@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   sync-and-translate:
@@ -63,6 +64,7 @@ jobs:
           ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: |
             The i18n check found docs that need translation. Here is the JSON report:
 
@@ -83,5 +85,4 @@ jobs:
             git commit -m "docs: sync Chinese translations"
             git push
             ```
-          allowed_tools: Bash,Read,Write,Edit,Glob,Grep
-          model: sonnet
+          claude_args: "--allowedTools Bash Read Write Edit Glob Grep --model sonnet"
