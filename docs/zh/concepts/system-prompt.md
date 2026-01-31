@@ -1,12 +1,13 @@
 ---
-title: "System Prompt"
+title: "系统提示词 (System Prompt)"
+sidebarTitle: "系统提示词"
 mmh3_hash: "cf8816e8158f4073cb916c9cea3afc4a"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
 read_when:
   - 编辑 system prompt 文本、tools 列表或 time/heartbeat 部分
   - 更改 workspace bootstrap 或 skills 注入行为
 ---
-# System Prompt
+# 系统提示词 (System Prompt)
 
 OpenClaw 为每个 agent 运行构建自定义 system prompt。Prompt 由 **OpenClaw 拥有**,不使用 p-coding-agent 默认 prompt。
 

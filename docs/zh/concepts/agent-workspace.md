@@ -1,12 +1,13 @@
 ---
-title: "Agent workspace"
+title: "智能体工作区"
+sidebarTitle: "智能体工作区"
 mmh3_hash: "eeae1c937d93a39cb96deb59e1a5f0e5"
 summary: "Agent workspace: 位置、布局和备份策略"
 read_when:
   - 你需要解释 agent workspace 或其文件布局
   - 你想要备份或迁移 agent workspace
 ---
-# Agent workspace
+# 智能体工作区
 
 workspace 是 agent 的主目录。它是用于文件工具和 workspace context 的唯一工作目录。保持它私密并将其视为记忆。
 

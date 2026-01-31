@@ -1,5 +1,6 @@
 ---
-title: "OAuth"
+title: "OAuth 认证"
+sidebarTitle: "OAuth 认证"
 mmh3_hash: "1f6cbc211d79663f11393f5c6e7d1938"
 summary: "OpenClaw 中的 OAuth: token 交换、存储和多账户模式"
 read_when:
@@ -8,7 +9,7 @@ read_when:
   - 你想要 setup-token 或 OAuth auth 流程
   - 你想要多个账户或 profile 路由
 ---
-# OAuth
+# OAuth 认证
 
 OpenClaw 通过 OAuth 支持提供它的 providers 的"subscription auth"(特别是 **OpenAI Codex (ChatGPT OAuth)**)。对于 Anthropic subscriptions,使用 **setup-token** 流程。本页面解释:
 

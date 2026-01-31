@@ -1,5 +1,6 @@
 ---
-title: "Presence"
+title: "在线状态"
+sidebarTitle: "在线状态"
 mmh3_hash: "835b21fb58f1fd9f1135f7955d600d73"
 summary: "OpenClaw presence 条目如何生成、合并和显示"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 调查重复或陈旧的实例行
   - 更改 gateway WS connect 或 system-event beacons
 ---
-# Presence
+# 在线状态
 
 OpenClaw "presence" 是一个轻量级、尽力而为的视图:
 - **Gateway** 本身,以及

@@ -1,11 +1,12 @@
 ---
-title: "Channels & routing"
+title: "频道与路由"
+sidebarTitle: "频道与路由"
 mmh3_hash: "68179c016f9ec4f5630ee43d55a32632"
 summary: "每个 channel 的路由规则(WhatsApp、Telegram、Discord、Slack)和共享 context"
 read_when:
   - 更改 channel 路由或收件箱行为
 ---
-# Channels & routing
+# 频道与路由
 
 OpenClaw 将回复 **路由回消息来源的 channel**。model 不选择 channel;路由是确定性的,由主机配置控制。
 

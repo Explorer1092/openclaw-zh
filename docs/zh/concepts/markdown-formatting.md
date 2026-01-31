@@ -1,5 +1,6 @@
 ---
-title: "Markdown formatting"
+title: "Markdown 格式"
+sidebarTitle: "Markdown 格式"
 mmh3_hash: "f74630a846e564110ce3508a031185b3"
 summary: "出站 channels 的 Markdown 格式化管道"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 你正在添加新的 channel formatter 或样式映射
   - 你正在调试跨 channels 的格式化回归
 ---
-# Markdown formatting
+# Markdown 格式
 
 OpenClaw 通过将出站 Markdown 转换为共享的中间表示(IR),然后再渲染特定于 channel 的输出来格式化它。IR 保持源文本完整,同时携带样式/链接跨度,以便分块和渲染可以在 channels 之间保持一致。
 

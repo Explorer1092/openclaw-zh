@@ -1,11 +1,12 @@
 ---
-title: "Agent Loop (OpenClaw)"
+title: "智能体循环 (OpenClaw)"
+sidebarTitle: "智能体循环"
 mmh3_hash: "0e06d0b1019a4841f98ebfd75fa6d350"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:
   - 你需要了解 agent loop 或生命周期事件的详细流程
 ---
-# Agent Loop (OpenClaw)
+# 智能体循环 (OpenClaw)
 
 agentic loop 是 agent 的完整"真实"运行过程:接收输入 → 上下文组装 → model 推理 →
 工具执行 → 流式回复 → 持久化。它是将消息转换为操作和最终回复的权威路径,同时保持 session 状态的一致性。

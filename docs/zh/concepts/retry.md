@@ -1,12 +1,13 @@
 ---
-title: "Retry policy"
+title: "重试策略"
+sidebarTitle: "重试策略"
 mmh3_hash: "d5bfe1e425fbe40cdedd77bb753ba73b"
 summary: "出站 provider 调用的重试 policy"
 read_when:
   - 更新 provider 重试行为或默认值
   - 调试 provider 发送错误或速率限制
 ---
-# Retry policy
+# 重试策略
 
 ## 目标
 - 按 HTTP 请求重试,而不是按多步骤流程。

@@ -1,11 +1,12 @@
 ---
-title: "Groups"
+title: "群组"
+sidebarTitle: "群组"
 mmh3_hash: "7d2aebdfffde8173646be283472338b1"
 summary: "跨表面的 group chat 行为(WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams)"
 read_when:
   - 更改 group chat 行为或 mention gating
 ---
-# Groups
+# 群组
 
 OpenClaw 在各个表面上一致地处理 group chats:WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams。
 

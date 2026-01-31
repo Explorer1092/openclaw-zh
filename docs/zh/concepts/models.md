@@ -1,5 +1,6 @@
 ---
-title: "Models CLI"
+title: "模型 CLI"
+sidebarTitle: "模型 CLI"
 mmh3_hash: "58f14d9dfd6cccc336585d7a6f62c7c6"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 更改 model fallback 行为或选择 UX
   - 更新 model scan probes (tools/images)
 ---
-# Models CLI
+# 模型 CLI
 
 参见 [/concepts/model-failover](/zh/concepts/model-failover) 了解 auth profile 轮换、cooldowns 以及它与 fallbacks 的交互方式。快速 provider 概述 + 示例:[/concepts/model-providers](/zh/concepts/model-providers)。
 

@@ -1,5 +1,6 @@
 ---
-title: "Context"
+title: "上下文"
+sidebarTitle: "上下文"
 mmh3_hash: "4aa26d197ac3aa8c956fc8c702c3fe15"
 summary: "Context: model 看到什么、如何构建以及如何检查"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 你正在调试为什么 model "知道"某事(或忘记了它)
   - 你想减少 context 开销(/context、/status、/compact)
 ---
-# Context
+# 上下文
 
 "Context"是 **OpenClaw 发送给 model 用于运行的所有内容**。它受 model 的 **context window**(token 限制)约束。
 

@@ -1,5 +1,6 @@
 ---
-title: "Timezones"
+title: "时区"
+sidebarTitle: "时区"
 mmh3_hash: "4ee18a2763f55b0423bf67945f39b2a9"
 summary: "Agents、envelopes 和 prompts 的 Timezone 处理"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 为 system prompts 配置用户 timezone
 ---
 
-# Timezones
+# 时区
 
 OpenClaw 标准化时间戳,以便 model 看到 **单个参考时间**。
 

@@ -1,5 +1,6 @@
 ---
-title: "Model failover"
+title: "模型故障转移"
+sidebarTitle: "模型故障转移"
 mmh3_hash: "2ad630e218a0bd9d2baccba9512184b5"
 summary: "OpenClaw 如何轮换 auth profiles 并跨 models 后备"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 更新 auth profiles 或 models 的 failover 规则
 ---
 
-# Model failover
+# 模型故障转移
 
 OpenClaw 分两个阶段处理故障:
 1) 当前 provider 内的 **Auth profile 轮换**。

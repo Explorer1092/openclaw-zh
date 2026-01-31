@@ -1,5 +1,6 @@
 ---
-title: "Streaming + chunking"
+title: "流式与分片"
+sidebarTitle: "流式与分片"
 mmh3_hash: "52b179bd13b5e61c109e925df097d1ab"
 summary: "Streaming + chunking 行为(block 回复、draft streaming、限制)"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 更改 block streaming 或 channel chunking 行为
   - 调试重复/早期 block 回复或 draft streaming
 ---
-# Streaming + chunking
+# 流式与分片
 
 OpenClaw 有两个单独的"streaming"层:
 - **Block streaming (channels):** 当 assistant 写入时发出完成的 **blocks**。这些是正常的 channel 消息(不是 token deltas)。

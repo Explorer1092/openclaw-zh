@@ -1,12 +1,13 @@
 ---
-title: "Context Window & Compaction"
+title: "上下文窗口与压缩"
+sidebarTitle: "上下文窗口与压缩"
 mmh3_hash: "c400063912fa3d112978afbdd374740c"
 summary: "Context window + compaction: OpenClaw 如何将 sessions 保持在 model 限制内"
 read_when:
   - 你想了解自动 compaction 和 /compact
   - 你正在调试达到 context 限制的长 sessions
 ---
-# Context Window & Compaction
+# 上下文窗口与压缩
 
 每个 model 都有一个 **context window**(它可以看到的最大 tokens)。长时间运行的聊天会累积消息和工具结果;一旦窗口紧张,OpenClaw 会 **compact** 较旧的历史记录以保持在限制内。
 

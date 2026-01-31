@@ -1,11 +1,12 @@
 ---
-title: "Agent Runtime 🤖"
+title: "智能体运行时 🤖"
+sidebarTitle: "智能体运行时"
 mmh3_hash: "53fde06e8b712259ed7ae5d9627cad48"
 summary: "Agent runtime (embedded p-mono)、workspace 契约和 session bootstrap"
 read_when:
   - 更改 agent runtime、workspace bootstrap 或 session 行为
 ---
-# Agent Runtime 🤖
+# 智能体运行时 🤖
 
 OpenClaw 运行一个派生自 **p-mono** 的单个嵌入式 agent runtime。
 

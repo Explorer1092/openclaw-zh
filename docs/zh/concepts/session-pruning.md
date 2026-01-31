@@ -1,12 +1,13 @@
 ---
-title: "Session Pruning"
+title: "会话修剪"
+sidebarTitle: "会话修剪"
 mmh3_hash: "f699150e26132c0100ebf771d59d090e"
 summary: "Session pruning: tool-result 修剪以减少 context 膨胀"
 read_when:
   - 你想减少来自 tool 输出的 LLM context 增长
   - 你正在调整 agents.defaults.contextPruning
 ---
-# Session Pruning
+# 会话修剪
 
 Session pruning 在每次 LLM 调用之前从内存中的 context 中修剪 **旧的 tool results**。它 **不** 重写磁盘上的 session 历史记录(`*.jsonl`)。
 

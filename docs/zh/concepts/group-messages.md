@@ -1,11 +1,12 @@
 ---
-title: "Group messages (WhatsApp web channel)"
+title: "群组消息 (WhatsApp web 频道)"
+sidebarTitle: "群组消息"
 mmh3_hash: "7faf81c0b4f9ce0e3cd8dfcf793791db"
 summary: "WhatsApp group 消息处理的行为和配置(mentionPatterns 在各个表面之间共享)"
 read_when:
   - 更改 group 消息规则或 mentions
 ---
-# Group messages (WhatsApp web channel)
+# 群组消息 (WhatsApp web 频道)
 
 目标:让 Clawd 坐在 WhatsApp groups 中,仅在被 ping 时唤醒,并将该线程与个人 DM session 分开。
 

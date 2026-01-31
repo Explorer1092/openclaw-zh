@@ -1,12 +1,13 @@
 ---
 mmh3_hash: "9c97bdefff2d37d9f7c19133495fd661"
 summary: "Multi-agent 路由:隔离的 agents、channel accounts 和 bindings"
-title: Multi-Agent Routing
+title: "多智能体路由"
+sidebarTitle: "多智能体路由"
 read_when: "你想在一个 gateway 进程中使用多个隔离的 agents (workspaces + auth)。"
 status: active
 ---
 
-# Multi-Agent Routing
+# 多智能体路由
 
 目标:多个 *隔离的* agents(单独的 workspace + `agentDir` + sessions),加上多个 channel accounts(例如两个 WhatsApps)在一个运行的 Gateway 中。入站通过 bindings 路由到 agent。
 

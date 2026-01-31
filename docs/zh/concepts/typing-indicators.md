@@ -1,11 +1,12 @@
 ---
-title: "Typing indicators"
+title: "输入指示器"
+sidebarTitle: "输入指示器"
 mmh3_hash: "8052acceb1883d04413d41870877a4c0"
 summary: "OpenClaw 何时显示 typing indicators 以及如何调整它们"
 read_when:
   - 更改 typing indicator 行为或默认值
 ---
-# Typing indicators
+# 输入指示器
 
 Typing indicators 在运行处于活动状态时发送到 chat channel。使用 `agents.defaults.typingMode` 控制 **何时** typing 开始,使用 `typingIntervalSeconds` 控制 **多久** 刷新一次。
 

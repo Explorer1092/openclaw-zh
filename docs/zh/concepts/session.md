@@ -1,11 +1,12 @@
 ---
-title: "Session Management"
+title: "会话管理"
+sidebarTitle: "会话管理"
 mmh3_hash: "612ded7a8cffad72f923b285c3783907"
 summary: "Session 管理规则、keys 和聊天持久化"
 read_when:
   - 修改 session 处理或存储
 ---
-# Session Management
+# 会话管理
 
 OpenClaw 将 **每个 agent 一个直接聊天 session** 视为主要。直接聊天折叠到 `agent:<agentId>:<mainKey>`(默认 `main`),而 group/channel 聊天获得自己的 keys。遵守 `session.mainKey`。
 

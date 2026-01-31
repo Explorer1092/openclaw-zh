@@ -1,5 +1,6 @@
 ---
-title: "Messages"
+title: "消息"
+sidebarTitle: "消息"
 mmh3_hash: "a9c56225c752524dc3e69a3c222fd447"
 summary: "Message 流程、sessions、queueing 和 reasoning 可见性"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 澄清 sessions、queueing 模式或 streaming 行为
   - 记录 reasoning 可见性和 usage 含义
 ---
-# Messages
+# 消息
 
 本页面将 OpenClaw 如何处理入站消息、sessions、queueing、streaming 和 reasoning 可见性联系在一起。
 
