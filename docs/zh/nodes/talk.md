@@ -1,12 +1,13 @@
 ---
-title: "对讲模式 (Talk Mode)"
+title: "对讲模式"
+sidebarTitle: "对讲模式"
 mmh3_hash: "a56b419debab2567d1951dc6b01da440"
 summary: "对讲模式：使用 ElevenLabs TTS 的连续语音对话"
 read_when:
   - 在 macOS/iOS/Android 上实现对讲模式
   - 更改语音/TTS/打断行为
 ---
-# 对讲模式 (Talk Mode)
+# 对讲模式
 
 对讲模式是一个连续的语音对话循环：
 1) 监听语音

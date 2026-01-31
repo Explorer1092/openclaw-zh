@@ -1,12 +1,13 @@
 ---
-title: "控制 UI(浏览器)"
+title: "控制界面 (浏览器)"
+sidebarTitle: "控制界面"
 mmh3_hash: "cb6414976f7998f31d5af33d3ccd7281"
 summary: "网关的基于浏览器的控制 UI(聊天、节点、配置)"
 read_when:
   - 您想从浏览器操作网关
   - 您想要无需 SSH 隧道的 Tailnet 访问
 ---
-# 控制 UI(浏览器)
+# 控制界面 (浏览器)
 
 控制 UI 是网关提供的小型 **Vite + Lit** 单页应用:
 

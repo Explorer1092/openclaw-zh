@@ -1,5 +1,6 @@
 ---
 title: "相机捕获 (智能体)"
+sidebarTitle: "相机捕获"
 mmh3_hash: "62ce659cddd8bf0f4dc3001cc8b4d878"
 summary: "用于智能体的相机捕获（iOS 节点 + macOS 应用）：照片 (jpg) 和短视频片段 (mp4)"
 read_when:

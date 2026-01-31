@@ -1,5 +1,6 @@
 ---
 title: "语音唤醒 (全局唤醒词)"
+sidebarTitle: "语音唤醒"
 mmh3_hash: "6fd0a067a8ac5ca2f013aff03e856893"
 summary: "全局语音唤醒词 (网关拥有) 以及它们如何在节点间同步"
 read_when:

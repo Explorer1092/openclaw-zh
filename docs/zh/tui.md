@@ -1,12 +1,13 @@
 ---
-title: "TUI (终端 UI)"
+title: "TUI (终端界面)"
+sidebarTitle: "TUI"
 mmh3_hash: "b80aa67c5e030c09e7327b047b4ff551"
 summary: "终端 UI (TUI):从任何机器连接到网关"
 read_when:
   - 您想要 TUI 的初学者友好演练
   - 您需要 TUI 功能、命令和快捷键的完整列表
 ---
-# TUI (终端 UI)
+# TUI (终端界面)
 
 ## 快速入门
 1) 启动网关。
