@@ -1,5 +1,6 @@
 ---
-title: "Android 应用(节点)"
+title: "Android 应用 (节点)"
+sidebarTitle: "Android"
 mmh3_hash: "2b10c546f9bd6f503667da158f64e59f"
 summary: "Android 应用(节点):连接运行手册 + Canvas/Chat/Camera"
 read_when:
@@ -8,7 +9,7 @@ read_when:
   - 验证跨客户端的聊天历史一致性
 ---
 
-# Android 应用(节点)
+# Android 应用 (节点)
 
 ## 支持概览
 - 角色:配套节点应用(Android 不托管网关)。

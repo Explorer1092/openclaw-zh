@@ -1,5 +1,6 @@
 ---
 title: "菜单栏图标状态"
+sidebarTitle: "菜单栏图标"
 mmh3_hash: "901bcb3135be5012b39181c8a5471bd7"
 summary: "macOS 上 OpenClaw 的菜单栏图标状态和动画"
 read_when:

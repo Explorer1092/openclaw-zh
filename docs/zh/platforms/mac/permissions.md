@@ -1,5 +1,6 @@
 ---
-title: "macOS 权限(TCC)"
+title: "macOS 权限 (TCC)"
+sidebarTitle: "macOS 权限"
 mmh3_hash: "b8755171a0e5f7283a96d341ce9bf236"
 summary: "macOS 权限持久化(TCC)和签名要求"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 打包或签名 macOS 应用
   - 更改捆绑包 ID 或应用安装路径
 ---
-# macOS 权限(TCC)
+# macOS 权限 (TCC)
 
 macOS 权限授予是脆弱的。TCC 将权限授予与应用的代码签名、捆绑包标识符和
 磁盘路径相关联。如果其中任何一个更改,macOS 会将应用视为新应用,并可能

@@ -1,5 +1,6 @@
 ---
-title: "OpenClaw macOS 发布(Sparkle)"
+title: "OpenClaw macOS 发布 (Sparkle)"
+sidebarTitle: "macOS 发布"
 mmh3_hash: "174d1fc5b78905cf7485a7716d1d7b25"
 summary: "OpenClaw macOS 发布清单(Sparkle feed、打包、签名)"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 更新 Sparkle appcast 或 feed 资源
 ---
 
-# OpenClaw macOS 发布(Sparkle)
+# OpenClaw macOS 发布 (Sparkle)
 
 此应用现在提供 Sparkle 自动更新。发布版本必须经过 Developer ID 签名、
 压缩并使用签名的 appcast 条目发布。

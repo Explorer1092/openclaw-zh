@@ -1,11 +1,12 @@
 ---
-title: "WebChat(macOS 应用)"
+title: "WebChat (macOS 应用)"
+sidebarTitle: "WebChat"
 mmh3_hash: "e9dbce3ac796f657bf3c2c9bd8844153"
 summary: "mac 应用如何嵌入网关 WebChat 以及如何调试它"
 read_when:
   - 调试 mac WebChat 视图或环回端口
 ---
-# WebChat(macOS 应用)
+# WebChat (macOS 应用)
 
 macOS 菜单栏应用将 WebChat UI 嵌入为原生 SwiftUI 视图。它连接到网关并默认
 为所选代理的 **main session**(其他会话有会话切换器)。

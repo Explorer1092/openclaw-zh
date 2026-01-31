@@ -1,12 +1,13 @@
 ---
-title: "Skills(macOS)"
+title: "技能 (macOS)"
+sidebarTitle: "技能"
 mmh3_hash: "29ff3393cc623c3a18801cd2fb8f25bf"
 summary: "macOS Skills 设置 UI 和网关支持的状态"
 read_when:
   - 更新 macOS Skills 设置 UI
   - 更改技能门控或安装行为
 ---
-# Skills(macOS)
+# 技能 (macOS)
 
 macOS 应用通过网关显示 OpenClaw 技能;它不在本地解析技能。
 

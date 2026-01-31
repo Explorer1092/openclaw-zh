@@ -1,5 +1,6 @@
 ---
-title: "macOS VM 上的 OpenClaw(沙盒)"
+title: "macOS VM 上的 OpenClaw (沙盒)"
+sidebarTitle: "macOS VM"
 mmh3_hash: "7a068774e79000b9c59e1889e7e3ab82"
 summary: "在沙盒 macOS VM(本地或托管)中运行 OpenClaw,当你需要隔离或 iMessage"
 read_when:
@@ -9,7 +10,7 @@ read_when:
   - 你想比较本地 vs 托管 macOS VM 选项
 ---
 
-# macOS VM 上的 OpenClaw(沙盒)
+# macOS VM 上的 OpenClaw (沙盒)
 
 ## 推荐默认(大多数用户)
 

@@ -1,5 +1,6 @@
 ---
 title: "Linux 应用"
+sidebarTitle: "Linux"
 mmh3_hash: "b036d0ea9146e3fa60861c91819b3825"
 summary: "Linux 支持 + 配套应用状态"
 read_when:

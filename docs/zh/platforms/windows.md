@@ -1,12 +1,13 @@
 ---
-title: "Windows(WSL2)"
+title: "Windows (WSL2)"
+sidebarTitle: "Windows"
 mmh3_hash: "1a41f0182978918e89adce142a24c206"
 summary: "Windows(WSL2)支持 + 配套应用状态"
 read_when:
   - 在 Windows 上安装 OpenClaw
   - 寻找 Windows 配套应用状态
 ---
-# Windows(WSL2)
+# Windows (WSL2)
 
 推荐**通过 WSL2**(推荐 Ubuntu)在 Windows 上运行 OpenClaw。CLI + 网关在
 Linux 内部运行,这保持了运行时的一致性,并使工具更加兼容(Node/Bun/pnpm、

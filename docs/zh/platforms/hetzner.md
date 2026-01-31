@@ -1,5 +1,6 @@
 ---
-title: "在 Hetzner 上运行 OpenClaw(Docker,生产 VPS 指南)"
+title: "在 Hetzner 上运行 OpenClaw (Docker, 生产 VPS 指南)"
+sidebarTitle: "Hetzner"
 mmh3_hash: "b72f7a6977b2db87a627db44569f6689"
 summary: "在廉价的 Hetzner VPS(Docker)上全天候运行 OpenClaw 网关,具有持久状态和内置二进制文件"
 read_when:
@@ -9,7 +10,7 @@ read_when:
   - 你在 Hetzner 或类似提供商上的 Docker 中运行 OpenClaw
 ---
 
-# 在 Hetzner 上运行 OpenClaw(Docker,生产 VPS 指南)
+# 在 Hetzner 上运行 OpenClaw (Docker, 生产 VPS 指南)
 
 ## 目标
 使用 Docker 在 Hetzner VPS 上运行持久的 OpenClaw 网关,具有持久状态、内置二进制文件和安全重启行为。
