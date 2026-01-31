@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "43de571c19fc8341946c47425f881c53"
+mmh3_hash: "2786c8b56780b05cea11518d020a5cc6"
 summary: "常见问题 - OpenClaw 设置、使用和故障排除"
 read_when:
   - 遇到问题或错误
@@ -1327,6 +1327,16 @@ openclaw gateway restart
 ```
 
 参阅[更新/回滚](/install/updating)。
+
+### 中文文档翻译什么时候同步?
+
+中文文档的同步触发来自仓库的 **Docs i18n Sync** 工作流:
+
+- **定时触发:** 每周一 09:00 UTC 自动从上游 `openclaw/openclaw` 的 `main` 分支同步英文 docs。
+- **手动触发:** 维护者可以随时手动运行该工作流( `workflow_dispatch` )以加速同步。
+- **检测方式:** 同步后运行 `bun scripts/docs-i18n-hash.ts check`，只在检测到缺失或过期翻译时才进入翻译流程。
+
+因此它 **不是实时感知** 上游更新；正常情况下会在下一个定时任务或手动触发后更新。
 
 ### 如何回滚到以前的版本?
 
