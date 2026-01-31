@@ -1,5 +1,6 @@
 ---
 title: "Slack"
+sidebarTitle: "Slack"
 mmh3_hash: "da25955bca60f9d7eb713b5595e8faa8"
 summary: "Socket 或 HTTP webhook 模式的 Slack 设置"
 read_when: "设置 Slack 或调试 Slack socket/HTTP 模式时"

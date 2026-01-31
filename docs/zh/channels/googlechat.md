@@ -1,5 +1,6 @@
 ---
 title: "Google Chat (Chat API)"
+sidebarTitle: "Google Chat"
 mmh3_hash: "0713d6aad9b8059116771b38a1666978"
 summary: "Google Chat 应用支持状态、功能和配置"
 read_when:

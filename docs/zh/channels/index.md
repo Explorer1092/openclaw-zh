@@ -1,12 +1,13 @@
 ---
-title: "Chat Channels"
+title: "聊天频道"
+sidebarTitle: "聊天频道"
 mmh3_hash: "a31cf88a6d5a6d6fd2095e50eefdb199"
 summary: "OpenClaw 可以连接的消息平台"
 read_when:
   - You want to choose a chat channel for OpenClaw
   - You need a quick overview of supported messaging platforms
 ---
-# Chat Channels
+# 聊天频道
 
 OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 channel 通过 Gateway 连接。
 文本在所有平台都支持；媒体和反应功能因 channel 而异。
