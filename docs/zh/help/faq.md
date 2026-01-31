@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2786c8b56780b05cea11518d020a5cc6"
+mmh3_hash: "6872544a1603af8b28ecd4bd7f500b2d"
 summary: "常见问题 - OpenClaw 设置、使用和故障排除"
 read_when:
   - 遇到问题或错误
@@ -1328,7 +1328,7 @@ openclaw gateway restart
 
 参阅[更新/回滚](/install/updating)。
 
-### 中文文档翻译什么时候同步?
+### 中文文档翻译什么时候同步？
 
 中文文档的同步触发来自仓库的 **Docs i18n Sync** 工作流:
 

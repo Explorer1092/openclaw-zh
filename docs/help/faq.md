@@ -414,7 +414,7 @@ Newest entries are at the top. If the top section is marked **Unreleased**, the 
 section is the latest shipped version. Entries are grouped by **Highlights**, **Changes**, and
 **Fixes** (plus docs/other sections when needed).
 
-### When do Chinese doc translations sync
+### When do Chinese doc translations sync?
 
 Chinese docs are synced by the **Docs i18n Sync** workflow:
 
