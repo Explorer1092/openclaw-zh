@@ -1194,7 +1194,7 @@
             ]
           },
           {
-            "group": "命令行",
+            "group": "CLI",
             "pages": [
               "zh/cli/index",
               "zh/cli/setup",
@@ -1271,7 +1271,7 @@
             ]
           },
           {
-            "group": "网关与运维",
+            "group": "Gateway 与运维",
             "pages": [
               "zh/gateway/protocol",
               "zh/gateway/bridge-protocol",
@@ -1313,7 +1313,7 @@
             ]
           },
           {
-            "group": "消息通道",
+            "group": "Channels",
             "pages": [
               "zh/channels/index",
               "zh/channels/whatsapp",
@@ -1336,7 +1336,7 @@
             ]
           },
           {
-            "group": "模型提供商",
+            "group": "Providers",
             "pages": [
               "zh/providers/index",
               "zh/providers/models",
@@ -1354,7 +1354,7 @@
             ]
           },
           {
-            "group": "自动化与钩子",
+            "group": "自动化与 Hooks",
             "pages": [
               "zh/hooks",
               "zh/hooks/soul-evil",
@@ -1367,7 +1367,7 @@
             ]
           },
           {
-            "group": "工具与技能",
+            "group": "Tools 与 Skills",
             "pages": [
               "zh/tools/lobster",
               "zh/tools/llm-task",
@@ -1394,7 +1394,7 @@
             ]
           },
           {
-            "group": "节点与媒体",
+            "group": "Nodes 与媒体",
             "pages": [
               "zh/nodes/camera",
               "zh/nodes/images",
@@ -1420,7 +1420,7 @@
             ]
           },
           {
-            "group": "macOS 伴侣应用",
+            "group": "macOS Companion App",
             "pages": [
               "zh/platforms/mac/dev-setup",
               "zh/platforms/mac/menu-bar",
