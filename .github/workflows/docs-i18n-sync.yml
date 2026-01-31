@@ -1,0 +1,81 @@
+name: Docs i18n Sync
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # Weekly Monday 9am UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-and-translate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Sync upstream docs
+        run: |
+          git remote add upstream https://github.com/openclaw/openclaw.git || true
+          git fetch upstream main
+          # Merge upstream docs/ and scripts/docs-i18n-hash.ts only
+          git checkout upstream/main -- docs/ scripts/docs-i18n-hash.ts
+          # Stage upstream changes (if any)
+          git add docs/ scripts/docs-i18n-hash.ts
+          if git diff --cached --quiet; then
+            echo "upstream_changed=false" >> "$GITHUB_ENV"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "docs: sync upstream English docs"
+            git push
+            echo "upstream_changed=true" >> "$GITHUB_ENV"
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Check translation status
+        id: check
+        run: |
+          output=$(bun scripts/docs-i18n-hash.ts check --json || true)
+          echo "result<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$output" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          missing=$(echo "$output" | jq '.missing | length')
+          outdated=$(echo "$output" | jq '.outdated | length')
+          echo "count=$((missing + outdated))" >> "$GITHUB_OUTPUT"
+
+      - name: Translate docs
+        if: steps.check.outputs.count != '0'
+        uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+          ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_AUTH_TOKEN }}
+          prompt: |
+            The i18n check found docs that need translation. Here is the JSON report:
+
+            ${{ steps.check.outputs.result }}
+
+            For each missing or outdated file:
+            1. Read the English source
+            2. Create or update the .zh.md translation (Chinese Simplified)
+            3. Run `bun scripts/docs-i18n-hash.ts update <file.zh.md>` to stamp the hash
+
+            After all translations, run `bun scripts/docs-i18n-hash.ts check` to verify.
+
+            Then commit all changes directly to the current branch:
+            ```
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add docs/**/*.zh.md
+            git commit -m "docs: sync Chinese translations"
+            git push
+            ```
+          allowed_tools: Bash,Read,Write,Edit,Glob,Grep
+          model: sonnet

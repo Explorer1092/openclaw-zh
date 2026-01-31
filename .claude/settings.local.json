@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "atoz-team-marketplace": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/user/Code/github.com/Explorer1092/personal-copilot/third_party/claude-plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "plugin-dev@claude-plugins-official": true
+  }
+}
