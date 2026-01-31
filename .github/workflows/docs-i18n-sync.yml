@@ -73,21 +73,35 @@ jobs:
             Translations live in docs/zh/ mirroring the English structure:
               docs/start/getting-started.md → docs/zh/start/getting-started.md
 
-            For each missing or outdated file:
-            1. Read the English source (e.g. docs/start/getting-started.md)
-            2. Create or update the Chinese translation at docs/zh/start/getting-started.md
-            3. Run `bun scripts/docs-i18n-hash.ts update docs/zh/start/getting-started.md` to stamp the hash
+            ## Translation workflow
 
-            After all translations, run `bun scripts/docs-i18n-hash.ts check` to verify.
-
-            Then commit and push:
+            First run this once:
             ```
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
+            ```
+
+            Then process files **grouped by subdirectory** (e.g. all docs/start/* together, then docs/install/*, etc.).
+
+            For each file:
+            1. Read the English source
+            2. Create/update the Chinese translation under docs/zh/
+            3. Run `bun scripts/docs-i18n-hash.ts update <docs/zh/path>` to stamp the hash
+
+            ## Commit rules (IMPORTANT)
+
+            You MUST commit and push incrementally to avoid losing work:
+            - **After finishing each subdirectory group**, commit and push immediately
+            - **OR after every 5 files**, whichever comes first
+
+            Use this pattern each time:
+            ```
             git add docs/zh/
-            git commit -m "docs: sync Chinese translations"
+            git commit -m "docs(zh): translate <group-name>"
             git push
             ```
+
+            After ALL translations are done, run `bun scripts/docs-i18n-hash.ts check` as a final verification.
           claude_args: "--allowedTools Bash Read Write Edit Glob Grep --model sonnet"
 
       - name: Update Mintlify navigation
