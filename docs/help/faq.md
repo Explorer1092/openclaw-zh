@@ -414,7 +414,17 @@ Newest entries are at the top. If the top section is marked **Unreleased**, the 
 section is the latest shipped version. Entries are grouped by **Highlights**, **Changes**, and
 **Fixes** (plus docs/other sections when needed).
 
-### I cant access docs.openclaw.ai SSL error What now
+### When do Chinese doc translations sync?
+
+Chinese docs are synced by the **Docs i18n Sync** workflow:
+
+- **Scheduled:** every Monday at 09:00 UTC, it pulls English docs from `openclaw/openclaw` `main`.
+- **Manual:** maintainers can run the workflow on demand (`workflow_dispatch`) to sync sooner.
+- **Detection:** after syncing, `bun scripts/docs-i18n-hash.ts check` runs and only triggers translation when files are missing or outdated.
+
+So it does **not** detect upstream updates instantly; updates land on the next scheduled run or manual trigger.
+
+### I can't access docs.openclaw.ai (SSL error). What now?
 
 Some Comcast/Xfinity connections incorrectly block `docs.openclaw.ai` via Xfinity
 Advanced Security. Disable it or allowlist `docs.openclaw.ai`, then retry. More

@@ -67,6 +67,8 @@ apps/ios/*.mobileprovision
 .vscode/
 IDENTITY.md
 USER.md
+!docs/zh/reference/templates/IDENTITY.md
+!docs/zh/reference/templates/USER.md
 .tgz
 
 # local tooling
