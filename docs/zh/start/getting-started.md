@@ -1,5 +1,6 @@
 ---
 title: "快速开始"
+sidebarTitle: "快速开始"
 mmh3_hash: "6b492947b03a0d6c789b28589952d218"
 summary: "初学者指南：从零开始到发送第一条消息（向导、认证、频道、配对）"
 read_when:

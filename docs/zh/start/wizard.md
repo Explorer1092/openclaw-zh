@@ -1,5 +1,6 @@
 ---
 title: "引导向导(CLI)"
+sidebarTitle: "向导"
 mmh3_hash: "de05552de0231eb953e575b3274503f8"
 summary: "CLI 引导向导:网关、工作空间、频道和技能的引导式设置"
 read_when:
