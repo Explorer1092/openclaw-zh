@@ -1,5 +1,6 @@
 ---
 title: "更新"
+sidebarTitle: "更新"
 mmh3_hash: "2930cf69020d717ab72be6556d32f9b6"
 summary: "安全地更新 OpenClaw (全局安装或源码)，加上回滚策略"
 read_when:

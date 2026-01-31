@@ -1,5 +1,6 @@
 ---
 title: "BOOT.md"
+sidebarTitle: "BOOT.md"
 mmh3_hash: "9dc8cc6c2f8a77ebda1222bc1122e03a"
 summary: "BOOT.md 的工作空间模板"
 read_when:

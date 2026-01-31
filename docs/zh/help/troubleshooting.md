@@ -1,5 +1,6 @@
 ---
 title: "故障排除"
+sidebarTitle: "故障排除"
 mmh3_hash: "eb9d9b9a635bbdd28037dcf5572fdb43"
 summary: "故障排除中心: 症状 → 检查 → 修复"
 read_when:

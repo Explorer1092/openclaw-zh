@@ -1,5 +1,6 @@
 ---
-title: "设备模型数据库(友好名称)"
+title: "设备模型数据库 (友好名称)"
+sidebarTitle: "设备模型数据库"
 mmh3_hash: "59be4a7f5a3b39a88a64868a2c27385f"
 summary: "OpenClaw 如何为 macOS 应用中的友好名称供应 Apple 设备模型标识符。"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 更改实例 UI 显示设备名称的方式
 ---
 
-# 设备模型数据库(友好名称)
+# 设备模型数据库 (友好名称)
 
 macOS 伴侣应用通过将 Apple 模型标识符(例如 `iPad16,6`、`Mac16,6`)映射到人类可读的名称,在**实例** UI 中显示友好的 Apple 设备模型名称。
 

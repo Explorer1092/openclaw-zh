@@ -1,5 +1,6 @@
 ---
 title: "Bun (实验性)"
+sidebarTitle: "Bun"
 mmh3_hash: "2b375926112a91ff7c3c7ad72fd1b24d"
 summary: "Bun 工作流（实验性）：安装以及与 pnpm 相比的注意事项"
 read_when:

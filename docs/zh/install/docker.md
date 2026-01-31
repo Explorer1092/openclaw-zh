@@ -1,5 +1,6 @@
 ---
-title: "Docker(可选)"
+title: "Docker (可选)"
+sidebarTitle: "Docker"
 mmh3_hash: "a935555fa117ac8b7940b1ae50d4d50b"
 summary: "OpenClaw 的可选 Docker 设置和引导"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 您正在验证 Docker 流程
 ---
 
-# Docker(可选)
+# Docker (可选)
 
 Docker 是**可选的**。仅在您希望使用容器化网关或验证 Docker 流程时使用。
 

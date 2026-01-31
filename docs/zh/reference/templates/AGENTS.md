@@ -1,5 +1,6 @@
 ---
 title: "AGENTS.md - 你的工作空间"
+sidebarTitle: "AGENTS.md"
 mmh3_hash: "43f36004238beed5b00f018dfd4330ca"
 summary: "AGENTS.md 的工作空间模板"
 read_when:

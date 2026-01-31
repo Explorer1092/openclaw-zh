@@ -1,5 +1,6 @@
 ---
 title: "Ansible 安装"
+sidebarTitle: "Ansible"
 mmh3_hash: "831331b85f3db6c5deb670b8a7fe06a8"
 summary: "使用 Ansible、Tailscale VPN 和防火墙隔离实现自动化、强化的 OpenClaw 安装"
 read_when:

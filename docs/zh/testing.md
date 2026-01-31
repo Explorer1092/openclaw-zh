@@ -1,5 +1,6 @@
 ---
 title: "测试"
+sidebarTitle: "测试"
 mmh3_hash: "e9ea1cf8db4b9f05291d15d00c11828a"
 summary: "测试套件:单元/e2e/实时套件、Docker 运行器以及每个测试覆盖的内容"
 read_when:
