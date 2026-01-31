@@ -33,4 +33,4 @@ openclaw onboard --opencode-zen-api-key "$OPENCODE_API_KEY"
 - 也支持 `OPENCODE_ZEN_API_KEY`。
 - 您登录到 Zen,添加账单详细信息,然后复制您的 API 密钥。
 - OpenCode Zen 按请求计费;有关详细信息,请查看 OpenCode 仪表板。
-<\!-- source-hash: c783dbc354dd56f68f6c80095a08f559 -->
+<!-- source-hash: c783dbc354dd56f68f6c80095a08f559 -->

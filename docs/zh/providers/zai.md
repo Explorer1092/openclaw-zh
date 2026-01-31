@@ -31,4 +31,4 @@ openclaw onboard --zai-api-key "$ZAI_API_KEY"
 - GLM 模型可用作 `zai/<model>`(例如: `zai/glm-4.7`)。
 - 有关模型系列概述,请参见 [/providers/glm](/providers/glm)。
 - Z.AI 使用带有您的 API 密钥的 Bearer 身份验证。
-<\!-- source-hash: a1b0d1afaa154720b83f40bfa86dec3c -->
+<!-- source-hash: a1b0d1afaa154720b83f40bfa86dec3c -->

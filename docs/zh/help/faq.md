@@ -1706,7 +1706,7 @@ nix run github:openclaw/openclaw
 - 流式传输设置
 
 典型使用:
-- 文本消息: <1KB 每条消息
+ - 文本消息: 小于 1KB 每条消息
 - 图像: 100KB-1MB 每张图像
 - 音频: 100KB-1MB 每个文件
 
