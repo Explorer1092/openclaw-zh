@@ -1,11 +1,12 @@
 ---
-title: "Thinking 级别(/think 指令)"
+title: "思考级别 (/think 指令)"
+sidebarTitle: "思考级别"
 mmh3_hash: "5415c11d2823a250950432813e66848a"
 summary: "/think + /verbose 的指令语法以及它们如何影响模型推理"
 read_when:
   - 调整 thinking 或 verbose 指令解析或默认值
 ---
-# Thinking 级别(/think 指令)
+# 思考级别 (/think 指令)
 
 ## 它做什么
 - 任何入站正文中的内联指令: `/t <level>`、`/think:<level>` 或 `/thinking <level>`。

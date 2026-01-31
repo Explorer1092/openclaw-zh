@@ -1,5 +1,6 @@
 ---
-title: "LLM Task"
+title: "LLM 任务"
+sidebarTitle: "LLM 任务"
 mmh3_hash: "8c92d664c12413167d3d11a55788d74b"
 summary: "用于工作流的仅 JSON LLM 任务(可选插件工具)"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 您需要架构验证的 LLM 输出以进行自动化
 ---
 
-# LLM Task
+# LLM 任务
 
 `llm-task` 是一个**可选插件工具**,运行仅 JSON LLM 任务并返回结构化输出(可选地根据 JSON Schema 进行验证)。
 

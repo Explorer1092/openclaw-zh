@@ -1,5 +1,6 @@
 ---
 title: "斜杠命令"
+sidebarTitle: "斜杠命令"
 mmh3_hash: "810ea632a53b44f9fb3c6ee839ab38a4"
 summary: "斜杠命令: 文本 vs 原生、配置和支持的命令"
 read_when:

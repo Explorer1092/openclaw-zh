@@ -1,11 +1,12 @@
 ---
-title: "浏览器故障排除(Linux)"
+title: "浏览器故障排除 (Linux)"
+sidebarTitle: "浏览器故障排除"
 mmh3_hash: "ac4404a8f15436b336fb2d5cfaff4129"
 summary: "修复 Linux 上 OpenClaw 浏览器控制的 Chrome/Brave/Edge/Chromium CDP 启动问题"
 read_when: "浏览器控制在 Linux 上失败,特别是使用 snap Chromium"
 ---
 
-# 浏览器故障排除(Linux)
+# 浏览器故障排除 (Linux)
 
 ## 问题: "Failed to start Chrome CDP on port 18800"
 

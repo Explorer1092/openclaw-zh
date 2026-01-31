@@ -1,5 +1,6 @@
 ---
-title: "子 agent"
+title: "子智能体"
+sidebarTitle: "子智能体"
 mmh3_hash: "23bea4475c628ad02d42be5d93a1ec4c"
 summary: "子 agent: 生成隔离的 agent 运行,将结果公告回请求者聊天"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 您正在更改 sessions_spawn 或子 agent 工具策略
 ---
 
-# 子 agent
+# 子智能体
 
 子 agent 是从现有 agent 运行生成的后台 agent 运行。它们在自己的会话(`agent:<agentId>:subagent:<uuid>`)中运行,完成后,将其结果**公告**回请求者聊天频道。
 

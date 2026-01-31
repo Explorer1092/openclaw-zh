@@ -1,5 +1,6 @@
 ---
-title: "Zalo Personal(插件)"
+title: "Zalo Personal (插件)"
+sidebarTitle: "Zalo Personal"
 mmh3_hash: "e2618c6c06e4bb061697305e148dedef"
 summary: "Zalo Personal 插件: 通过 zca-cli 的 QR 登录 + 消息(插件安装 + 通道配置 + CLI + 工具)"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 您正在配置或开发 zalouser 插件
 ---
 
-# Zalo Personal(插件)
+# Zalo Personal (插件)
 
 通过插件为 OpenClaw 提供 Zalo Personal 支持,使用 `zca-cli` 自动化正常的 Zalo 用户帐户。
 

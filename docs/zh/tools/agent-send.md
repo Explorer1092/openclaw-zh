@@ -1,11 +1,12 @@
 ---
-title: "`openclaw agent`(直接运行 agent)"
+title: "openclaw agent (直接运行 agent)"
+sidebarTitle: "openclaw agent"
 mmh3_hash: "3f6ca74da7b756b6ec2f3e49b08d444c"
 summary: "直接运行 `openclaw agent` CLI(可选投递)"
 read_when:
   - 添加或修改 agent CLI 入口点
 ---
-# `openclaw agent`(直接运行 agent)
+# openclaw agent (直接运行 agent)
 
 `openclaw agent` 无需入站聊天消息即可运行单次 agent 转换。
 默认情况下它会**通过网关**运行;添加 `--local` 可强制使用当前机器上的嵌入式运行时。

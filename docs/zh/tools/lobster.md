@@ -1,6 +1,7 @@
 ---
 mmh3_hash: "b2d6aae5cf8fad3e0abb69160ad08e75"
-title: Lobster
+title: "Lobster"
+sidebarTitle: "Lobster"
 summary: "OpenClaw 的类型化工作流运行时,具有可恢复的批准门控。"
 description: OpenClaw 的类型化工作流运行时 — 具有批准门控的可组合管道。
 read_when:

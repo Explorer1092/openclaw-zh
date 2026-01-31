@@ -1,5 +1,6 @@
 ---
 title: "ClawdHub"
+sidebarTitle: "ClawdHub"
 mmh3_hash: "7a86393b3859c0dc55ecf80ca8262bed"
 summary: "ClawdHub 指南: 公共技能注册表 + CLI 工作流"
 read_when:

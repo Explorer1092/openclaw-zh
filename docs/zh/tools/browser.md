@@ -1,5 +1,6 @@
 ---
-title: "浏览器(openclaw 管理)"
+title: "浏览器 (openclaw 管理)"
+sidebarTitle: "浏览器"
 mmh3_hash: "6dbeb13ca7dbb8ca3dbbb10e8f27c857"
 summary: "集成浏览器控制服务 + 操作命令"
 read_when:
@@ -8,7 +9,7 @@ read_when:
   - 在 macOS 应用中实现浏览器设置 + 生命周期
 ---
 
-# 浏览器(openclaw 管理)
+# 浏览器 (openclaw 管理)
 
 OpenClaw 可以运行一个 **agent 控制的专用 Chrome/Brave/Edge/Chromium 配置文件**。
 它与您的个人浏览器隔离,并通过网关内部的一个小型本地控制服务进行管理(仅本地回环)。

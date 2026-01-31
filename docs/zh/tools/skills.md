@@ -1,12 +1,13 @@
 ---
-title: "技能(OpenClaw)"
+title: "技能 (OpenClaw)"
+sidebarTitle: "技能"
 mmh3_hash: "4916746ccbec2eace335f4dfcdce88ce"
 summary: "技能: 管理 vs 工作区、门控规则和配置/环境接线"
 read_when:
   - 添加或修改技能
   - 更改技能门控或加载规则
 ---
-# 技能(OpenClaw)
+# 技能 (OpenClaw)
 
 OpenClaw 使用**[AgentSkills](https://agentskills.io) 兼容**的技能文件夹来教 agent 如何使用工具。每个技能是一个包含 `SKILL.md` 的目录,其中包含 YAML frontmatter 和指令。OpenClaw 加载**捆绑技能**加上可选的本地覆盖,并在加载时根据环境、配置和二进制存在对其进行过滤。
 

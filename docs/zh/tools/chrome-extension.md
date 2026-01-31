@@ -1,5 +1,6 @@
 ---
-title: "Chrome 扩展(浏览器中继)"
+title: "Chrome 扩展 (浏览器中继)"
+sidebarTitle: "Chrome 扩展"
 mmh3_hash: "1bbc60900a940f3b36a5624100183669"
 summary: "Chrome 扩展: 让 OpenClaw 驱动您现有的 Chrome 标签页"
 read_when:
@@ -8,7 +9,7 @@ read_when:
   - 您想了解浏览器接管的安全影响
 ---
 
-# Chrome 扩展(浏览器中继)
+# Chrome 扩展 (浏览器中继)
 
 OpenClaw Chrome 扩展让 agent 控制您的**现有 Chrome 标签页**(您的正常 Chrome 窗口),而不是启动单独的 openclaw 管理的 Chrome 配置文件。
 
