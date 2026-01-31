@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "c5c8358dc93ce9e646418a51da9e9057"
 summary: "使用 OpenRouter 的统一 API 在 OpenClaw 中访问多个模型"
 read_when:
   - 您想为多个 LLM 使用单个 API 密钥

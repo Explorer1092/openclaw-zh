@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "3b1371bdf8801b1ec6a96625a0d7b587"
 title: "Vercel AI Gateway"
 summary: "Vercel AI Gateway 设置 (身份验证 + 模型选择)"
 read_when:

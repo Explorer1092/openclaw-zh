@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "93cb4a74f352e43f0e69ebd06994bcb2"
 summary: "语音通话插件: 通过 Twilio/Telnyx/Plivo 的出站 + 入站通话(插件安装 + 配置 + CLI)"
 read_when:
   - 您想从 OpenClaw 拨打出站语音电话

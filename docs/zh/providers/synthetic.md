@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "98d30b02183fb7f0be031b1fb05ee2f2"
 summary: "在 OpenClaw 中使用 Synthetic 的 Anthropic 兼容 API"
 read_when:
   - 您想使用 Synthetic 作为模型提供商

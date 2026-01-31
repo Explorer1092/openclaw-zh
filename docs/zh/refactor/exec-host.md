@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "333a49d0f2d309ee712c656438ebeb22"
 summary: "重构计划: exec 主机路由、节点批准和无头运行器"
 read_when:
   - 设计 exec 主机路由或 exec 批准

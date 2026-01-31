@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "ac4404a8f15436b336fb2d5cfaff4129"
 summary: "修复 Linux 上 OpenClaw 浏览器控制的 Chrome/Brave/Edge/Chromium CDP 启动问题"
 read_when: "浏览器控制在 Linux 上失败,特别是使用 snap Chromium"
 ---

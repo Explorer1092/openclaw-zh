@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2e415cb2a304ad1eada33b92361a3233"
+mmh3_hash: "de05552de0231eb953e575b3274503f8"
 summary: "CLI 引导向导:网关、工作空间、频道和技能的引导式设置"
 read_when:
   - 运行或配置引导向导

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "542f3d5b5fdd54b370da71c02500563d"
 summary: "将 Claude Max/Pro 订阅作为 OpenAI 兼容的 API 端点使用"
 read_when:
   - 您想将 Claude Max 订阅与 OpenAI 兼容的工具一起使用

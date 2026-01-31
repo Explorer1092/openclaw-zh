@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "a510136251a82a49a14cec0b35793dba"
 summary: "开发代理工具注释(C-3PO)"
 read_when:
   - 使用开发网关模板

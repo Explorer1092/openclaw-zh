@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1af7f9748d4b6eb056dcf989440b766e"
 summary: "Clawnet 重构: 统一网络协议、角色、身份验证、批准、身份"
 read_when:
   - 为节点 + 操作员客户端规划统一的网络协议

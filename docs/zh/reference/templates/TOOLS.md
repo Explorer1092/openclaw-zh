@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "9a1f94f0c2a0c309669c32599cd7d5b8"
 summary: "TOOLS.md 的工作空间模板"
 read_when:
   - 手动引导工作空间

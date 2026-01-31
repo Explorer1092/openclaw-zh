@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "ec437a94864e4b476dcb2df147335b3b"
 summary: "计划: 为所有消息连接器提供一个干净的插件 SDK + 运行时"
 read_when:
   - 定义或重构插件架构

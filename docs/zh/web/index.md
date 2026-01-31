@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "c76eee68170913679d8fcb5f936f90ab"
 summary: "网关 web 界面: 控制 UI、绑定模式和安全性"
 read_when:
   - 您想通过 Tailscale 访问网关

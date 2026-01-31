@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "705027073390c3741ee89a5d79fe653a"
 summary: "SOUL Evil 钩子(用 SOUL_EVIL.md 替换 SOUL.md)"
 read_when:
   - 您想启用或调整 SOUL Evil 钩子

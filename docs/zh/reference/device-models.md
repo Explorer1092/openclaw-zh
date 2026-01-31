@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "59be4a7f5a3b39a88a64868a2c27385f"
 summary: "OpenClaw 如何为 macOS 应用中的友好名称供应 Apple 设备模型标识符。"
 read_when:
   - 更新设备模型标识符映射或 NOTICE/许可证文件

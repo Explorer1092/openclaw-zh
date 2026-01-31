@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "e76b29058b0d9af9f2d1c019c96e96e1"
 summary: "Exec 批准、允许列表和沙箱逃逸提示"
 read_when:
   - 配置 exec 批准或允许列表

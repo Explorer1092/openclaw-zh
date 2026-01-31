@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "3dcc3253092dd0249e771e3cad1bea38"
 summary: "审计哪些内容可以花钱、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API

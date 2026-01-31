@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "d5b71e811582ae1bef0ff95d98aea3c9"
 summary: "计划: 添加 OpenResponses /v1/responses 端点并干净地弃用聊天完成"
 owner: "openclaw"
 status: "草案"

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "b758a94e40f7cb6a17cc452af943e6fe"
 summary: "用于定向调试日志的诊断标志"
 read_when:
   - 您需要定向调试日志而不提高全局日志级别
