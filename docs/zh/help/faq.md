@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6872544a1603af8b28ecd4bd7f500b2d"
+mmh3_hash: "294362448f2757d5423aa9f2406ae088"
 summary: "常见问题 - OpenClaw 设置、使用和故障排除"
 read_when:
   - 遇到问题或错误

@@ -424,7 +424,7 @@ Chinese docs are synced by the **Docs i18n Sync** workflow:
 
 So it does **not** detect upstream updates instantly; updates land on the next scheduled run or manual trigger.
 
-### I cant access docs.openclaw.ai SSL error What now
+### I can't access docs.openclaw.ai (SSL error). What now?
 
 Some Comcast/Xfinity connections incorrectly block `docs.openclaw.ai` via Xfinity
 Advanced Security. Disable it or allowlist `docs.openclaw.ai`, then retry. More
