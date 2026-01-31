@@ -90,27 +90,24 @@ jobs:
 
             ## Translation style guidelines
 
-            Keep product-specific terminology and technical keywords in English. Only translate generic/descriptive words into Chinese. Examples:
+            Apply these rules to decide what to translate vs keep in English:
 
-            **Keep in English** (product concepts / technical terms):
-            - CLI, Gateway, Channels, Providers, Hooks, Tools, Skills, Nodes
-            - Agent, Session, Webhook, Cron, TUI, WebChat, Canvas, Plugin
-            - OAuth, RPC, API, SDK, WebSocket, HTTP, DNS, SSH
-            - WhatsApp, Telegram, Discord, Slack, iMessage, Signal, Mattermost
-            - macOS, iOS, Android, Windows, Linux, Docker, Nix, Bun
-            - OpenClaw, Pi, Tailscale, Cloudflare, Mintlify
+            **NEVER translate** — keep the original English spelling:
+            1. Product names and brands (e.g. OpenClaw, Pi, Tailscale, Cloudflare)
+            2. Platform/OS names (e.g. macOS, iOS, Android, Windows, Linux)
+            3. Protocol and standard acronyms (e.g. OAuth, RPC, API, HTTP, WebSocket, SSH, DNS)
+            4. Software tool names (e.g. Docker, Nix, Bun, Terraform)
+            5. Third-party service/channel names (e.g. WhatsApp, Telegram, Discord, Slack)
+            6. Terms that are part of the project's domain model — words used as CLI subcommands, config keys, or UI labels in the English product (e.g. Gateway, Agent, Session, Channel, Provider, Hook, Skill, Node, Plugin, Cron, TUI, Canvas)
 
-            **Translate into Chinese** (generic concepts):
-            - Start Here → 开始使用, Help → 帮助, Install & Updates → 安装与更新
-            - Core Concepts → 核心概念, Platforms → 平台
-            - Media → 媒体, Automation → 自动化
+            **DO translate** — localize into the target language:
+            - Generic descriptive words that are not project-specific terminology (e.g. "Start Here", "Help", "Install", "Updates", "Core Concepts", "Platforms", "Media", "Automation")
 
-            **Mixed pattern** (English term + Chinese connector):
-            - Gateway & Ops → Gateway 与运维
-            - Automation & Hooks → 自动化与 Hooks
-            - Tools & Skills → Tools 与 Skills
-            - Nodes & Media → Nodes 与媒体
-            - macOS Companion App → keep as-is in English
+            **Mixed phrases** — when a heading combines a domain term with a generic word:
+            - Keep the domain term in English, translate only the generic connector/descriptor
+            - Example pattern: "Gateway & Ops" → "Gateway {localized-and} {localized-ops}"
+
+            **How to decide:** if a word appears as a CLI command, config key, API concept, or navigation label in the English product, it is a domain term — keep it in English.
 
             ## Commit rules (IMPORTANT)
 
