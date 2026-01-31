@@ -15,24 +15,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: zh
           fetch-depth: 0
 
-      - name: Sync upstream docs
+      - name: Sync upstream English docs into zh branch
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/openclaw/openclaw.git || true
           git fetch upstream main
-          # Merge upstream docs/ and scripts/docs-i18n-hash.ts only
+          # Update main branch to match upstream
+          git fetch origin main
+          git checkout main
+          git reset --hard upstream/main
+          git push origin main --force
+          # Switch back to zh and merge upstream docs
+          git checkout zh
           git checkout upstream/main -- docs/ scripts/docs-i18n-hash.ts
-          # Stage upstream changes (if any)
           git add docs/ scripts/docs-i18n-hash.ts
-          if git diff --cached --quiet; then
-            echo "upstream_changed=false" >> "$GITHUB_ENV"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --cached --quiet; then
             git commit -m "docs: sync upstream English docs"
-            git push
-            echo "upstream_changed=true" >> "$GITHUB_ENV"
+            git push origin zh
           fi
 
       - uses: oven-sh/setup-bun@v2
