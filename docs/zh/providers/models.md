@@ -1,5 +1,6 @@
 ---
 title: "模型提供商"
+sidebarTitle: "模型提供商示例"
 mmh3_hash: "8feb6efd5e056228b93fbb331af7a489"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
 read_when:

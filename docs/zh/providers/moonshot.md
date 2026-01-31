@@ -1,5 +1,6 @@
 ---
 title: "Moonshot AI (Kimi)"
+sidebarTitle: "Moonshot AI"
 mmh3_hash: "7313d9f254410c42de5f6824e7a7c31f"
 summary: "配置 Moonshot K2 vs Kimi Code (单独的提供商 + 密钥)"
 read_when:

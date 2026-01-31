@@ -1,5 +1,6 @@
 ---
 title: "OpenCode Zen"
+sidebarTitle: "OpenCode Zen"
 mmh3_hash: "62f3089df4a853044e20dc0918629f16"
 summary: "将 OpenCode Zen (精选模型) 与 OpenClaw 一起使用"
 read_when:

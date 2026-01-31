@@ -1,5 +1,6 @@
 ---
 title: "OpenAI"
+sidebarTitle: "OpenAI"
 mmh3_hash: "02f329f4bc8faf16259c5299a486af1f"
 summary: "在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI"
 read_when:
