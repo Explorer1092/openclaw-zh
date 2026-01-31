@@ -1,4 +1,5 @@
 ---
+title: "Bonjour / mDNS 发现"
 mmh3_hash: "d81f0081a96d5d48ddcbeb59be659b76"
 summary: "Bonjour/mDNS 发现 + 调试(Gateway beacons、clients 和常见故障模式)"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "Cron vs 心跳：何时使用"
 mmh3_hash: "54caeb38fea2fb6aad577024658879b5"
 summary: "关于在自动化中选择心跳还是 cron 作业的指导"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "浏览器登录 + X/Twitter 发帖"
 mmh3_hash: "7e07cbff739edc67b586b08be9a2fd5e"
 summary: "浏览器自动化 + X/Twitter 发帖的手动登录"
 read_when:

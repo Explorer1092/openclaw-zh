@@ -1,4 +1,5 @@
 ---
+title: "Gateway 服务手册"
 mmh3_hash: "5da70948a6be6061083e310c2b2f7704"
 summary: "Gateway 服务、生命周期和操作手册"
 read_when:

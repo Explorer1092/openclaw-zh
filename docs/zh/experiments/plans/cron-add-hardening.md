@@ -1,4 +1,5 @@
 ---
+title: "Cron Add 加强与架构对齐"
 mmh3_hash: "519cc75f91eb943d242d4ec7def57839"
 summary: "加强 cron.add 输入处理,对齐架构,改进 cron UI/代理工具"
 owner: "openclaw"

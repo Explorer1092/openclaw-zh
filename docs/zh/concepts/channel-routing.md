@@ -1,4 +1,5 @@
 ---
+title: "Channels & routing"
 mmh3_hash: "68179c016f9ec4f5630ee43d55a32632"
 summary: "每个 channel 的路由规则(WhatsApp、Telegram、Discord、Slack)和共享 context"
 read_when:

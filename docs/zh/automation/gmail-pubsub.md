@@ -1,4 +1,5 @@
 ---
+title: "Gmail Pub/Sub -> OpenClaw"
 mmh3_hash: "b785e1976de82deaf0ce4995ccbd6c71"
 summary: "Gmail Pub/Sub 推送通过 gogcli 接入 OpenClaw webhooks"
 read_when:

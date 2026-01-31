@@ -1,4 +1,5 @@
 ---
+title: "Agent Runtime 🤖"
 mmh3_hash: "53fde06e8b712259ed7ae5d9627cad48"
 summary: "Agent runtime (embedded p-mono)、workspace 契约和 session bootstrap"
 read_when:

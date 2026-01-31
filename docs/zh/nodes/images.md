@@ -1,4 +1,5 @@
 ---
+title: "图像 & 媒体支持 — 2025-12-05"
 mmh3_hash: "1bbad8726b56e89c32d4f154e430d4fd"
 summary: "发送、网关和智能体回复的图像和媒体处理规则"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "OpenClaw macOS 发布(Sparkle)"
 mmh3_hash: "174d1fc5b78905cf7485a7716d1d7b25"
 summary: "OpenClaw macOS 发布清单(Sparkle feed、打包、签名)"
 read_when:

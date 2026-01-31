@@ -1,4 +1,5 @@
 ---
+title: "Exec 工具"
 mmh3_hash: "f2044b0a0a51c3830f32c8ce0747b044"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
 read_when:

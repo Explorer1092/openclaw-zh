@@ -1,4 +1,5 @@
 ---
+title: "Remote access (SSH, tunnels, and tailnets)"
 mmh3_hash: "06d02a24e1a693fb7c1a74d7113dd434"
 summary: "Remote access using SSH tunnels (Gateway WS) and tailnets"
 read_when:

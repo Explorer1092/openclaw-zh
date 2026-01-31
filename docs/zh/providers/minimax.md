@@ -1,4 +1,5 @@
 ---
+title: "MiniMax"
 mmh3_hash: "0f5eeec19d4ff9be135bdd89edc694e9"
 summary: "在 OpenClaw 中使用 MiniMax M2.1"
 read_when:

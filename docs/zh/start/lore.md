@@ -1,4 +1,5 @@
 ---
+title: "OpenClaw 的传说 🦞📖"
 mmh3_hash: "fe334cc21c341a5270712df72d4233fa"
 summary: "OpenClaw 的背景故事和传说,用于上下文和基调"
 read_when:

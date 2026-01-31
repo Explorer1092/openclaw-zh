@@ -1,4 +1,5 @@
 ---
+title: "插件代理工具"
 mmh3_hash: "9f181a3992afeffe4249195e738d6112"
 summary: "在插件中编写代理工具(架构、可选工具、允许列表)"
 read_when:

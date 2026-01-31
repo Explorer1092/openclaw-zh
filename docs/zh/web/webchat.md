@@ -1,4 +1,5 @@
 ---
+title: "WebChat(网关 WebSocket UI)"
 mmh3_hash: "d2bb050ccfc3bb95128aceb34b57f03f"
 summary: "环回 WebChat 静态主机和网关 WS 聊天 UI 使用"
 read_when:

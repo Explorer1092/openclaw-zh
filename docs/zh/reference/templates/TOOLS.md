@@ -1,4 +1,5 @@
 ---
+title: "TOOLS.md - 本地注释"
 mmh3_hash: "9a1f94f0c2a0c309669c32599cd7d5b8"
 summary: "TOOLS.md 的工作空间模板"
 read_when:

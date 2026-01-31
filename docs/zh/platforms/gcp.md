@@ -1,4 +1,5 @@
 ---
+title: "在 GCP Compute Engine 上运行 OpenClaw(Docker,生产 VPS 指南)"
 mmh3_hash: "1960fbc809815982da6072e310f100a3"
 summary: "在 GCP Compute Engine VM(Docker)上全天候运行 OpenClaw 网关,具有持久状态"
 read_when:

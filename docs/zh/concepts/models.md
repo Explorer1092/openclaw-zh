@@ -1,4 +1,5 @@
 ---
+title: "Models CLI"
 mmh3_hash: "58f14d9dfd6cccc336585d7a6f62c7c6"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when:

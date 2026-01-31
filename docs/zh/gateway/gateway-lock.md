@@ -1,4 +1,5 @@
 ---
+title: "Gateway lock"
 mmh3_hash: "c0207beb70ab55763b939bd30bf025c5"
 summary: "使用 WebSocket 监听器绑定的 Gateway 单例守护"
 read_when:

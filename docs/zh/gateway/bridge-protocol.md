@@ -1,4 +1,5 @@
 ---
+title: "Bridge 协议(旧版节点传输)"
 mmh3_hash: "91e5a012f28556cd268e62c24a75269d"
 summary: "Bridge 协议(旧版节点):TCP JSONL、配对、作用域 RPC"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "Android 应用(节点)"
 mmh3_hash: "2b10c546f9bd6f503667da158f64e59f"
 summary: "Android 应用(节点):连接运行手册 + Canvas/Chat/Camera"
 read_when:

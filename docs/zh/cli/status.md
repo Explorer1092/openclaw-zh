@@ -1,4 +1,5 @@
 ---
+title: "`openclaw status`"
 mmh3_hash: "40ac6fa8bdaf11f0a566dcb5180b62aa"
 summary: "`openclaw status` 的 CLI 参考(诊断、探测、使用快照)"
 read_when:

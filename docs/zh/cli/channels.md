@@ -1,4 +1,5 @@
 ---
+title: "`openclaw channels`"
 mmh3_hash: "59a3dc984953b43945d911b9ce921f5d"
 summary: "`openclaw channels` 的 CLI 参考(账户、状态、登录/登出、日志)"
 read_when:

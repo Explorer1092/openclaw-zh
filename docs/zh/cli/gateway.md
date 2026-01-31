@@ -1,4 +1,5 @@
 ---
+title: "网关 CLI"
 mmh3_hash: "5106a9ac44dad678003d31f215603869"
 summary: "OpenClaw 网关 CLI(`openclaw gateway`) — 运行、查询和发现网关"
 read_when:

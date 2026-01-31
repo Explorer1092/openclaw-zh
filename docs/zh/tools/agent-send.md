@@ -1,4 +1,5 @@
 ---
+title: "`openclaw agent`(直接运行 agent)"
 mmh3_hash: "3f6ca74da7b756b6ec2f3e49b08d444c"
 summary: "直接运行 `openclaw agent` CLI(可选投递)"
 read_when:

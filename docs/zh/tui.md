@@ -1,4 +1,5 @@
 ---
+title: "TUI (终端 UI)"
 mmh3_hash: "b80aa67c5e030c09e7327b047b4ff551"
 summary: "终端 UI (TUI):从任何机器连接到网关"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "健康检查(CLI)"
 mmh3_hash: "b04ea209c868588e91f028094ad860e9"
 summary: "Channel 连接性的健康检查步骤"
 read_when:

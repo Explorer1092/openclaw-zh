@@ -1,4 +1,5 @@
 ---
+title: "macOS 上的健康检查"
 mmh3_hash: "17a93e5c13e31a4c74a4874249b8c90a"
 summary: "macOS 应用如何报告网关/Baileys 健康状态"
 read_when:

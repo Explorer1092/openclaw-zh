@@ -1,4 +1,5 @@
 ---
+title: "`openclaw uninstall`"
 mmh3_hash: "7fc89226de3179584c3352f3d6d74d1c"
 summary: "`openclaw uninstall` 的 CLI 参考(删除网关服务 + 本地数据)"
 read_when:

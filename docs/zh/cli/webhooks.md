@@ -1,4 +1,5 @@
 ---
+title: "`openclaw webhooks`"
 mmh3_hash: "0e0918f630c78be9ef67157585c10741"
 summary: "`openclaw webhooks` 的 CLI 参考(webhook 助手 + Gmail Pub/Sub)"
 read_when:

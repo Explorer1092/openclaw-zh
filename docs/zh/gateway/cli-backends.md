@@ -1,4 +1,5 @@
 ---
+title: "CLI backends(回退运行时)"
 mmh3_hash: "7c4168935d21fb41c9f2a7ee5671b730"
 summary: "CLI backends:通过本地 AI CLI 的纯文本回退"
 read_when:

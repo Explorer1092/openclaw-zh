@@ -1,4 +1,5 @@
 ---
+title: "`openclaw directory`"
 mmh3_hash: "d32c27a8f3d96cbd42aad78a985a1156"
 summary: "`openclaw directory` 的 CLI 参考(自己、对等方、组)"
 read_when:

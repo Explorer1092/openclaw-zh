@@ -1,4 +1,5 @@
 ---
+title: "Markdown formatting"
 mmh3_hash: "f74630a846e564110ce3508a031185b3"
 summary: "出站 channels 的 Markdown 格式化管道"
 read_when:

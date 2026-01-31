@@ -1,4 +1,5 @@
 ---
+title: "脚本"
 mmh3_hash: "6ad573a93368295dc4c38389d1a1fccb"
 summary: "仓库脚本:目的、范围和安全注意事项"
 read_when:

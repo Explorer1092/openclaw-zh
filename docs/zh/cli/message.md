@@ -1,4 +1,5 @@
 ---
+title: "`openclaw message`"
 mmh3_hash: "a5d03fa6f690cb38676550db8e0dca2c"
 summary: "`openclaw message` 的 CLI 参考(发送 + 频道操作)"
 read_when:

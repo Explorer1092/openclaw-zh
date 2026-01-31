@@ -1,4 +1,5 @@
 ---
+title: "Canvas(macOS 应用)"
 mmh3_hash: "233557b78b7dd2bd8779cd0bb74dd561"
 summary: "通过 WKWebView + 自定义 URL 方案嵌入的代理控制 Canvas 面板"
 read_when:

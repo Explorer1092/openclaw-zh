@@ -1,4 +1,5 @@
 ---
+title: "Peekaboo Bridge(macOS UI 自动化)"
 mmh3_hash: "61f141669b0b16162c4752703e3a7d85"
 summary: "macOS UI 自动化的 PeekabooBridge 集成"
 read_when:

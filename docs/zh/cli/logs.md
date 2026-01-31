@@ -1,4 +1,5 @@
 ---
+title: "`openclaw logs`"
 mmh3_hash: "f96af2bf58c6dc48618514727959a3c8"
 summary: "`openclaw logs` 的 CLI 参考(通过 RPC 尾随网关日志)"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "`openclaw devices`"
 mmh3_hash: "21db565bead99b4bc25ecf4857e88fc6"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:

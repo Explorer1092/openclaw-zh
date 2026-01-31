@@ -1,4 +1,5 @@
 ---
+title: "平台"
 mmh3_hash: "888a1217854ea503f0763259e2ca2980"
 summary: "平台支持概述(网关 + 配套应用)"
 read_when:

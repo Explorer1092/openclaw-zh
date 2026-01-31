@@ -1,4 +1,5 @@
 ---
+title: "Agent Loop (OpenClaw)"
 mmh3_hash: "0e06d0b1019a4841f98ebfd75fa6d350"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:

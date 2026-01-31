@@ -1,4 +1,5 @@
 ---
+title: "`openclaw system`"
 mmh3_hash: "e1f8ac3453695d8d3c7005e7551edb87"
 summary: "`openclaw system` 的 CLI 参考(系统事件、心跳、存在)"
 read_when:

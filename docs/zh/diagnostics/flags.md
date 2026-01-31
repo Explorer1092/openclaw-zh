@@ -1,4 +1,5 @@
 ---
+title: "诊断标志"
 mmh3_hash: "b758a94e40f7cb6a17cc452af943e6fe"
 summary: "用于定向调试日志的诊断标志"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "Heartbeat(Gateway)"
 mmh3_hash: "435dc65db6f45f6145ad4adcd5599c67"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:

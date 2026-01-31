@@ -1,4 +1,5 @@
 ---
+title: "Anthropic (Claude)"
 mmh3_hash: "f525f887ce5fac22cf27f8707dc0a758"
 summary: "在 OpenClaw 中通过 API 密钥或 setup-token 使用 Anthropic Claude"
 read_when:

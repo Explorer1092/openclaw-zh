@@ -1,4 +1,5 @@
 ---
+title: "技能配置"
 mmh3_hash: "4291a80fae7a6985e873e2a1a8ba495c"
 summary: "技能配置架构和示例"
 read_when:

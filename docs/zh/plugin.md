@@ -1,4 +1,5 @@
 ---
+title: "插件(扩展)"
 mmh3_hash: "31b2c2cbfb7d836a1a2b6efdcab70474"
 summary: "OpenClaw 插件/扩展:发现、配置和安全"
 read_when:

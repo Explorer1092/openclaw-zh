@@ -1,4 +1,5 @@
 ---
+title: "Typing indicators"
 mmh3_hash: "8052acceb1883d04413d41870877a4c0"
 summary: "OpenClaw 何时显示 typing indicators 以及如何调整它们"
 read_when:

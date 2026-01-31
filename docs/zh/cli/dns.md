@@ -1,4 +1,5 @@
 ---
+title: "`openclaw dns`"
 mmh3_hash: "479fbd087bada8f38432189e6cc740ed"
 summary: "`openclaw dns` 的 CLI 参考(广域发现助手)"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "Ollama"
 mmh3_hash: "cf38094ad22d1a4e0293d762cf8a11be"
 summary: "使用 Ollama 运行 OpenClaw (本地 LLM 运行时)"
 read_when:

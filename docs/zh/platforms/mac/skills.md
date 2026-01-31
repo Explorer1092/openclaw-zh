@@ -1,4 +1,5 @@
 ---
+title: "Skills(macOS)"
 mmh3_hash: "29ff3393cc623c3a18801cd2fb8f25bf"
 summary: "macOS Skills 设置 UI 和网关支持的状态"
 read_when:

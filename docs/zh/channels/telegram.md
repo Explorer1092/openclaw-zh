@@ -1,4 +1,5 @@
 ---
+title: "Telegram (Bot API)"
 mmh3_hash: "59f3a4d42ce6867971840fe507a3f855"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "环境变量"
 mmh3_hash: "6f0902e505169f276aca7c7e5ffec371"
 summary: "OpenClaw 加载环境变量的位置和优先顺序"
 read_when:

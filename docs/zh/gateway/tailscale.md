@@ -1,4 +1,5 @@
 ---
+title: "Tailscale(网关仪表板)"
 mmh3_hash: "c5fa2c6f99101416b39ad49477829506"
 summary: "网关仪表板的集成 Tailscale Serve/Funnel"
 read_when:

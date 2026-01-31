@@ -1,4 +1,5 @@
 ---
+title: "`openclaw skills`"
 mmh3_hash: "5fbe7ac268fad6bc21aa79498b5960d8"
 summary: "`openclaw skills` 的 CLI 参考(列表/信息/检查)和技能资格"
 read_when:

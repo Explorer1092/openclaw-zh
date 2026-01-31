@@ -1,4 +1,5 @@
 ---
+title: "将 OpenClaw 迁移到新机器"
 mmh3_hash: "28dede80080bedde9c49e4e632ec20c5"
 summary: "将 OpenClaw 安装从一台机器移动（迁移）到另一台机器"
 read_when:

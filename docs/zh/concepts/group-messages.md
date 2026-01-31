@@ -1,4 +1,5 @@
 ---
+title: "Group messages (WhatsApp web channel)"
 mmh3_hash: "7faf81c0b4f9ce0e3cd8dfcf793791db"
 summary: "WhatsApp group 消息处理的行为和配置(mentionPatterns 在各个表面之间共享)"
 read_when:

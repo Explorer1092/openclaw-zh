@@ -1,4 +1,5 @@
 ---
+title: "安装程序内部"
 mmh3_hash: "ea1992f492d7babac7565da8d4ff2c09"
 summary: "安装脚本的工作原理(install.sh + install-cli.sh)、标志和自动化"
 read_when:

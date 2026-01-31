@@ -1,4 +1,5 @@
 ---
+title: "配置示例"
 mmh3_hash: "dbbf00e801087ba00819793f4bcc0225"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:

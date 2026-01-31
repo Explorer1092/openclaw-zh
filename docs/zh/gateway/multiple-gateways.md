@@ -1,4 +1,5 @@
 ---
+title: "多个 Gateways(同一主机)"
 mmh3_hash: "c8c346e1b8dfd06f28c944d471c2be1e"
 summary: "在一台主机上运行多个 OpenClaw Gateways(隔离、端口和配置文件)"
 read_when:

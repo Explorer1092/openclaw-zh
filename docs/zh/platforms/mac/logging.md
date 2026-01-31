@@ -1,4 +1,5 @@
 ---
+title: "日志记录(macOS)"
 mmh3_hash: "a9a7483245f07e9620e83ce75d70a8d3"
 summary: "OpenClaw 日志:滚动诊断文件日志 + 统一日志隐私标志"
 read_when:

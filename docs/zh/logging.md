@@ -1,4 +1,5 @@
 ---
+title: "日志记录"
 mmh3_hash: "47ddf407757ffe86168bb7a461d5f4ad"
 summary: "日志记录概述:文件日志、控制台输出、CLI 跟踪和控制 UI"
 read_when:

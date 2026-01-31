@@ -1,4 +1,5 @@
 ---
+title: "`openclaw voicecall`"
 mmh3_hash: "591819413dab87c82fc85a298a69ea7d"
 summary: "`openclaw voicecall` 的 CLI 参考(语音呼叫插件命令界面)"
 read_when:

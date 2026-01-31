@@ -1,4 +1,5 @@
 ---
+title: "Firecrawl"
 mmh3_hash: "1bba6d2ec31bf6ec79acfc7a14500d0f"
 summary: "Firecrawl 作为 web_fetch 的回退(反机器人 + 缓存提取)"
 read_when:

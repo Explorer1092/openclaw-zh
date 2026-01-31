@@ -1,4 +1,5 @@
 ---
+title: "提升模式(/elevated 指令)"
 mmh3_hash: "b0fb00f34f34155b1c3be457fe6424d7"
 summary: "提升执行模式和 /elevated 指令"
 read_when:

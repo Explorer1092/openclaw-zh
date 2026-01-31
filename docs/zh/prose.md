@@ -1,4 +1,5 @@
 ---
+title: "OpenProse"
 mmh3_hash: "16a2618af0abe6d0d93222597f79b616"
 summary: "OpenProse:.prose 工作流、斜杠命令和 OpenClaw 中的状态"
 read_when:

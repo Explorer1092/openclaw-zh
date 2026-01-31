@@ -1,4 +1,5 @@
 ---
+title: "Session Pruning"
 mmh3_hash: "f699150e26132c0100ebf771d59d090e"
 summary: "Session pruning: tool-result 修剪以减少 context 膨胀"
 read_when:

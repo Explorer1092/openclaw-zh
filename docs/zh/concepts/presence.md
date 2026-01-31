@@ -1,4 +1,5 @@
 ---
+title: "Presence"
 mmh3_hash: "835b21fb58f1fd9f1135f7955d600d73"
 summary: "OpenClaw presence 条目如何生成、合并和显示"
 read_when:

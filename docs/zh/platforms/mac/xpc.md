@@ -1,4 +1,5 @@
 ---
+title: "OpenClaw macOS IPC 架构"
 mmh3_hash: "7580fabb0a3a142d07ec29b2e72fa406"
 summary: "OpenClaw 应用、网关节点传输和 PeekabooBridge 的 macOS IPC 架构"
 read_when:

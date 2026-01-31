@@ -1,4 +1,5 @@
 ---
+title: "System Prompt"
 mmh3_hash: "cf8816e8158f4073cb916c9cea3afc4a"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
 read_when:

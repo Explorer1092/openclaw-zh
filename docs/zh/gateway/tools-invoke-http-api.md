@@ -1,4 +1,5 @@
 ---
+title: "工具调用(HTTP)"
 mmh3_hash: "6afe0483405c853fd13d1a80aec88061"
 summary: "通过网关 HTTP 端点直接调用单个工具"
 read_when:

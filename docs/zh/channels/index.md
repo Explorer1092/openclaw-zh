@@ -1,4 +1,5 @@
 ---
+title: "Chat Channels"
 mmh3_hash: "a31cf88a6d5a6d6fd2095e50eefdb199"
 summary: "OpenClaw 可以连接的消息平台"
 read_when:

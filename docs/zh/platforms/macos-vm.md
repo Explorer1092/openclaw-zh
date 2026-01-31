@@ -1,4 +1,5 @@
 ---
+title: "macOS VM 上的 OpenClaw(沙盒)"
 mmh3_hash: "7a068774e79000b9c59e1889e7e3ab82"
 summary: "在沙盒 macOS VM(本地或托管)中运行 OpenClaw,当你需要隔离或 iMessage"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "`openclaw plugins`"
 mmh3_hash: "110daf5c05854b28f7f953399fc076ee"
 summary: "`openclaw plugins` 的 CLI 参考(列表、安装、启用/禁用、doctor)"
 read_when:

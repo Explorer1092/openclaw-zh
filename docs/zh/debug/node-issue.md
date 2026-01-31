@@ -1,4 +1,5 @@
 ---
+title: "Node + tsx "__name is not a function" 崩溃"
 mmh3_hash: "a91689441c551de75c6bc6d9aaa2939e"
 summary: Node + tsx "__name is not a function" 崩溃说明和解决方法
 read_when:

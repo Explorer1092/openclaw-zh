@@ -1,4 +1,5 @@
 ---
+title: "插件清单(openclaw.plugin.json)"
 mmh3_hash: "937a23110f9a4ff8bd02bb01affb9e3f"
 summary: "插件清单 + JSON 架构要求(严格配置验证)"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "Windows(WSL2)"
 mmh3_hash: "1a41f0182978918e89adce142a24c206"
 summary: "Windows(WSL2)支持 + 配套应用状态"
 read_when:

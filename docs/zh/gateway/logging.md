@@ -1,4 +1,5 @@
 ---
+title: "日志"
 mmh3_hash: "78577be2a45193b12e428a83a23ab782"
 summary: "日志表面、文件日志、WS 日志样式和控制台格式化"
 read_when:

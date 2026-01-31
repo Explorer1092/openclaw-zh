@@ -1,4 +1,5 @@
 ---
+title: "`openclaw tui`"
 mmh3_hash: "1f224fdfdbb4a24c1ccf38e80d691423"
 summary: "`openclaw tui` 的 CLI 参考(连接到网关的终端 UI)"
 read_when:

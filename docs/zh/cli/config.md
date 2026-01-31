@@ -1,4 +1,5 @@
 ---
+title: "`openclaw config`"
 mmh3_hash: "a154052c65d4e8000017b48dfd6988f0"
 summary: "`openclaw config` 的 CLI 参考(获取/设置/取消设置配置值)"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "Discord (Bot API)"
 mmh3_hash: "90d7dc5b2fa62331cb13713b9bacd32c"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:

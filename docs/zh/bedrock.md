@@ -1,4 +1,5 @@
 ---
+title: "Amazon Bedrock"
 mmh3_hash: "364f0cdbc78f4c7aa4c53cb04bcbd811"
 summary: "在 OpenClaw 中使用 Amazon Bedrock (Converse API) 模型"
 read_when:

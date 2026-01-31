@@ -1,4 +1,5 @@
 ---
+title: "Command Queue (2026-01-16)"
 mmh3_hash: "56e7ee072e0abc1cdf8882531eb174b1"
 summary: "序列化入站自动回复运行的命令队列设计"
 read_when:

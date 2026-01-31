@@ -1,4 +1,5 @@
 ---
+title: "Session Management"
 mmh3_hash: "612ded7a8cffad72f923b285c3783907"
 summary: "Session 管理规则、keys 和聊天持久化"
 read_when:

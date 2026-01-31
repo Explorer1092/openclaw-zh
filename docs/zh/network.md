@@ -1,4 +1,5 @@
 ---
+title: "网络中心"
 mmh3_hash: "1a0fba2bb498f745bbae44bb9e79fffa"
 summary: "网络中心:网关界面、配对、发现和安全"
 read_when:

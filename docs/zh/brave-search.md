@@ -1,4 +1,5 @@
 ---
+title: "Brave Search API"
 mmh3_hash: "e73ded8b3e74cc788ada2041b78e423e"
 summary: "用于 web_search 的 Brave Search API 设置"
 read_when:

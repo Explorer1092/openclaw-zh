@@ -1,4 +1,5 @@
 ---
+title: "`openclaw memory`"
 mmh3_hash: "c408873a06f596b9fb56ae60191729ff"
 summary: "`openclaw memory` 的 CLI 参考(状态/索引/搜索)"
 read_when:

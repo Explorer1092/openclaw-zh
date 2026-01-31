@@ -1,4 +1,5 @@
 ---
+title: "`openclaw hooks`"
 mmh3_hash: "6d87b83840154f9ac21261cc79bf1099"
 summary: "`openclaw hooks` 的 CLI 参考(代理钩子)"
 read_when:

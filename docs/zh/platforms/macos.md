@@ -1,4 +1,5 @@
 ---
+title: "OpenClaw macOS 配套应用(菜单栏 + 网关代理)"
 mmh3_hash: "9ef2dd49d1d26951df47e157e3f03a0c"
 summary: "OpenClaw macOS 配套应用(菜单栏 + 网关代理)"
 read_when:

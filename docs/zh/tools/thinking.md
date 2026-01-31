@@ -1,4 +1,5 @@
 ---
+title: "Thinking 级别(/think 指令)"
 mmh3_hash: "5415c11d2823a250950432813e66848a"
 summary: "/think + /verbose 的指令语法以及它们如何影响模型推理"
 read_when:

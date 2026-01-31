@@ -1,4 +1,5 @@
 ---
+title: "在 Hetzner 上运行 OpenClaw(Docker,生产 VPS 指南)"
 mmh3_hash: "b72f7a6977b2db87a627db44569f6689"
 summary: "在廉价的 Hetzner VPS(Docker)上全天候运行 OpenClaw 网关,具有持久状态和内置二进制文件"
 read_when:

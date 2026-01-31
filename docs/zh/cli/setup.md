@@ -1,4 +1,5 @@
 ---
+title: "`openclaw setup`"
 mmh3_hash: "f25093fedb0146a019f68e55424490e4"
 summary: "`openclaw setup` 的 CLI 参考(初始化配置 + 工作区)"
 read_when:

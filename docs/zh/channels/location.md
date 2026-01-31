@@ -1,4 +1,5 @@
 ---
+title: "渠道位置解析"
 mmh3_hash: "217d36d7852048c64187fc3703b33d73"
 summary: "入站渠道位置解析（Telegram + WhatsApp）和上下文字段"
 read_when:

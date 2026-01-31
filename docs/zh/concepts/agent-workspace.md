@@ -1,4 +1,5 @@
 ---
+title: "Agent workspace"
 mmh3_hash: "eeae1c937d93a39cb96deb59e1a5f0e5"
 summary: "Agent workspace: 位置、布局和备份策略"
 read_when:

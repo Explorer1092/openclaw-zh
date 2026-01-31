@@ -1,4 +1,5 @@
 ---
+title: "VPS 托管"
 mmh3_hash: "d85fa376d5a2d470ff6ce7f08424a394"
 summary: "OpenClaw 的 VPS 托管中心(Oracle/Fly/Hetzner/GCP/exe.dev)"
 read_when:

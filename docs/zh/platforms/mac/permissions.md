@@ -1,4 +1,5 @@
 ---
+title: "macOS 权限(TCC)"
 mmh3_hash: "b8755171a0e5f7283a96d341ce9bf236"
 summary: "macOS 权限持久化(TCC)和签名要求"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "发现和传输"
 mmh3_hash: "52ff40bbee82e4d4988fbb62e39c6921"
 summary: "节点发现和传输(Bonjour、Tailscale、SSH)用于查找 gateway"
 read_when:

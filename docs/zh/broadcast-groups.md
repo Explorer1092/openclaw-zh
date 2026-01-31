@@ -1,4 +1,5 @@
 ---
+title: "广播组"
 mmh3_hash: "ee5fbeedeebdef1d9ecb865218a40f84"
 summary: "将 WhatsApp 消息广播给多个代理"
 read_when:

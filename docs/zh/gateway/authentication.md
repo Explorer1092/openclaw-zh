@@ -1,4 +1,5 @@
 ---
+title: "认证"
 mmh3_hash: "454afa16c8015edb23e4e6b45bdeb687"
 summary: "模型认证:OAuth、API 密钥和 setup-token"
 read_when:

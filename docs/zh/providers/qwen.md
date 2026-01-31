@@ -1,4 +1,5 @@
 ---
+title: "Qwen"
 mmh3_hash: "273ef37185086229f59df75798fc55cd"
 summary: "在 OpenClaw 中使用 Qwen OAuth (免费层)"
 read_when:

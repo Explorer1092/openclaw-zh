@@ -1,4 +1,5 @@
 ---
+title: "Gateway 协议(WebSocket)"
 mmh3_hash: "4ac9154e70fa20f0f258602ad8296136"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:

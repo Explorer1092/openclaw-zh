@@ -1,4 +1,5 @@
 ---
+title: "工作空间内存 v2(离线): 研究说明"
 mmh3_hash: "ec3ca739e624731d08d391642a2c8591"
 summary: "研究说明: Clawd 工作空间的离线内存系统(Markdown 真实来源 + 派生索引)"
 read_when:

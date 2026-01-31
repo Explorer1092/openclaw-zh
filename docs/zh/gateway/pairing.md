@@ -1,4 +1,5 @@
 ---
+title: "Gateway 拥有的配对(Option B)"
 mmh3_hash: "f4e2a5cd1638c1772124df6af87461b9"
 summary: "Gateway 拥有的节点配对(Option B)用于 iOS 和其他远程节点"
 read_when:

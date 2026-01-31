@@ -1,4 +1,5 @@
 ---
+title: "Model failover"
 mmh3_hash: "2ad630e218a0bd9d2baccba9512184b5"
 summary: "OpenClaw 如何轮换 auth profiles 并跨 models 后备"
 read_when:

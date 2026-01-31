@@ -1,4 +1,5 @@
 ---
+title: "发布检查清单(npm + macOS)"
 mmh3_hash: "36b7e9d4f02b8dd22a8140f811927a83"
 summary: "npm + macOS 应用的逐步发布检查清单"
 read_when:

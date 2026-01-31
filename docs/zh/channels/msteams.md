@@ -1,4 +1,5 @@
 ---
+title: "Microsoft Teams (plugin)"
 mmh3_hash: "8ec8d3541ccf6312d89fa9baf19eb715"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when:

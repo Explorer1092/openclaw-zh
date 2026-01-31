@@ -1,4 +1,5 @@
 ---
+title: "节点 (Nodes)"
 mmh3_hash: "aad76d87ae07d0c09dc8683168a8e30d"
 summary: "节点：配对、功能、权限以及用于 canvas/camera/screen/system 的 CLI 助手"
 read_when:

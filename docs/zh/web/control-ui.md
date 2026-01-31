@@ -1,4 +1,5 @@
 ---
+title: "控制 UI(浏览器)"
 mmh3_hash: "cb6414976f7998f31d5af33d3ccd7281"
 summary: "网关的基于浏览器的控制 UI(聊天、节点、配置)"
 read_when:

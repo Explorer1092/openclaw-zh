@@ -1,4 +1,5 @@
 ---
+title: "TypeBox 作为 protocol 真相来源"
 mmh3_hash: "78c9a91e49df0b051814e03642803626"
 summary: "TypeBox schemas 作为 gateway protocol 的单一真相来源"
 read_when:

@@ -1,4 +1,5 @@
 ---
+title: "Chrome 扩展(浏览器中继)"
 mmh3_hash: "1bbc60900a940f3b36a5624100183669"
 summary: "Chrome 扩展: 让 OpenClaw 驱动您现有的 Chrome 标签页"
 read_when:
