@@ -26,7 +26,7 @@ jobs:
           git fetch upstream main
           # Update main branch to match upstream
           git fetch origin main
-          git checkout main
+          git checkout -B main origin/main
           git reset --hard upstream/main
           git push origin main --force
           # Switch back to zh branch
