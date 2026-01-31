@@ -3,9 +3,7 @@ title: "Token 使用与成本"
 sidebarTitle: "Token 使用与成本"
 mmh3_hash: "600d25af63d711c8c079fbb481b0472d"
 summary: "OpenClaw 如何构建提示词上下文并报告 Token 使用情况 + 成本"
-read_when:
-  - 解释 Token 使用、成本或上下文窗口
-  - 调试上下文增长或压缩行为
+read_when: ["解释 Token 使用、成本或上下文窗口","调试上下文增长或压缩行为"]
 ---
 # Token 使用与成本
 

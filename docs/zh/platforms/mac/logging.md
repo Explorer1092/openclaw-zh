@@ -3,9 +3,7 @@ title: "日志记录 (macOS)"
 sidebarTitle: "日志记录"
 mmh3_hash: "a9a7483245f07e9620e83ce75d70a8d3"
 summary: "OpenClaw 日志:滚动诊断文件日志 + 统一日志隐私标志"
-read_when:
-  - 捕获 macOS 日志或调查私有数据日志记录
-  - 调试语音唤醒/会话生命周期问题
+read_when: ["捕获 macOS 日志或调查私有数据日志记录","调试语音唤醒/会话生命周期问题"]
 ---
 # 日志记录 (macOS)
 

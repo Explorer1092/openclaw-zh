@@ -3,9 +3,7 @@ title: "Anthropic (Claude)"
 sidebarTitle: "Anthropic"
 mmh3_hash: "f525f887ce5fac22cf27f8707dc0a758"
 summary: "在 OpenClaw 中通过 API 密钥或 setup-token 使用 Anthropic Claude"
-read_when:
-  - 您想在 OpenClaw 中使用 Anthropic 模型
-  - 您想使用 setup-token 而不是 API 密钥
+read_when: ["您想在 OpenClaw 中使用 Anthropic 模型","您想使用 setup-token 而不是 API 密钥"]
 ---
 # Anthropic (Claude)
 

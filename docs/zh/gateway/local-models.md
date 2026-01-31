@@ -3,10 +3,7 @@ title: "本地模型"
 sidebarTitle: "本地模型"
 mmh3_hash: "c10359b0968424b2af26ea2bb24d8acf"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
-read_when:
-  - 您想从自己的 GPU 机器提供模型
-  - 您正在连接 LM Studio 或兼容 OpenAI 的代理
-  - 您需要最安全的本地模型指导
+read_when: ["您想从自己的 GPU 机器提供模型","您正在连接 LM Studio 或兼容 OpenAI 的代理","您需要最安全的本地模型指导"]
 ---
 # 本地模型
 

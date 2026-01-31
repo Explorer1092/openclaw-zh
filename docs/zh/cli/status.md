@@ -3,9 +3,7 @@ title: "`openclaw status`"
 sidebarTitle: "openclaw status"
 mmh3_hash: "40ac6fa8bdaf11f0a566dcb5180b62aa"
 summary: "`openclaw status` 的 CLI 参考(诊断、探测、使用快照)"
-read_when:
-  - 您想快速诊断频道健康状况 + 最近的会话收件人
-  - 您想要用于调试的可粘贴"全部"状态
+read_when: ["您想快速诊断频道健康状况 + 最近的会话收件人","您想要用于调试的可粘贴\"全部\"状态"]
 ---
 
 # `openclaw status`

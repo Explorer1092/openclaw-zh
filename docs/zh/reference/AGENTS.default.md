@@ -3,9 +3,7 @@ title: "AGENTS.md (OpenClaw 个人助手默认)"
 sidebarTitle: "AGENTS.md 默认"
 mmh3_hash: "54e4638a6a2511d3bc5e12eddc4df265"
 summary: "个人助手设置的默认 OpenClaw 代理指令和技能名单"
-read_when:
-  - 启动新的 OpenClaw 代理会话
-  - 启用或审计默认技能
+read_when: ["启动新的 OpenClaw 代理会话","启用或审计默认技能"]
 ---
 # AGENTS.md (OpenClaw 个人助手默认)
 

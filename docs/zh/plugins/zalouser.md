@@ -3,9 +3,7 @@ title: "Zalo Personal (插件)"
 sidebarTitle: "Zalo Personal"
 mmh3_hash: "e2618c6c06e4bb061697305e148dedef"
 summary: "Zalo Personal 插件: 通过 zca-cli 的 QR 登录 + 消息(插件安装 + 通道配置 + CLI + 工具)"
-read_when:
-  - 您想要 OpenClaw 中的 Zalo Personal(非官方)支持
-  - 您正在配置或开发 zalouser 插件
+read_when: ["您想要 OpenClaw 中的 Zalo Personal(非官方)支持","您正在配置或开发 zalouser 插件"]
 ---
 
 # Zalo Personal (插件)

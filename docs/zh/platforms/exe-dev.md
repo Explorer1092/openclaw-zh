@@ -3,9 +3,7 @@ title: "exe.dev"
 sidebarTitle: "exe.dev"
 mmh3_hash: "0abf84258b75824f5e0cea569cda3982"
 summary: "在 exe.dev 上运行 OpenClaw 网关(VM + HTTPS 代理)以实现远程访问"
-read_when:
-  - 你想要一个廉价的始终在线的 Linux 主机用于网关
-  - 你想要远程控制 UI 访问而不运行自己的 VPS
+read_when: ["你想要一个廉价的始终在线的 Linux 主机用于网关","你想要远程控制 UI 访问而不运行自己的 VPS"]
 ---
 
 # exe.dev

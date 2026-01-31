@@ -3,8 +3,7 @@ title: "Zalo (Bot API)"
 sidebarTitle: "Zalo"
 mmh3_hash: "91b47007d6be50669ae71c44fba50b32"
 summary: "Zalo bot 支持状态、功能和配置"
-read_when:
-  - Working on Zalo features or webhooks
+read_when: ["Working on Zalo features or webhooks"]
 ---
 # Zalo (Bot API)
 

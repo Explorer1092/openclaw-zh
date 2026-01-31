@@ -3,8 +3,7 @@ title: "远程 OpenClaw (macOS ⇄ 远程主机)"
 sidebarTitle: "远程 OpenClaw"
 mmh3_hash: "546442a5a4b880125a974daca15ae420"
 summary: "macOS 应用通过 SSH 控制远程 OpenClaw 网关的流程"
-read_when:
-  - 设置或调试远程 mac 控制
+read_when: ["设置或调试远程 mac 控制"]
 ---
 # 远程 OpenClaw (macOS ⇄ 远程主机)
 

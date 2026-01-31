@@ -2,9 +2,7 @@
 title: "`openclaw node`"
 mmh3_hash: "23139b2df27df3910fa485979805c6be"
 summary: "`openclaw node` 的 CLI 参考(无头节点主机)"
-read_when:
-  - 运行无头节点主机
-  - 为 system.run 配对非 macOS 节点
+read_when: ["运行无头节点主机","为 system.run 配对非 macOS 节点"]
 ---
 
 # `openclaw node`

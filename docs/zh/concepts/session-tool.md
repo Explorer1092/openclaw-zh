@@ -3,8 +3,7 @@ title: "会话工具"
 sidebarTitle: "会话工具"
 mmh3_hash: "2056baf9f6a7a5d6d30e6bb8ad7ef08e"
 summary: "Agent session tools 用于列出 sessions、获取历史记录和发送跨 session 消息"
-read_when:
-  - 添加或修改 session tools
+read_when: ["添加或修改 session tools"]
 ---
 
 # 会话工具

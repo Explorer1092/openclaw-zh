@@ -3,9 +3,7 @@ title: "系统提示词 (System Prompt)"
 sidebarTitle: "系统提示词"
 mmh3_hash: "cf8816e8158f4073cb916c9cea3afc4a"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
-read_when:
-  - 编辑 system prompt 文本、tools 列表或 time/heartbeat 部分
-  - 更改 workspace bootstrap 或 skills 注入行为
+read_when: ["编辑 system prompt 文本、tools 列表或 time/heartbeat 部分","更改 workspace bootstrap 或 skills 注入行为"]
 ---
 # 系统提示词 (System Prompt)
 

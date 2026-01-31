@@ -3,10 +3,7 @@ title: "macOS 上的网关 (外部 launchd)"
 sidebarTitle: "macOS 网关"
 mmh3_hash: "80c477e35d0b122b5a306f1a83cb8edf"
 summary: "macOS 上的网关运行时(外部 launchd 服务)"
-read_when:
-  - 打包 OpenClaw.app
-  - 调试 macOS 网关 launchd 服务
-  - 为 macOS 安装网关 CLI
+read_when: ["打包 OpenClaw.app","调试 macOS 网关 launchd 服务","为 macOS 安装网关 CLI"]
 ---
 
 # macOS 上的网关 (外部 launchd)

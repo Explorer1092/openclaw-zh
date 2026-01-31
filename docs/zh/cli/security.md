@@ -3,9 +3,7 @@ title: "`openclaw security`"
 sidebarTitle: "openclaw security"
 mmh3_hash: "2e11427942acef805238fe5ad8c2f460"
 summary: "`openclaw security` 的 CLI 参考(审计和修复常见的安全陷阱)"
-read_when:
-  - 您想对配置/状态运行快速安全审计
-  - 您想应用安全的"修复"建议(chmod、加强默认值)
+read_when: ["您想对配置/状态运行快速安全审计","您想应用安全的\"修复\"建议(chmod、加强默认值)"]
 ---
 
 # `openclaw security`

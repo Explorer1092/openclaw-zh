@@ -3,10 +3,7 @@ title: "LINE (插件)"
 sidebarTitle: "LINE"
 mmh3_hash: "d572b52c754cb090bcfd32770300660e"
 summary: "LINE Messaging API 插件设置、配置和使用"
-read_when:
-  - You want to connect OpenClaw to LINE
-  - You need LINE webhook + credential setup
-  - You want LINE-specific message options
+read_when: ["You want to connect OpenClaw to LINE","You need LINE webhook + credential setup","You want LINE-specific message options"]
 ---
 
 # LINE (插件)

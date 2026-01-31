@@ -4,9 +4,7 @@ title: "Lobster"
 sidebarTitle: "Lobster"
 summary: "OpenClaw 的类型化工作流运行时,具有可恢复的批准门控。"
 description: OpenClaw 的类型化工作流运行时 — 具有批准门控的可组合管道。
-read_when:
-  - 您想要具有明确批准的确定性多步骤工作流
-  - 您需要在不重新运行早期步骤的情况下恢复工作流
+read_when: ["您想要具有明确批准的确定性多步骤工作流","您需要在不重新运行早期步骤的情况下恢复工作流"]
 ---
 
 # Lobster

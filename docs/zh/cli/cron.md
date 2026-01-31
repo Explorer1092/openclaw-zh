@@ -3,9 +3,7 @@ title: "`openclaw cron`"
 sidebarTitle: "openclaw cron"
 mmh3_hash: "abd1a50ad4f58f2a073f86b25012bd74"
 summary: "`openclaw cron` 的 CLI 参考(安排和运行后台作业)"
-read_when:
-  - 您想要计划任务和唤醒
-  - 您正在调试 cron 执行和日志
+read_when: ["您想要计划任务和唤醒","您正在调试 cron 执行和日志"]
 ---
 
 # `openclaw cron`

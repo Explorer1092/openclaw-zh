@@ -3,8 +3,7 @@ title: "`openclaw agents`"
 sidebarTitle: "openclaw agents"
 mmh3_hash: "bb3aaacc99e810b50dc5788cacd83f2c"
 summary: "`openclaw agents` 的 CLI 参考(列出/添加/删除/设置身份)"
-read_when:
-  - 您想要多个隔离的代理(工作区 + 路由 + 身份验证)
+read_when: ["您想要多个隔离的代理(工作区 + 路由 + 身份验证)"]
 ---
 
 # `openclaw agents`

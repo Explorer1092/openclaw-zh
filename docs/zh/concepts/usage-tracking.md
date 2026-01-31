@@ -3,9 +3,7 @@ title: "用量跟踪"
 sidebarTitle: "用量跟踪"
 mmh3_hash: "43579207bcbcb63aa1f063f5dc510f57"
 summary: "Usage tracking 表面和凭据要求"
-read_when:
-  - 你正在连接 provider usage/quota 表面
-  - 你需要解释 usage tracking 行为或 auth 要求
+read_when: ["你正在连接 provider usage/quota 表面","你需要解释 usage tracking 行为或 auth 要求"]
 ---
 # 用量跟踪
 

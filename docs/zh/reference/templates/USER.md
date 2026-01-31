@@ -3,8 +3,7 @@ mmh3_hash: "5c557bec9ce8208ca359ca328787881f"
 title: "USER.md - 关于使用者"
 sidebarTitle: "USER.md"
 summary: "用户画像记录"
-read_when:
-  - 手动引导工作区
+read_when: ["手动引导工作区"]
 ---
 # USER.md - 关于使用者
 

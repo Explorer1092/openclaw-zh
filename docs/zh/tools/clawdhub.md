@@ -3,10 +3,7 @@ title: "ClawdHub"
 sidebarTitle: "ClawdHub"
 mmh3_hash: "7a86393b3859c0dc55ecf80ca8262bed"
 summary: "ClawdHub 指南: 公共技能注册表 + CLI 工作流"
-read_when:
-  - 向新用户介绍 ClawdHub
-  - 安装、搜索或发布技能
-  - 解释 ClawdHub CLI 标志和同步行为
+read_when: ["向新用户介绍 ClawdHub","安装、搜索或发布技能","解释 ClawdHub CLI 标志和同步行为"]
 ---
 
 # ClawdHub

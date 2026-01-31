@@ -3,8 +3,7 @@ title: "`openclaw pairing`"
 sidebarTitle: "openclaw pairing"
 mmh3_hash: "41f4c004ddde346aa2a549027747aff8"
 summary: "`openclaw pairing` 的 CLI 参考(批准/列出配对请求)"
-read_when:
-  - 您正在使用配对模式的 DM 并需要批准发件人
+read_when: ["您正在使用配对模式的 DM 并需要批准发件人"]
 ---
 
 # `openclaw pairing`

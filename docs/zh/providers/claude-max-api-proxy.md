@@ -2,10 +2,7 @@
 title: "Claude Max API Proxy"
 mmh3_hash: "542f3d5b5fdd54b370da71c02500563d"
 summary: "将 Claude Max/Pro 订阅作为 OpenAI 兼容的 API 端点使用"
-read_when:
-  - 您想将 Claude Max 订阅与 OpenAI 兼容的工具一起使用
-  - 您想要一个包装 Claude Code CLI 的本地 API 服务器
-  - 您想通过使用订阅而不是 API 密钥来节省成本
+read_when: ["您想将 Claude Max 订阅与 OpenAI 兼容的工具一起使用","您想要一个包装 Claude Code CLI 的本地 API 服务器","您想通过使用订阅而不是 API 密钥来节省成本"]
 ---
 # Claude Max API Proxy
 

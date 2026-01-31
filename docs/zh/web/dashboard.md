@@ -3,8 +3,7 @@ title: "仪表板 (控制界面)"
 sidebarTitle: "仪表板"
 mmh3_hash: "11b46ddcf148e703b2a076935379a8ac"
 summary: "网关仪表板(控制 UI)访问和身份验证"
-read_when:
-  - 更改仪表板身份验证或暴露模式
+read_when: ["更改仪表板身份验证或暴露模式"]
 ---
 # 仪表板 (控制界面)
 

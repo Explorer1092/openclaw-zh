@@ -3,8 +3,7 @@ title: "`openclaw docs`"
 sidebarTitle: "openclaw docs"
 mmh3_hash: "bd8b575e87f74599f711684f6526882b"
 summary: "`openclaw docs` 的 CLI 参考(搜索实时文档索引)"
-read_when:
-  - 您想从终端搜索实时 OpenClaw 文档
+read_when: ["您想从终端搜索实时 OpenClaw 文档"]
 ---
 
 # `openclaw docs`

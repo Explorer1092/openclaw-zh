@@ -3,9 +3,7 @@ title: "诊断"
 sidebarTitle: "诊断"
 mmh3_hash: "772ab72f735cf5f95b6670dd99e5627c"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
-read_when:
-  - 添加或修改 doctor 迁移
-  - 引入破坏性配置更改
+read_when: ["添加或修改 doctor 迁移","引入破坏性配置更改"]
 ---
 # 诊断
 

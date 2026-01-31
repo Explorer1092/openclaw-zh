@@ -3,10 +3,7 @@ title: "Cron 与心跳：何时使用"
 sidebarTitle: "Cron 与心跳"
 mmh3_hash: "54caeb38fea2fb6aad577024658879b5"
 summary: "关于在自动化中选择心跳还是 cron 作业的指导"
-read_when:
-  - 决定如何调度重复任务时
-  - 设置后台监控或通知时
-  - 优化定期检查的 token 使用时
+read_when: ["决定如何调度重复任务时","设置后台监控或通知时","优化定期检查的 token 使用时"]
 ---
 # Cron 与心跳：何时使用
 

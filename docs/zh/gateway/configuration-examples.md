@@ -3,10 +3,7 @@ title: "配置示例"
 sidebarTitle: "配置示例"
 mmh3_hash: "dbbf00e801087ba00819793f4bcc0225"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
-read_when:
-  - 学习如何配置 OpenClaw
-  - 寻找配置示例
-  - 首次设置 OpenClaw
+read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 OpenClaw"]
 ---
 # 配置示例
 

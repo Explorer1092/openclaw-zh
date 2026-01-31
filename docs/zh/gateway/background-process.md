@@ -3,9 +3,7 @@ title: "后台 Exec 与 Process 工具"
 sidebarTitle: "后台工具"
 mmh3_hash: "0285254caece79c711832773a2127710"
 summary: "后台 exec 执行和进程管理"
-read_when:
-  - 添加或修改后台 exec 行为
-  - 调试长时间运行的 exec 任务
+read_when: ["添加或修改后台 exec 行为","调试长时间运行的 exec 任务"]
 ---
 
 # 后台 Exec 与 Process 工具

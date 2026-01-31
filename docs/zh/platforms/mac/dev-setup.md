@@ -3,8 +3,7 @@ title: "macOS 开发人员设置"
 sidebarTitle: "开发设置"
 mmh3_hash: "fa434f92885370c25111cdb94b4cfbbd"
 summary: "为开发 OpenClaw macOS 应用的开发人员提供的设置指南"
-read_when:
-  - 设置 macOS 开发环境
+read_when: ["设置 macOS 开发环境"]
 ---
 # macOS 开发人员设置
 

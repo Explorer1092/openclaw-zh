@@ -2,9 +2,7 @@
 title: "Web(网关)"
 mmh3_hash: "c76eee68170913679d8fcb5f936f90ab"
 summary: "网关 web 界面: 控制 UI、绑定模式和安全性"
-read_when:
-  - 您想通过 Tailscale 访问网关
-  - 您想要浏览器控制 UI 和配置编辑
+read_when: ["您想通过 Tailscale 访问网关","您想要浏览器控制 UI 和配置编辑"]
 ---
 # Web(网关)
 

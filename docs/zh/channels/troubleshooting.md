@@ -3,9 +3,7 @@ title: "频道故障排除"
 sidebarTitle: "频道故障排除"
 mmh3_hash: "0eeae9a8b658fc9bc47fd3aa90f92fb1"
 summary: "特定频道的故障排除快捷方式（Discord/Telegram/WhatsApp）"
-read_when:
-  - A channel connects but messages don't flow
-  - Investigating channel misconfiguration (intents, permissions, privacy mode)
+read_when: ["A channel connects but messages don't flow","Investigating channel misconfiguration (intents, permissions, privacy mode)"]
 ---
 # 频道故障排除
 

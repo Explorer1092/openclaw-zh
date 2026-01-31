@@ -2,10 +2,7 @@
 title: "BlueBubbles (macOS REST)"
 mmh3_hash: "8d9c4e15a2f62b6be772eacc54898a48"
 summary: "通过 BlueBubbles macOS 服务器实现 iMessage（REST 收发、输入状态、回应、配对、高级操作）。"
-read_when:
-  - 设置 BlueBubbles 频道
-  - 排查 webhook 配对问题
-  - 在 macOS 上配置 iMessage
+read_when: ["设置 BlueBubbles 频道","排查 webhook 配对问题","在 macOS 上配置 iMessage"]
 ---
 # BlueBubbles (macOS REST)
 

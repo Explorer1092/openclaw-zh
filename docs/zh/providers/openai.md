@@ -3,9 +3,7 @@ title: "OpenAI"
 sidebarTitle: "OpenAI"
 mmh3_hash: "02f329f4bc8faf16259c5299a486af1f"
 summary: "在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI"
-read_when:
-  - 您想在 OpenClaw 中使用 OpenAI 模型
-  - 您想使用 Codex 订阅身份验证而不是 API 密钥
+read_when: ["您想在 OpenClaw 中使用 OpenAI 模型","您想使用 Codex 订阅身份验证而不是 API 密钥"]
 ---
 # OpenAI
 

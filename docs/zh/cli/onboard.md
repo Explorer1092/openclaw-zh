@@ -3,8 +3,7 @@ title: "`openclaw onboard`"
 sidebarTitle: "openclaw onboard"
 mmh3_hash: "09926de5f27b01e42667e750ec755a87"
 summary: "`openclaw onboard` 的 CLI 参考(交互式入职向导)"
-read_when:
-  - 您想要网关、工作区、身份验证、频道和技能的指导性设置
+read_when: ["您想要网关、工作区、身份验证、频道和技能的指导性设置"]
 ---
 
 # `openclaw onboard`

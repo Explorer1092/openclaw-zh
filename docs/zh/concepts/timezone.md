@@ -3,9 +3,7 @@ title: "时区"
 sidebarTitle: "时区"
 mmh3_hash: "4ee18a2763f55b0423bf67945f39b2a9"
 summary: "Agents、envelopes 和 prompts 的 Timezone 处理"
-read_when:
-  - 你需要了解如何为 model 规范化时间戳
-  - 为 system prompts 配置用户 timezone
+read_when: ["你需要了解如何为 model 规范化时间戳","为 system prompts 配置用户 timezone"]
 ---
 
 # 时区

@@ -3,8 +3,7 @@ title: "WebChat (macOS 应用)"
 sidebarTitle: "WebChat"
 mmh3_hash: "e9dbce3ac796f657bf3c2c9bd8844153"
 summary: "mac 应用如何嵌入网关 WebChat 以及如何调试它"
-read_when:
-  - 调试 mac WebChat 视图或环回端口
+read_when: ["调试 mac WebChat 视图或环回端口"]
 ---
 # WebChat (macOS 应用)
 

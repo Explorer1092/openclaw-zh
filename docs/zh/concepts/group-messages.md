@@ -3,8 +3,7 @@ title: "群组消息 (WhatsApp web 频道)"
 sidebarTitle: "群组消息"
 mmh3_hash: "7faf81c0b4f9ce0e3cd8dfcf793791db"
 summary: "WhatsApp group 消息处理的行为和配置(mentionPatterns 在各个表面之间共享)"
-read_when:
-  - 更改 group 消息规则或 mentions
+read_when: ["更改 group 消息规则或 mentions"]
 ---
 # 群组消息 (WhatsApp web 频道)
 

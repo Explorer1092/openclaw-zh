@@ -3,8 +3,7 @@ mmh3_hash: "dc8bf2132a156f83816caee04d393d3c"
 title: "IDENTITY.md - 我是谁"
 sidebarTitle: "IDENTITY.md"
 summary: "代理身份记录"
-read_when:
-  - 手动引导工作区
+read_when: ["手动引导工作区"]
 ---
 # IDENTITY.md - 我是谁
 

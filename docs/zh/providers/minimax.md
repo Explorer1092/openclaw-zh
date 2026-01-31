@@ -3,9 +3,7 @@ title: "MiniMax"
 sidebarTitle: "MiniMax"
 mmh3_hash: "0f5eeec19d4ff9be135bdd89edc694e9"
 summary: "在 OpenClaw 中使用 MiniMax M2.1"
-read_when:
-  - 您想在 OpenClaw 中使用 MiniMax 模型
-  - 您需要 MiniMax 设置指导
+read_when: ["您想在 OpenClaw 中使用 MiniMax 模型","您需要 MiniMax 设置指导"]
 ---
 # MiniMax
 

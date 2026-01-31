@@ -3,9 +3,7 @@ title: "技能 (OpenClaw)"
 sidebarTitle: "技能"
 mmh3_hash: "4916746ccbec2eace335f4dfcdce88ce"
 summary: "技能: 管理 vs 工作区、门控规则和配置/环境接线"
-read_when:
-  - 添加或修改技能
-  - 更改技能门控或加载规则
+read_when: ["添加或修改技能","更改技能门控或加载规则"]
 ---
 # 技能 (OpenClaw)
 

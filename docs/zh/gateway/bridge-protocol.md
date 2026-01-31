@@ -3,10 +3,7 @@ title: "桥接协议 (旧版节点传输)"
 sidebarTitle: "桥接协议"
 mmh3_hash: "91e5a012f28556cd268e62c24a75269d"
 summary: "Bridge 协议(旧版节点):TCP JSONL、配对、作用域 RPC"
-read_when:
-  - 构建或调试节点客户端(iOS/Android/macOS 节点模式)
-  - 调查配对或 bridge 认证失败
-  - 审计 gateway 公开的节点 surface
+read_when: ["构建或调试节点客户端(iOS/Android/macOS 节点模式)","调查配对或 bridge 认证失败","审计 gateway 公开的节点 surface"]
 ---
 
 # 桥接协议 (旧版节点传输)

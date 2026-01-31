@@ -3,9 +3,7 @@ title: "位置命令 (节点)"
 sidebarTitle: "位置命令"
 mmh3_hash: "c9501a7c1343f150c669cc33d8efe6f4"
 summary: "节点的位置命令 (location.get)，权限模式和后台行为"
-read_when:
-  - 添加位置节点支持或权限 UI 时
-  - 设计后台位置 + 推送流程时
+read_when: ["添加位置节点支持或权限 UI 时","设计后台位置 + 推送流程时"]
 ---
 
 # 位置命令 (节点)

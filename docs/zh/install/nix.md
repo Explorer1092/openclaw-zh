@@ -3,10 +3,7 @@ title: "Nix 安装"
 sidebarTitle: "Nix"
 mmh3_hash: "44829f6d4950c66c8060fe72fb539aac"
 summary: "使用 Nix 声明式安装 OpenClaw"
-read_when:
-  - 你想要可重现、可回滚的安装
-  - 你已经在使用 Nix/NixOS/Home Manager
-  - 你想要一切都被固定并声明式管理
+read_when: ["你想要可重现、可回滚的安装","你已经在使用 Nix/NixOS/Home Manager","你想要一切都被固定并声明式管理"]
 ---
 
 # Nix 安装

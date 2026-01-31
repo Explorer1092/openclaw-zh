@@ -2,9 +2,7 @@
 title: "acp"
 mmh3_hash: "39d1a81a6b95777977349447091fd108"
 summary: "运行 ACP 桥接以支持 IDE 集成"
-read_when:
-  - 设置基于 ACP 的 IDE 集成
-  - 调试 ACP 会话路由到网关
+read_when: ["设置基于 ACP 的 IDE 集成","调试 ACP 会话路由到网关"]
 ---
 
 # acp

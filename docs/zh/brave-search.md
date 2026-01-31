@@ -2,9 +2,7 @@
 title: "Brave Search API"
 mmh3_hash: "e73ded8b3e74cc788ada2041b78e423e"
 summary: "用于 web_search 的 Brave Search API 设置"
-read_when:
-  - 您想使用 Brave Search 进行 web_search
-  - 您需要 BRAVE_API_KEY 或计划详细信息
+read_when: ["您想使用 Brave Search 进行 web_search","您需要 BRAVE_API_KEY 或计划详细信息"]
 ---
 
 # Brave Search API

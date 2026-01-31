@@ -2,8 +2,7 @@
 title: "Twitch (plugin)"
 mmh3_hash: "3c732935cfb58094c67da793b41b7eb5"
 summary: "Twitch 聊天机器人配置和设置"
-read_when:
-  - Setting up Twitch chat integration for OpenClaw
+read_when: ["Setting up Twitch chat integration for OpenClaw"]
 ---
 # Twitch (plugin)
 

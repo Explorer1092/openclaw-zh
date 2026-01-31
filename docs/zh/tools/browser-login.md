@@ -3,9 +3,7 @@ title: "浏览器登录与 X/Twitter 发帖"
 sidebarTitle: "浏览器登录"
 mmh3_hash: "7e07cbff739edc67b586b08be9a2fd5e"
 summary: "浏览器自动化 + X/Twitter 发帖的手动登录"
-read_when:
-  - 需要登录网站以进行浏览器自动化
-  - 想要发布更新到 X/Twitter
+read_when: ["需要登录网站以进行浏览器自动化","想要发布更新到 X/Twitter"]
 ---
 
 # 浏览器登录与 X/Twitter 发帖

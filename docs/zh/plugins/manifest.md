@@ -2,9 +2,7 @@
 title: "插件清单(openclaw.plugin.json)"
 mmh3_hash: "937a23110f9a4ff8bd02bb01affb9e3f"
 summary: "插件清单 + JSON 架构要求(严格配置验证)"
-read_when:
-  - 您正在构建 OpenClaw 插件
-  - 您需要提供插件配置架构或调试插件验证错误
+read_when: ["您正在构建 OpenClaw 插件","您需要提供插件配置架构或调试插件验证错误"]
 ---
 # 插件清单(openclaw.plugin.json)
 

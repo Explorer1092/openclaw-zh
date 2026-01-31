@@ -3,9 +3,7 @@ title: "Bonjour / mDNS 发现"
 sidebarTitle: "Bonjour / mDNS"
 mmh3_hash: "d81f0081a96d5d48ddcbeb59be659b76"
 summary: "Bonjour/mDNS 发现 + 调试(Gateway beacons、clients 和常见故障模式)"
-read_when:
-  - 在 macOS/iOS 上调试 Bonjour 发现问题
-  - 更改 mDNS 服务类型、TXT 记录或发现 UX
+read_when: ["在 macOS/iOS 上调试 Bonjour 发现问题","更改 mDNS 服务类型、TXT 记录或发现 UX"]
 ---
 # Bonjour / mDNS 发现
 

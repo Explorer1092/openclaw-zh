@@ -3,8 +3,7 @@ title: "OpenAI Chat Completions (HTTP)"
 sidebarTitle: "OpenAI Chat Completions"
 mmh3_hash: "5d8a167b36a7e912ac3fe56d0cbbfdde"
 summary: "从 Gateway 公开兼容 OpenAI 的 /v1/chat/completions HTTP 端点"
-read_when:
-  - 集成期望 OpenAI Chat Completions 的工具
+read_when: ["集成期望 OpenAI Chat Completions 的工具"]
 ---
 # OpenAI Chat Completions (HTTP)
 

@@ -2,9 +2,7 @@
 title: "Nostr"
 mmh3_hash: "3d141599e886e158b0c09d61c5ae09f2"
 summary: "通过 NIP-04 加密消息实现的 Nostr DM 频道"
-read_when:
-  - 你希望 OpenClaw 通过 Nostr 接收私信
-  - 你正在设置去中心化消息传递
+read_when: ["你希望 OpenClaw 通过 Nostr 接收私信","你正在设置去中心化消息传递"]
 ---
 # Nostr
 

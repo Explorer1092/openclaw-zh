@@ -3,9 +3,7 @@ title: "安装"
 sidebarTitle: "安装"
 mmh3_hash: "c4733660f987a4d70e37a0dfe82d6f62"
 summary: "安装 OpenClaw (推荐安装程序，全局安装，或从源码)"
-read_when:
-  - 安装 OpenClaw
-  - 你想要从 GitHub 安装
+read_when: ["安装 OpenClaw","你想要从 GitHub 安装"]
 ---
 
 # 安装

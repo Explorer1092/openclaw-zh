@@ -3,10 +3,7 @@ title: "Web 工具"
 sidebarTitle: "Web 工具"
 mmh3_hash: "b7b9da932434cb6a8ace8e2aecbcaaa6"
 summary: "Web 搜索 + 获取工具(Brave Search API、Perplexity 直接/OpenRouter)"
-read_when:
-  - 您想启用 web_search 或 web_fetch
-  - 您需要 Brave Search API 密钥设置
-  - 您想使用 Perplexity Sonar 进行 Web 搜索
+read_when: ["您想启用 web_search 或 web_fetch","您需要 Brave Search API 密钥设置","您想使用 Perplexity Sonar 进行 Web 搜索"]
 ---
 
 # Web 工具

@@ -3,8 +3,7 @@ title: "网关架构"
 sidebarTitle: "网关架构"
 mmh3_hash: "a898abf3b1c01df8523db1fad7989ccd"
 summary: "WebSocket gateway 架构、组件和客户端流程"
-read_when:
-  - 在 gateway protocol、clients 或 transports 上工作
+read_when: ["在 gateway protocol、clients 或 transports 上工作"]
 ---
 # 网关架构
 

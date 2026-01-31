@@ -3,9 +3,7 @@ title: "Gmail Pub/Sub 到 OpenClaw"
 sidebarTitle: "Gmail Pub/Sub"
 mmh3_hash: "b785e1976de82deaf0ce4995ccbd6c71"
 summary: "Gmail Pub/Sub 推送通过 gogcli 接入 OpenClaw webhooks"
-read_when:
-  - 将 Gmail 收件箱触发器接入 OpenClaw 时
-  - 设置 Pub/Sub 推送以进行智能体唤醒时
+read_when: ["将 Gmail 收件箱触发器接入 OpenClaw 时","设置 Pub/Sub 推送以进行智能体唤醒时"]
 ---
 
 # Gmail Pub/Sub 到 OpenClaw

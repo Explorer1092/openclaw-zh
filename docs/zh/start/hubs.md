@@ -3,8 +3,7 @@ title: "文档中心"
 sidebarTitle: "文档中心"
 mmh3_hash: "0d9d5bfd60881acada52c93c88fedee6"
 summary: "链接到每个 OpenClaw 文档的中心"
-read_when:
-  - 您想要文档的完整地图
+read_when: ["您想要文档的完整地图"]
 ---
 # 文档中心
 

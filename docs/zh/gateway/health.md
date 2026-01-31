@@ -3,8 +3,7 @@ title: "健康检查 (CLI)"
 sidebarTitle: "健康检查"
 mmh3_hash: "b04ea209c868588e91f028094ad860e9"
 summary: "Channel 连接性的健康检查步骤"
-read_when:
-  - 诊断 WhatsApp channel 健康状况
+read_when: ["诊断 WhatsApp channel 健康状况"]
 ---
 # 健康检查 (CLI)
 

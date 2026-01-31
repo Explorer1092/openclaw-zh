@@ -2,9 +2,7 @@
 title: "将 OpenClaw 迁移到新机器"
 mmh3_hash: "28dede80080bedde9c49e4e632ec20c5"
 summary: "将 OpenClaw 安装从一台机器移动（迁移）到另一台机器"
-read_when:
-  - 你正在将 OpenClaw 移动到新的笔记本电脑/服务器
-  - 你想保留会话、认证和频道登录（WhatsApp 等）
+read_when: ["你正在将 OpenClaw 移动到新的笔记本电脑/服务器","你想保留会话、认证和频道登录（WhatsApp 等）"]
 ---
 # 将 OpenClaw 迁移到新机器
 

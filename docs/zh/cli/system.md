@@ -3,10 +3,7 @@ title: "`openclaw system`"
 sidebarTitle: "openclaw system"
 mmh3_hash: "e1f8ac3453695d8d3c7005e7551edb87"
 summary: "`openclaw system` 的 CLI 参考(系统事件、心跳、存在)"
-read_when:
-  - 您想在不创建 cron 作业的情况下将系统事件排队
-  - 您需要启用或禁用心跳
-  - 您想检查系统存在条目
+read_when: ["您想在不创建 cron 作业的情况下将系统事件排队","您需要启用或禁用心跳","您想检查系统存在条目"]
 ---
 
 # `openclaw system`

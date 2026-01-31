@@ -2,10 +2,7 @@
 mmh3_hash: "257f73fbacdd5b443596ab5dc425edef"
 title: "Node.js + npm (PATH 健全性)"
 summary: "Node.js + npm 安装健全性：版本、PATH 和全局安装"
-read_when:
-  - "你安装了 OpenClaw 但 `openclaw` 显示“未找到命令”"
-  - "你正在新机器上设置 Node.js/npm"
-  - "npm install -g ... 失败并出现权限或 PATH 问题"
+read_when: ["\"你安装了 OpenClaw 但 `openclaw` 显示“未找到命令”\"","\"你正在新机器上设置 Node.js/npm\"","\"npm install -g ... 失败并出现权限或 PATH 问题\""]
 ---
 
 # Node.js + npm (PATH 健全性)

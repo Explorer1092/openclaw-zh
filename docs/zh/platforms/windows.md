@@ -3,9 +3,7 @@ title: "Windows (WSL2)"
 sidebarTitle: "Windows"
 mmh3_hash: "1a41f0182978918e89adce142a24c206"
 summary: "Windows(WSL2)支持 + 配套应用状态"
-read_when:
-  - 在 Windows 上安装 OpenClaw
-  - 寻找 Windows 配套应用状态
+read_when: ["在 Windows 上安装 OpenClaw","寻找 Windows 配套应用状态"]
 ---
 # Windows (WSL2)
 

@@ -3,9 +3,7 @@ title: "Exec 工具"
 sidebarTitle: "Exec"
 mmh3_hash: "f2044b0a0a51c3830f32c8ce0747b044"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
-read_when:
-  - 使用或修改 exec 工具
-  - 调试 stdin 或 TTY 行为
+read_when: ["使用或修改 exec 工具","调试 stdin 或 TTY 行为"]
 ---
 
 # Exec 工具

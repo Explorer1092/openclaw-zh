@@ -3,10 +3,7 @@ title: "Canvas (macOS 应用)"
 sidebarTitle: "Canvas"
 mmh3_hash: "233557b78b7dd2bd8779cd0bb74dd561"
 summary: "通过 WKWebView + 自定义 URL 方案嵌入的代理控制 Canvas 面板"
-read_when:
-  - 实现 macOS Canvas 面板
-  - 为可视化工作区添加代理控件
-  - 调试 WKWebView canvas 加载
+read_when: ["实现 macOS Canvas 面板","为可视化工作区添加代理控件","调试 WKWebView canvas 加载"]
 ---
 # Canvas (macOS 应用)
 

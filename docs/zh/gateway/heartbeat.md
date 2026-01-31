@@ -3,9 +3,7 @@ title: "心跳 (网关)"
 sidebarTitle: "心跳"
 mmh3_hash: "435dc65db6f45f6145ad4adcd5599c67"
 summary: "Heartbeat 轮询消息和通知规则"
-read_when:
-  - 调整 heartbeat 节奏或消息
-  - 在 heartbeat 和 cron 之间决定用于计划任务
+read_when: ["调整 heartbeat 节奏或消息","在 heartbeat 和 cron 之间决定用于计划任务"]
 ---
 # 心跳 (网关)
 

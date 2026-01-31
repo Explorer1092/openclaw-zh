@@ -3,9 +3,7 @@ title: "认证"
 sidebarTitle: "认证"
 mmh3_hash: "454afa16c8015edb23e4e6b45bdeb687"
 summary: "模型认证:OAuth、API 密钥和 setup-token"
-read_when:
-  - 调试模型认证或 OAuth 过期问题
-  - 记录认证或凭证存储相关内容
+read_when: ["调试模型认证或 OAuth 过期问题","记录认证或凭证存储相关内容"]
 ---
 # 认证
 

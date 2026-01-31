@@ -3,8 +3,7 @@ title: "`openclaw configure`"
 sidebarTitle: "openclaw configure"
 mmh3_hash: "7f44b0caa173351fea65a90f13503f54"
 summary: "`openclaw configure` 的 CLI 参考(交互式配置提示)"
-read_when:
-  - 您想以交互方式调整凭据、设备或代理默认值
+read_when: ["您想以交互方式调整凭据、设备或代理默认值"]
 ---
 
 # `openclaw configure`

@@ -2,10 +2,7 @@
 title: "文本转语音(TTS)"
 mmh3_hash: "d448bfcfd501433b8b6303f22b369d99"
 summary: "用于出站回复的文本转语音(TTS)"
-read_when:
-  - 为回复启用文本转语音
-  - 配置 TTS 提供程序或限制
-  - 使用 /tts 命令
+read_when: ["为回复启用文本转语音","配置 TTS 提供程序或限制","使用 /tts 命令"]
 ---
 
 # 文本转语音(TTS)

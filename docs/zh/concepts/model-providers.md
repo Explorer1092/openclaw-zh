@@ -3,9 +3,7 @@ title: "模型提供方"
 sidebarTitle: "模型提供方"
 mmh3_hash: "a470afc8558bc13a39dfbd5e812b46a9"
 summary: "Model provider 概述,包含示例配置 + CLI 流程"
-read_when:
-  - 你需要按 provider 的 model 设置参考
-  - 你想要 model providers 的示例配置或 CLI onboarding 命令
+read_when: ["你需要按 provider 的 model 设置参考","你想要 model providers 的示例配置或 CLI onboarding 命令"]
 ---
 # 模型提供方
 

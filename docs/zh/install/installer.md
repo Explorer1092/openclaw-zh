@@ -3,10 +3,7 @@ title: "安装程序内部"
 sidebarTitle: "安装程序"
 mmh3_hash: "ea1992f492d7babac7565da8d4ff2c09"
 summary: "安装脚本的工作原理(install.sh + install-cli.sh)、标志和自动化"
-read_when:
-  - 您想了解 `openclaw.bot/install.sh`
-  - 您想自动化安装(CI / 无头)
-  - 您想从 GitHub 检出安装
+read_when: ["您想了解 `openclaw.bot/install.sh`","您想自动化安装(CI / 无头)","您想从 GitHub 检出安装"]
 ---
 
 # 安装程序内部

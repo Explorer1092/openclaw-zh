@@ -3,8 +3,7 @@ title: "智能体运行时 🤖"
 sidebarTitle: "智能体运行时"
 mmh3_hash: "53fde06e8b712259ed7ae5d9627cad48"
 summary: "Agent runtime (embedded p-mono)、workspace 契约和 session bootstrap"
-read_when:
-  - 更改 agent runtime、workspace bootstrap 或 session 行为
+read_when: ["更改 agent runtime、workspace bootstrap 或 session 行为"]
 ---
 # 智能体运行时 🤖
 

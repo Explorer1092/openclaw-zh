@@ -2,10 +2,7 @@
 title: "工作空间内存 v2(离线): 研究说明"
 mmh3_hash: "ec3ca739e624731d08d391642a2c8591"
 summary: "研究说明: Clawd 工作空间的离线内存系统(Markdown 真实来源 + 派生索引)"
-read_when:
-  - 设计超出每日 Markdown 日志的工作空间内存 (~/.openclaw/workspace)
-  - 决定: 独立 CLI 与深度 OpenClaw 集成
-  - 添加离线召回 + 反思(retain/recall/reflect)
+read_when: ["设计超出每日 Markdown 日志的工作空间内存 (~/.openclaw/workspace)","决定: 独立 CLI 与深度 OpenClaw 集成","添加离线召回 + 反思(retain/recall/reflect)"]
 ---
 
 # 工作空间内存 v2(离线): 研究说明

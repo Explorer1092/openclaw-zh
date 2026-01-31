@@ -3,9 +3,7 @@ title: "`openclaw directory`"
 sidebarTitle: "openclaw directory"
 mmh3_hash: "d32c27a8f3d96cbd42aad78a985a1156"
 summary: "`openclaw directory` 的 CLI 参考(自己、对等方、组)"
-read_when:
-  - 您想查找频道的联系人/组/自己 ID
-  - 您正在开发频道目录适配器
+read_when: ["您想查找频道的联系人/组/自己 ID","您正在开发频道目录适配器"]
 ---
 
 # `openclaw directory`

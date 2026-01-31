@@ -3,9 +3,7 @@ title: "`openclaw approvals`"
 sidebarTitle: "openclaw approvals"
 mmh3_hash: "1a682918a981ebbc0bac175e2d74dba7"
 summary: "`openclaw approvals` 的 CLI 参考(网关或节点主机的执行批准)"
-read_when:
-  - 您想从 CLI 编辑执行批准
-  - 您需要管理网关或节点主机上的允许列表
+read_when: ["您想从 CLI 编辑执行批准","您需要管理网关或节点主机上的允许列表"]
 ---
 
 # `openclaw approvals`

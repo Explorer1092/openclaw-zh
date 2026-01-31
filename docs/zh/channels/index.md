@@ -3,9 +3,7 @@ title: "聊天频道"
 sidebarTitle: "聊天频道"
 mmh3_hash: "a31cf88a6d5a6d6fd2095e50eefdb199"
 summary: "OpenClaw 可以连接的消息平台"
-read_when:
-  - You want to choose a chat channel for OpenClaw
-  - You need a quick overview of supported messaging platforms
+read_when: ["You want to choose a chat channel for OpenClaw","You need a quick overview of supported messaging platforms"]
 ---
 # 聊天频道
 

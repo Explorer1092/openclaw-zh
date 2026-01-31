@@ -3,9 +3,7 @@ title: "智能体工作区"
 sidebarTitle: "智能体工作区"
 mmh3_hash: "eeae1c937d93a39cb96deb59e1a5f0e5"
 summary: "Agent workspace: 位置、布局和备份策略"
-read_when:
-  - 你需要解释 agent workspace 或其文件布局
-  - 你想要备份或迁移 agent workspace
+read_when: ["你需要解释 agent workspace 或其文件布局","你想要备份或迁移 agent workspace"]
 ---
 # 智能体工作区
 

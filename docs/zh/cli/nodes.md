@@ -3,9 +3,7 @@ title: "`openclaw nodes`"
 sidebarTitle: "openclaw nodes"
 mmh3_hash: "9ba378bd14c6421006218f1aa280415f"
 summary: "`openclaw nodes` 的 CLI 参考(列表/状态/批准/调用、相机/画布/屏幕)"
-read_when:
-  - 您正在管理配对的节点(相机、屏幕、画布)
-  - 您需要批准请求或调用节点命令
+read_when: ["您正在管理配对的节点(相机、屏幕、画布)","您需要批准请求或调用节点命令"]
 ---
 
 # `openclaw nodes`

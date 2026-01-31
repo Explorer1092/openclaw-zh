@@ -3,8 +3,7 @@ title: "macOS 签名 (调试构建)"
 sidebarTitle: "签名 (调试)"
 mmh3_hash: "cc7acd3f60b42520b4a7e588de36a577"
 summary: "由打包脚本生成的 macOS 调试构建的签名步骤"
-read_when:
-  - 构建或签名 mac 调试构建
+read_when: ["构建或签名 mac 调试构建"]
 ---
 # macOS 签名 (调试构建)
 

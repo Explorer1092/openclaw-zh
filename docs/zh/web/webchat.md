@@ -3,8 +3,7 @@ title: "WebChat (网关 WebSocket 界面)"
 sidebarTitle: "WebChat"
 mmh3_hash: "d2bb050ccfc3bb95128aceb34b57f03f"
 summary: "环回 WebChat 静态主机和网关 WS 聊天 UI 使用"
-read_when:
-  - 调试或配置 WebChat 访问
+read_when: ["调试或配置 WebChat 访问"]
 ---
 # WebChat (网关 WebSocket 界面)
 

@@ -3,9 +3,7 @@ title: "Amazon Bedrock"
 sidebarTitle: "Amazon Bedrock"
 mmh3_hash: "364f0cdbc78f4c7aa4c53cb04bcbd811"
 summary: "在 OpenClaw 中使用 Amazon Bedrock (Converse API) 模型"
-read_when:
-  - 您想在 OpenClaw 中使用 Amazon Bedrock 模型
-  - 您需要为模型调用设置 AWS 凭证/区域
+read_when: ["您想在 OpenClaw 中使用 Amazon Bedrock 模型","您需要为模型调用设置 AWS 凭证/区域"]
 ---
 # Amazon Bedrock
 

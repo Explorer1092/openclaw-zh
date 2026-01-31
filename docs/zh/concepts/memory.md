@@ -3,9 +3,7 @@ title: "记忆 (Memory)"
 sidebarTitle: "记忆"
 mmh3_hash: "d811704a748293f9220079b26ec1ff48"
 summary: "OpenClaw memory 如何工作(workspace 文件 + 自动内存刷新)"
-read_when:
-  - 你想了解内存文件布局和工作流程
-  - 你想调整自动预 compaction 内存刷新
+read_when: ["你想了解内存文件布局和工作流程","你想调整自动预 compaction 内存刷新"]
 ---
 # 记忆 (Memory)
 

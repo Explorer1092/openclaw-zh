@@ -3,8 +3,7 @@ title: "输入指示器"
 sidebarTitle: "输入指示器"
 mmh3_hash: "8052acceb1883d04413d41870877a4c0"
 summary: "OpenClaw 何时显示 typing indicators 以及如何调整它们"
-read_when:
-  - 更改 typing indicator 行为或默认值
+read_when: ["更改 typing indicator 行为或默认值"]
 ---
 # 输入指示器
 

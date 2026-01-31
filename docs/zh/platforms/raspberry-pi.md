@@ -2,10 +2,7 @@
 title: "在 Raspberry Pi 上运行 OpenClaw"
 mmh3_hash: "74b23dfc335f566e70d59a8f968c96ca"
 summary: "在 Raspberry Pi 上运行 OpenClaw(经济型自托管设置)"
-read_when:
-  - 在 Raspberry Pi 上设置 OpenClaw
-  - 在 ARM 设备上运行 OpenClaw
-  - 构建廉价的始终在线个人 AI
+read_when: ["在 Raspberry Pi 上设置 OpenClaw","在 ARM 设备上运行 OpenClaw","构建廉价的始终在线个人 AI"]
 ---
 
 # 在 Raspberry Pi 上运行 OpenClaw

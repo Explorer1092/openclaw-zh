@@ -3,10 +3,7 @@ title: "Cron 作业 (网关调度器)"
 sidebarTitle: "Cron 作业"
 mmh3_hash: "6e8db07cfc03adcc327fbfdb4010440b"
 sunmary: "网关调度器的 Cron 作业 + 唤醒"
-read_when:
-  - 调度后台作业或唤醒时
-  - 连接应与心跳一起或并行运行的自动化时
-  - 在心跳和 cron 之间决定调度任务时
+read_when: ["调度后台作业或唤醒时","连接应与心跳一起或并行运行的自动化时","在心跳和 cron 之间决定调度任务时"]
 ---
 # Cron 作业 (网关调度器)
 

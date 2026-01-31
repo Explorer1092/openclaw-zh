@@ -3,9 +3,7 @@ title: "`openclaw message`"
 sidebarTitle: "openclaw message"
 mmh3_hash: "a5d03fa6f690cb38676550db8e0dca2c"
 summary: "`openclaw message` 的 CLI 参考(发送 + 频道操作)"
-read_when:
-  - 添加或修改消息 CLI 操作
-  - 更改出站频道行为
+read_when: ["添加或修改消息 CLI 操作","更改出站频道行为"]
 ---
 
 # `openclaw message`

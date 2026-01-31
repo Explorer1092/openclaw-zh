@@ -3,9 +3,7 @@ title: "RPC 适配器"
 sidebarTitle: "RPC 适配器"
 mmh3_hash: "bc3b578c4fc3fe4f26b99f335edad021"
 summary: "用于外部 CLI(signal-cli、imsg)和网关模式的 RPC 适配器"
-read_when:
-  - 添加或更改外部 CLI 集成
-  - 调试 RPC 适配器(signal-cli、imsg)
+read_when: ["添加或更改外部 CLI 集成","调试 RPC 适配器(signal-cli、imsg)"]
 ---
 # RPC 适配器
 

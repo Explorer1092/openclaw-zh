@@ -3,9 +3,7 @@ title: "`openclaw plugins`"
 sidebarTitle: "openclaw plugins"
 mmh3_hash: "110daf5c05854b28f7f953399fc076ee"
 summary: "`openclaw plugins` 的 CLI 参考(列表、安装、启用/禁用、doctor)"
-read_when:
-  - 您想安装或管理进程内网关插件
-  - 您想调试插件加载失败
+read_when: ["您想安装或管理进程内网关插件","您想调试插件加载失败"]
 ---
 
 # `openclaw plugins`

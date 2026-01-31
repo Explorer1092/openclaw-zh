@@ -3,8 +3,7 @@ title: "配置 🔧"
 sidebarTitle: "配置"
 mmh3_hash: "37f999a4c2cdbe90e5aee91afebcd82f"
 summary: "~/.openclaw/openclaw.json 的所有配置选项及示例"
-read_when:
-  - 添加或修改配置字段
+read_when: ["添加或修改配置字段"]
 ---
 # 配置 🔧
 

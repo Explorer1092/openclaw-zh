@@ -3,10 +3,7 @@ title: "浏览器 (openclaw 管理)"
 sidebarTitle: "浏览器"
 mmh3_hash: "6dbeb13ca7dbb8ca3dbbb10e8f27c857"
 summary: "集成浏览器控制服务 + 操作命令"
-read_when:
-  - 添加 agent 控制的浏览器自动化
-  - 调试为什么 openclaw 干扰您自己的 Chrome
-  - 在 macOS 应用中实现浏览器设置 + 生命周期
+read_when: ["添加 agent 控制的浏览器自动化","调试为什么 openclaw 干扰您自己的 Chrome","在 macOS 应用中实现浏览器设置 + 生命周期"]
 ---
 
 # 浏览器 (openclaw 管理)

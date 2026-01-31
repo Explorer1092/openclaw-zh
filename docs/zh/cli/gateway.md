@@ -3,10 +3,7 @@ title: "网关 CLI"
 sidebarTitle: "网关 CLI"
 mmh3_hash: "5106a9ac44dad678003d31f215603869"
 summary: "OpenClaw 网关 CLI(`openclaw gateway`) — 运行、查询和发现网关"
-read_when:
-  - 从 CLI 运行网关(开发或服务器)
-  - 调试网关身份验证、绑定模式和连接性
-  - 通过 Bonjour 发现网关(LAN + tailnet)
+read_when: ["从 CLI 运行网关(开发或服务器)","调试网关身份验证、绑定模式和连接性","通过 Bonjour 发现网关(LAN + tailnet)"]
 ---
 
 # 网关 CLI

@@ -2,10 +2,7 @@
 title: "网络中心"
 mmh3_hash: "1a0fba2bb498f745bbae44bb9e79fffa"
 summary: "网络中心:网关界面、配对、发现和安全"
-read_when:
-  - 您需要网络架构 + 安全概述
-  - 您正在调试本地 vs tailnet 访问或配对
-  - 您想要网络文档的规范列表
+read_when: ["您需要网络架构 + 安全概述","您正在调试本地 vs tailnet 访问或配对","您想要网络文档的规范列表"]
 ---
 # 网络中心
 

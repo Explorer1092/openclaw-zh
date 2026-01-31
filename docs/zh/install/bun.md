@@ -3,9 +3,7 @@ title: "Bun (实验性)"
 sidebarTitle: "Bun"
 mmh3_hash: "2b375926112a91ff7c3c7ad72fd1b24d"
 summary: "Bun 工作流（实验性）：安装以及与 pnpm 相比的注意事项"
-read_when:
-  - 你想要最快的本地开发循环 (bun + watch)
-  - 你遇到了 Bun install/patch/生命周期脚本问题
+read_when: ["你想要最快的本地开发循环 (bun + watch)","你遇到了 Bun install/patch/生命周期脚本问题"]
 ---
 
 # Bun (实验性)
