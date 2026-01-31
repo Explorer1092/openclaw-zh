@@ -1,5 +1,6 @@
 ---
-title: "Gateway 拥有的配对(Option B)"
+title: "网关托管配对 (选项 B)"
+sidebarTitle: "网关托管配对"
 mmh3_hash: "f4e2a5cd1638c1772124df6af87461b9"
 summary: "Gateway 拥有的节点配对(Option B)用于 iOS 和其他远程节点"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 为批准远程节点添加 CLI 流程
   - 使用节点管理扩展 gateway 协议
 ---
-# Gateway 拥有的配对(Option B)
+# 网关托管配对 (选项 B)
 
 在 Gateway 拥有的配对中,**Gateway** 是允许哪些节点加入的事实来源。UIs(macOS app、未来的客户端)只是批准或拒绝待处理请求的前端。
 

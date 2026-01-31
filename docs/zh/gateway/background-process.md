@@ -1,5 +1,6 @@
 ---
-title: "后台 Exec + Process 工具"
+title: "后台 Exec 与 Process 工具"
+sidebarTitle: "后台工具"
 mmh3_hash: "0285254caece79c711832773a2127710"
 summary: "后台 exec 执行和进程管理"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 调试长时间运行的 exec 任务
 ---
 
-# 后台 Exec + Process 工具
+# 后台 Exec 与 Process 工具
 
 OpenClaw 通过 `exec` 工具运行 shell 命令,并在内存中保留长时间运行的任务。`process` 工具管理这些后台 sessions。
 

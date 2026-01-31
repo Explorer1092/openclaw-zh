@@ -1,11 +1,12 @@
 ---
 mmh3_hash: "31032898b00758636c03e1fd89bd2967"
-title: 形式验证(安全模型)
+title: "形式验证 (安全模型)"
+sidebarTitle: "形式验证"
 summary: OpenClaw 最高风险路径的机器检查安全模型。
 permalink: /security/formal-verification/
 ---
 
-# 形式验证(安全模型)
+# 形式验证 (安全模型)
 
 本页跟踪 OpenClaw 的**形式安全模型**(今天是 TLA+/TLC;根据需要更多)。
 

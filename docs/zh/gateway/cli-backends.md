@@ -1,5 +1,6 @@
 ---
-title: "CLI backends(回退运行时)"
+title: "CLI 后端 (回退运行时)"
+sidebarTitle: "CLI 后端"
 mmh3_hash: "7c4168935d21fb41c9f2a7ee5671b730"
 summary: "CLI backends:通过本地 AI CLI 的纯文本回退"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 您正在运行 Claude Code CLI 或其他本地 AI CLI 并希望重用它们
   - 您需要一个纯文本、无工具的路径,仍然支持 sessions 和图像
 ---
-# CLI backends(回退运行时)
+# CLI 后端 (回退运行时)
 
 当 API 提供商宕机、速率受限或暂时行为异常时,OpenClaw 可以运行 **本地 AI CLI** 作为 **纯文本回退**。这是有意保守的:
 

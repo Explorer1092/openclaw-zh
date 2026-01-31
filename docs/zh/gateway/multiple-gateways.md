@@ -1,12 +1,13 @@
 ---
-title: "多个 Gateways(同一主机)"
+title: "多个网关 (同一主机)"
+sidebarTitle: "多个网关"
 mmh3_hash: "c8c346e1b8dfd06f28c944d471c2be1e"
 summary: "在一台主机上运行多个 OpenClaw Gateways(隔离、端口和配置文件)"
 read_when:
   - 在同一台机器上运行多个 Gateway
   - 您需要每个 Gateway 的隔离配置/状态/端口
 ---
-# 多个 Gateways(同一主机)
+# 多个网关 (同一主机)
 
 大多数设置应使用一个 Gateway,因为单个 Gateway 可以处理多个消息连接和 agents。如果您需要更强的隔离或冗余(例如,rescue bot),请使用隔离的配置文件/端口运行单独的 Gateways。
 

@@ -1,12 +1,13 @@
 ---
-title: "Doctor"
+title: "诊断"
+sidebarTitle: "诊断"
 mmh3_hash: "772ab72f735cf5f95b6670dd99e5627c"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
 read_when:
   - 添加或修改 doctor 迁移
   - 引入破坏性配置更改
 ---
-# Doctor
+# 诊断
 
 `openclaw doctor` 是 OpenClaw 的修复 + 迁移工具。它修复过时的配置/状态,检查健康状况,并提供可操作的修复步骤。
 

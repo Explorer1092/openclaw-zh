@@ -1,5 +1,6 @@
 ---
-title: "Gateway 协议(WebSocket)"
+title: "网关协议 (WebSocket)"
+sidebarTitle: "网关协议"
 mmh3_hash: "4ac9154e70fa20f0f258602ad8296136"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
@@ -8,7 +9,7 @@ read_when:
   - 重新生成协议 schema/models
 ---
 
-# Gateway 协议(WebSocket)
+# 网关协议 (WebSocket)
 
 Gateway WS 协议是 OpenClaw 的**单一控制平面 + 节点传输**。所有客户端(CLI、web UI、macOS app、iOS/Android 节点、无头节点)通过 WebSocket 连接并在握手时声明其**角色** + **作用域**。
 

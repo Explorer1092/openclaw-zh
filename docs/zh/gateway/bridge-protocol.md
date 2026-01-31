@@ -1,5 +1,6 @@
 ---
-title: "Bridge 协议(旧版节点传输)"
+title: "桥接协议 (旧版节点传输)"
+sidebarTitle: "桥接协议"
 mmh3_hash: "91e5a012f28556cd268e62c24a75269d"
 summary: "Bridge 协议(旧版节点):TCP JSONL、配对、作用域 RPC"
 read_when:
@@ -8,7 +9,7 @@ read_when:
   - 审计 gateway 公开的节点 surface
 ---
 
-# Bridge 协议(旧版节点传输)
+# 桥接协议 (旧版节点传输)
 
 Bridge 协议是一个 **旧版** 节点传输(TCP JSONL)。新的节点客户端应该改用统一的 Gateway WebSocket 协议。
 

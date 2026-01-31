@@ -1,5 +1,6 @@
 ---
-title: "发现和传输"
+title: "发现与传输"
+sidebarTitle: "发现与传输"
 mmh3_hash: "52ff40bbee82e4d4988fbb62e39c6921"
 summary: "节点发现和传输(Bonjour、Tailscale、SSH)用于查找 gateway"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 调整远程连接模式(直连 vs SSH)
   - 为远程节点设计节点发现 + 配对
 ---
-# 发现和传输
+# 发现与传输
 
 OpenClaw 有两个表面上看起来相似的不同问题:
 

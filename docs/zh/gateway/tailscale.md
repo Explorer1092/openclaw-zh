@@ -1,12 +1,13 @@
 ---
-title: "Tailscale(网关仪表板)"
+title: "Tailscale (网关仪表板)"
+sidebarTitle: "Tailscale"
 mmh3_hash: "c5fa2c6f99101416b39ad49477829506"
 summary: "网关仪表板的集成 Tailscale Serve/Funnel"
 read_when:
   - 在 localhost 外暴露网关控制 UI
   - 自动化 tailnet 或公共仪表板访问
 ---
-# Tailscale(网关仪表板)
+# Tailscale (网关仪表板)
 
 OpenClaw 可以为网关仪表板和 WebSocket 端口自动配置 Tailscale **Serve**(tailnet)或 **Funnel**(公共)。这使网关保持绑定到环回,而 Tailscale 提供 HTTPS、路由和(对于 Serve)身份头。
 

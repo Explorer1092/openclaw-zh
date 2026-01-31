@@ -1,12 +1,13 @@
 ---
-title: "工具调用(HTTP)"
+title: "工具调用 (HTTP)"
+sidebarTitle: "工具调用"
 mmh3_hash: "6afe0483405c853fd13d1a80aec88061"
 summary: "通过网关 HTTP 端点直接调用单个工具"
 read_when:
   - 在不运行完整代理轮次的情况下调用工具
   - 构建需要工具策略强制执行的自动化
 ---
-# 工具调用(HTTP)
+# 工具调用 (HTTP)
 
 OpenClaw 的网关暴露了一个简单的 HTTP 端点,用于直接调用单个工具。它始终启用,但受网关身份验证和工具策略控制。
 
