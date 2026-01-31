@@ -25,15 +25,15 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/openclaw/openclaw.git || true
           git fetch upstream main
-          # Sync English docs from upstream into zh branch, preserving .zh.md
+          # Sync English docs from upstream, skip docs/zh/ directory
           git ls-tree -r --name-only upstream/main -- docs/ scripts/docs-i18n-hash.ts \
             | grep -v '\.zh\.md$' \
             | while IFS= read -r f; do
                 git checkout upstream/main -- "$f" 2>/dev/null || true
               done
-          # Remove English docs deleted upstream (keep .zh.md)
+          # Remove English docs deleted upstream (keep docs/zh/)
           comm -23 \
-            <(git ls-files -- 'docs/*.md' | grep -v '\.zh\.md$' | sort) \
+            <(git ls-files -- 'docs/*.md' | grep -v '\.zh\.md$' | grep -v '^docs/zh/' | sort) \
             <(git ls-tree -r --name-only upstream/main -- docs/ | grep -v '\.zh\.md$' | sort) \
             | xargs -r git rm --quiet 2>/dev/null || true
           git add docs/ scripts/docs-i18n-hash.ts
@@ -70,38 +70,33 @@ jobs:
 
             ${{ steps.check.outputs.result }}
 
+            Translations live in docs/zh/ mirroring the English structure:
+              docs/start/getting-started.md → docs/zh/start/getting-started.md
+
             For each missing or outdated file:
-            1. Read the English source
-            2. Create or update the .zh.md translation (Chinese Simplified)
-            3. Run `bun scripts/docs-i18n-hash.ts update <file.zh.md>` to stamp the hash
+            1. Read the English source (e.g. docs/start/getting-started.md)
+            2. Create or update the Chinese translation at docs/zh/start/getting-started.md
+            3. Run `bun scripts/docs-i18n-hash.ts update docs/zh/start/getting-started.md` to stamp the hash
 
             After all translations, run `bun scripts/docs-i18n-hash.ts check` to verify.
 
-            Then commit all changes directly to the current branch:
+            Then commit and push:
             ```
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add docs/**/*.zh.md
+            git add docs/zh/
             git commit -m "docs: sync Chinese translations"
             git push
             ```
           claude_args: "--allowedTools Bash Read Write Edit Glob Grep --model sonnet"
 
-      - name: Mirror .zh.md to docs/zh/ and update Mintlify nav
+      - name: Update Mintlify navigation
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Mirror each .zh.md → docs/zh/<relative-path>.md
-          find docs -name '*.zh.md' -not -path 'docs/zh/*' | while IFS= read -r zh; do
-            rel="${zh#docs/}"
-            target="docs/zh/${rel%.zh.md}.md"
-            mkdir -p "$(dirname "$target")"
-            sed '/^mmh3_hash:/d' "$zh" > "$target"
-          done
-          # Generate Mintlify i18n navigation
           bun scripts/gen-zh-nav.ts
-          git add docs/zh/ docs/docs.json
+          git add docs/docs.json
           if ! git diff --cached --quiet; then
-            git commit -m "docs: mirror Chinese translations and update Mintlify nav"
+            git commit -m "docs: update Mintlify zh navigation"
             git push origin zh
           fi

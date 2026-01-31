@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "5a9f717a07c28b0a20dbdea35361c2f7"
 summary: "监控模型提供商的 OAuth 过期情况"
 read_when:
   - 设置认证过期监控或警报时

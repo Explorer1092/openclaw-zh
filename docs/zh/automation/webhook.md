@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "632610c706c4db1c57e311d96d95067c"
 summary: "用于唤醒和隔离智能体运行的 Webhook 入口"
 read_when:
   - 添加或更改 webhook 端点时

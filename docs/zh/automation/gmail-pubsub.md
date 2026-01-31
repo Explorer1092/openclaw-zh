@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "b785e1976de82deaf0ce4995ccbd6c71"
 summary: "Gmail Pub/Sub 推送通过 gogcli 接入 OpenClaw webhooks"
 read_when:
   - 将 Gmail 收件箱触发器接入 OpenClaw 时

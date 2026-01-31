@@ -38,10 +38,14 @@ const groupNames: Record<string, string> = {
 
 const nav = config.navigation;
 
+// Extract English groups (handle both flat and i18n formats)
+const enGroups: { group: string; pages: string[] }[] =
+  nav.groups ?? nav.languages?.find((l: any) => l.language === "en")?.groups ?? [];
+
 // Build zh navigation: mirror groups but only include pages with translations
 const zhGroups: { group: string; pages: string[] }[] = [];
 
-for (const group of nav.groups) {
+for (const group of enGroups) {
   const zhPages: string[] = [];
   for (const page of group.pages) {
     const zhFile = join(ZH_DIR, page + ".md");
@@ -62,7 +66,7 @@ config.navigation = {
   languages: [
     {
       language: "en",
-      groups: nav.groups,
+      groups: enGroups,
     },
     {
       language: "zh",

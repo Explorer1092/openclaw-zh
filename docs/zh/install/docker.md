@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "a935555fa117ac8b7940b1ae50d4d50b"
 summary: "OpenClaw 的可选 Docker 设置和入门"
 read_when:
   - 你想要容器化网关而不是本地安装

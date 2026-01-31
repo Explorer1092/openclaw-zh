@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "ea1992f492d7babac7565da8d4ff2c09"
 summary: "安装脚本 (install.sh + install-cli.sh) 如何工作，标志和自动化"
 read_when:
   - 你想要了解 `openclaw.bot/install.sh`

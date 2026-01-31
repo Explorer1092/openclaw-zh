@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "257f73fbacdd5b443596ab5dc425edef"
 title: "Node.js + npm (PATH 健全性)"
 summary: "Node.js + npm 安装健全性：版本、PATH 和全局安装"
 read_when:

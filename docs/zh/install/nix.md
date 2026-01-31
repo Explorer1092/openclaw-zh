@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "44829f6d4950c66c8060fe72fb539aac"
 summary: "使用 Nix 声明式安装 OpenClaw"
 read_when:
   - 你想要可重现、可回滚的安装

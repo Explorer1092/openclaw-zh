@@ -7,7 +7,7 @@
  * Usage:
  *   bun scripts/docs-i18n-hash.ts check [--json]
  *   bun scripts/docs-i18n-hash.ts generate <file.md>
- *   bun scripts/docs-i18n-hash.ts update <file.zh.md>
+ *   bun scripts/docs-i18n-hash.ts update <docs/zh/file.md>
  */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -175,10 +175,12 @@ function findDocs(docsDir: string): string[] {
   const results: string[] = [];
   const { readdirSync, statSync } = require("node:fs");
 
+  const zhDir = join(docsDir, "zh");
   function walk(dir: string) {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
+        if (full === zhDir) continue; // skip docs/zh/
         walk(full);
       } else if (entry.name.endsWith(".md") && !entry.name.endsWith(".zh.md")) {
         results.push(full);
@@ -201,10 +203,12 @@ function cmdCheck(jsonOutput: boolean) {
   const outdated: { file: string; expected: string; actual: string }[] = [];
   const ok: string[] = [];
 
+  const ZH = join(DOCS, "zh");
   for (const doc of docs) {
     const rel = doc.slice(ROOT.length + 1);
-    const zhPath = doc.replace(/\.md$/, ".zh.md");
-    const zhRel = zhPath.slice(ROOT.length + 1);
+    // docs/start/foo.md → docs/zh/start/foo.md
+    const relFromDocs = doc.slice(DOCS.length + 1);
+    const zhPath = join(ZH, relFromDocs);
 
     if (!existsSync(zhPath)) {
       missing.push(rel);
@@ -266,11 +270,18 @@ function cmdUpdate(zhFile: string) {
     console.error(`File not found: ${zhFile}`);
     process.exit(1);
   }
-  if (!resolved.endsWith(".zh.md")) {
-    console.error(`Expected a .zh.md file, got: ${zhFile}`);
+  // Accept both docs/zh/foo.md and legacy foo.zh.md
+  const zhDir = join(DOCS, "zh") + "/";
+  let enPath: string;
+  if (resolved.startsWith(zhDir)) {
+    // docs/zh/start/foo.md → docs/start/foo.md
+    enPath = join(DOCS, resolved.slice(zhDir.length));
+  } else if (resolved.endsWith(".zh.md")) {
+    enPath = resolved.replace(/\.zh\.md$/, ".md");
+  } else {
+    console.error(`Expected a file under docs/zh/ or a .zh.md file, got: ${zhFile}`);
     process.exit(1);
   }
-  const enPath = resolved.replace(/\.zh\.md$/, ".md");
   if (!existsSync(enPath)) {
     console.error(`English source not found: ${enPath}`);
     process.exit(1);

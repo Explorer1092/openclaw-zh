@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "098274b7e040552c179e6740e5ffcb73"
 summary: "完全卸载 OpenClaw (CLI, 服务, 状态, 工作区)"
 read_when:
   - 你想从机器上删除 OpenClaw

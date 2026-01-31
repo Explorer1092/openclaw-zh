@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "a56b419debab2567d1951dc6b01da440"
 summary: "对讲模式：使用 ElevenLabs TTS 的连续语音对话"
 read_when:
   - 在 macOS/iOS/Android 上实现对讲模式

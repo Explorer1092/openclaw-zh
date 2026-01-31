@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1bbad8726b56e89c32d4f154e430d4fd"
 summary: "发送、网关和智能体回复的图像和媒体处理规则"
 read_when:
   - 修改媒体管道或附件时
