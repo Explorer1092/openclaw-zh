@@ -103,6 +103,7 @@ jobs:
 
             After ALL translations are done, run `bun scripts/docs-i18n-hash.ts check` as a final verification.
           claude_args: "--allowedTools Bash Read Write Edit Glob Grep --model sonnet"
+          show_full_output: true
 
       - name: Update Mintlify navigation
         run: |
