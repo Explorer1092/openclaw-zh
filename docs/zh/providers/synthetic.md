@@ -93,4 +93,4 @@ synthetic/hf:MiniMaxAI/MiniMax-M2.1
 - 模型引用使用 `synthetic/<modelId>`。
 - 如果您启用模型允许列表(`agents.defaults.models`),请添加您计划使用的每个模型。
 - 有关提供商规则,请参见 [模型提供商](/concepts/model-providers)。
-<!-- source-hash: eb17da00709cf30f562837cdc7976859 -->
+{/*  source-hash: eb17da00709cf30f562837cdc7976859  */}

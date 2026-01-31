@@ -157,4 +157,4 @@ openclaw onboard --auth-choice kimi-code-api-key
 - 如果需要,在 `models.providers` 中覆盖定价和上下文元数据。
 - 如果 Moonshot 为模型发布不同的上下文限制,请相应调整 `contextWindow`。
 - 如果您需要中国端点,请使用 `https://api.moonshot.cn/v1`。
-<!-- source-hash: 2b2e8c89fc203548bcd74d102cfa7881 -->
+{/*  source-hash: 2b2e8c89fc203548bcd74d102cfa7881  */}

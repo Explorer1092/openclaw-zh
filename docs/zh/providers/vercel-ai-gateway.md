@@ -46,4 +46,4 @@ openclaw onboard --non-interactive \
 ## 环境注意事项
 
 如果网关作为守护进程(launchd/systemd)运行,请确保该进程可以访问 `AI_GATEWAY_API_KEY`(例如,在 `~/.openclaw/.env` 中或通过 `env.shellEnv`)。
-<!-- source-hash: e481f03ce32cb10299f407011dde4650 -->
+{/*  source-hash: e481f03ce32cb10299f407011dde4650  */}

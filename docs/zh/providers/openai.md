@@ -58,4 +58,4 @@ openclaw models auth login --provider openai-codex
 
 - 模型引用始终使用 `provider/model`(参见 [/concepts/models](/concepts/models))。
 - 身份验证详细信息 + 重用规则在 [/concepts/oauth](/concepts/oauth) 中。
-<!-- source-hash: 49ee72ad257bc49d2381e863f9b44e38 -->
+{/*  source-hash: 49ee72ad257bc49d2381e863f9b44e38  */}
