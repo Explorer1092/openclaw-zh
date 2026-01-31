@@ -1,5 +1,6 @@
 ---
 title: "CLI 参考"
+sidebarTitle: "CLI 参考"
 mmh3_hash: "cf5286b993a414ca13a3272c9cacce1e"
 summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
 read_when:

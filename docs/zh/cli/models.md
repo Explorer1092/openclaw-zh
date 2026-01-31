@@ -1,5 +1,6 @@
 ---
 title: "`openclaw models`"
+sidebarTitle: "openclaw models"
 mmh3_hash: "a918d16532840559552ffce872ab5901"
 summary: "`openclaw models` 的 CLI 参考(状态/列表/设置/扫描、别名、回退、身份验证)"
 read_when:

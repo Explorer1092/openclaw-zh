@@ -1,5 +1,6 @@
 ---
 title: "`openclaw reset`"
+sidebarTitle: "openclaw reset"
 mmh3_hash: "03f6231336776724e2e6a80430aa6e11"
 summary: "`openclaw reset` 的 CLI 参考(重置本地状态/配置)"
 read_when:

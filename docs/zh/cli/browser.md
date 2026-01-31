@@ -1,5 +1,6 @@
 ---
 title: "`openclaw browser`"
+sidebarTitle: "openclaw browser"
 mmh3_hash: "2fb12e6757ef4f9853e162ef3cb6b2b8"
 summary: "`openclaw browser` 的 CLI 参考(配置文件、标签、操作、扩展中继)"
 read_when:

@@ -1,6 +1,7 @@
 ---
 mmh3_hash: "dbe62b2f8606f77486059b99e328f9c9"
 title: 沙盒 CLI
+sidebarTitle: "沙盒 CLI"
 summary: "管理沙盒容器并检查有效的沙盒策略"
 read_when: "您正在管理沙盒容器或调试沙盒/工具策略行为。"
 status: active

@@ -1,5 +1,6 @@
 ---
 title: "`openclaw update`"
+sidebarTitle: "openclaw update"
 mmh3_hash: "0eab4dcd7fbe2c18fdca1d2deb8ae3b9"
 summary: "`openclaw update` 的 CLI 参考(相对安全的源更新 + 网关自动重启)"
 read_when:

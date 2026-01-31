@@ -1,5 +1,6 @@
 ---
 title: "`openclaw onboard`"
+sidebarTitle: "openclaw onboard"
 mmh3_hash: "09926de5f27b01e42667e750ec755a87"
 summary: "`openclaw onboard` 的 CLI 参考(交互式入职向导)"
 read_when:

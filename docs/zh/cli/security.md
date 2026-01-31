@@ -1,5 +1,6 @@
 ---
 title: "`openclaw security`"
+sidebarTitle: "openclaw security"
 mmh3_hash: "2e11427942acef805238fe5ad8c2f460"
 summary: "`openclaw security` 的 CLI 参考(审计和修复常见的安全陷阱)"
 read_when:

@@ -1,5 +1,6 @@
 ---
 title: "`openclaw doctor`"
+sidebarTitle: "openclaw doctor"
 mmh3_hash: "1b6ff3adb53f3c7c1bf4316b7644b4fd"
 summary: "`openclaw doctor` 的 CLI 参考(健康检查 + 指导性修复)"
 read_when:

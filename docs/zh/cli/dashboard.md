@@ -1,5 +1,6 @@
 ---
 title: "`openclaw dashboard`"
+sidebarTitle: "openclaw dashboard"
 mmh3_hash: "04a9fe93b2e0a741aecbd3750e92467c"
 summary: "`openclaw dashboard` 的 CLI 参考(打开控制 UI)"
 read_when:

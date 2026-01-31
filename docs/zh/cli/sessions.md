@@ -1,5 +1,6 @@
 ---
 title: "`openclaw sessions`"
+sidebarTitle: "openclaw sessions"
 mmh3_hash: "55372e6b78d2b27ef8a0c11588e143fc"
 summary: "`openclaw sessions` 的 CLI 参考(列出存储的会话 + 使用情况)"
 read_when:
