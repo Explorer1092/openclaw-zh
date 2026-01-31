@@ -201,4 +201,3 @@ export CLAWDHUB_DISABLE_TELEMETRY=1
 - `CLAWDHUB_WORKDIR`: 覆盖默认 workdir。
 - `CLAWDHUB_DISABLE_TELEMETRY=1`: 在 `sync` 时禁用遥测。
 
-<!-- i18n-hash:262249bc54e7318657efd2e573f03d59 -->

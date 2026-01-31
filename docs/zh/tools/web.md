@@ -249,4 +249,3 @@ await web_search({
 - 如果您使用工具配置文件/允许列表,添加 `web_search`/`web_fetch` 或 `group:web`。
 - 如果缺少 Brave 密钥,`web_search` 返回带有文档链接的简短设置提示。
 
-<!-- i18n-hash:0ecb6d7f1de43afb8d126588ed13a596 -->

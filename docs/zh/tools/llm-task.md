@@ -110,4 +110,3 @@ openclaw.invoke --tool llm-task --action json --args-json '{
 - 除非使用 `schema` 进行验证,否则将输出视为不受信任。
 - 在任何有副作用的步骤(发送、发布、exec)之前进行批准。
 
-<!-- i18n-hash:bd7086e8fb49f23444300a33d5a7faff -->

@@ -188,4 +188,3 @@ read_when:
 - **`/stop`** 定位活动聊天会话,以便它可以中止当前运行。
 - **Slack:** 仍支持 `channels.slack.slashCommand` 用于单个 `/openclaw` 风格命令。如果启用 `commands.native`,您必须为每个内置命令创建一个 Slack 斜杠命令(与 `/help` 相同的名称)。Slack 的命令参数菜单作为临时 Block Kit 按钮提供。
 
-<!-- i18n-hash:c3cbb721c25de1b69eeb5b44379d73fd -->

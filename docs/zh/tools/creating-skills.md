@@ -44,4 +44,3 @@ description: 一个简单的打招呼技能。
 ## 共享技能
 您还可以在 [ClawdHub](https://clawdhub.com) 上浏览和贡献技能。
 
-<!-- i18n-hash:9e49d880d00e6477f9993749e3803483 -->

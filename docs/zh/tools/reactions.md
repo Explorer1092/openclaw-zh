@@ -21,4 +21,3 @@ read_when:
 - **WhatsApp**: 空 `emoji` 删除机器人反应;`remove: true` 映射到空表情符号(仍需要 `emoji`)。
 - **Signal**: 当启用 `channels.signal.reactionNotifications` 时,入站反应通知会发出系统事件。
 
-<!-- i18n-hash:4c73427fd47a42f4219a666db6cfa7b5 -->

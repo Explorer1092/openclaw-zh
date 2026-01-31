@@ -136,4 +136,3 @@ read_when:
 - `sessions_spawn` 始终是非阻塞的: 它立即返回 `{ status: "accepted", runId, childSessionKey }`。
 - 子 agent 上下文仅注入 `AGENTS.md` + `TOOLS.md`(无 `SOUL.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md` 或 `BOOTSTRAP.md`)。
 
-<!-- i18n-hash:da6e3b423fbbeae1126a4345904a4cba -->

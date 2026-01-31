@@ -51,4 +51,3 @@ openclaw agent --agent ops --message "Generate report" --deliver --reply-channel
 - `--timeout <秒>`: 覆盖 agent 超时时间
 - `--json`: 输出结构化 JSON
 
-<!-- i18n-hash:a623aa6b5af7ef5cbfccf3f31479f9c2 -->

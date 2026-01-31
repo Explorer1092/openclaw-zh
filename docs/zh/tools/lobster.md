@@ -332,4 +332,3 @@ OpenProse 与 Lobster 配合得很好: 使用 `/prose` 编排多 agent 准备,�
 - 线程: https://x.com/plattenschieber/status/2014508656335770033
 - 仓库: https://github.com/bloomedai/brain-cli
 
-<!-- i18n-hash:29a4da9c2f58d765a1eba46c0746f01e -->

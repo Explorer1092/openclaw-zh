@@ -50,4 +50,3 @@ read_when:
 - 提升的 exec 调用在信息级别记录。
 - 会话状态包括提升模式(例如 `elevated=ask`、`elevated=full`)。
 
-<!-- i18n-hash:8b6c2b606ba0e1f04d91025232ca9291 -->

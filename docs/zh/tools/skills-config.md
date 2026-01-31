@@ -71,4 +71,3 @@ read_when:
 
 全局 `env` 和 `skills.entries.<skill>.env/apiKey` 仅适用于**主机**运行。
 
-<!-- i18n-hash:0810dd8b09d06f9e85c82cc9ae90eec9 -->
