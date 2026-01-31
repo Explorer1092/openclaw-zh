@@ -86,3 +86,22 @@ jobs:
             git push
             ```
           claude_args: "--allowedTools Bash Read Write Edit Glob Grep --model sonnet"
+
+      - name: Mirror .zh.md to docs/zh/ and update Mintlify nav
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Mirror each .zh.md → docs/zh/<relative-path>.md
+          find docs -name '*.zh.md' -not -path 'docs/zh/*' | while IFS= read -r zh; do
+            rel="${zh#docs/}"
+            target="docs/zh/${rel%.zh.md}.md"
+            mkdir -p "$(dirname "$target")"
+            sed '/^mmh3_hash:/d' "$zh" > "$target"
+          done
+          # Generate Mintlify i18n navigation
+          bun scripts/gen-zh-nav.ts
+          git add docs/zh/ docs/docs.json
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: mirror Chinese translations and update Mintlify nav"
+            git push origin zh
+          fi
