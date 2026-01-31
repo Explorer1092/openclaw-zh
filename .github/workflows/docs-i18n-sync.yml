@@ -24,21 +24,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/openclaw/openclaw.git || true
           git fetch upstream main
-          # Update main branch to match upstream
-          git fetch origin main
-          git checkout -B main origin/main
-          git reset --hard upstream/main
-          git push origin main --force
-          # Switch back to zh branch
-          git checkout zh
-          # Sync English docs from upstream, preserving .zh.md translations
-          # 1. List all non-.zh.md files in upstream docs/
+          # Sync English docs from upstream into zh branch, preserving .zh.md
           git ls-tree -r --name-only upstream/main -- docs/ scripts/docs-i18n-hash.ts \
             | grep -v '\.zh\.md$' \
             | while IFS= read -r f; do
                 git checkout upstream/main -- "$f" 2>/dev/null || true
               done
-          # 2. Remove English docs deleted upstream (but keep .zh.md)
+          # Remove English docs deleted upstream (keep .zh.md)
           comm -23 \
             <(git ls-files -- 'docs/*.md' | grep -v '\.zh\.md$' | sort) \
             <(git ls-tree -r --name-only upstream/main -- docs/ | grep -v '\.zh\.md$' | sort) \
