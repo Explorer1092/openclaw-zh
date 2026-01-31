@@ -1,5 +1,6 @@
 ---
-title: "Gmail Pub/Sub -> OpenClaw"
+title: "Gmail Pub/Sub 到 OpenClaw"
+sidebarTitle: "Gmail Pub/Sub"
 mmh3_hash: "b785e1976de82deaf0ce4995ccbd6c71"
 summary: "Gmail Pub/Sub 推送通过 gogcli 接入 OpenClaw webhooks"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 设置 Pub/Sub 推送以进行智能体唤醒时
 ---
 
-# Gmail Pub/Sub -> OpenClaw
+# Gmail Pub/Sub 到 OpenClaw
 
 目标：Gmail 监视 -> Pub/Sub 推送 -> `gog gmail watch serve` -> OpenClaw webhook。
 

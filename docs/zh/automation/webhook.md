@@ -1,5 +1,6 @@
 ---
-title: "Webhooks"
+title: "Webhook"
+sidebarTitle: "Webhook"
 mmh3_hash: "632610c706c4db1c57e311d96d95067c"
 summary: "用于唤醒和隔离智能体运行的 Webhook 入口"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 将外部系统连接到 OpenClaw 时
 ---
 
-# Webhooks
+# Webhook
 
 网关可以为外部触发器暴露一个小型 HTTP webhook 端点。
 

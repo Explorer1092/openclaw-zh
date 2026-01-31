@@ -1,5 +1,6 @@
 ---
-title: "Poll"
+title: "轮询"
+sidebarTitle: "轮询"
 mmh3_hash: "9ffa93bb16fef117cddb4fb937843dcf"
 ---
 --channel: `whatsapp` (默认), `discord`, 或 `msteams`

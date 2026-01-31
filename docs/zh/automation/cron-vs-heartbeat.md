@@ -1,5 +1,6 @@
 ---
-title: "Cron vs 心跳：何时使用"
+title: "Cron 与心跳：何时使用"
+sidebarTitle: "Cron 与心跳"
 mmh3_hash: "54caeb38fea2fb6aad577024658879b5"
 summary: "关于在自动化中选择心跳还是 cron 作业的指导"
 read_when:
@@ -7,7 +8,7 @@ read_when:
   - 设置后台监控或通知时
   - 优化定期检查的 token 使用时
 ---
-# Cron vs 心跳：何时使用
+# Cron 与心跳：何时使用
 
 心跳和 cron 作业都可以让你按计划运行任务。本指南帮助你为你的用例选择正确的机制。
 

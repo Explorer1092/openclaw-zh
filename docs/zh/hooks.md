@@ -1,5 +1,6 @@
 ---
 title: "钩子"
+sidebarTitle: "钩子"
 mmh3_hash: "7a16d229de3a45944ab3409696ff705a"
 summary: "钩子:用于命令和生命周期事件的事件驱动自动化"
 read_when:
