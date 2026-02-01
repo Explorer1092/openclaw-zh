@@ -1,6 +1,6 @@
 ---
 title: "ClawdHub"
-sidebarTitle: "ClawdHub"
+sidebarTitle: "ClawdHub 注册表"
 mmh3_hash: "7a86393b3859c0dc55ecf80ca8262bed"
 summary: "ClawdHub 指南: 公共技能注册表 + CLI 工作流"
 read_when: ["向新用户介绍 ClawdHub","安装、搜索或发布技能","解释 ClawdHub CLI 标志和同步行为"]
@@ -198,4 +198,3 @@ export CLAWDHUB_DISABLE_TELEMETRY=1
 - `CLAWDHUB_CONFIG_PATH`: 覆盖 CLI 存储令牌/配置的位置。
 - `CLAWDHUB_WORKDIR`: 覆盖默认 workdir。
 - `CLAWDHUB_DISABLE_TELEMETRY=1`: 在 `sync` 时禁用遥测。
-

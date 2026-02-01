@@ -1,6 +1,6 @@
 ---
 title: "Exec 工具"
-sidebarTitle: "Exec"
+sidebarTitle: "Exec 工具"
 mmh3_hash: "f2044b0a0a51c3830f32c8ce0747b044"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
 read_when: ["使用或修改 exec 工具","调试 stdin 或 TTY 行为"]
@@ -144,4 +144,3 @@ openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 - 仅适用于 OpenAI/OpenAI Codex 模型。
 - 工具策略仍然适用;`allow: ["exec"]` 隐式允许 `apply_patch`。
 - 配置位于 `tools.exec.applyPatch` 下。
-

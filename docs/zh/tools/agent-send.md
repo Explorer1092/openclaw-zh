@@ -1,6 +1,6 @@
 ---
 title: "openclaw agent (直接运行 agent)"
-sidebarTitle: "openclaw agent"
+sidebarTitle: "openclaw agent 命令"
 mmh3_hash: "3f6ca74da7b756b6ec2f3e49b08d444c"
 summary: "直接运行 `openclaw agent` CLI(可选投递)"
 read_when: ["添加或修改 agent CLI 入口点"]
@@ -50,4 +50,3 @@ openclaw agent --agent ops --message "Generate report" --deliver --reply-channel
 - `--verbose <on|full|off>`: 持久化 verbose 级别
 - `--timeout <秒>`: 覆盖 agent 超时时间
 - `--json`: 输出结构化 JSON
-

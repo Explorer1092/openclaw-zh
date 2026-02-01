@@ -1,7 +1,7 @@
 ---
 mmh3_hash: "b2d6aae5cf8fad3e0abb69160ad08e75"
 title: "Lobster"
-sidebarTitle: "Lobster"
+sidebarTitle: "Lobster 工作流"
 summary: "OpenClaw 的类型化工作流运行时,具有可恢复的批准门控。"
 description: OpenClaw 的类型化工作流运行时 — 具有批准门控的可组合管道。
 read_when: ["您想要具有明确批准的确定性多步骤工作流","您需要在不重新运行早期步骤的情况下恢复工作流"]
@@ -330,4 +330,3 @@ OpenProse 与 Lobster 配合得很好: 使用 `/prose` 编排多 agent 准备,�
 
 - 线程: https://x.com/plattenschieber/status/2014508656335770033
 - 仓库: https://github.com/bloomedai/brain-cli
-
