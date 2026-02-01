@@ -1271,7 +1271,7 @@
             ]
           },
           {
-            "group": "Gateway 与运维",
+            "group": "网关与运维",
             "pages": [
               "zh/gateway/protocol",
               "zh/gateway/bridge-protocol",
@@ -1313,7 +1313,7 @@
             ]
           },
           {
-            "group": "Channels",
+            "group": "聊天频道",
             "pages": [
               "zh/channels/index",
               "zh/channels/whatsapp",
@@ -1336,7 +1336,7 @@
             ]
           },
           {
-            "group": "Providers",
+            "group": "模型提供商",
             "pages": [
               "zh/providers/index",
               "zh/providers/models",
@@ -1354,7 +1354,7 @@
             ]
           },
           {
-            "group": "自动化与 Hooks",
+            "group": "自动化与钩子",
             "pages": [
               "zh/hooks",
               "zh/hooks/soul-evil",
@@ -1394,7 +1394,7 @@
             ]
           },
           {
-            "group": "Nodes 与媒体",
+            "group": "节点与媒体",
             "pages": [
               "zh/nodes/camera",
               "zh/nodes/images",
@@ -1420,7 +1420,7 @@
             ]
           },
           {
-            "group": "macOS Companion App",
+            "group": "macOS 配套应用",
             "pages": [
               "zh/platforms/mac/dev-setup",
               "zh/platforms/mac/menu-bar",
