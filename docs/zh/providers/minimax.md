@@ -1,7 +1,7 @@
 ---
 title: "MiniMax"
 sidebarTitle: "MiniMax"
-mmh3_hash: "0f5eeec19d4ff9be135bdd89edc694e9"
+mmh3_hash: "e3cb2013382e113cb83459b512a0dd68"
 summary: "在 OpenClaw 中使用 MiniMax M2.1"
 read_when: ["您想在 OpenClaw 中使用 MiniMax 模型","您需要 MiniMax 设置指导"]
 ---
@@ -18,7 +18,7 @@ MiniMax 在 M2.1 中强调了以下改进:
 - 更强的**多语言编码**(Rust、Java、Go、C++、Kotlin、Objective-C、TS/JS)。
 - 更好的 **Web/应用开发**和美学输出质量(包括原生移动应用)。
 - 改进的**复合指令**处理,用于办公风格的工作流程,基于交错思考和集成约束执行。
-- **更简洁的响应**,降低令牌使用量和更快的迭代循环。
+- **更简洁的响应**,降低 token 使用量和更快的迭代循环。
 - 更强的**工具/代理框架**兼容性和上下文管理(Claude Code、Droid/Factory AI、Cline、Kilo Code、Roo Code、BlackBox)。
 - 更高质量的**对话和技术写作**输出。
 
@@ -30,11 +30,31 @@ MiniMax 在 M2.1 中强调了以下改进:
 
 ## 选择设置
 
-### MiniMax M2.1 — 推荐
+### MiniMax OAuth (编码计划) — 推荐
 
-**适用于:** 托管的 MiniMax 与 Anthropic 兼容的 API。
+**适用于:** 通过 OAuth 使用 MiniMax 编码计划快速设置,无需 API 密钥。
+
+启用捆绑的 OAuth 插件并进行身份验证:
+
+```bash
+openclaw plugins enable minimax-portal-auth  # 如果已加载则跳过。
+openclaw gateway restart  # 如果网关已经运行则重启
+openclaw onboard --auth-choice minimax-portal
+```
+
+系统将提示您选择端点:
+
+- **Global** - 国际用户(`api.minimax.io`)
+- **CN** - 中国用户(`api.minimaxi.com`)
+
+有关详细信息,请参见 [MiniMax OAuth 插件 README](https://github.com/openclaw/openclaw/tree/main/extensions/minimax-portal-auth)。
+
+### MiniMax M2.1 (API 密钥)
+
+**适用于:** 使用 Anthropic 兼容 API 的托管 MiniMax。
 
 通过 CLI 配置:
+
 - 运行 `openclaw configure`
 - 选择 **Model/auth**
 - 选择 **MiniMax M2.1**
@@ -58,12 +78,12 @@ MiniMax 在 M2.1 中强调了以下改进:
             input: ["text"],
             cost: { input: 15, output: 60, cacheRead: 2, cacheWrite: 10 },
             contextWindow: 200000,
-            maxTokens: 8192
-          }
-        ]
-      }
-    }
-  }
+            maxTokens: 8192,
+          },
+        ],
+      },
+    },
+  },
 }
 ```
 
@@ -78,14 +98,14 @@ MiniMax 在 M2.1 中强调了以下改进:
     defaults: {
       models: {
         "anthropic/claude-opus-4-5": { alias: "opus" },
-        "minimax/MiniMax-M2.1": { alias: "minimax" }
+        "minimax/MiniMax-M2.1": { alias: "minimax" },
       },
       model: {
         primary: "anthropic/claude-opus-4-5",
-        fallbacks: ["minimax/MiniMax-M2.1"]
-      }
-    }
-  }
+        fallbacks: ["minimax/MiniMax-M2.1"],
+      },
+    },
+  },
 }
 ```
 
@@ -101,8 +121,8 @@ MiniMax 在 M2.1 中强调了以下改进:
   agents: {
     defaults: {
       model: { primary: "lmstudio/minimax-m2.1-gs32" },
-      models: { "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" } }
-    }
+      models: { "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" } },
+    },
   },
   models: {
     mode: "merge",
@@ -119,12 +139,12 @@ MiniMax 在 M2.1 中强调了以下改进:
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 196608,
-            maxTokens: 8192
-          }
-        ]
-      }
-    }
-  }
+            maxTokens: 8192,
+          },
+        ],
+      },
+    },
+  },
 }
 ```
 
@@ -132,10 +152,10 @@ MiniMax 在 M2.1 中强调了以下改进:
 
 使用交互式配置向导设置 MiniMax 而无需编辑 JSON:
 
-1) 运行 `openclaw configure`。
-2) 选择 **Model/auth**。
-3) 选择 **MiniMax M2.1**。
-4) 在提示时选择您的默认模型。
+1. 运行 `openclaw configure`。
+2. 选择 **Model/auth**。
+3. 选择 **MiniMax M2.1**。
+4. 在提示时选择您的默认模型。
 
 ## 配置选项
 
@@ -160,17 +180,19 @@ MiniMax 在 M2.1 中强调了以下改进:
 ### "未知模型: minimax/MiniMax-M2.1"
 
 这通常意味着 **MiniMax 提供商未配置**(没有提供商条目,也没有找到 MiniMax 身份验证配置文件/环境密钥)。此检测的修复在 **2026.1.12** 中(撰写本文时尚未发布)。修复方法:
+
 - 升级到 **2026.1.12**(或从源代码 `main` 运行),然后重新启动网关。
 - 运行 `openclaw configure` 并选择 **MiniMax M2.1**,或
 - 手动添加 `models.providers.minimax` 块,或
 - 设置 `MINIMAX_API_KEY`(或 MiniMax 身份验证配置文件),以便可以注入提供商。
 
 确保模型 ID **区分大小写**:
+
 - `minimax/MiniMax-M2.1`
 - `minimax/MiniMax-M2.1-lightning`
 
 然后重新检查:
+
 ```bash
 openclaw models list
 ```
-{/*  source-hash: 954acb5456cc959c586d0d231d4393a5  */}

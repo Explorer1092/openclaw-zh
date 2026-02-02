@@ -1,7 +1,7 @@
 ---
 title: "Synthetic"
 sidebarTitle: "Synthetic"
-mmh3_hash: "98d30b02183fb7f0be031b1fb05ee2f2"
+mmh3_hash: "4a7b33863f9135d6df4727008ebec619"
 summary: "在 OpenClaw 中使用 Synthetic 的 Anthropic 兼容 API"
 read_when: ["您想使用 Synthetic 作为模型提供商","您需要 Synthetic API 密钥或基础 URL 设置"]
 ---

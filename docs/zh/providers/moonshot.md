@@ -1,35 +1,36 @@
 ---
 title: "Moonshot AI (Kimi)"
 sidebarTitle: "Moonshot AI"
-mmh3_hash: "7313d9f254410c42de5f6824e7a7c31f"
-summary: "配置 Moonshot K2 vs Kimi Code (单独的提供商 + 密钥)"
-read_when: ["您想设置 Moonshot K2 (Moonshot Open Platform) vs Kimi Code","您需要了解单独的端点、密钥和模型引用","您想要复制/粘贴任一提供商的配置"]
+mmh3_hash: "2af547c49237f10b789917f11adc7825"
+summary: "配置 Moonshot K2 vs Kimi Coding (单独的提供商 + 密钥)"
+read_when: ["您想设置 Moonshot K2 (Moonshot Open Platform) vs Kimi Coding","您需要了解单独的端点、密钥和模型引用","您想要复制/粘贴任一提供商的配置"]
 ---
-
 # Moonshot AI (Kimi)
 
-Moonshot 提供 Kimi API,具有 OpenAI 兼容的端点。配置提供商并将默认模型设置为 `moonshot/kimi-k2.5`,或使用 Kimi Code 的 `kimi-code/kimi-for-coding`。
+Moonshot 提供 Kimi API,具有 OpenAI 兼容的端点。配置提供商并将默认模型设置为 `moonshot/kimi-k2.5`,或使用 Kimi Coding 的 `kimi-coding/k2p5`。
 
 当前 Kimi K2 模型 ID:
-{/* moonshot-kimi-k2-ids:start */}
+
+{/* moonshot-kimi-k2-ids:start */ && null}
+
 - `kimi-k2.5`
 - `kimi-k2-0905-preview`
 - `kimi-k2-turbo-preview`
 - `kimi-k2-thinking`
 - `kimi-k2-thinking-turbo`
-{/* moonshot-kimi-k2-ids:end */}
+{/* moonshot-kimi-k2-ids:end */ && null}
 
 ```bash
 openclaw onboard --auth-choice moonshot-api-key
 ```
 
-Kimi Code:
+Kimi Coding:
 
 ```bash
 openclaw onboard --auth-choice kimi-code-api-key
 ```
 
-注意: Moonshot 和 Kimi Code 是单独的提供商。密钥不可互换,端点不同,模型引用也不同(Moonshot 使用 `moonshot/...`,Kimi Code 使用 `kimi-code/...`)。
+注意: Moonshot 和 Kimi Coding 是单独的提供商。密钥不可互换,端点不同,模型引用也不同(Moonshot 使用 `moonshot/...`,Kimi Coding 使用 `kimi-coding/...`)。
 
 ## 配置片段 (Moonshot API)
 
@@ -45,10 +46,10 @@ openclaw onboard --auth-choice kimi-code-api-key
         "moonshot/kimi-k2-0905-preview": { alias: "Kimi K2" },
         "moonshot/kimi-k2-turbo-preview": { alias: "Kimi K2 Turbo" },
         "moonshot/kimi-k2-thinking": { alias: "Kimi K2 Thinking" },
-        "moonshot/kimi-k2-thinking-turbo": { alias: "Kimi K2 Thinking Turbo" }
+        "moonshot/kimi-k2-thinking-turbo": { alias: "Kimi K2 Thinking Turbo" },
         // moonshot-kimi-k2-aliases:end
-      }
-    }
+      },
+    },
   },
   models: {
     mode: "merge",
@@ -66,7 +67,7 @@ openclaw onboard --auth-choice kimi-code-api-key
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 256000,
-            maxTokens: 8192
+            maxTokens: 8192,
           },
           {
             id: "kimi-k2-0905-preview",
@@ -75,7 +76,7 @@ openclaw onboard --auth-choice kimi-code-api-key
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 256000,
-            maxTokens: 8192
+            maxTokens: 8192,
           },
           {
             id: "kimi-k2-turbo-preview",
@@ -84,7 +85,7 @@ openclaw onboard --auth-choice kimi-code-api-key
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 256000,
-            maxTokens: 8192
+            maxTokens: 8192,
           },
           {
             id: "kimi-k2-thinking",
@@ -93,7 +94,7 @@ openclaw onboard --auth-choice kimi-code-api-key
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 256000,
-            maxTokens: 8192
+            maxTokens: 8192,
           },
           {
             id: "kimi-k2-thinking-turbo",
@@ -102,59 +103,35 @@ openclaw onboard --auth-choice kimi-code-api-key
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 256000,
-            maxTokens: 8192
-          }
+            maxTokens: 8192,
+          },
           // moonshot-kimi-k2-models:end
-        ]
-      }
-    }
-  }
+        ],
+      },
+    },
+  },
 }
 ```
 
-## Kimi Code
+## Kimi Coding
 
 ```json5
 {
-  env: { KIMICODE_API_KEY: "sk-..." },
+  env: { KIMI_API_KEY: "sk-..." },
   agents: {
     defaults: {
-      model: { primary: "kimi-code/kimi-for-coding" },
+      model: { primary: "kimi-coding/k2p5" },
       models: {
-        "kimi-code/kimi-for-coding": { alias: "Kimi Code" }
-      }
-    }
+        "kimi-coding/k2p5": { alias: "Kimi K2.5" },
+      },
+    },
   },
-  models: {
-    mode: "merge",
-    providers: {
-      "kimi-code": {
-        baseUrl: "https://api.kimi.com/coding/v1",
-        apiKey: "${KIMICODE_API_KEY}",
-        api: "openai-completions",
-        models: [
-          {
-            id: "kimi-for-coding",
-            name: "Kimi For Coding",
-            reasoning: true,
-            input: ["text"],
-            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-            contextWindow: 262144,
-            maxTokens: 32768,
-            headers: { "User-Agent": "KimiCLI/0.77" },
-            compat: { supportsDeveloperRole: false }
-          }
-        ]
-      }
-    }
-  }
 }
 ```
 
 ## 注意事项
 
-- Moonshot 模型引用使用 `moonshot/<modelId>`。Kimi Code 模型引用使用 `kimi-code/<modelId>`。
+- Moonshot 模型引用使用 `moonshot/<modelId>`。Kimi Coding 模型引用使用 `kimi-coding/<modelId>`。
 - 如果需要,在 `models.providers` 中覆盖定价和上下文元数据。
 - 如果 Moonshot 为模型发布不同的上下文限制,请相应调整 `contextWindow`。
-- 如果您需要中国端点,请使用 `https://api.moonshot.cn/v1`。
-{/*  source-hash: 2b2e8c89fc203548bcd74d102cfa7881  */}
+- 国际端点使用 `https://api.moonshot.ai/v1`,中国端点使用 `https://api.moonshot.cn/v1`。
