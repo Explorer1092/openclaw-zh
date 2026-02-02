@@ -1,13 +1,13 @@
 ---
-title: "图像与媒体支持 (2025-12-05)"
+title: "图像与媒体支持"
 sidebarTitle: "图像与媒体"
-mmh3_hash: "1bbad8726b56e89c32d4f154e430d4fd"
-summary: "发送、网关和智能体回复的图像和媒体处理规则"
+mmh3_hash: "62af5eac7e33e5f642e37679ff04a34c"
+summary: "发送、Gateway 和 Agent 回复的图像和媒体处理规则"
 read_when: ["修改媒体管道或附件时"]
 ---
-# 图像与媒体支持 (2025-12-05)
+# 图像与媒体支持 — 2025-12-05
 
-WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、网关和智能体回复的媒体处理规则。
+WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、Gateway 和 Agent 回复的媒体处理规则。
 
 ## 目标
 - 通过 `openclaw message send --media` 发送带有可选标题的媒体。
