@@ -1,7 +1,7 @@
 ---
 title: "exe.dev"
 sidebarTitle: "exe.dev"
-mmh3_hash: "0abf84258b75824f5e0cea569cda3982"
+mmh3_hash: "a954c085372ffeb36cd741615cb227a0"
 summary: "在 exe.dev 上运行 OpenClaw 网关(VM + HTTPS 代理)以实现远程访问"
 read_when: ["你想要一个廉价的始终在线的 Linux 主机用于网关","你想要远程控制 UI 访问而不运行自己的 VPS"]
 ---
@@ -64,7 +64,7 @@ sudo apt-get install -y git curl jq ca-certificates openssl
 运行 OpenClaw 安装脚本:
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 ## 4) 设置 nginx 代理 OpenClaw 到端口 8000

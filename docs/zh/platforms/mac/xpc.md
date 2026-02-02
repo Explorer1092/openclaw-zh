@@ -1,7 +1,7 @@
 ---
 title: "OpenClaw macOS IPC 架构"
 sidebarTitle: "macOS IPC"
-mmh3_hash: "7580fabb0a3a142d07ec29b2e72fa406"
+mmh3_hash: "b50ea09a8e200291d022156f85f4981b"
 summary: "OpenClaw 应用、网关节点传输和 PeekabooBridge 的 macOS IPC 架构"
 read_when: ["编辑 IPC 合约或菜单栏应用 IPC"]
 ---

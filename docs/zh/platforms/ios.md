@@ -1,7 +1,7 @@
 ---
 title: "iOS 应用 (节点)"
 sidebarTitle: "iOS"
-mmh3_hash: "330a9eb76cc71fb0e38c295a0f384427"
+mmh3_hash: "80aaf1136c13944db774e22a3d70059f"
 summary: "iOS 节点应用:连接到网关、配对、canvas 和故障排除"
 read_when: ["配对或重新连接 iOS 节点","从源代码运行 iOS 应用","调试网关发现或 canvas 命令"]
 ---

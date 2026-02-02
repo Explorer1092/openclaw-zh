@@ -1,7 +1,7 @@
 ---
 title: "macOS 权限 (TCC)"
 sidebarTitle: "macOS 权限"
-mmh3_hash: "b8755171a0e5f7283a96d341ce9bf236"
+mmh3_hash: "687a4d77ab2caf13a941b68f29500972"
 summary: "macOS 权限持久化(TCC)和签名要求"
 read_when: ["调试缺失或卡住的 macOS 权限提示","打包或签名 macOS 应用","更改捆绑包 ID 或应用安装路径"]
 ---

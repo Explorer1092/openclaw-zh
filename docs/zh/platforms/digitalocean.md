@@ -1,6 +1,6 @@
 ---
 title: "在 DigitalOcean 上运行 OpenClaw"
-mmh3_hash: "b731469e7f3d4857030128bd451b6816"
+mmh3_hash: "c3f99be751c727d4ae84269827c74e3e"
 summary: "在 DigitalOcean 上运行 OpenClaw(简单的付费 VPS 选项)"
 read_when: ["在 DigitalOcean 上设置 OpenClaw","寻找 OpenClaw 的廉价 VPS 托管"]
 ---
@@ -65,7 +65,7 @@ curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt install -y nodejs
 
 # 安装 OpenClaw
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 
 # 验证
 openclaw --version

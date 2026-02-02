@@ -1,7 +1,7 @@
 ---
 title: "OpenClaw macOS 配套应用 (菜单栏 + 网关代理)"
 sidebarTitle: "macOS 配套应用"
-mmh3_hash: "9ef2dd49d1d26951df47e157e3f03a0c"
+mmh3_hash: "2438eef405490d5739cc0d1964e68bcc"
 summary: "OpenClaw macOS 配套应用(菜单栏 + 网关代理)"
 read_when: ["实现 macOS 应用功能","在 macOS 上更改网关生命周期或节点桥接"]
 ---

@@ -1,7 +1,7 @@
 ---
 title: "在 GCP Compute Engine 上运行 OpenClaw (Docker, 生产 VPS 指南)"
 sidebarTitle: "GCP Compute Engine"
-mmh3_hash: "1960fbc809815982da6072e310f100a3"
+mmh3_hash: "949da5f43eb906ee78cf226a43125584"
 summary: "在 GCP Compute Engine VM(Docker)上全天候运行 OpenClaw 网关,具有持久状态"
 read_when: ["你想在 GCP 上全天候运行 OpenClaw","你想要一个生产级、始终在线的网关在自己的 VM 上","你想要完全控制持久化、二进制文件和重启行为"]
 ---

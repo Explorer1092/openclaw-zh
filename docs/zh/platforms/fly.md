@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ba49aa6fbca87e0a5b733fa944d082bb"
+mmh3_hash: "81c1620951dc62dc6111fdf93265eb12"
 title: "Fly.io 部署"
 sidebarTitle: "Fly.io"
 description: 在 Fly.io 上部署 OpenClaw

@@ -1,7 +1,7 @@
 ---
 title: "macOS VM 上的 OpenClaw (沙盒)"
 sidebarTitle: "macOS VM"
-mmh3_hash: "7a068774e79000b9c59e1889e7e3ab82"
+mmh3_hash: "79caf223246820c80b5697bf6533d4b3"
 summary: "在沙盒 macOS VM(本地或托管)中运行 OpenClaw,当你需要隔离或 iMessage"
 read_when: ["你希望 OpenClaw 与主 macOS 环境隔离","你想要在沙箱中集成 iMessage(BlueBubbles)","你想要一个可以克隆的可重置 macOS 环境","你想比较本地 vs 托管 macOS VM 选项"]
 ---

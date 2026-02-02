@@ -1,7 +1,7 @@
 ---
 title: "Android 应用 (节点)"
 sidebarTitle: "Android"
-mmh3_hash: "2b10c546f9bd6f503667da158f64e59f"
+mmh3_hash: "5ac466c94031c9941ef8ce66798ddadd"
 summary: "Android 应用(节点):连接运行手册 + Canvas/Chat/Camera"
 read_when: ["配对或重新连接 Android 节点","调试 Android 网关发现或认证","验证跨客户端的聊天历史一致性"]
 ---
