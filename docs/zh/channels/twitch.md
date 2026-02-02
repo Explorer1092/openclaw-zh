@@ -1,7 +1,7 @@
 ---
 title: "Twitch (插件)"
 sidebarTitle: "Twitch (插件)"
-mmh3_hash: "3c732935cfb58094c67da793b41b7eb5"
+mmh3_hash: "006d379975b0bb30677c0f04e4ce260b"
 summary: "Twitch 聊天机器人配置和设置"
 read_when: ["Setting up Twitch chat integration for OpenClaw"]
 ---

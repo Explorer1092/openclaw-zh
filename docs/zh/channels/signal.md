@@ -1,7 +1,7 @@
 ---
 title: "Signal (signal-cli)"
 sidebarTitle: "Signal"
-mmh3_hash: "ee228910548c8a68274bc1744c7f0842"
+mmh3_hash: "77ed5c3439dfcf31d96913dcefa1028f"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置和号码模型"
 read_when: ["Setting up Signal support","Debugging Signal send/receive"]
 ---

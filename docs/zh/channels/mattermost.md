@@ -1,7 +1,7 @@
 ---
 title: "Mattermost (插件)"
 sidebarTitle: "Mattermost"
-mmh3_hash: "4800ace1ce29eedfbce202186462ad3e"
+mmh3_hash: "c38e97a67ae30ad618147489670fa51c"
 summary: "Mattermost bot 设置和 OpenClaw 配置"
 read_when: ["Setting up Mattermost","Debugging Mattermost routing"]
 ---

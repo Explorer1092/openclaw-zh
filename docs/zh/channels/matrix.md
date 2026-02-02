@@ -1,7 +1,7 @@
 ---
 title: "Matrix (插件)"
 sidebarTitle: "Matrix"
-mmh3_hash: "6425daaac5643f3a85e6c1d309bdd713"
+mmh3_hash: "829dba14d16dbc8ea51a9980d84ada1d"
 summary: "Matrix 支持状态、功能和配置"
 read_when: ["Working on Matrix channel features"]
 ---

@@ -1,6 +1,6 @@
 ---
 title: "Nextcloud Talk (插件)"
-mmh3_hash: "13785b47a1b930145a4bc8a7c620cf42"
+mmh3_hash: "8582e73fa5e875c05c5f818a43e08bb8"
 summary: "Nextcloud Talk 支持状态、功能和配置"
 read_when: ["Working on Nextcloud Talk channel features"]
 ---

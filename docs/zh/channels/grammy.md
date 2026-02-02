@@ -1,7 +1,7 @@
 ---
 title: "grammY 集成 (Telegram Bot API)"
 sidebarTitle: "grammY"
-mmh3_hash: "7b38a496caaaa9091cf0891d9810d57a"
+mmh3_hash: "c945039d3c61c869a17cf5b2712d3467"
 summary: "通过 grammY 集成 Telegram Bot API 及设置说明"
 read_when: ["使用 Telegram 或 grammY 路径时"]
 ---

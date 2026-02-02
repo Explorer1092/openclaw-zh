@@ -1,7 +1,7 @@
 ---
 title: "Discord (Bot API)"
 sidebarTitle: "Discord"
-mmh3_hash: "90d7dc5b2fa62331cb13713b9bacd32c"
+mmh3_hash: "ca6656560bfb61d2e830e49094a6f771"
 summary: "Discord bot 支持状态、功能和配置"
 read_when: ["使用 Discord 频道功能时"]
 ---

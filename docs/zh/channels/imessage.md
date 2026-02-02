@@ -1,7 +1,7 @@
 ---
 title: "iMessage (imsg)"
 sidebarTitle: "iMessage"
-mmh3_hash: "61237d10685b07ce8b763c92c6d26333"
+mmh3_hash: "9359a0c9086652b4e5ae37e598b6e23f"
 summary: "通过 imsg (基于 stdio 的 JSON-RPC) 实现 iMessage 支持，包括设置和 chat_id 路由"
 read_when: ["设置 iMessage 支持","调试 iMessage 发送/接收"]
 ---
