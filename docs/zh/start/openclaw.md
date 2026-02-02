@@ -1,7 +1,7 @@
 ---
 title: "使用 OpenClaw 构建个人助手"
 sidebarTitle: "OpenClaw 助手设置"
-mmh3_hash: "33fc4211403f8cc46fb21d7a1954ec12"
+mmh3_hash: "0bbbfdca1374be2ad36190dca4d39ea9"
 summary: "将 OpenClaw 作为带有安全警告的个人助手运行的端到端指南"
 read_when: ["引导新的助手实例","审查安全/权限影响"]
 ---

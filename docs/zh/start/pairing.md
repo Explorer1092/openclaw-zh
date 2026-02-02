@@ -1,7 +1,7 @@
 ---
 title: "配对"
 sidebarTitle: "配对"
-mmh3_hash: "718eaa9f6f5e2ed5a9476b20d6f35ceb"
+mmh3_hash: "4785fa6902f858a84ed0f2fb3e4e54b9"
 summary: "配对概览：批准谁可以私信你 + 哪些节点可以加入"
 read_when: ["设置私信访问控制","配对新的 iOS/Android 节点","审查 OpenClaw 安全姿态"]
 ---

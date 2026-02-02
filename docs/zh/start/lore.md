@@ -1,13 +1,14 @@
 ---
-title: "OpenClaw 的传说 🦞📖"
-sidebarTitle: "OpenClaw 传说"
-mmh3_hash: "fe334cc21c341a5270712df72d4233fa"
-summary: "OpenClaw 的背景故事和传说,用于上下文和基调"
-read_when: ["编写引用传说的文档或 UX 文案"]
+mmh3_hash: "5b7aadb9333d81db7f3690d5fc3f8b77"
+summary: "OpenClaw 的背景故事和文化"
+read_when:
+  - 编写引用背景故事的文档或用户体验文案
+title: "OpenClaw 背景故事"
 ---
+
 # OpenClaw 的传说 🦞📖
 
-*一个关于龙虾、蜕壳和太多令牌的故事。*
+_一个关于龙虾、蜕壳和海量 token 的故事。_
 
 ## 起源故事
 

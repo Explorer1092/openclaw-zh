@@ -1,7 +1,7 @@
 ---
 title: "入门 (macOS 应用)"
 sidebarTitle: "macOS 入门"
-mmh3_hash: "41e39f67b2d0678af063fdcd046cf257"
+mmh3_hash: "64c8c0eecf8a1eeeb13b3aa67a7cbc53"
 summary: "OpenClaw 的首次运行入门流程（macOS 应用）"
 read_when: ["设计 macOS 入门助手","实现认证或身份设置"]
 ---
