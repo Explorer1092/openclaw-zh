@@ -1,18 +1,21 @@
 ---
 title: "`openclaw channels`"
 sidebarTitle: "openclaw channels"
-mmh3_hash: "59a3dc984953b43945d911b9ce921f5d"
+mmh3_hash: "cdda8936a1199b3f99618357bd32fdf4"
 summary: "`openclaw channels` 的 CLI 参考(账户、状态、登录/登出、日志)"
-read_when: ["您想添加/删除频道账户(WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (插件)/Signal/iMessage)","您想检查频道状态或查看频道日志"]
+read_when:
+  - 您想添加/删除 Channel 账户(WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (插件)/Signal/iMessage)
+  - 您想检查 Channel 状态或查看 Channel 日志
 ---
 
 # `openclaw channels`
 
-管理网关上的聊天频道账户及其运行时状态。
+管理 Gateway 上的聊天 Channel 账户及其运行时状态。
 
 相关文档:
-- 频道指南:[频道](/channels/index)
-- 网关配置:[配置](/gateway/configuration)
+
+- Channel 指南:[Channels](/channels/index)
+- Gateway 配置:[Configuration](/gateway/configuration)
 
 ## 常用命令
 
@@ -32,7 +35,7 @@ openclaw channels add --channel telegram --token <bot-token>
 openclaw channels remove --channel telegram --delete
 ```
 
-提示:`openclaw channels add --help` 显示每个频道的标志(令牌、应用令牌、signal-cli 路径等)。
+提示:`openclaw channels add --help` 显示每个 Channel 的标志(令牌、应用令牌、signal-cli 路径等)。
 
 ## 登录/登出(交互式)
 
@@ -57,13 +60,14 @@ openclaw channels capabilities --channel discord --target channel:123
 ```
 
 注意:
-- `--channel` 是可选的;省略它以列出每个频道(包括扩展)。
-- `--target` 接受 `channel:<id>` 或原始数字频道 ID,仅适用于 Discord。
-- 探测是提供商特定的:Discord 意图 + 可选频道权限;Slack 机器人 + 用户范围;Telegram 机器人标志 + webhook;Signal 守护进程版本;MS Teams 应用令牌 + Graph 角色/范围(在已知的地方注释)。没有探测的频道报告 `Probe: unavailable`。
+
+- `--channel` 是可选的;省略它以列出每个 Channel(包括扩展)。
+- `--target` 接受 `channel:<id>` 或原始数字 Channel ID,仅适用于 Discord。
+- 探测是提供商特定的:Discord 意图 + 可选 Channel 权限;Slack 机器人 + 用户范围;Telegram 机器人标志 + webhook;Signal 守护进程版本;MS Teams 应用令牌 + Graph 角色/范围(在已知的地方注释)。没有探测的 Channel 报告 `Probe: unavailable`。
 
 ## 将名称解析为 ID
 
-使用提供商目录将频道/用户名称解析为 ID:
+使用提供商目录将 Channel/用户名称解析为 ID:
 
 ```bash
 openclaw channels resolve --channel slack "#general" "@jane"
@@ -72,5 +76,6 @@ openclaw channels resolve --channel matrix "Project Room"
 ```
 
 注意:
+
 - 使用 `--kind user|group|auto` 强制目标类型。
 - 当多个条目共享相同名称时,解析优先选择活动匹配项。

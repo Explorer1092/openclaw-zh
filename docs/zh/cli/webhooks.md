@@ -1,8 +1,10 @@
 ---
 title: "`openclaw webhooks`"
-mmh3_hash: "0e0918f630c78be9ef67157585c10741"
+mmh3_hash: "088cec173e191cd0f0a178c451703eba"
 summary: "`openclaw webhooks` 的 CLI 参考(webhook 助手 + Gmail Pub/Sub)"
-read_when: ["您想将 Gmail Pub/Sub 事件连接到 OpenClaw","您想要 webhook 助手命令"]
+read_when:
+  - 您想将 Gmail Pub/Sub 事件连接到 OpenClaw
+  - 您想要 webhook 助手命令
 ---
 
 # `openclaw webhooks`

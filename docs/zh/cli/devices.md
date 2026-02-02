@@ -1,8 +1,10 @@
 ---
 title: "`openclaw devices`"
-mmh3_hash: "21db565bead99b4bc25ecf4857e88fc6"
+mmh3_hash: "8ffc83911f9a2e6d21c4244b398878bf"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
-read_when: ["您正在批准设备配对请求","您需要轮换或撤销设备令牌"]
+read_when:
+  - 您正在批准设备配对请求
+  - 您需要轮换或撤销设备令牌
 ---
 
 # `openclaw devices`
@@ -54,9 +56,9 @@ openclaw devices revoke --device <deviceId> --role node
 
 ## 常用选项
 
-- `--url <url>`:网关 WebSocket URL(配置时默认为 `gateway.remote.url`)。
-- `--token <token>`:网关令牌(如果需要)。
-- `--password <password>`:网关密码(密码认证)。
+- `--url <url>`:Gateway WebSocket URL(配置时默认为 `gateway.remote.url`)。
+- `--token <token>`:Gateway令牌(如果需要)。
+- `--password <password>`:Gateway密码(密码认证)。
 - `--timeout <ms>`:RPC 超时。
 - `--json`:JSON 输出(推荐用于脚本)。
 

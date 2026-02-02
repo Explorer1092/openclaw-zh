@@ -1,23 +1,25 @@
 ---
 title: "`openclaw directory`"
 sidebarTitle: "openclaw directory"
-mmh3_hash: "d32c27a8f3d96cbd42aad78a985a1156"
+mmh3_hash: "8fb92e14d7963984437a8af08f1def1e"
 summary: "`openclaw directory` 的 CLI 参考(自己、对等方、组)"
-read_when: ["您想查找频道的联系人/组/自己 ID","您正在开发频道目录适配器"]
+read_when:
+  - 您想查找Channel的联系人/组/自己 ID
+  - 您正在开发Channel目录适配器
 ---
 
 # `openclaw directory`
 
-支持的频道的目录查找(联系人/对等方、组和"我")。
+支持的Channel的目录查找(联系人/对等方、组和"我")。
 
 ## 常用标志
-- `--channel <name>`:频道 ID/别名(配置多个频道时必需;仅配置一个时自动)
-- `--account <id>`:账户 ID(默认:频道默认)
+- `--channel <name>`:Channel ID/别名(配置多个Channel时必需;仅配置一个时自动)
+- `--account <id>`:账户 ID(默认:Channel默认)
 - `--json`:输出 JSON
 
 ## 注意
 - `directory` 旨在帮助您找到可以粘贴到其他命令中的 ID(特别是 `openclaw message send --target ...`)。
-- 对于许多频道,结果是基于配置的(允许列表/配置的组)而不是实时提供商目录。
+- 对于许多Channel,结果是基于配置的(允许列表/配置的组)而不是实时提供商目录。
 - 默认输出是 `id`(有时是 `name`)由制表符分隔;使用 `--json` 进行脚本编写。
 
 ## 将结果与 `message send` 一起使用
@@ -27,7 +29,7 @@ openclaw directory peers list --channel slack --query "U0"
 openclaw message send --channel slack --target user:U012ABCDEF --message "hello"
 ```
 
-## ID 格式(按频道)
+## ID 格式(按Channel)
 
 - WhatsApp:`+15551234567`(DM)、`1234567890-1234567890@g.us`(组)
 - Telegram:`@username` 或数字聊天 ID;组是数字 ID

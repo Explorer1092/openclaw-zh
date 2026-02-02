@@ -1,15 +1,17 @@
 ---
 title: "acp"
-mmh3_hash: "39d1a81a6b95777977349447091fd108"
+mmh3_hash: "a6349eaf172136b933624e4aab9ca16f"
 summary: "运行 ACP 桥接以支持 IDE 集成"
-read_when: ["设置基于 ACP 的 IDE 集成","调试 ACP 会话路由到网关"]
+read_when:
+  - 设置基于 ACP 的 IDE 集成
+  - 调试 ACP Session 路由到 Gateway
 ---
 
 # acp
 
-运行与 OpenClaw 网关通信的 ACP(代理客户端协议)桥接。
+运行与 OpenClaw Gateway 通信的 ACP(Agent Client Protocol)桥接。
 
-此命令通过 stdio 与 IDE 进行 ACP 通信,并通过 WebSocket 将提示转发到网关。它将 ACP 会话映射到网关会话密钥。
+此命令通过 stdio 与 IDE 进行 ACP 通信,并通过 WebSocket 将提示转发到 Gateway。它将 ACP Session 映射到 Gateway Session 密钥。
 
 ## 用法
 
@@ -31,8 +33,8 @@ openclaw acp --session agent:main:main --reset-session
 
 ## ACP 客户端(调试)
 
-使用内置的 ACP 客户端来检查桥接,而无需 IDE。
-它会生成 ACP 桥接并让您交互式地输入提示。
+使用内置的 ACP 客户端在不使用 IDE 的情况下对桥接进行健全性检查。
+它会生成 ACP 桥接并允许您交互式地输入提示。
 
 ```bash
 openclaw acp client
@@ -46,10 +48,10 @@ openclaw acp client --server "node" --server-args openclaw.mjs acp --url ws://12
 
 ## 如何使用
 
-当 IDE(或其他客户端)使用代理客户端协议并且您希望它驱动 OpenClaw 网关会话时,请使用 ACP。
+当 IDE(或其他客户端)使用 Agent Client Protocol 并且您希望它驱动 OpenClaw Gateway Session 时,请使用 ACP。
 
-1. 确保网关正在运行(本地或远程)。
-2. 配置网关目标(配置或标志)。
+1. 确保 Gateway 正在运行(本地或远程)。
+2. 配置 Gateway 目标(配置或标志)。
 3. 将您的 IDE 配置为通过 stdio 运行 `openclaw acp`。
 
 配置示例(持久化):
@@ -65,11 +67,11 @@ openclaw config set gateway.remote.token <token>
 openclaw acp --url wss://gateway-host:18789 --token <token>
 ```
 
-## 选择代理
+## 选择 Agent
 
-ACP 不直接选择代理。它通过网关会话密钥进行路由。
+ACP 不直接选择 Agent。它通过 Gateway Session 密钥进行路由。
 
-使用代理范围的会话密钥来定位特定代理:
+使用 Agent 范围的 Session 密钥来定位特定 Agent:
 
 ```bash
 openclaw acp --session agent:main:main
@@ -77,7 +79,7 @@ openclaw acp --session agent:design:main
 openclaw acp --session agent:qa:bug-123
 ```
 
-每个 ACP 会话映射到单个网关会话密钥。一个代理可以有多个会话;除非您覆盖密钥或标签,否则 ACP 默认为隔离的 `acp:<uuid>` 会话。
+每个 ACP Session 映射到单个 Gateway Session 密钥。一个 Agent 可以有多个 Session;除非您覆盖密钥或标签,否则 ACP 默认为隔离的 `acp:<uuid>` Session。
 
 ## Zed 编辑器设置
 
@@ -116,18 +118,18 @@ openclaw acp --session agent:qa:bug-123
 }
 ```
 
-在 Zed 中,打开代理面板并选择"OpenClaw ACP"以启动线程。
+在 Zed 中,打开 Agent 面板并选择"OpenClaw ACP"以启动线程。
 
-## 会话映射
+## Session 映射
 
-默认情况下,ACP 会话获得一个带有 `acp:` 前缀的隔离网关会话密钥。
-要重用已知会话,请传递会话密钥或标签:
+默认情况下,ACP Session 获得一个带有 `acp:` 前缀的隔离 Gateway Session 密钥。
+要重用已知 Session,请传递 Session 密钥或标签:
 
-- `--session <key>`:使用特定的网关会话密钥。
-- `--session-label <label>`:通过标签解析现有会话。
-- `--reset-session`:为该密钥生成新的会话 ID(相同密钥,新记录)。
+- `--session <key>`:使用特定的 Gateway Session 密钥。
+- `--session-label <label>`:通过标签解析现有 Session。
+- `--reset-session`:为该密钥生成新的 Session ID(相同密钥,新记录)。
 
-如果您的 ACP 客户端支持元数据,您可以覆盖每个会话:
+如果您的 ACP 客户端支持元数据,您可以覆盖每个 Session:
 
 ```json
 {
@@ -139,23 +141,23 @@ openclaw acp --session agent:qa:bug-123
 }
 ```
 
-在 [/concepts/session](/concepts/session) 了解有关会话密钥的更多信息。
+在 [/concepts/session](/concepts/session) 了解有关 Session 密钥的更多信息。
 
 ## 选项
 
-- `--url <url>`:网关 WebSocket URL(配置时默认为 gateway.remote.url)。
-- `--token <token>`:网关身份验证令牌。
-- `--password <password>`:网关身份验证密码。
-- `--session <key>`:默认会话密钥。
-- `--session-label <label>`:要解析的默认会话标签。
-- `--require-existing`:如果会话密钥/标签不存在则失败。
-- `--reset-session`:在首次使用前重置会话密钥。
+- `--url <url>`:Gateway WebSocket URL(配置时默认为 gateway.remote.url)。
+- `--token <token>`:Gateway 身份验证令牌。
+- `--password <password>`:Gateway 身份验证密码。
+- `--session <key>`:默认 Session 密钥。
+- `--session-label <label>`:要解析的默认 Session 标签。
+- `--require-existing`:如果 Session 密钥/标签不存在则失败。
+- `--reset-session`:在首次使用前重置 Session 密钥。
 - `--no-prefix-cwd`:不在提示前添加工作目录前缀。
 - `--verbose, -v`:详细日志输出到 stderr。
 
 ### `acp client` 选项
 
-- `--cwd <dir>`:ACP 会话的工作目录。
+- `--cwd <dir>`:ACP Session 的工作目录。
 - `--server <command>`:ACP 服务器命令(默认:`openclaw`)。
 - `--server-args <args...>`:传递给 ACP 服务器的额外参数。
 - `--server-verbose`:在 ACP 服务器上启用详细日志。

@@ -1,9 +1,11 @@
 ---
 title: "`openclaw voicecall`"
 sidebarTitle: "openclaw voicecall"
-mmh3_hash: "591819413dab87c82fc85a298a69ea7d"
+mmh3_hash: "3e02e2ccf043d3f4108b92d5eebdedb4"
 summary: "`openclaw voicecall` 的 CLI 参考(语音呼叫插件命令界面)"
-read_when: ["您使用语音呼叫插件并想要 CLI 入口点","您想要 `voicecall call|continue|status|tail|expose` 的快速示例"]
+read_when:
+  - 您使用语音呼叫插件并想要 CLI 入口点
+  - 您想要 `voicecall call|continue|status|tail|expose` 的快速示例
 ---
 
 # `openclaw voicecall`

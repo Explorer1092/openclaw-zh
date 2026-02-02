@@ -1,14 +1,14 @@
 ---
 title: "`openclaw config`"
-mmh3_hash: "a154052c65d4e8000017b48dfd6988f0"
+mmh3_hash: "95aef574bf9c6e8d7d0f7bf3020e83f5"
 summary: "`openclaw config` 的 CLI 参考(获取/设置/取消设置配置值)"
-read_when: ["您想以非交互方式读取或编辑配置"]
+read_when:
+  - 您想以非交互方式读取或编辑配置
 ---
 
 # `openclaw config`
 
-配置助手:按路径获取/设置/取消设置值。不带子命令运行以打开
-配置向导(与 `openclaw configure` 相同)。
+配置助手:按路径获取/设置/取消设置值。不带子命令运行以打开配置向导(与 `openclaw configure` 相同)。
 
 ## 示例
 
@@ -29,7 +29,7 @@ openclaw config get agents.defaults.workspace
 openclaw config get agents.list[0].id
 ```
 
-使用代理列表索引来定位特定代理:
+使用 Agent 列表索引来定位特定 Agent:
 
 ```bash
 openclaw config get agents.list
@@ -47,4 +47,4 @@ openclaw config set gateway.port 19001 --json
 openclaw config set channels.whatsapp.groups '["*"]' --json
 ```
 
-编辑后重新启动网关。
+编辑后重新启动 Gateway。

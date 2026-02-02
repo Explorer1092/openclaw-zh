@@ -1,14 +1,16 @@
 ---
 title: "`openclaw doctor`"
 sidebarTitle: "openclaw doctor"
-mmh3_hash: "1b6ff3adb53f3c7c1bf4316b7644b4fd"
+mmh3_hash: "8c5dff9a72961b1780071f10032faf09"
 summary: "`openclaw doctor` 的 CLI 参考(健康检查 + 指导性修复)"
-read_when: ["您有连接/认证问题并想要指导性修复","您已更新并想要进行健全性检查"]
+read_when:
+  - 您有连接/认证问题并想要指导性修复
+  - 您已更新并想要进行健全性检查
 ---
 
 # `openclaw doctor`
 
-网关和频道的健康检查 + 快速修复。
+Gateway和Channel的健康检查 + 快速修复。
 
 相关:
 - 故障排除:[故障排除](/gateway/troubleshooting)

@@ -1,18 +1,20 @@
 ---
 title: "`openclaw agents`"
 sidebarTitle: "openclaw agents"
-mmh3_hash: "bb3aaacc99e810b50dc5788cacd83f2c"
+mmh3_hash: "bdd7f6e06efad98e617dadd07f8b1e01"
 summary: "`openclaw agents` 的 CLI 参考(列出/添加/删除/设置身份)"
-read_when: ["您想要多个隔离的代理(工作区 + 路由 + 身份验证)"]
+read_when:
+  - 您想要多个隔离的 Agent(工作区 + 路由 + 身份验证)
 ---
 
 # `openclaw agents`
 
-管理隔离的代理(工作区 + 身份验证 + 路由)。
+管理隔离的 Agent(工作区 + 身份验证 + 路由)。
 
 相关:
-- 多代理路由:[多代理路由](/concepts/multi-agent)
-- 代理工作区:[代理工作区](/concepts/agent-workspace)
+
+- 多 Agent 路由:[Multi-Agent Routing](/concepts/multi-agent)
+- Agent 工作区:[Agent workspace](/concepts/agent-workspace)
 
 ## 示例
 
@@ -26,7 +28,8 @@ openclaw agents delete work
 
 ## 身份文件
 
-每个代理工作区可以在工作区根目录包含一个 `IDENTITY.md`:
+每个 Agent 工作区可以在工作区根目录包含一个 `IDENTITY.md`:
+
 - 示例路径:`~/.openclaw/workspace/IDENTITY.md`
 - `set-identity --from-identity` 从工作区根目录读取(或显式的 `--identity-file`)
 
@@ -35,6 +38,7 @@ openclaw agents delete work
 ## 设置身份
 
 `set-identity` 将字段写入 `agents.list[].identity`:
+
 - `name`
 - `theme`
 - `emoji`

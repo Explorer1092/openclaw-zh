@@ -1,9 +1,11 @@
 ---
 title: "`openclaw memory`"
 sidebarTitle: "openclaw memory"
-mmh3_hash: "c408873a06f596b9fb56ae60191729ff"
+mmh3_hash: "0d84a87927a216a7595318a818d63963"
 summary: "`openclaw memory` 的 CLI 参考(状态/索引/搜索)"
-read_when: ["您想索引或搜索语义内存","您正在调试内存可用性或索引"]
+read_when:
+  - 您想索引或搜索语义内存
+  - 您正在调试内存可用性或索引
 ---
 
 # `openclaw memory`
@@ -33,7 +35,7 @@ openclaw memory index --agent main --verbose
 
 通用:
 
-- `--agent <id>`:范围限定到单个代理(默认:所有配置的代理)。
+- `--agent <id>`:范围限定到单个Agent(默认:所有配置的Agent)。
 - `--verbose`:在探测和索引期间发出详细日志。
 
 注意:

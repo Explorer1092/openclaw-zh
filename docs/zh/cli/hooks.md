@@ -1,14 +1,16 @@
 ---
 title: "`openclaw hooks`"
 sidebarTitle: "openclaw hooks"
-mmh3_hash: "6d87b83840154f9ac21261cc79bf1099"
-summary: "`openclaw hooks` 的 CLI 参考(代理钩子)"
-read_when: ["您想管理代理钩子","您想安装或更新钩子"]
+mmh3_hash: "850ad2c7b1ff60780760ec5eaa321af4"
+summary: "`openclaw hooks` 的 CLI 参考(Agent钩子)"
+read_when:
+  - 您想管理Agent钩子
+  - 您想安装或更新钩子
 ---
 
 # `openclaw hooks`
 
-管理代理钩子(用于 `/new`、`/reset` 和网关启动等命令的事件驱动自动化)。
+管理Agent钩子(用于 `/new`、`/reset` 和Gateway启动等命令的事件驱动自动化)。
 
 相关:
 - 钩子:[钩子](/hooks)
@@ -146,7 +148,7 @@ openclaw hooks enable session-memory
 - 将配置保存到磁盘
 
 **启用后:**
-- 重新启动网关以重新加载钩子(在 macOS 上重新启动菜单栏应用,或在开发中重新启动网关进程)。
+- 重新启动Gateway以重新加载钩子(在 macOS 上重新启动菜单栏应用,或在开发中重新启动Gateway进程)。
 
 ## 禁用钩子
 
@@ -172,7 +174,7 @@ openclaw hooks disable command-logger
 ```
 
 **禁用后:**
-- 重新启动网关以重新加载钩子
+- 重新启动Gateway以重新加载钩子
 
 ## 安装钩子
 
@@ -225,7 +227,7 @@ openclaw hooks update --all
 
 ### session-memory
 
-在您发出 `/new` 时将会话上下文保存到内存。
+在您发出 `/new` 时将Session上下文保存到内存。
 
 **启用:**
 
@@ -278,7 +280,7 @@ openclaw hooks enable soul-evil
 
 ### boot-md
 
-在网关启动时运行 `BOOT.md`(频道启动后)。
+在Gateway启动时运行 `BOOT.md`(Channel启动后)。
 
 **事件**: `gateway:startup`
 

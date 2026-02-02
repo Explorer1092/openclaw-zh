@@ -1,9 +1,11 @@
 ---
 title: "`openclaw reset`"
 sidebarTitle: "openclaw reset"
-mmh3_hash: "03f6231336776724e2e6a80430aa6e11"
+mmh3_hash: "c4116c52f8552f5950536034ca5bc993"
 summary: "`openclaw reset` 的 CLI 参考(重置本地状态/配置)"
-read_when: ["您想在保持 CLI 安装的同时擦除本地状态","您想要将要删除的内容的模拟运行"]
+read_when:
+  - 您想在保持 CLI 安装的同时擦除本地状态
+  - 您想要将要删除的内容的模拟运行
 ---
 
 # `openclaw reset`

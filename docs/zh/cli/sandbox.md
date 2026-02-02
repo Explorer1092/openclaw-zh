@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dbe62b2f8606f77486059b99e328f9c9"
+mmh3_hash: "17dcb70bcac7e34c060db083e69ffb10"
 title: 沙盒 CLI
 sidebarTitle: "沙盒 CLI"
 summary: "管理沙盒容器并检查有效的沙盒策略"
@@ -9,11 +9,11 @@ status: active
 
 # 沙盒 CLI
 
-管理基于 Docker 的沙盒容器以实现隔离的代理执行。
+管理基于 Docker 的沙盒容器以实现隔离的Agent执行。
 
 ## 概述
 
-OpenClaw 可以在隔离的 Docker 容器中运行代理以确保安全。`sandbox` 命令帮助您管理这些容器,特别是在更新或配置更改后。
+OpenClaw 可以在隔离的 Docker 容器中运行Agent以确保安全。`sandbox` 命令帮助您管理这些容器,特别是在更新或配置更改后。
 
 ## 命令
 
@@ -43,7 +43,7 @@ openclaw sandbox list --json     # JSON 输出
 - Docker 镜像以及是否与配置匹配
 - 年龄(自创建以来的时间)
 - 空闲时间(自上次使用以来的时间)
-- 关联的会话/代理
+- 关联的Session/Agent
 
 ### `openclaw sandbox recreate`
 
@@ -51,20 +51,20 @@ openclaw sandbox list --json     # JSON 输出
 
 ```bash
 openclaw sandbox recreate --all                # 重新创建所有容器
-openclaw sandbox recreate --session main       # 特定会话
-openclaw sandbox recreate --agent mybot        # 特定代理
+openclaw sandbox recreate --session main       # 特定Session
+openclaw sandbox recreate --agent mybot        # 特定Agent
 openclaw sandbox recreate --browser            # 仅浏览器容器
 openclaw sandbox recreate --all --force        # 跳过确认
 ```
 
 **选项:**
 - `--all`:重新创建所有沙盒容器
-- `--session <key>`:为特定会话重新创建容器
-- `--agent <id>`:为特定代理重新创建容器
+- `--session <key>`:为特定Session重新创建容器
+- `--agent <id>`:为特定Agent重新创建容器
 - `--browser`:仅重新创建浏览器容器
 - `--force`:跳过确认提示
 
-**重要提示:** 容器在下次使用代理时会自动重新创建。
+**重要提示:** 容器在下次使用Agent时会自动重新创建。
 
 ## 用例
 
@@ -95,15 +95,15 @@ openclaw sandbox recreate --all
 
 ```bash
 openclaw sandbox recreate --all
-# 或只是一个代理:
+# 或只是一个Agent:
 openclaw sandbox recreate --agent family
 ```
 
 
-### 仅针对特定代理
+### 仅针对特定Agent
 
 ```bash
-# 仅更新一个代理的容器
+# 仅更新一个Agent的容器
 openclaw sandbox recreate --agent alfred
 ```
 
@@ -112,15 +112,15 @@ openclaw sandbox recreate --agent alfred
 **问题:** 当您更新沙盒 Docker 镜像或配置时:
 - 现有容器继续使用旧设置运行
 - 容器仅在 24 小时不活动后才被修剪
-- 定期使用的代理会无限期地保持旧容器运行
+- 定期使用的Agent会无限期地保持旧容器运行
 
 **解决方案:** 使用 `openclaw sandbox recreate` 强制删除旧容器。它们将在下次需要时自动使用当前设置重新创建。
 
-提示:优先使用 `openclaw sandbox recreate` 而不是手动 `docker rm`。它使用网关的容器命名,并在范围/会话键更改时避免不匹配。
+提示:优先使用 `openclaw sandbox recreate` 而不是手动 `docker rm`。它使用Gateway的容器命名,并在范围/Session键更改时避免不匹配。
 
 ## 配置
 
-沙盒设置位于 `~/.openclaw/openclaw.json` 的 `agents.defaults.sandbox` 下(每个代理覆盖进入 `agents.list[].sandbox`):
+沙盒设置位于 `~/.openclaw/openclaw.json` 的 `agents.defaults.sandbox` 下(每个Agent覆盖进入 `agents.list[].sandbox`):
 
 ```jsonc
 {
@@ -147,5 +147,5 @@ openclaw sandbox recreate --agent alfred
 ## 另请参阅
 
 - [沙盒文档](/gateway/sandboxing)
-- [代理配置](/concepts/agent-workspace)
+- [Agent配置](/concepts/agent-workspace)
 - [Doctor 命令](/gateway/doctor) - 检查沙盒设置
