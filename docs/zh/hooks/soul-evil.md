@@ -1,7 +1,7 @@
 ---
 title: "SOUL Evil 钩子"
 sidebarTitle: "SOUL Evil"
-mmh3_hash: "705027073390c3741ee89a5d79fe653a"
+mmh3_hash: "61ea3b26febe421b501e4f000634a3aa"
 summary: "SOUL Evil 钩子(用 SOUL_EVIL.md 替换 SOUL.md)"
 read_when: ["您想启用或调整 SOUL Evil 钩子","您想要清除窗口或随机机会角色交换"]
 ---

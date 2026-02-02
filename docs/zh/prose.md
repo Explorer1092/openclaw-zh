@@ -1,6 +1,6 @@
 ---
 title: "OpenProse"
-mmh3_hash: "16a2618af0abe6d0d93222597f79b616"
+mmh3_hash: "361bc61ec99c33d65aa24db73fd2d3fe"
 summary: "OpenProse:.prose 工作流、斜杠命令和 OpenClaw 中的状态"
 read_when: ["您想运行或编写 .prose 工作流","您想启用 OpenProse 插件","您需要了解状态存储"]
 ---

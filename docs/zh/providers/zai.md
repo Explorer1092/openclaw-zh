@@ -1,7 +1,7 @@
 ---
 title: "Z.AI"
 sidebarTitle: "Z.AI"
-mmh3_hash: "7ff8fa7a0cdc26fc48b1d69512b5642f"
+mmh3_hash: "af754480b62ca2bac52742dba9982e3f"
 summary: "将 Z.AI (GLM 模型) 与 OpenClaw 一起使用"
 read_when: ["您想在 OpenClaw 中使用 Z.AI / GLM 模型","您需要简单的 ZAI_API_KEY 设置"]
 ---

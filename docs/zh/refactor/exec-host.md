@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "333a49d0f2d309ee712c656438ebeb22"
+mmh3_hash: "5ea4e037aa77255ec44bb597e7aa8af1"
 summary: "重构计划: exec 主机路由、节点批准和无头运行器"
 read_when: ["设计 exec 主机路由或 exec 批准","实现节点运行器 + UI IPC","添加 exec 主机安全模式和斜杠命令"]
 ---

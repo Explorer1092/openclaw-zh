@@ -1,7 +1,7 @@
 ---
 title: "插件 (扩展)"
 sidebarTitle: "插件"
-mmh3_hash: "31b2c2cbfb7d836a1a2b6efdcab70474"
+mmh3_hash: "b1dbf7c5936b00ab2d319ef71633866e"
 summary: "OpenClaw 插件/扩展:发现、配置和安全"
 read_when: ["添加或修改插件/扩展","记录插件安装或加载规则"]
 ---

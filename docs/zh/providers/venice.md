@@ -1,6 +1,6 @@
 ---
 title: "Venice AI (Venice 亮点)"
-mmh3_hash: "68919186113c99e3f9da0910b734fa3a"
+mmh3_hash: "5e488af62e4efdb1297e11d74b98a412"
 summary: "在 OpenClaw 中使用 Venice AI 注重隐私的模型"
 read_when: ["您想在 OpenClaw 中进行注重隐私的推理","您需要 Venice AI 设置指导"]
 ---

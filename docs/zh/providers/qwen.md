@@ -1,6 +1,6 @@
 ---
 title: "Qwen"
-mmh3_hash: "273ef37185086229f59df75798fc55cd"
+mmh3_hash: "216635cee80ad666cd038bcdd7dd7e71"
 summary: "在 OpenClaw 中使用 Qwen OAuth (免费层)"
 read_when: ["您想将 Qwen 与 OpenClaw 一起使用","您想要免费层 OAuth 访问 Qwen Coder"]
 ---

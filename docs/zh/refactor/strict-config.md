@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3da0cce878b8a6b27483fdbc46499137"
+mmh3_hash: "54b3d868840774a0c680898f09fc41f2"
 summary: "严格配置验证 + 仅 doctor 迁移"
 read_when: ["设计或实现配置验证行为","处理配置迁移或 doctor 工作流","处理插件配置架构或插件加载门控"]
 ---

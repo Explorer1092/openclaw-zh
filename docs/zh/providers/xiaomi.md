@@ -1,6 +1,6 @@
 ---
 title: "Xiaomi MiMo"
-mmh3_hash: "1152eb731065a5bfc3a8449b96220ee9"
+mmh3_hash: "dc3e5788dca6c4a84dcd38a659f59ff3"
 summary: "将 Xiaomi MiMo (mimo-v2-flash) 与 OpenClaw 一起使用"
 read_when: ["您想在 OpenClaw 中使用 Xiaomi MiMo 模型","您需要 XIAOMI_API_KEY 设置"]
 ---

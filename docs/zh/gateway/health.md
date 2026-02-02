@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "26a51031105b82ff5a77de4119636c58"
 summary: "Channel 连接性的健康检查步骤"
 read_when:
   - 诊断 WhatsApp channel 健康状况

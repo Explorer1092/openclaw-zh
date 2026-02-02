@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "047e69cb05b2e63ee2405bcbf70beced"
 summary: "后台 exec 执行和进程管理"
 read_when:
   - 添加或修改后台 exec 行为

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fd5e7d92cfa0857080c5cb79c0ce7ca8"
+mmh3_hash: "c997ce42cf3f76bfb1e008d9ef24b4a7"
 summary: "每个代理的沙箱 + 工具限制、优先级和示例"
 title: "多智能体沙箱与工具配置"
 sidebarTitle: "多智能体沙箱与工具"

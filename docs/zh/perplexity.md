@@ -1,6 +1,6 @@
 ---
 title: "Perplexity Sonar"
-mmh3_hash: "0982063cf51b7688346225fbc0c77d89"
+mmh3_hash: "de3408a73d2fe163f02b20da1c0e99a4"
 summary: "用于 web_search 的 Perplexity Sonar 设置"
 read_when: ["您想使用 Perplexity Sonar 进行网络搜索","您需要 PERPLEXITY_API_KEY 或 OpenRouter 设置"]
 ---

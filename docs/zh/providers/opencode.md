@@ -1,7 +1,7 @@
 ---
 title: "OpenCode Zen"
 sidebarTitle: "OpenCode Zen"
-mmh3_hash: "62f3089df4a853044e20dc0918629f16"
+mmh3_hash: "13b81b8380b73db4ae0b48b3a79115d1"
 summary: "将 OpenCode Zen (精选模型) 与 OpenClaw 一起使用"
 read_when: ["您想使用 OpenCode Zen 进行模型访问","您想要一个编码友好模型的精选列表"]
 ---
