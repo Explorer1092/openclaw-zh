@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "33cf36e9648306ed825852bcfa1f6ab1"
+mmh3_hash: "4e542a65b1d0753b22d6832bcb7b0c5e"
 summary: "How OpenClaw sandboxing works: modes, scopes, workspace access, and images"
 title: "沙盒化"
 sidebarTitle: "沙盒化"

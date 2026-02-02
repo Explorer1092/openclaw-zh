@@ -1,7 +1,7 @@
 ---
 title: "网关协议 (WebSocket)"
 sidebarTitle: "网关协议"
-mmh3_hash: "4ac9154e70fa20f0f258602ad8296136"
+mmh3_hash: "3811706510261b393f1c84bfcab88d21"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when: ["实现或更新 gateway WS 客户端","调试协议不匹配或连接失败","重新生成协议 schema/models"]
 ---

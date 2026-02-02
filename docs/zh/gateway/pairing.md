@@ -1,7 +1,7 @@
 ---
 title: "网关托管配对 (选项 B)"
 sidebarTitle: "网关托管配对"
-mmh3_hash: "f4e2a5cd1638c1772124df6af87461b9"
+mmh3_hash: "2acc6ec5ba5d01db44e649e561ee5347"
 summary: "Gateway 拥有的节点配对(Option B)用于 iOS 和其他远程节点"
 read_when: ["在没有 macOS UI 的情况下实现节点配对批准","为批准远程节点添加 CLI 流程","使用节点管理扩展 gateway 协议"]
 ---

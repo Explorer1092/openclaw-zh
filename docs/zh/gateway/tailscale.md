@@ -1,7 +1,7 @@
 ---
 title: "Tailscale (网关仪表板)"
 sidebarTitle: "Tailscale"
-mmh3_hash: "c5fa2c6f99101416b39ad49477829506"
+mmh3_hash: "67c12176c1c6ce930525bd92c5fc1aa9"
 summary: "网关仪表板的集成 Tailscale Serve/Funnel"
 read_when: ["在 localhost 外暴露网关控制 UI","自动化 tailnet 或公共仪表板访问"]
 ---

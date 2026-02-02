@@ -1,7 +1,7 @@
 ---
 title: "配置示例"
 sidebarTitle: "配置示例"
-mmh3_hash: "dbbf00e801087ba00819793f4bcc0225"
+mmh3_hash: "8a4caa36743157988b8f21df8a088725"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 OpenClaw"]
 ---
@@ -400,28 +400,79 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
     reload: { mode: "hybrid", debounceMs: 300 }
   },
 
-  // 用于高级调试的浏览器控制
-  browser: {
-    enabled: true,
-    provider: "chrome",
-    controlPort: 18791,
-    maxProfiles: 5,
-    headless: false,
-    devtools: true
-  },
-
-  // Canvas 文件服务器
-  canvasHost: {
-    enabled: true,
-    port: 18793,
-    bind: "127.0.0.1",
-    canvas: { basePath: "~/.openclaw/workspace/canvas" },
-    a2ui: { enabled: true }
+  skills: {
+    allowBundled: ["gemini", "peekaboo"],
+    load: {
+      extraDirs: ["~/Projects/agent-scripts/skills"]
+    },
+    install: {
+      preferBrew: true,
+      nodeManager: "npm"
+    },
+    entries: {
+      "nano-banana-pro": {
+        enabled: true,
+        apiKey: "GEMINI_KEY_HERE",
+        env: { GEMINI_API_KEY: "GEMINI_KEY_HERE" }
+      },
+      peekaboo: { enabled: true }
+    }
   }
 }
 ```
 
-## 常见场景
+## 常见模式
+
+### 多平台设置
+
+```json5
+{
+  agent: { workspace: "~/.openclaw/workspace" },
+  channels: {
+    whatsapp: { allowFrom: ["+15555550123"] },
+    telegram: {
+      enabled: true,
+      botToken: "YOUR_TOKEN",
+      allowFrom: ["123456789"],
+    },
+    discord: {
+      enabled: true,
+      token: "YOUR_TOKEN",
+      dm: { allowFrom: ["yourname"] },
+    },
+  },
+}
+```
+
+### OAuth 与 API 密钥故障转移
+
+```json5
+{
+  auth: {
+    profiles: {
+      "anthropic:subscription": {
+        provider: "anthropic",
+        mode: "oauth",
+        email: "me@example.com",
+      },
+      "anthropic:api": {
+        provider: "anthropic",
+        mode: "api_key",
+      },
+    },
+    order: {
+      anthropic: ["anthropic:subscription", "anthropic:api"],
+    },
+  },
+  agent: {
+    workspace: "~/.openclaw/workspace",
+    model: {
+      primary: "anthropic/claude-sonnet-4-5",
+      fallbacks: ["anthropic/claude-opus-4-5"],
+    },
+  },
+}
+```
 
 ### Anthropic 订阅 + API 密钥,MiniMax 回退
 ```json5

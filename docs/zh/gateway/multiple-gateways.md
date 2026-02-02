@@ -1,7 +1,7 @@
 ---
 title: "多个网关 (同一主机)"
 sidebarTitle: "多个网关"
-mmh3_hash: "c8c346e1b8dfd06f28c944d471c2be1e"
+mmh3_hash: "12e8736ad5fb358a99c7837e70d8fbae"
 summary: "在一台主机上运行多个 OpenClaw Gateways(隔离、端口和配置文件)"
 read_when: ["在同一台机器上运行多个 Gateway","您需要每个 Gateway 的隔离配置/状态/端口"]
 ---

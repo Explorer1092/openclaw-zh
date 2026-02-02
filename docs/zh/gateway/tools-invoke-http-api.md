@@ -1,7 +1,7 @@
 ---
 title: "工具调用 (HTTP)"
 sidebarTitle: "工具调用"
-mmh3_hash: "6afe0483405c853fd13d1a80aec88061"
+mmh3_hash: "1e35aee49b26dd2024e300e9d782f7fa"
 summary: "通过网关 HTTP 端点直接调用单个工具"
 read_when: ["在不运行完整代理轮次的情况下调用工具","构建需要工具策略强制执行的自动化"]
 ---
