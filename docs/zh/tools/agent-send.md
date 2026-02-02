@@ -1,7 +1,7 @@
 ---
 title: "openclaw agent (直接运行 agent)"
 sidebarTitle: "openclaw agent 命令"
-mmh3_hash: "3f6ca74da7b756b6ec2f3e49b08d444c"
+mmh3_hash: "64d3a4c72dadf98ddd3ef3e8e8075661"
 summary: "直接运行 `openclaw agent` CLI(可选投递)"
 read_when: ["添加或修改 agent CLI 入口点"]
 ---

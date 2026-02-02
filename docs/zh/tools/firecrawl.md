@@ -1,6 +1,6 @@
 ---
 title: "Firecrawl"
-mmh3_hash: "1bba6d2ec31bf6ec79acfc7a14500d0f"
+mmh3_hash: "e54813312cb927bbbfbf1f40ee27ded1"
 summary: "Firecrawl 作为 web_fetch 的回退(反机器人 + 缓存提取)"
 read_when: ["您想要 Firecrawl 支持的网页提取","您需要 Firecrawl API 密钥","您想要 web_fetch 的反机器人提取"]
 ---

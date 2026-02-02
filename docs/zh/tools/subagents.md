@@ -1,7 +1,7 @@
 ---
 title: "子智能体"
 sidebarTitle: "子智能体"
-mmh3_hash: "23bea4475c628ad02d42be5d93a1ec4c"
+mmh3_hash: "fd63091ced1f0dfa696d200a53e0dcc4"
 summary: "子 agent: 生成隔离的 agent 运行,将结果公告回请求者聊天"
 read_when: ["您想通过 agent 进行后台/并行工作","您正在更改 sessions_spawn 或子 agent 工具策略"]
 ---

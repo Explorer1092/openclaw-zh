@@ -1,7 +1,7 @@
 ---
 title: "apply_patch 工具"
 sidebarTitle: "apply_patch 工具"
-mmh3_hash: "66b5df6a44f57ede43ba384f83a9e79f"
+mmh3_hash: "4cb7fe502e700c076cb402c1b822624d"
 summary: "使用 apply_patch 工具应用多文件补丁"
 read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或调试基于补丁的编辑"]
 ---

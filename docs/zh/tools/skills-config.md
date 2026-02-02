@@ -1,7 +1,7 @@
 ---
 title: "技能配置"
 sidebarTitle: "技能配置"
-mmh3_hash: "4291a80fae7a6985e873e2a1a8ba495c"
+mmh3_hash: "b39c449d78a459cb63b752ebd0774efa"
 summary: "技能配置架构和示例"
 read_when: ["添加或修改技能配置","调整捆绑允许列表或安装行为"]
 ---

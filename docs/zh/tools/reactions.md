@@ -1,7 +1,7 @@
 ---
 title: "反应工具"
 sidebarTitle: "反应工具"
-mmh3_hash: "dd2951865471932d97abb6bd72e7874a"
+mmh3_hash: "660fb3d5bdc3215dd3bb5607e529443d"
 summary: "跨频道共享的反应语义"
 read_when: ["在任何频道中处理反应"]
 ---
