@@ -1,7 +1,7 @@
 ---
 title: "HEARTBEAT.md"
 sidebarTitle: "HEARTBEAT.md"
-mmh3_hash: "a404a615907c2ef2f89e5c584e83830b"
+mmh3_hash: "0aa210b74cefc0df4ab7a9fe5d6c49df"
 summary: "HEARTBEAT.md 的工作空间模板"
 read_when: ["手动引导工作空间"]
 ---

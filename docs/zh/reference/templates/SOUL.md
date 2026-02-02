@@ -1,7 +1,7 @@
 ---
 title: "SOUL.md - 你是谁"
 sidebarTitle: "SOUL.md"
-mmh3_hash: "102417a166628c980e9ad9d5757165a4"
+mmh3_hash: "a5c8312db0c7dc5eae0ff293714ae88a"
 summary: "SOUL.md 的工作空间模板"
 read_when: ["手动引导工作空间"]
 ---

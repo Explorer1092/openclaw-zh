@@ -1,7 +1,7 @@
 ---
 title: "TOOLS.md - 本地注释"
 sidebarTitle: "TOOLS.md"
-mmh3_hash: "9a1f94f0c2a0c309669c32599cd7d5b8"
+mmh3_hash: "f7c3799c8b02e546b64b659c1a65d904"
 summary: "TOOLS.md 的工作空间模板"
 read_when: ["手动引导工作空间"]
 ---

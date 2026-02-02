@@ -1,9 +1,8 @@
 ---
-title: "AGENTS.md - 你的工作空间"
-sidebarTitle: "AGENTS.md"
-mmh3_hash: "43f36004238beed5b00f018dfd4330ca"
+mmh3_hash: "a90bd0e634350cce04dd1c3d1628034e"
 summary: "AGENTS.md 的工作空间模板"
-read_when: ["手动引导工作空间"]
+read_when:
+  - 手动引导工作空间
 ---
 # AGENTS.md - 你的工作空间
 

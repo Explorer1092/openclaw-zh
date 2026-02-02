@@ -1,7 +1,7 @@
 ---
 title: "BOOTSTRAP.md - 你好,世界"
 sidebarTitle: "BOOTSTRAP.md"
-mmh3_hash: "78f6df5486ce07ed065a0523874ad5b0"
+mmh3_hash: "048f3b90fcb925dd04614fce6476e220"
 summary: "新代理的首次运行仪式"
 read_when: ["手动引导工作空间"]
 ---

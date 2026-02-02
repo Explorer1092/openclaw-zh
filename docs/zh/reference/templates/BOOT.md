@@ -1,7 +1,7 @@
 ---
 title: "BOOT.md"
 sidebarTitle: "BOOT.md"
-mmh3_hash: "9dc8cc6c2f8a77ebda1222bc1122e03a"
+mmh3_hash: "9a06472dedcf2f85b4f9831645b9d51b"
 summary: "BOOT.md 的工作空间模板"
 read_when: ["添加 BOOT.md 检查清单"]
 ---

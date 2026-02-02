@@ -1,6 +1,6 @@
 ---
 title: "TOOLS.md - 用户工具注释(可编辑)"
-mmh3_hash: "a510136251a82a49a14cec0b35793dba"
+mmh3_hash: "47ea7913ea5f2c28bb25417fb4f942d6"
 summary: "开发代理工具注释(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---
