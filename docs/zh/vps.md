@@ -1,6 +1,6 @@
 ---
 title: "VPS 托管"
-mmh3_hash: "d85fa376d5a2d470ff6ce7f08424a394"
+mmh3_hash: "2d499632f80f5f24c114446f3988ecb0"
 summary: "OpenClaw 的 VPS 托管中心(Oracle/Fly/Hetzner/GCP/exe.dev)"
 read_when: ["您想在云中运行网关","您需要 VPS/托管指南的快速地图"]
 ---

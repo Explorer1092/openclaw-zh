@@ -1,7 +1,7 @@
 ---
 title: "环境变量"
 sidebarTitle: "环境变量"
-mmh3_hash: "6f0902e505169f276aca7c7e5ffec371"
+mmh3_hash: "92c715a013ec2e663e9cab23f0316e25"
 summary: "OpenClaw 加载环境变量的位置和优先顺序"
 read_when: ["您需要知道加载了哪些环境变量,以及以什么顺序","您正在调试网关中缺少的 API 密钥","您正在记录提供程序身份验证或部署环境"]
 ---

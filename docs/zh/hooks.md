@@ -1,7 +1,7 @@
 ---
 title: "钩子"
 sidebarTitle: "钩子"
-mmh3_hash: "7a16d229de3a45944ab3409696ff705a"
+mmh3_hash: "c86e328aaa8f046d3adca3ed5a2d2dd4"
 summary: "钩子:用于命令和生命周期事件的事件驱动自动化"
 read_when: ["您想要为 /new、/reset、/stop 和代理生命周期事件提供事件驱动自动化","您想要构建、安装或调试钩子"]
 ---

@@ -1,7 +1,7 @@
 ---
 title: "测试"
 sidebarTitle: "测试"
-mmh3_hash: "e9ea1cf8db4b9f05291d15d00c11828a"
+mmh3_hash: "774fd0810245d94f702862c03b700b0f"
 summary: "测试套件:单元/e2e/实时套件、Docker 运行器以及每个测试覆盖的内容"
 read_when: ["在本地或 CI 中运行测试","为模型/提供程序错误添加回归","调试网关 + 代理行为"]
 ---
