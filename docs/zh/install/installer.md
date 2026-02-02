@@ -1,23 +1,23 @@
 ---
+mmh3_hash: "0d30e310bede798497d4e684d07be7c4"
 title: "安装程序内部"
 sidebarTitle: "安装程序"
-mmh3_hash: "ea1992f492d7babac7565da8d4ff2c09"
 summary: "安装脚本的工作原理(install.sh + install-cli.sh)、标志和自动化"
-read_when: ["您想了解 `openclaw.bot/install.sh`","您想自动化安装(CI / 无头)","您想从 GitHub 检出安装"]
+read_when: ["您想了解 `openclaw.ai/install.sh`","您想自动化安装(CI / 无头)","您想从 GitHub 检出安装"]
 ---
 
 # 安装程序内部
 
 OpenClaw 提供两个安装脚本(从 `openclaw.ai` 提供):
 
-- `https://openclaw.bot/install.sh` — "推荐"安装程序(默认全局 npm 安装;也可以从 GitHub 检出安装)
-- `https://openclaw.bot/install-cli.sh` — 非 root 友好的 CLI 安装程序(安装到带有自己 Node 的前缀)
- - `https://openclaw.ai/install.ps1` — Windows PowerShell 安装程序(默认 npm;可选 git 安装)
+- `https://openclaw.ai/install.sh` — "推荐"安装程序(默认全局 npm 安装;也可以从 GitHub 检出安装)
+- `https://openclaw.ai/install-cli.sh` — 非 root 友好的 CLI 安装程序(安装到带有自己 Node 的前缀)
+- `https://openclaw.ai/install.ps1` — Windows PowerShell 安装程序(默认 npm;可选 git 安装)
 
 要查看当前标志/行为,请运行:
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --help
+curl -fsSL https://openclaw.ai/install.sh | bash -s -- --help
 ```
 
 Windows(PowerShell)帮助:
@@ -45,7 +45,7 @@ Windows(PowerShell)帮助:
 如果*想要* `sharp` 链接到全局安装的 libvips(或正在调试),请设置:
 
 ```bash
-SHARP_IGNORE_GLOBAL_LIBVIPS=0 curl -fsSL https://openclaw.bot/install.sh | bash
+SHARP_IGNORE_GLOBAL_LIBVIPS=0 curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 ### 可发现性 / "git 安装"提示
@@ -78,7 +78,7 @@ SHARP_IGNORE_GLOBAL_LIBVIPS=0 curl -fsSL https://openclaw.bot/install.sh | bash
 帮助:
 
 ```bash
-curl -fsSL https://openclaw.bot/install-cli.sh | bash -s -- --help
+curl -fsSL https://openclaw.ai/install-cli.sh | bash -s -- --help
 ```
 
 ## install.ps1(Windows PowerShell)

@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "ec30cdcd0eddaaa7ca6af4fbafcbd09c"
 title: "Ansible 安装"
 sidebarTitle: "Ansible"
-mmh3_hash: "831331b85f3db6c5deb670b8a7fe06a8"
 summary: "使用 Ansible、Tailscale VPN 和防火墙隔离实现自动化、强化的 OpenClaw 安装"
 read_when: ["你想要带有安全加固的自动化服务器部署","你需要带有 VPN 访问的防火墙隔离设置","你正在部署到远程 Debian/Ubuntu 服务器"]
 ---

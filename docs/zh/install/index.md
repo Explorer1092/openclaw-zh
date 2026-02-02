@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "72c751f6c4823b0aae9bf877af6d3eb7"
 title: "安装"
 sidebarTitle: "安装"
-mmh3_hash: "c4733660f987a4d70e37a0dfe82d6f62"
 summary: "安装 OpenClaw (推荐安装程序，全局安装，或从源码)"
 read_when: ["安装 OpenClaw","你想要从 GitHub 安装"]
 ---
@@ -13,7 +13,7 @@ read_when: ["安装 OpenClaw","你想要从 GitHub 安装"]
 ## 快速安装 (推荐)
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 Windows (PowerShell):
@@ -41,13 +41,13 @@ openclaw onboard --install-daemon
 通过 npm 全局安装 `openclaw` 并运行入门引导。
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 安装程序标志：
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --help
+curl -fsSL https://openclaw.ai/install.sh | bash -s -- --help
 ```
 
 详情：[安装程序内部](/install/installer)。
@@ -55,7 +55,7 @@ curl -fsSL https://openclaw.bot/install.sh | bash -s -- --help
 非交互式 (跳过入门引导):
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --no-onboard
+curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
 ```
 
 ### 2) 全局安装 (手动)
@@ -74,11 +74,15 @@ SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g openclaw@latest
 
 如果你看到 `sharp: Please add node-gyp to your dependencies`，要么安装构建工具（macOS: Xcode CLT + `npm install -g node-gyp`），要么使用上面的 `SHARP_IGNORE_GLOBAL_LIBVIPS=1` 变通方法跳过本地构建。
 
-或者：
+或者使用 pnpm:
 
 ```bash
 pnpm add -g openclaw@latest
+pnpm approve-builds -g                # 批准 openclaw, node-llama-cpp, sharp 等
+pnpm add -g openclaw@latest           # 重新运行以执行 postinstall 脚本
 ```
+
+pnpm 需要显式批准具有构建脚本的包。在第一次安装显示"忽略构建脚本"警告后，运行 `pnpm approve-builds -g` 并选择列出的包，然后重新运行安装，以便执行 postinstall 脚本。
 
 然后：
 
@@ -124,10 +128,10 @@ openclaw onboard --install-daemon
 
 ```bash
 # 显式 npm
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --install-method npm
+curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method npm
 
 # 从 GitHub 安装 (源码 checkout)
-curl -fsSL https://openclaw.bot/install.sh | bash -s -- --install-method git
+curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git
 ```
 
 常用标志：

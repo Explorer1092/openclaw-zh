@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "8a5fef4f24b6e76be7baea97f7b6ecbf"
 title: "Bun (实验性)"
 sidebarTitle: "Bun"
-mmh3_hash: "2b375926112a91ff7c3c7ad72fd1b24d"
 summary: "Bun 工作流（实验性）：安装以及与 pnpm 相比的注意事项"
 read_when: ["你想要最快的本地开发循环 (bun + watch)","你遇到了 Bun install/patch/生命周期脚本问题"]
 ---
@@ -26,7 +26,7 @@ read_when: ["你想要最快的本地开发循环 (bun + watch)","你遇到了 B
 bun install
 ```
 
-注意：`bun.lock`/`bun.lockb` 已被 gitignode，所以无论哪种方式都没有仓库变动。如果你想要 *无锁文件写入*：
+注意：`bun.lock`/`bun.lockb` 已被 gitignore，所以无论哪种方式都没有仓库变动。如果你想要 *无锁文件写入*：
 
 ```sh
 bun install --no-save

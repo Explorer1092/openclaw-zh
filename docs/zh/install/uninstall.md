@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "fef73a9a0c7297a2a66f4100e23bcbd2"
 title: "卸载"
 sidebarTitle: "卸载"
-mmh3_hash: "098274b7e040552c179e6740e5ffcb73"
 summary: "完全卸载 OpenClaw (CLI, 服务, 状态, 工作区)"
 read_when: ["你想从机器上删除 OpenClaw","卸载后网关服务仍在运行"]
 ---
@@ -114,7 +114,7 @@ Remove-Item -Force "$env:USERPROFILE\.openclaw\gateway.cmd"
 
 ### 正常安装 (install.sh / npm / pnpm / bun)
 
-如果你使用了 `https://openclaw.bot/install.sh` 或 `install.ps1`，CLI 是通过 `npm install -g openclaw@latest` 安装的。
+如果你使用了 `https://openclaw.ai/install.sh` 或 `install.ps1`，CLI 是通过 `npm install -g openclaw@latest` 安装的。
 用 `npm rm -g openclaw` (如果你是以这种方式安装的，则用 `pnpm remove -g` / `bun remove -g`) 移除它。
 
 ### 源码 checkout (git clone)

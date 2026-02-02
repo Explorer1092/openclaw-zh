@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "30f5dd18d1ea92df392df1ac1f1a0931"
 title: "更新"
 sidebarTitle: "更新"
-mmh3_hash: "2930cf69020d717ab72be6556d32f9b6"
 summary: "安全地更新 OpenClaw (全局安装或源码)，加上回滚策略"
 read_when: ["更新 OpenClaw","更新后出现问题"]
 ---
@@ -15,14 +15,14 @@ OpenClaw 发展迅速 (pre “1.0”)。像发布基础设施一样对待更新�
 **首选** 更新路径是重新运行网站上的安装程序。它检测现有安装，就地升级，并在需要时运行 `openclaw doctor`。
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 注意：
 - 如果不想再次运行入门向导，请添加 `--no-onboard`。
 - 对于 **源码安装**，使用：
   ```bash
-  curl -fsSL https://openclaw.bot/install.sh | bash -s -- --install-method git --no-onboard
+  curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git --no-onboard
   ```
   安装程序 **仅** 在仓库干净时才会 `git pull --rebase`。
 - 对于 **全局安装**，脚本在底层使用 `npm install -g openclaw@latest`。
@@ -215,4 +215,4 @@ git pull
 
 - 再次运行 `openclaw doctor` 并仔细阅读输出（它通常会告诉你修复方法）。
 - 检查：[故障排除](/gateway/troubleshooting)
-- 在 Discord 中提问：https://channels.discord.gg/clawd
+- 在 Discord 中提问：https://discord.gg/clawd

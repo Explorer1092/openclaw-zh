@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "a3445b4bc99dabdb7b7953cc2c32dbf3"
 title: "Docker (可选)"
 sidebarTitle: "Docker"
-mmh3_hash: "a935555fa117ac8b7940b1ae50d4d50b"
 summary: "OpenClaw 的可选 Docker 设置和引导"
 read_when: ["您希望使用容器化网关而非本地安装","您正在验证 Docker 流程"]
 ---
@@ -158,7 +158,7 @@ RUN pnpm ui:build
 
 ENV NODE_ENV=production
 
-CMD ["node","dist/index.mjs"]
+CMD ["node","dist/index.js"]
 ```
 
 ### 频道设置(可选)
@@ -185,7 +185,7 @@ docker compose run --rm openclaw-cli channels add --channel discord --token "<to
 ### 健康检查
 
 ```bash
-docker compose exec openclaw-gateway node dist/index.mjs health --token "$OPENCLAW_GATEWAY_TOKEN"
+docker compose exec openclaw-gateway node dist/index.js health --token "$OPENCLAW_GATEWAY_TOKEN"
 ```
 
 ### E2E 冒烟测试(Docker)

@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "3c3b64437f0dbb49c5e696cfc7d2e5bc"
 title: "开发频道"
 sidebarTitle: "开发频道"
-mmh3_hash: "2c585945d1bad7c8ddc1649a2b665637"
 summary: "稳定版、测试版和开发版频道：语义、切换和标记"
 read_when: ["你想要在稳定版/测试版/开发版之间切换","你正在标记或发布预发布版本"]
 ---
