@@ -1,24 +1,27 @@
 ---
-title: "Zalo Personal (插件)"
-sidebarTitle: "Zalo 个人号"
-mmh3_hash: "e2618c6c06e4bb061697305e148dedef"
-summary: "Zalo Personal 插件: 通过 zca-cli 的 QR 登录 + 消息(插件安装 + 通道配置 + CLI + 工具)"
-read_when: ["您想要 OpenClaw 中的 Zalo Personal(非官方)支持","您正在配置或开发 zalouser 插件"]
+mmh3_hash: "f384fae582061a2fcd25796ea57e7152"
+summary: "Zalo Personal Plugin: 通过 zca-cli 的 QR 登录 + 消息(Plugin 安装 + channel 配置 + CLI + Tool)"
+read_when:
+  - 您想要 OpenClaw 中的 Zalo Personal(非官方)支持
+  - 您正在配置或开发 zalouser Plugin
+title: "Zalo Personal Plugin"
 ---
 
-# Zalo Personal (插件)
+# Zalo Personal(Plugin)
 
-通过插件为 OpenClaw 提供 Zalo Personal 支持,使用 `zca-cli` 自动化正常的 Zalo 用户帐户。
+通过 Plugin 为 OpenClaw 提供 Zalo Personal 支持,使用 `zca-cli` 自动化正常的 Zalo 用户帐户。
 
 > **警告:** 非官方自动化可能导致帐户暂停/封禁。使用风险自负。
 
 ## 命名
-通道 id 为 `zalouser`,以明确表明这会自动化**个人 Zalo 用户帐户**(非官方)。我们保留 `zalo` 用于将来可能的官方 Zalo API 集成。
+
+Channel id 为 `zalouser`,以明确表明这会自动化**个人 Zalo 用户帐户**(非官方)。我们保留 `zalo` 用于将来可能的官方 Zalo API 集成。
 
 ## 它在哪里运行
-此插件在**网关进程内**运行。
 
-如果您使用远程网关,请在**运行网关的机器**上安装/配置它,然后重启网关。
+此 Plugin 在 **Gateway 进程内**运行。
+
+如果您使用远程 Gateway,请在**运行 Gateway 的机器**上安装/配置它,然后重启 Gateway。
 
 ## 安装
 
@@ -28,7 +31,7 @@ read_when: ["您想要 OpenClaw 中的 Zalo Personal(非官方)支持","您正�
 openclaw plugins install @openclaw/zalouser
 ```
 
-之后重启网关。
+之后重启 Gateway。
 
 ### 选项 B: 从本地文件夹安装(开发)
 
@@ -37,26 +40,28 @@ openclaw plugins install ./extensions/zalouser
 cd ./extensions/zalouser && pnpm install
 ```
 
-之后重启网关。
+之后重启 Gateway。
 
 ## 先决条件: zca-cli
-网关机器必须在 `PATH` 上有 `zca`:
+
+Gateway 机器必须在 `PATH` 上有 `zca`:
 
 ```bash
 zca --version
 ```
 
 ## 配置
-通道配置位于 `channels.zalouser` 下(不是 `plugins.entries.*`):
+
+Channel 配置位于 `channels.zalouser` 下(不是 `plugins.entries.*`):
 
 ```json5
 {
   channels: {
     zalouser: {
       enabled: true,
-      dmPolicy: "pairing"
-    }
-  }
+      dmPolicy: "pairing",
+    },
+  },
 }
 ```
 
@@ -70,7 +75,8 @@ openclaw message send --channel zalouser --target <threadId> --message "Hello fr
 openclaw directory peers list --channel zalouser --query "name"
 ```
 
-## 代理工具
-工具名称: `zalouser`
+## Agent Tool
+
+Tool 名称: `zalouser`
 
 操作: `send`、`image`、`link`、`friends`、`groups`、`me`、`status`
