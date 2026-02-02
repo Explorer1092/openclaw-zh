@@ -1,31 +1,31 @@
 ---
-title: "日志"
-sidebarTitle: "日志"
-mmh3_hash: "78577be2a45193b12e428a83a23ab782"
 summary: "日志表面、文件日志、WS 日志样式和控制台格式化"
-read_when: ["更改日志输出或格式","调试 CLI 或 gateway 输出"]
+read_when:
+  - 更改日志输出或格式
+  - 调试 CLI 或 Gateway 输出
+title: "Logging"
 ---
 
-# 日志
+# Logging
 
-有关面向用户的概述(CLI + Control UI + 配置),请参见 [/zh/logging](/zh/logging)。
+有关面向用户的概述(CLI + Control UI + 配置),请参见 [/logging](/logging)。
 
 OpenClaw 有两个日志"表面":
 
 - **控制台输出**(您在终端/调试 UI 中看到的内容)。
-- **文件日志**(JSON 行)由 gateway logger 写入。
+- **文件日志**(JSON 行)由 Gateway logger 写入。
 
 ## 基于文件的 logger
 
 - 默认滚动日志文件位于 `/tmp/openclaw/` 下(每天一个文件):`openclaw-YYYY-MM-DD.log`
-  - 日期使用 gateway 主机的本地时区。
+  - 日期使用 Gateway 主机的本地时区。
 - 日志文件路径和级别可以通过 `~/.openclaw/openclaw.json` 配置:
   - `logging.file`
   - `logging.level`
 
 文件格式是每行一个 JSON 对象。
 
-Control UI 日志选项卡通过 gateway 追踪此文件(`logs.tail`)。CLI 也可以这样做:
+Control UI 日志选项卡通过 Gateway 追踪此文件(`logs.tail`)。CLI 也可以这样做:
 
 ```bash
 openclaw logs --follow
@@ -68,7 +68,7 @@ Gateway 以两种模式打印 WebSocket 协议日志:
 
 ### WS 日志样式
 
-`openclaw gateway` 支持每个 gateway 的样式开关:
+`openclaw gateway` 支持每个 Gateway 的样式开关:
 
 - `--ws-log auto`(默认):正常模式已优化;verbose 模式使用紧凑输出
 - `--ws-log compact`:verbose 时紧凑输出(配对的请求/响应)
@@ -90,7 +90,7 @@ openclaw gateway --verbose --ws-log full
 
 ## 控制台格式化(子系统日志)
 
-控制台格式化器是 **TTY 感知的**,并打印一致的、带前缀的行。子系统 loggers 保持输出分组和可扫描。
+控制台格式化器是 **TTY 感知的**,并打印一致的、带前缀的行。子系统 logger 保持输出分组和可扫描。
 
 行为:
 
@@ -98,7 +98,7 @@ openclaw gateway --verbose --ws-log full
 - **子系统颜色**(每个子系统稳定)加上级别着色
 - **当输出是 TTY 或环境看起来像富终端时着色**(`TERM`/`COLORTERM`/`TERM_PROGRAM`),尊重 `NO_COLOR`
 - **缩短的子系统前缀**:删除前导 `gateway/` + `channels/`,保留最后 2 个段(例如 `whatsapp/outbound`)
-- **按子系统的子 loggers**(自动前缀 + 结构化字段 `{ subsystem }`)
+- **按子系统的子 logger**(自动前缀 + 结构化字段 `{ subsystem }`)
 - **`logRaw()`** 用于 QR/UX 输出(无前缀,无格式化)
 - **控制台样式**(例如 `pretty | compact | json`)
 - **控制台日志级别**与文件日志级别分开(当 `logging.level` 设置为 `debug`/`trace` 时,文件保留完整细节)

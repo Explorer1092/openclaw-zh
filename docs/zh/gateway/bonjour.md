@@ -1,46 +1,48 @@
 ---
-title: "Bonjour / mDNS 发现"
-sidebarTitle: "Bonjour / mDNS"
-mmh3_hash: "d81f0081a96d5d48ddcbeb59be659b76"
-summary: "Bonjour/mDNS 发现 + 调试(Gateway beacons、clients 和常见故障模式)"
-read_when: ["在 macOS/iOS 上调试 Bonjour 发现问题","更改 mDNS 服务类型、TXT 记录或发现 UX"]
+summary: "Bonjour/mDNS 发现 + 调试(Gateway beacon、客户端和常见故障模式)"
+read_when:
+  - 在 macOS/iOS 上调试 Bonjour 发现问题
+  - 更改 mDNS 服务类型、TXT 记录或发现 UX
+title: "Bonjour Discovery"
 ---
+
 # Bonjour / mDNS 发现
 
 OpenClaw 使用 Bonjour(mDNS / DNS‑SD)作为 **仅限 LAN 的便利功能**来发现活动的 Gateway(WebSocket 端点)。这是尽力而为的,**不能**替代基于 SSH 或 Tailnet 的连接。
 
-## Wide‑area Bonjour(单播 DNS‑SD)通过 Tailscale
+## Wide-area Bonjour(单播 DNS-SD)通过 Tailscale
 
-如果节点和 gateway 位于不同的网络上,多播 mDNS 无法跨越边界。您可以通过切换到 **单播 DNS‑SD**("Wide‑Area Bonjour")通过 Tailscale 来保持相同的发现 UX。
+如果节点和 Gateway 位于不同的网络上,多播 mDNS 无法跨越边界。您可以通过切换到 **单播 DNS-SD**("Wide-Area Bonjour")通过 Tailscale 来保持相同的发现 UX。
 
 高级步骤:
 
-1) 在 gateway 主机上运行 DNS 服务器(可通过 Tailnet 访问)。
-2) 在专用区域下发布 `_openclaw-gw._tcp` 的 DNS‑SD 记录(例如:`openclaw.internal.`)。
-3) 配置 Tailscale **split DNS**,以便您选择的域通过该 DNS 服务器解析(包括 iOS)。
+1. 在 Gateway 主机上运行 DNS 服务器(可通过 Tailnet 访问)。
+2. 在专用区域下发布 `_openclaw-gw._tcp` 的 DNS-SD 记录(例如:`openclaw.internal.`)。
+3. 配置 Tailscale **split DNS**,以便您选择的域通过该 DNS 服务器解析客户端(包括 iOS)。
 
-OpenClaw 支持任何发现域;`openclaw.internal.` 只是一个示例。iOS/Android 节点浏览 `local.` 和您配置的 wide‑area 域。
+OpenClaw 支持任何发现域;`openclaw.internal.` 只是一个示例。iOS/Android 节点浏览 `local.` 和您配置的 wide-area 域。
 
 ### Gateway 配置(推荐)
 
 ```json5
 {
   gateway: { bind: "tailnet" }, // 仅 tailnet(推荐)
-  discovery: { wideArea: { enabled: true } } // 启用 wide-area DNS-SD 发布
+  discovery: { wideArea: { enabled: true } }, // 启用 wide-area DNS-SD 发布
 }
 ```
 
-### 一次性 DNS 服务器设置(gateway 主机)
+### 一次性 DNS 服务器设置(Gateway 主机)
 
 ```bash
 openclaw dns setup --apply
 ```
 
 这将安装 CoreDNS 并配置它:
-- 仅在 gateway 的 Tailscale 接口上监听端口 53
+
+- 仅在 Gateway 的 Tailscale 接口上监听端口 53
 - 从 `~/.openclaw/dns/<domain>.db` 提供您选择的域(例如:`openclaw.internal.`)
 
-从 tailnet 连接的机器验证:
+从 Tailnet 连接的机器验证:
 
 ```bash
 dns-sd -B _openclaw-gw._tcp openclaw.internal.
@@ -51,16 +53,17 @@ dig @<TAILNET_IPV4> -p 53 _openclaw-gw._tcp.openclaw.internal PTR +short
 
 在 Tailscale 管理控制台中:
 
-- 添加指向 gateway 的 tailnet IP 的 nameserver(UDP/TCP 53)。
+- 添加指向 Gateway 的 Tailnet IP 的 nameserver(UDP/TCP 53)。
 - 添加 split DNS,以便您的发现域使用该 nameserver。
 
-一旦客户端接受 tailnet DNS,iOS 节点可以在您的发现域中浏览 `_openclaw-gw._tcp`,而无需多播。
+一旦客户端接受 Tailnet DNS,iOS 节点可以在您的发现域中浏览 `_openclaw-gw._tcp`,而无需多播。
 
 ### Gateway 监听器安全性(推荐)
 
-Gateway WS 端口(默认 `18789`)默认绑定到 loopback。对于 LAN/tailnet 访问,请显式绑定并保持启用认证。
+Gateway WS 端口(默认 `18789`)默认绑定到 loopback。对于 LAN/Tailnet 访问,请显式绑定并保持启用认证。
 
-对于仅 tailnet 设置:
+对于仅 Tailnet 设置:
+
 - 在 `~/.openclaw/openclaw.json` 中设置 `gateway.bind: "tailnet"`。
 - 重启 Gateway(或重启 macOS 菜单栏应用)。
 
@@ -145,5 +148,5 @@ Bonjour/DNS‑SD 通常将服务实例名称中的字节转义为十进制 `\DDD
 
 ## 相关文档
 
-- 发现策略和传输选择:[Discovery](/zh/gateway/discovery)
-- 节点配对 + 批准:[Gateway pairing](/zh/gateway/pairing)
+- 发现策略和传输选择:[Discovery](/gateway/discovery)
+- 节点配对 + 批准:[Gateway pairing](/gateway/pairing)
