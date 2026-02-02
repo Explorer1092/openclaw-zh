@@ -1,7 +1,7 @@
 ---
 title: "频道与路由"
 sidebarTitle: "频道与路由"
-mmh3_hash: "68179c016f9ec4f5630ee43d55a32632"
+mmh3_hash: "5cdd0deca841ce23fb6bd6e7e01aeba8"
 summary: "每个 channel 的路由规则(WhatsApp、Telegram、Discord、Slack)和共享 context"
 read_when: ["更改 channel 路由或收件箱行为"]
 ---

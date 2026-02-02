@@ -1,7 +1,7 @@
 ---
 title: "模型 CLI"
 sidebarTitle: "模型 CLI"
-mmh3_hash: "58f14d9dfd6cccc336585d7a6f62c7c6"
+mmh3_hash: "c6109501bdd16ea2b69ad867ebe79e67"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when: ["添加或修改 models CLI (models list/set/scan/aliases/fallbacks)","更改 model fallback 行为或选择 UX","更新 model scan probes (tools/images)"]
 ---

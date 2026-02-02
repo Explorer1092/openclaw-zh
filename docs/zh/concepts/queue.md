@@ -1,7 +1,7 @@
 ---
 title: "命令队列 (2026-01-16)"
 sidebarTitle: "命令队列"
-mmh3_hash: "56e7ee072e0abc1cdf8882531eb174b1"
+mmh3_hash: "fb43fbe395e5b0a3e692d85bfe5c00c7"
 summary: "序列化入站自动回复运行的命令队列设计"
 read_when: ["更改自动回复执行或并发"]
 ---

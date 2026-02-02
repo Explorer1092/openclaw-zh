@@ -1,7 +1,7 @@
 ---
 title: "会话管理"
 sidebarTitle: "会话管理"
-mmh3_hash: "612ded7a8cffad72f923b285c3783907"
+mmh3_hash: "288b545019f04a139fb6f0baada3886e"
 summary: "Session 管理规则、keys 和聊天持久化"
 read_when: ["修改 session 处理或存储"]
 ---

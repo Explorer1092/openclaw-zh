@@ -1,7 +1,7 @@
 ---
 title: "上下文窗口与压缩"
 sidebarTitle: "上下文窗口与压缩"
-mmh3_hash: "c400063912fa3d112978afbdd374740c"
+mmh3_hash: "33d6c44c0ddfc5c43f32d82baa588838"
 summary: "Context window + compaction: OpenClaw 如何将 sessions 保持在 model 限制内"
 read_when: ["你想了解自动 compaction 和 /compact","你正在调试达到 context 限制的长 sessions"]
 ---

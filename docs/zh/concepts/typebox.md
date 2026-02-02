@@ -1,7 +1,7 @@
 ---
 title: "TypeBox 作为协议真相来源"
 sidebarTitle: "TypeBox 协议真相来源"
-mmh3_hash: "78c9a91e49df0b051814e03642803626"
+mmh3_hash: "af7aed810df09e4a461bb9b231494ad9"
 summary: "TypeBox schemas 作为 gateway protocol 的单一真相来源"
 read_when: ["更新 protocol schemas 或 codegen"]
 ---

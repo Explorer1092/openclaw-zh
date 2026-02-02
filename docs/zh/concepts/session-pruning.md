@@ -1,7 +1,7 @@
 ---
 title: "会话修剪"
 sidebarTitle: "会话修剪"
-mmh3_hash: "f699150e26132c0100ebf771d59d090e"
+mmh3_hash: "6065e7b7100258d8ff795e923a13f777"
 summary: "Session pruning: tool-result 修剪以减少 context 膨胀"
 read_when: ["你想减少来自 tool 输出的 LLM context 增长","你正在调整 agents.defaults.contextPruning"]
 ---

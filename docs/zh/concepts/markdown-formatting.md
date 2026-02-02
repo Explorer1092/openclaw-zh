@@ -1,7 +1,7 @@
 ---
 title: "Markdown 格式"
 sidebarTitle: "Markdown 格式"
-mmh3_hash: "f74630a846e564110ce3508a031185b3"
+mmh3_hash: "5854e0796bb762b69b0264605c2a1284"
 summary: "出站 channels 的 Markdown 格式化管道"
 read_when: ["你正在为出站 channels 更改 markdown 格式化或分块","你正在添加新的 channel formatter 或样式映射","你正在调试跨 channels 的格式化回归"]
 ---

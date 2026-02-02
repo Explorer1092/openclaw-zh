@@ -1,7 +1,7 @@
 ---
 title: "消息"
 sidebarTitle: "消息"
-mmh3_hash: "a9c56225c752524dc3e69a3c222fd447"
+mmh3_hash: "cef47a38320e05030d67ade0e21601f4"
 summary: "Message 流程、sessions、queueing 和 reasoning 可见性"
 read_when: ["解释入站消息如何变成回复","澄清 sessions、queueing 模式或 streaming 行为","记录 reasoning 可见性和 usage 含义"]
 ---
