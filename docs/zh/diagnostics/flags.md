@@ -1,6 +1,6 @@
 ---
 title: "诊断标志"
-mmh3_hash: "b758a94e40f7cb6a17cc452af943e6fe"
+mmh3_hash: "b26bc76d5f1b4a62b0caec15bb1c80a0"
 summary: "用于定向调试日志的诊断标志"
 read_when: ["您需要定向调试日志而不提高全局日志级别","您需要捕获子系统特定日志以进行支持"]
 ---
