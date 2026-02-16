@@ -1,31 +1,32 @@
 ---
-title: "Telegram 允许列表加强"
-mmh3_hash: "819ea272962848d4b74da08b1a678726"
 summary: "Telegram 允许列表加强: 前缀 + 空格规范化"
-read_when: ["查看历史 Telegram 允许列表更改"]
+read_when:
+  - 查看历史 Telegram 允许列表更改
+title: "Telegram 允许列表加强"
 ---
+
 # Telegram 允许列表加强
 
-**日期**: 2026-01-05  
-**状态**: 完成  
+**日期**: 2026-01-05
+**状态**: 完成
 **PR**: #216
 
 ## 摘要
 
-Telegram 允许列表现在接受不区分大小写的 `telegram:` 和 `tg:` 前缀,并容忍意外的空格。这使入站允许列表检查与出站发送规范化对齐。
+Telegram 允许列表现在接受不区分大小写的 `telegram:` 和 `tg:` 前缀, 并容忍意外的空格。这使入站允许列表检查与出站发送规范化对齐。
 
 ## 更改内容
 
-- 前缀 `telegram:` 和 `tg:` 被视为相同(不区分大小写)。
-- 允许列表条目被修剪;空条目被忽略。
+- 前缀 `telegram:` 和 `tg:` 被视为相同 (不区分大小写)。
+- 允许列表条目被修剪; 空条目被忽略。
 
 ## 示例
 
-对于相同的 ID,以下所有内容都被接受:
+对于相同的 ID, 以下所有内容都被接受:
 
 - `telegram:123456`
 - `TG:123456`
-- ` tg:123456 `
+- `tg:123456`
 
 ## 重要性
 
@@ -33,5 +34,5 @@ Telegram 允许列表现在接受不区分大小写的 `telegram:` 和 `tg:` 前
 
 ## 相关文档
 
-- [群组聊天](/concepts/groups)
-- [Telegram 提供程序](/channels/telegram)
+- [群组聊天](/channels/groups)
+- [Telegram Provider](/channels/telegram)
