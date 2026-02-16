@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5fb540d74a4937260909b4a93ac37a2c"
+mmh3_hash: "6f371504bf066cfbc82d4efea731507c"
 summary: "WebSocket gateway 架构、组件和客户端流程"
 read_when:
   - 在 gateway protocol、clients 或 transports 上工作
@@ -18,7 +18,10 @@ title: "Gateway Architecture"
   `127.0.0.1:18789`)上的 **WebSocket** 连接到 Gateway。
 - **Nodes** (macOS/iOS/Android/headless)也通过 **WebSocket** 连接,但声明 `role: node` 并具有显式的 caps/commands。
 - 每个主机一个 Gateway;它是打开 WhatsApp session 的唯一位置。
-- **canvas host** (默认 `18793`)提供 agent 可编辑的 HTML 和 A2UI。
+- **canvas host** 由 Gateway HTTP server 在以下位置提供:
+  - `/__openclaw__/canvas/` (agent 可编辑的 HTML/CSS/JS)
+  - `/__openclaw__/a2ui/` (A2UI host)
+    它使用与 Gateway 相同的端口(默认 `18789`)。
 
 ## 组件和流程
 
@@ -52,21 +55,23 @@ title: "Gateway Architecture"
 
 ## 连接生命周期(单个客户端)
 
-```
-Client                    Gateway
-  |                          |
-  |---- req:connect -------->|
-  |<------ res (ok) ---------|   (or res error + close)
-  |   (payload=hello-ok carries snapshot: presence + health)
-  |                          |
-  |<------ event:presence ---|
-  |<------ event:tick -------|
-  |                          |
-  |------- req:agent ------->|
-  |<------ res:agent --------|   (ack: {runId,status:"accepted"})
-  |<------ event:agent ------|   (streaming)
-  |<------ res:agent --------|   (final: {runId,status,summary})
-  |                          |
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Gateway
+
+    Client->>Gateway: req:connect
+    Gateway-->>Client: res (ok)
+    Note right of Gateway: or res error + close
+    Note left of Client: payload=hello-ok<br>snapshot: presence + health
+
+    Gateway-->>Client: event:presence
+    Gateway-->>Client: event:tick
+
+    Client->>Gateway: req:agent
+    Gateway-->>Client: res:agent<br>ack {runId, status:"accepted"}
+    Gateway-->>Client: event:agent<br>(streaming)
+    Gateway-->>Client: res:agent<br>final {runId, status, summary}
 ```
 
 ## 线路协议(摘要)
@@ -88,7 +93,7 @@ Client                    Gateway
 - **非本地**连接必须签署 `connect.challenge` nonce 并需要显式批准。
 - Gateway auth (`gateway.auth.*`)仍然适用于**所有**连接,无论是本地还是远程。
 
-详细信息:[Gateway protocol](/gateway/protocol)、[Pairing](/start/pairing)、[Security](/gateway/security)。
+详细信息:[Gateway protocol](/gateway/protocol)、[Pairing](/channels/pairing)、[Security](/gateway/security)。
 
 ## Protocol 类型和代码生成
 

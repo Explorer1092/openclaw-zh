@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "207e1e5665ba2dc5e3d40c001125c85c"
+mmh3_hash: "7ca6ee0a5e21de49f432a4274e347a38"
 summary: "Agent runtime (embedded pi-mono)、workspace 契约和 session bootstrap"
 read_when:
   - 更改 agent runtime、workspace bootstrap 或 session 行为
@@ -100,4 +100,4 @@ Block 流式传输在完成后立即发送完成的 assistant blocks;它**默认
 
 ---
 
-*下一步: [Group Chats](/concepts/group-messages)* 🦞
+_下一步: [Group Chats](/channels/group-messages)_ 🦞

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a75064833413f7b718c7027efeb89cdd"
+mmh3_hash: "0e5536dca37de52e1b2bfe64f44f17c3"
 summary: "Agent workspace: 位置、布局和备份策略"
 read_when:
   - 你需要解释 agent workspace 或其文件布局
@@ -209,5 +209,5 @@ git push
 ## 高级注意事项
 
 - Multi-agent 路由可以为每个 agent 使用不同的 workspaces。参见
-  [Channel routing](/concepts/channel-routing) 了解路由配置。
+  [Channel routing](/channels/channel-routing) 了解路由配置。
 - 如果启用了 `agents.defaults.sandbox`,非主 sessions 可以使用 `agents.defaults.sandbox.workspaceRoot` 下的每个 session 沙箱 workspaces。

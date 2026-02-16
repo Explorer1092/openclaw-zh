@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "da08e6f9229e284c83c53c2140210511"
+mmh3_hash: "a18dc7020bdd2728a357631a3ea65f24"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:
   - 你需要了解 agent loop 或生命周期事件的详细流程
@@ -73,7 +73,7 @@ OpenClaw 有两个 hook 系统:
   使用它来添加/删除 bootstrap context 文件。
 - **Command hooks**: `/new`、`/reset`、`/stop` 和其他命令事件(参见 Hooks 文档)。
 
-参见 [Hooks](/hooks) 了解设置和示例。
+参见 [Hooks](/automation/hooks) 了解设置和示例。
 
 ### Plugin hooks (agent + gateway 生命周期)
 
@@ -88,7 +88,7 @@ OpenClaw 有两个 hook 系统:
 - **`session_start` / `session_end`**: session 生命周期边界。
 - **`gateway_start` / `gateway_stop`**: gateway 生命周期事件。
 
-参见 [Plugins](/plugin#plugin-hooks) 了解 hook API 和注册详细信息。
+参见 [Plugins](/tools/plugin#plugin-hooks) 了解 hook API 和注册详细信息。
 
 ## 流式传输 + 部分回复
 
