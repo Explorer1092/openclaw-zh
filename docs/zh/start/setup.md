@@ -1,7 +1,7 @@
 ---
 title: "设置"
 sidebarTitle: "设置"
-mmh3_hash: "2f357625c3f7d24f6a71d0e2f759ab11"
+mmh3_hash: "a7305dc2e87b72b18c460f65227cb24a"
 summary: "设置指南：保持 OpenClaw 设置量身定制，同时保持最新"
 read_when: ["设置新机器","想要“最新 + 最好”而不破坏个人设置"]
 ---

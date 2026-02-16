@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5b7aadb9333d81db7f3690d5fc3f8b77"
+mmh3_hash: "22ad60071b6a95baa66eae9469a632a4"
 summary: "OpenClaw 的背景故事和文化"
 read_when:
   - 编写引用背景故事的文档或用户体验文案

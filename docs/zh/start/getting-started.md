@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "179c5fa0380f79abb8c1656b06c37430"
+mmh3_hash: "0214ba4ac2425d129981de351241b86c"
 summary: "初学者指南：从零开始到发送第一条消息（向导、认证、Channel、配对）"
 read_when:
   - 首次从零开始设置

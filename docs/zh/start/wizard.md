@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "570108ba4fea0c773d19e328b95ba92b"
+mmh3_hash: "fc824ec03670fad12e45d5d44989c27d"
 summary: "CLI 入门向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
 read_when:
   - 运行或配置入门向导
