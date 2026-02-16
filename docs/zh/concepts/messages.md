@@ -1,11 +1,14 @@
 ---
-title: "消息"
-sidebarTitle: "消息"
-mmh3_hash: "cef47a38320e05030d67ade0e21601f4"
+mmh3_hash: "c660b0067607f0b860dde2997fd24d95"
 summary: "Message 流程、sessions、queueing 和 reasoning 可见性"
-read_when: ["解释入站消息如何变成回复","澄清 sessions、queueing 模式或 streaming 行为","记录 reasoning 可见性和 usage 含义"]
+read_when:
+  - 解释入站消息如何变成回复
+  - 澄清 sessions、queueing 模式或 streaming 行为
+  - 记录 reasoning 可见性和 usage 含义
+title: "Messages"
 ---
-# 消息
+
+# Messages
 
 本页面将 OpenClaw 如何处理入站消息、sessions、queueing、streaming 和 reasoning 可见性联系在一起。
 
@@ -24,7 +27,7 @@ Inbound message
 - `agents.defaults.*` 用于 block streaming 和 chunking 默认值。
 - Channel 覆盖(`channels.whatsapp.*`、`channels.telegram.*` 等)用于 caps 和 streaming 切换。
 
-参见 [Configuration](/zh/gateway/configuration) 了解完整 schema。
+参见 [Configuration](/gateway/configuration) 了解完整 schema。
 
 ## 入站去重
 
@@ -63,7 +66,7 @@ Sessions 由 gateway 拥有,而不是由 clients 拥有。
 
 多个 devices/channels 可以映射到同一 session,但历史记录不会完全同步回每个客户端。建议:使用一个主要设备进行长时间对话,以避免发散的 context。Control UI 和 TUI 始终显示 gateway 支持的 session transcript,因此它们是真相的来源。
 
-详细信息:[Session management](/zh/concepts/session)。
+详细信息:[Session management](/concepts/session)。
 
 ## 入站 bodies 和 history context
 
@@ -89,7 +92,7 @@ Directive 剥离仅适用于 **当前消息** 部分,因此 history 保持完整
 - 通过 `messages.queue`(和 `messages.queue.byChannel`)配置。
 - 模式:`interrupt`、`steer`、`followup`、`collect`,加上 backlog 变体。
 
-详细信息:[Queueing](/zh/concepts/queue)。
+详细信息:[Queueing](/concepts/queue)。
 
 ## Streaming、chunking 和 batching
 
@@ -103,7 +106,7 @@ Block streaming 在 model 生成文本块时发送部分回复。Chunking 尊重
 - `agents.defaults.humanDelay` (block 回复之间的类人暂停)
 - Channel 覆盖:`*.blockStreaming` 和 `*.blockStreamingCoalesce`(非 Telegram channels 需要显式 `*.blockStreaming: true`)
 
-详细信息:[Streaming + chunking](/zh/concepts/streaming)。
+详细信息:[Streaming + chunking](/concepts/streaming)。
 
 ## Reasoning 可见性和 tokens
 
@@ -112,12 +115,13 @@ OpenClaw 可以公开或隐藏 model reasoning:
 - 当 model 生成时,Reasoning 内容仍计入 token usage。
 - Telegram 支持 reasoning stream 到草稿气泡中。
 
-详细信息:[Thinking + reasoning directives](/zh/tools/thinking) 和 [Token use](/zh/token-use)。
+详细信息:[Thinking + reasoning directives](/tools/thinking) 和 [Token use](/reference/token-use)。
 
 ## 前缀、threading 和 replies
 
 出站消息格式化集中在 `messages` 中:
-- `messages.responsePrefix`(出站前缀)和 `channels.whatsapp.messagePrefix`(WhatsApp 入站前缀)
+
+- `messages.responsePrefix`、`channels.<channel>.responsePrefix` 和 `channels.<channel>.accounts.<id>.responsePrefix`(出站前缀级联),加上 `channels.whatsapp.messagePrefix`(WhatsApp 入站前缀)
 - 通过 `replyToMode` 和每个 channel 默认值进行回复 threading
 
-详细信息:[Configuration](/zh/gateway/configuration#messages) 和 channel 文档。
+详细信息:[Configuration](/gateway/configuration#messages) 和 channel 文档。

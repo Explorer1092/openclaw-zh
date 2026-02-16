@@ -1,11 +1,13 @@
 ---
-title: "记忆 (Memory)"
-sidebarTitle: "记忆"
-mmh3_hash: "0d47cd20c177bff82ce81f897b7c1829"
+mmh3_hash: "e97121655f10df07f1bf585af4d116f2"
+title: "Memory"
 summary: "OpenClaw memory 如何工作(workspace 文件 + 自动内存刷新)"
-read_when: ["你想了解内存文件布局和工作流程","你想调整自动预 compaction 内存刷新"]
+read_when:
+  - 你想了解内存文件布局和工作流程
+  - 你想调整自动预 compaction 内存刷新
 ---
-# 记忆 (Memory)
+
+# Memory
 
 OpenClaw memory 是 **agent workspace 中的纯 Markdown**。文件是真相的来源;model 只"记住"写入磁盘的内容。
 
@@ -22,7 +24,7 @@ Memory search tools 由活动 memory plugin 提供(默认:`memory-core`)。使�
   - 精选的长期内存。
   - **仅在主要私有 session 中加载**(从不在 group contexts 中)。
 
-这些文件位于 workspace 下(`agents.defaults.workspace`,默认 `~/.openclaw/workspace`)。参见 [Agent workspace](/zh/concepts/agent-workspace) 了解完整布局。
+这些文件位于 workspace 下(`agents.defaults.workspace`,默认 `~/.openclaw/workspace`)。参见 [Agent workspace](/concepts/agent-workspace) 了解完整布局。
 
 ## 何时写入 memory
 
@@ -63,24 +65,27 @@ Memory search tools 由活动 memory plugin 提供(默认:`memory-core`)。使�
 - **每个 compaction 周期一次 flush**(在 `sessions.json` 中跟踪)。
 - **Workspace 必须可写**: 如果 session 在沙盒中运行,并且 `workspaceAccess: "ro"` 或 `"none"`,则跳过 flush。
 
-有关完整的 compaction 生命周期,请参见 [Session management + compaction](/zh/reference/session-management-compaction)。
+有关完整的 compaction 生命周期,请参见 [Session management + compaction](/reference/session-management-compaction)。
 
 ## Vector memory search
 
-OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md`(加上你选择加入的任何额外目录或文件)上构建小型向量索引,以便语义查询即使在措辞不同时也能找到相关注释。
+OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md` 上构建小型向量索引,以便语义查询即使在措辞不同时也能找到相关注释。
 
 默认值:
+
 - 默认启用。
 - 监视 memory 文件的更改(去抖动)。
+- 在 `agents.defaults.memorySearch` 下配置 memory search(不是顶级 `memorySearch`)。
 - 默认使用远程 embeddings。如果未设置 `memorySearch.provider`,OpenClaw 自动选择:
   1. `local` 如果配置了 `memorySearch.local.modelPath` 并且文件存在。
   2. `openai` 如果可以解析 OpenAI key。
   3. `gemini` 如果可以解析 Gemini key。
-  4. 否则 memory search 保持禁用,直到配置。
+  4. `voyage` 如果可以解析 Voyage key。
+  5. 否则 memory search 保持禁用,直到配置。
 - Local 模式使用 node-llama-cpp,可能需要 `pnpm approve-builds`。
 - 使用 sqlite-vec(在可用时)在 SQLite 内加速向量搜索。
 
-远程 embeddings **需要** embedding provider 的 API key。OpenClaw 从 auth profiles、`models.providers.*.apiKey` 或环境变量解析 keys。Codex OAuth 仅涵盖 chat/completions,**不** 满足 memory search 的 embeddings。对于 Gemini,使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。当使用自定义 OpenAI 兼容端点时,设置 `memorySearch.remote.apiKey`(和可选的 `memorySearch.remote.headers`)。
+远程 embeddings **需要** embedding provider 的 API key。OpenClaw 从 auth profiles、`models.providers.*.apiKey` 或环境变量解析 keys。Codex OAuth 仅涵盖 chat/completions,**不** 满足 memory search 的 embeddings。对于 Gemini,使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。对于 Voyage,使用 `VOYAGE_API_KEY` 或 `models.providers.voyage.apiKey`。当使用自定义 OpenAI 兼容端点时,设置 `memorySearch.remote.apiKey`(和可选的 `memorySearch.remote.headers`)。
 
 ### 额外的 memory 路径
 

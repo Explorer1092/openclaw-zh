@@ -1,11 +1,14 @@
 ---
-title: "上下文"
-sidebarTitle: "上下文"
-mmh3_hash: "fd7175d6338497f54f1e85ce8ce703bb"
+mmh3_hash: "0eea16d1972a9808139e87128781323e"
 summary: "Context: model 看到什么、如何构建以及如何检查"
-read_when: ["你想了解 OpenClaw 中\"context\"的含义","你正在调试为什么 model \"知道\"某事(或忘记了它)","你想减少 context 开销(/context、/status、/compact)"]
+read_when:
+  - 你想了解 OpenClaw 中"context"的含义
+  - 你正在调试为什么 model "知道"某事(或忘记了它)
+  - 你想减少 context 开销(/context、/status、/compact)
+title: "Context"
 ---
-# 上下文
+
+# Context
 
 "Context"是 **OpenClaw 发送给 model 用于运行的所有内容**。它受 model 的 **context window**(token 限制)约束。
 
@@ -24,7 +27,7 @@ Context *不同于*"内存":内存可以存储在磁盘上并稍后重新加载;
 - `/usage tokens` → 向正常回复附加每个回复的 usage footer。
 - `/compact` → 将较旧的历史记录总结为紧凑条目以释放窗口空间。
 
-另见:[Slash commands](/zh/tools/slash-commands)、[Token use & costs](/zh/token-use)、[Compaction](/zh/concepts/compaction)。
+另见:[Slash commands](/tools/slash-commands)、[Token use & costs](/reference/token-use)、[Compaction](/concepts/compaction)。
 
 ## 示例输出
 
@@ -93,7 +96,7 @@ System prompt 由 **OpenClaw 拥有** 并在每次运行时重建。它包括:
 - Runtime 元数据(host/OS/model/thinking)。
 - 在 **Project Context** 下注入的 workspace bootstrap 文件。
 
-完整细分:[System Prompt](/zh/concepts/system-prompt)。
+完整细分:[System Prompt](/concepts/system-prompt)。
 
 ## 注入的 workspace 文件(Project Context)
 
@@ -106,7 +109,7 @@ System prompt 由 **OpenClaw 拥有** 并在每次运行时重建。它包括:
 - `HEARTBEAT.md`
 - `BOOTSTRAP.md`(仅首次运行)
 
-大文件使用 `agents.defaults.bootstrapMaxChars`(默认 `20000` 字符)按文件截断。`/context` 显示 **原始 vs 注入** 大小以及是否发生截断。
+大文件使用 `agents.defaults.bootstrapMaxChars`(默认 `20000` 字符)按文件截断。OpenClaw 还使用 `agents.defaults.bootstrapTotalMaxChars`(默认 `24000` 字符)在文件间强制执行总 bootstrap 注入上限。`/context` 显示 **原始 vs 注入** 大小以及是否发生截断。
 
 ## Skills: 注入了什么 vs 按需加载
 
@@ -117,8 +120,9 @@ Skill 指令 *默认不包含*。期望 model **仅在需要时** `read` skill �
 ## Tools: 有两个成本
 
 Tools 以两种方式影响 context:
-1) System prompt 中的 **Tool 列表文本**(你看到的"Tooling")。
-2) **Tool schemas** (JSON)。这些被发送给 model 以便它可以调用 tools。即使你看不到它们作为纯文本,它们也计入 context。
+
+1. **Tool 列表文本** 在 system prompt 中(你看到的"Tooling")。
+2. **Tool schemas** (JSON)。这些被发送给 model 以便它可以调用 tools。即使你看不到它们作为纯文本,它们也计入 context。
 
 `/context detail` 分解最大的 tool schemas,以便你可以看到什么占主导地位。
 
@@ -131,7 +135,7 @@ Slash commands 由 Gateway 处理。有几种不同的行为:
   - 正常消息中的内联 directives 作为每条消息的提示。
 - **内联快捷方式**(仅允许列表发送者):正常消息中的某些 `/...` tokens 可以立即运行(例如:"hey /status"),并在 model 看到剩余文本之前被剥离。
 
-详细信息:[Slash commands](/zh/tools/slash-commands)。
+详细信息:[Slash commands](/tools/slash-commands)。
 
 ## Sessions、compaction 和 pruning(什么持久化)
 
@@ -140,7 +144,7 @@ Slash commands 由 Gateway 处理。有几种不同的行为:
 - **Compaction** 将摘要持久化到 transcript 中并保持最近的消息完整。
 - **Pruning** 从运行的 *内存中* prompt 中删除旧的 tool results,但不重写 transcript。
 
-文档:[Session](/zh/concepts/session)、[Compaction](/zh/concepts/compaction)、[Session pruning](/zh/concepts/session-pruning)。
+文档:[Session](/concepts/session)、[Compaction](/concepts/compaction)、[Session pruning](/concepts/session-pruning)。
 
 ## `/context` 实际报告什么
 
