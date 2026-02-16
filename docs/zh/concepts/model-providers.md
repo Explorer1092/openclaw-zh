@@ -1,17 +1,19 @@
 ---
-title: "模型提供方"
-sidebarTitle: "模型提供方"
-mmh3_hash: "e3c077d21cdb46bcd8c08d140b2189dd"
+mmh3_hash: "136f1d74bf497787f26149974eb89343"
 summary: "Model provider 概述,包含示例配置 + CLI 流程"
-read_when: ["你需要按 provider 的 model 设置参考","你想要 model providers 的示例配置或 CLI onboarding 命令"]
+read_when:
+  - 你需要按 provider 的 model 设置参考
+  - 你想要 model providers 的示例配置或 CLI onboarding 命令
+title: "Model Providers"
 ---
-# 模型提供方
 
-本页面涵盖 **LLM/model providers**(不是像 WhatsApp/Telegram 这样的聊天 channels)。有关 model 选择规则,请参见 [/concepts/models](/zh/concepts/models)。
+# Model providers
+
+本页面涵盖 **LLM/model providers**(不是像 WhatsApp/Telegram 这样的聊天 channels)。有关 model 选择规则,请参见 [/concepts/models](/concepts/models)。
 
 ## 快速规则
 
-- Model refs 使用 `provider/model`(例如:`opencode/claude-opus-4-5`)。
+- Model refs 使用 `provider/model`(例如:`opencode/claude-opus-4-6`)。
 - 如果你设置 `agents.defaults.models`,它将成为允许列表。
 - CLI helpers: `openclaw onboard`、`openclaw models list`、`openclaw models set <provider/model>`。
 
@@ -23,12 +25,12 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `openai`
 - Auth: `OPENAI_API_KEY`
-- 示例 model: `openai/gpt-5.2`
+- 示例 model: `openai/gpt-5.1-codex`
 - CLI: `openclaw onboard --auth-choice openai-api-key`
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai/gpt-5.2" } } }
+  agents: { defaults: { model: { primary: "openai/gpt-5.1-codex" } } },
 }
 ```
 
@@ -36,12 +38,12 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `anthropic`
 - Auth: `ANTHROPIC_API_KEY` 或 `claude setup-token`
-- 示例 model: `anthropic/claude-opus-4-5`
+- 示例 model: `anthropic/claude-opus-4-6`
 - CLI: `openclaw onboard --auth-choice token` (粘贴 setup-token) 或 `openclaw models auth paste-token --provider anthropic`
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } }
+  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-6" } } },
 }
 ```
 
@@ -49,12 +51,12 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `openai-codex`
 - Auth: OAuth (ChatGPT)
-- 示例 model: `openai-codex/gpt-5.2`
+- 示例 model: `openai-codex/gpt-5.3-codex`
 - CLI: `openclaw onboard --auth-choice openai-codex` 或 `openclaw models auth login --provider openai-codex`
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai-codex/gpt-5.2" } } }
+  agents: { defaults: { model: { primary: "openai-codex/gpt-5.3-codex" } } },
 }
 ```
 
@@ -62,12 +64,12 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `opencode`
 - Auth: `OPENCODE_API_KEY` (或 `OPENCODE_ZEN_API_KEY`)
-- 示例 model: `opencode/claude-opus-4-5`
+- 示例 model: `opencode/claude-opus-4-6`
 - CLI: `openclaw onboard --auth-choice opencode-zen`
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "opencode/claude-opus-4-5" } } }
+  agents: { defaults: { model: { primary: "opencode/claude-opus-4-6" } } },
 }
 ```
 
@@ -78,7 +80,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 - 示例 model: `google/gemini-3-pro-preview`
 - CLI: `openclaw onboard --auth-choice gemini-api-key`
 
-### Google Vertex / Antigravity / Gemini CLI
+### Google Vertex, Antigravity, and Gemini CLI
 
 - Providers: `google-vertex`、`google-antigravity`、`google-gemini-cli`
 - Auth: Vertex 使用 gcloud ADC;Antigravity/Gemini CLI 使用它们各自的 auth 流程
@@ -102,7 +104,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `vercel-ai-gateway`
 - Auth: `AI_GATEWAY_API_KEY`
-- 示例 model: `vercel-ai-gateway/anthropic/claude-opus-4.5`
+- 示例 model: `vercel-ai-gateway/anthropic/claude-opus-4.6`
 - CLI: `openclaw onboard --auth-choice ai-gateway-api-key`
 
 ### 其他内置 providers
@@ -116,6 +118,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
   - OpenAI 兼容 base URL: `https://api.cerebras.ai/v1`。
 - Mistral: `mistral` (`MISTRAL_API_KEY`)
 - GitHub Copilot: `github-copilot` (`COPILOT_GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_TOKEN`)
+- Hugging Face Inference: `huggingface` (`HUGGINGFACE_HUB_TOKEN` 或 `HF_TOKEN`) — OpenAI 兼容 router;示例 model: `huggingface/deepseek-ai/DeepSeek-R1`;CLI: `openclaw onboard --auth-choice huggingface-api-key`。参见 [Hugging Face (Inference)](/providers/huggingface)。
 
 ## 通过 `models.providers` 的 Providers (自定义/base URL)
 
@@ -128,14 +131,17 @@ Moonshot 使用 OpenAI 兼容端点,因此将其配置为自定义 provider:
 - Provider: `moonshot`
 - Auth: `MOONSHOT_API_KEY`
 - 示例 model: `moonshot/kimi-k2.5`
-- Kimi K2 model IDs:
-  {/* moonshot-kimi-k2-model-refs:start */}
-  - `moonshot/kimi-k2.5`
-  - `moonshot/kimi-k2-0905-preview`
-  - `moonshot/kimi-k2-turbo-preview`
-  - `moonshot/kimi-k2-thinking`
-  - `moonshot/kimi-k2-thinking-turbo`
-  {/* moonshot-kimi-k2-model-refs:end */}
+
+Kimi K2 model IDs:
+
+{/_moonshot-kimi-k2-model-refs:start_/ && null}
+
+- `moonshot/kimi-k2.5`
+- `moonshot/kimi-k2-0905-preview`
+- `moonshot/kimi-k2-turbo-preview`
+- `moonshot/kimi-k2-thinking`
+- `moonshot/kimi-k2-thinking-turbo`
+  {/_moonshot-kimi-k2-model-refs:end_/ && null}
 ```json5
 {
   agents: {
@@ -155,31 +161,20 @@ Moonshot 使用 OpenAI 兼容端点,因此将其配置为自定义 provider:
 }
 ```
 
-### Kimi Code
+### Kimi Coding
 
-Kimi Code 使用专用端点和 key(与 Moonshot 分开):
+Kimi Coding 使用 Moonshot AI 的 Anthropic 兼容端点:
 
-- Provider: `kimi-code`
-- Auth: `KIMICODE_API_KEY`
-- 示例 model: `kimi-code/kimi-for-coding`
+- Provider: `kimi-coding`
+- Auth: `KIMI_API_KEY`
+- 示例 model: `kimi-coding/k2p5`
 
 ```json5
 {
-  env: { KIMICODE_API_KEY: "sk-..." },
+  env: { KIMI_API_KEY: "sk-..." },
   agents: {
-    defaults: { model: { primary: "kimi-code/kimi-for-coding" } }
+    defaults: { model: { primary: "kimi-coding/k2p5" } },
   },
-  models: {
-    mode: "merge",
-    providers: {
-      "kimi-code": {
-        baseUrl: "https://api.kimi.com/coding/v1",
-        apiKey: "${KIMICODE_API_KEY}",
-        api: "openai-completions",
-        models: [{ id: "kimi-for-coding", name: "Kimi For Coding" }]
-      }
-    }
-  }
 }
 ```
 
@@ -196,7 +191,7 @@ Model refs:
 - `qwen-portal/coder-model`
 - `qwen-portal/vision-model`
 
-参见 [/providers/qwen](/zh/providers/qwen) 了解设置详细信息和注释。
+参见 [/providers/qwen](/providers/qwen) 了解设置详细信息和注释。
 
 ### Synthetic
 
@@ -233,7 +228,7 @@ MiniMax 通过 `models.providers` 配置,因为它使用自定义端点:
 - MiniMax (Anthropic‑兼容): `--auth-choice minimax-api`
 - Auth: `MINIMAX_API_KEY`
 
-参见 [/providers/minimax](/zh/providers/minimax) 了解设置详细信息、model 选项和配置片段。
+参见 [/providers/minimax](/providers/minimax) 了解设置详细信息、model 选项和配置片段。
 
 ### Ollama
 
@@ -257,7 +252,33 @@ ollama pull llama3.3
 }
 ```
 
-Ollama 在本地 `http://127.0.0.1:11434/v1` 运行时自动检测。参见 [/providers/ollama](/zh/providers/ollama) 了解 model 推荐和自定义配置。
+Ollama 在本地 `http://127.0.0.1:11434/v1` 运行时自动检测。参见 [/providers/ollama](/providers/ollama) 了解 model 推荐和自定义配置。
+
+### vLLM
+
+vLLM 是本地(或自托管的)OpenAI 兼容 server:
+
+- Provider: `vllm`
+- Auth: 可选(取决于你的 server)
+- 默认 base URL: `http://127.0.0.1:8000/v1`
+
+要选择在本地自动发现(如果你的 server 不强制执行 auth,任何值都可以):
+
+```bash
+export VLLM_API_KEY="vllm-local"
+```
+
+然后设置一个 model(替换为 `/v1/models` 返回的 IDs 之一):
+
+```json5
+{
+  agents: {
+    defaults: { model: { primary: "vllm/your-model-id" } },
+  },
+}
+```
+
+参见 [/providers/vllm](/providers/vllm) 了解详细信息。
 
 ### 本地 proxies (LM Studio、vLLM、LiteLLM 等)
 
@@ -307,8 +328,8 @@ Ollama 在本地 `http://127.0.0.1:11434/v1` 运行时自动检测。参见 [/pr
 
 ```bash
 openclaw onboard --auth-choice opencode-zen
-openclaw models set opencode/claude-opus-4-5
+openclaw models set opencode/claude-opus-4-6
 openclaw models list
 ```
 
-另见:[/gateway/configuration](/zh/gateway/configuration) 了解完整配置示例。
+另见:[/gateway/configuration](/gateway/configuration) 了解完整配置示例。
