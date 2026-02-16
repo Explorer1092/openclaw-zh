@@ -1,7 +1,7 @@
 ---
 title: "Cron 与心跳：何时使用"
 sidebarTitle: "Cron 与心跳"
-mmh3_hash: "1b46ec99199f45d4ad32c3808d28c41f"
+mmh3_hash: "8e2ab7c0aaea41fce590330e5a402a56"
 summary: "关于在自动化中选择心跳还是 cron 作业的指导"
 read_when: ["决定如何调度重复任务时","设置后台监控或通知时","优化定期检查的 token 使用时"]
 ---
@@ -88,7 +88,8 @@ Cron 作业在 **确切时间** 运行，可以在隔离会话中运行而不影
 - **确切计时**：带有时区支持的 5 字段 cron 表达式。
 - **会话隔离**：在 `cron:<jobId>` 中运行而不污染主历史记录。
 - **模型覆盖**：每个作业使用更便宜或更强大的模型。
-- **传递控制**：可以直接传递到频道；默认情况下仍向主会话发布摘要（可配置）。
+- **传递控制**：Isolated 作业默认为 `announce` (摘要)；根据需要选择 `none`。
+- **立即传递**：Announce 模式直接发布而不等待心跳。
 - **无需智能体上下文**：即使主会话空闲或被压缩也会运行。
 - **一次性支持**：用于精确未来时间戳的 `--at`。
 
@@ -102,7 +103,7 @@ openclaw cron add \
   --session isolated \
   --message "Generate today's briefing: weather, calendar, top emails, news summary." \
   --model opus \
-  --deliver \
+  --announce \
   --channel whatsapp \
   --to "+15551234567"
 ```
@@ -168,7 +169,7 @@ openclaw cron add \
 **Cron 作业** (精确计时):
 ```bash
 # 早上 7 点的每日晨间简报
-openclaw cron add --name "Morning brief" --cron "0 7 * * *" --session isolated --message "..." --deliver
+openclaw cron add --name "Morning brief" --cron "0 7 * * *" --session isolated --message "..." --announce
 
 # 周一上午 9 点的每周项目审查
 openclaw cron add --name "Weekly review" --cron "0 9 * * 1" --session isolated --message "..." --model opus
@@ -216,7 +217,7 @@ Lobster 是用于 **多步骤工具管道** 的工作流运行时，需要确定
 | 历史 | 共享 | 共享 | 每次运行全新 |
 | 上下文 | 完整 | 完整 | 无 (开始时干净) |
 | 模型 | 主会话模型 | 主会话模型 | 可覆盖 |
-| 输出 | 如果不是 `HEARTBEAT_OK` 则传递 | 心跳提示词 + 事件 | 摘要发布到主会话 |
+| 输出 | 如果不是 `HEARTBEAT_OK` 则传递 | 心跳提示词 + 事件 | Announce 摘要 (默认) |
 
 ### 何时使用主会话 cron
 
@@ -239,7 +240,7 @@ openclaw cron add \
 当你想要以下内容时，使用 `--session isolated`：
 - 没有先前上下文的干净状态
 - 不同的模型或思考设置
-- 输出直接传递到频道（摘要默认仍发布到主会话）
+- Announce 摘要直接到 Channel
 - 不会弄乱主会话的历史记录
 
 ```bash
@@ -250,7 +251,7 @@ openclaw cron add \
   --message "Weekly codebase analysis..." \
   --model opus \
   --thinking high \
-  --deliver
+  --announce
 ```
 
 ## 成本考虑

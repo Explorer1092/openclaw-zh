@@ -1,7 +1,7 @@
 ---
 title: "Cron 作业"
 sidebarTitle: "Cron 作业"
-mmh3_hash: "19ebd7d865818e7deced3d17044e8864"
+mmh3_hash: "6e5363775daba43da53eb86b2c9fbc01"
 summary: "网关调度器的 Cron 作业 + 唤醒"
 read_when: ["调度后台作业或唤醒时","连接应与心跳一起或并行运行的自动化时","在心跳和 cron 之间决定调度任务时"]
 ---
@@ -14,14 +14,17 @@ Cron 是 Gateway 内置的调度器。它持久化作业,在正确的时间唤�
 
 如果你想要 *"每天早上运行这个"* 或 *"20 分钟后提醒 Agent"*,cron 就是这种机制。
 
+故障排除: [/automation/troubleshooting](/automation/troubleshooting)
+
 ## TL;DR
 
 - Cron 在 **Gateway 内部** 运行(而不是在模型内部)。
 - 作业持久化在 `~/.openclaw/cron/` 下,因此重启不会丢失计划。
 - 两种执行风格:
   - **Main session**: 将系统事件排队,然后在下一次心跳时运行。
-  - **Isolated**: 在 `cron:<jobId>` 中运行专用的 Agent 回合,可选传递输出。
+  - **Isolated**: 在 `cron:<jobId>` 中运行专用的 Agent 回合,带有传递(默认为 announce 或 none)。
 - 唤醒是一等公民: 作业可以请求"现在唤醒"与"下次心跳"。
+- Webhook 发布是每个作业的可选功能: 设置 `notify: true` 并配置 `cron.webhook`。
 
 ## 快速开始 (可操作)
 
@@ -37,7 +40,7 @@ openclaw cron add \
   --delete-after-run
 
 openclaw cron list
-openclaw cron run <job-id> --force
+openclaw cron run <job-id>
 openclaw cron runs --id <job-id>
 ```
 
@@ -50,7 +53,7 @@ openclaw cron add \
   --tz "America/Los_Angeles" \
   --session isolated \
   --message "Summarize overnight updates." \
-  --deliver \
+  --announce \
   --channel slack \
   --to "channel:C1234567890"
 ```
@@ -80,7 +83,7 @@ Cron 作业默认持久化在 Gateway 主机的 `~/.openclaw/cron/jobs.json`。G
    - Main session → `payload.kind = "systemEvent"`
    - Isolated session → `payload.kind = "agentTurn"`
 
-可选: `deleteAfterRun: true` 从存储中删除成功的一次性作业。
+可选: 一次性作业 (`schedule.kind = "at"`) 成功后默认删除。设置 `deleteAfterRun: false` 以保留它们(它们将在成功后禁用)。
 
 ## 概念
 
@@ -95,13 +98,13 @@ Cron 作业是一个存储记录,包含:
 
 作业由稳定的 `jobId` 标识(供 CLI/Gateway API 使用)。
 在 Agent 工具调用中,`jobId` 是规范的;为了兼容性接受旧版 `id`。
-作业可以通过 `deleteAfterRun: true` 选择在成功的一次性运行后自动删除。
+一次性作业成功后默认自动删除;设置 `deleteAfterRun: false` 以保留它们。
 
 ### 计划
 
 Cron 支持三种计划类型:
 
-- `at`: 一次性时间戳(自纪元以来的毫秒数)。Gateway 接受 ISO 8601 并强制转换为 UTC。
+- `at`: 通过 `schedule.at` 的一次性时间戳(ISO 8601)。
 - `every`: 固定间隔(毫秒)。
 - `cron`: 带有可选 IANA 时区的 5 字段 cron 表达式。
 
@@ -114,8 +117,8 @@ Cron 表达式使用 `croner`。如果省略时区,则使用 Gateway 主机的�
 Main 作业将系统事件排队,并可选地唤醒心跳运行器。
 它们必须使用 `payload.kind = "systemEvent"`。
 
-- `wakeMode: "next-heartbeat"` (默认): 事件等待下一次预定的心跳。
-- `wakeMode: "now"`: 事件触发立即的心跳运行。
+- `wakeMode: "now"` (默认): 事件触发立即的心跳运行。
+- `wakeMode: "next-heartbeat"`: 事件等待下一次预定的心跳。
 
 当你想要正常的心跳提示词 + main session 上下文时,这是最合适的。
 参见 [心跳](/gateway/heartbeat)。
@@ -128,9 +131,13 @@ Isolated 作业在 session `cron:<jobId>` 中运行专用的 Agent 回合。
 
 - 提示词以 `[cron:<jobId> <job name>]` 为前缀以进行追踪。
 - 每次运行都开始一个 **新的 session id** (没有先前的对话结转)。
-- 摘要会发布到 main session (前缀 `Cron`,可配置)。
-- `wakeMode: "now"` 在发布摘要后触发立即的心跳。
-- 如果 `payload.deliver: true`,输出将传递到 Channel;否则保持内部。
+- 默认行为: 如果省略 `delivery`,isolated 作业会发布摘要 (`delivery.mode = "announce"`)。
+- `delivery.mode` (仅 isolated) 选择发生什么:
+  - `announce`: 将摘要传递到目标 Channel,并向 main session 发布简短摘要。
+  - `none`: 仅内部(无传递,无 main session 摘要)。
+- `wakeMode` 控制 main session 摘要何时发布:
+  - `now`: 立即心跳。
+  - `next-heartbeat`: 等待下一次预定的心跳。
 
 将 isolated 作业用于嘈杂、频繁或不应向 main 聊天历史记录发送垃圾邮件的"后台杂务"。
 
@@ -146,16 +153,17 @@ Isolated 作业在 session `cron:<jobId>` 中运行专用的 Agent 回合。
 - `message`: 必需的文本提示词。
 - `model` / `thinking`: 可选覆盖(见下文)。
 - `timeoutSeconds`: 可选超时覆盖。
-- `deliver`: `true` 以将输出发送到 Channel 目标。
-- `channel`: `last` 或特定 Channel。
-- `to`: Channel 特定目标(电话/聊天/Channel id)。
-- `bestEffortDeliver`: 避免在传递失败时使作业失败。
 
-隔离选项(仅适用于 `session=isolated`):
+传递配置(仅 isolated 作业):
 
-- `postToMainPrefix` (CLI: `--post-prefix`): main session 中系统事件的前缀。
-- `postToMainMode`: `summary` (默认) 或 `full`。
-- `postToMainMaxChars`: 当 `postToMainMode=full` 时的最大字符数(默认 8000)。
+- `delivery.mode`: `none` | `announce`。
+- `delivery.channel`: `last` 或特定 Channel。
+- `delivery.to`: Channel 特定目标(电话/聊天/Channel id)。
+- `delivery.bestEffort`: 避免在 announce 传递失败时使作业失败。
+
+Announce 传递会抑制运行的消息工具发送;使用 `delivery.channel`/`delivery.to` 来定向聊天。当 `delivery.mode = "none"` 时,不会向 main session 发布摘要。
+
+如果 isolated 作业省略 `delivery`,OpenClaw 默认为 `announce`。
 
 ### 模型和思考覆盖
 
@@ -172,20 +180,31 @@ Isolated 作业 (`agentTurn`) 可以覆盖模型和思考级别:
 2. Hook 特定默认值(例如 `hooks.gmail.model`)
 3. Agent 配置默认值
 
+#### Announce 传递流程
+
+当 `delivery.mode = "announce"` 时,cron 通过出站 Channel 适配器直接传递。
+不会启动 main Agent 来制作或转发消息。
+
+行为细节:
+
+- 内容: 传递使用 isolated 运行的出站载荷(文本/媒体),具有正常的分块和 Channel 格式。
+- 仅心跳响应 (没有真实内容的 `HEARTBEAT_OK`) 不会传递。
+- 如果 isolated 运行已通过消息工具向同一目标发送消息,则跳过传递以避免重复。
+- 缺少或无效的传递目标会使作业失败,除非 `delivery.bestEffort = true`。
+- 仅当 `delivery.mode = "announce"` 时,才会向 main session 发布简短摘要。
+- Main session 摘要遵守 `wakeMode`: `now` 触发立即心跳,`next-heartbeat` 等待下一次预定的心跳。
+
 ### 传递 (Channel + 目标)
 
-Isolated 作业可以将输出传递到 Channel。作业载荷可以指定:
+Isolated 作业可以通过顶层 `delivery` 配置将输出传递到 Channel:
 
-- `channel`: `whatsapp` / `telegram` / `discord` / `slack` / `mattermost` (插件) / `signal` / `imessage` / `last`
-- `to`: Channel 特定的接收者目标
+- `delivery.mode`: `announce` (传递摘要) 或 `none`。
+- `delivery.channel`: `whatsapp` / `telegram` / `discord` / `slack` / `mattermost` (插件) / `signal` / `imessage` / `last`。
+- `delivery.to`: Channel 特定的接收者目标。
 
-如果省略 `channel` 或 `to`,cron 可以回退到 main session 的"最后路由"(Agent 最后回复的地方)。
+传递配置仅对 isolated 作业 (`sessionTarget: "isolated"`) 有效。
 
-传递说明:
-
-- 如果设置了 `to`,cron 会自动传递 Agent 的最终输出,即使省略了 `deliver`。
-- 当你想要没有显式 `to` 的最后路由传递时,使用 `deliver: true`。
-- 使用 `deliver: false` 以保持输出内部,即使存在 `to`。
+如果省略 `delivery.channel` 或 `delivery.to`,cron 可以回退到 main session 的"最后路由"(Agent 最后回复的地方)。
 
 目标格式提醒:
 
@@ -206,7 +225,7 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
 
 ## 工具调用的 JSON schema
 
-当直接调用 Gateway `cron.*` 工具(Agent 工具调用或 RPC) 时使用这些形状。CLI 标志接受人类持续时间,如 `20m`,但工具调用使用纪元毫秒作为 `atMs` 和 `everyMs`(接受 ISO 时间戳作为 `at` 时间)。
+当直接调用 Gateway `cron.*` 工具(Agent 工具调用或 RPC) 时使用这些形状。CLI 标志接受人类持续时间,如 `20m`,但工具调用应对 `schedule.at` 使用 ISO 8601 字符串,对 `schedule.everyMs` 使用毫秒。
 
 ### cron.add 参数
 
@@ -215,7 +234,7 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
 ```json
 {
   "name": "Reminder",
-  "schedule": { "kind": "at", "atMs": 1738262400000 },
+  "schedule": { "kind": "at", "at": "2026-02-01T16:00:00Z" },
   "sessionTarget": "main",
   "wakeMode": "now",
   "payload": { "kind": "systemEvent", "text": "Reminder text" },
@@ -233,23 +252,26 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
   "wakeMode": "next-heartbeat",
   "payload": {
     "kind": "agentTurn",
-    "message": "Summarize overnight updates.",
-    "deliver": true,
+    "message": "Summarize overnight updates."
+  },
+  "delivery": {
+    "mode": "announce",
     "channel": "slack",
     "to": "channel:C1234567890",
-    "bestEffortDeliver": true
-  },
-  "isolation": { "postToMainPrefix": "Cron", "postToMainMode": "summary" }
+    "bestEffort": true
+  }
 }
 ```
 
 注意:
 
-- `schedule.kind`: `at` (`atMs`), `every` (`everyMs`), 或 `cron` (`expr`, 可选 `tz`)。
-- `atMs` 和 `everyMs` 是纪元毫秒。
+- `schedule.kind`: `at` (`at`), `every` (`everyMs`), 或 `cron` (`expr`, 可选 `tz`)。
+- `schedule.at` 接受 ISO 8601(时区可选;省略时视为 UTC)。
+- `everyMs` 是毫秒。
 - `sessionTarget` 必须是 `"main"` 或 `"isolated"` 并且必须匹配 `payload.kind`。
-- 可选字段: `agentId`, `description`, `enabled`, `deleteAfterRun`, `isolation`。
-- 省略时 `wakeMode` 默认为 `"next-heartbeat"`。
+- 可选字段: `agentId`, `description`, `enabled`, `notify`, `deleteAfterRun` (对于 `at` 默认为 true),
+  `delivery`。
+- 省略时 `wakeMode` 默认为 `"now"`。
 
 ### cron.update 参数
 
@@ -292,9 +314,18 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
     enabled: true, // 默认 true
     store: "~/.openclaw/cron/jobs.json",
     maxConcurrentRuns: 1, // 默认 1
+    webhook: "https://example.invalid/cron-finished", // 可选的已完成运行 webhook 端点
+    webhookToken: "replace-with-dedicated-webhook-token", // 可选,不要重用 Gateway 认证令牌
   },
 }
 ```
+
+Webhook 行为:
+
+- 仅当作业具有 `notify: true` 时,Gateway 才会向 `cron.webhook` 发布已完成运行事件。
+- 载荷是 cron 已完成事件 JSON。
+- 如果设置了 `cron.webhookToken`,认证标头是 `Authorization: Bearer <cron.webhookToken>`。
+- 如果未设置 `cron.webhookToken`,则不发送 `Authorization` 标头。
 
 完全禁用 cron:
 
@@ -326,7 +357,7 @@ openclaw cron add \
   --wake now
 ```
 
-重复的 isolated 作业(传递到 WhatsApp):
+重复的 isolated 作业(announce 到 WhatsApp):
 
 ```bash
 openclaw cron add \
@@ -335,7 +366,7 @@ openclaw cron add \
   --tz "America/Los_Angeles" \
   --session isolated \
   --message "Summarize inbox + calendar for today." \
-  --deliver \
+  --announce \
   --channel whatsapp \
   --to "+15551234567"
 ```
@@ -365,7 +396,7 @@ openclaw cron add \
   --message "Weekly deep analysis of project progress." \
   --model "opus" \
   --thinking high \
-  --deliver \
+  --announce \
   --channel whatsapp \
   --to "+15551234567"
 ```
@@ -381,10 +412,11 @@ openclaw cron edit <jobId> --agent ops
 openclaw cron edit <jobId> --clear-agent
 ```
 
-手动运行(调试):
+手动运行(强制是默认,使用 `--due` 仅在到期时运行):
 
 ```bash
-openclaw cron run <jobId> --force
+openclaw cron run <jobId>
+openclaw cron run <jobId> --due
 ```
 
 编辑现有作业(修补字段):
@@ -421,6 +453,13 @@ openclaw system event --mode now --text "Next heartbeat: check battery."
 - 检查 cron 是否已启用: `cron.enabled` 和 `OPENCLAW_SKIP_CRON`。
 - 检查 Gateway 是否持续运行(cron 在 Gateway 进程内运行)。
 - 对于 `cron` 计划: 确认时区(`--tz`) vs 主机时区。
+
+### 重复作业在失败后持续延迟
+
+- OpenClaw 在连续错误后对重复作业应用指数重试退避:
+  30秒、1分钟、5分钟、15分钟,然后重试之间 60 分钟。
+- 退避在下次成功运行后自动重置。
+- 一次性 (`at`) 作业在终端运行 (`ok`、`error` 或 `skipped`) 后禁用且不重试。
 
 ### Telegram 传递到了错误的地方
 
