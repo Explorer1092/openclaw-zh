@@ -1,7 +1,7 @@
 ---
 title: "聊天频道"
 sidebarTitle: "聊天频道"
-mmh3_hash: "e513047447afd777bb289054f449c9de"
+mmh3_hash: "8e58e1fc78186535584b959dfc5d4fea"
 summary: "OpenClaw 可以连接的消息平台"
 read_when: ["You want to choose a chat channel for OpenClaw","You need a quick overview of supported messaging platforms"]
 ---
@@ -15,12 +15,14 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 c
 - [WhatsApp](/channels/whatsapp) — 最流行；使用 Baileys 并需要二维码配对。
 - [Telegram](/channels/telegram) — 通过 grammY 使用 Bot API；支持群组。
 - [Discord](/channels/discord) — Discord Bot API + Gateway；支持服务器、频道和私信。
+- [IRC](/channels/irc) — 经典 IRC 服务器；频道 + 私信，具有配对/白名单控制。
 - [Slack](/channels/slack) — Bolt SDK；工作区应用。
+- [Feishu](/channels/feishu) — 通过 WebSocket 的飞书/Lark bot（插件，需单独安装）。
 - [Google Chat](/channels/googlechat) — 通过 HTTP webhook 使用 Google Chat API 应用。
 - [Mattermost](/channels/mattermost) — Bot API + WebSocket；频道、群组、私信（插件，需单独安装）。
 - [Signal](/channels/signal) — signal-cli；注重隐私。
 - [BlueBubbles](/channels/bluebubbles) — **推荐用于 iMessage**；使用 BlueBubbles macOS 服务器 REST API，功能完整支持（编辑、撤回、效果、反应、群组管理 — 编辑功能目前在 macOS 26 Tahoe 上损坏）。
-- [iMessage](/channels/imessage) — 仅限 macOS；通过 imsg 原生集成（旧版，新部署建议使用 BlueBubbles）。
+- [iMessage (旧版)](/channels/imessage) — 通过 imsg CLI 的旧版 macOS 集成（已弃用，新设置请使用 BlueBubbles）。
 - [Microsoft Teams](/channels/msteams) — Bot Framework；企业支持（插件，需单独安装）。
 - [LINE](/channels/line) — LINE Messaging API bot（插件，需单独安装）。
 - [Nextcloud Talk](/channels/nextcloud-talk) — 通过 Nextcloud Talk 自托管聊天（插件，需单独安装）。
@@ -37,7 +39,7 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 c
 - Channels 可以同时运行；配置多个后 OpenClaw 将按聊天路由。
 - 最快的设置通常是 **Telegram**（简单的 bot token）。WhatsApp 需要二维码配对并且
   在磁盘上存储更多状态。
-- 群组行为因 channel 而异；参见[群组](/concepts/groups)。
+- 群组行为因 channel 而异；参见[群组](/channels/groups)。
 - 为安全起见会强制执行私信配对和白名单；参见[安全](/gateway/security)。
 - Telegram 内部机制：[grammY 注释](/channels/grammy)。
 - 故障排除：[Channel 故障排除](/channels/troubleshooting)。
