@@ -1,8 +1,9 @@
 ---
-title: "Perplexity Sonar"
-mmh3_hash: "de3408a73d2fe163f02b20da1c0e99a4"
 summary: "用于 web_search 的 Perplexity Sonar 设置"
-read_when: ["您想使用 Perplexity Sonar 进行网络搜索","您需要 PERPLEXITY_API_KEY 或 OpenRouter 设置"]
+read_when:
+  - 您想使用 Perplexity Sonar 进行网络搜索
+  - 您需要 PERPLEXITY_API_KEY 或 OpenRouter 设置
+title: "Perplexity Sonar"
 ---
 
 # Perplexity Sonar
@@ -11,15 +12,15 @@ OpenClaw 可以使用 Perplexity Sonar 作为 `web_search` 工具。您可以通
 
 ## API 选项
 
-### Perplexity(直接)
+### Perplexity (直接)
 
-- 基础 URL: https://api.perplexity.ai
-- 环境变量:`PERPLEXITY_API_KEY`
+- 基础 URL: [https://api.perplexity.ai](https://api.perplexity.ai)
+- 环境变量: `PERPLEXITY_API_KEY`
 
-### OpenRouter(替代)
+### OpenRouter (替代)
 
-- 基础 URL: https://openrouter.ai/api/v1
-- 环境变量:`OPENROUTER_API_KEY`
+- 基础 URL: [https://openrouter.ai/api/v1](https://openrouter.ai/api/v1)
+- 环境变量: `OPENROUTER_API_KEY`
 - 支持预付费/加密货币积分。
 
 ## 配置示例
@@ -33,11 +34,11 @@ OpenClaw 可以使用 Perplexity Sonar 作为 `web_search` 工具。您可以通
         perplexity: {
           apiKey: "pplx-...",
           baseUrl: "https://api.perplexity.ai",
-          model: "perplexity/sonar-pro"
-        }
-      }
-    }
-  }
+          model: "perplexity/sonar-pro",
+        },
+      },
+    },
+  },
 }
 ```
 
@@ -51,15 +52,15 @@ OpenClaw 可以使用 Perplexity Sonar 作为 `web_search` 工具。您可以通
         provider: "perplexity",
         perplexity: {
           apiKey: "pplx-...",
-          baseUrl: "https://api.perplexity.ai"
-        }
-      }
-    }
-  }
+          baseUrl: "https://api.perplexity.ai",
+        },
+      },
+    },
+  },
 }
 ```
 
-如果同时设置了 `PERPLEXITY_API_KEY` 和 `OPENROUTER_API_KEY`,请设置 `tools.web.search.perplexity.baseUrl`(或 `tools.web.search.perplexity.apiKey`)以消除歧义。
+如果同时设置了 `PERPLEXITY_API_KEY` 和 `OPENROUTER_API_KEY`,请设置 `tools.web.search.perplexity.baseUrl` (或 `tools.web.search.perplexity.apiKey`) 以消除歧义。
 
 如果未设置基础 URL,OpenClaw 根据 API 密钥源选择默认值:
 
@@ -70,7 +71,7 @@ OpenClaw 可以使用 Perplexity Sonar 作为 `web_search` 工具。您可以通
 ## 模型
 
 - `perplexity/sonar` — 带网络搜索的快速问答
-- `perplexity/sonar-pro`(默认)— 多步推理 + 网络搜索
+- `perplexity/sonar-pro` (默认) — 多步推理 + 网络搜索
 - `perplexity/sonar-reasoning-pro` — 深度研究
 
 有关完整的 web_search 配置,请参阅 [Web 工具](/tools/web)。

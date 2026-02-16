@@ -1,20 +1,23 @@
 ---
+summary: "OpenProse: .prose 工作流、slash 命令和 OpenClaw 中的状态"
+read_when:
+  - 您想运行或编写 .prose 工作流
+  - 您想启用 OpenProse 插件
+  - 您需要了解状态存储
 title: "OpenProse"
-mmh3_hash: "361bc61ec99c33d65aa24db73fd2d3fe"
-summary: "OpenProse:.prose 工作流、斜杠命令和 OpenClaw 中的状态"
-read_when: ["您想运行或编写 .prose 工作流","您想启用 OpenProse 插件","您需要了解状态存储"]
 ---
+
 # OpenProse
 
-OpenProse 是一种可移植的、以 markdown 为先的工作流格式,用于编排 AI 会话。在 OpenClaw 中,它作为插件提供,安装 OpenProse 技能包加上 `/prose` 斜杠命令。程序存储在 `.prose` 文件中,可以使用显式控制流生成多个子代理。
+OpenProse 是一种可移植的、以 markdown 为先的工作流格式,用于编排 AI 会话。在 OpenClaw 中,它作为插件提供,安装 OpenProse skill pack 加上 `/prose` slash 命令。程序存储在 `.prose` 文件中,可以使用显式控制流生成多个 sub-agent。
 
-官方网站: https://www.prose.md
+官方网站: [https://www.prose.md](https://www.prose.md)
 
 ## 它能做什么
 
-- 具有显式并行性的多代理研究 + 综合。
+- 具有显式并行性的多 agent 研究 + 综合。
 - 可重复的批准安全工作流(代码审查、事件分类、内容管道)。
-- 可重用的 `.prose` 程序,您可以在支持的代理运行时中运行。
+- 可重用的 `.prose` 程序,您可以在支持的 agent 运行时中运行。
 
 ## 安装 + 启用
 
@@ -24,15 +27,15 @@ OpenProse 是一种可移植的、以 markdown 为先的工作流格式,用于�
 openclaw plugins enable open-prose
 ```
 
-启用插件后重启网关。
+启用插件后重启 Gateway。
 
-开发/本地检出:`openclaw plugins install ./extensions/open-prose`
+开发/本地检出: `openclaw plugins install ./extensions/open-prose`
 
-相关文档:[插件](/plugin)、[插件清单](/plugins/manifest)、[技能](/tools/skills)。
+相关文档: [插件](/tools/plugin)、[插件清单](/plugins/manifest)、[Skills](/tools/skills)。
 
-## 斜杠命令
+## Slash 命令
 
-OpenProse 将 `/prose` 注册为用户可调用的技能命令。它路由到 OpenProse VM 指令,并在底层使用 OpenClaw 工具。
+OpenProse 将 `/prose` 注册为用户可调用的 skill 命令。它路由到 OpenProse VM 指令,并在底层使用 OpenClaw 工具。
 
 常用命令:
 
@@ -46,10 +49,10 @@ OpenProse 将 `/prose` 注册为用户可调用的技能命令。它路由到 Op
 /prose update
 ```
 
-## 示例:一个简单的 `.prose` 文件
+## 示例: 一个简单的 `.prose` 文件
 
 ```prose
-# 使用两个并行运行的代理进行研究 + 综合。
+# 使用两个并行运行的 agent 进行研究 + 综合。
 
 input topic: "What should we research?"
 
@@ -87,7 +90,7 @@ OpenProse 在您的工作区中的 `.prose/` 下保存状态:
 └── agents/
 ```
 
-用户级持久代理位于:
+用户级持久 agent 位于:
 
 ```
 ~/.prose/agents/
@@ -97,14 +100,15 @@ OpenProse 在您的工作区中的 `.prose/` 下保存状态:
 
 OpenProse 支持多个状态后端:
 
-- **filesystem**(默认):`.prose/runs/...`
-- **in-context**:瞬态,用于小程序
-- **sqlite**(实验性):需要 `sqlite3` 二进制文件
-- **postgres**(实验性):需要 `psql` 和连接字符串
+- **filesystem** (默认): `.prose/runs/...`
+- **in-context**: 瞬态,用于小程序
+- **sqlite** (实验性): 需要 `sqlite3` 二进制文件
+- **postgres** (实验性): 需要 `psql` 和连接字符串
 
 注意:
+
 - sqlite/postgres 是可选的和实验性的。
-- postgres 凭证流入子代理日志;使用专用的、最少权限的 DB。
+- postgres 凭证流入 subagent 日志;使用专用的、最少权限的 DB。
 
 ## 远程程序
 
@@ -115,13 +119,13 @@ OpenProse 支持多个状态后端:
 
 OpenProse 程序映射到 OpenClaw 原语:
 
-| OpenProse 概念 | OpenClaw 工具 |
-| --- | --- |
-| 生成会话 / 任务工具 | `sessions_spawn` |
-| 文件读/写 | `read` / `write` |
-| Web 获取 | `web_fetch` |
+| OpenProse 概念        | OpenClaw 工具    |
+| --------------------- | ---------------- |
+| Spawn session / Task tool | `sessions_spawn` |
+| 文件读/写             | `read` / `write` |
+| Web fetch             | `web_fetch`      |
 
-如果您的工具允许列表阻止这些工具,OpenProse 程序将失败。请参阅[技能配置](/tools/skills-config)。
+如果您的工具允许列表阻止这些工具,OpenProse 程序将失败。请参阅 [Skills 配置](/tools/skills-config)。
 
 ## 安全 + 批准
 
