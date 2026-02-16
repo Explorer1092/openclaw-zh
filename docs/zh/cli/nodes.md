@@ -1,7 +1,7 @@
 ---
 title: "`openclaw nodes`"
 sidebarTitle: "openclaw nodes"
-mmh3_hash: "809bb945b12fe510c003796b049815a8"
+mmh3_hash: "415856861d8f2ad3700b45e2544c47ee"
 summary: "`openclaw nodes` 的 CLI 参考(列表/状态/批准/调用、相机/画布/屏幕)"
 read_when:
   - 您正在管理配对的Node(相机、屏幕、画布)
@@ -13,11 +13,13 @@ read_when:
 管理配对的Node(设备)并调用Node功能。
 
 相关:
+
 - Node概述:[Node](/nodes)
 - 相机:[相机Node](/nodes/camera)
 - 图像:[图像Node](/nodes/images)
 
 常用选项:
+
 - `--url`、`--token`、`--timeout`、`--json`
 
 ## 常用命令
@@ -47,6 +49,7 @@ openclaw nodes run --agent main --node <id|name|ip> --raw "git status"
 ```
 
 调用标志:
+
 - `--params <json>`:JSON 对象字符串(默认 `{}`)。
 - `--invoke-timeout <ms>`:Node调用超时(默认 `15000`)。
 - `--idempotency-key <key>`:可选的幂等性键。
@@ -61,8 +64,9 @@ openclaw nodes run --agent main --node <id|name|ip> --raw "git status"
 - 需要公布 `system.run` 的Node(macOS 伴侣应用或无头Node主机)。
 
 标志:
+
 - `--cwd <path>`:工作目录。
-- `--env <key=val>`:环境覆盖(可重复)。
+- `--env <key=val>`:环境覆盖(可重复)。注意:Node主机忽略 `PATH` 覆盖(并且 `tools.exec.pathPrepend` 不应用于Node主机)。
 - `--command-timeout <ms>`:命令超时。
 - `--invoke-timeout <ms>`:Node调用超时(默认 `30000`)。
 - `--needs-screen-recording`:需要屏幕录制权限。

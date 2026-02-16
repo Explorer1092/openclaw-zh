@@ -1,7 +1,7 @@
 ---
 title: "`openclaw memory`"
 sidebarTitle: "openclaw memory"
-mmh3_hash: "0d84a87927a216a7595318a818d63963"
+mmh3_hash: "253317e45f2ae07885dc1d17448c0f83"
 summary: "`openclaw memory` 的 CLI 参考(状态/索引/搜索)"
 read_when:
   - 您想索引或搜索语义内存
@@ -14,8 +14,9 @@ read_when:
 由活动内存插件提供(默认:`memory-core`;设置 `plugins.slots.memory = "none"` 以禁用)。
 
 相关:
+
 - 内存概念:[内存](/concepts/memory)
- - 插件:[插件](/plugins)
+- Plugin:[Plugin](/tools/plugin)
 
 ## 示例
 
@@ -39,6 +40,7 @@ openclaw memory index --agent main --verbose
 - `--verbose`:在探测和索引期间发出详细日志。
 
 注意:
+
 - `memory status --deep` 探测向量 + 嵌入可用性。
 - `memory status --deep --index` 如果存储脏了则运行重新索引。
 - `memory index --verbose` 打印每个阶段的详细信息(提供商、模型、源、批处理活动)。

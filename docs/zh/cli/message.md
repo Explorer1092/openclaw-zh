@@ -1,7 +1,7 @@
 ---
 title: "`openclaw message`"
 sidebarTitle: "openclaw message"
-mmh3_hash: "f36fd975d055a35ac2ee084e48666108"
+mmh3_hash: "fce70382a5e21003cc98453326c74755"
 summary: "`openclaw message` 的 CLI 参考(发送 + Channel操作)"
 read_when:
   - 添加或修改消息 CLI 操作
@@ -20,11 +20,13 @@ openclaw message <subcommand> [flags]
 ```
 
 Channel选择:
+
 - 如果配置了多个Channel,则需要 `--channel`。
 - 如果恰好配置了一个Channel,它将成为默认值。
 - 值:`whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams`(Mattermost 需要插件)
 
 目标格式(`--target`):
+
 - WhatsApp:E.164 或组 JID
 - Telegram:聊天 ID 或 `@username`
 - Discord:`channel:<id>` 或 `user:<id>`(或 `<@id>` 提及;原始数字 ID 被视为Channel)
@@ -33,9 +35,10 @@ Channel选择:
 - Mattermost(插件):`channel:<id>`、`user:<id>` 或 `@username`(裸 ID 被视为Channel)
 - Signal:`+E.164`、`group:<id>`、`signal:+E.164`、`signal:group:<id>` 或 `username:<name>`/`u:<name>`
 - iMessage:句柄、`chat_id:<id>`、`chat_guid:<guid>` 或 `chat_identifier:<id>`
-- MS Teams:Session ID(`19:...@thread.tacv2`)或 `conversation:<id>` 或 `user:<aad-object-id>`
+- MS Teams:对话 ID(`19:...@thread.tacv2`)或 `conversation:<id>` 或 `user:<aad-object-id>`
 
 名称查找:
+
 - 对于受支持的提供商(Discord/Slack等),像 `Help` 或 `#help` 这样的Channel名称通过目录缓存解析。
 - 在缓存未命中时,如果提供商支持,OpenClaw 将尝试实时目录查找。
 
@@ -63,10 +66,11 @@ Channel选择:
   - 仅限 WhatsApp:`--gif-playback`
 
 - `poll`
-  - Channel:WhatsApp/Discord/MS Teams
+  - Channel:WhatsApp/Telegram/Discord/Matrix/MS Teams
   - 必需:`--target`、`--poll-question`、`--poll-option`(重复)
   - 可选:`--poll-multi`
-  - 仅限 Discord:`--poll-duration-hours`、`--message`
+  - 仅限 Discord:`--poll-duration-hours`、`--silent`、`--message`
+  - 仅限 Telegram:`--poll-duration-seconds`(5-600)、`--silent`、`--poll-anonymous` / `--poll-public`、`--thread-id`
 
 - `react`
   - Channel:Discord/Google Chat/Slack/Telegram/WhatsApp/Signal
