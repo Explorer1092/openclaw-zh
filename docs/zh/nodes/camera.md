@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "de5d035a9dd37ed3df9ca1a1b82539dc"
 summary: "相机捕获 (iOS node + macOS 应用) 用于 agent 使用: 照片 (jpg) 和短视频片段 (mp4)"
 read_when:
   - 添加或修改 iOS node 或 macOS 上的相机捕获

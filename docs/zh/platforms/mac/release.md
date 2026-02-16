@@ -1,7 +1,7 @@
 ---
 title: "OpenClaw macOS 发布 (Sparkle)"
 sidebarTitle: "macOS 发布"
-mmh3_hash: "086aabd1f360ce83e6ea177587f4e5da"
+mmh3_hash: "080acf74076e87d879c5c9fe322de2a3"
 summary: "OpenClaw macOS 发布清单(Sparkle feed、打包、签名)"
 read_when: ["剪切或验证 OpenClaw macOS 发布","更新 Sparkle appcast 或 feed 资源"]
 ---

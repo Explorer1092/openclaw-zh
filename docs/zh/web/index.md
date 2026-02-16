@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1b8c6b8037b18c29e0a040e40e544367"
 summary: "Gateway web surfaces: Control UI, 绑定模式和安全性"
 read_when:
   - 您想通过 Tailscale 访问 Gateway

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "57763ed2889d87a12dda2cd54189e5b0"
+mmh3_hash: "9f41069fd922da4503c8e0851905da2a"
 summary: "个人助手设置的默认 OpenClaw 代理指令和技能名单"
 read_when:
   - 启动新的 OpenClaw 代理会话

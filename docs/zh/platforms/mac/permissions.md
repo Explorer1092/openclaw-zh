@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "549ef8fbf0914e42df7232a7ada8f56d"
 summary: "macOS 权限持久化 (TCC) 和签名要求"
 read_when:
   - 调试缺失或卡住的 macOS 权限提示

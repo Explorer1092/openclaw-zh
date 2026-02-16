@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "f460c75c35d74150c609a7585359c978"
 summary: "入站图像/音频/视频理解 (可选), 带有 provider + CLI 回退"
 read_when:
   - 设计或重构媒体理解

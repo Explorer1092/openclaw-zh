@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1477dd1aebd5a92994a3c9c2e4452ec3"
 summary: "OpenProse: .prose 工作流、slash 命令和 OpenClaw 中的状态"
 read_when:
   - 您想运行或编写 .prose 工作流

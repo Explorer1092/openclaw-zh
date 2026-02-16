@@ -1,7 +1,7 @@
 ---
 title: "语音叠加层生命周期 (macOS)"
 sidebarTitle: "语音叠加层"
-mmh3_hash: "43fd3ed0a6f4c2caca7f72bb846202dc"
+mmh3_hash: "2f9e847ec523e79d407607199790f1db"
 summary: "唤醒词和按下说话重叠时的语音叠加层生命周期"
 read_when: ["调整语音叠加层行为"]
 ---

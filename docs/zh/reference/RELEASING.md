@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "355ba96b59c4d977092c78265e285d7b"
+mmh3_hash: "4057780c30b8e750a615654ecc05daaa"
 summary: "npm + macOS 应用的逐步发布检查清单"
 read_when:
   - 发布新的 npm 版本

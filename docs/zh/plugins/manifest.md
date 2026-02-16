@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "109e72745e201f63275f76d5385c65bf"
+mmh3_hash: "3965f012677574575f0d2519b6720151"
 summary: "Plugin 清单 + JSON schema 要求(严格配置验证)"
 read_when:
   - 您正在构建 OpenClaw Plugin

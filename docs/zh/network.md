@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "9b68e94c181ec943e8a46731df6c4f4c"
 summary: "网络中心: gateway 界面、配对、发现和安全"
 read_when:
   - 您需要网络架构 + 安全概述

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "514da28afaba2b0edae5b2afb78de71f"
+mmh3_hash: "0a85a80738c552fc70119660aa07482e"
 summary: "计划: 为所有消息连接器提供一个干净的插件 SDK + 运行时"
 read_when: ["定义或重构插件架构","将通道连接器迁移到插件 SDK/运行时"]
 ---

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "8b22db679d13a768197ce991f212f52d"
 summary: "节点: 配对、功能、权限以及用于 canvas/camera/screen/system 的 CLI 助手"
 read_when:
   - 将 iOS/Android 节点配对到 gateway

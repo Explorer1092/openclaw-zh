@@ -1,7 +1,7 @@
 ---
 title: "WebChat (Gateway WebSocket UI)"
 sidebarTitle: "WebChat"
-mmh3_hash: "3e4c39c6ae63714aa2f30b017f229dc5"
+mmh3_hash: "20f09a0a18b8864f91d9bee726138943"
 summary: "环回 WebChat 静态主机和 Gateway WS 聊天 UI 使用"
 read_when: ["调试或配置 WebChat 访问"]
 ---

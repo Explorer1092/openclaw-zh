@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4ad84c98356e546dfa5f0a31d97f8a6e"
+mmh3_hash: "4a9a719f835d6073b8b1b7a5c107d658"
 summary: "用于外部 CLI(signal-cli、imsg)和网关模式的 RPC 适配器"
 read_when:
   - 添加或更改外部 CLI 集成

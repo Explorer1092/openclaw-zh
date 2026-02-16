@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "19185f782ce250c2b3cd9681dc3f7d37"
 summary: "OpenClaw 的 VPS 托管中心 (Oracle/Fly/Hetzner/GCP/exe.dev)"
 read_when:
   - 您想在云中运行 Gateway

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "a5ffc69f46b45d156a753b54ce00a735"
 summary: "用于 web_search 的 Perplexity Sonar 设置"
 read_when:
   - 您想使用 Perplexity Sonar 进行网络搜索

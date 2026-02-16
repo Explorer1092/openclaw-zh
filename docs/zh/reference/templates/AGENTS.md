@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a90bd0e634350cce04dd1c3d1628034e"
+mmh3_hash: "58bc054c69801456ddc2a6648c23b84f"
 summary: "AGENTS.md 的工作空间模板"
 read_when:
   - 手动引导工作空间
