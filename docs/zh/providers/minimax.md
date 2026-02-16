@@ -1,7 +1,7 @@
 ---
 title: "MiniMax"
 sidebarTitle: "MiniMax"
-mmh3_hash: "e3cb2013382e113cb83459b512a0dd68"
+mmh3_hash: "e00e4f76ec09b2e6b13eb9dee548426a"
 summary: "在 OpenClaw 中使用 MiniMax M2.1"
 read_when: ["您想在 OpenClaw 中使用 MiniMax 模型","您需要 MiniMax 设置指导"]
 ---
@@ -89,7 +89,7 @@ openclaw onboard --auth-choice minimax-portal
 
 ### MiniMax M2.1 作为后备(Opus 主要)
 
-**适用于:** 将 Opus 4.5 作为主要,故障转移到 MiniMax M2.1。
+**适用于:** 将 Opus 4.6 作为主要,故障转移到 MiniMax M2.1。
 
 ```json5
 {
@@ -97,11 +97,11 @@ openclaw onboard --auth-choice minimax-portal
   agents: {
     defaults: {
       models: {
-        "anthropic/claude-opus-4-5": { alias: "opus" },
+        "anthropic/claude-opus-4-6": { alias: "opus" },
         "minimax/MiniMax-M2.1": { alias: "minimax" },
       },
       model: {
-        primary: "anthropic/claude-opus-4-5",
+        primary: "anthropic/claude-opus-4-6",
         fallbacks: ["minimax/MiniMax-M2.1"],
       },
     },
@@ -171,7 +171,7 @@ openclaw onboard --auth-choice minimax-portal
 - 模型引用为 `minimax/<model>`。
 - 编码计划使用 API: `https://api.minimaxi.com/v1/api/openplatform/coding_plan/remains`(需要编码计划密钥)。
 - 如果您需要精确的成本跟踪,请更新 `models.json` 中的定价值。
-- MiniMax 编码计划推荐链接(优惠 10%): https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link
+- MiniMax 编码计划推荐链接(优惠 10%): [https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link](https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link)
 - 参见 [/concepts/model-providers](/concepts/model-providers) 了解提供商规则。
 - 使用 `openclaw models list` 和 `openclaw models set minimax/MiniMax-M2.1` 进行切换。
 

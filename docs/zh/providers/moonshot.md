@@ -1,7 +1,7 @@
 ---
 title: "Moonshot AI (Kimi)"
 sidebarTitle: "Moonshot AI"
-mmh3_hash: "2af547c49237f10b789917f11adc7825"
+mmh3_hash: "5531f31f450dc7c3c8468b373386882c"
 summary: "配置 Moonshot K2 vs Kimi Coding (单独的提供商 + 密钥)"
 read_when: ["您想设置 Moonshot K2 (Moonshot Open Platform) vs Kimi Coding","您需要了解单独的端点、密钥和模型引用","您想要复制/粘贴任一提供商的配置"]
 ---

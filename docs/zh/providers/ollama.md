@@ -1,20 +1,22 @@
 ---
 title: "Ollama"
-mmh3_hash: "79b49883b7e2bff88108c462d661ce50"
+mmh3_hash: "89ffbde31078b93441575956f808a87a"
 summary: "使用 Ollama 运行 OpenClaw (本地 LLM 运行时)"
 read_when: ["您想通过 Ollama 使用本地模型运行 OpenClaw","您需要 Ollama 设置和配置指导"]
 ---
 # Ollama
 
-Ollama 是一个本地 LLM 运行时,可以轻松在您的机器上运行开源模型。OpenClaw 与 Ollama 的 OpenAI 兼容 API 集成,并且当您使用 `OLLAMA_API_KEY`(或身份验证配置文件)选择加入并且不定义显式的 `models.providers.ollama` 条目时,可以**自动发现支持工具的模型**。
+Ollama 是一个本地 LLM 运行时,可以轻松在您的机器上运行开源模型。OpenClaw 与 Ollama 的原生 API (`/api/chat`) 集成,支持流式传输和工具调用,并且当您使用 `OLLAMA_API_KEY`(或身份验证配置文件)选择加入并且不定义显式的 `models.providers.ollama` 条目时,可以**自动发现支持工具的模型**。
 
 ## 快速开始
 
-1) 安装 Ollama: https://ollama.ai
+1. 安装 Ollama: [https://ollama.ai](https://ollama.ai)
 
-2) 拉取一个模型:
+2. 拉取一个模型:
 
 ```bash
+ollama pull gpt-oss:20b
+# 或
 ollama pull llama3.3
 # 或
 ollama pull qwen2.5-coder:32b
@@ -22,7 +24,7 @@ ollama pull qwen2.5-coder:32b
 ollama pull deepseek-r1:32b
 ```
 
-3) 为 OpenClaw 启用 Ollama(任何值都有效;Ollama 不需要真正的密钥):
+3. 为 OpenClaw 启用 Ollama(任何值都有效;Ollama 不需要真正的密钥):
 
 ```bash
 # 设置环境变量
@@ -32,15 +34,15 @@ export OLLAMA_API_KEY="ollama-local"
 openclaw config set models.providers.ollama.apiKey "ollama-local"
 ```
 
-4) 使用 Ollama 模型:
+4. 使用 Ollama 模型:
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "ollama/llama3.3" }
-    }
-  }
+      model: { primary: "ollama/gpt-oss:20b" },
+    },
+  },
 }
 ```
 
@@ -87,6 +89,7 @@ export OLLAMA_API_KEY="ollama-local"
 ### 显式设置(手动模型)
 
 在以下情况下使用显式配置:
+
 - Ollama 在另一个主机/端口上运行。
 - 您想强制使用特定的上下文窗口或模型列表。
 - 您想包含不报告工具支持的模型。
@@ -96,14 +99,13 @@ export OLLAMA_API_KEY="ollama-local"
   models: {
     providers: {
       ollama: {
-        // 使用包含 /v1 的主机用于 OpenAI 兼容的 API
-        baseUrl: "http://ollama-host:11434/v1",
+        baseUrl: "http://ollama-host:11434",
         apiKey: "ollama-local",
-        api: "openai-completions",
+        api: "ollama",
         models: [
           {
-            id: "llama3.3",
-            name: "Llama 3.3",
+            id: "gpt-oss:20b",
+            name: "GPT-OSS 20B",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -129,10 +131,10 @@ export OLLAMA_API_KEY="ollama-local"
     providers: {
       ollama: {
         apiKey: "ollama-local",
-        baseUrl: "http://ollama-host:11434/v1"
-      }
-    }
-  }
+        baseUrl: "http://ollama-host:11434",
+      },
+    },
+  },
 }
 ```
 
@@ -145,11 +147,11 @@ export OLLAMA_API_KEY="ollama-local"
   agents: {
     defaults: {
       model: {
-        primary: "ollama/llama3.3",
-        fallback: ["ollama/qwen2.5-coder:32b"]
-      }
-    }
-  }
+        primary: "ollama/gpt-oss:20b",
+        fallbacks: ["ollama/llama3.3", "ollama/qwen2.5-coder:32b"],
+      },
+    },
+  },
 }
 ```
 
@@ -166,6 +168,31 @@ ollama pull deepseek-r1:32b
 ### 模型成本
 
 Ollama 是免费的并在本地运行,因此所有模型成本都设置为 $0。
+
+### 流式配置
+
+OpenClaw 的 Ollama 集成默认使用**原生 Ollama API** (`/api/chat`),它完全支持同时进行流式传输和工具调用。无需特殊配置。
+
+#### 旧版 OpenAI 兼容模式
+
+如果您需要使用 OpenAI 兼容端点(例如,在仅支持 OpenAI 格式的代理后面),请显式设置 `api: "openai-completions"`:
+
+```json5
+{
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://ollama-host:11434/v1",
+        api: "openai-completions",
+        apiKey: "ollama-local",
+        models: [...]
+      }
+    }
+  }
+}
+```
+
+注意: OpenAI 兼容端点可能不支持同时进行流式传输 + 工具调用。您可能需要在模型配置中使用 `params: { streaming: false }` 禁用流式传输。
 
 ### 上下文窗口
 
@@ -190,6 +217,7 @@ curl http://localhost:11434/api/tags
 ### 没有可用的模型
 
 OpenClaw 仅自动发现报告工具支持的模型。如果您的模型未列出,请:
+
 - 拉取支持工具的模型,或
 - 在 `models.providers.ollama` 中显式定义模型。
 
@@ -197,7 +225,8 @@ OpenClaw 仅自动发现报告工具支持的模型。如果您的模型未列�
 
 ```bash
 ollama list  # 查看已安装的内容
-ollama pull llama3.3  # 拉取模型
+ollama pull gpt-oss:20b  # 拉取支持工具的模型
+ollama pull llama3.3     # 或其他模型
 ```
 
 ### 连接被拒绝
@@ -217,4 +246,3 @@ ollama serve
 - [模型提供商](/concepts/model-providers) - 所有提供商的概述
 - [模型选择](/concepts/models) - 如何选择模型
 - [配置](/gateway/configuration) - 完整的配置参考
-{/*  source-hash: cba9d55b28273e8af2f2a022ae2dd9c4  */}
