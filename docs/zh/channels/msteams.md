@@ -1,7 +1,7 @@
 ---
 title: "Microsoft Teams (插件)"
 sidebarTitle: "Microsoft Teams"
-mmh3_hash: "39b7af771fb500d7fc84311a8b2b6253"
+mmh3_hash: "8093a88e6d5a4bfc4039fc938c24a63f"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when: ["Working on MS Teams channel features"]
 ---
@@ -34,7 +34,7 @@ openclaw plugins install ./extensions/msteams
 如果您在配置/入门期间选择 Teams 并检测到 git 检出,
 OpenClaw 将自动提供本地安装路径。
 
-详情: [插件](/plugin)
+详情: [插件](/tools/plugin)
 
 ## 快速设置(初学者)
 1) 安装 Microsoft Teams 插件。
@@ -391,6 +391,8 @@ tailscale funnel 3978
 3. 增加 Teams 应用 **manifest 版本**,重新上传并在 Teams 中**重新安装应用**。
 4. **完全退出并重新启动 Teams** 以清除缓存的应用元数据。
 
+**用户提及的附加权限:** 用户 @mentions 对对话中的用户开箱即用。但是,如果您想动态搜索并提及**不在当前对话中**的用户,请添加 `User.Read.All` (Application) 权限并授予管理员同意。
+
 ## 已知限制
 
 ### Webhook 超时
@@ -419,6 +421,7 @@ Teams markdown 比 Slack 或 Discord 更受限:
 - `channels.msteams.textChunkLimit`: 出站文本块大小。
 - `channels.msteams.chunkMode`: `length` (默认)或 `newline` 在长度分块之前在空行(段落边界)上拆分。
 - `channels.msteams.mediaAllowHosts`: 入站附件主机白名单(默认为 Microsoft/Teams 域)。
+- `channels.msteams.mediaAuthAllowHosts`: 媒体重试时附加 Authorization 标头的 allowlist(默认为 Graph + Bot Framework 主机)。
 - `channels.msteams.requireMention`: 在频道/群组中需要 @mention (默认 true)。
 - `channels.msteams.replyStyle`: `thread | top-level` (见[回复样式](#reply-style-threads-vs-posts))。
 - `channels.msteams.teams.<teamId>.replyStyle`: 每团队覆盖。

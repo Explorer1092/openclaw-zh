@@ -1,6 +1,6 @@
 ---
 title: "Nextcloud Talk (插件)"
-mmh3_hash: "8582e73fa5e875c05c5f818a43e08bb8"
+mmh3_hash: "c6ec52e923518c1f12579ee4a2a73451"
 summary: "Nextcloud Talk 支持状态、功能和配置"
 read_when: ["Working on Nextcloud Talk channel features"]
 ---
@@ -24,7 +24,7 @@ openclaw plugins install ./extensions/nextcloud-talk
 如果您在配置/初始化过程中选择 Nextcloud Talk 且检测到 git 检出，
 OpenClaw 将自动提供本地安装路径。
 
-详情：[插件](/plugin)
+详情：[插件](/tools/plugin)
 
 ## 快速设置 (入门)
 1) 安装 Nextcloud Talk 插件。
@@ -64,6 +64,7 @@ OpenClaw 将自动提供本地安装路径。
   - `openclaw pairing list nextcloud-talk`
   - `openclaw pairing approve nextcloud-talk <CODE>`
 - 公开私信：`channels.nextcloud-talk.dmPolicy="open"` 加上 `channels.nextcloud-talk.allowFrom=["*"]`。
+- `allowFrom` 仅匹配 Nextcloud 用户 ID；显示名称被忽略。
 
 ## 聊天室 (群组)
 - 默认：`channels.nextcloud-talk.groupPolicy = "allowlist"` (需要提及)。
