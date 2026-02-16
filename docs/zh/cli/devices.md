@@ -1,6 +1,6 @@
 ---
+mmh3_hash: "b5a88c4356fabf887446a51d0fcfe3c0"
 title: "`openclaw devices`"
-mmh3_hash: "8ffc83911f9a2e6d21c4244b398878bf"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
   - 您正在批准设备配对请求
@@ -61,6 +61,8 @@ openclaw devices revoke --device <deviceId> --role node
 - `--password <password>`:Gateway密码(密码认证)。
 - `--timeout <ms>`:RPC 超时。
 - `--json`:JSON 输出(推荐用于脚本)。
+
+注意:当您设置 `--url` 时,CLI 不会回退到配置或环境凭据。显式传递 `--token` 或 `--password`。缺少显式凭据会导致错误。
 
 ## 注意
 

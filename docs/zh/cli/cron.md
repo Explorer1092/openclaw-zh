@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "e07e23bf8d5196a184172ad1c4349856"
 title: "`openclaw cron`"
 sidebarTitle: "openclaw cron"
-mmh3_hash: "93e5c118237ac203829540c619322c9f"
 summary: "`openclaw cron` 的 CLI 参考(安排和运行后台作业)"
 read_when:
   - 您想要计划任务和唤醒
@@ -13,20 +13,33 @@ read_when:
 管理Gateway调度程序的 cron 作业。
 
 相关:
+
 - Cron 作业:[Cron 作业](/automation/cron-jobs)
 
 提示:运行 `openclaw cron --help` 查看完整的命令界面。
+
+注意:隔离的 `cron add` 作业默认使用 `--announce` 传递。使用 `--no-deliver` 来保持输出内部。`--deliver` 仍作为 `--announce` 的已弃用别名保留。
+
+注意:一次性(`--at`)作业默认在成功后删除。使用 `--keep-after-run` 来保留它们。
+
+注意:重复作业现在在连续错误后使用指数重试退避(30秒 → 1分钟 → 5分钟 → 15分钟 → 60分钟),然后在下次成功运行后返回正常计划。
 
 ## 常见编辑
 
 在不更改消息的情况下更新传递设置:
 
 ```bash
-openclaw cron edit <job-id> --deliver --channel telegram --to "123456789"
+openclaw cron edit <job-id> --announce --channel telegram --to "123456789"
 ```
 
 为隔离作业禁用传递:
 
 ```bash
 openclaw cron edit <job-id> --no-deliver
+```
+
+向特定Channel通知:
+
+```bash
+openclaw cron edit <job-id> --announce --channel slack --to "channel:C1234567890"
 ```

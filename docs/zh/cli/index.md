@@ -1,7 +1,7 @@
 ---
 title: "CLI 参考"
 sidebarTitle: "CLI 参考"
-mmh3_hash: "4b8b4eda9461b1ca42522fda6d3927a1"
+mmh3_hash: "7d59ea7be8da3cfb141208a9849ea602"
 summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
 read_when:
   - 添加或修改 CLI 命令或选项
@@ -257,7 +257,7 @@ openclaw [--dev] [--profile <name>] <command>
 - `openclaw plugins enable <id>` / `disable <id>` — 切换 `plugins.entries.<id>.enabled`。
 - `openclaw plugins doctor` — 报告插件加载错误。
 
-大多数插件更改需要重启Gateway。参见 [/plugin](/plugin)。
+大多数插件更改需要重启Gateway。参见 [/tools/plugin](/tools/plugin)。
 
 ## 内存
 
@@ -417,7 +417,7 @@ openclaw status --deep
 - `--json`:输出 JSON(无样式)。
 - `-v`、`--verbose`:包括缺少的要求详细信息。
 
-提示:使用 `npx clawdhub` 搜索、安装和同步技能。
+提示:使用 `npx clawhub` 搜索、安装和同步技能。
 
 ### `pairing`
 批准跨Channel的 DM 配对请求。
@@ -650,7 +650,8 @@ openclaw logs --no-color
 ```
 
 ### `gateway <subcommand>`
-Gateway CLI 助手(对 RPC 子命令使用 `--url`、`--token`、`--password`、`--timeout`、`--expect-final`)。
+
+Gateway CLI 助手(对 RPC 子命令使用 `--url`、`--token`、`--password`、`--timeout`、`--expect-final`)。当您传递 `--url` 时,CLI 不会自动应用配置或环境凭据。显式包含 `--token` 或 `--password`。缺少显式凭据会导致错误。
 
 子命令:
 - `gateway call <method> [--params <json>]`
