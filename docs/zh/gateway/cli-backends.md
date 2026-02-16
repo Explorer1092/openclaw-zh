@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "7aeba4e77b1ac68586e3d6cf1c78e043"
 summary: "CLI backend:通过本地 AI CLI 的纯文本回退"
 read_when:
   - 您希望在 API 提供商失败时有一个可靠的回退

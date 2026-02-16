@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "5de8447a1e8dd263c6d6552fa1894ca0"
 summary: "OpenClaw 是一个可在任何操作系统上运行的 AI agent 多通道 gateway。"
 read_when:
   - 向新人介绍 OpenClaw

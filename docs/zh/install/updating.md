@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "854460caea22854cf92004f9bd703f20"
 summary: "安全地更新 OpenClaw (全局安装或源码), 加上回滚策略"
 read_when:
   - 更新 OpenClaw

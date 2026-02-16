@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "a05d6410ee51df189cfd331db12fa2ec"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:
   - 学习如何配置 OpenClaw

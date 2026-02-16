@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "f032861302ff4b24ade7a55fe77bdcc5"
 summary: "Bonjour/mDNS 发现 + 调试(Gateway beacon、客户端和常见故障模式)"
 read_when:
   - 在 macOS/iOS 上调试 Bonjour 发现问题

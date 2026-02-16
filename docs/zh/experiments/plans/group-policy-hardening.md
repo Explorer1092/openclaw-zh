@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "5cb0dfc5fbc95f22ee57fdcc93e32b88"
 summary: "Telegram 允许列表加强: 前缀 + 空格规范化"
 read_when:
   - 查看历史 Telegram 允许列表更改
