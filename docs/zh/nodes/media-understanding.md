@@ -1,47 +1,49 @@
 ---
+summary: "入站图像/音频/视频理解 (可选), 带有 provider + CLI 回退"
+read_when:
+  - 设计或重构媒体理解
+  - 调整入站音频/视频/图像预处理
 title: "媒体理解"
-sidebarTitle: "媒体理解"
-mmh3_hash: "ca7e8f5b0036a137fab6591ef5c43b8b"
-summary: "入站图像/音频/视频理解（可选），带有提供商 + CLI 回退"
-read_when: ["设计或重构媒体理解时","调整入站音频/视频/图像预处理时"]
 ---
+
 # 媒体理解 (入站) — 2026-01-17
 
-OpenClaw 可以在回复管道运行之前 **总结入站媒体**（图像/音频/视频）。它会自动检测本地工具或提供商密钥何时可用，并且可以禁用或自定义。如果理解功能关闭，模型仍会照常接收原始文件/URL。
+OpenClaw 可以在回复管道运行之前**总结入站媒体** (图像/音频/视频)。它会自动检测本地工具或 provider 密钥何时可用, 并且可以禁用或自定义。如果理解功能关闭, 模型仍会照常接收原始文件/URL。
 
 ## 目标
-- 可选：将入站媒体预先消化为简短文本，以便更快路由 + 更好命令解析。
-- 保留向模型传递原始媒体（始终）。
-- 支持 **提供商 API** 和 **CLI 回退**。
-- 允许具有有序回退（错误/大小/超时）的多个模型。
+
+- 可选: 将入站媒体预先消化为简短文本, 以便更快路由 + 更好命令解析。
+- 保留向模型传递原始媒体 (始终)。
+- 支持 **provider API** 和 **CLI 回退**。
+- 允许具有有序回退 (错误/大小/超时) 的多个模型。
 
 ## 高级行为
 
 1. 收集入站附件 (`MediaPaths`, `MediaUrls`, `MediaTypes`)。
-2. 对于每个启用的功能（图像/音频/视频），根据策略（默认: **第一个**）选择附件。
-3. 选择第一个符合条件的模型条目（大小 + 功能 + 认证）。
-4. 如果模型失败或媒体过大，**回退到下一个条目**。
+2. 对于每个启用的功能 (图像/音频/视频), 根据策略 (默认: **第一个**) 选择附件。
+3. 选择第一个符合条件的模型条目 (大小 + 功能 + 认证)。
+4. 如果模型失败或媒体过大, **回退到下一个条目**。
 5. 成功时:
    - `Body` 变为 `[Image]`, `[Audio]`, 或 `[Video]` 块。
-   - 音频设置 `{{Transcript}}`；命令解析在存在时使用标题文本，
+   - 音频设置 `{{Transcript}}`; 命令解析在存在时使用标题文本,
      否则使用转录。
    - 标题作为块内的 `User text:` 保留。
 
-如果理解失败或被禁用，**回复流程继续** 使用原始正文 + 附件。
+如果理解失败或被禁用, **回复流程继续**使用原始正文 + 附件。
 
 ## 配置概览
 
-`tools.media` 支持 **共享模型** 以及每个功能的覆盖:
+`tools.media` 支持**共享模型**以及每个功能的覆盖:
 
-- `tools.media.models`: 共享模型列表（使用 `capabilities` 进行门控）。
+- `tools.media.models`: 共享模型列表 (使用 `capabilities` 进行门控)。
 - `tools.media.image` / `tools.media.audio` / `tools.media.video`:
   - 默认值 (`prompt`, `maxChars`, `maxBytes`, `timeoutSeconds`, `language`)
-  - 提供商覆盖 (`baseUrl`, `headers`, `providerOptions`)
+  - provider 覆盖 (`baseUrl`, `headers`, `providerOptions`)
   - 通过 `tools.media.audio.providerOptions.deepgram` 的 Deepgram 音频选项
-  - 可选的 **每功能 `models` 列表**（优先于共享模型）
+  - 可选的**每功能 `models` 列表** (优先于共享模型)
   - `attachments` 策略 (`mode`, `maxAttachments`, `prefer`)
-  - `scope` (可选的按频道/聊天类型/会话键门控)
-- `tools.media.concurrency`: 最大并发功能运行数（默认 **2**）。
+  - `scope` (可选的按 channel/chatType/session key 门控)
+- `tools.media.concurrency`: 最大并发功能运行数 (默认 **2**)。
 
 ```json5
 {
