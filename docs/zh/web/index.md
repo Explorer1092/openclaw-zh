@@ -1,8 +1,9 @@
 ---
-title: "Web (Gateway)"
-mmh3_hash: "5165719c1bb55eb5d91165eb4ee3338c"
-summary: "Gateway Web 界面: Control UI、绑定模式和安全性"
-read_when: ["您想通过 Tailscale 访问 Gateway","您想要浏览器 Control UI 和配置编辑"]
+summary: "Gateway web surfaces: Control UI, 绑定模式和安全性"
+read_when:
+  - 您想通过 Tailscale 访问 Gateway
+  - 您想要浏览器 Control UI 和配置编辑
+title: "Web"
 ---
 # Web (Gateway)
 
