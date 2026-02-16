@@ -1,7 +1,7 @@
 ---
 title: "Google Chat (Chat API)"
 sidebarTitle: "Google Chat"
-mmh3_hash: "52300fa0a5c0fbb09573f796c9167f07"
+mmh3_hash: "0206b5b886cc57fadb89542f5a00732d"
 summary: "Google Chat 应用支持状态、功能和配置"
 read_when: ["Working on Google Chat channel features"]
 ---
@@ -135,8 +135,11 @@ your-domain.com {
 5. 群组空间默认需要 @-提及。如果提及检测需要应用的用户名，请使用 `botUser`。
 
 ## 目标
-使用这些标识符进行投递和允许列表：
-- 私聊：`users/<userId>` 或 `users/<email>`（接受电子邮件地址）。
+
+使用这些标识符进行投递和 allowlist：
+
+- 私聊：`users/<userId>`（推荐）或原始电子邮件 `name@example.com`（可变主体）。
+- 已弃用：`users/<email>` 被视为用户 ID，而非电子邮件 allowlist。
 - 空间：`spaces/<spaceId>`。
 
 ## 配置要点

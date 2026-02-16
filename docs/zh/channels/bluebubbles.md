@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f13d1b1920eaa62a45e6e67d9addbf16"
+mmh3_hash: "0257721ccc2966387891478fccdceb2f"
 summary: "通过 BlueBubbles macOS 服务器使用 iMessage（REST 发送/接收、输入中、反应、配对、高级操作）。"
 read_when:
   - 设置 BlueBubbles channel
@@ -40,6 +40,84 @@ title: "BlueBubbles"
 4. 将 BlueBubbles webhook 指向你的 gateway（示例：`https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`）。
 5. 启动 gateway；它将注册 webhook 处理器并开始配对。
 
+安全说明：
+
+- 始终设置 webhook 密码。如果你通过反向代理（Tailscale Serve/Funnel、nginx、Cloudflare Tunnel、ngrok）公开 gateway，代理可能通过 loopback 连接到 gateway。BlueBubbles webhook 处理器将带有转发标头的请求视为代理请求，不接受无密码的 webhook。
+
+## 保持 Messages.app 运行（VM / 无头设置）
+
+某些 macOS VM / 常开设置可能导致 Messages.app 进入"空闲"状态（传入事件停止，直到应用被打开/置于前台）。一个简单的解决方法是**每 5 分钟使用 AppleScript + LaunchAgent 唤醒 Messages**。
+
+### 1) 保存 AppleScript
+
+将此保存为：
+
+- `~/Scripts/poke-messages.scpt`
+
+示例脚本（非交互式；不窃取焦点）：
+
+```applescript
+try
+  tell application "Messages"
+    if not running then
+      launch
+    end if
+
+    -- Touch the scripting interface to keep the process responsive.
+    set _chatCount to (count of chats)
+  end tell
+on error
+  -- Ignore transient failures (first-run prompts, locked session, etc).
+end try
+```
+
+### 2) 安装 LaunchAgent
+
+将此保存为：
+
+- `~/Library/LaunchAgents/com.user.poke-messages.plist`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.user.poke-messages</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/bin/bash</string>
+      <string>-lc</string>
+      <string>/usr/bin/osascript &quot;$HOME/Scripts/poke-messages.scpt&quot;</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StartInterval</key>
+    <integer>300</integer>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/poke-messages.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/poke-messages.err</string>
+  </dict>
+</plist>
+```
+
+说明：
+
+- 这**每 300 秒**运行一次，**并在登录时**运行。
+- 首次运行可能触发 macOS **Automation** 提示（`osascript` → Messages）。在运行 LaunchAgent 的同一用户会话中批准它们。
+
+加载它：
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.user.poke-messages.plist 2>/dev/null || true
+launchctl load ~/Library/LaunchAgents/com.user.poke-messages.plist
+```
+
 ## Onboarding
 BlueBubbles 在交互式设置向导中可用：
 ```
@@ -67,7 +145,7 @@ DM：
 - 通过以下方式批准：
   - `openclaw pairing list bluebubbles`
   - `openclaw pairing approve bluebubbles <CODE>`
-- 配对是默认的令牌交换。详情：[Pairing](/start/pairing)
+- 配对是默认的令牌交换。详情：[Pairing](/channels/pairing)
 
 群组：
 
@@ -144,9 +222,6 @@ BlueBubbles 在配置中启用时支持高级消息操作：
     },
   },
 }
-    }
-  }
-}
 ```
 
 可用操作：
@@ -220,6 +295,7 @@ Provider 选项：
 - `channels.bluebubbles.textChunkLimit`：出站块大小（字符）（默认：4000）。
 - `channels.bluebubbles.chunkMode`：`length`（默认）仅在超过 `textChunkLimit` 时拆分；`newline` 在长度分块前在空行（段落边界）拆分。
 - `channels.bluebubbles.mediaMaxMb`：入站媒体上限（MB）（默认：8）。
+- `channels.bluebubbles.mediaLocalRoots`：出站本地媒体路径允许的绝对本地目录的显式 allowlist。除非配置此项，否则默认拒绝本地路径发送。每个账户覆盖：`channels.bluebubbles.accounts.<accountId>.mediaLocalRoots`。
 - `channels.bluebubbles.historyLimit`：上下文的最大群组消息数（0 禁用）。
 - `channels.bluebubbles.dmHistoryLimit`：DM 历史记录限制。
 - `channels.bluebubbles.actions`：启用/禁用特定操作。
@@ -257,4 +333,4 @@ Provider 选项：
 - OpenClaw 根据 BlueBubbles 服务器的 macOS 版本自动隐藏已知损坏的操作。如果编辑在 macOS 26（Tahoe）上仍然出现，使用 `channels.bluebubbles.actions.edit=false` 手动禁用。
 - 对于状态/健康信息：`openclaw status --all` 或 `openclaw status --deep`。
 
-有关一般 channel 工作流参考，参见 [Channels](/channels) 和 [Plugins](/plugins) 指南。
+有关一般 channel 工作流参考，参见 [Channels](/channels) 和 [Plugins](/tools/plugin) 指南。
