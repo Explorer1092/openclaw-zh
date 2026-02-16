@@ -1,7 +1,7 @@
 ---
 title: "Anthropic (Claude)"
 sidebarTitle: "Anthropic"
-mmh3_hash: "01f3bcfdb38fc8d5420b303b6b20eff5"
+mmh3_hash: "46afbead5764dcee2c81fb72145068b3"
 summary: "在 OpenClaw 中通过 API 密钥或 setup-token 使用 Anthropic Claude"
 read_when: ["您想在 OpenClaw 中使用 Anthropic 模型","您想使用 setup-token 而不是 API 密钥"]
 ---
@@ -30,7 +30,7 @@ openclaw onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 ```json5
 {
   env: { ANTHROPIC_API_KEY: "sk-ant-..." },
-  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } },
+  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-6" } } },
 }
 ```
 
@@ -53,7 +53,7 @@ OpenClaw 支持 Anthropic 的 prompt 缓存功能。这是 **仅限 API** 的功
   agents: {
     defaults: {
       models: {
-        "anthropic/claude-opus-4-5": {
+        "anthropic/claude-opus-4-6": {
           params: { cacheRetention: "long" },
         },
       },
@@ -102,18 +102,18 @@ openclaw models auth setup-token --provider anthropic
 openclaw models auth paste-token --provider anthropic
 ```
 
-### CLI 设置
+### CLI 设置 (setup-token)
 
 ```bash
 # 在入门期间粘贴 setup-token
 openclaw onboard --auth-choice setup-token
 ```
 
-### 配置片段
+### 配置片段 (setup-token)
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } },
+  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-6" } } },
 }
 ```
 

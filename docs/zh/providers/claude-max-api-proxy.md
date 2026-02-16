@@ -1,7 +1,7 @@
 ---
 title: "Claude Max API Proxy"
 sidebarTitle: "Claude Max API Proxy"
-mmh3_hash: "377a857d0d276462780f7efe81499a48"
+mmh3_hash: "7b28d91f9180790de124a7ea889faee8"
 summary: "将 Claude Max/Pro 订阅用作 OpenAI 兼容的 API 端点"
 read_when: ["您想将 Claude Max 订阅与 OpenAI 兼容工具一起使用","您想要一个包装 Claude Code CLI 的本地 API 服务器","您想通过使用订阅而不是 API 密钥来节省费用"]
 ---
@@ -129,9 +129,9 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.claude-max-api.plist
 
 ## 链接
 
-- **npm:** https://www.npmjs.com/package/claude-max-api-proxy
-- **GitHub:** https://github.com/atalovesyou/claude-max-api-proxy
-- **Issues:** https://github.com/atalovesyou/claude-max-api-proxy/issues
+- **npm:** [https://www.npmjs.com/package/claude-max-api-proxy](https://www.npmjs.com/package/claude-max-api-proxy)
+- **GitHub:** [https://github.com/atalovesyou/claude-max-api-proxy](https://github.com/atalovesyou/claude-max-api-proxy)
+- **Issues:** [https://github.com/atalovesyou/claude-max-api-proxy/issues](https://github.com/atalovesyou/claude-max-api-proxy/issues)
 
 ## 注意事项
 

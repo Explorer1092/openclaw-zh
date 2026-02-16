@@ -1,7 +1,7 @@
 ---
 title: "模型提供商"
 sidebarTitle: "模型提供商"
-mmh3_hash: "3950bf4c844bb887085cd57a558b27d6"
+mmh3_hash: "1fae421ba1182f43e6efddb1670938a5"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
 read_when: ["您想选择一个模型提供商","您需要支持的 LLM 后端的快速概述"]
 ---
@@ -27,7 +27,7 @@ Venice 是我们推荐的 Venice AI 设置,用于隐私优先的推理,并可选
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-5" } } },
+  agents: { defaults: { model: { primary: "anthropic/claude-opus-4-6" } } },
 }
 ```
 
@@ -37,16 +37,23 @@ Venice 是我们推荐的 Venice AI 设置,用于隐私优先的推理,并可选
 - [Anthropic (API + Claude Code CLI)](/providers/anthropic)
 - [Qwen (OAuth)](/providers/qwen)
 - [OpenRouter](/providers/openrouter)
+- [LiteLLM (统一网关)](/providers/litellm)
 - [Vercel AI Gateway](/providers/vercel-ai-gateway)
+- [Together AI](/providers/together)
+- [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
 - [OpenCode Zen](/providers/opencode)
-- [Amazon Bedrock](/bedrock)
+- [Amazon Bedrock](/providers/bedrock)
 - [Z.AI](/providers/zai)
 - [Xiaomi](/providers/xiaomi)
 - [GLM 模型](/providers/glm)
 - [MiniMax](/providers/minimax)
 - [Venice (Venice AI, 注重隐私)](/providers/venice)
+- [Hugging Face (Inference)](/providers/huggingface)
 - [Ollama (本地模型)](/providers/ollama)
+- [vLLM (本地模型)](/providers/vllm)
+- [Qianfan](/providers/qianfan)
+- [NVIDIA](/providers/nvidia)
 
 ## 转录提供商
 

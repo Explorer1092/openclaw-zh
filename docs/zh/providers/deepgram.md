@@ -1,7 +1,7 @@
 ---
 title: "Deepgram"
 sidebarTitle: "Deepgram"
-mmh3_hash: "c09a2d4fc023f3929fd75a7fa2784102"
+mmh3_hash: "598f6661c7fbf88c69f37f14527051b5"
 summary: "用于入站语音笔记的 Deepgram 转录"
 read_when: ["您想要用于音频附件的 Deepgram 语音转文本","您需要快速的 Deepgram 配置示例"]
 ---
@@ -11,8 +11,8 @@ Deepgram 是一个语音转文本 API。在 OpenClaw 中,它通过 `tools.media.
 
 启用后,OpenClaw 将音频文件上传到 Deepgram 并将转录注入回复管道(`{{Transcript}}` + `[Audio]` 块)。这**不是流式**的;它使用预录制的转录端点。
 
-网站: https://deepgram.com
-文档: https://developers.deepgram.com
+网站: [https://deepgram.com](https://deepgram.com)
+文档: [https://developers.deepgram.com](https://developers.deepgram.com)
 
 ## 快速开始
 
