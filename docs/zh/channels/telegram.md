@@ -1,7 +1,7 @@
 ---
 title: "Telegram (Bot API)"
 sidebarTitle: "Telegram"
-mmh3_hash: "62214a2dbeb272e191bce0f26094735e"
+mmh3_hash: "f5d445e4a10c6b488112790b289771ec"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when: ["Working on Telegram features or webhooks"]
 ---

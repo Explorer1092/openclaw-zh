@@ -1,7 +1,7 @@
 ---
 title: "Zalo 个人号 (非官方)"
 sidebarTitle: "Zalo 个人号"
-mmh3_hash: "ed0d99e6b6a7b3ae77465f87e3aeb665"
+mmh3_hash: "9f0f4ca425c226af555a71df9b45ddf1"
 summary: "Zalo personal account support via zca-cli (QR login), capabilities, and configuration"
 read_when: ["Setting up Zalo Personal for OpenClaw","Debugging Zalo Personal login or message flow"]
 ---

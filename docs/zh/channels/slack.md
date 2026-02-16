@@ -1,138 +1,100 @@
 ---
+mmh3_hash: "15821a44afd762c2955fd400fdb597cc"
+summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
+read_when:
+  - Setting up Slack or debugging Slack socket/HTTP mode
 title: "Slack"
-sidebarTitle: "Slack"
-mmh3_hash: "a38829be3b6fad2f19e002c429df5fa1"
-summary: "Socket 或 HTTP webhook 模式的 Slack 设置"
-read_when: "设置 Slack 或调试 Slack socket/HTTP 模式时"
 ---
 
 # Slack
 
-## Socket 模式 (默认)
+状态: 通过 Slack 应用集成支持私信 + 频道,生产环境可用。默认模式为 Socket Mode; 同时支持 HTTP Events API 模式。
 
-### 快速设置 (初学者)
-1) 创建一个 Slack 应用并启用 **Socket Mode**。
-2) 创建一个 **App Token** (`xapp-...`) 和 **Bot Token** (`xoxb-...`)。
-3) 为 OpenClaw 设置 token 并启动 gateway。
+<CardGroup cols={3}>
+  <Card title="配对" icon="link" href="/channels/pairing">
+    Slack 私信默认使用配对模式。
+  </Card>
+  <Card title="Slash 命令" icon="terminal" href="/tools/slash-commands">
+    原生命令行为和命令目录。
+  </Card>
+  <Card title="频道故障排除" icon="wrench" href="/channels/troubleshooting">
+    跨频道诊断和修复手册。
+  </Card>
+</CardGroup>
 
-最小配置:
-```json5
-{
-  channels: {
-    slack: {
-      enabled: true,
-      appToken: "xapp-...",
-      botToken: "xoxb-..."
-    }
-  }
-}
-```
+## 快速设置
 
-### 设置步骤
-1) 在 https://api.slack.com/apps 创建一个 Slack 应用 (From scratch)。
-2) **Socket Mode** → 开启。然后前往 **Basic Information** → **App-Level Tokens** → **Generate Token and Scopes**,添加 `connections:write` 权限。复制 **App Token** (`xapp-...`)。
-3) **OAuth & Permissions** → 添加 bot token scopes (使用下面的 manifest)。点击 **Install to Workspace**。复制 **Bot User OAuth Token** (`xoxb-...`)。
-4) 可选: **OAuth & Permissions** → 添加 **User Token Scopes** (查看下面的只读列表)。重新安装应用并复制 **User OAuth Token** (`xoxp-...`)。
-5) **Event Subscriptions** → 启用事件并订阅:
-   - `message.*` (包括编辑/删除/主题广播)
-   - `app_mention`
-   - `reaction_added`, `reaction_removed`
-   - `member_joined_channel`, `member_left_channel`
-   - `channel_rename`
-   - `pin_added`, `pin_removed`
-6) 邀请 bot 加入你希望它读取的频道。
-7) Slash Commands → 如果使用 `channels.slack.slashCommand`,创建 `/openclaw`。如果启用原生命令,为每个内置命令添加一个 slash command (与 `/help` 中的名称相同)。除非设置 `channels.slack.commands.native: true`,否则 Slack 的原生命令默认关闭 (全局 `commands.native` 为 `"auto"`,Slack 保持关闭)。
-8) App Home → 启用 **Messages Tab**,以便用户可以私信 bot。
+<Tabs>
+  <Tab title="Socket Mode (默认)">
+    <Steps>
+      <Step title="创建 Slack 应用和 token">
+        在 Slack 应用设置中:
 
-使用下面的 manifest 以保持 scopes 和 events 同步。
+        - 启用 **Socket Mode**
+        - 创建 **App Token** (`xapp-...`) 并授予 `connections:write` 权限
+        - 安装应用并复制 **Bot Token** (`xoxb-...`)
+      </Step>
 
-多账户支持: 使用 `channels.slack.accounts`,为每个账户配置 token 和可选的 `name`。查看 [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) 了解共享模式。
-
-### OpenClaw 配置 (最小)
-
-通过环境变量设置 token (推荐):
-- `SLACK_APP_TOKEN=xapp-...`
-- `SLACK_BOT_TOKEN=xoxb-...`
-
-或通过配置文件:
+      <Step title="配置 OpenClaw">
 
 ```json5
 {
   channels: {
     slack: {
       enabled: true,
-      appToken: "xapp-...",
-      botToken: "xoxb-..."
-    }
-  }
-}
-```
-
-### User token (可选)
-OpenClaw 可以使用 Slack user token (`xoxp-...`) 进行读取操作 (历史记录、
-置顶、反应、emoji、成员信息)。默认情况下保持只读: 存在 user token 时读取操作优先使用它,
-写入操作仍使用 bot token,除非你明确选择启用。即使设置 `userTokenReadOnly: false`,
-当 bot token 可用时,写入操作仍优先使用它。
-
-User token 在配置文件中配置 (不支持环境变量)。对于多账户,
-设置 `channels.slack.accounts.<id>.userToken`。
-
-使用 bot + app + user tokens 的示例:
-```json5
-{
-  channels: {
-    slack: {
-      enabled: true,
+      mode: "socket",
       appToken: "xapp-...",
       botToken: "xoxb-...",
-      userToken: "xoxp-..."
-    }
-  }
+    },
+  },
 }
 ```
 
-显式设置 userTokenReadOnly 的示例 (允许 user token 写入):
-```json5
-{
-  channels: {
-    slack: {
-      enabled: true,
-      appToken: "xapp-...",
-      botToken: "xoxb-...",
-      userToken: "xoxp-...",
-      userTokenReadOnly: false
-    }
-  }
-}
+        环境变量回退 (仅默认账户):
+
+```bash
+SLACK_APP_TOKEN=xapp-...
+SLACK_BOT_TOKEN=xoxb-...
 ```
 
-#### Token 使用规则
-- 读取操作 (历史记录、反应列表、置顶列表、emoji 列表、成员信息、
-  搜索) 在配置了 user token 时优先使用它,否则使用 bot token。
-- 写入操作 (发送/编辑/删除消息、添加/移除反应、置顶/取消置顶、
-  文件上传) 默认使用 bot token。如果 `userTokenReadOnly: false` 且
-  没有可用的 bot token,OpenClaw 会回退到 user token。
+      </Step>
 
-### 历史上下文
-- `channels.slack.historyLimit` (或 `channels.slack.accounts.*.historyLimit`) 控制提示词中包含多少条最近的频道/群组消息。
-- 回退到 `messages.groupChat.historyLimit`。设置 `0` 禁用 (默认 50)。
+      <Step title="订阅应用事件">
+        订阅 bot 事件:
 
-## HTTP 模式 (Events API)
-当你的 Gateway 可通过 HTTPS 被 Slack 访问时使用 HTTP webhook 模式 (典型的服务器部署)。
-HTTP 模式使用 Events API + Interactivity + Slash Commands,共享同一个请求 URL。
+        - `app_mention`
+        - `message.channels`, `message.groups`, `message.im`, `message.mpim`
+        - `reaction_added`, `reaction_removed`
+        - `member_joined_channel`, `member_left_channel`
+        - `channel_rename`
+        - `pin_added`, `pin_removed`
 
-### 设置步骤
-1) 创建一个 Slack 应用并**禁用 Socket Mode** (如果只使用 HTTP 则可选)。
-2) **Basic Information** → 复制 **Signing Secret**。
-3) **OAuth & Permissions** → 安装应用并复制 **Bot User OAuth Token** (`xoxb-...`)。
-4) **Event Subscriptions** → 启用事件并将 **Request URL** 设置为你的 gateway webhook 路径 (默认 `/slack/events`)。
-5) **Interactivity & Shortcuts** → 启用并设置相同的 **Request URL**。
-6) **Slash Commands** → 为你的命令设置相同的 **Request URL**。
+        同时启用 App Home 的 **Messages Tab** 以支持私信。
+      </Step>
 
-示例请求 URL:
-`https://gateway-host/slack/events`
+      <Step title="启动 gateway">
 
-### OpenClaw 配置 (最小)
+```bash
+openclaw gateway
+```
+
+      </Step>
+    </Steps>
+
+  </Tab>
+
+  <Tab title="HTTP Events API 模式">
+    <Steps>
+      <Step title="为 HTTP 配置 Slack 应用">
+
+        - 设置模式为 HTTP (`channels.slack.mode="http"`)
+        - 复制 Slack **Signing Secret**
+        - 将 Event Subscriptions + Interactivity + Slash command Request URL 设置为同一个 webhook 路径 (默认 `/slack/events`)
+
+      </Step>
+
+      <Step title="配置 OpenClaw HTTP 模式">
+
 ```json5
 {
   channels: {
@@ -141,18 +103,211 @@ HTTP 模式使用 Events API + Interactivity + Slash Commands,共享同一个请
       mode: "http",
       botToken: "xoxb-...",
       signingSecret: "your-signing-secret",
-      webhookPath: "/slack/events"
-    }
-  }
+      webhookPath: "/slack/events",
+    },
+  },
 }
 ```
 
-多账户 HTTP 模式: 设置 `channels.slack.accounts.<id>.mode = "http"` 并为每个账户提供唯一的
-`webhookPath`,以便每个 Slack 应用可以指向其自己的 URL。
+      </Step>
 
-### Manifest (可选)
-使用此 Slack 应用 manifest 快速创建应用 (如需要可调整名称/命令)。如果计划配置 user token,
-请包含 user scopes。
+      <Step title="多账户 HTTP 使用唯一 webhook 路径">
+        支持按账户的 HTTP 模式。
+
+        为每个账户提供不同的 `webhookPath` 以避免注册冲突。
+      </Step>
+    </Steps>
+
+  </Tab>
+</Tabs>
+
+## Token 模型
+
+- Socket Mode 需要 `botToken` + `appToken`。
+- HTTP 模式需要 `botToken` + `signingSecret`。
+- 配置中的 token 会覆盖环境变量回退。
+- `SLACK_BOT_TOKEN` / `SLACK_APP_TOKEN` 环境变量回退仅适用于默认账户。
+- `userToken` (`xoxp-...`) 仅在配置中设置 (无环境变量回退) 且默认为只读行为 (`userTokenReadOnly: true`)。
+- 可选: 添加 `chat:write.customize` 权限以使出站消息使用活动 agent 身份 (自定义 `username` 和图标)。`icon_emoji` 使用 `:emoji_name:` 语法。
+
+<Tip>
+对于操作/目录读取,配置了 user token 时可以优先使用。对于写入,bot token 仍然优先; 仅当 `userTokenReadOnly: false` 且 bot token 不可用时才允许 user-token 写入。
+</Tip>
+
+## 访问控制和路由
+
+<Tabs>
+  <Tab title="私信策略">
+    `channels.slack.dmPolicy` 控制私信访问 (旧版: `channels.slack.dm.policy`):
+
+    - `pairing` (默认)
+    - `allowlist`
+    - `open` (需要 `channels.slack.allowFrom` 包含 `"*"`; 旧版: `channels.slack.dm.allowFrom`)
+    - `disabled`
+
+    私信标志:
+
+    - `dm.enabled` (默认 true)
+    - `channels.slack.allowFrom` (推荐)
+    - `dm.allowFrom` (旧版)
+    - `dm.groupEnabled` (群组私信默认 false)
+    - `dm.groupChannels` (可选 MPIM 白名单)
+
+    私信配对使用 `openclaw pairing approve slack <code>`。
+
+  </Tab>
+
+  <Tab title="频道策略">
+    `channels.slack.groupPolicy` 控制频道处理:
+
+    - `open`
+    - `allowlist`
+    - `disabled`
+
+    频道白名单位于 `channels.slack.channels`。
+
+    运行时注意: 如果完全没有 `channels.slack` (仅环境变量设置) 且 `channels.defaults.groupPolicy` 未设置,运行时会回退到 `groupPolicy="open"` 并记录警告。
+
+    名称/ID 解析:
+
+    - 在启动时解析频道白名单条目和私信白名单条目 (当 token 访问允许时)
+    - 未解析的条目保持配置状态
+
+  </Tab>
+
+  <Tab title="提及和频道用户">
+    频道消息默认需要提及才能触发。
+
+    提及来源:
+
+    - 显式应用提及 (`<@botId>`)
+    - 提及正则表达式模式 (`agents.list[].groupChat.mentionPatterns`, 回退到 `messages.groupChat.mentionPatterns`)
+    - 隐式回复-bot-线程行为
+
+    按频道控制 (`channels.slack.channels.<id|name>`):
+
+    - `requireMention`
+    - `users` (白名单)
+    - `allowBots`
+    - `skills`
+    - `systemPrompt`
+    - `tools`, `toolsBySender`
+
+  </Tab>
+</Tabs>
+
+## 命令和 slash 行为
+
+- Slack 的原生命令自动模式默认**关闭** (`commands.native: "auto"` 不会启用 Slack 原生命令)。
+- 使用 `channels.slack.commands.native: true` (或全局 `commands.native: true`) 启用原生 Slack 命令处理器。
+- 当原生命令启用时,在 Slack 中注册匹配的 slash 命令 (`/<command>` 名称)。
+- 如果未启用原生命令,你可以通过 `channels.slack.slashCommand` 运行单个配置的 slash 命令。
+
+默认 slash 命令设置:
+
+- `enabled: false`
+- `name: "openclaw"`
+- `sessionPrefix: "slack:slash"`
+- `ephemeral: true`
+
+Slash session 使用隔离的键:
+
+- `agent:<agentId>:slack:slash:<userId>`
+
+并仍然针对目标对话 session 路由命令执行 (`CommandTargetSessionKey`)。
+
+## 线程、session 和回复标签
+
+- 私信路由为 `direct`; 频道路由为 `channel`; MPIM 路由为 `group`。
+- 使用默认 `session.dmScope=main` 时,Slack 私信合并到 agent 主 session。
+- 频道 session: `agent:<agentId>:slack:channel:<channelId>`。
+- 线程回复可以在适用时创建线程 session 后缀 (`:thread:<threadTs>`)。
+- `channels.slack.thread.historyScope` 默认为 `thread`; `thread.inheritParent` 默认为 `false`。
+- `channels.slack.thread.initialHistoryLimit` 控制新线程 session 启动时获取多少现有线程消息 (默认 `20`; 设置 `0` 禁用)。
+
+回复线程控制:
+
+- `channels.slack.replyToMode`: `off|first|all` (默认 `off`)
+- `channels.slack.replyToModeByChatType`: 按 `direct|group|channel` 设置
+- 私聊的旧版回退: `channels.slack.dm.replyToMode`
+
+支持手动回复标签:
+
+- `[[reply_to_current]]`
+- `[[reply_to:<id>]]`
+
+注意: `replyToMode="off"` 禁用隐式回复线程。显式 `[[reply_to_*]]` 标签仍然会被遵守。
+
+## 媒体、分块和传递
+
+<AccordionGroup>
+  <Accordion title="入站附件">
+    Slack 文件附件从 Slack 托管的私有 URL 下载 (token 认证请求流) 并在获取成功且大小限制允许时写入媒体存储。
+
+    运行时入站大小上限默认为 `20MB`,除非通过 `channels.slack.mediaMaxMb` 覆盖。
+
+  </Accordion>
+
+  <Accordion title="出站文本和文件">
+    - 文本块使用 `channels.slack.textChunkLimit` (默认 4000)
+    - `channels.slack.chunkMode="newline"` 启用段落优先分割
+    - 文件发送使用 Slack 上传 API 且可以包含线程回复 (`thread_ts`)
+    - 出站媒体上限遵循配置的 `channels.slack.mediaMaxMb`; 否则频道发送使用媒体管道的 MIME 类型默认值
+  </Accordion>
+
+  <Accordion title="传递目标">
+    推荐的显式目标:
+
+    - `user:<id>` 用于私信
+    - `channel:<id>` 用于频道
+
+    发送到用户目标时,Slack 私信通过 Slack conversation API 打开。
+
+  </Accordion>
+</AccordionGroup>
+
+## 操作和门控
+
+Slack 操作通过 `channels.slack.actions.*` 控制。
+
+当前 Slack 工具中可用的操作组:
+
+| 组         | 默认    |
+| ---------- | ------- |
+| messages   | 启用    |
+| reactions  | 启用    |
+| pins       | 启用    |
+| memberInfo | 启用    |
+| emojiList  | 启用    |
+
+## 事件和操作行为
+
+- 消息编辑/删除/线程广播映射到系统事件。
+- 反应添加/移除事件映射到系统事件。
+- 成员加入/离开、频道创建/重命名、置顶添加/移除事件映射到系统事件。
+- `channel_id_changed` 可以在 `configWrites` 启用时迁移频道配置键。
+- 频道主题/目的元数据被视为不可信上下文,可以注入到路由上下文中。
+
+## 确认反应
+
+`ackReaction` 在 OpenClaw 处理入站消息时发送确认表情符号。
+
+解析顺序:
+
+- `channels.slack.accounts.<accountId>.ackReaction`
+- `channels.slack.ackReaction`
+- `messages.ackReaction`
+- agent 身份表情符号回退 (`agents.list[].identity.emoji`, 否则 "👀")
+
+注意:
+
+- Slack 期望 shortcode (例如 `"eyes"`)。
+- 使用 `""` 禁用频道或账户的反应。
+
+## Manifest 和权限检查清单
+
+<AccordionGroup>
+  <Accordion title="Slack 应用 manifest 示例">
 
 ```json
 {
@@ -184,14 +339,8 @@ HTTP 模式使用 Events API + Interactivity + Slash Commands,共享同一个请
         "channels:history",
         "channels:read",
         "groups:history",
-        "groups:read",
-        "groups:write",
         "im:history",
-        "im:read",
-        "im:write",
         "mpim:history",
-        "mpim:read",
-        "mpim:write",
         "users:read",
         "app_mentions:read",
         "reactions:read",
@@ -202,21 +351,6 @@ HTTP 模式使用 Events API + Interactivity + Slash Commands,共享同一个请
         "commands",
         "files:read",
         "files:write"
-      ],
-      "user": [
-        "channels:history",
-        "channels:read",
-        "groups:history",
-        "groups:read",
-        "im:history",
-        "im:read",
-        "mpim:history",
-        "mpim:read",
-        "users:read",
-        "reactions:read",
-        "pins:read",
-        "emoji:read",
-        "search:read"
       ]
     }
   },
@@ -242,268 +376,99 @@ HTTP 模式使用 Events API + Interactivity + Slash Commands,共享同一个请
 }
 ```
 
-如果启用原生命令,为每个要公开的命令添加一个 `slash_commands` 条目 (匹配 `/help` 列表)。使用 `channels.slack.commands.native` 覆盖。
+  </Accordion>
 
-## Scopes (当前 vs 可选)
-Slack 的 Conversations API 按类型划分权限范围: 你只需要实际使用的会话类型
-(channels, groups, im, mpim) 的权限。查看
-https://docs.slack.dev/apis/web-api/using-the-conversations-api/ 了解概述。
+  <Accordion title="可选 user-token 权限 (读取操作)">
+    如果配置了 `channels.slack.userToken`,典型的读取权限为:
 
-### Bot token scopes (必需)
-- `chat:write` (通过 `chat.postMessage` 发送/更新/删除消息)
-  https://docs.slack.dev/reference/methods/chat.postMessage
-- `im:write` (通过 `conversations.open` 打开用户私信)
-  https://docs.slack.dev/reference/methods/conversations.open
-- `channels:history`, `groups:history`, `im:history`, `mpim:history`
-  https://docs.slack.dev/reference/methods/conversations.history
-- `channels:read`, `groups:read`, `im:read`, `mpim:read`
-  https://docs.slack.dev/reference/methods/conversations.info
-- `users:read` (用户查询)
-  https://docs.slack.dev/reference/methods/users.info
-- `reactions:read`, `reactions:write` (`reactions.get` / `reactions.add`)
-  https://docs.slack.dev/reference/methods/reactions.get
-  https://docs.slack.dev/reference/methods/reactions.add
-- `pins:read`, `pins:write` (`pins.list` / `pins.add` / `pins.remove`)
-  https://docs.slack.dev/reference/scopes/pins.read
-  https://docs.slack.dev/reference/scopes/pins.write
-- `emoji:read` (`emoji.list`)
-  https://docs.slack.dev/reference/scopes/emoji.read
-- `files:write` (通过 `files.uploadV2` 上传)
-  https://docs.slack.dev/messaging/working-with-files/#upload
+    - `channels:history`, `groups:history`, `im:history`, `mpim:history`
+    - `channels:read`, `groups:read`, `im:read`, `mpim:read`
+    - `users:read`
+    - `reactions:read`
+    - `pins:read`
+    - `emoji:read`
+    - `search:read` (如果依赖 Slack 搜索读取)
 
-### User token scopes (可选,默认只读)
-如果配置 `channels.slack.userToken`,在 **User Token Scopes** 下添加这些权限。
+  </Accordion>
+</AccordionGroup>
 
-- `channels:history`, `groups:history`, `im:history`, `mpim:history`
-- `channels:read`, `groups:read`, `im:read`, `mpim:read`
-- `users:read`
-- `reactions:read`
-- `pins:read`
-- `emoji:read`
-- `search:read`
+## 故障排除
 
-### 目前不需要 (但可能在未来需要)
-- `mpim:write` (仅当我们添加通过 `conversations.open` 打开群组私信/开始私信时)
-- `groups:write` (仅当我们添加私有频道管理: 创建/重命名/邀请/归档时)
-- `chat:write.public` (仅当我们想发送到 bot 未加入的频道时)
-  https://docs.slack.dev/reference/scopes/chat.write.public
-- `users:read.email` (仅当我们需要从 `users.info` 获取邮箱字段时)
-  https://docs.slack.dev/changelog/2017-04-narrowing-email-access
-- `files:read` (仅当我们开始列出/读取文件元数据时)
+<AccordionGroup>
+  <Accordion title="频道中没有回复">
+    按顺序检查:
 
-## 配置
-Slack 仅使用 Socket Mode (无 HTTP webhook 服务器)。提供两个 token:
+    - `groupPolicy`
+    - 频道白名单 (`channels.slack.channels`)
+    - `requireMention`
+    - 按频道 `users` 白名单
 
-```json
-{
-  "slack": {
-    "enabled": true,
-    "botToken": "xoxb-...",
-    "appToken": "xapp-...",
-    "groupPolicy": "allowlist",
-    "dm": {
-      "enabled": true,
-      "policy": "pairing",
-      "allowFrom": ["U123", "U456", "*"],
-      "groupEnabled": false,
-      "groupChannels": ["G123"],
-      "replyToMode": "all"
-    },
-    "channels": {
-      "C123": { "allow": true, "requireMention": true },
-      "#general": {
-        "allow": true,
-        "requireMention": true,
-        "users": ["U123"],
-        "skills": ["search", "docs"],
-        "systemPrompt": "Keep answers short."
-      }
-    },
-    "reactionNotifications": "own",
-    "reactionAllowlist": ["U123"],
-    "replyToMode": "off",
-    "actions": {
-      "reactions": true,
-      "messages": true,
-      "pins": true,
-      "memberInfo": true,
-      "emojiList": true
-    },
-    "slashCommand": {
-      "enabled": true,
-      "name": "openclaw",
-      "sessionPrefix": "slack:slash",
-      "ephemeral": true
-    },
-    "textChunkLimit": 4000,
-    "mediaMaxMb": 20
-  }
-}
+    有用的命令:
+
+```bash
+openclaw channels status --probe
+openclaw logs --follow
+openclaw doctor
 ```
 
-Token 也可以通过环境变量提供:
-- `SLACK_BOT_TOKEN`
-- `SLACK_APP_TOKEN`
+  </Accordion>
 
-确认反应通过 `messages.ackReaction` +
-`messages.ackReactionScope` 全局控制。使用 `messages.removeAckAfterReply`
-在 bot 回复后清除确认反应。
+  <Accordion title="私信被忽略">
+    检查:
 
-## 限制
-- 出站文本分块为 `channels.slack.textChunkLimit` (默认 4000)。
-- 可选换行分块: 设置 `channels.slack.chunkMode="newline"` 以在长度分块之前按空行 (段落边界) 分割。
-- 媒体上传受 `channels.slack.mediaMaxMb` 限制 (默认 20)。
+    - `channels.slack.dm.enabled`
+    - `channels.slack.dmPolicy` (或旧版 `channels.slack.dm.policy`)
+    - 配对批准 / 白名单条目
 
-## 回复线程
-默认情况下,OpenClaw 在主频道中回复。使用 `channels.slack.replyToMode` 控制自动线程:
-
-| 模式 | 行为 |
-| --- | --- |
-| `off` | **默认。** 在主频道回复。仅当触发消息已在线程中时才使用线程。 |
-| `first` | 首次回复进入线程 (在触发消息下),后续回复进入主频道。适用于保持上下文可见同时避免线程混乱。 |
-| `all` | 所有回复进入线程。保持对话集中但可能降低可见性。 |
-
-该模式适用于自动回复和 agent tool 调用 (`slack sendMessage`)。
-
-### 按聊天类型的线程设置
-你可以通过设置 `channels.slack.replyToModeByChatType` 为每种聊天类型配置不同的线程行为:
-
-```json5
-{
-  channels: {
-    slack: {
-      replyToMode: "off",        // 频道的默认值
-      replyToModeByChatType: {
-        direct: "all",           // 私信始终使用线程
-        group: "first"           // 群组私信/MPIM 首次回复使用线程
-      },
-    }
-  }
-}
+```bash
+openclaw pairing list slack
 ```
 
-支持的聊天类型:
-- `direct`: 1对1私信 (Slack `im`)
-- `group`: 群组私信 / MPIM (Slack `mpim`)
-- `channel`: 标准频道 (公开/私有)
+  </Accordion>
 
-优先级:
-1) `replyToModeByChatType.<chatType>`
-2) `replyToMode`
-3) 提供商默认值 (`off`)
+  <Accordion title="Socket 模式未连接">
+    验证 bot + app token 以及 Slack 应用设置中的 Socket Mode 启用状态。
+  </Accordion>
 
-当未设置聊天类型覆盖时,旧版 `channels.slack.dm.replyToMode` 仍作为 `direct` 的回退值接受。
+  <Accordion title="HTTP 模式未接收事件">
+    验证:
 
-示例:
+    - signing secret
+    - webhook 路径
+    - Slack Request URL (Events + Interactivity + Slash Commands)
+    - 每个 HTTP 账户唯一的 `webhookPath`
 
-仅私信使用线程:
-```json5
-{
-  channels: {
-    slack: {
-      replyToMode: "off",
-      replyToModeByChatType: { direct: "all" }
-    }
-  }
-}
-```
+  </Accordion>
 
-群组私信使用线程但频道保持在根级别:
-```json5
-{
-  channels: {
-    slack: {
-      replyToMode: "off",
-      replyToModeByChatType: { group: "first" }
-    }
-  }
-}
-```
+  <Accordion title="原生/slash 命令未触发">
+    验证你是否想要:
 
-频道使用线程,私信保持在根级别:
-```json5
-{
-  channels: {
-    slack: {
-      replyToMode: "first",
-      replyToModeByChatType: { direct: "off", group: "off" }
-    }
-  }
-}
-```
+    - 原生命令模式 (`channels.slack.commands.native: true`) 并在 Slack 中注册匹配的 slash 命令
+    - 或单个 slash 命令模式 (`channels.slack.slashCommand.enabled: true`)
 
-### 手动线程标签
-为了精细控制,在 agent 响应中使用这些标签:
-- `[[reply_to_current]]` — 回复触发消息 (开始/继续线程)。
-- `[[reply_to:<id>]]` — 回复特定消息 id。
+    同时检查 `commands.useAccessGroups` 和频道/用户白名单。
 
-## Sessions + 路由
-- 私信共享 `main` session (类似 WhatsApp/Telegram)。
-- 频道映射到 `agent:<agentId>:slack:channel:<channelId>` sessions。
-- Slash commands 使用 `agent:<agentId>:slack:slash:<userId>` sessions (前缀可通过 `channels.slack.slashCommand.sessionPrefix` 配置)。
-- 如果 Slack 未提供 `channel_type`,OpenClaw 根据频道 ID 前缀 (`D`, `C`, `G`) 推断,默认为 `channel` 以保持 session key 稳定。
-- 原生命令注册使用 `commands.native` (全局默认 `"auto"` → Slack 关闭),可通过 `channels.slack.commands.native` 按工作空间覆盖。文本命令需要独立的 `/...` 消息,可通过 `commands.text: false` 禁用。Slack slash commands 在 Slack 应用中管理,不会自动移除。使用 `commands.useAccessGroups: false` 绕过命令的访问组检查。
-- 完整命令列表 + 配置: [Slash commands](/tools/slash-commands)
+  </Accordion>
+</AccordionGroup>
 
-## 私信安全 (配对)
-- 默认: `channels.slack.dm.policy="pairing"` — 未知私信发送者获得配对码 (1小时后过期)。
-- 通过以下方式批准: `openclaw pairing approve slack <code>`。
-- 允许任何人: 设置 `channels.slack.dm.policy="open"` 和 `channels.slack.dm.allowFrom=["*"]`。
-- `channels.slack.dm.allowFrom` 接受用户 ID、@handles 或邮箱 (在 token 允许时启动时解析)。配置向导接受用户名并在 token 允许时在设置期间将其解析为 id。
+## 配置参考指针
 
-## 群组策略
-- `channels.slack.groupPolicy` 控制频道处理 (`open|disabled|allowlist`)。
-- `allowlist` 要求频道列在 `channels.slack.channels` 中。
- - 如果仅设置 `SLACK_BOT_TOKEN`/`SLACK_APP_TOKEN` 且从未创建 `channels.slack` 部分,
-   运行时将 `groupPolicy` 默认为 `open`。添加 `channels.slack.groupPolicy`、
-   `channels.defaults.groupPolicy` 或频道白名单来锁定它。
- - 配置向导接受 `#channel` 名称并在可能时将其解析为 ID
-   (公开 + 私有); 如果存在多个匹配项,优先选择活动频道。
- - 启动时,OpenClaw 将白名单中的频道/用户名解析为 ID (当 token 允许时)
-   并记录映射; 未解析的条目保持原样。
- - 要**不允许任何频道**,设置 `channels.slack.groupPolicy: "disabled"` (或保持空白名单)。
+主要参考:
 
-频道选项 (`channels.slack.channels.<id>` 或 `channels.slack.channels.<name>`):
-- `allow`: 当 `groupPolicy="allowlist"` 时允许/拒绝频道。
-- `requireMention`: 频道的提及门控。
-- `tools`: 可选的每频道 tool 策略覆盖 (`allow`/`deny`/`alsoAllow`)。
-- `toolsBySender`: 可选的频道内每发送者 tool 策略覆盖 (键为发送者 id/@handles/邮箱; 支持 `"*"` 通配符)。
-- `allowBots`: 允许此频道中 bot 创作的消息 (默认: false)。
-- `users`: 可选的每频道用户白名单。
-- `skills`: 技能过滤器 (省略 = 所有技能,空 = 无)。
-- `systemPrompt`: 频道的额外系统提示词 (与主题/目的结合)。
-- `enabled`: 设置 `false` 禁用频道。
+- [配置参考 - Slack](/gateway/configuration-reference#slack)
 
-## 传递目标
-在 cron/CLI 发送时使用:
-- `user:<id>` 用于私信
-- `channel:<id>` 用于频道
+  重点 Slack 字段:
+  - 模式/认证: `mode`, `botToken`, `appToken`, `signingSecret`, `webhookPath`, `accounts.*`
+  - 私信访问: `dm.enabled`, `dmPolicy`, `allowFrom` (旧版: `dm.policy`, `dm.allowFrom`), `dm.groupEnabled`, `dm.groupChannels`
+  - 频道访问: `groupPolicy`, `channels.*`, `channels.*.users`, `channels.*.requireMention`
+  - 线程/历史: `replyToMode`, `replyToModeByChatType`, `thread.*`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
+  - 传递: `textChunkLimit`, `chunkMode`, `mediaMaxMb`
+  - 操作/功能: `configWrites`, `commands.native`, `slashCommand.*`, `actions.*`, `userToken`, `userTokenReadOnly`
 
-## Tool 操作
-Slack tool 操作可通过 `channels.slack.actions.*` 门控:
+## 相关
 
-| 操作组 | 默认 | 说明 |
-| --- | --- | --- |
-| reactions | 启用 | 反应 + 列出反应 |
-| messages | 启用 | 读取/发送/编辑/删除 |
-| pins | 启用 | 置顶/取消置顶/列出 |
-| memberInfo | 启用 | 成员信息 |
-| emojiList | 启用 | 自定义 emoji 列表 |
-
-## 安全注意事项
-- 写入默认使用 bot token,因此状态更改操作保持在应用的 bot 权限和身份范围内。
-- 设置 `userTokenReadOnly: false` 允许在没有可用 bot token 时使用 user token 进行写入
-  操作,这意味着操作以安装用户的访问权限运行。将 user token 视为高度特权并保持
-  操作门控和白名单严格。
-- 如果启用 user-token 写入,确保 user token 包含你期望的写入
-  scopes (`chat:write`, `reactions:write`, `pins:write`,
-  `files:write`),否则这些操作将失败。
-
-## 注意事项
-- 提及门控通过 `channels.slack.channels` 控制 (将 `requireMention` 设置为 `true`); `agents.list[].groupChat.mentionPatterns` (或 `messages.groupChat.mentionPatterns`) 也计为提及。
-- 多 agent 覆盖: 在 `agents.list[].groupChat.mentionPatterns` 上设置每 agent 的模式。
-- 反应通知遵循 `channels.slack.reactionNotifications` (在模式 `allowlist` 下使用 `reactionAllowlist`)。
-- Bot 创作的消息默认被忽略; 通过 `channels.slack.allowBots` 或 `channels.slack.channels.<id>.allowBots` 启用。
-- 警告: 如果允许回复其他 bot (`channels.slack.allowBots=true` 或 `channels.slack.channels.<id>.allowBots=true`),使用 `requireMention`、`channels.slack.channels.<id>.users` 白名单和/或 `AGENTS.md` 和 `SOUL.md` 中的明确防护措施来防止 bot 到 bot 的回复循环。
-- 对于 Slack tool,反应移除语义在 [/tools/reactions](/tools/reactions) 中。
-- 附件在允许且在大小限制内时下载到媒体存储。
+- [配对](/channels/pairing)
+- [频道路由](/channels/channel-routing)
+- [故障排除](/channels/troubleshooting)
+- [配置](/gateway/configuration)
+- [Slash 命令](/tools/slash-commands)

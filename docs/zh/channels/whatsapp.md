@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp (Web 频道)"
 sidebarTitle: "WhatsApp"
-mmh3_hash: "9032626cbfda016cc1907a33ef26d6a1"
+mmh3_hash: "145116fce5d577555f318792d7818001"
 summary: "WhatsApp（web 渠道）集成：登录、收件箱、回复、媒体和操作"
 read_when: ["Working on WhatsApp/web channel behavior or inbox routing"]
 ---
