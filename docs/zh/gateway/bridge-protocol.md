@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "330bfba8921d03da2edfe7ee124488d8"
 summary: "Bridge 协议(旧版节点):TCP JSONL、配对、作用域 RPC"
 read_when:
   - 构建或调试节点客户端(iOS/Android/macOS 节点模式)
@@ -29,7 +28,7 @@ Bridge 协议是一个 **旧版** 节点传输(TCP JSONL)。新的节点客户�
 - 可选 TLS(当 `bridge.tls.enabled` 为 true 时)。
 - 旧版默认监听器端口为 `18790`(当前构建不启动 TCP Bridge)。
 
-启用 TLS 时,发现 TXT 记录包括 `bridgeTls=1` 加上 `bridgeTlsSha256`,以便节点可以固定证书。
+启用 TLS 时,发现 TXT 记录包括 `bridgeTls=1` 加上 `bridgeTlsSha256` 作为非机密提示。请注意,Bonjour/mDNS TXT 记录是未经身份验证的;客户端不得在没有明确的用户意图或其他带外验证的情况下,将广告的指纹视为权威固定。
 
 ## 握手 + 配对
 

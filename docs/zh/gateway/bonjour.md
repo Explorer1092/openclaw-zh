@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "52d2a77f7df0c39ac1fc0f402e0f35a6"
 summary: "Bonjour/mDNS 发现 + 调试(Gateway beacon、客户端和常见故障模式)"
 read_when:
   - 在 macOS/iOS 上调试 Bonjour 发现问题
@@ -86,21 +85,31 @@ Gateway 广播小的非机密提示,以使 UI 流程更方便:
 - `gatewayPort=<port>`(Gateway WS + HTTP)
 - `gatewayTls=1`(仅在启用 TLS 时)
 - `gatewayTlsSha256=<sha256>`(仅在启用 TLS 且指纹可用时)
-- `canvasPort=<port>`(仅在启用 canvas host 时;默认 `18793`)
+- `canvasPort=<port>`(仅在启用 canvas host 时;当前与 `gatewayPort` 相同)
 - `sshPort=<port>`(未覆盖时默认为 22)
 - `transport=gateway`
 - `cliPath=<path>`(可选;可运行的 `openclaw` 入口点的绝对路径)
 - `tailnetDns=<magicdns>`(Tailnet 可用时的可选提示)
+
+安全注意事项:
+
+- Bonjour/mDNS TXT 记录是 **未经身份验证的**。客户端不得将 TXT 视为权威路由。
+- 客户端应使用解析的服务端点(SRV + A/AAAA)进行路由。将 `lanHost`、`tailnetDns`、`gatewayPort` 和 `gatewayTlsSha256` 仅视为提示。
+- TLS 固定绝不能允许广告的 `gatewayTlsSha256` 覆盖先前存储的固定。
+- iOS/Android 节点应将基于发现的直接连接视为 **仅 TLS**,并在信任首次指纹之前要求明确的用户确认。
 
 ## 在 macOS 上调试
 
 有用的内置工具:
 
 - 浏览实例:
+
   ```bash
   dns-sd -B _openclaw-gw._tcp local.
   ```
+
 - 解析一个实例(替换 `<instance>`):
+
   ```bash
   dns-sd -L "<instance>" _openclaw-gw._tcp local.
   ```
@@ -120,6 +129,7 @@ Gateway 写入滚动日志文件(在启动时打印为 `gateway log file: ...`)�
 iOS 节点使用 `NWBrowser` 发现 `_openclaw-gw._tcp`。
 
 捕获日志:
+
 - Settings → Gateway → Advanced → **Discovery Debug Logs**
 - Settings → Gateway → Advanced → **Discovery Logs** → 重现 → **Copy**
 

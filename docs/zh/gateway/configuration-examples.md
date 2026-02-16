@@ -1,13 +1,15 @@
 ---
-title: "配置示例"
-sidebarTitle: "配置示例"
-mmh3_hash: "8a4caa36743157988b8f21df8a088725"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
-read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 OpenClaw"]
+read_when:
+  - 学习如何配置 OpenClaw
+  - 寻找配置示例
+  - 首次设置 OpenClaw
+title: "配置示例"
 ---
+
 # 配置示例
 
-以下示例与当前配置 schema 对齐。有关详尽的参考和每个字段的注释,请参见 [Configuration](/zh/gateway/configuration)。
+以下示例与当前配置 schema 对齐。有关详尽的参考和每个字段的注释,请参见 [Configuration](/gateway/configuration)。
 
 ## 快速入门
 
@@ -224,13 +226,13 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
       userTimezone: "America/Chicago",
       model: {
         primary: "anthropic/claude-sonnet-4-5",
-        fallbacks: ["anthropic/claude-opus-4-5", "openai/gpt-5.2"]
+        fallbacks: ["anthropic/claude-opus-4-6", "openai/gpt-5.2"]
       },
       imageModel: {
         primary: "openrouter/anthropic/claude-sonnet-4-5"
       },
       models: {
-        "anthropic/claude-opus-4-5": { alias: "opus" },
+        "anthropic/claude-opus-4-6": { alias: "opus" },
         "anthropic/claude-sonnet-4-5": { alias: "sonnet" },
         "openai/gpt-5.2": { alias: "gpt" }
       },
@@ -341,7 +343,8 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
   cron: {
     enabled: true,
     store: "~/.openclaw/cron/cron.json",
-    maxConcurrentRuns: 2
+    maxConcurrentRuns: 2,
+    sessionRetention: "24h"
   },
 
   // Webhooks
@@ -350,7 +353,7 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
     path: "/hooks",
     token: "shared-secret",
     presets: ["gmail"],
-    transformsDir: "~/.openclaw/hooks",
+    transformsDir: "~/.openclaw/hooks/transforms",
     mappings: [
       {
         id: "gmail-hook",
@@ -366,7 +369,10 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
         to: "+15555550123",
         thinking: "low",
         timeoutSeconds: 300,
-        transform: { module: "./transforms/gmail.js", export: "transformGmail" }
+        transform: {
+          module: "gmail.js",
+          export: "transformGmail"
+        }
       }
     ],
     gmail: {
@@ -444,6 +450,32 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
 }
 ```
 
+### 安全 DM 模式(共享收件箱/多用户 DM)
+
+如果有多个人可以向您的 bot 发送 DM(在 `allowFrom` 中有多个条目、为多人批准配对或 `dmPolicy: "open"`),请启用 **安全 DM 模式**,以便来自不同发件人的 DM 默认不共享一个上下文:
+
+```json5
+{
+  // 安全 DM 模式(推荐用于多用户或敏感 DM agent)
+  session: { dmScope: "per-channel-peer" },
+
+  channels: {
+    // 示例:WhatsApp 多用户收件箱
+    whatsapp: {
+      dmPolicy: "allowlist",
+      allowFrom: ["+15555550123", "+15555550124"],
+    },
+
+    // 示例:Discord 多用户收件箱
+    discord: {
+      enabled: true,
+      token: "YOUR_DISCORD_BOT_TOKEN",
+      dm: { enabled: true, allowFrom: ["alice", "bob"] },
+    },
+  },
+}
+```
+
 ### OAuth 与 API 密钥故障转移
 
 ```json5
@@ -468,7 +500,7 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
     workspace: "~/.openclaw/workspace",
     model: {
       primary: "anthropic/claude-sonnet-4-5",
-      fallbacks: ["anthropic/claude-opus-4-5"],
+      fallbacks: ["anthropic/claude-opus-4-6"],
     },
   },
 }
@@ -505,7 +537,7 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
   agent: {
     workspace: "~/.openclaw/workspace",
     model: {
-      primary: "anthropic/claude-opus-4-5",
+      primary: "anthropic/claude-opus-4-6",
       fallbacks: ["minimax/MiniMax-M2.1"]
     }
   }
@@ -572,4 +604,4 @@ read_when: ["学习如何配置 OpenClaw","寻找配置示例","首次设置 Ope
 - 如果设置 `dmPolicy: "open"`,匹配的 `allowFrom` 列表必须包含 `"*"`。
 - Provider IDs 不同(电话号码、用户 IDs、channel IDs)。使用 provider 文档确认格式。
 - 稍后添加的可选部分:`web`、`browser`、`ui`、`discovery`、`canvasHost`、`talk`、`signal`、`imessage`。
-- 有关更深入的设置说明,请参见 [Providers](/zh/channels/whatsapp) 和 [Troubleshooting](/zh/gateway/troubleshooting)。
+- 有关更深入的设置说明,请参见 [Providers](/channels/whatsapp) 和 [Troubleshooting](/gateway/troubleshooting)。

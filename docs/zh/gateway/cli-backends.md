@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "59a6a4afc1574d42e9ce3dc88c18d79a"
 summary: "CLI backend:通过本地 AI CLI 的纯文本回退"
 read_when:
   - 您希望在 API 提供商失败时有一个可靠的回退
@@ -24,13 +23,13 @@ title: "CLI Backends"
 您可以 **无需任何配置** 使用 Claude Code CLI(OpenClaw 附带内置默认值):
 
 ```bash
-openclaw agent --message "hi" --model claude-cli/opus-4.5
+openclaw agent --message "hi" --model claude-cli/opus-4.6
 ```
 
 Codex CLI 也可以开箱即用:
 
 ```bash
-openclaw agent --message "hi" --model codex-cli/gpt-5.2-codex
+openclaw agent --message "hi" --model codex-cli/gpt-5.3-codex
 ```
 
 如果您的 Gateway 在 launchd/systemd 下运行并且 PATH 很少,只需添加命令路径:
@@ -60,11 +59,12 @@ openclaw agent --message "hi" --model codex-cli/gpt-5.2-codex
   agents: {
     defaults: {
       model: {
-        primary: "anthropic/claude-opus-4-5",
-        fallbacks: ["claude-cli/opus-4.5"],
+        primary: "anthropic/claude-opus-4-6",
+        fallbacks: ["claude-cli/opus-4.6", "claude-cli/opus-4.5"],
       },
       models: {
-        "anthropic/claude-opus-4-5": { alias: "Opus" },
+        "anthropic/claude-opus-4-6": { alias: "Opus" },
+        "claude-cli/opus-4.6": {},
         "claude-cli/opus-4.5": {},
       },
     },
@@ -108,6 +108,7 @@ agents.defaults.cliBackends
           input: "arg",
           modelArg: "--model",
           modelAliases: {
+            "claude-opus-4-6": "opus",
             "claude-opus-4-5": "opus",
             "claude-sonnet-4-5": "sonnet",
           },

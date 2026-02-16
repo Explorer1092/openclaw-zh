@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "047e69cb05b2e63ee2405bcbf70beced"
+mmh3_hash: "eb88b3e7b59df6ce844fbcac19b4ebf3"
 summary: "后台 exec 执行和进程管理"
 read_when:
   - 添加或修改后台 exec 行为
@@ -47,6 +47,7 @@ OpenClaw 通过 `exec` 工具运行 shell 命令,并在内存中保留长时间�
 - `tools.exec.timeoutSec`(默认 1800)
 - `tools.exec.cleanupMs`(默认 1800000)
 - `tools.exec.notifyOnExit`(默认 true):当后台 exec 退出时,将系统事件加入队列并请求 heartbeat。
+- `tools.exec.notifyOnExitEmptySuccess`(默认 false):当为 true 时,也会为未产生输出的成功后台运行加入完成事件队列。
 
 ## process 工具
 
@@ -67,7 +68,9 @@ OpenClaw 通过 `exec` 工具运行 shell 命令,并在内存中保留长时间�
 - Session 日志仅在您运行 `process poll/log` 且工具结果被记录时才保存到聊天历史。
 - `process` 的作用域为每个 Agent;它只能看到该 Agent 启动的 session。
 - `process list` 包含一个派生的 `name`(命令动词 + 目标),用于快速扫描。
-- `process log` 使用基于行的 `offset`/`limit`(省略 `offset` 以获取最后 N 行)。
+- `process log` 使用基于行的 `offset`/`limit`。
+- 当 `offset` 和 `limit` 都省略时,它返回最后 200 行并包含分页提示。
+- 当提供 `offset` 而省略 `limit` 时,它从 `offset` 返回到末尾(不限制为 200)。
 
 ## 示例
 
