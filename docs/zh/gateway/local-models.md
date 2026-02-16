@@ -1,13 +1,15 @@
 ---
-title: "本地模型"
-sidebarTitle: "本地模型"
-mmh3_hash: "a3322dcb9e85163d26d9c0db4290bc36"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
-read_when: ["您想从自己的 GPU 机器提供模型","您正在连接 LM Studio 或兼容 OpenAI 的代理","您需要最安全的本地模型指导"]
+read_when:
+  - 您想从自己的 GPU 机器提供模型
+  - 您正在连接 LM Studio 或兼容 OpenAI 的代理
+  - 您需要最安全的本地模型指导
+title: "本地模型"
 ---
+
 # 本地模型
 
-本地是可行的,但 OpenClaw 期望大上下文 + 对提示注入的强大防御。小卡会截断上下文并泄漏安全性。目标高:**≥2 台最大配置的 Mac Studios 或等效的 GPU 设备(~$30k+)**。单个 **24 GB** GPU 仅适用于具有较高延迟的较轻提示。使用 **您可以运行的最大/完整大小模型变体**;大量量化或"小"检查点会增加提示注入风险(参见 [Security](/zh/gateway/security))。
+本地是可行的,但 OpenClaw 期望大上下文 + 对提示注入的强大防御。小卡会截断上下文并泄漏安全性。目标高:**≥2 台最大配置的 Mac Studios 或等效的 GPU 设备(~$30k+)**。单个 **24 GB** GPU 仅适用于具有较高延迟的较轻提示。使用 **您可以运行的最大/完整大小模型变体**;大量量化或"小"检查点会增加提示注入风险(参见 [Security](/gateway/security))。
 
 ## 推荐:LM Studio + MiniMax M2.1(Responses API,完整大小)
 
@@ -19,7 +21,7 @@ read_when: ["您想从自己的 GPU 机器提供模型","您正在连接 LM Stud
     defaults: {
       model: { primary: "lmstudio/minimax-m2.1-gs32" },
       models: {
-        "anthropic/claude-opus-4-5": { alias: "Opus" },
+        "anthropic/claude-opus-4-6": { alias: "Opus" },
         "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" }
       }
     }
@@ -65,12 +67,12 @@ read_when: ["您想从自己的 GPU 机器提供模型","您正在连接 LM Stud
     defaults: {
       model: {
         primary: "anthropic/claude-sonnet-4-5",
-        fallbacks: ["lmstudio/minimax-m2.1-gs32", "anthropic/claude-opus-4-5"]
+        fallbacks: ["lmstudio/minimax-m2.1-gs32", "anthropic/claude-opus-4-6"]
       },
       models: {
         "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
         "lmstudio/minimax-m2.1-gs32": { alias: "MiniMax Local" },
-        "anthropic/claude-opus-4-5": { alias: "Opus" }
+        "anthropic/claude-opus-4-6": { alias: "Opus" }
       }
     }
   },
