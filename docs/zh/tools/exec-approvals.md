@@ -1,6 +1,6 @@
 ---
 title: "Exec 批准"
-mmh3_hash: "a5b1f69928964ed8034239bca7496dd1"
+mmh3_hash: "caea39226c426dbebd76dbc22d0ad02f"
 summary: "Exec 批准、允许列表和沙箱逃逸提示"
 read_when: ["配置 exec 批准或允许列表","在 macOS 应用中实现 exec 批准 UX","审查沙箱逃逸提示和影响"]
 ---

@@ -1,7 +1,7 @@
 ---
 title: "apply_patch 工具"
 sidebarTitle: "apply_patch 工具"
-mmh3_hash: "4cb7fe502e700c076cb402c1b822624d"
+mmh3_hash: "e700dbedb218ead817d95cedead0f153"
 summary: "使用 apply_patch 工具应用多文件补丁"
 read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或调试基于补丁的编辑"]
 ---
@@ -31,7 +31,8 @@ read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或�
 
 ## 注意事项
 
-- 路径相对于工作区根目录解析。
+- 补丁路径支持相对路径(从工作区目录)和绝对路径。
+- `tools.exec.applyPatch.workspaceOnly` 默认为 `true`(工作区包含)。仅当您有意希望 `apply_patch` 在工作区目录之外写入/删除时,才将其设置为 `false`。
 - 在 `*** Update File:` 块中使用 `*** Move to:` 重命名文件。
 - `*** End of File` 在需要时标记仅 EOF 插入。
 - 实验性功能,默认禁用。使用 `tools.exec.applyPatch.enabled` 启用。

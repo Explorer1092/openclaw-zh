@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dd6dc740dec5f37437c37c9024c275f6"
+mmh3_hash: "b239b107bcffda016570b058205d02d0"
 summary: "ClawHub 指南：公共技能注册表 + CLI 工作流"
 read_when:
   - 向新用户介绍 ClawHub

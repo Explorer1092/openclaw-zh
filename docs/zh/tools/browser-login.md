@@ -1,7 +1,7 @@
 ---
 title: "浏览器登录与 X/Twitter 发帖"
 sidebarTitle: "浏览器登录"
-mmh3_hash: "5ebb0d6aecae2856e34c824c140887e5"
+mmh3_hash: "c5ae4f43605f02a3be63e757d4cc288a"
 summary: "浏览器自动化 + X/Twitter 发帖的手动登录"
 read_when: ["需要登录网站以进行浏览器自动化","想要发布更新到 X/Twitter"]
 ---
@@ -34,8 +34,7 @@ openclaw browser open https://x.com
 
 ## X/Twitter: 推荐流程
 
-- **读取/搜索/线程:** 使用 **bird** CLI 技能(无浏览器,稳定)。
-  - 仓库: https://github.com/steipete/bird
+- **读取/搜索/线程:** 使用**主机**浏览器(手动登录)。
 - **发布更新:** 使用**主机**浏览器(手动登录)。
 
 ## 沙箱 + 主机浏览器访问

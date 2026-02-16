@@ -1,7 +1,7 @@
 ---
 title: "LLM 任务"
 sidebarTitle: "LLM 任务"
-mmh3_hash: "b93c9ef8b774ef1bc10b7c5eaf6fd8e7"
+mmh3_hash: "90b23e57fac76bec35df7076c49ca9d5"
 summary: "用于工作流的仅 JSON LLM 任务(可选插件工具)"
 read_when: ["您想要工作流内的仅 JSON LLM 步骤","您需要架构验证的 LLM 输出以进行自动化"]
 ---
