@@ -1,9 +1,11 @@
 ---
-mmh3_hash: "ca55789dbbcdcf26e3c5cc31b3f87c1a"
-title: "Nix 安装"
-sidebarTitle: "Nix"
+mmh3_hash: "eae870bd6a73bcb11f47d00f2d5d4aa8"
 summary: "使用 Nix 声明式安装 OpenClaw"
-read_when: ["你想要可重现、可回滚的安装","你已经在使用 Nix/NixOS/Home Manager","你想要一切都被固定并声明式管理"]
+read_when:
+  - 您想要可重现、可回滚的安装
+  - 您已经在使用 Nix/NixOS/Home Manager
+  - 您想要一切都被固定并声明式管理
+title: "Nix"
 ---
 
 # Nix 安装
@@ -12,7 +14,7 @@ read_when: ["你想要可重现、可回滚的安装","你已经在使用 Nix/Ni
 
 ## 快速开始
 
-将此粘贴给你的 AI 智能体 (Claude, Cursor 等)：
+将此粘贴给您的 AI agent (Claude, Cursor 等):
 
 ```text
 I want to set up nix-openclaw on my Mac.
@@ -33,9 +35,9 @@ Reference the nix-openclaw README for module options.
 >
 > nix-openclaw 仓库是 Nix 安装的事实来源。本页只是一个快速概览。
 
-## 你得到了什么
+## 您会得到什么
 
-- 网关 + macOS 应用 + 工具 (whisper, spotify, cameras) — 全部固定
+- Gateway + macOS 应用 + 工具 (whisper, spotify, cameras) — 全部固定
 - 重启后存活的 Launchd 服务
 - 带有声明式配置的插件系统
 - 即时回滚: `home-manager switch --rollback`
