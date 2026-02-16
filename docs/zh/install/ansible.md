@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ec30cdcd0eddaaa7ca6af4fbafcbd09c"
+mmh3_hash: "fa2eb8d0e0761660f8338446a48b5216"
 title: "Ansible 安装"
 sidebarTitle: "Ansible"
 summary: "使用 Ansible、Tailscale VPN 和防火墙隔离实现自动化、强化的 OpenClaw 安装"
@@ -106,7 +106,7 @@ nmap -p- YOUR_SERVER_IP
 
 安装 Docker 是为了 **智能体沙盒**（隔离工具执行），而不是为了运行网关本身。网关仅绑定到 localhost，并通过 Tailscale VPN 访问。
 
-有关沙盒配置，请参见 [多智能体沙盒 & 工具](/multi-agent-sandbox-tools)。
+有关沙盒配置，请参见 [多智能体沙盒 & 工具](/tools/multi-agent-sandbox-tools)。
 
 ## 手动安装
 
@@ -202,4 +202,4 @@ openclaw channels login
 - [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) — 完整部署指南
 - [Docker](/install/docker) — 容器化网关设置
 - [沙盒](/gateway/sandboxing) — 智能体沙盒配置
-- [多智能体沙盒 & 工具](/multi-agent-sandbox-tools) — 每智能体隔离
+- [多智能体沙盒 & 工具](/tools/multi-agent-sandbox-tools) — 每智能体隔离
