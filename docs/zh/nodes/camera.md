@@ -1,26 +1,26 @@
 ---
+summary: "相机捕获 (iOS node + macOS 应用) 用于 agent 使用: 照片 (jpg) 和短视频片段 (mp4)"
+read_when:
+  - 添加或修改 iOS node 或 macOS 上的相机捕获
+  - 扩展 agent 可访问的 MEDIA 临时文件工作流
 title: "相机捕获"
-sidebarTitle: "相机捕获"
-mmh3_hash: "35e73e794166c30e343a2c302df3d25a"
-summary: "相机捕获 (iOS Node + macOS 应用) 用于 Agent: 照片 (jpg) 和短视频片段 (mp4)"
-read_when: ["添加或修改 iOS Node 或 macOS 上的相机捕获时","扩展 Agent 可访问的 MEDIA 临时文件工作流时"]
 ---
 
-# 相机捕获 (Agent)
+# 相机捕获 (agent)
 
-OpenClaw 支持 Agent 工作流的 **相机捕获**：
+OpenClaw 支持 agent 工作流的**相机捕获**:
 
-- **iOS Node** (通过 Gateway 配对): 通过 `node.invoke` 捕获 **照片** (`jpg`) 或 **短视频片段** (`mp4`, 可选音频)。
-- **Android Node** (通过 Gateway 配对): 通过 `node.invoke` 捕获 **照片** (`jpg`) 或 **短视频片段** (`mp4`, 可选音频)。
-- **macOS 应用** (通过 Gateway 作为 Node): 通过 `node.invoke` 捕获 **照片** (`jpg`) 或 **短视频片段** (`mp4`, 可选音频)。
+- **iOS node** (通过 Gateway 配对): 通过 `node.invoke` 捕获**照片** (`jpg`) 或**短视频片段** (`mp4`, 可选音频)。
+- **Android node** (通过 Gateway 配对): 通过 `node.invoke` 捕获**照片** (`jpg`) 或**短视频片段** (`mp4`, 可选音频)。
+- **macOS 应用** (通过 Gateway 作为 node): 通过 `node.invoke` 捕获**照片** (`jpg`) 或**短视频片段** (`mp4`, 可选音频)。
 
 所有相机访问都受到 **用户控制的设置** 限制。
 
-## iOS Node
+## iOS node
 
 ### 用户设置 (默认开启)
 
-- iOS 设置标签页 → **相机 (Camera)** → **允许相机 (Allow Camera)** (`camera.enabled`)
+- iOS Settings 标签页 → **Camera** → **Allow Camera** (`camera.enabled`)
   - 默认: **开** (缺少键视为已启用)。
   - 关闭时: `camera.*` 命令返回 `CAMERA_DISABLED`。
 
@@ -59,11 +59,11 @@ OpenClaw 支持 Agent 工作流的 **相机捕获**：
 
 ### 前台要求
 
-像 `canvas.*` 一样，iOS Node 仅允许在 **前台** 执行 `camera.*` 命令。后台调用返回 `NODE_BACKGROUND_UNAVAILABLE`。
+像 `canvas.*` 一样, iOS node 仅允许在**前台**执行 `camera.*` 命令。后台调用返回 `NODE_BACKGROUND_UNAVAILABLE`。
 
 ### CLI 助手 (临时文件 + MEDIA)
 
-获取附件的最简单方法是通过 CLI 助手，它将解码的媒体写入临时文件并打印 `MEDIA:<path>`。
+获取附件的最简单方法是通过 CLI 助手, 它将解码的媒体写入临时文件并打印 `MEDIA:<path>`。
 
 示例:
 
@@ -76,28 +76,28 @@ openclaw nodes camera clip --node <id> --no-audio
 
 注意:
 
-- `nodes camera snap` 默认为 **两个** 摄像头，以给 Agent 提供两个视图。
-- 输出文件是临时的（在 OS 临时目录中），除非你构建自己的包装器。
+- `nodes camera snap` 默认为**两个**摄像头, 以给 agent 提供两个视图。
+- 输出文件是临时的 (在 OS 临时目录中), 除非您构建自己的包装器。
 
-## Android Node
+## Android node
 
-### 用户设置 (默认开启)
+### Android 用户设置 (默认开启)
 
-- Android 设置页 → **相机 (Camera)** → **允许相机 (Allow Camera)** (`camera.enabled`)
+- Android Settings sheet → **Camera** → **Allow Camera** (`camera.enabled`)
   - 默认: **开** (缺少键视为已启用)。
   - 关闭时: `camera.*` 命令返回 `CAMERA_DISABLED`。
 
 ### 权限
 
-- Android 需要运行时权限：
+- Android 需要运行时权限:
   - `camera.snap` 和 `camera.clip` 都需要 `CAMERA`。
-  - 当 `includeAudio=true` 时，`camera.clip` 需要 `RECORD_AUDIO`。
+  - 当 `includeAudio=true` 时, `camera.clip` 需要 `RECORD_AUDIO`。
 
-如果缺少权限，应用会在可能时提示；如果被拒绝，`camera.*` 请求会失败并返回 `*_PERMISSION_REQUIRED` 错误。
+如果缺少权限, 应用会在可能时提示; 如果被拒绝, `camera.*` 请求会失败并返回 `*_PERMISSION_REQUIRED` 错误。
 
-### 前台要求
+### Android 前台要求
 
-像 `canvas.*` 一样，Android Node 仅允许在 **前台** 执行 `camera.*` 命令。后台调用返回 `NODE_BACKGROUND_UNAVAILABLE`。
+像 `canvas.*` 一样, Android node 仅允许在**前台**执行 `camera.*` 命令。后台调用返回 `NODE_BACKGROUND_UNAVAILABLE`。
 
 ### 载荷保护
 
@@ -107,15 +107,15 @@ openclaw nodes camera clip --node <id> --no-audio
 
 ### 用户设置 (默认关闭)
 
-macOS 配套应用暴露了一个复选框：
+macOS 配套应用暴露了一个复选框:
 
-- **设置 (Settings) → 常规 (General) → 允许相机 (Allow Camera)** (`openclaw.cameraEnabled`)
+- **Settings → General → Allow Camera** (`openclaw.cameraEnabled`)
   - 默认: **关**
-  - 关闭时: 相机请求返回 “用户禁用了相机 (Camera disabled by user)”。
+  - 关闭时: 相机请求返回 "Camera disabled by user"。
 
-### CLI 助手 (节点调用)
+### CLI 助手 (node invoke)
 
-使用主 `openclaw` CLI 在 macOS 节点上调用相机命令。
+使用主 `openclaw` CLI 在 macOS node 上调用相机命令。
 
 示例:
 
@@ -133,18 +133,18 @@ openclaw nodes camera clip --node <id> --no-audio
 
 注意:
 
-- `openclaw nodes camera snap` 默认为 `maxWidth=1600`，除非被覆盖。
-- 在 macOS 上，`camera.snap` 在捕获前等待 `delayMs` (默认 2000ms) 以便预热/曝光稳定。
+- `openclaw nodes camera snap` 默认为 `maxWidth=1600`, 除非被覆盖。
+- 在 macOS 上, `camera.snap` 在捕获前等待 `delayMs` (默认 2000ms) 以便预热/曝光稳定。
 - 照片载荷会被重新压缩以保持 base64 在 5 MB 以下。
 
 ## 安全 + 实际限制
 
-- 相机和麦克风访问会触发通常的 OS 权限提示（并需要 Info.plist 中的用法字符串）。
-- 视频片段有上限（目前 `<= 60s`），以避免过大的节点载荷（base64 开销 + 消息限制）。
+- 相机和麦克风访问会触发通常的 OS 权限提示 (并需要 Info.plist 中的用法字符串)。
+- 视频片段有上限 (目前 `<= 60s`), 以避免过大的 node 载荷 (base64 开销 + 消息限制)。
 
 ## macOS 屏幕录像 (OS 级)
 
-对于 *屏幕* 视频（非相机），请使用 macOS 配套应用：
+对于*屏幕*视频 (非相机), 请使用 macOS 配套应用:
 
 ```bash
 openclaw nodes screen record --node <id> --duration 10s --fps 15   # 打印 MEDIA:<path>
@@ -152,4 +152,4 @@ openclaw nodes screen record --node <id> --duration 10s --fps 15   # 打印 MEDI
 
 注意:
 
-- 需要 macOS **屏幕录制 (Screen Recording)** 权限 (TCC)。
+- 需要 macOS **Screen Recording** 权限 (TCC)。
