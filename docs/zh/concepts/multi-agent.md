@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5174417268187e4b115383d8bab0c5ed"
+mmh3_hash: "9f2ee27bfdf9f1fd23b46dba1cc57d5a"
 summary: "Multi-agent 路由:隔离的 agents、channel accounts 和 bindings"
 title: "多智能体路由"
 sidebarTitle: "多智能体路由"
