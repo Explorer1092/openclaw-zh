@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a99e6a5a8e7168ac9fb398eeed96e755"
+mmh3_hash: "32519da319f0598e395a699b1751f36d"
 title: "Vercel AI Gateway"
 sidebarTitle: "Vercel AI Gateway"
 summary: "Vercel AI Gateway 设置 (身份验证 + 模型选择)"
@@ -16,21 +16,21 @@ read_when: ["您想将 Vercel AI Gateway 与 OpenClaw 一起使用","您需要 A
 
 ## 快速开始
 
-1) 设置 API 密钥(推荐: 为网关存储它):
+1. 设置 API 密钥(推荐: 为 Gateway 存储它):
 
 ```bash
 openclaw onboard --auth-choice ai-gateway-api-key
 ```
 
-2) 设置默认模型:
+2. 设置默认模型:
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "vercel-ai-gateway/anthropic/claude-opus-4.5" }
-    }
-  }
+      model: { primary: "vercel-ai-gateway/anthropic/claude-opus-4.6" },
+    },
+  },
 }
 ```
 
@@ -45,5 +45,4 @@ openclaw onboard --non-interactive \
 
 ## 环境注意事项
 
-如果网关作为守护进程(launchd/systemd)运行,请确保该进程可以访问 `AI_GATEWAY_API_KEY`(例如,在 `~/.openclaw/.env` 中或通过 `env.shellEnv`)。
-{/*  source-hash: e481f03ce32cb10299f407011dde4650  */}
+如果 Gateway 作为守护进程(launchd/systemd)运行,请确保该进程可以访问 `AI_GATEWAY_API_KEY`(例如,在 `~/.openclaw/.env` 中或通过 `env.shellEnv`)。

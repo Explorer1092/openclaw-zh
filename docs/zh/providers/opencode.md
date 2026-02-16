@@ -1,7 +1,7 @@
 ---
 title: "OpenCode Zen"
 sidebarTitle: "OpenCode Zen"
-mmh3_hash: "13b81b8380b73db4ae0b48b3a79115d1"
+mmh3_hash: "a88c1673d063be7b8cbbeb6ea2f55e60"
 summary: "将 OpenCode Zen (精选模型) 与 OpenClaw 一起使用"
 read_when: ["您想使用 OpenCode Zen 进行模型访问","您想要一个编码友好模型的精选列表"]
 ---
@@ -24,7 +24,7 @@ openclaw onboard --opencode-zen-api-key "$OPENCODE_API_KEY"
 ```json5
 {
   env: { OPENCODE_API_KEY: "sk-..." },
-  agents: { defaults: { model: { primary: "opencode/claude-opus-4-5" } } }
+  agents: { defaults: { model: { primary: "opencode/claude-opus-4-6" } } },
 }
 ```
 
@@ -33,4 +33,3 @@ openclaw onboard --opencode-zen-api-key "$OPENCODE_API_KEY"
 - 也支持 `OPENCODE_ZEN_API_KEY`。
 - 您登录到 Zen,添加账单详细信息,然后复制您的 API 密钥。
 - OpenCode Zen 按请求计费;有关详细信息,请查看 OpenCode 仪表板。
-{/*  source-hash: c783dbc354dd56f68f6c80095a08f559  */}

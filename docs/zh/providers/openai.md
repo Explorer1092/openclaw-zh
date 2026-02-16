@@ -1,7 +1,7 @@
 ---
 title: "OpenAI"
 sidebarTitle: "OpenAI"
-mmh3_hash: "c57ca81b1d19c5a74e8ad61fb3645de9"
+mmh3_hash: "9b54e033c96e5404d8014bd8a6b17f19"
 summary: "在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI"
 read_when: ["您想在 OpenClaw 中使用 OpenAI 模型","您想使用 Codex 订阅身份验证而不是 API 密钥"]
 ---
@@ -27,7 +27,7 @@ openclaw onboard --openai-api-key "$OPENAI_API_KEY"
 ```json5
 {
   env: { OPENAI_API_KEY: "sk-..." },
-  agents: { defaults: { model: { primary: "openai/gpt-5.2" } } }
+  agents: { defaults: { model: { primary: "openai/gpt-5.1-codex" } } },
 }
 ```
 
@@ -36,7 +36,7 @@ openclaw onboard --openai-api-key "$OPENAI_API_KEY"
 **适用于:** 使用 ChatGPT/Codex 订阅访问而不是 API 密钥。
 Codex cloud 需要 ChatGPT 登录,而 Codex CLI 支持 ChatGPT 或 API 密钥登录。
 
-### CLI 设置
+### CLI 设置 (Codex OAuth)
 
 ```bash
 # 在向导中运行 Codex OAuth
@@ -46,11 +46,11 @@ openclaw onboard --auth-choice openai-codex
 openclaw models auth login --provider openai-codex
 ```
 
-### 配置片段
+### 配置片段 (Codex 订阅)
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai-codex/gpt-5.2" } } }
+  agents: { defaults: { model: { primary: "openai-codex/gpt-5.3-codex" } } },
 }
 ```
 
@@ -58,4 +58,3 @@ openclaw models auth login --provider openai-codex
 
 - 模型引用始终使用 `provider/model`(参见 [/concepts/models](/concepts/models))。
 - 身份验证详细信息 + 重用规则在 [/concepts/oauth](/concepts/oauth) 中。
-{/*  source-hash: 49ee72ad257bc49d2381e863f9b44e38  */}

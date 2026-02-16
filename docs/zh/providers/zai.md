@@ -1,7 +1,7 @@
 ---
 title: "Z.AI"
 sidebarTitle: "Z.AI"
-mmh3_hash: "af754480b62ca2bac52742dba9982e3f"
+mmh3_hash: "46d5d54a359587dda84cb91239bda2a4"
 summary: "将 Z.AI (GLM 模型) 与 OpenClaw 一起使用"
 read_when: ["您想在 OpenClaw 中使用 Z.AI / GLM 模型","您需要简单的 ZAI_API_KEY 设置"]
 ---
@@ -22,13 +22,12 @@ openclaw onboard --zai-api-key "$ZAI_API_KEY"
 ```json5
 {
   env: { ZAI_API_KEY: "sk-..." },
-  agents: { defaults: { model: { primary: "zai/glm-4.7" } } }
+  agents: { defaults: { model: { primary: "zai/glm-5" } } },
 }
 ```
 
 ## 注意事项
 
-- GLM 模型可用作 `zai/<model>`(例如: `zai/glm-4.7`)。
+- GLM 模型可用作 `zai/<model>`(例如: `zai/glm-5`)。
 - 有关模型系列概述,请参见 [/providers/glm](/providers/glm)。
 - Z.AI 使用带有您的 API 密钥的 Bearer 身份验证。
-{/*  source-hash: a1b0d1afaa154720b83f40bfa86dec3c  */}
