@@ -1,7 +1,7 @@
 ---
 title: "Canvas (macOS 应用)"
 sidebarTitle: "Canvas"
-mmh3_hash: "c8116f6f81363e369c921385243d252e"
+mmh3_hash: "ae535565380eb29063d5eafcc5405516"
 summary: "通过 WKWebView + 自定义 URL 方案嵌入的代理控制 Canvas 面板"
 read_when: ["实现 macOS Canvas 面板","为可视化工作区添加代理控件","调试 WKWebView canvas 加载"]
 ---
@@ -67,7 +67,7 @@ A2UI 由网关 canvas 主机托管并在 Canvas 面板内渲染。当网关广�
 默认 A2UI 主机 URL:
 
 ```
-http://<gateway-host>:18793/__openclaw__/a2ui/
+http://<gateway-host>:18789/__openclaw__/a2ui/
 ```
 
 ### A2UI 命令(v0.8)
@@ -97,3 +97,23 @@ openclaw nodes canvas a2ui push --jsonl /tmp/a2ui-v0.8.jsonl --node <id>
 ```bash
 openclaw nodes canvas a2ui push --node <id> --text "Hello from A2UI"
 ```
+
+## 从 Canvas 触发代理运行
+
+Canvas 可以通过深度链接触发新的代理运行:
+
+- `openclaw://agent?...`
+
+示例(在 JS 中):
+
+```js
+window.location.href = "openclaw://agent?message=Review%20this%20design";
+```
+
+除非提供有效密钥,否则应用会提示确认。
+
+## 安全说明
+
+- Canvas 方案阻止目录遍历;文件必须位于会话根目录下。
+- 本地 Canvas 内容使用自定义方案(不需要环回服务器)。
+- 仅在明确导航时才允许外部 `http(s)` URL。

@@ -1,6 +1,6 @@
 ---
 title: "在 Raspberry Pi 上运行 OpenClaw"
-mmh3_hash: "be44a57da5e201527a6d61d5a7239efc"
+mmh3_hash: "ca01ac4c8fe26d6c7db55ed6187aeb91"
 summary: "在 Raspberry Pi 上运行 OpenClaw(经济型自托管设置)"
 read_when: ["在 Raspberry Pi 上设置 OpenClaw","在 ARM 设备上运行 OpenClaw","构建廉价的始终在线个人 AI"]
 ---
@@ -109,7 +109,7 @@ sudo sysctl -p
 ### 选项 A: 标准安装(推荐)
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 ```
 
 ### 选项 B: 可修改安装(用于修改)

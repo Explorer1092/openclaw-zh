@@ -1,7 +1,7 @@
 ---
 title: "Windows (WSL2)"
 sidebarTitle: "Windows"
-mmh3_hash: "ebccd947658c138d76f80c43dc041aef"
+mmh3_hash: "c55c0a841c5a3c3aef1d4dafe97685fb"
 summary: "Windows(WSL2)支持 + 配套应用状态"
 read_when: ["在 Windows 上安装 OpenClaw","寻找 Windows 配套应用状态"]
 ---
@@ -9,7 +9,8 @@ read_when: ["在 Windows 上安装 OpenClaw","寻找 Windows 配套应用状态"
 
 推荐**通过 WSL2**(推荐 Ubuntu)在 Windows 上运行 OpenClaw。CLI + 网关在
 Linux 内部运行,这保持了运行时的一致性,并使工具更加兼容(Node/Bun/pnpm、
-Linux 二进制文件、技能)。原生 Windows 安装未经测试且更容易出问题。
+Linux 二进制文件、技能)。原生 Windows 可能更棘手。WSL2 提供完整的 Linux 体验 —
+一条命令安装:`wsl --install`。
 
 计划推出原生 Windows 配套应用。
 

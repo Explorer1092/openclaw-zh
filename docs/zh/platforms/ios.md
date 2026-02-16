@@ -1,7 +1,7 @@
 ---
 title: "iOS 应用 (节点)"
 sidebarTitle: "iOS"
-mmh3_hash: "80aaf1136c13944db774e22a3d70059f"
+mmh3_hash: "b32ebedc129284b10412031bbd8c23a1"
 summary: "iOS 节点应用:连接到网关、配对、canvas 和故障排除"
 read_when: ["配对或重新连接 iOS 节点","从源代码运行 iOS 应用","调试网关发现或 canvas 命令"]
 ---
@@ -67,11 +67,12 @@ openclaw gateway call node.list --params "{}"
 iOS 节点渲染 WKWebView canvas。使用 `node.invoke` 来驱动它:
 
 ```bash
-openclaw nodes invoke --node "iOS Node" --command canvas.navigate --params '{"url":"http://<gateway-host>:18793/__openclaw__/canvas/"}'
+openclaw nodes invoke --node "iOS Node" --command canvas.navigate --params '{"url":"http://<gateway-host>:18789/__openclaw__/canvas/"}'
 ```
 
 注意:
 - 网关 canvas 主机提供 `/__openclaw__/canvas/` 和 `/__openclaw__/a2ui/`。
+- 它从网关 HTTP 服务器提供(与 `gateway.port` 相同端口,默认 `18789`)。
 - 当广播 canvas 主机 URL 时,iOS 节点在连接时自动导航到 A2UI。
 - 使用 `canvas.navigate` 和 `{"url":""}` 返回到内置脚手架。
 

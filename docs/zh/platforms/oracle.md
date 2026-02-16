@@ -1,6 +1,6 @@
 ---
 title: "在 Oracle Cloud(OCI)上运行 OpenClaw"
-mmh3_hash: "6f75f2d16412aa95680eccdd01ca0ec0"
+mmh3_hash: "129c421af92815f9a99138aea033cabf"
 summary: "在 Oracle Cloud 上运行 OpenClaw(始终免费 ARM)"
 read_when: ["在 Oracle Cloud 上设置 OpenClaw","寻找 OpenClaw 的低成本 VPS 托管","想要在小型服务器上全天候运行 OpenClaw"]
 ---
@@ -97,7 +97,7 @@ tailscale status
 ## 5) 安装 OpenClaw
 
 ```bash
-curl -fsSL https://openclaw.bot/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
 source ~/.bashrc
 ```
 

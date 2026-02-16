@@ -1,7 +1,7 @@
 ---
 title: "Android 应用 (节点)"
 sidebarTitle: "Android"
-mmh3_hash: "5ac466c94031c9941ef8ce66798ddadd"
+mmh3_hash: "1f09608f709041e9ff3a56a95bbd0f30"
 summary: "Android 应用(节点):连接运行手册 + Canvas/Chat/Camera"
 read_when: ["配对或重新连接 Android 节点","调试 Android 网关发现或认证","验证跨客户端的聊天历史一致性"]
 ---
@@ -115,20 +115,20 @@ Android 节点的聊天表使用网关的**主会话键**(`main`),因此历史�
 
 如果你希望节点显示代理可以在磁盘上编辑的真实 HTML/CSS/JS,将节点指向网关 canvas 主机。
 
-注意:节点使用 `canvasHost.port` 上的独立 canvas 主机(默认 `18793`)。
+注意:节点从网关 HTTP 服务器加载 canvas(与 `gateway.port` 相同端口,默认 `18789`)。
 
 1) 在网关主机上创建 `~/.openclaw/workspace/canvas/index.html`。
 
 2) 将节点导航到它(局域网):
 
 ```bash
-openclaw nodes invoke --node "<Android Node>" --command canvas.navigate --params '{"url":"http://<gateway-hostname>.local:18793/__openclaw__/canvas/"}'
+openclaw nodes invoke --node "<Android Node>" --command canvas.navigate --params '{"url":"http://<gateway-hostname>.local:18789/__openclaw__/canvas/"}'
 ```
 
-Tailnet(可选):如果两个设备都在 Tailscale 上,使用 MagicDNS 名称或 tailnet IP 代替 `.local`,例如 `http://<gateway-magicdns>:18793/__openclaw__/canvas/`。
+Tailnet(可选):如果两个设备都在 Tailscale 上,使用 MagicDNS 名称或 tailnet IP 代替 `.local`,例如 `http://<gateway-magicdns>:18789/__openclaw__/canvas/`。
 
 此服务器将实时重载客户端注入 HTML 并在文件更改时重新加载。
-A2UI 主机位于 `http://<gateway-host>:18793/__openclaw__/a2ui/`。
+A2UI 主机位于 `http://<gateway-host>:18789/__openclaw__/a2ui/`。
 
 Canvas 命令(仅前台):
 - `canvas.eval`、`canvas.snapshot`、`canvas.navigate`(使用 `{"url":""}` 或 `{"url":"/"}` 返回到默认脚手架)。`canvas.snapshot` 返回 `{ format, base64 }`(默认 `format="jpeg"`)。

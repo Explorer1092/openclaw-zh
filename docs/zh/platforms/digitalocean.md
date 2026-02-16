@@ -1,6 +1,6 @@
 ---
 title: "在 DigitalOcean 上运行 OpenClaw"
-mmh3_hash: "c3f99be751c727d4ae84269827c74e3e"
+mmh3_hash: "e551e24b831ddc27c9a1b6465c609f83"
 summary: "在 DigitalOcean 上运行 OpenClaw(简单的付费 VPS 选项)"
 read_when: ["在 DigitalOcean 上设置 OpenClaw","寻找 OpenClaw 的廉价 VPS 托管"]
 ---
