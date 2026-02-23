@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0fc76be0c1486f7e0ca80eb6376d9198"
+mmh3_hash: "will be updated"
 summary: "调试工具：监视模式、原始模型流和跟踪推理泄漏"
 read_when:
   - 您需要检查原始模型输出以查找推理泄漏
@@ -32,13 +32,13 @@ title: "调试"
 为了快速迭代,在文件监视器下运行 Gateway:
 
 ```bash
-pnpm gateway:watch --force
+pnpm gateway:watch
 ```
 
 这映射到:
 
 ```bash
-tsx watch src/entry.ts gateway --force
+node --watch-path src --watch-path tsconfig.json --watch-path package.json --watch-preserve-output scripts/run-node.mjs gateway --force
 ```
 
 在 `gateway:watch` 之后添加任何 Gateway CLI 标志,它们将在每次重启时传递。
@@ -48,7 +48,7 @@ tsx watch src/entry.ts gateway --force
 使用 dev 配置文件隔离状态并启动安全、可丢弃的调试设置。有**两个** `--dev` 标志:
 
 - **全局 `--dev`（配置文件）:** 在 `~/.openclaw-dev` 下隔离状态,并将 Gateway 端口默认为 `19001`（派生端口随之移动）。
-- **`gateway --dev`:** 告诉 Gateway 在缺失时自动创建默认配置 + 工作空间**（并跳过 BOOTSTRAP.md）。
+- **`gateway --dev`:** 告诉 Gateway 在缺失时自动创建默认配置 + 工作空间（并跳过 BOOTSTRAP.md）。
 
 推荐流程（dev 配置文件 + dev 引导）:
 
@@ -102,13 +102,13 @@ OpenClaw 可以在任何过滤/格式化之前记录**原始助手流**。这是
 通过 CLI 启用它:
 
 ```bash
-pnpm gateway:watch --force --raw-stream
+pnpm gateway:watch --raw-stream
 ```
 
 可选路径覆盖:
 
 ```bash
-pnpm gateway:watch --force --raw-stream --raw-stream-path ~/.openclaw/logs/raw-stream.jsonl
+pnpm gateway:watch --raw-stream --raw-stream-path ~/.openclaw/logs/raw-stream.jsonl
 ```
 
 等效环境变量:
