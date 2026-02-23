@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "db9f251dcea2675fa750c0fa435f9c23"
 summary: "在无根 Podman 容器中运行 OpenClaw"
 read_when:
   - 您想要使用 Podman 而不是 Docker 的容器化 Gateway

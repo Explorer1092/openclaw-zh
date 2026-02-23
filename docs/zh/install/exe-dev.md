@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c803bc5734dc9bbf738ee53b0cc78743"
+mmh3_hash: "7854cb4916062de95a5b27175eda5ec6"
 summary: "在 exe.dev（VM + HTTPS 代理）上运行 OpenClaw Gateway 以实现远程访问"
 read_when:
   - 您想要便宜的永久在线 Linux 主机来运行 Gateway
@@ -31,7 +31,7 @@ title: "exe.dev"
 Shelley，[exe.dev](https://exe.dev) 的 Agent，可以使用我们的提示立即安装 OpenClaw。使用的提示如下：
 
 ```
-Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-interactive and accept-risk flags for openclaw onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Pairing is done by "openclaw devices list" and "openclaw device approve <request id>". Make sure the dashboard shows that OpenClaw's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
+Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-interactive and accept-risk flags for openclaw onboarding. Add the supplied auth or token as needed. Configure nginx to forward from the default port 18789 to the root location on the default enabled site config, making sure to enable Websocket support. Pairing is done by "openclaw devices list" and "openclaw devices approve <request id>". Make sure the dashboard shows that OpenClaw's health is OK. exe.dev handles forwarding from port 8000 to port 80/443 and HTTPS for us, so the final "reachable" should be <vm-name>.exe.xyz, without port specification.
 ```
 
 ## 手动安装

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1ed4a4f766157c585b8b19a0befab77c"
 summary: "在 GCP Compute Engine VM（Docker）上全天候运行 OpenClaw Gateway，具有持久状态"
 read_when:
   - 您希望 OpenClaw 在 GCP 上全天候运行
