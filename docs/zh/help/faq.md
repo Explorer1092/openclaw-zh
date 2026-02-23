@@ -1,7 +1,7 @@
 ---
 title: "常见问题解答 (FAQ)"
 sidebarTitle: "常见问题"
-mmh3_hash: "9947ccc2123f48250f78ec150c429290"
+mmh3_hash: "e1094b648621382396d81f8681987cda"
 summary: "常见问题 - OpenClaw 设置、使用和故障排除"
 read_when: ["遇到问题或错误","需要设置/配置帮助","想要了解功能"]
 ---
