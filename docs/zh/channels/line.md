@@ -1,9 +1,12 @@
 ---
 title: "LINE (插件)"
 sidebarTitle: "LINE"
-mmh3_hash: "aabd55c86a9ba62a46c7775e430ddb31"
+mmh3_hash: "6e787d41c781134fd27c1d91240bd052"
 summary: "LINE Messaging API 插件设置、配置和使用"
-read_when: ["You want to connect OpenClaw to LINE","You need LINE webhook + credential setup","You want LINE-specific message options"]
+read_when:
+  - 连接 OpenClaw 到 LINE
+  - 配置 LINE webhook + 凭据
+  - 使用 LINE 特有的消息选项
 ---
 
 # LINE (插件)
@@ -112,6 +115,7 @@ openclaw pairing approve line <CODE>
 - `channels.line.groupPolicy`: `allowlist | open | disabled`
 - `channels.line.groupAllowFrom`: 群聊允许列表中的 LINE 用户 ID
 - 每个群组的覆盖设置：`channels.line.groups.<groupId>.allowFrom`
+- 运行时注意：如果 `channels.line` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组检查（即使设置了 `channels.defaults.groupPolicy`）。
 
 LINE ID 区分大小写。有效 ID 格式如下：
 
