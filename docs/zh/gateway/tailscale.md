@@ -1,7 +1,7 @@
 ---
 title: "Tailscale (网关仪表板)"
 sidebarTitle: "Tailscale"
-mmh3_hash: "eb35afbdf3bbb386c41887afad3cbdf1"
+mmh3_hash: "will be updated"
 summary: "网关仪表板的集成 Tailscale Serve/Funnel"
 read_when: ["在 localhost 外暴露网关控制 UI","自动化 tailnet 或公共仪表板访问"]
 ---
@@ -22,7 +22,9 @@ OpenClaw 可以为网关仪表板和 WebSocket 端口自动配置 Tailscale **Se
 - `token`(当设置 `OPENCLAW_GATEWAY_TOKEN` 时默认)
 - `password`(通过 `OPENCLAW_GATEWAY_PASSWORD` 或配置的共享秘密)
 
-当 `tailscale.mode = "serve"` 且 `gateway.auth.allowTailscale` 为 `true` 时,有效的 Serve 代理请求可以通过 Tailscale 身份头(`tailscale-user-login`)进行身份验证,而无需提供令牌/密码。OpenClaw 通过本地 Tailscale 守护进程(`tailscale whois`)解析 `x-forwarded-for` 地址并将其与头匹配来验证身份,然后接受它。OpenClaw 仅在请求来自环回并带有 Tailscale 的 `x-forwarded-for`、`x-forwarded-proto` 和 `x-forwarded-host` 头时将请求视为 Serve。
+当 `tailscale.mode = "serve"` 且 `gateway.auth.allowTailscale` 为 `true` 时,Control UI/WebSocket 身份验证可以使用 Tailscale 身份头(`tailscale-user-login`)而无需提供令牌/密码。OpenClaw 通过本地 Tailscale 守护进程(`tailscale whois`)解析 `x-forwarded-for` 地址并将其与头匹配来验证身份,然后接受它。OpenClaw 仅在请求来自环回并带有 Tailscale 的 `x-forwarded-for`、`x-forwarded-proto` 和 `x-forwarded-host` 头时将请求视为 Serve。
+HTTP API 端点（例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`）仍然需要令牌/密码身份验证。
+此无令牌流程假设 Gateway 主机是可信的。如果不受信任的本地代码可能在同一主机上运行,请禁用 `gateway.auth.allowTailscale` 并改为要求令牌/密码身份验证。
 要需要明确的凭证,请设置 `gateway.auth.allowTailscale: false` 或强制 `gateway.auth.mode: "password"`。
 
 ## 配置示例

@@ -98,12 +98,19 @@ exec ssh -T gateway-host imsg "$@"
       cliPath: "~/.openclaw/scripts/imsg-ssh",
       remoteHost: "user@gateway-host", // 用于 SCP 附件获取
       includeAttachments: true,
+      // 可选：覆盖允许的附件根目录。
+      // 默认包含 /Users/*/Library/Messages/Attachments
+      attachmentRoots: ["/Users/*/Library/Messages/Attachments"],
+      remoteAttachmentRoots: ["/Users/*/Library/Messages/Attachments"],
     },
   },
 }
 ```
 
     如果未设置 `remoteHost`，OpenClaw 会尝试通过解析 SSH 包装脚本自动检测它。
+    `remoteHost` 必须为 `host` 或 `user@host` 格式（不含空格或 SSH 选项）。
+    OpenClaw 对 SCP 使用严格主机密钥检查，因此中继主机密钥必须已存在于 `~/.ssh/known_hosts` 中。
+    附件路径会根据允许的根目录（`attachmentRoots` / `remoteAttachmentRoots`）进行验证。
 
   </Tab>
 </Tabs>
@@ -152,6 +159,7 @@ imsg send <handle> "test"
     群组发送者 allowlist：`channels.imessage.groupAllowFrom`。
 
     运行时回退：如果未设置 `groupAllowFrom`，iMessage 群组发送者检查在可用时回退到 `allowFrom`。
+    运行时注意：如果 `channels.imessage` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 并记录警告（即使设置了 `channels.defaults.groupPolicy`）。
 
     群组的提及门控：
 
@@ -242,6 +250,11 @@ exec ssh -T bot@mac-mini.tailnet-1234.ts.net imsg "$@"
   <Accordion title="附件和媒体">
     - 入站附件摄取是可选的：`channels.imessage.includeAttachments`
     - 当设置 `remoteHost` 时，可以通过 SCP 获取远程附件路径
+    - 附件路径必须匹配允许的根目录：
+      - `channels.imessage.attachmentRoots`（本地）
+      - `channels.imessage.remoteAttachmentRoots`（远程 SCP 模式）
+      - 默认根目录模式：`/Users/*/Library/Messages/Attachments`
+    - SCP 使用严格主机密钥检查（`StrictHostKeyChecking=yes`）
     - 出站媒体大小使用 `channels.imessage.mediaMaxMb`（默认 16 MB）
   </Accordion>
 
