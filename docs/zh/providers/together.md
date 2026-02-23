@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "will-be-updated"
 summary: "Together AI 设置（身份验证 + 模型选择）"
 read_when:
   - 您想要在 OpenClaw 中使用 Together AI
@@ -46,7 +47,7 @@ openclaw onboard --non-interactive \
 
 ## 环境注意事项
 
-如果 Gateway 作为守护程序运行（launchd/systemd），请确保 `TOGETHER_API_KEY` 对该进程可用（例如，在 `~/.clawdbot/.env` 中或通过 `env.shellEnv`）。
+如果 Gateway 作为守护程序运行（launchd/systemd），请确保 `TOGETHER_API_KEY` 对该进程可用（例如，在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
 
 ## 可用模型
 

@@ -1,3 +1,9 @@
+---
+mmh3_hash: "placeholder"
+title: "OpenClaw 威胁模型"
+summary: "基于 MITRE ATLAS 框架的 OpenClaw 生态系统威胁模型"
+---
+
 # OpenClaw 威胁模型 v1.0
 
 ## MITRE ATLAS 框架

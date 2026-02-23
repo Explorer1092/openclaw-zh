@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f2ee27bfdf9f1fd23b46dba1cc57d5a"
+mmh3_hash: "5d813a6e938644e82312301dfe5c50ac"
 summary: "Multi-agent 路由:隔离的 agents、channel accounts 和 bindings"
 title: "多智能体路由"
 sidebarTitle: "多智能体路由"
@@ -66,6 +66,55 @@ openclaw agents add work
 openclaw agents list --bindings
 ```
 
+## 快速开始
+
+<Steps>
+  <Step title="创建每个 agent workspace">
+
+使用向导或手动创建 workspaces:
+
+```bash
+openclaw agents add coding
+openclaw agents add social
+```
+
+每个 agent 都有自己的 workspace,包含 `SOUL.md`、`AGENTS.md` 和可选的 `USER.md`,以及 `~/.openclaw/agents/<agentId>` 下的专用 `agentDir` 和 session store。
+
+  </Step>
+
+  <Step title="创建 channel accounts">
+
+在您偏好的 channels 上为每个 agent 创建一个 account:
+
+- Discord:每个 agent 一个 bot,启用 Message Content Intent,复制每个 token。
+- Telegram:通过 BotFather 为每个 agent 创建一个 bot,复制每个 token。
+- WhatsApp:为每个 account 链接每个电话号码。
+
+```bash
+openclaw channels login --channel whatsapp --account work
+```
+
+参见 channel 指南:[Discord](/channels/discord)、[Telegram](/channels/telegram)、[WhatsApp](/channels/whatsapp)。
+
+  </Step>
+
+  <Step title="添加 agents、accounts 和 bindings">
+
+在 `agents.list` 下添加 agents,在 `channels.<channel>.accounts` 下添加 channel accounts,并通过 `bindings` 连接它们(下面有示例)。
+
+  </Step>
+
+  <Step title="重启并验证">
+
+```bash
+openclaw gateway restart
+openclaw agents list --bindings
+openclaw channels status --probe
+```
+
+  </Step>
+</Steps>
+
 ## 多个 agents = 多个人,多个人格
 
 使用 **多个 agents**,每个 `agentId` 成为 **完全隔离的 persona**:
@@ -78,7 +127,7 @@ openclaw agents list --bindings
 
 ## 一个 WhatsApp 号码,多个人(DM 拆分)
 
-你可以将 **不同的 WhatsApp DMs** 路由到不同的 agents,同时保持在 **一个 WhatsApp account** 上。使用 `peer.kind: "dm"` 匹配发送者 E.164(如 `+15551234567`)。回复仍来自同一 WhatsApp 号码(无每个 agent 的发送者身份)。
+你可以将 **不同的 WhatsApp DMs** 路由到不同的 agents,同时保持在 **一个 WhatsApp account** 上。使用 `peer.kind: "direct"` 匹配发送者 E.164(如 `+15551234567`)。回复仍来自同一 WhatsApp 号码(无每个 agent 的发送者身份)。
 
 重要细节:直接聊天折叠到 agent 的 **main session key**,因此真正的隔离需要 **每个人一个 agent**。
 
@@ -93,8 +142,8 @@ openclaw agents list --bindings
     ]
   },
   bindings: [
-    { agentId: "alex", match: { channel: "whatsapp", peer: { kind: "dm", id: "+15551230001" } } },
-    { agentId: "mia",  match: { channel: "whatsapp", peer: { kind: "dm", id: "+15551230002" } } }
+    { agentId: "alex", match: { channel: "whatsapp", peer: { kind: "direct", id: "+15551230001" } } },
+    { agentId: "mia",  match: { channel: "whatsapp", peer: { kind: "direct", id: "+15551230002" } } }
   ],
   channels: {
     whatsapp: {
@@ -114,11 +163,15 @@ openclaw agents list --bindings
 Bindings 是 **确定性的**,**最具体的获胜**:
 
 1. `peer` 匹配(精确 DM/group/channel id)
-2. `guildId` (Discord)
-3. `teamId` (Slack)
-4. channel 的 `accountId` 匹配
-5. channel 级别匹配(`accountId: "*"`)
-6. 后备到默认 agent(`agents.list[].default`,否则第一个列表条目,默认:`main`)
+2. `parentPeer` 匹配(线程继承)
+3. `guildId + roles`(Discord 角色路由)
+4. `guildId`(Discord)
+5. `teamId`(Slack)
+6. channel 的 `accountId` 匹配
+7. channel 级别匹配(`accountId: "*"`)
+8. 后备到默认 agent(`agents.list[].default`,否则第一个列表条目,默认:`main`)
+
+如果同一层级中有多个 bindings 匹配,则配置顺序中的第一个获胜。如果一个 binding 设置了多个匹配字段(例如 `peer` + `guildId`),则所有指定字段都是必需的(`AND` 语义)。
 
 ## 多个 accounts / 电话号码
 

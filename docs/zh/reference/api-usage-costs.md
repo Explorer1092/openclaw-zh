@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f4adefc607a3ec6b4ba70e72de4251da"
+mmh3_hash: "ee5c7b544036867c260697c3e4675031"
 summary: "审计哪些内容可以花钱、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API
@@ -28,7 +28,7 @@ title: "API 使用和成本"
 
 - `openclaw status --usage` 和 `openclaw channels list` 显示提供商**使用窗口**(配额快照,而不是每条消息成本)。
 
-有关详细信息和示例,请参见 [令牌使用和成本](/token-use)。
+有关详细信息和示例，请参见 [令牌使用和成本](/reference/token-use)。
 
 ## 如何发现密钥
 
@@ -63,7 +63,9 @@ OpenClaw 可以从以下位置获取凭证:
 
 - `memorySearch.provider = "openai"` → OpenAI 嵌入
 - `memorySearch.provider = "gemini"` → Gemini 嵌入
-- 如果本地嵌入失败,可选回退到 OpenAI
+- `memorySearch.provider = "voyage"` → Voyage 嵌入
+- `memorySearch.provider = "mistral"` → Mistral 嵌入
+- 如果本地嵌入失败，可选回退到远程提供商
 
 您可以使用 `memorySearch.provider = "local"` 保持本地(无 API 使用)。
 

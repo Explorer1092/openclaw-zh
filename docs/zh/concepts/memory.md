@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e97121655f10df07f1bf585af4d116f2"
+mmh3_hash: "ea3045cf8cb50e9920c09cd12960210b"
 title: "Memory"
 summary: "OpenClaw memory 如何工作(workspace 文件 + 自动内存刷新)"
 read_when:
@@ -25,6 +25,15 @@ Memory search tools 由活动 memory plugin 提供(默认:`memory-core`)。使�
   - **仅在主要私有 session 中加载**(从不在 group contexts 中)。
 
 这些文件位于 workspace 下(`agents.defaults.workspace`,默认 `~/.openclaw/workspace`)。参见 [Agent workspace](/concepts/agent-workspace) 了解完整布局。
+
+## Memory tools
+
+OpenClaw 为这些 Markdown 文件提供两个面向 agent 的工具:
+
+- `memory_search` — 对已索引片段进行语义召回。
+- `memory_get` — 对特定 Markdown 文件/行范围进行目标读取。
+
+当文件不存在时(例如,第一次写入之前的今天的每日日志),`memory_get` 现在会**优雅降级**。内置管理器和 QMD 后端都会返回 `{ text: "", path }` 而不是抛出 `ENOENT`,因此 agent 可以处理"尚无记录"的情况,而无需将工具调用包在 try/catch 逻辑中。
 
 ## 何时写入 memory
 
@@ -81,11 +90,68 @@ OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md` 上构建小型向量索引,以
   2. `openai` 如果可以解析 OpenAI key。
   3. `gemini` 如果可以解析 Gemini key。
   4. `voyage` 如果可以解析 Voyage key。
-  5. 否则 memory search 保持禁用,直到配置。
+  5. `mistral` 如果可以解析 Mistral key。
+  6. 否则 memory search 保持禁用,直到配置。
 - Local 模式使用 node-llama-cpp,可能需要 `pnpm approve-builds`。
 - 使用 sqlite-vec(在可用时)在 SQLite 内加速向量搜索。
 
-远程 embeddings **需要** embedding provider 的 API key。OpenClaw 从 auth profiles、`models.providers.*.apiKey` 或环境变量解析 keys。Codex OAuth 仅涵盖 chat/completions,**不** 满足 memory search 的 embeddings。对于 Gemini,使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。对于 Voyage,使用 `VOYAGE_API_KEY` 或 `models.providers.voyage.apiKey`。当使用自定义 OpenAI 兼容端点时,设置 `memorySearch.remote.apiKey`(和可选的 `memorySearch.remote.headers`)。
+远程 embeddings **需要** embedding provider 的 API key。OpenClaw 从 auth profiles、`models.providers.*.apiKey` 或环境变量解析 keys。Codex OAuth 仅涵盖 chat/completions,**不** 满足 memory search 的 embeddings。对于 Gemini,使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。对于 Voyage,使用 `VOYAGE_API_KEY` 或 `models.providers.voyage.apiKey`。对于 Mistral,使用 `MISTRAL_API_KEY` 或 `models.providers.mistral.apiKey`。当使用自定义 OpenAI 兼容端点时,设置 `memorySearch.remote.apiKey`(和可选的 `memorySearch.remote.headers`)。
+
+### QMD 后端(实验性)
+
+设置 `memory.backend = "qmd"` 以将内置 SQLite 索引器替换为 [QMD](https://github.com/tobi/qmd):一个本地优先的搜索 sidecar,结合了 BM25 + 向量 + 重新排序。Markdown 仍然是事实的来源;OpenClaw 调用 QMD 进行检索。关键点:
+
+**前提条件**
+
+- 默认禁用。通过配置选择加入(`memory.backend = "qmd"`)。
+- 单独安装 QMD CLI(`bun install -g https://github.com/tobi/qmd` 或获取发行版)并确保 `qmd` 二进制文件在 gateway 的 `PATH` 上。
+- QMD 需要允许扩展的 SQLite 构建(macOS 上使用 `brew install sqlite`)。
+- QMD 通过 Bun + `node-llama-cpp` 完全在本地运行,并在首次使用时从 HuggingFace 自动下载 GGUF 模型(不需要单独的 Ollama 守护进程)。
+- Gateway 在 `~/.openclaw/agents/<agentId>/qmd/` 下运行 QMD 的自包含 XDG home,通过设置 `XDG_CONFIG_HOME` 和 `XDG_CACHE_HOME`。
+- 操作系统支持:一旦安装了 Bun + SQLite,macOS 和 Linux 可以直接工作。Windows 最好通过 WSL2 支持。
+
+**Sidecar 如何运行**
+
+- Gateway 在 `~/.openclaw/agents/<agentId>/qmd/` 下写入自包含的 QMD home(config + cache + sqlite DB)。
+- 从 `memory.qmd.paths`(加上默认 workspace memory 文件)通过 `qmd collection add` 创建 collections,然后 `qmd update` + `qmd embed` 在启动时和可配置间隔(`memory.qmd.update.interval`,默认 5 分钟)运行。
+- Gateway 现在在启动时初始化 QMD 管理器,因此即使在第一次 `memory_search` 调用之前也会激活定期更新定时器。
+- Boot 刷新现在默认在后台运行,因此聊天启动不会被阻塞;设置 `memory.qmd.update.waitForBootSync = true` 以保留之前的阻塞行为。
+- 搜索通过 `memory.qmd.searchMode` 运行(默认 `qmd search --json`;还支持 `vsearch` 和 `query`)。如果所选模式在您的 QMD 构建中拒绝标志,OpenClaw 会使用 `qmd query` 重试。如果 QMD 失败或二进制文件丢失,OpenClaw 会自动回退到内置 SQLite 管理器,以便 memory tools 继续工作。
+- **第一次搜索可能很慢**:QMD 可能在第一次 `qmd query` 运行时下载本地 GGUF 模型(重排序/查询扩展)。
+
+**配置界面(`memory.qmd.*`)**
+
+- `command`(默认 `qmd`):覆盖可执行路径。
+- `searchMode`(默认 `search`):选择哪个 QMD 命令支持 `memory_search`(`search`、`vsearch`、`query`)。
+- `includeDefaultMemory`(默认 `true`):自动索引 `MEMORY.md` + `memory/**/*.md`。
+- `paths[]`:添加额外的目录/文件(`path`、可选 `pattern`、可选稳定 `name`)。
+- `sessions`:选择加入 session JSONL 索引(`enabled`、`retentionDays`、`exportDir`)。
+- `update`:控制刷新节奏和维护执行:(`interval`、`debounceMs`、`onBoot`、`waitForBootSync`、`embedInterval`、`commandTimeoutMs`、`updateTimeoutMs`、`embedTimeoutMs`)。
+- `limits`:限制召回 payload(`maxResults`、`maxSnippetChars`、`maxInjectedChars`、`timeoutMs`)。
+- `scope`:与 [`session.sendPolicy`](/gateway/configuration#session) 相同的 schema。默认仅 DM(`deny` 所有,`allow` 直接聊天)。
+
+**示例**
+
+```json5
+memory: {
+  backend: "qmd",
+  citations: "auto",
+  qmd: {
+    includeDefaultMemory: true,
+    update: { interval: "5m", debounceMs: 15000 },
+    limits: { maxResults: 6, timeoutMs: 4000 },
+    scope: {
+      default: "deny",
+      rules: [
+        { action: "allow", match: { chatType: "direct" } },
+      ]
+    },
+    paths: [
+      { name: "docs", path: "~/notes", pattern: "**/*.md" }
+    ]
+  }
+}
+```
 
 ### 额外的 memory 路径
 
@@ -151,11 +217,11 @@ agents: {
 如果你不想设置 API key,使用 `memorySearch.provider = "local"` 或设置 `memorySearch.fallback = "none"`。
 
 后备:
-- `memorySearch.fallback` 可以是 `openai`、`gemini`、`local` 或 `none`。
+- `memorySearch.fallback` 可以是 `openai`、`gemini`、`voyage`、`mistral`、`local` 或 `none`。
 - 仅当主 embedding provider 失败时才使用后备 provider。
 
-批量索引(OpenAI + Gemini):
-- 默认为 OpenAI 和 Gemini embeddings 启用。设置 `agents.defaults.memorySearch.remote.batch.enabled = false` 以禁用。
+批量索引(OpenAI + Gemini + Voyage):
+- 默认禁用。设置 `agents.defaults.memorySearch.remote.batch.enabled = true` 以启用用于大语料库索引(OpenAI、Gemini 和 Voyage)。
 - 默认行为等待批处理完成;如果需要,调整 `remote.batch.wait`、`remote.batch.pollIntervalMs` 和 `remote.batch.timeoutMinutes`。
 - 设置 `remote.batch.concurrency` 以控制我们并行提交多少批处理作业(默认: 2)。
 - 批处理模式适用于 `memorySearch.provider = "openai"` 或 `"gemini"` 并使用相应的 API key。
@@ -250,7 +316,49 @@ BM25(全文)相反:在精确 tokens 上很强,在释义上较弱。混合搜索�
 
 这不是"IR 理论完美",但它简单、快速,并且倾向于改善真实注释的召回/精度。如果我们以后想变得更花哨,常见的下一步是 Reciprocal Rank Fusion (RRF) 或在混合之前进行分数归一化(min/max 或 z-score)。
 
-配置:
+#### 后处理管道
+
+合并向量和关键字分数后,两个可选的后处理阶段会在结果到达 agent 之前对结果列表进行精细化:
+
+```
+向量 + 关键字 → 加权合并 → 时间衰减 → 排序 → MMR → 前 K 个结果
+```
+
+两个阶段**默认关闭**,可以独立启用。
+
+#### MMR 重排序(多样性)
+
+当混合搜索返回结果时,多个 chunks 可能包含相似或重叠的内容。
+
+**MMR(最大边际相关性)**重新排序结果以平衡相关性与多样性,确保顶部结果涵盖查询的不同方面,而不是重复相同的信息。
+
+工作原理:
+1. 结果按其原始相关性评分(向量 + BM25 加权分数)。
+2. MMR 迭代选择最大化以下值的结果:`λ × 相关性 − (1−λ) × 与已选择的最大相似度`。
+3. 结果之间的相似度使用标记化内容的 Jaccard 文本相似度来衡量。
+
+`lambda` 参数控制权衡:
+- `lambda = 1.0` → 纯相关性(无多样性惩罚)
+- `lambda = 0.0` → 最大多样性(忽略相关性)
+- 默认:`0.7`(平衡,略微偏重相关性)
+
+#### 时间衰减(近期增强)
+
+每日记录随时间积累数百个有日期的文件。**时间衰减**根据每个结果的年龄对分数应用指数乘数,使近期记忆自然排名更高,而旧记忆逐渐淡出。
+
+**长青文件永远不会衰减:**
+- `MEMORY.md`(根 memory 文件)
+- `memory/` 中的非日期文件(例如 `memory/projects.md`、`memory/network.md`)
+
+默认半衰期 30 天时:
+- 今天的记录:**100%** 原始分数
+- 7 天前:**~84%**
+- 30 天前:**50%**
+- 90 天前:**12.5%**
+
+#### 配置
+
+两个功能都在 `memorySearch.query.hybrid` 下配置:
 
 ```json5
 agents: {
@@ -261,13 +369,28 @@ agents: {
           enabled: true,
           vectorWeight: 0.7,
           textWeight: 0.3,
-          candidateMultiplier: 4
+          candidateMultiplier: 4,
+          // 多样性:减少冗余结果
+          mmr: {
+            enabled: true,    // 默认: false
+            lambda: 0.7       // 0 = 最大多样性, 1 = 最大相关性
+          },
+          // 近期性:提升较新的记忆
+          temporalDecay: {
+            enabled: true,    // 默认: false
+            halfLifeDays: 30  // 每 30 天分数减半
+          }
         }
       }
     }
   }
 }
 ```
+
+您可以独立启用任一功能:
+- **仅 MMR** — 当您有许多相似记录但年龄不重要时有用。
+- **仅时间衰减** — 当近期性很重要但您的结果已经多样化时有用。
+- **两者都启用** — 推荐用于具有大量长期运行每日记录历史的 agent。
 
 ### Embedding cache
 

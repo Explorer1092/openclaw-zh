@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5cab0eaa64696b8101094ce0af12711a"
+mmh3_hash: "ec1d4279cda368cd1f95c50f5be5b362"
 summary: "排查 Cron 和 Heartbeat 调度及传递问题"
 read_when:
   - Cron 未运行
@@ -90,7 +90,7 @@ openclaw channels status --probe
 
 - `heartbeat skipped` 且 `reason=quiet-hours` → 在 `activeHours` 之外。
 - `requests-in-flight` → 主通道繁忙；Heartbeat 延迟。
-- `empty-heartbeat-file` → `HEARTBEAT.md` 存在但没有可操作内容。
+- `empty-heartbeat-file` → 间隔心跳被跳过，因为 `HEARTBEAT.md` 没有可操作内容且没有已排队的 cron 事件。
 - `alerts-disabled` → 可见性设置抑制出站 Heartbeat 消息。
 
 ## 时区和 activeHours 陷阱

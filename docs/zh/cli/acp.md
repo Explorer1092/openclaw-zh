@@ -1,6 +1,6 @@
 ---
 title: "acp"
-mmh3_hash: "a6349eaf172136b933624e4aab9ca16f"
+mmh3_hash: "a042b72c106197b8e6bdb96c8bac4459"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:
   - 设置基于 ACP 的 IDE 集成
@@ -18,16 +18,19 @@ read_when:
 ```bash
 openclaw acp
 
-# 远程网关
+# 远程 Gateway
 openclaw acp --url wss://gateway-host:18789 --token <token>
 
-# 附加到现有会话密钥
+# 远程 Gateway(从文件读取令牌)
+openclaw acp --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
+
+# 附加到现有 Session 密钥
 openclaw acp --session agent:main:main
 
 # 按标签附加(必须已存在)
 openclaw acp --session-label "support inbox"
 
-# 在第一次提示之前重置会话密钥
+# 在第一次提示之前重置 Session 密钥
 openclaw acp --session agent:main:main --reset-session
 ```
 
@@ -39,8 +42,8 @@ openclaw acp --session agent:main:main --reset-session
 ```bash
 openclaw acp client
 
-# 将生成的桥接指向远程网关
-openclaw acp client --server-args --url wss://gateway-host:18789 --token <token>
+# 将生成的桥接指向远程 Gateway
+openclaw acp client --server-args --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
 
 # 覆盖服务器命令(默认:openclaw)
 openclaw acp client --server "node" --server-args openclaw.mjs acp --url ws://127.0.0.1:19001
@@ -65,6 +68,8 @@ openclaw config set gateway.remote.token <token>
 
 ```bash
 openclaw acp --url wss://gateway-host:18789 --token <token>
+# 对于本地进程安全性,首选此方式
+openclaw acp --url wss://gateway-host:18789 --token-file ~/.openclaw/gateway.token
 ```
 
 ## 选择 Agent
@@ -98,7 +103,7 @@ openclaw acp --session agent:qa:bug-123
 }
 ```
 
-要定位特定网关或代理:
+要定位特定 Gateway 或 Agent:
 
 ```json
 {
@@ -108,9 +113,12 @@ openclaw acp --session agent:qa:bug-123
       "command": "openclaw",
       "args": [
         "acp",
-        "--url", "wss://gateway-host:18789",
-        "--token", "<token>",
-        "--session", "agent:design:main"
+        "--url",
+        "wss://gateway-host:18789",
+        "--token",
+        "<token>",
+        "--session",
+        "agent:design:main"
       ],
       "env": {}
     }
@@ -147,13 +155,20 @@ openclaw acp --session agent:qa:bug-123
 
 - `--url <url>`:Gateway WebSocket URL(配置时默认为 gateway.remote.url)。
 - `--token <token>`:Gateway 身份验证令牌。
+- `--token-file <path>`:从文件读取 Gateway 身份验证令牌。
 - `--password <password>`:Gateway 身份验证密码。
+- `--password-file <path>`:从文件读取 Gateway 身份验证密码。
 - `--session <key>`:默认 Session 密钥。
 - `--session-label <label>`:要解析的默认 Session 标签。
 - `--require-existing`:如果 Session 密钥/标签不存在则失败。
 - `--reset-session`:在首次使用前重置 Session 密钥。
 - `--no-prefix-cwd`:不在提示前添加工作目录前缀。
 - `--verbose, -v`:详细日志输出到 stderr。
+
+安全说明:
+
+- `--token` 和 `--password` 在某些系统上可能在本地进程列表中可见。
+- 首选 `--token-file`/`--password-file` 或环境变量(`OPENCLAW_GATEWAY_TOKEN`、`OPENCLAW_GATEWAY_PASSWORD`)。
 
 ### `acp client` 选项
 

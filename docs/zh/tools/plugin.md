@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "96e714ca232a07e1dadc12e373a521d0"
+mmh3_hash: "will-be-updated"
 summary: "OpenClaw Plugins/Extensions：发现、配置和安全"
 read_when:
   - 添加或修改 Plugins/Extensions

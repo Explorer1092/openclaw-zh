@@ -1,7 +1,7 @@
 ---
 title: "`openclaw onboard`"
 sidebarTitle: "openclaw onboard"
-mmh3_hash: "5fc9ee7d3c0ae5dc5c13c3d9cf7fe8c0"
+mmh3_hash: "93ff53fc42d2a7e1057bca0ee7698b57"
 summary: "`openclaw onboard` 的 CLI 参考(交互式入职向导)"
 read_when:
   - 您想要Gateway、工作区、身份验证、Channel和技能的指导性设置
@@ -57,11 +57,20 @@ openclaw onboard --non-interactive \
 # --auth-choice zai-cn
 ```
 
+非交互式 Mistral 示例:
+
+```bash
+openclaw onboard --non-interactive \
+  --auth-choice mistral-api-key \
+  --mistral-api-key "$MISTRAL_API_KEY"
+```
+
 流程注意事项:
 
-- `quickstart`:最少提示,自动生成Gateway令牌。
+- `quickstart`:最少提示,自动生成 Gateway 令牌。
 - `manual`:端口/绑定/身份验证的完整提示(`advanced` 的别名)。
-- 最快的第一次聊天:`openclaw dashboard`(控制 UI,无Channel设置)。
+- 本地入职 DM 范围行为:[CLI 入职参考](/start/wizard-cli-reference#outputs-and-internals)。
+- 最快的第一次聊天:`openclaw dashboard`(控制 UI,无 Channel 设置)。
 - 自定义提供商:连接任何 OpenAI 或 Anthropic 兼容端点,包括未列出的托管提供商。使用 Unknown 自动检测。
 
 ## 常见后续命令

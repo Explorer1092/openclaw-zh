@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "15821a44afd762c2955fd400fdb597cc"
+mmh3_hash: "74489d7c770de2b2b0238e7211065138"
 summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
 read_when:
   - Setting up Slack or debugging Slack socket/HTTP mode
@@ -166,7 +166,7 @@ openclaw gateway
 
     频道白名单位于 `channels.slack.channels`。
 
-    运行时注意: 如果完全没有 `channels.slack` (仅环境变量设置) 且 `channels.defaults.groupPolicy` 未设置,运行时会回退到 `groupPolicy="open"` 并记录警告。
+    运行时注意: 如果完全没有 `channels.slack`（仅环境变量设置），运行时会回退到 `groupPolicy="allowlist"` 并记录警告（即使设置了 `channels.defaults.groupPolicy`）。
 
     名称/ID 解析:
 
@@ -192,6 +192,8 @@ openclaw gateway
     - `skills`
     - `systemPrompt`
     - `tools`, `toolsBySender`
+    - `toolsBySender` 键格式: `id:`、`e164:`、`username:`、`name:` 或 `"*"` 通配符
+      （旧版无前缀键仍映射到 `id:` 匹配）
 
   </Tab>
 </Tabs>
@@ -202,6 +204,12 @@ openclaw gateway
 - 使用 `channels.slack.commands.native: true` (或全局 `commands.native: true`) 启用原生 Slack 命令处理器。
 - 当原生命令启用时,在 Slack 中注册匹配的 slash 命令 (`/<command>` 名称)。
 - 如果未启用原生命令,你可以通过 `channels.slack.slashCommand` 运行单个配置的 slash 命令。
+- 原生参数菜单现在会自适应渲染策略：
+  - 最多 5 个选项：按钮块
+  - 6-100 个选项：静态选择菜单
+  - 超过 100 个选项：当 interactivity 选项处理器可用时使用带异步选项过滤的外部选择
+  - 如果编码的选项值超过 Slack 限制，回退到按钮
+- 对于长选项负载，Slash 命令参数菜单在派发所选值之前使用确认对话框。
 
 默认 slash 命令设置:
 
@@ -236,7 +244,7 @@ Slash session 使用隔离的键:
 - `[[reply_to_current]]`
 - `[[reply_to:<id>]]`
 
-注意: `replyToMode="off"` 禁用隐式回复线程。显式 `[[reply_to_*]]` 标签仍然会被遵守。
+注意: `replyToMode="off"` 禁用 Slack 中**所有**回复线程，包括显式 `[[reply_to_*]]` 标签。这与 Telegram 不同，在 Telegram 中显式标签在 `"off"` 模式下仍然有效。差异反映了平台线程模型的不同：Slack 线程会将消息从频道中隐藏，而 Telegram 回复在主聊天流中仍然可见。
 
 ## 媒体、分块和传递
 
@@ -285,8 +293,12 @@ Slack 操作通过 `channels.slack.actions.*` 控制。
 - 消息编辑/删除/线程广播映射到系统事件。
 - 反应添加/移除事件映射到系统事件。
 - 成员加入/离开、频道创建/重命名、置顶添加/移除事件映射到系统事件。
+- 助手线程状态更新（线程中的"正在输入..."指示器）使用 `assistant.threads.setStatus`，需要 bot 权限 `assistant:write`。
 - `channel_id_changed` 可以在 `configWrites` 启用时迁移频道配置键。
-- 频道主题/目的元数据被视为不可信上下文,可以注入到路由上下文中。
+- 频道主题/目的元数据被视为不可信上下文，可以注入到路由上下文中。
+- Block actions 和 modal 交互会触发结构化的 `Slack interaction: ...` 系统事件，包含丰富的负载字段：
+  - block actions: 所选值、标签、选择器值和 `workflow_*` 元数据
+  - modal `view_submission` 和 `view_closed` 事件，包含路由频道元数据和表单输入
 
 ## 确认反应
 
@@ -451,6 +463,47 @@ openclaw pairing list slack
   </Accordion>
 </AccordionGroup>
 
+## 文本流式传输
+
+OpenClaw 通过 Agents and AI Apps API 支持 Slack 原生文本流式传输。
+
+`channels.slack.streaming` 控制实时预览行为：
+
+- `off`：禁用实时预览流式传输。
+- `partial`（默认）：用最新的部分输出替换预览文本。
+- `block`：以分块预览更新追加。
+- `progress`：生成时显示进度状态文本，然后发送最终文本。
+
+`channels.slack.nativeStreaming` 控制 Slack 的原生流式传输 API（`chat.startStream` / `chat.appendStream` / `chat.stopStream`），当 `streaming` 为 `partial` 时使用（默认：`true`）。
+
+禁用 Slack 原生流式传输（保留草稿预览行为）：
+
+```yaml
+channels:
+  slack:
+    streaming: partial
+    nativeStreaming: false
+```
+
+旧版键：
+
+- `channels.slack.streamMode`（`replace | status_final | append`）自动迁移到 `channels.slack.streaming`。
+- 布尔值 `channels.slack.streaming` 自动迁移到 `channels.slack.nativeStreaming`。
+
+### 要求
+
+1. 在 Slack 应用设置中启用 **Agents and AI Apps**。
+2. 确保应用拥有 `assistant:write` 权限。
+3. 该消息必须有可用的回复线程。线程选择仍遵循 `replyToMode`。
+
+### 行为
+
+- 第一个文本块开始流式传输（`chat.startStream`）。
+- 后续文本块追加到同一流中（`chat.appendStream`）。
+- 回复结束时完成流（`chat.stopStream`）。
+- 媒体和非文本负载回退到正常传递。
+- 如果流式传输在回复中途失败，OpenClaw 对剩余负载回退到正常传递。
+
 ## 配置参考指针
 
 主要参考:
@@ -462,7 +515,7 @@ openclaw pairing list slack
   - 私信访问: `dm.enabled`, `dmPolicy`, `allowFrom` (旧版: `dm.policy`, `dm.allowFrom`), `dm.groupEnabled`, `dm.groupChannels`
   - 频道访问: `groupPolicy`, `channels.*`, `channels.*.users`, `channels.*.requireMention`
   - 线程/历史: `replyToMode`, `replyToModeByChatType`, `thread.*`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
-  - 传递: `textChunkLimit`, `chunkMode`, `mediaMaxMb`
+  - 传递: `textChunkLimit`, `chunkMode`, `mediaMaxMb`, `streaming`, `nativeStreaming`
   - 操作/功能: `configWrites`, `commands.native`, `slashCommand.*`, `actions.*`, `userToken`, `userTokenReadOnly`
 
 ## 相关

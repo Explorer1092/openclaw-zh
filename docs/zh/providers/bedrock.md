@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ce5bc5e04b5f3409afee9862bf735443"
+mmh3_hash: "will-be-updated"
 summary: "在 OpenClaw 中使用 Amazon Bedrock（Converse API）模型"
 read_when:
   - 您想要在 OpenClaw 中使用 Amazon Bedrock 模型
@@ -47,9 +47,9 @@ OpenClaw 可以通过 pi‑ai 的 **Bedrock Converse** 流式 Provider 使用 **
 - `refreshInterval` 以秒为单位；设置为 `0` 可禁用缓存。
 - `defaultContextWindow`（默认：`32000`）和 `defaultMaxTokens`（默认：`4096`）用于发现的模型（如果您知道模型限制，请覆盖）。
 
-## 设置（手动）
+## 入门
 
-1. 确保 AWS 凭据在 **Gateway 主机**上可用：
+1. 确保 AWS 凭据在**网关主机**上可用：
 
 ```bash
 export AWS_ACCESS_KEY_ID="AKIA..."
@@ -98,7 +98,7 @@ export AWS_BEARER_TOKEN_BEDROCK="..."
 
 在附加了 IAM 角色的 EC2 实例上运行 OpenClaw 时，AWS SDK 将自动使用实例元数据服务（IMDS）进行身份验证。但是，OpenClaw 的凭据检测目前仅检查环境变量，而不检查 IMDS 凭据。
 
-**解决方法：**设置 `AWS_PROFILE=default` 以表明 AWS 凭据可用。实际身份验证仍通过 IMDS 使用实例角色。
+**解决方法：** 设置 `AWS_PROFILE=default` 以表明 AWS 凭据可用。实际身份验证仍通过 IMDS 使用实例角色。
 
 ```bash
 # 添加到 ~/.bashrc 或您的 Shell 配置文件
@@ -114,7 +114,7 @@ export AWS_REGION=us-east-1
 
 或附加托管策略 `AmazonBedrockFullAccess`。
 
-**快速设置：**
+## 快速设置（AWS 路径）
 
 ```bash
 # 1. 创建 IAM 角色和实例配置文件

@@ -1,7 +1,7 @@
 ---
 title: "会话工具"
 sidebarTitle: "会话工具"
-mmh3_hash: "27d06a7ab8b399aec83022878d6a0a66"
+mmh3_hash: "4b3a657f50f9ac3de442b4e8cfa21e28"
 summary: "Agent session tools 用于列出 sessions、获取历史记录和发送跨 session 消息"
 read_when: ["添加或修改 session tools"]
 ---
@@ -133,7 +133,10 @@ Runtime 覆盖(每个 session 条目):
 - `label?` (可选;用于日志/UI)
 - `agentId?` (可选;如果允许,在另一个 agent id 下生成)
 - `model?` (可选;覆盖 sub-agent model;无效值错误)
+- `thinking?` (可选;覆盖 sub-agent 运行的 thinking level)
 - `runTimeoutSeconds?` (默认 0;设置时,在 N 秒后中止 sub-agent 运行)
+- `thread?` (默认 false;在支持的 channel/plugin 中请求线程绑定路由)
+- `mode?` (`run|session`;默认 `run`,但当 `thread=true` 时默认 `session`;`mode="session"` 需要 `thread=true`)
 - `cleanup?` (`delete|keep`,默认 `keep`)
 
 允许列表:
@@ -147,6 +150,7 @@ Runtime 覆盖(每个 session 条目):
 - Sub-agents 默认为完整 tool 集 **减去 session tools**(通过 `tools.subagents.tools` 可配置)。
 - Sub-agents 不允许调用 `sessions_spawn`(无 sub-agent → sub-agent 生成)。
 - 始终非阻塞:立即返回 `{ status: "accepted", runId, childSessionKey }`。
+- 当 `thread=true` 时,channel plugins 可以将传递/路由绑定到线程目标(Discord 支持由 `session.threadBindings.*` 和 `channels.discord.threadBindings.*` 控制)。
 - 完成后,OpenClaw 运行 sub-agent **announce 步骤** 并将结果发布到请求者 chat channel。
 - 在 announce 步骤期间精确回复 `ANNOUNCE_SKIP` 以保持静默。
 - Announce 回复规范化为 `Status`/`Result`/`Notes`;`Status` 来自 runtime 结果(不是 model 文本)。
@@ -155,19 +159,39 @@ Runtime 覆盖(每个 session 条目):
 
 ## Sandbox Session 可见性
 
-沙盒 sessions 可以使用 session tools,但默认情况下它们只能看到通过 `sessions_spawn` 生成的 sessions。
+Session tools 可以限定范围以减少跨 session 访问。
+
+默认行为:
+
+- `tools.sessions.visibility` 默认为 `tree`(当前 session + 生成的 subagent sessions)。
+- 对于沙盒 sessions,`agents.defaults.sandbox.sessionToolsVisibility` 可以硬性限制可见性。
 
 配置:
 
 ```json5
 {
+  tools: {
+    sessions: {
+      // "self" | "tree" | "agent" | "all"
+      // 默认: "tree"
+      visibility: "tree",
+    },
+  },
   agents: {
     defaults: {
       sandbox: {
-        // default: "spawned"
-        sessionToolsVisibility: "spawned" // or "all"
-      }
-    }
-  }
+        // 默认: "spawned"
+        sessionToolsVisibility: "spawned", // 或 "all"
+      },
+    },
+  },
 }
 ```
+
+注意:
+
+- `self`: 仅当前 session key。
+- `tree`: 当前 session + 当前 session 生成的 sessions。
+- `agent`: 属于当前 agent id 的任何 session。
+- `all`: 任何 session(跨 agent 访问仍需要 `tools.agentToAgent`)。
+- 当 session 处于沙盒中且 `sessionToolsVisibility="spawned"` 时,即使您设置了 `tools.sessions.visibility="all"`,OpenClaw 也会将可见性限制到 `tree`。

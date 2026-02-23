@@ -1,6 +1,6 @@
 ---
 title: "在 DigitalOcean 上运行 OpenClaw"
-mmh3_hash: "e551e24b831ddc27c9a1b6465c609f83"
+mmh3_hash: "77ecf8dbf5bf466b06cb62f273253067"
 summary: "在 DigitalOcean 上运行 OpenClaw(简单的付费 VPS 选项)"
 read_when: ["在 DigitalOcean 上设置 OpenClaw","寻找 OpenClaw 的廉价 VPS 托管"]
 ---
@@ -37,6 +37,10 @@ read_when: ["在 DigitalOcean 上设置 OpenClaw","寻找 OpenClaw 的廉价 VPS
 - 约 20 分钟
 
 ## 1) 创建 Droplet
+
+<Warning>
+使用干净的基础镜像（Ubuntu 24.04 LTS）。避免使用第三方 Marketplace 一键镜像，除非你已检查其启动脚本和防火墙默认值。
+</Warning>
 
 1. 登录 [DigitalOcean](https://cloud.digitalocean.com/)
 2. 点击**创建 → Droplets**

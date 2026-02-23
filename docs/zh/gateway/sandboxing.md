@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "808dcf3dee3ab28f706424b4930d6b80"
+mmh3_hash: "will be updated"
 summary: "OpenClaw 沙盒的工作原理:模式、作用域、工作空间访问和镜像"
 title: 沙盒
 read_when: "您想要沙盒的专门解释或需要调整 agents.defaults.sandbox。"
@@ -20,6 +20,10 @@ Gateway 保持在主机上;启用时工具执行在隔离沙盒中运行。
 - 可选的沙盒 Browser(`agents.defaults.sandbox.browser`)。
   - 默认情况下,沙盒 Browser 自动启动(确保 CDP 可达)当 Browser 工具需要它时。
     通过 `agents.defaults.sandbox.browser.autoStart` 和 `agents.defaults.sandbox.browser.autoStartTimeoutMs` 配置。
+  - 默认情况下,沙盒 Browser 容器使用专用 Docker 网络(`openclaw-sandbox-browser`)而不是全局 `bridge` 网络。
+    通过 `agents.defaults.sandbox.browser.network` 配置。
+  - 可选的 `agents.defaults.sandbox.browser.cdpSourceRange` 使用 CIDR 允许列表限制容器边缘 CDP 入口(例如 `172.21.0.1/32`)。
+  - noVNC 观察者访问默认受密码保护;OpenClaw 发出解析到观察者 Session 的短期令牌 URL。
   - `agents.defaults.sandbox.browser.allowHostControl` 允许沙盒 Session 显式定位主机 Browser。
   - 可选的允许列表门控 `target: "custom"`: `allowedControlUrls`、`allowedControlHosts`、`allowedControlPorts`。
 

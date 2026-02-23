@@ -1,7 +1,7 @@
 ---
 title: "`openclaw voicecall`"
 sidebarTitle: "openclaw voicecall"
-mmh3_hash: "3e02e2ccf043d3f4108b92d5eebdedb4"
+mmh3_hash: "2655a0ba2a421e7da06c6f7bbcfe36fc"
 summary: "`openclaw voicecall` 的 CLI 参考(语音呼叫插件命令界面)"
 read_when:
   - 您使用语音呼叫插件并想要 CLI 入口点
@@ -29,7 +29,7 @@ openclaw voicecall end --call-id <id>
 ```bash
 openclaw voicecall expose --mode serve
 openclaw voicecall expose --mode funnel
-openclaw voicecall unexpose
+openclaw voicecall expose --mode off
 ```
 
 安全注意事项:仅将 webhook 端点公开给您信任的网络。在可能的情况下,优先使用 Tailscale Serve 而不是 Funnel。

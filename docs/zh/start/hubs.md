@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ed8dbe1c7d01bbc072c415746b5538fe"
+mmh3_hash: "placeholder"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "357deb7753ccebf58ebbf7f82937cfa1"
+mmh3_hash: "84cb8f6c9d93f086fc575436394b7adf"
 summary: "项目起源、贡献者和许可证。"
 read_when:
   - 您想要了解项目背景故事或贡献者致谢

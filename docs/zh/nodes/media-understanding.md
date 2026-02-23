@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f460c75c35d74150c609a7585359c978"
+mmh3_hash: "78c668d79cbd671653ce6c7415f5a966"
 summary: "入站图像/音频/视频理解 (可选), 带有 provider + CLI 回退"
 read_when:
   - 设计或重构媒体理解
@@ -178,7 +178,7 @@ CLI 模板还可以使用:
 | 功能           | 提供商集成                                    | 说明                                  |
 | -------------- | --------------------------------------------- | ------------------------------------- |
 | Image (图像)   | OpenAI / Anthropic / Google / 其他通过 `pi-ai` | 注册表中任何支持图像的模型都有效。    |
-| Audio (音频)   | OpenAI, Groq, Deepgram, Google                | 提供商转录 (Whisper/Deepgram/Gemini)。 |
+| Audio (音频)   | OpenAI, Groq, Deepgram, Google, Mistral        | 提供商转录 (Whisper/Deepgram/Gemini/Voxtral)。 |
 | Video (视频)   | Google (Gemini API)                           | 提供商视频理解。                      |
 
 ## 推荐提供商
@@ -186,11 +186,11 @@ CLI 模板还可以使用:
 **Image (图像)**
 
 - 首选你的活动模型（如果它支持图像）。
-- 良好的默认值: `openai/gpt-5.2`, `anthropic/claude-opus-4-5`, `google/gemini-3-pro-preview`。
+- 良好的默认值: `openai/gpt-5.2`, `anthropic/claude-opus-4-6`, `google/gemini-3-pro-preview`。
 
 **Audio (音频)**
 
-- `openai/gpt-4o-mini-transcribe`, `groq/whisper-large-v3-turbo`, 或 `deepgram/nova-3`。
+- `openai/gpt-4o-mini-transcribe`, `groq/whisper-large-v3-turbo`, `deepgram/nova-3`，或 `mistral/voxtral-mini-latest`。
 - CLI 回退: `whisper-cli` (whisper-cpp) 或 `whisper`。
 - Deepgram 设置: [Deepgram (音频转录)](/providers/deepgram)。
 
@@ -293,7 +293,7 @@ CLI 模板还可以使用:
         maxChars: 500,
         models: [
           { provider: "openai", model: "gpt-5.2" },
-          { provider: "anthropic", model: "claude-opus-4-5" },
+          { provider: "anthropic", model: "claude-opus-4-6" },
           {
             type: "cli",
             command: "gemini",

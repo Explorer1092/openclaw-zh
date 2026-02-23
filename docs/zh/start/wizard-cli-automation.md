@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "placeholder"
 summary: "OpenClaw CLI 的脚本化引导和 Agent 设置"
 read_when:
   - 您在脚本或 CI 中自动化引导

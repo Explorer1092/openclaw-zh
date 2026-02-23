@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "33f8682ddbee6edf87ed9c6322d5a754"
+mmh3_hash: "will be updated"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -150,6 +150,15 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 
 在此窗口之外(东部时间早上 9 点之前或晚上 10 点之后),Heartbeat 被跳过。窗口内的下一个计划滴答将正常运行。
 
+### 全天候设置
+
+如果您希望 Heartbeat 全天运行,请使用以下模式之一:
+
+- 完全省略 `activeHours`(无时间窗口限制;这是默认行为)。
+- 设置全天窗口:`activeHours: { start: "00:00", end: "24:00" }`。
+
+不要将 `start` 和 `end` 设置为相同的时间(例如 `08:00` 到 `08:00`)。这被视为零宽度窗口,因此 Heartbeat 始终被跳过。
+
 ### 多账户示例
 
 使用 `accountId` 在多账户 Channel(如 Telegram)上定位特定账户:
@@ -163,7 +172,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
         heartbeat: {
           every: "1h",
           target: "telegram",
-          to: "12345678",
+          to: "12345678:topic:42", // 可选:路由到特定话题/线程
           accountId: "ops-bot",
         },
       },
@@ -192,14 +201,16 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
   - `last`(默认):传递到最后使用的外部 Channel。
   - 显式 Channel:`whatsapp` / `telegram` / `discord` / `googlechat` / `slack` / `msteams` / `signal` / `imessage`。
   - `none`:运行 Heartbeat 但**不要**外部传递。
-- `to`:可选的接收者覆盖(特定 Channel 的 ID,例如 WhatsApp 的 E.164 或 Telegram 聊天 ID)。
+- `to`:可选的接收者覆盖(特定 Channel 的 ID,例如 WhatsApp 的 E.164 或 Telegram 聊天 ID)。对于 Telegram 话题/线程,使用 `<chatId>:topic:<messageThreadId>`。
 - `accountId`:多账户 Channel 的可选账户 ID。当 `target: "last"` 时,账户 ID 适用于已解析的最后一个 Channel(如果支持账户);否则被忽略。如果账户 ID 与已解析 Channel 的已配置账户不匹配,则跳过传递。
 - `prompt`:覆盖默认提示正文(不合并)。
 - `ackMaxChars`:传递前 `HEARTBEAT_OK` 后允许的最大字符数。
-- `activeHours`:将 Heartbeat 运行限制在时间窗口内。具有 `start`(HH:MM,包含)、`end`(HH:MM 排他;允许 `24:00` 表示一天结束)和可选 `timezone` 的对象。
+- `suppressToolErrorWarnings`:为 true 时,在 Heartbeat 运行期间抑制工具错误警告有效负载。
+- `activeHours`:将 Heartbeat 运行限制在时间窗口内。具有 `start`(HH:MM,包含;使用 `00:00` 表示一天开始)、`end`(HH:MM 排他;允许 `24:00` 表示一天结束)和可选 `timezone` 的对象。
   - 省略或 `"user"`:如果设置则使用您的 `agents.defaults.userTimezone`,否则回退到主机系统时区。
   - `"local"`:始终使用主机系统时区。
   - 任何 IANA 标识符(例如 `America/New_York`):直接使用;如果无效,则回退到上面的 `"user"` 行为。
+  - `start` 和 `end` 不能相等以形成活动窗口;相等的值被视为零宽度(始终在窗口外)。
   - 在活动窗口之外,Heartbeat 被跳过,直到窗口内的下一个滴答。
 
 ## 传递行为

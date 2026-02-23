@@ -1,7 +1,7 @@
 ---
 title: "CLI 参考"
 sidebarTitle: "CLI 参考"
-mmh3_hash: "7d59ea7be8da3cfb141208a9849ea602"
+mmh3_hash: "3dfad4ddbb4dad6e6617d34017f0bc20"
 summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
 read_when:
   - 添加或修改 CLI 命令或选项
@@ -18,6 +18,7 @@ read_when:
 - [`onboard`](/cli/onboard)
 - [`configure`](/cli/configure)
 - [`config`](/cli/config)
+- [`completion`](/cli/completion)
 - [`doctor`](/cli/doctor)
 - [`dashboard`](/cli/dashboard)
 - [`reset`](/cli/reset)
@@ -52,6 +53,8 @@ read_when:
 - [`channels`](/cli/channels)
 - [`security`](/cli/security)
 - [`skills`](/cli/skills)
+- [`daemon`](/cli/daemon)(Gateway 服务命令的旧版别名)
+- [`clawbot`](/cli/clawbot)(旧版别名命名空间)
 - [`voicecall`](/cli/voicecall)(插件;如果已安装)
 
 ## 全局标志
@@ -96,7 +99,9 @@ openclaw [--dev] [--profile <name>] <command>
     get
     set
     unset
+  completion
   doctor
+  dashboard
   security
     audit
   reset
@@ -233,6 +238,9 @@ openclaw [--dev] [--profile <name>] <command>
   pairing
     list
     approve
+  qr
+  clawbot
+    qr
   docs
   dns
     setup
@@ -300,13 +308,14 @@ openclaw [--dev] [--profile <name>] <command>
 - `--non-interactive`
 - `--mode <local|remote>`
 - `--flow <quickstart|advanced|manual>`(manual 是 advanced 的别名)
-- `--auth-choice <setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ai-gateway-api-key|moonshot-api-key|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|skip>`
+- `--auth-choice <setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ai-gateway-api-key|moonshot-api-key|moonshot-api-key-cn|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|mistral-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|custom-api-key|skip>`
 - `--token-provider <id>`(非交互;与 `--auth-choice token` 一起使用)
 - `--token <token>`(非交互;与 `--auth-choice token` 一起使用)
 - `--token-profile-id <id>`(非交互;默认:`<provider>:manual`)
 - `--token-expires-in <duration>`(非交互;例如 `365d`、`12h`)
 - `--anthropic-api-key <key>`
 - `--openai-api-key <key>`
+- `--mistral-api-key <key>`
 - `--openrouter-api-key <key>`
 - `--ai-gateway-api-key <key>`
 - `--moonshot-api-key <key>`
@@ -315,6 +324,11 @@ openclaw [--dev] [--profile <name>] <command>
 - `--zai-api-key <key>`
 - `--minimax-api-key <key>`
 - `--opencode-zen-api-key <key>`
+- `--custom-base-url <url>`(非交互;与 `--auth-choice custom-api-key` 一起使用)
+- `--custom-model-id <id>`(非交互;与 `--auth-choice custom-api-key` 一起使用)
+- `--custom-api-key <key>`(非交互;可选;与 `--auth-choice custom-api-key` 一起使用;省略时回退到 `CUSTOM_API_KEY`)
+- `--custom-provider-id <id>`(非交互;可选自定义提供商 ID)
+- `--custom-compatibility <openai|anthropic>`(非交互;可选;默认 `openai`)
 - `--gateway-port <port>`
 - `--gateway-bind <loopback|lan|tailnet|auto|custom>`
 - `--gateway-auth <token|password>`

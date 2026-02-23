@@ -1,7 +1,7 @@
 ---
 title: "系统提示词 (System Prompt)"
 sidebarTitle: "系统提示词"
-mmh3_hash: "e19ef7d77ddfb692629f5f4cb577af81"
+mmh3_hash: "dc5d7605331325132be936e21f38e3dc"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
 read_when: ["编辑 system prompt 文本、tools 列表或 time/heartbeat 部分","更改 workspace bootstrap 或 skills 注入行为"]
 ---
@@ -16,6 +16,7 @@ Prompt 由 OpenClaw 组装并注入到每个 agent 运行中。
 Prompt 有意紧凑并使用固定部分:
 
 - **Tooling**: 当前 tool 列表 + 简短描述。
+- **Safety**: 简短的护栏提醒,避免权力寻求行为或绕过监督。
 - **Skills** (在可用时):告诉 model 如何按需加载 skill 指令。
 - **OpenClaw Self-Update**: 如何运行 `config.apply` 和 `update.run`。
 - **Workspace**: 工作目录(`agents.defaults.workspace`)。
@@ -27,6 +28,8 @@ Prompt 有意紧凑并使用固定部分:
 - **Heartbeats**: heartbeat prompt 和 ack 行为。
 - **Runtime**: host、OS、node、model、repo root(检测时)、thinking level(一行)。
 - **Reasoning**: 当前可见性级别 + /reasoning 切换提示。
+
+System prompt 中的安全护栏是建议性的。它们指导 model 行为,但不强制执行策略。使用 tool policy、exec approvals、sandboxing 和 channel allowlists 进行硬性强制执行;运营者可以按设计禁用这些。
 
 ## Prompt 模式
 
@@ -49,8 +52,15 @@ Bootstrap 文件被修剪并附加在 **Project Context** 下,以便 model 无�
 - `USER.md`
 - `HEARTBEAT.md`
 - `BOOTSTRAP.md` (仅在全新 workspaces 上)
+- `MEMORY.md` 和/或 `memory.md`(在 workspace 中存在时;任一或两者都可能被注入)
 
-大文件用标记截断。每个文件的最大大小由 `agents.defaults.bootstrapMaxChars` 控制(默认:20000)。缺失的文件注入简短的缺失文件标记。
+所有这些文件都**注入到 context window 中**,每次对话都会消耗 tokens。保持它们简洁——尤其是 `MEMORY.md`,它会随时间增长,导致意外的高 context 使用量和更频繁的压缩。
+
+> **注意:** `memory/*.md` 每日文件**不会**自动注入。它们通过 `memory_search` 和 `memory_get` 工具按需访问,因此除非 model 显式读取它们,否则不计入 context window。
+
+大文件用标记截断。每个文件的最大大小由 `agents.defaults.bootstrapMaxChars` 控制(默认:20000)。跨文件注入的总 bootstrap 内容上限由 `agents.defaults.bootstrapTotalMaxChars` 控制(默认:150000)。缺失的文件注入简短的缺失文件标记。
+
+Sub-agent sessions 仅注入 `AGENTS.md` 和 `TOOLS.md`(其他 bootstrap 文件被过滤掉以保持 sub-agent context 小巧)。
 
 Internal hooks 可以通过 `agent:bootstrap` 拦截此步骤以变更或替换注入的 bootstrap 文件(例如将 `SOUL.md` 交换为备用 persona)。
 
@@ -87,4 +97,4 @@ Internal hooks 可以通过 `agent:bootstrap` 拦截此步骤以变更或替换�
 
 ## Documentation
 
-在可用时,system prompt 包括指向本地 OpenClaw 文档目录(repo workspace 中的 `docs/` 或捆绑的 npm package 文档)的 **Documentation** 部分,并且还注释公共镜像、源 repo、社区 Discord 和 ClawdHub (https://clawdhub.com) 用于 skills 发现。Prompt 指示 model 首先查阅本地文档以了解 OpenClaw 行为、commands、configuration 或 architecture,并在可能时自己运行 `openclaw status`(仅在缺少访问权限时询问用户)。
+在可用时,system prompt 包括指向本地 OpenClaw 文档目录(repo workspace 中的 `docs/` 或捆绑的 npm package 文档)的 **Documentation** 部分,并且还注释公共镜像、源 repo、社区 Discord 和 ClawHub (https://clawhub.com) 用于 skills 发现。Prompt 指示 model 首先查阅本地文档以了解 OpenClaw 行为、commands、configuration 或 architecture,并在可能时自己运行 `openclaw status`(仅在缺少访问权限时询问用户)。

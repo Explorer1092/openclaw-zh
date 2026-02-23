@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b5a88c4356fabf887446a51d0fcfe3c0"
+mmh3_hash: "c2b582becddf69c7e121f404faf45acc"
 title: "`openclaw devices`"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
@@ -22,12 +22,14 @@ openclaw devices list
 openclaw devices list --json
 ```
 
-### `openclaw devices approve <requestId>`
+### `openclaw devices approve [requestId] [--latest]`
 
-批准待处理的设备配对请求。
+批准待处理的设备配对请求。如果省略 `requestId`,OpenClaw 将自动批准最近的待处理请求。
 
 ```
+openclaw devices approve
 openclaw devices approve <requestId>
+openclaw devices approve --latest
 ```
 
 ### `openclaw devices reject <requestId>`
@@ -57,8 +59,8 @@ openclaw devices revoke --device <deviceId> --role node
 ## 常用选项
 
 - `--url <url>`:Gateway WebSocket URL(配置时默认为 `gateway.remote.url`)。
-- `--token <token>`:Gateway令牌(如果需要)。
-- `--password <password>`:Gateway密码(密码认证)。
+- `--token <token>`:Gateway 令牌(如果需要)。
+- `--password <password>`:Gateway 密码(密码认证)。
 - `--timeout <ms>`:RPC 超时。
 - `--json`:JSON 输出(推荐用于脚本)。
 

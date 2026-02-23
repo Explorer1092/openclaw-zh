@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9591abec6c7db244ce1e880c6a4ee70c"
+mmh3_hash: "fd0c1431a356c50b255274db75a2a50d"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置路径和号码模型"
 read_when:
   - 设置 Signal 支持
@@ -196,6 +196,7 @@ DM：
 
 - `channels.signal.groupPolicy = open | allowlist | disabled`。
 - 当设置为 `allowlist` 时，`channels.signal.groupAllowFrom` 控制谁可以在群组中触发。
+- 运行时注意：如果 `channels.signal` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组检查（即使 `channels.defaults.groupPolicy` 已设置）。
 
 ## 工作原理（行为）
 

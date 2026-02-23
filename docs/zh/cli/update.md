@@ -1,7 +1,7 @@
 ---
 title: "`openclaw update`"
 sidebarTitle: "openclaw update"
-mmh3_hash: "f0ad4cb251126c423601f5111fcfd48b"
+mmh3_hash: "6910092a75603552c3ade2c7f5f2a480"
 summary: "`openclaw update` 的 CLI 参考(相对安全的源更新 + Gateway自动重启)"
 read_when:
   - 您想安全地更新源检出
@@ -23,6 +23,7 @@ openclaw update wizard
 openclaw update --channel beta
 openclaw update --channel dev
 openclaw update --tag beta
+openclaw update --dry-run
 openclaw update --no-restart
 openclaw update --json
 openclaw --update
@@ -33,6 +34,7 @@ openclaw --update
 - `--no-restart`:成功更新后跳过重启Gateway服务。
 - `--channel <stable|beta|dev>`:设置更新Channel(git + npm;在配置中持久化)。
 - `--tag <dist-tag|version>`:仅覆盖此更新的 npm dist-tag 或版本。
+- `--dry-run`:预览计划的更新操作(Channel/标签/目标/重启流程),而不写入配置、安装、同步插件或重启。
 - `--json`:打印机器可读的 `UpdateRunResult` JSON。
 - `--timeout <seconds>`:每步超时(默认为 1200 秒)。
 

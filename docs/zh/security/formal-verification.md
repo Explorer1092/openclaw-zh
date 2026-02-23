@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "50252b4261949ee17d9c9c904b70284d"
+mmh3_hash: "placeholder"
 title: "形式验证 (安全模型)"
 sidebarTitle: "形式验证"
 summary: OpenClaw 最高风险路径的机器检查安全模型。

@@ -1,27 +1,30 @@
 ---
+mmh3_hash: "will-be-updated"
 title: "模型提供商"
 sidebarTitle: "模型提供商示例"
-mmh3_hash: "fc08fbde40385cbfe0a8dbafb18e38c4"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
-read_when: ["您想选择一个模型提供商","您需要 LLM 身份验证 + 模型选择的快速设置示例"]
+read_when:
+  - 您想选择一个模型提供商
+  - 您需要 LLM 身份验证 + 模型选择的快速设置示例
 ---
+
 # 模型提供商
 
-OpenClaw 可以使用多个 LLM 提供商。选择一个,进行身份验证,然后将默认模型设置为 `provider/model`。
+OpenClaw 可以使用多个 LLM 提供商。选择一个，进行身份验证，然后将默认模型设置为 `provider/model`。
 
-## 亮点: Venice (Venice AI)
+## 亮点：Venice (Venice AI)
 
-Venice 是我们推荐的 Venice AI 设置,用于隐私优先的推理,并可选择将 Opus 用于最困难的任务。
+Venice 是我们推荐的 Venice AI 设置，用于隐私优先的推理，并可选择将 Opus 用于最困难的任务。
 
-- 默认: `venice/llama-3.3-70b`
-- 最佳整体: `venice/claude-opus-45` (Opus 仍然是最强的)
+- 默认：`venice/llama-3.3-70b`
+- 最佳整体：`venice/claude-opus-45`（Opus 仍然是最强的）
 
 参见 [Venice AI](/providers/venice)。
 
-## 快速开始(两步)
+## 快速开始（两步）
 
-1. 使用提供商进行身份验证(通常通过 `openclaw onboard`)。
-2. 设置默认模型:
+1. 使用提供商进行身份验证（通常通过 `openclaw onboard`）。
+2. 设置默认模型：
 
 ```json5
 {
@@ -29,7 +32,7 @@ Venice 是我们推荐的 Venice AI 设置,用于隐私优先的推理,并可选
 }
 ```
 
-## 支持的提供商(入门集)
+## 支持的提供商（入门集）
 
 - [OpenAI (API + Codex)](/providers/openai)
 - [Anthropic (API + Claude Code CLI)](/providers/anthropic)
@@ -37,6 +40,7 @@ Venice 是我们推荐的 Venice AI 设置,用于隐私优先的推理,并可选
 - [Vercel AI Gateway](/providers/vercel-ai-gateway)
 - [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
+- [Mistral](/providers/mistral)
 - [Synthetic](/providers/synthetic)
 - [OpenCode Zen](/providers/opencode)
 - [Z.AI](/providers/zai)
@@ -46,4 +50,4 @@ Venice 是我们推荐的 Venice AI 设置,用于隐私优先的推理,并可选
 - [Amazon Bedrock](/providers/bedrock)
 - [Qianfan](/providers/qianfan)
 
-有关完整的提供商目录(xAI、Groq、Mistral 等)和高级配置,请参见 [模型提供商](/concepts/model-providers)。
+有关完整的提供商目录（xAI、Groq、Mistral 等）和高级配置，请参见[模型提供商](/concepts/model-providers)。

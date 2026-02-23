@@ -1,7 +1,7 @@
 ---
 title: "`openclaw nodes`"
 sidebarTitle: "openclaw nodes"
-mmh3_hash: "415856861d8f2ad3700b45e2544c47ee"
+mmh3_hash: "c26ebaaae0070992967309cfb76fd506"
 summary: "`openclaw nodes` 的 CLI 参考(列表/状态/批准/调用、相机/画布/屏幕)"
 read_when:
   - 您正在管理配对的Node(相机、屏幕、画布)
@@ -71,5 +71,7 @@ openclaw nodes run --agent main --node <id|name|ip> --raw "git status"
 - `--invoke-timeout <ms>`:Node调用超时(默认 `30000`)。
 - `--needs-screen-recording`:需要屏幕录制权限。
 - `--raw <command>`:运行 shell 字符串(`/bin/sh -lc` 或 `cmd.exe /c`)。
-- `--agent <id>`:Agent范围的批准/允许列表(默认为配置的Agent)。
+  在 Windows Node 主机的允许列表模式下,`cmd.exe /c` shell 包装器运行需要批准
+  (仅允许列表条目不会自动允许包装器形式)。
+- `--agent <id>`:Agent 范围的批准/允许列表(默认为配置的 Agent)。
 - `--ask <off|on-miss|always>`、`--security <deny|allowlist|full>`:覆盖。

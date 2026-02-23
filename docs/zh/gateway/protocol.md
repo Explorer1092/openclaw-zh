@@ -1,9 +1,12 @@
 ---
 title: "网关协议 (WebSocket)"
 sidebarTitle: "网关协议"
-mmh3_hash: "3811706510261b393f1c84bfcab88d21"
+mmh3_hash: "will be updated"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
-read_when: ["实现或更新 gateway WS 客户端","调试协议不匹配或连接失败","重新生成协议 schema/models"]
+read_when:
+  - 实现或更新 gateway WS 客户端
+  - 调试协议不匹配或连接失败
+  - 重新生成协议 schema/models
 ---
 
 # 网关协议 (WebSocket)
@@ -122,8 +125,8 @@ Gateway → Client:
 
 ## 帧
 
-- **请求**:`{type:"req", id, method, params}`  
-- **响应**:`{type:"res", id, ok, payload|error}`  
+- **请求**:`{type:"req", id, method, params}`
+- **响应**:`{type:"res", id, ok, payload|error}`
 - **事件**:`{type:"event", event, payload, seq?, stateVersion?}`
 
 有副作用的方法需要**幂等键**(参见 schema)。
@@ -131,11 +134,14 @@ Gateway → Client:
 ## 角色 + 作用域
 
 ### 角色
+
 - `operator` = 控制平面客户端(CLI/UI/automation)。
 - `node` = 功能主机(camera/screen/canvas/system.run)。
 
 ### 作用域(operator)
+
 常见作用域:
+
 - `operator.read`
 - `operator.write`
 - `operator.admin`
@@ -143,7 +149,9 @@ Gateway → Client:
 - `operator.pairing`
 
 ### Caps/commands/permissions(node)
+
 节点在连接时声明功能声明:
+
 - `caps`:高级功能类别。
 - `commands`:invoke 的命令 allowlist。
 - `permissions`:粒度切换(例如 `screen.record`、`camera.capture`)。
@@ -158,6 +166,13 @@ Gateway 将这些视为**声明**并强制执行服务器端 allowlists。
 ### 节点辅助方法
 
 - 节点可以调用 `skills.bins` 以获取当前的 skill 可执行文件列表,用于自动允许检查。
+
+### Operator 辅助方法
+
+- Operator 可以调用 `tools.catalog`(`operator.read`)以获取 Agent 的运行时工具目录。响应包括分组工具和来源元数据:
+  - `source`:`core` 或 `plugin`
+  - `pluginId`:当 `source="plugin"` 时的插件所有者
+  - `optional`:Plugin 工具是否为可选
 
 ## Exec 批准
 
@@ -185,8 +200,8 @@ Gateway 将这些视为**声明**并强制执行服务器端 allowlists。
 - Gateways 为每个设备 + 角色颁发令牌。
 - 除非启用本地自动批准,否则新设备 IDs 需要配对批准。
 - **本地**连接包括 loopback 和 gateway 主机自己的 tailnet 地址(因此同主机 tailnet 绑定仍然可以自动批准)。
-- 所有 WS 客户端在 `connect` 期间必须包含 `device` 身份(operator + node)。Control UI **仅**在启用 `gateway.controlUi.allowInsecureAuth`(或用于紧急使用的 `gateway.controlUi.dangerouslyDisableDeviceAuth`)时才能省略它。
-- 非本地连接必须签署服务器提供的 `connect.challenge` nonce。
+- 所有 WS 客户端在 `connect` 期间必须包含 `device` 身份(operator + node)。Control UI **仅**在启用 `gateway.controlUi.dangerouslyDisableDeviceAuth` 时才能省略它,用于紧急使用。
+- 所有连接必须签署服务器提供的 `connect.challenge` nonce。
 
 ## TLS + 固定
 

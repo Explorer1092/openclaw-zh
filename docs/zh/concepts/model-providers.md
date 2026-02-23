@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "136f1d74bf497787f26149974eb89343"
+mmh3_hash: "e351566812f9c2b6ba5fa0de32bac099"
 summary: "Model provider 概述,包含示例配置 + CLI 流程"
 read_when:
   - 你需要按 provider 的 model 设置参考
@@ -17,6 +17,20 @@ title: "Model Providers"
 - 如果你设置 `agents.defaults.models`,它将成为允许列表。
 - CLI helpers: `openclaw onboard`、`openclaw models list`、`openclaw models set <provider/model>`。
 
+## API key 轮换
+
+- 支持针对选定 providers 的通用 provider 轮换。
+- 通过以下方式配置多个 keys:
+  - `OPENCLAW_LIVE_<PROVIDER>_KEY`(单个实时覆盖,最高优先级)
+  - `<PROVIDER>_API_KEYS`(逗号或分号列表)
+  - `<PROVIDER>_API_KEY`(主 key)
+  - `<PROVIDER>_API_KEY_*`(编号列表,例如 `<PROVIDER>_API_KEY_1`)
+- 对于 Google providers,`GOOGLE_API_KEY` 也作为后备包含在内。
+- Key 选择顺序保留优先级并去重值。
+- 仅在速率限制响应(例如 `429`、`rate_limit`、`quota`、`resource exhausted`)时使用下一个 key 重试请求。
+- 非速率限制失败立即失败;不尝试 key 轮换。
+- 当所有候选 keys 都失败时,从最后一次尝试返回最终错误。
+
 ## 内置 providers (pi-ai catalog)
 
 OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.providers` 配置;只需设置 auth + 选择 model。
@@ -25,6 +39,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `openai`
 - Auth: `OPENAI_API_KEY`
+- 可选轮换: `OPENAI_API_KEYS`、`OPENAI_API_KEY_1`、`OPENAI_API_KEY_2`,以及 `OPENCLAW_LIVE_OPENAI_KEY`(单个覆盖)
 - 示例 model: `openai/gpt-5.1-codex`
 - CLI: `openclaw onboard --auth-choice openai-api-key`
 
@@ -38,6 +53,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `anthropic`
 - Auth: `ANTHROPIC_API_KEY` 或 `claude setup-token`
+- 可选轮换: `ANTHROPIC_API_KEYS`、`ANTHROPIC_API_KEY_1`、`ANTHROPIC_API_KEY_2`,以及 `OPENCLAW_LIVE_ANTHROPIC_KEY`(单个覆盖)
 - 示例 model: `anthropic/claude-opus-4-6`
 - CLI: `openclaw onboard --auth-choice token` (粘贴 setup-token) 或 `openclaw models auth paste-token --provider anthropic`
 
@@ -77,6 +93,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `google`
 - Auth: `GEMINI_API_KEY`
+- 可选轮换: `GEMINI_API_KEYS`、`GEMINI_API_KEY_1`、`GEMINI_API_KEY_2`、`GOOGLE_API_KEY` 后备,以及 `OPENCLAW_LIVE_GEMINI_KEY`(单个覆盖)
 - 示例 model: `google/gemini-3-pro-preview`
 - CLI: `openclaw onboard --auth-choice gemini-api-key`
 
@@ -117,6 +134,8 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
   - Cerebras 上的 GLM models 使用 ids `zai-glm-4.7` 和 `zai-glm-4.6`。
   - OpenAI 兼容 base URL: `https://api.cerebras.ai/v1`。
 - Mistral: `mistral` (`MISTRAL_API_KEY`)
+  - 示例 model: `mistral/mistral-large-latest`
+  - CLI: `openclaw onboard --auth-choice mistral-api-key`
 - GitHub Copilot: `github-copilot` (`COPILOT_GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_TOKEN`)
 - Hugging Face Inference: `huggingface` (`HUGGINGFACE_HUB_TOKEN` 或 `HF_TOKEN`) — OpenAI 兼容 router;示例 model: `huggingface/deepseek-ai/DeepSeek-R1`;CLI: `openclaw onboard --auth-choice huggingface-api-key`。参见 [Hugging Face (Inference)](/providers/huggingface)。
 
@@ -192,6 +211,70 @@ Model refs:
 - `qwen-portal/vision-model`
 
 参见 [/providers/qwen](/providers/qwen) 了解设置详细信息和注释。
+
+### Volcano Engine (Doubao)
+
+Volcano Engine(火山引擎)在中国提供对 Doubao 和其他 models 的访问。
+
+- Provider: `volcengine`(编码:`volcengine-plan`)
+- Auth: `VOLCANO_ENGINE_API_KEY`
+- 示例 model: `volcengine/doubao-seed-1-8-251228`
+- CLI: `openclaw onboard --auth-choice volcengine-api-key`
+
+```json5
+{
+  agents: {
+    defaults: { model: { primary: "volcengine/doubao-seed-1-8-251228" } },
+  },
+}
+```
+
+可用 models:
+
+- `volcengine/doubao-seed-1-8-251228`(Doubao Seed 1.8)
+- `volcengine/doubao-seed-code-preview-251028`
+- `volcengine/kimi-k2-5-260127`(Kimi K2.5)
+- `volcengine/glm-4-7-251222`(GLM 4.7)
+- `volcengine/deepseek-v3-2-251201`(DeepSeek V3.2 128K)
+
+编码 models(`volcengine-plan`):
+
+- `volcengine-plan/ark-code-latest`
+- `volcengine-plan/doubao-seed-code`
+- `volcengine-plan/kimi-k2.5`
+- `volcengine-plan/kimi-k2-thinking`
+- `volcengine-plan/glm-4.7`
+
+### BytePlus(国际版)
+
+BytePlus ARK 为国际用户提供与 Volcano Engine 相同的 models 访问。
+
+- Provider: `byteplus`(编码:`byteplus-plan`)
+- Auth: `BYTEPLUS_API_KEY`
+- 示例 model: `byteplus/seed-1-8-251228`
+- CLI: `openclaw onboard --auth-choice byteplus-api-key`
+
+```json5
+{
+  agents: {
+    defaults: { model: { primary: "byteplus/seed-1-8-251228" } },
+  },
+}
+```
+
+可用 models:
+
+- `byteplus/seed-1-8-251228`(Seed 1.8)
+- `byteplus/kimi-k2-5-260127`(Kimi K2.5)
+- `byteplus/glm-4-7-251222`(GLM 4.7)
+
+编码 models(`byteplus-plan`):
+
+- `byteplus-plan/ark-code-latest`
+- `byteplus-plan/doubao-seed-code`
+- `byteplus-plan/kimi-k2.5`
+- `byteplus-plan/kimi-k2-thinking`
+- `byteplus-plan/glm-4.7`
 
 ### Synthetic
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "38118c634e9e8532a3193f8b428de5a3"
+mmh3_hash: "7750ec790df775f14e8f8db041eeed7f"
 title: "Gateway CLI"
 sidebarTitle: "Gateway CLI"
 summary: "OpenClaw Gateway CLI(`openclaw gateway`) — 运行、查询和发现Gateway"

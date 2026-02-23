@@ -1,6 +1,6 @@
 ---
 title: "`openclaw config`"
-mmh3_hash: "95aef574bf9c6e8d7d0f7bf3020e83f5"
+mmh3_hash: "b287da7d7e3d1daf5de1557fef67d760"
 summary: "`openclaw config` 的 CLI 参考(获取/设置/取消设置配置值)"
 read_when:
   - 您想以非交互方式读取或编辑配置
@@ -39,12 +39,12 @@ openclaw config set agents.list[1].tools.exec.node "node-id-or-name"
 ## 值
 
 值在可能的情况下被解析为 JSON5;否则它们被视为字符串。
-使用 `--json` 要求 JSON5 解析。
+使用 `--strict-json` 要求 JSON5 解析。`--json` 作为旧版别名仍受支持。
 
 ```bash
 openclaw config set agents.defaults.heartbeat.every "0m"
-openclaw config set gateway.port 19001 --json
-openclaw config set channels.whatsapp.groups '["*"]' --json
+openclaw config set gateway.port 19001 --strict-json
+openclaw config set channels.whatsapp.groups '["*"]' --strict-json
 ```
 
 编辑后重新启动 Gateway。

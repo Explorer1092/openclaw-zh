@@ -1,7 +1,7 @@
 ---
 title: "`openclaw message`"
 sidebarTitle: "openclaw message"
-mmh3_hash: "fce70382a5e21003cc98453326c74755"
+mmh3_hash: "3a1ea70448414239f5ba2dad6b88fdd2"
 summary: "`openclaw message` 的 CLI 参考(发送 + Channel操作)"
 read_when:
   - 添加或修改消息 CLI 操作
@@ -121,7 +121,7 @@ Channel选择:
 - `thread create`
   - Channel:Discord
   - 必需:`--thread-name`、`--target`(Channel ID)
-  - 可选:`--message-id`、`--auto-archive-min`
+  - 可选:`--message-id`、`--message`、`--auto-archive-min`
 
 - `thread list`
   - Channel:Discord
@@ -192,6 +192,16 @@ openclaw message send --channel discord \
   --target channel:123 --message "hi" --reply-to 456
 ```
 
+发送带组件的 Discord 消息:
+
+```
+openclaw message send --channel discord \
+  --target channel:123 --message "Choose:" \
+  --components '{"text":"Choose a path","blocks":[{"type":"actions","buttons":[{"label":"Approve","style":"success"},{"label":"Decline","style":"danger"}]}]}'
+```
+
+完整 schema 请参见 [Discord 组件](/channels/discord#interactive-components)。
+
 创建 Discord 投票:
 ```
 openclaw message poll --channel discord \
@@ -199,6 +209,15 @@ openclaw message poll --channel discord \
   --poll-question "Snack?" \
   --poll-option Pizza --poll-option Sushi \
   --poll-multi --poll-duration-hours 48
+```
+
+创建 Telegram 投票(2 分钟后自动关闭):
+```
+openclaw message poll --channel telegram \
+  --target @mychat \
+  --poll-question "Lunch?" \
+  --poll-option Pizza --poll-option Sushi \
+  --poll-duration-seconds 120 --silent
 ```
 
 发送 Teams 主动消息:

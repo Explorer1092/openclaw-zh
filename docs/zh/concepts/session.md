@@ -1,7 +1,7 @@
 ---
 title: "会话管理"
 sidebarTitle: "会话管理"
-mmh3_hash: "74fbdfcaca2dcfe7b0de3e2ee7673655"
+mmh3_hash: "65b6d8b2d02a3e5fc2421be1c47ebfc2"
 summary: "Session 管理规则、keys 和聊天持久化"
 read_when: ["修改 session 处理或存储"]
 ---
@@ -15,6 +15,43 @@ OpenClaw 将 **每个 agent 一个直接聊天 session** 视为主要。直接�
 - `per-channel-peer`: 按 channel + 发送者隔离(推荐用于多用户收件箱)。
 - `per-account-channel-peer`: 按 account + channel + 发送者隔离(推荐用于多账户收件箱)。
 使用 `session.identityLinks` 将 provider 前缀的 peer ids 映射到规范身份,以便在使用 `per-peer`、`per-channel-peer` 或 `per-account-channel-peer` 时,同一个人跨 channels 共享 DM session。
+
+## 安全 DM 模式(推荐用于多用户设置)
+
+> **安全警告:** 如果您的 agent 可以从**多人**接收 DMs,您应该强烈考虑启用安全 DM 模式。没有它,所有用户共享相同的对话 context,这可能会在用户之间泄露私人信息。
+
+**默认设置下的问题示例:**
+
+- Alice (`<SENDER_A>`) 向您的 agent 发送关于私人话题的消息(例如,医疗预约)
+- Bob (`<SENDER_B>`) 向您的 agent 询问"我们在聊什么?"
+- 因为两个 DMs 共享同一个 session,model 可能会用 Alice 的先前 context 来回答 Bob。
+
+**修复方法:** 设置 `dmScope` 以按用户隔离 sessions:
+
+```json5
+// ~/.openclaw/openclaw.json
+{
+  session: {
+    // 安全 DM 模式:按 channel + 发送者隔离 DM context。
+    dmScope: "per-channel-peer",
+  },
+}
+```
+
+**启用时机:**
+
+- 您有多个发送者的配对批准
+- 您使用具有多个条目的 DM 允许列表
+- 您设置了 `dmPolicy: "open"`
+- 多个电话号码或 accounts 可以向您的 agent 发送消息
+
+注意:
+
+- 默认为 `dmScope: "main"` 以保持连续性(所有 DMs 共享 main session)。这对单用户设置来说是可以的。
+- 本地 CLI onboarding 在未设置时默认写入 `session.dmScope: "per-channel-peer"`(保留现有的明确值)。
+- 对于同一 channel 上的多账户收件箱,首选 `per-account-channel-peer`。
+- 如果同一个人在多个 channels 上联系您,使用 `session.identityLinks` 将其 DM sessions 折叠为一个规范身份。
+- 您可以使用 `openclaw security audit` 验证您的 DM 设置(参见 [security](/cli/security))。
 
 ## Gateway 是真相来源
 所有 session 状态由 **gateway 拥有**("master" OpenClaw)。UI 客户端(macOS app、WebChat 等)必须查询 gateway 以获取 session 列表和 token 计数,而不是读取本地文件。
@@ -74,7 +111,9 @@ OpenClaw 默认在 LLM 调用之前从内存中的 context 中修剪 **旧的 to
     sendPolicy: {
       rules: [
         { action: "deny", match: { channel: "discord", chatType: "group" } },
-        { action: "deny", match: { keyPrefix: "cron:" } }
+        { action: "deny", match: { keyPrefix: "cron:" } },
+        // 匹配原始 session key(包括 `agent:<id>:` 前缀)。
+        { action: "deny", match: { rawKeyPrefix: "agent:main:discord:" } },
       ],
       default: "allow"
     }
@@ -107,7 +146,7 @@ Runtime 覆盖(仅所有者):
     },
     resetByType: {
       thread: { mode: "daily", atHour: 4 },
-      dm: { mode: "idle", idleMinutes: 240 },
+      direct: { mode: "idle", idleMinutes: 240 },
       group: { mode: "idle", idleMinutes: 120 }
     },
     resetByChannel: {

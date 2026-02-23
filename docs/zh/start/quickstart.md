@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "placeholder"
 summary: "快速开始已移至入门。"
 read_when:
   - 您正在寻找最快的设置步骤

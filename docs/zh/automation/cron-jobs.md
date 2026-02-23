@@ -1,9 +1,12 @@
 ---
 title: "Cron 作业"
 sidebarTitle: "Cron 作业"
-mmh3_hash: "6e5363775daba43da53eb86b2c9fbc01"
-summary: "网关调度器的 Cron 作业 + 唤醒"
-read_when: ["调度后台作业或唤醒时","连接应与心跳一起或并行运行的自动化时","在心跳和 cron 之间决定调度任务时"]
+mmh3_hash: "3b0e7d5f8dcca9fd56fd8687c137e5ee"
+summary: "Gateway 调度器的 Cron 作业 + 唤醒"
+read_when:
+  - 调度后台作业或唤醒时
+  - 连接应与心跳一起或并行运行的自动化时
+  - 在心跳和 cron 之间决定调度任务时
 ---
 
 # Cron 作业 (Gateway 调度器)
@@ -24,7 +27,8 @@ Cron 是 Gateway 内置的调度器。它持久化作业,在正确的时间唤�
   - **Main session**: 将系统事件排队,然后在下一次心跳时运行。
   - **Isolated**: 在 `cron:<jobId>` 中运行专用的 Agent 回合,带有传递(默认为 announce 或 none)。
 - 唤醒是一等公民: 作业可以请求"现在唤醒"与"下次心跳"。
-- Webhook 发布是每个作业的可选功能: 设置 `notify: true` 并配置 `cron.webhook`。
+- Webhook 发布是每个作业的可选功能: 通过 `delivery.mode = "webhook"` + `delivery.to = "<url>"` 设置。
+- 旧版回退: 存储的带有 `notify: true` 的旧版作业在设置了 `cron.webhook` 时仍会发布,请将这些作业迁移到 webhook 传递模式。
 
 ## 快速开始 (可操作)
 
@@ -93,7 +97,7 @@ Cron 作业是一个存储记录,包含:
 
 - **schedule** (何时应该运行),
 - **payload** (它应该做什么),
-- 可选的 **delivery** (输出应该发送到哪里)。
+- 可选的 **delivery 模式** (`announce`、`webhook` 或 `none`)。
 - 可选的 **Agent 绑定** (`agentId`): 在特定 Agent 下运行作业;如果丢失或未知,Gateway 将回退到默认 Agent。
 
 作业由稳定的 `jobId` 标识(供 CLI/Gateway API 使用)。
@@ -106,9 +110,16 @@ Cron 支持三种计划类型:
 
 - `at`: 通过 `schedule.at` 的一次性时间戳(ISO 8601)。
 - `every`: 固定间隔(毫秒)。
-- `cron`: 带有可选 IANA 时区的 5 字段 cron 表达式。
+- `cron`: 带有可选 IANA 时区的 5 字段 cron 表达式(或带秒的 6 字段)。
 
 Cron 表达式使用 `croner`。如果省略时区,则使用 Gateway 主机的本地时区。
+
+为了减少多个 Gateway 的整点负载峰值,OpenClaw 对重复整点表达式(例如 `0 * * * *`、`0 */2 * * *`)应用最长 5 分钟的确定性每作业错峰窗口。固定时间表达式(例如 `0 7 * * *`)保持精确。
+
+对于任何 cron 计划,你可以使用 `schedule.staggerMs` 设置显式错峰窗口(`0` 保持精确时序)。CLI 快捷方式:
+
+- `--stagger 30s`(或 `1m`、`5m`)设置显式错峰窗口。
+- `--exact` 强制 `staggerMs = 0`。
 
 ### Main vs isolated 执行
 
@@ -132,8 +143,9 @@ Isolated 作业在 session `cron:<jobId>` 中运行专用的 Agent 回合。
 - 提示词以 `[cron:<jobId> <job name>]` 为前缀以进行追踪。
 - 每次运行都开始一个 **新的 session id** (没有先前的对话结转)。
 - 默认行为: 如果省略 `delivery`,isolated 作业会发布摘要 (`delivery.mode = "announce"`)。
-- `delivery.mode` (仅 isolated) 选择发生什么:
+- `delivery.mode` 选择发生什么:
   - `announce`: 将摘要传递到目标 Channel,并向 main session 发布简短摘要。
+  - `webhook`: 当完成事件包含摘要时,将已完成事件载荷 POST 到 `delivery.to`。
   - `none`: 仅内部(无传递,无 main session 摘要)。
 - `wakeMode` 控制 main session 摘要何时发布:
   - `now`: 立即心跳。
@@ -154,16 +166,42 @@ Isolated 作业在 session `cron:<jobId>` 中运行专用的 Agent 回合。
 - `model` / `thinking`: 可选覆盖(见下文)。
 - `timeoutSeconds`: 可选超时覆盖。
 
-传递配置(仅 isolated 作业):
+传递配置:
 
-- `delivery.mode`: `none` | `announce`。
-- `delivery.channel`: `last` 或特定 Channel。
-- `delivery.to`: Channel 特定目标(电话/聊天/Channel id)。
+- `delivery.mode`: `none` | `announce` | `webhook`。
+- `delivery.channel`: `last` 或特定 Channel(announce 模式)。
+- `delivery.to`: Channel 特定目标(announce)或 webhook URL(webhook 模式)。
 - `delivery.bestEffort`: 避免在 announce 传递失败时使作业失败。
 
 Announce 传递会抑制运行的消息工具发送;使用 `delivery.channel`/`delivery.to` 来定向聊天。当 `delivery.mode = "none"` 时,不会向 main session 发布摘要。
 
 如果 isolated 作业省略 `delivery`,OpenClaw 默认为 `announce`。
+
+#### Announce 传递流程
+
+当 `delivery.mode = "announce"` 时,cron 通过出站 Channel 适配器直接传递。
+不会启动 main Agent 来制作或转发消息。
+
+行为细节:
+
+- 内容: 传递使用 isolated 运行的出站载荷(文本/媒体),具有正常的分块和 Channel 格式。
+- 仅心跳响应 (没有真实内容的 `HEARTBEAT_OK`) 不会传递。
+- 如果 isolated 运行已通过消息工具向同一目标发送消息,则跳过传递以避免重复。
+- 缺少或无效的传递目标会使作业失败,除非 `delivery.bestEffort = true`。
+- 仅当 `delivery.mode = "announce"` 时,才会向 main session 发布简短摘要。
+- Main session 摘要遵守 `wakeMode`: `now` 触发立即心跳,`next-heartbeat` 等待下一次预定的心跳。
+
+#### Webhook 传递流程
+
+当 `delivery.mode = "webhook"` 时,当完成事件包含摘要时,cron 将已完成事件载荷 POST 到 `delivery.to`。
+
+行为细节:
+
+- 端点必须是有效的 HTTP(S) URL。
+- Webhook 模式中不会尝试 Channel 传递。
+- Webhook 模式中不会向 main session 发布摘要。
+- 如果设置了 `cron.webhookToken`,认证标头是 `Authorization: Bearer <cron.webhookToken>`。
+- 旧版回退: 存储的带有 `notify: true` 的旧版作业仍会发布到 `cron.webhook`(如果已配置),并附带警告以便你迁移到 `delivery.mode = "webhook"`。
 
 ### 模型和思考覆盖
 
@@ -180,29 +218,16 @@ Isolated 作业 (`agentTurn`) 可以覆盖模型和思考级别:
 2. Hook 特定默认值(例如 `hooks.gmail.model`)
 3. Agent 配置默认值
 
-#### Announce 传递流程
-
-当 `delivery.mode = "announce"` 时,cron 通过出站 Channel 适配器直接传递。
-不会启动 main Agent 来制作或转发消息。
-
-行为细节:
-
-- 内容: 传递使用 isolated 运行的出站载荷(文本/媒体),具有正常的分块和 Channel 格式。
-- 仅心跳响应 (没有真实内容的 `HEARTBEAT_OK`) 不会传递。
-- 如果 isolated 运行已通过消息工具向同一目标发送消息,则跳过传递以避免重复。
-- 缺少或无效的传递目标会使作业失败,除非 `delivery.bestEffort = true`。
-- 仅当 `delivery.mode = "announce"` 时,才会向 main session 发布简短摘要。
-- Main session 摘要遵守 `wakeMode`: `now` 触发立即心跳,`next-heartbeat` 等待下一次预定的心跳。
-
 ### 传递 (Channel + 目标)
 
 Isolated 作业可以通过顶层 `delivery` 配置将输出传递到 Channel:
 
-- `delivery.mode`: `announce` (传递摘要) 或 `none`。
+- `delivery.mode`: `announce` (Channel 传递)、`webhook` (HTTP POST) 或 `none`。
 - `delivery.channel`: `whatsapp` / `telegram` / `discord` / `slack` / `mattermost` (插件) / `signal` / `imessage` / `last`。
 - `delivery.to`: Channel 特定的接收者目标。
 
-传递配置仅对 isolated 作业 (`sessionTarget: "isolated"`) 有效。
+`announce` 传递仅对 isolated 作业 (`sessionTarget: "isolated"`) 有效。
+`webhook` 传递对 main 和 isolated 作业都有效。
 
 如果省略 `delivery.channel` 或 `delivery.to`,cron 可以回退到 main session 的"最后路由"(Agent 最后回复的地方)。
 
@@ -269,7 +294,7 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
 - `schedule.at` 接受 ISO 8601(时区可选;省略时视为 UTC)。
 - `everyMs` 是毫秒。
 - `sessionTarget` 必须是 `"main"` 或 `"isolated"` 并且必须匹配 `payload.kind`。
-- 可选字段: `agentId`, `description`, `enabled`, `notify`, `deleteAfterRun` (对于 `at` 默认为 true),
+- 可选字段: `agentId`, `description`, `enabled`, `deleteAfterRun` (对于 `at` 默认为 true),
   `delivery`。
 - 省略时 `wakeMode` 默认为 `"now"`。
 
@@ -314,18 +339,20 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
     enabled: true, // 默认 true
     store: "~/.openclaw/cron/jobs.json",
     maxConcurrentRuns: 1, // 默认 1
-    webhook: "https://example.invalid/cron-finished", // 可选的已完成运行 webhook 端点
-    webhookToken: "replace-with-dedicated-webhook-token", // 可选,不要重用 Gateway 认证令牌
+    webhook: "https://example.invalid/legacy", // 已弃用: 仅用于存储的 notify:true 旧版作业的回退
+    webhookToken: "replace-with-dedicated-webhook-token", // 可选: webhook 模式的 Bearer token
   },
 }
 ```
 
 Webhook 行为:
 
-- 仅当作业具有 `notify: true` 时,Gateway 才会向 `cron.webhook` 发布已完成运行事件。
-- 载荷是 cron 已完成事件 JSON。
+- 推荐: 按作业设置 `delivery.mode: "webhook"` 和 `delivery.to: "https://..."`。
+- Webhook URL 必须是有效的 `http://` 或 `https://` URL。
+- 发布时,载荷是 cron 已完成事件 JSON。
 - 如果设置了 `cron.webhookToken`,认证标头是 `Authorization: Bearer <cron.webhookToken>`。
 - 如果未设置 `cron.webhookToken`,则不发送 `Authorization` 标头。
+- 已弃用回退: 存储的带有 `notify: true` 的旧版作业在存在 `cron.webhook` 时仍会使用它。
 
 完全禁用 cron:
 
@@ -371,6 +398,19 @@ openclaw cron add \
   --to "+15551234567"
 ```
 
+带有显式 30 秒错峰的重复 cron 作业:
+
+```bash
+openclaw cron add \
+  --name "Minute watcher" \
+  --cron "0 * * * * *" \
+  --tz "UTC" \
+  --stagger 30s \
+  --session isolated \
+  --message "Run minute watcher checks." \
+  --announce
+```
+
 重复的 isolated 作业(传递到 Telegram 主题):
 
 ```bash
@@ -380,7 +420,7 @@ openclaw cron add \
   --tz "America/Los_Angeles" \
   --session isolated \
   --message "Summarize today; send to the nightly topic." \
-  --deliver \
+  --announce \
   --channel telegram \
   --to "-1001234567890:topic:123"
 ```
@@ -410,6 +450,12 @@ openclaw cron add --name "Ops sweep" --cron "0 6 * * *" --session isolated --mes
 # 切换或清除现有作业上的 Agent
 openclaw cron edit <jobId> --agent ops
 openclaw cron edit <jobId> --clear-agent
+```
+
+强制现有 cron 作业精确按计划运行(无错峰):
+
+```bash
+openclaw cron edit <jobId> --exact
 ```
 
 手动运行(强制是默认,使用 `--due` 仅在到期时运行):
@@ -466,3 +512,10 @@ openclaw system event --mode now --text "Next heartbeat: check battery."
 - 对于论坛主题,使用 `-100…:topic:<id>` 以便显式且无歧义。
 - 如果你在日志或存储的"最后路由"目标中看到 `telegram:...` 前缀,这很正常;
   cron 传递接受它们并仍能正确解析主题 ID。
+
+### Subagent announce 传递重试
+
+- 当 subagent 运行完成时,Gateway 会向请求方 session 公告结果。
+- 如果 announce 流程返回 `false`(例如请求方 session 忙),Gateway 会通过 `announceRetryCount` 跟踪最多重试 3 次。
+- 距 `endedAt` 超过 5 分钟的公告会被强制过期,以防止陈旧条目无限循环。
+- 如果你在日志中看到重复的 announce 传递,请检查 subagent 注册表中 `announceRetryCount` 值较高的条目。

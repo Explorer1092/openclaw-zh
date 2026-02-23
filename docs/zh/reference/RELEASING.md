@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4057780c30b8e750a615654ecc05daaa"
+mmh3_hash: "d4fe95c3b302c10613c30993ac7f8c46"
 summary: "npm + macOS 应用的逐步发布检查清单"
 read_when:
   - 发布新的 npm 版本
@@ -23,7 +23,7 @@ read_when:
 
 - [ ] 提升 `package.json` 版本(例如 `2026.1.29`)。
 - [ ] 运行 `pnpm plugins:sync` 以对齐扩展包版本 + changelog。
-- [ ] 更新 CLI/版本字符串:[`src/cli/program.ts`](https://github.com/openclaw/openclaw/blob/main/src/cli/program.ts) 和 [`src/provider-web.ts`](https://github.com/openclaw/openclaw/blob/main/src/provider-web.ts) 中的 Baileys 用户代理。
+- [ ] 更新 [`src/version.ts`](https://github.com/openclaw/openclaw/blob/main/src/version.ts) 中的 CLI/版本字符串以及 [`src/web/session.ts`](https://github.com/openclaw/openclaw/blob/main/src/web/session.ts) 中的 Baileys 用户代理。
 - [ ] 确认包元数据(名称、描述、仓库、关键字、许可证),`bin` 映射指向 [`openclaw.mjs`](https://github.com/openclaw/openclaw/blob/main/openclaw.mjs) 用于 `openclaw`。
 - [ ] 如果依赖项更改,运行 `pnpm install` 以便 `pnpm-lock.yaml` 是最新的。
 
@@ -105,6 +105,7 @@ read_when:
 - @openclaw/bluebubbles
 - @openclaw/diagnostics-otel
 - @openclaw/discord
+- @openclaw/feishu
 - @openclaw/lobster
 - @openclaw/matrix
 - @openclaw/msteams
@@ -114,4 +115,4 @@ read_when:
 - @openclaw/zalo
 - @openclaw/zalouser
 
-发布说明还必须指出**默认情况下未启用**的**新可选捆绑插件**(示例:`tlon`)。
+发布说明还必须指出**默认情况下未启用**的**新可选捆绑插件**（示例：`tlon`）。

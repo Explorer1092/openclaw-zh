@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "3f4d2188bd0887bc50d661820bce1efa"
 summary: "OpenClaw 如何构建提示词上下文并报告令牌使用情况 + 成本"
 read_when:
   - 解释令牌使用情况、成本或上下文窗口

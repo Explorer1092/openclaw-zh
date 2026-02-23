@@ -1,7 +1,7 @@
 ---
 title: "模型 CLI"
 sidebarTitle: "模型 CLI"
-mmh3_hash: "296e3a814c854476ab5155aa2371a5c8"
+mmh3_hash: "e5f05dfaee444775ba6fd6e5218ee45c"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when: ["添加或修改 models CLI (models list/set/scan/aliases/fallbacks)","更改 model fallback 行为或选择 UX","更新 model scan probes (tools/images)"]
 ---
@@ -90,6 +90,7 @@ Model "provider/model" is not allowed. Use /model to list available models.
 
 注意:
 - `/model`(和 `/model list`)是紧凑的编号选择器(model family + 可用 providers)。
+- 在 Discord 上,`/model` 和 `/models` 会打开带有 provider 和 model 下拉列表及提交步骤的交互式选择器。
 - `/model <#>` 从该选择器中选择。
 - `/model status` 是详细视图(auth 候选和配置时的 provider 端点 `baseUrl` + `api` 模式)。
 - Model refs 通过在 **第一个** `/` 上拆分来解析。输入 `/model <ref>` 时使用 `provider/model`。
@@ -155,6 +156,7 @@ openclaw models status
 - `--max-age-days <days>`: 跳过较旧的 models
 - `--provider <name>`: provider 前缀过滤器
 - `--max-candidates <n>`: fallback 列表大小
+- `--probe-profile <profile>`: 逗号分隔的探测配置文件列表(工具、图像、两者均包含)
 - `--set-default`: 将 `agents.defaults.model.primary` 设置为第一个选择
 - `--set-image`: 将 `agents.defaults.imageModel.primary` 设置为第一个 image 选择
 
@@ -176,4 +178,4 @@ openclaw models status
 
 ## Models registry (`models.json`)
 
-`models.providers` 中的自定义 providers 写入 agent 目录下的 `models.json`(默认 `~/.openclaw/agents/<agentId>/models.json`)。除非 `models.mode` 设置为 `replace`,否则此文件默认合并。
+`models.providers` 中的自定义 providers 写入 agent 目录下的 `models.json`(默认 `~/.openclaw/agents/<agentId>/models.json`)。除非 `models.mode` 设置为 `replace`,否则此文件默认合并。当 `models.mode = "replace"` 时,`models.json` 完全替换内置 catalog(使用此选项可构建严格策略的精选 model 列表)。

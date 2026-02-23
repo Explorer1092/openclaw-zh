@@ -1,8 +1,8 @@
 ---
-mmh3_hash: "8b22db679d13a768197ce991f212f52d"
-summary: "节点: 配对、功能、权限以及用于 canvas/camera/screen/system 的 CLI 助手"
+mmh3_hash: "fd3ea03592c8aca5b232c73c944edcf8"
+summary: "Node 的配对、功能、权限和 canvas/camera/screen/system 的 CLI 辅助工具"
 read_when:
-  - 将 iOS/Android 节点配对到 gateway
+  - 将 iOS/Android Node 配对到 Gateway
   - 使用 node canvas/camera 获取 agent 上下文
   - 添加新的 node 命令或 CLI 助手
 title: "节点"
@@ -273,7 +273,7 @@ openclaw nodes notify --node <idOrNameOrIp> --title "Ping" --body "Gateway ready
 - `system.notify` 尊重 macOS 应用上的通知权限状态。
 - `system.run` 支持 `--cwd`, `--env KEY=VAL`, `--command-timeout` 和 `--needs-screen-recording`。
 - `system.notify` 支持 `--priority <passive|active|timeSensitive>` 和 `--delivery <system|overlay|auto>`。
-- Node host 忽略 `PATH` 覆盖。如果您需要额外的 PATH 条目, 请配置 node host 服务环境 (或在标准位置安装工具), 而不是通过 `--env` 传递 `PATH`。
+- Node host 忽略 `PATH` 覆盖并移除危险的启动/shell 键（`DYLD_*`、`LD_*`、`NODE_OPTIONS`、`PYTHON*`、`PERL*`、`RUBYOPT`、`SHELLOPTS`、`PS4`）。如果需要额外的 PATH 条目，请配置 node host 服务环境（或将工具安装在标准位置），而不是通过 `--env` 传递 `PATH`。
 - 在 macOS node 模式下, `system.run` 受 macOS 应用中的 exec 批准门控 (Settings → Exec approvals)。
   Ask/allowlist/full 的行为与无头 node host 相同; 被拒绝的提示返回 `SYSTEM_RUN_DENIED`。
 - 在无头 node host 上, `system.run` 受 exec 批准门控 (`~/.openclaw/exec-approvals.json`)。
@@ -323,7 +323,7 @@ openclaw node run --host <gateway-host> --port 18789
 - node host 将其 node id、token、显示名称和 gateway 连接信息存储在 `~/.openclaw/node.json` 中。
 - Exec 批准通过 `~/.openclaw/exec-approvals.json` 在本地强制执行
   (请参阅 [Exec 批准](/tools/exec-approvals))。
-- 在 macOS 上, 无头 node host 在可达时优先使用配套应用 exec host, 如果应用不可用则回退到本地执行。设置 `OPENCLAW_NODE_EXEC_HOST=app` 以要求应用, 或 `OPENCLAW_NODE_EXEC_FALLBACK=0` 以禁用回退。
+- 在 macOS 上, 无头 node host 默认在本地执行 `system.run`。设置 `OPENCLAW_NODE_EXEC_HOST=app` 通过配套应用 exec host 路由 `system.run`；添加 `OPENCLAW_NODE_EXEC_FALLBACK=0` 以要求应用 host，在不可用时快速失败。
 - 当 Gateway WS 使用 TLS 时, 添加 `--tls` / `--tls-fingerprint`。
 
 ## Mac node 模式

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "will-be-updated"
 summary: "Hugging Face Inference 设置（身份验证 + 模型选择）"
 read_when:
   - 您想要在 OpenClaw 中使用 Hugging Face Inference
@@ -50,7 +51,8 @@ openclaw onboard --non-interactive \
 
 ## 环境注意事项
 
-如果 Gateway 作为守护程序运行（launchd/systemd），请确保 `HUGGINGFACE_HUB_TOKEN` 或 `HF_TOKEN` 对该进程可用（例如，在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
+如果 Gateway 作为守护程序运行（launchd/systemd），请确保 `HUGGINGFACE_HUB_TOKEN` 或 `HF_TOKEN`
+对该进程可用（例如，在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
 
 ## 模型发现和引导下拉列表
 
@@ -66,8 +68,8 @@ GET https://router.huggingface.co/v1/models
 
 ## 模型名称和可编辑选项
 
-- **来自 API 的名称：**当 API 返回 `name`、`title` 或 `display_name` 时，模型显示名称**从 GET /v1/models 水合**；否则从模型 id 派生（例如 `deepseek-ai/DeepSeek-R1` → "DeepSeek R1"）。
-- **覆盖显示名称：**您可以在配置中为每个模型设置自定义标签，以便它在 CLI 和 UI 中以您想要的方式显示：
+- **来自 API 的名称：** 当 API 返回 `name`、`title` 或 `display_name` 时，模型显示名称**从 GET /v1/models 水合**；否则从模型 id 派生（例如 `deepseek-ai/DeepSeek-R1` → "DeepSeek R1"）。
+- **覆盖显示名称：** 您可以在配置中为每个模型设置自定义标签，以便它在 CLI 和 UI 中以您想要的方式显示：
 
 ```json5
 {
@@ -82,14 +84,14 @@ GET https://router.huggingface.co/v1/models
 }
 ```
 
-- **Provider / 策略选择：**在**模型 id** 后附加后缀以选择路由器如何选择后端：
+- **Provider / 策略选择：** 在**模型 id** 后附加后缀以选择路由器如何选择后端：
   - **`:fastest`** — 最高吞吐量（路由器选择；Provider 选择**锁定** — 无交互式后端选择器）。
   - **`:cheapest`** — 每个输出令牌的最低成本（路由器选择；Provider 选择**锁定**）。
   - **`:provider`** — 强制特定后端（例如 `:sambanova`、`:together`）。
 
   当您选择 **:cheapest** 或 **:fastest**（例如在引导模型下拉列表中）时，Provider 被锁定：路由器按成本或速度决定，不显示可选的"首选特定后端"步骤。您可以将这些作为单独的条目添加到 `models.providers.huggingface.models` 或使用后缀设置 `model.primary`。您还可以在 [Inference Provider settings](https://hf.co/settings/inference-providers) 中设置默认顺序（无后缀 = 使用该顺序）。
 
-- **配置合并：**合并配置时保留 `models.providers.huggingface.models` 中的现有条目（例如在 `models.json` 中）。因此，您在那里设置的任何自定义 `name`、`alias` 或模型选项都会被保留。
+- **配置合并：** 合并配置时保留 `models.providers.huggingface.models` 中的现有条目（例如在 `models.json` 中）。因此，您在那里设置的任何自定义 `name`、`alias` 或模型选项都会被保留。
 
 ## 模型 ID 和配置示例
 

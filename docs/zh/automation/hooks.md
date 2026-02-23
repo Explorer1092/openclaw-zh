@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "36ad6d04bc00fe32425d726362deb37b"
+mmh3_hash: "8e53bdc756c9817c2ffa45a42110b065"
 summary: "Hooks：用于命令和生命周期事件的事件驱动自动化"
 read_when:
   - 您需要为 /new、/reset、/stop 和 Agent 生命周期事件设置事件驱动自动化
@@ -177,9 +177,7 @@ metadata:
 `handler.ts` 文件导出一个 `HookHandler` 函数：
 
 ```typescript
-import type { HookHandler } from "../../src/hooks/hooks.js";
-
-const myHandler: HookHandler = async (event) => {
+const myHandler = async (event) => {
   // 仅在 'new' 命令时触发
   if (event.type !== "command" || event.action !== "new") {
     return;
@@ -204,12 +202,13 @@ export default myHandler;
 
 ```typescript
 {
-  type: 'command' | 'session' | 'agent' | 'gateway',
-  action: string,              // 例如 'new'、'reset'、'stop'
+  type: 'command' | 'session' | 'agent' | 'gateway' | 'message',
+  action: string,              // 例如 'new'、'reset'、'stop'、'received'、'sent'
   sessionKey: string,          // Session 标识符
   timestamp: Date,             // 事件发生时间
   messages: string[],          // 在此推送消息以发送给用户
   context: {
+    // 命令事件：
     sessionEntry?: SessionEntry,
     sessionId?: string,
     sessionFile?: string,
@@ -217,7 +216,13 @@ export default myHandler;
     senderId?: string,
     workspaceDir?: string,
     bootstrapFiles?: WorkspaceBootstrapFile[],
-    cfg?: OpenClawConfig
+    cfg?: OpenClawConfig,
+    // 消息事件（完整详情见消息事件章节）：
+    from?: string,             // message:received
+    to?: string,               // message:sent
+    content?: string,
+    channelId?: string,
+    success?: boolean,         // message:sent
   }
 }
 ```
@@ -243,6 +248,72 @@ Gateway 启动时触发：
 
 - **`gateway:startup`**：在 Channels 启动且 Hooks 加载后
 
+### 消息事件
+
+在接收或发送消息时触发：
+
+- **`message`**：所有消息事件（通用监听器）
+- **`message:received`**：从任何 Channel 接收到入站消息时
+- **`message:sent`**：出站消息成功发送时
+
+#### 消息事件上下文
+
+消息事件包含关于消息的丰富上下文：
+
+```typescript
+// message:received 上下文
+{
+  from: string,           // 发送者标识符（电话号码、用户 ID 等）
+  content: string,        // 消息内容
+  timestamp?: number,     // 接收时的 Unix 时间戳
+  channelId: string,      // Channel（例如 "whatsapp"、"telegram"、"discord"）
+  accountId?: string,     // 多账号设置的提供商账号 ID
+  conversationId?: string, // 聊天/会话 ID
+  messageId?: string,     // 来自提供商的消息 ID
+  metadata?: {            // 额外的提供商特定数据
+    to?: string,
+    provider?: string,
+    surface?: string,
+    threadId?: string,
+    senderId?: string,
+    senderName?: string,
+    senderUsername?: string,
+    senderE164?: string,
+  }
+}
+
+// message:sent 上下文
+{
+  to: string,             // 接收者标识符
+  content: string,        // 已发送的消息内容
+  success: boolean,       // 发送是否成功
+  error?: string,         // 发送失败时的错误消息
+  channelId: string,      // Channel（例如 "whatsapp"、"telegram"、"discord"）
+  accountId?: string,     // 提供商账号 ID
+  conversationId?: string, // 聊天/会话 ID
+  messageId?: string,     // 提供商返回的消息 ID
+}
+```
+
+#### 示例：消息记录 Hook
+
+```typescript
+const isMessageReceivedEvent = (event: { type: string; action: string }) =>
+  event.type === "message" && event.action === "received";
+const isMessageSentEvent = (event: { type: string; action: string }) =>
+  event.type === "message" && event.action === "sent";
+
+const handler = async (event) => {
+  if (isMessageReceivedEvent(event as { type: string; action: string })) {
+    console.log(`[message-logger] Received from ${event.context.from}: ${event.context.content}`);
+  } else if (isMessageSentEvent(event as { type: string; action: string })) {
+    console.log(`[message-logger] Sent to ${event.context.to}: ${event.context.content}`);
+  }
+};
+
+export default handler;
+```
+
 ### Tool Result Hooks（Plugin API）
 
 这些 Hooks 不是事件流监听器；它们让 Plugins 在 OpenClaw 持久化 Tool 结果之前同步调整它们。
@@ -256,8 +327,6 @@ Gateway 启动时触发：
 - **`session:start`**：新会话开始时
 - **`session:end`**：会话结束时
 - **`agent:error`**：Agent 遇到错误时
-- **`message:sent`**：发送消息时
-- **`message:received`**：接收消息时
 
 ## 创建自定义 Hooks
 
@@ -290,9 +359,7 @@ metadata: { "openclaw": { "emoji": "🎯", "events": ["command:new"] } }
 ### 4. 创建 handler.ts
 
 ```typescript
-import type { HookHandler } from "../../src/hooks/hooks.js";
-
-const handler: HookHandler = async (event) => {
+const handler = async (event) => {
   if (event.type !== "command" || event.action !== "new") {
     return;
   }
@@ -718,13 +785,17 @@ tail -f ~/.openclaw/gateway.log
 
 ```typescript
 import { test } from "vitest";
-import { createHookEvent } from "./src/hooks/hooks.js";
 import myHandler from "./hooks/my-hook/handler.js";
 
 test("my handler works", async () => {
-  const event = createHookEvent("command", "new", "test-session", {
-    foo: "bar",
-  });
+  const event = {
+    type: "command",
+    action: "new",
+    sessionKey: "test-session",
+    timestamp: new Date(),
+    messages: [],
+    context: { foo: "bar" },
+  };
 
   await myHandler(event);
 

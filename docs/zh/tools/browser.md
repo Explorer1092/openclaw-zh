@@ -1,9 +1,12 @@
 ---
 title: "浏览器 (openclaw 管理)"
 sidebarTitle: "浏览器"
-mmh3_hash: "c9d57185693dfb90b68668239309742e"
+mmh3_hash: "will-be-updated"
 summary: "集成浏览器控制服务 + 操作命令"
-read_when: ["添加 agent 控制的浏览器自动化","调试为什么 openclaw 干扰您自己的 Chrome","在 macOS 应用中实现浏览器设置 + 生命周期"]
+read_when:
+  - 添加代理控制的浏览器自动化
+  - 调试 OpenClaw 为何干扰您自己的 Chrome
+  - 在 macOS 应用中实现浏览器设置和生命周期
 ---
 
 # 浏览器 (openclaw 管理)
@@ -346,9 +349,9 @@ openclaw browser create-profile \
 - `openclaw browser scrollintoview e12`
 - `openclaw browser drag 10 11`
 - `openclaw browser select 9 OptionA OptionB`
-- `openclaw browser download e12 /tmp/report.pdf`
-- `openclaw browser waitfordownload /tmp/report.pdf`
-- `openclaw browser upload /tmp/file.pdf`
+- `openclaw browser download e12 report.pdf`
+- `openclaw browser waitfordownload report.pdf`
+- `openclaw browser upload /tmp/openclaw/uploads/file.pdf`
 - `openclaw browser fill --fields '[{"ref":"1","type":"text","value":"Ada"}]'`
 - `openclaw browser dialog --accept`
 - `openclaw browser wait --text "Done"`
@@ -366,7 +369,7 @@ openclaw browser create-profile \
 - `openclaw browser storage local set theme dark`
 - `openclaw browser storage session clear`
 - `openclaw browser set offline on`
-- `openclaw browser set headers --json '{"X-Debug":"1"}'`
+- `openclaw browser set headers --headers-json '{"X-Debug":"1"}'`
 - `openclaw browser set credentials user pass`
 - `openclaw browser set credentials --clear`
 - `openclaw browser set geo 37.7749 -122.4194 --origin "https://example.com"`
@@ -378,6 +381,11 @@ openclaw browser create-profile \
 
 注意:
 - `upload` 和 `dialog` 是**预备**调用;在触发选择器/对话框的点击/按下之前运行它们。
+- 下载和跟踪输出路径受 OpenClaw 临时根目录限制:
+  - 跟踪: `/tmp/openclaw`（回退: `${os.tmpdir()}/openclaw`）
+  - 下载: `/tmp/openclaw/downloads`（回退: `${os.tmpdir()}/openclaw/downloads`）
+- 上传路径受 OpenClaw 临时上传根目录限制:
+  - 上传: `/tmp/openclaw/uploads`（回退: `${os.tmpdir()}/openclaw/uploads`）
 - `upload` 也可以通过 `--input-ref` 或 `--element` 直接设置文件输入。
 - `snapshot`:
   - `--format ai`(安装 Playwright 时的默认值): 返回带有数字引用(`aria-ref="<n>"`)的 AI 快照。
@@ -470,7 +478,7 @@ JSON 中的角色快照包括 `refs` 加上一个小的 `stats` 块(行/字符/�
 - Cookies: `cookies`、`cookies set`、`cookies clear`
 - 存储: `storage local|session get|set|clear`
 - 离线: `set offline on|off`
-- 标头: `set headers --json '{"X-Debug":"1"}'`(或 `--clear`)
+- 标头: `set headers --headers-json '{"X-Debug":"1"}'`（旧版 `set headers --json '{"X-Debug":"1"}'` 仍然受支持）
 - HTTP 基本认证: `set credentials user pass`(或 `--clear`)
 - 地理位置: `set geo <lat> <lon> --origin "https://example.com"`(或 `--clear`)
 - 媒体: `set media dark|light|no-preference|none`

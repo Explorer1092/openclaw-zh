@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0f0de247a30abde27cff08c4a7d13048"
+mmh3_hash: "will be updated"
 summary: "模型认证:OAuth、API 密钥和 setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
@@ -97,11 +97,26 @@ openclaw models status
 openclaw doctor
 ```
 
+## API 密钥轮换行为(Gateway)
+
+部分提供商支持在 API 调用触发提供商速率限制时,使用备用密钥重试请求。
+
+- 优先级顺序:
+  - `OPENCLAW_LIVE_<PROVIDER>_KEY`(单个覆盖)
+  - `<PROVIDER>_API_KEYS`
+  - `<PROVIDER>_API_KEY`
+  - `<PROVIDER>_API_KEY_*`
+- Google 提供商还包括 `GOOGLE_API_KEY` 作为额外回退。
+- 相同的密钥列表在使用前会去重。
+- OpenClaw 仅针对速率限制错误使用下一个密钥重试(例如 `429`、`rate_limit`、`quota`、`resource exhausted`)。
+- 非速率限制错误不会使用备用密钥重试。
+- 如果所有密钥都失败,则返回最后一次尝试的最终错误。
+
 ## 控制使用哪个凭证
 
 ### Per-session(聊天命令)
 
-使用 `/model <alias-or-id>@<profileId>` 为当前 session 固定特定的提供商凭证(示例 profile ID:`anthropic:default`、`anthropic:work`)。
+使用 `/model <alias-or-id>@<profileId>` 为当前 Session 固定特定的提供商凭证(示例 profile ID:`anthropic:default`、`anthropic:work`)。
 
 使用 `/model`(或 `/model list`)获取紧凑选择器;使用 `/model status` 获取完整视图(候选项 + 下一个认证 profile,以及配置时的提供商端点详情)。
 

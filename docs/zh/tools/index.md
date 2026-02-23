@@ -1,6 +1,6 @@
 ---
 title: "工具(OpenClaw)"
-mmh3_hash: "faf4c03c746f1b9020a6851dd148af06"
+mmh3_hash: "will-be-updated"
 summary: "OpenClaw 的 Agent 工具表面(浏览器、画布、节点、消息、cron)替代旧版 `openclaw-*` 技能"
 read_when: ["添加或修改 agent 工具","停用或更改 `openclaw-*` 技能"]
 ---

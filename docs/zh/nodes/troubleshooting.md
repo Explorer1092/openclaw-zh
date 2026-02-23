@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4ce5bd4d3e1532b0b5960da8d76d182b"
+mmh3_hash: "171c8034b0700af40eb32de0cfc0f350"
 summary: "排查节点配对、前台要求、权限和工具失败问题"
 read_when:
   - 节点已连接但 camera/canvas/screen/exec 工具失败
@@ -85,7 +85,7 @@ openclaw approvals allowlist add --node <idOrNameOrIp> "/usr/bin/uname"
 - `LOCATION_PERMISSION_REQUIRED` → 未授予请求的位置模式。
 - `LOCATION_BACKGROUND_UNAVAILABLE` → 应用处于后台但仅存在"使用期间"权限。
 - `SYSTEM_RUN_DENIED: approval required` → Exec 请求需要明确审批。
-- `SYSTEM_RUN_DENIED: allowlist miss` → 命令被白名单模式阻止。
+- `SYSTEM_RUN_DENIED: allowlist miss` → 命令被白名单模式阻止。在 Windows Node host 上，`cmd.exe /c ...` 等 shell 包装器形式在白名单模式下被视为白名单未命中，除非通过询问流程批准。
 
 ## 快速恢复循环
 

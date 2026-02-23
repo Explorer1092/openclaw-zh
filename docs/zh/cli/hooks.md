@@ -1,33 +1,33 @@
 ---
-mmh3_hash: "ebfe8d933c2311a51e7d3c510537b34d"
+mmh3_hash: "a2c3b03a51f9d79f489517b6e201819a"
 title: "`openclaw hooks`"
 sidebarTitle: "openclaw hooks"
 summary: "`openclaw hooks` 的 CLI 参考(Agent Hook)"
 read_when:
-  - 您想管理Agent Hook
-  - 您想安装或更新Hook
+  - 您想管理 Agent Hook
+  - 您想安装或更新 Hook
 ---
 
 # `openclaw hooks`
 
-管理Agent Hook(用于 `/new`、`/reset` 和Gateway启动等命令的事件驱动自动化)。
+管理 Agent Hook(用于 `/new`、`/reset` 和 Gateway 启动等命令的事件驱动自动化)。
 
 相关:
 
 - Hook:[Hook](/automation/hooks)
 - Plugin Hook:[Plugin](/tools/plugin#plugin-hooks)
 
-## 列出所有Hook
+## 列出所有 Hook
 
 ```bash
 openclaw hooks list
 ```
 
-列出从工作区、管理和捆绑目录发现的所有Hook。
+列出从工作区、管理和捆绑目录发现的所有 Hook。
 
 **选项:**
 
-- `--eligible`:仅显示符合条件的Hook(满足要求)
+- `--eligible`:仅显示符合条件的 Hook(满足要求)
 - `--json`:输出为 JSON
 - `-v, --verbose`:显示详细信息,包括缺少的要求
 
@@ -49,7 +49,7 @@ Ready:
 openclaw hooks list --verbose
 ```
 
-显示不符合条件的Hook缺少的要求。
+显示不符合条件的 Hook 缺少的要求。
 
 **示例(JSON):**
 
@@ -59,17 +59,17 @@ openclaw hooks list --json
 
 返回结构化 JSON 供程序使用。
 
-## 获取Hook信息
+## 获取 Hook 信息
 
 ```bash
 openclaw hooks info <name>
 ```
 
-显示特定Hook的详细信息。
+显示特定 Hook 的详细信息。
 
 **参数:**
 
-- `<name>`:Hook名称(例如,`session-memory`)
+- `<name>`:Hook 名称(例如,`session-memory`)
 
 **选项:**
 
@@ -99,13 +99,13 @@ Requirements:
   Config: ✓ workspace.dir
 ```
 
-## 检查Hook资格
+## 检查 Hook 资格
 
 ```bash
 openclaw hooks check
 ```
 
-显示Hook资格状态摘要(准备就绪与未准备就绪的数量)。
+显示 Hook 资格状态摘要(准备就绪与未准备就绪的数量)。
 
 **选项:**
 
@@ -121,19 +121,19 @@ Ready: 4
 Not ready: 0
 ```
 
-## 启用Hook
+## 启用 Hook
 
 ```bash
 openclaw hooks enable <name>
 ```
 
-通过将特定Hook添加到您的配置(`~/.openclaw/config.json`)来启用它。
+通过将特定 Hook 添加到您的配置(`~/.openclaw/config.json`)来启用它。
 
-**注意:** 由Plugin管理的Hook在 `openclaw hooks list` 中显示 `plugin:<id>`,不能在此处启用/禁用。请改为启用/禁用Plugin。
+**注意:** 由 Plugin 管理的 Hook 在 `openclaw hooks list` 中显示 `plugin:<id>`,不能在此处启用/禁用。请改为启用/禁用 Plugin。
 
 **参数:**
 
-- `<name>`:Hook名称(例如,`session-memory`)
+- `<name>`:Hook 名称(例如,`session-memory`)
 
 **示例:**
 
@@ -149,25 +149,25 @@ openclaw hooks enable session-memory
 
 **它的作用:**
 
-- 检查Hook是否存在且符合条件
+- 检查 Hook 是否存在且符合条件
 - 在配置中更新 `hooks.internal.entries.<name>.enabled = true`
 - 将配置保存到磁盘
 
 **启用后:**
 
-- 重新启动Gateway以重新加载Hook(在 macOS 上重新启动菜单栏应用,或在开发中重新启动Gateway进程)。
+- 重新启动 Gateway 以重新加载 Hook(在 macOS 上重新启动菜单栏应用,或在开发中重新启动 Gateway 进程)。
 
-## 禁用Hook
+## 禁用 Hook
 
 ```bash
 openclaw hooks disable <name>
 ```
 
-通过更新配置来禁用特定Hook。
+通过更新配置来禁用特定 Hook。
 
 **参数:**
 
-- `<name>`:Hook名称(例如,`command-logger`)
+- `<name>`:Hook 名称(例如,`command-logger`)
 
 **示例:**
 
@@ -183,27 +183,29 @@ openclaw hooks disable command-logger
 
 **禁用后:**
 
-- 重新启动Gateway以重新加载Hook
+- 重新启动 Gateway 以重新加载 Hook
 
-## 安装Hook
+## 安装 Hook
 
 ```bash
 openclaw hooks install <path-or-spec>
+openclaw hooks install <npm-spec> --pin
 ```
 
-从本地文件夹/存档或 npm 安装Hook包。
+从本地文件夹/存档或 npm 安装 Hook 包。
 
 Npm 规范**仅限注册表**(包名称 + 可选版本/标签)。Git/URL/文件规范被拒绝。依赖项安装使用 `--ignore-scripts` 运行以确保安全。
 
 **它的作用:**
 
-- 将Hook包复制到 `~/.openclaw/hooks/<id>`
-- 在 `hooks.internal.entries.*` 中启用已安装的Hook
+- 将 Hook 包复制到 `~/.openclaw/hooks/<id>`
+- 在 `hooks.internal.entries.*` 中启用已安装的 Hook
 - 在 `hooks.internal.installs` 下记录安装
 
 **选项:**
 
 - `-l, --link`:链接本地目录而不是复制(将其添加到 `hooks.internal.load.extraDirs`)
+- `--pin`:将 npm 安装记录为 `hooks.internal.installs` 中精确解析的 `name@version`
 
 **支持的存档:** `.zip`、`.tgz`、`.tar.gz`、`.tar`
 
@@ -223,25 +225,27 @@ openclaw hooks install @openclaw/my-hook-pack
 openclaw hooks install -l ./my-hook-pack
 ```
 
-## 更新Hook
+## 更新 Hook
 
 ```bash
 openclaw hooks update <id>
 openclaw hooks update --all
 ```
 
-更新已安装的Hook包(仅限 npm 安装)。
+更新已安装的 Hook 包(仅限 npm 安装)。
 
 **选项:**
 
-- `--all`:更新所有跟踪的Hook包
+- `--all`:更新所有跟踪的 Hook 包
 - `--dry-run`:显示将更改的内容而不写入
 
-## 捆绑Hook
+当存在已存储的完整性哈希且获取的构件哈希发生变化时,OpenClaw 会打印警告并在继续前请求确认。在 CI/非交互运行中使用全局 `--yes` 跳过提示。
+
+## 捆绑 Hook
 
 ### session-memory
 
-在您发出 `/new` 时将Session上下文保存到内存。
+在您发出 `/new` 时将 Session 上下文保存到内存。
 
 **启用:**
 
@@ -294,7 +298,7 @@ grep '"action":"new"' ~/.openclaw/logs/commands.log | jq .
 
 ### boot-md
 
-在Gateway启动时运行 `BOOT.md`(Channel启动后)。
+在 Gateway 启动时运行 `BOOT.md`(Channel 启动后)。
 
 **事件**: `gateway:startup`
 

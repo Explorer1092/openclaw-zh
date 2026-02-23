@@ -1,6 +1,10 @@
 ---
-mmh3_hash: "da205d6f04093638983dfeeccfc9f4b5"
+mmh3_hash: "421a2674597ce20789044190c089a026"
 title: "Pi 集成架构"
+summary: "OpenClaw 嵌入式 Pi Agent 集成的架构和会话生命周期"
+read_when:
+  - 了解 OpenClaw 中 Pi SDK 集成设计时
+  - 修改 Pi 的 Agent 会话生命周期、工具或 Provider 接线时
 ---
 
 # Pi 集成架构

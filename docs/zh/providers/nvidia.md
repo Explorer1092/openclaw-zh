@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "will-be-updated"
 summary: "在 OpenClaw 中使用 NVIDIA 的 OpenAI 兼容 API"
 read_when:
   - 您想要在 OpenClaw 中使用 NVIDIA 模型

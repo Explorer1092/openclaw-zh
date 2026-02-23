@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3b0c1cebfe0b22885a5ef21d0301ac5c"
+mmh3_hash: "will be updated"
 summary: "使用 SSH 隧道(Gateway WS)和 Tailnet 进行远程访问"
 read_when:
   - 运行或故障排除远程 Gateway 设置
@@ -102,6 +102,20 @@ ssh -N -L 18789:127.0.0.1:18789 user@host
 
 当 Gateway 仅回环时,将 URL 保持在 `ws://127.0.0.1:18789` 并首先打开 SSH 隧道。
 
+## 凭证优先级
+
+Gateway 调用/探测凭证解析现在遵循一个共享契约:
+
+- 显式凭证(`--token`、`--password` 或工具 `gatewayToken`)始终优先。
+- 本地模式默认值:
+  - 令牌:`OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token`
+  - 密码:`OPENCLAW_GATEWAY_PASSWORD` -> `gateway.auth.password`
+- 远程模式默认值:
+  - 令牌:`gateway.remote.token` -> `OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token`
+  - 密码:`OPENCLAW_GATEWAY_PASSWORD` -> `gateway.remote.password` -> `gateway.auth.password`
+- 远程探测/状态令牌检查默认情况下是严格的:当定位远程模式时,它们仅使用 `gateway.remote.token`(无本地令牌回退)。
+- 旧版 `CLAWDBOT_GATEWAY_*` 环境变量仅由兼容性调用路径使用;探测/状态/认证解析仅使用 `OPENCLAW_GATEWAY_*`。
+
 ## 通过 SSH 的聊天 UI
 
 WebChat 不再使用单独的 HTTP 端口。SwiftUI 聊天 UI 直接连接到 Gateway WebSocket。
@@ -123,8 +137,7 @@ macOS 菜单栏应用程序可以端到端驱动相同的设置(远程状态检�
 - **非回环绑定**(`lan`/`tailnet`/`custom`,或当回环不可用时的 `auto`)必须使用认证令牌/密码。
 - `gateway.remote.token` **仅**用于远程 CLI 调用 — 它**不**启用本地认证。
 - `gateway.remote.tlsFingerprint` 在使用 `wss://` 时固定远程 TLS 证书。
-- **Tailscale Serve** 可以在 `gateway.auth.allowTailscale: true` 时通过身份标头进行认证。
-  如果您想要令牌/密码,请将其设置为 `false`。
+- **Tailscale Serve** 可以在 `gateway.auth.allowTailscale: true` 时通过身份标头对 Control UI/WebSocket 流量进行身份验证;HTTP API 端点仍然需要令牌/密码认证。此无令牌流程假设 Gateway 主机是可信的。如果您想要令牌/密码,请将其设置为 `false`。
 - 将 Browser 控制视为操作员访问:仅 Tailnet + 故意节点配对。
 
 深入探讨:[安全](/gateway/security)。

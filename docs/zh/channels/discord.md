@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e42cde9253bc009a35490f2fbcdfed6e"
+mmh3_hash: "16e5bd90e6e2a69dca37e787a2a74415"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -24,16 +24,98 @@ title: "Discord"
 
 ## 快速设置
 
-<Steps>
-  <Step title="创建 Discord bot 并启用 intents">
-    在 Discord Developer Portal 中创建应用程序，添加 bot，然后启用：
+你需要创建一个带有 bot 的新应用程序，将 bot 添加到你的服务器，并将其与 OpenClaw 配对。我们建议将你的 bot 添加到你自己的私人服务器。如果你还没有，[先创建一个](https://support.discord.com/hc/en-us/articles/204849977-How-do-I-create-a-server)（选择 **Create My Own > For me and my friends**）。
 
-    - **Message Content Intent**
-    - **Server Members Intent**（角色 allowlist 和基于角色的路由所需；推荐用于名称到 ID 的 allowlist 匹配）
+<Steps>
+  <Step title="创建 Discord 应用程序和 bot">
+    前往 [Discord Developer Portal](https://discord.com/developers/applications) 并点击 **New Application**。将其命名为"OpenClaw"之类的名称。
+
+    点击侧栏中的 **Bot**。将 **Username** 设置为你的 OpenClaw agent 的名称。
 
   </Step>
 
-  <Step title="配置 token">
+  <Step title="启用特权 intents">
+    仍然在 **Bot** 页面，向下滚动到 **Privileged Gateway Intents** 并启用：
+
+    - **Message Content Intent**（必需）
+    - **Server Members Intent**（推荐；角色 allowlist 和名称到 ID 匹配所需）
+    - **Presence Intent**（可选；仅在你需要接收 presence 更新时才需要）
+
+  </Step>
+
+  <Step title="复制你的 bot token">
+    在 **Bot** 页面向上滚动并点击 **Reset Token**。
+
+    <Note>
+    尽管名字如此，这会生成你的第一个 token——没有什么被"重置"。
+    </Note>
+
+    复制 token 并将其保存。这是你的 **Bot Token**，你很快就会用到它。
+
+  </Step>
+
+  <Step title="生成邀请 URL 并将 bot 添加到你的服务器">
+    点击侧栏中的 **OAuth2**。你将生成一个带有正确权限的邀请 URL，用于将 bot 添加到你的服务器。
+
+    向下滚动到 **OAuth2 URL Generator** 并启用：
+
+    - `bot`
+    - `applications.commands`
+
+    下面将出现一个 **Bot Permissions** 部分。启用：
+
+    - View Channels
+    - Send Messages
+    - Read Message History
+    - Embed Links
+    - Attach Files
+    - Add Reactions（可选）
+
+    复制底部生成的 URL，将其粘贴到浏览器中，选择你的服务器，然后点击 **Continue** 连接。你现在应该能在 Discord 服务器中看到你的 bot。
+
+  </Step>
+
+  <Step title="启用 Developer Mode 并收集你的 ID">
+    回到 Discord 应用程序，你需要启用 Developer Mode 以便可以复制内部 ID。
+
+    1. 点击 **User Settings**（头像旁边的齿轮图标）→ **Advanced** → 打开 **Developer Mode**
+    2. 右键点击侧栏中的**服务器图标** → **Copy Server ID**
+    3. 右键点击**你自己的头像** → **Copy User ID**
+
+    将你的 **Server ID** 和 **User ID** 与你的 Bot Token 一起保存——你将在下一步中把这三项都发给 OpenClaw。
+
+  </Step>
+
+  <Step title="允许来自服务器成员的 DM">
+    为了让配对工作，Discord 需要允许你的 bot 给你发送 DM。右键点击**服务器图标** → **Privacy Settings** → 打开 **Direct Messages**。
+
+    这允许服务器成员（包括 bot）给你发送 DM。如果你想在 Discord DM 中使用 OpenClaw，请保持启用。如果你只打算使用公会频道，可以在配对后禁用 DM。
+
+  </Step>
+
+  <Step title="安全地设置你的 bot token（不要在聊天中发送）">
+    你的 Discord bot token 是一个密钥（类似密码）。在向 agent 发消息之前，在运行 OpenClaw 的机器上设置它。
+
+```bash
+openclaw config set channels.discord.token '"YOUR_BOT_TOKEN"' --json
+openclaw config set channels.discord.enabled true --json
+openclaw gateway
+```
+
+    如果 OpenClaw 已经作为后台服务运行，请改用 `openclaw gateway restart`。
+
+  </Step>
+
+  <Step title="配置 OpenClaw 并配对">
+
+    <Tabs>
+      <Tab title="询问你的 agent">
+        在任何现有 channel（例如 Telegram）上与你的 OpenClaw agent 聊天并告诉它。如果 Discord 是你的第一个 channel，请改用 CLI / 配置选项卡。
+
+        > "我已经在配置中设置了我的 Discord bot token。请使用用户 ID `<user_id>` 和服务器 ID `<server_id>` 完成 Discord 设置。"
+      </Tab>
+      <Tab title="CLI / 配置">
+        如果你更喜欢基于文件的配置，请设置：
 
 ```json5
 {
@@ -46,31 +128,39 @@ title: "Discord"
 }
 ```
 
-    默认账户的环境变量回退：
+        默认账户的环境变量回退：
 
 ```bash
 DISCORD_BOT_TOKEN=...
 ```
 
-  </Step>
-
-  <Step title="邀请 bot 并启动 gateway">
-    使用消息权限将 bot 邀请到你的服务器。
-
-```bash
-openclaw gateway
-```
+      </Tab>
+    </Tabs>
 
   </Step>
 
-  <Step title="批准首次 DM pairing">
+  <Step title="批准首次 DM 配对">
+    等待 gateway 运行，然后在 Discord 中给你的 bot 发送 DM。它会回复一个配对码。
+
+    <Tabs>
+      <Tab title="询问你的 agent">
+        在你现有的 channel 上将配对码发送给你的 agent：
+
+        > "批准这个 Discord 配对码：`<CODE>`"
+      </Tab>
+      <Tab title="CLI">
 
 ```bash
 openclaw pairing list discord
 openclaw pairing approve discord <CODE>
 ```
 
-    配对代码 1 小时后过期。
+      </Tab>
+    </Tabs>
+
+    配对码 1 小时后过期。
+
+    你现在应该能够通过 DM 在 Discord 中与你的 agent 聊天了。
 
   </Step>
 </Steps>
@@ -78,6 +168,87 @@ openclaw pairing approve discord <CODE>
 <Note>
 Token 解析支持账户。配置 token 值优先于环境变量回退。`DISCORD_BOT_TOKEN` 仅用于默认账户。
 </Note>
+
+## 推荐：设置公会工作区
+
+一旦 DM 正常工作，你可以将你的 Discord 服务器设置为完整的工作区，其中每个频道都有自己的 agent session 和上下文。这对于只有你和你的 bot 的私人服务器来说是推荐的。
+
+<Steps>
+  <Step title="将你的服务器添加到公会 allowlist">
+    这使你的 agent 能够在服务器上的任何频道中响应，而不仅仅是 DM。
+
+    <Tabs>
+      <Tab title="询问你的 agent">
+        > "将我的 Discord 服务器 ID `<server_id>` 添加到公会 allowlist"
+      </Tab>
+      <Tab title="配置">
+
+```json5
+{
+  channels: {
+    discord: {
+      groupPolicy: "allowlist",
+      guilds: {
+        YOUR_SERVER_ID: {
+          requireMention: true,
+          users: ["YOUR_USER_ID"],
+        },
+      },
+    },
+  },
+}
+```
+
+      </Tab>
+    </Tabs>
+
+  </Step>
+
+  <Step title="允许无需 @mention 即可响应">
+    默认情况下，你的 agent 只在公会频道中被 @提及时才响应。对于私人服务器，你可能希望它对每条消息都响应。
+
+    <Tabs>
+      <Tab title="询问你的 agent">
+        > "允许我的 agent 在这个服务器上无需被 @提及即可响应"
+      </Tab>
+      <Tab title="配置">
+        在你的公会配置中设置 `requireMention: false`：
+
+```json5
+{
+  channels: {
+    discord: {
+      guilds: {
+        YOUR_SERVER_ID: {
+          requireMention: false,
+        },
+      },
+    },
+  },
+}
+```
+
+      </Tab>
+    </Tabs>
+
+  </Step>
+
+  <Step title="规划公会频道中的记忆">
+    默认情况下，长期记忆（MEMORY.md）仅在 DM session 中加载。公会频道不会自动加载 MEMORY.md。
+
+    <Tabs>
+      <Tab title="询问你的 agent">
+        > "当我在 Discord 频道中提问时，如果需要来自 MEMORY.md 的长期上下文，请使用 memory_search 或 memory_get。"
+      </Tab>
+      <Tab title="手动">
+        如果你需要在每个频道中共享上下文，请将稳定的指令放在 `AGENTS.md` 或 `USER.md` 中（它们会在每个 session 中注入）。将长期笔记保存在 `MEMORY.md` 中，并使用 memory 工具按需访问它们。
+      </Tab>
+    </Tabs>
+
+  </Step>
+</Steps>
+
+现在在你的 Discord 服务器上创建一些频道并开始聊天。你的 agent 可以看到频道名称，每个频道都有自己的隔离 session——所以你可以设置 `#coding`、`#home`、`#research` 或任何适合你工作流程的内容。
 
 ## 运行时模型
 
@@ -88,6 +259,29 @@ Token 解析支持账户。配置 token 值优先于环境变量回退。`DISCOR
 - 群组 DM 默认被忽略（`channels.discord.dm.groupEnabled=false`）。
 - 原生 slash 命令在隔离的命令会话（`agent:<agentId>:discord:slash:<userId>`）中运行，同时仍然携带 `CommandTargetSessionKey` 到路由的对话会话。
 
+## 论坛频道
+
+Discord 论坛和媒体频道只接受线程帖子。OpenClaw 支持两种创建方式：
+
+- 向论坛父级（`channel:<forumId>`）发送消息以自动创建线程。线程标题使用消息的第一个非空行。
+- 使用 `openclaw message thread create` 直接创建线程。对于论坛频道不要传递 `--message-id`。
+
+示例：发送到论坛父级以创建线程
+
+```bash
+openclaw message send --channel discord --target channel:<forumId> \
+  --message "Topic title\nBody of the post"
+```
+
+示例：显式创建论坛线程
+
+```bash
+openclaw message thread create --channel discord --target channel:<forumId> \
+  --thread-name "Topic title" --message "Body of the post"
+```
+
+论坛父级不接受 Discord components。如果你需要 components，请发送到线程本身（`channel:<threadId>`）。
+
 ## 交互组件
 
 OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `components` 载荷的消息工具。交互结果作为正常入站消息路由回 agent，并遵循现有的 Discord `replyToMode` 设置。
@@ -97,6 +291,12 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
 - `text`、`section`、`separator`、`actions`、`media-gallery`、`file`
 - 操作行允许最多 5 个按钮或单个选择菜单
 - 选择类型：`string`、`user`、`role`、`mentionable`、`channel`
+
+默认情况下，components 是一次性的。设置 `components.reusable=true` 以允许按钮、选择框和表单被多次使用，直到过期。
+
+要限制谁可以点击按钮，在该按钮上设置 `allowedUsers`（Discord 用户 ID、标签或 `*`）。配置后，不匹配的用户将收到临时拒绝。
+
+`/model` 和 `/models` slash 命令会打开一个带有提供商和模型下拉菜单以及提交步骤的交互式模型选择器。选择器回复是临时的，只有调用用户可以使用它。
 
 文件附件：
 
@@ -119,12 +319,17 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
   to: "channel:123456789012345678",
   message: "Optional fallback text",
   components: {
+    reusable: true,
     text: "Choose a path",
     blocks: [
       {
         type: "actions",
         buttons: [
-          { label: "Approve", style: "success" },
+          {
+            label: "Approve",
+            style: "success",
+            allowedUsers: ["123456789012345678"],
+          },
           { label: "Decline", style: "danger" },
         ],
       },
@@ -194,6 +399,7 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
 
     - 公会必须匹配 `channels.discord.guilds`（首选 `id`，接受 slug）
     - 可选的发送者 allowlist：`users`（ID 或名称）和 `roles`（仅角色 ID）；如果配置了任一项，当发送者匹配 `users` 或 `roles` 时被允许
+    - 名称/标签对 `users` 受支持，但 ID 更安全；`openclaw security audit` 会在使用名称/标签条目时发出警告
     - 如果公会配置了 `channels`，未列出的频道被拒绝
     - 如果公会没有 `channels` 块，该 allowlist 公会中的所有频道都被允许
 
@@ -220,7 +426,7 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
 }
 ```
 
-    如果你只设置 `DISCORD_BOT_TOKEN` 并且不创建 `channels.discord` 块，运行时回退是 `groupPolicy="open"`（日志中有警告）。
+    如果你只设置 `DISCORD_BOT_TOKEN` 并且不创建 `channels.discord` 块，运行时回退是 `groupPolicy="allowlist"`（日志中有警告），即使 `channels.defaults.groupPolicy` 是 `open`。
 
   </Tab>
 
@@ -328,6 +534,10 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
 - 原生命令授权使用与正常消息处理相同的 Discord allowlist/policy。
 - 命令可能仍然在 Discord UI 中对未授权的用户可见；执行时仍然强制执行 OpenClaw 授权并返回"未授权"。
 
+默认 slash 命令设置：
+
+- `ephemeral: true`
+
 参见 [Slash commands](/tools/slash-commands) 了解命令目录和行为。
 
 ## 功能详情
@@ -351,6 +561,50 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
 
   </Accordion>
 
+  <Accordion title="实时流式预览">
+    OpenClaw 可以通过发送临时消息并在文本到达时编辑它来流式传输草稿回复。
+
+    - `channels.discord.streaming` 控制预览流式传输（`off` | `partial` | `block` | `progress`，默认：`off`）。
+    - `progress` 被接受以保持跨 channel 一致性，并在 Discord 上映射到 `partial`。
+    - `channels.discord.streamMode` 是旧版别名，会自动迁移。
+    - `partial` 在 token 到达时编辑单个预览消息。
+    - `block` 发出草稿大小的块（使用 `draftChunk` 调整大小和断点）。
+
+    示例：
+
+```json5
+{
+  channels: {
+    discord: {
+      streaming: "partial",
+    },
+  },
+}
+```
+
+    `block` 模式分块默认值（限制在 `channels.discord.textChunkLimit`）：
+
+```json5
+{
+  channels: {
+    discord: {
+      streaming: "block",
+      draftChunk: {
+        minChars: 200,
+        maxChars: 800,
+        breakPreference: "paragraph",
+      },
+    },
+  },
+}
+```
+
+    预览流式传输仅限文本；媒体回复回退到正常投递。
+
+    注意：预览流式传输与块流式传输是分开的。当为 Discord 显式启用块流式传输时，OpenClaw 会跳过预览流以避免双重流式传输。
+
+  </Accordion>
+
   <Accordion title="历史、上下文和线程行为">
     公会历史上下文：
 
@@ -370,6 +624,49 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
     - 线程配置继承父频道配置，除非存在线程特定条目
 
     频道主题作为**不受信任的**上下文注入（不作为系统提示）。
+
+  </Accordion>
+
+  <Accordion title="Subagent 的线程绑定会话">
+    Discord 可以将线程绑定到会话目标，以便该线程中的后续消息继续路由到同一会话（包括 subagent 会话）。
+
+    命令：
+
+    - `/focus <target>` 将当前/新线程绑定到 subagent/会话目标
+    - `/unfocus` 移除当前线程绑定
+    - `/agents` 显示活动运行和绑定状态
+    - `/session ttl <duration|off>` 检查/更新焦点绑定的自动取消焦点 TTL
+
+    配置：
+
+```json5
+{
+  session: {
+    threadBindings: {
+      enabled: true,
+      ttlHours: 24,
+    },
+  },
+  channels: {
+    discord: {
+      threadBindings: {
+        enabled: true,
+        ttlHours: 24,
+        spawnSubagentSessions: false, // 选择启用
+      },
+    },
+  },
+}
+```
+
+    注意：
+
+    - `session.threadBindings.*` 设置全局默认值。
+    - `channels.discord.threadBindings.*` 覆盖 Discord 行为。
+    - `spawnSubagentSessions` 必须为 true 以自动创建/绑定线程用于 `sessions_spawn({ thread: true })`。
+    - 如果账户禁用了线程绑定，`/focus` 和相关线程绑定操作不可用。
+
+    参见 [Sub-agents](/tools/subagents) 和 [Configuration Reference](/gateway/configuration-reference)。
 
   </Accordion>
 
@@ -422,7 +719,7 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
   </Accordion>
 
   <Accordion title="Gateway proxy">
-    使用 `channels.discord.proxy` 通过 HTTP(S) 代理路由 Discord gateway WebSocket 流量。
+    使用 `channels.discord.proxy` 通过 HTTP(S) 代理路由 Discord gateway WebSocket 流量以及启动时的 REST 查询（应用程序 ID + allowlist 解析）。
 
 ```json5
 {
@@ -595,6 +892,47 @@ OpenClaw 使用 Discord components v2 进行 exec 批准和跨上下文标记。
 }
 ```
 
+## 语音频道
+
+OpenClaw 可以加入 Discord 语音频道进行实时连续对话。这与语音消息附件是分开的。
+
+要求：
+
+- 启用原生命令（`commands.native` 或 `channels.discord.commands.native`）。
+- 配置 `channels.discord.voice`。
+- Bot 需要在目标语音频道中具有连接和发言权限。
+
+使用 Discord 专属原生命令 `/vc join|leave|status` 控制会话。该命令使用账户默认 agent，并遵循与其他 Discord 命令相同的 allowlist 和 group policy 规则。
+
+自动加入示例：
+
+```json5
+{
+  channels: {
+    discord: {
+      voice: {
+        enabled: true,
+        autoJoin: [
+          {
+            guildId: "123456789012345678",
+            channelId: "234567890123456789",
+          },
+        ],
+        tts: {
+          provider: "openai",
+          openai: { voice: "alloy" },
+        },
+      },
+    },
+  },
+}
+```
+
+注意：
+
+- `voice.tts` 仅覆盖语音播放的 `messages.tts`。
+- 语音默认启用；设置 `channels.discord.voice.enabled=false` 以禁用它。
+
 ## 语音消息
 
 Discord 语音消息显示波形预览并需要 OGG/Opus 音频加元数据。OpenClaw 自动生成波形，但需要在 gateway 主机上提供 `ffmpeg` 和 `ffprobe` 来检查和转换音频文件。
@@ -681,9 +1019,10 @@ openclaw logs --follow
 
 - 启动/认证：`enabled`、`token`、`accounts.*`、`allowBots`
 - policy：`groupPolicy`、`dm.*`、`guilds.*`、`guilds.*.channels.*`
-- 命令：`commands.native`、`commands.useAccessGroups`、`configWrites`
+- 命令：`commands.native`、`commands.useAccessGroups`、`configWrites`、`slashCommand.*`
 - 回复/历史：`replyToMode`、`historyLimit`、`dmHistoryLimit`、`dms.*.historyLimit`
 - 投递：`textChunkLimit`、`chunkMode`、`maxLinesPerMessage`
+- 流式传输：`streaming`（旧版别名：`streamMode`）、`draftChunk`、`blockStreaming`、`blockStreamingCoalesce`
 - 媒体/重试：`mediaMaxMb`、`retry`
 - 操作：`actions.*`
 - presence：`activity`、`status`、`activityType`、`activityUrl`
@@ -700,5 +1039,6 @@ openclaw logs --follow
 
 - [Pairing](/channels/pairing)
 - [Channel routing](/channels/channel-routing)
+- [Multi-agent routing](/concepts/multi-agent)
 - [Troubleshooting](/channels/troubleshooting)
 - [Slash commands](/tools/slash-commands)

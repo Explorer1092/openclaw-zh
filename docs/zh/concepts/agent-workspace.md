@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0e5536dca37de52e1b2bfe64f44f17c3"
+mmh3_hash: "4f9ed3fef2921f26d09ee02cc684d464"
 summary: "Agent workspace: 位置、布局和备份策略"
 read_when:
   - 你需要解释 agent workspace 或其文件布局
@@ -104,7 +104,7 @@ workspace 是 agent 的家。它是用于文件工具和 workspace context 的�
 - `canvas/` (可选)
   - 用于节点显示的 Canvas UI 文件(例如 `canvas/index.html`)。
 
-如果缺少任何 bootstrap 文件,OpenClaw 会在 session 中注入一个"缺失文件"标记并继续。大型 bootstrap 文件在注入时会被截断;使用 `agents.defaults.bootstrapMaxChars` 调整限制(默认: 20000)。
+如果缺少任何 bootstrap 文件,OpenClaw 会在 session 中注入一个"缺失文件"标记并继续。大型 bootstrap 文件在注入时会被截断;使用 `agents.defaults.bootstrapMaxChars`(默认: 20000)和 `agents.defaults.bootstrapTotalMaxChars`(默认: 150000)调整限制。
 `openclaw setup` 可以重新创建缺失的默认值而不覆盖现有文件。
 
 ## workspace 中没有的内容

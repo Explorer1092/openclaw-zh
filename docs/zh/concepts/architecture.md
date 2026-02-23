@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6f371504bf066cfbc82d4efea731507c"
+mmh3_hash: "1735f24f196079043ea55ff2956bac85"
 summary: "WebSocket gateway 架构、组件和客户端流程"
 read_when:
   - 在 gateway protocol、clients 或 transports 上工作

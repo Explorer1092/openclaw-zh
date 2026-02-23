@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0eea16d1972a9808139e87128781323e"
+mmh3_hash: "c7b612d8ef5524511b1ccfc8b41290c8"
 summary: "Context: model 看到什么、如何构建以及如何检查"
 read_when:
   - 你想了解 OpenClaw 中"context"的含义
@@ -109,7 +109,7 @@ System prompt 由 **OpenClaw 拥有** 并在每次运行时重建。它包括:
 - `HEARTBEAT.md`
 - `BOOTSTRAP.md`(仅首次运行)
 
-大文件使用 `agents.defaults.bootstrapMaxChars`(默认 `20000` 字符)按文件截断。OpenClaw 还使用 `agents.defaults.bootstrapTotalMaxChars`(默认 `24000` 字符)在文件间强制执行总 bootstrap 注入上限。`/context` 显示 **原始 vs 注入** 大小以及是否发生截断。
+大文件使用 `agents.defaults.bootstrapMaxChars`(默认 `20000` 字符)按文件截断。OpenClaw 还使用 `agents.defaults.bootstrapTotalMaxChars`(默认 `150000` 字符)在文件间强制执行总 bootstrap 注入上限。`/context` 显示 **原始 vs 注入** 大小以及是否发生截断。
 
 ## Skills: 注入了什么 vs 按需加载
 
