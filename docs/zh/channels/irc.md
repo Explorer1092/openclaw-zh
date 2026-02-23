@@ -2,6 +2,10 @@
 mmh3_hash: "0b129d241e420156b5462cb4d39fe351"
 title: IRC
 description: 将 OpenClaw 连接到 IRC Channels 和直接消息。
+summary: "IRC 插件设置、访问控制和故障排除"
+read_when:
+  - 连接 OpenClaw 到 IRC 频道或私信
+  - 配置 IRC allowlist、群组策略或提及门控
 ---
 
 当您想要 OpenClaw 在经典 Channels（`#room`）和直接消息中时，请使用 IRC。IRC 作为扩展 Plugin 提供，但在主配置中的 `channels.irc` 下配置。
@@ -158,7 +162,7 @@ IRC Channels 有两个单独的"门"：
             "*": {
               deny: ["group:runtime", "group:fs", "gateway", "nodes", "cron", "browser"],
             },
-            eigen: {
+            "id:eigen": {
               deny: ["gateway", "nodes", "cron"],
             },
           },
@@ -171,7 +175,9 @@ IRC Channels 有两个单独的"门"：
 
 注意：
 
-- `toolsBySender` 键可以是昵称（例如 `"eigen"`）或完整的主机掩码（`"eigen!~eigen@174.127.248.171"`）以实现更强的身份匹配。
+- `toolsBySender` 键应使用 `id:` 前缀作为 IRC 发送者身份值：
+  `id:eigen` 或 `id:eigen!~eigen@174.127.248.171`（后者实现更强的身份匹配）。
+- 旧版无前缀键仍被接受，仅匹配 `id:`。
 - 第一个匹配的发送者策略获胜；`"*"` 是通配符回退。
 
 有关群组访问 vs 提及门控（以及它们如何交互）的更多信息，请参见：[/channels/groups](/channels/groups)。
