@@ -1,0 +1,40 @@
+---
+mmh3_hash: "d5e0b7fe0e7002b978cdea9b523eb26a"
+title: "qr"
+summary: "`openclaw qr` 的 CLI 参考（生成 iOS 配对二维码和设置码）"
+read_when:
+  - 需要快速将 iOS 应用与 Gateway 配对
+  - 需要用于远程/手动共享的设置码输出
+---
+
+# `openclaw qr`
+
+根据当前 Gateway 配置生成 iOS 配对二维码和设置码。
+
+## 用法
+
+```bash
+openclaw qr
+openclaw qr --setup-code-only
+openclaw qr --json
+openclaw qr --remote
+openclaw qr --url wss://gateway.example/ws --token '<token>'
+```
+
+## 选项
+
+- `--remote`：使用配置中的 `gateway.remote.url` 和远程 token/密码
+- `--url <url>`：覆盖 payload 中使用的 Gateway URL
+- `--public-url <url>`：覆盖 payload 中使用的公开 URL
+- `--token <token>`：覆盖 payload 中的 Gateway token
+- `--password <password>`：覆盖 payload 中的 Gateway 密码
+- `--setup-code-only`：仅打印设置码
+- `--no-ascii`：跳过 ASCII 二维码渲染
+- `--json`：输出 JSON 格式（`setupCode`、`gatewayUrl`、`auth`、`urlSource`）
+
+## 说明
+
+- `--token` 和 `--password` 互斥。
+- 扫码后，使用以下命令审批设备配对：
+  - `openclaw devices list`
+  - `openclaw devices approve <requestId>`

@@ -1,0 +1,127 @@
+---
+mmh3_hash: "3c55c3ce139713cdc5968bf96ba17879"
+title: "Synology Chat"
+summary: "Synology Chat webhook 设置与 OpenClaw 配置"
+read_when:
+  - 使用 OpenClaw 配置 Synology Chat
+  - 调试 Synology Chat webhook 路由问题
+---
+
+# Synology Chat（插件）
+
+状态：通过插件支持，作为使用 Synology Chat webhook 的私信 Channel。
+该插件接受来自 Synology Chat 外发 webhook 的入站消息，并通过 Synology Chat 传入 webhook 发送回复。
+
+## 需要插件
+
+Synology Chat 基于插件运行，不属于默认核心 Channel 安装。
+
+从本地检出安装：
+
+```bash
+openclaw plugins install ./extensions/synology-chat
+```
+
+详情：[插件](/tools/plugin)
+
+## 快速设置
+
+1. 安装并启用 Synology Chat 插件。
+2. 在 Synology Chat 集成中：
+   - 创建一个传入 webhook 并复制其 URL。
+   - 创建一个带有密钥令牌的外发 webhook。
+3. 将外发 webhook URL 指向你的 OpenClaw Gateway：
+   - 默认为 `https://gateway-host/webhook/synology`。
+   - 或自定义的 `channels.synology-chat.webhookPath`。
+4. 在 OpenClaw 中配置 `channels.synology-chat`。
+5. 重启 Gateway 并向 Synology Chat 机器人发送私信。
+
+最小配置：
+
+```json5
+{
+  channels: {
+    "synology-chat": {
+      enabled: true,
+      token: "synology-outgoing-token",
+      incomingUrl: "https://nas.example.com/webapi/entry.cgi?api=SYNO.Chat.External&method=incoming&version=2&token=...",
+      webhookPath: "/webhook/synology",
+      dmPolicy: "allowlist",
+      allowedUserIds: ["123456"],
+      rateLimitPerMinute: 30,
+      allowInsecureSsl: false,
+    },
+  },
+}
+```
+
+## 环境变量
+
+对于默认账户，可以使用以下环境变量：
+
+- `SYNOLOGY_CHAT_TOKEN`
+- `SYNOLOGY_CHAT_INCOMING_URL`
+- `SYNOLOGY_NAS_HOST`
+- `SYNOLOGY_ALLOWED_USER_IDS`（逗号分隔）
+- `SYNOLOGY_RATE_LIMIT`
+- `OPENCLAW_BOT_NAME`
+
+配置值会覆盖环境变量。
+
+## 私信策略与访问控制
+
+- `dmPolicy: "allowlist"` 是推荐的默认设置。
+- `allowedUserIds` 接受 Synology 用户 ID 的列表（或逗号分隔的字符串）。
+- `dmPolicy: "open"` 允许任何发送者。
+- `dmPolicy: "disabled"` 阻止私信。
+- 配对审批方式：
+  - `openclaw pairing list synology-chat`
+  - `openclaw pairing approve synology-chat <CODE>`
+
+## 外发消息
+
+使用 Synology Chat 数字用户 ID 作为目标。
+
+示例：
+
+```bash
+openclaw message send --channel synology-chat --target 123456 --text "Hello from OpenClaw"
+openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
+```
+
+支持通过基于 URL 的文件传递发送媒体。
+
+## 多账户
+
+支持在 `channels.synology-chat.accounts` 下配置多个 Synology Chat 账户。
+每个账户可以覆盖 token、传入 URL、webhook 路径、私信策略和限制。
+
+```json5
+{
+  channels: {
+    "synology-chat": {
+      enabled: true,
+      accounts: {
+        default: {
+          token: "token-a",
+          incomingUrl: "https://nas-a.example.com/...token=...",
+        },
+        alerts: {
+          token: "token-b",
+          incomingUrl: "https://nas-b.example.com/...token=...",
+          webhookPath: "/webhook/synology-alerts",
+          dmPolicy: "allowlist",
+          allowedUserIds: ["987654"],
+        },
+      },
+    },
+  },
+}
+```
+
+## 安全说明
+
+- 保持 `token` 机密，泄露后及时轮换。
+- 除非明确信任自签名的本地 NAS 证书，否则保持 `allowInsecureSsl: false`。
+- 入站 webhook 请求经过 token 验证，并按发送者限速。
+- 生产环境推荐使用 `dmPolicy: "allowlist"`。
