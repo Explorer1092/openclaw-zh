@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1ab0bb0be094e0efaac34b3c23bf2af2"
+mmh3_hash: "38d958d2e2208e660b28900dbc8f6b4a"
 summary: "通过 imsg 实现传统 iMessage 支持（基于 stdio 的 JSON-RPC）。新设置应使用 BlueBubbles。"
 read_when:
   - 设置 iMessage 支持
@@ -233,6 +233,7 @@ exec ssh -T bot@mac-mini.tailnet-1234.ts.net imsg "$@"
 ```
 
     使用 SSH 密钥，以便 SSH 和 SCP 都是非交互式的。
+    事先确保主机密钥被信任（例如 `ssh bot@mac-mini.tailnet-1234.ts.net`），以填充 `known_hosts`。
 
   </Accordion>
 
