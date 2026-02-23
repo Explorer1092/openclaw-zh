@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will-be-updated"
+mmh3_hash: "e9605fade594176b7e880fc4403fbf79"
 title: "Anthropic (Claude)"
 sidebarTitle: "Anthropic"
 summary: "在 OpenClaw 中通过 API 密钥或 setup-token 使用 Anthropic Claude"

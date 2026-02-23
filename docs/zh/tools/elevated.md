@@ -1,7 +1,7 @@
 ---
 title: "提升模式 (/elevated 指令)"
 sidebarTitle: "提升模式"
-mmh3_hash: "will-be-updated"
+mmh3_hash: "54dd56814514065bb6b1395cd9681b6b"
 summary: "提升执行模式和 /elevated 指令"
 read_when:
   - 调整提升模式默认值、允许列表或斜杠命令行为

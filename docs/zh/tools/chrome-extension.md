@@ -1,7 +1,7 @@
 ---
 title: "Chrome 扩展 (浏览器中继)"
 sidebarTitle: "Chrome 扩展"
-mmh3_hash: "will-be-updated"
+mmh3_hash: "7a2c399e503a55900f94f603658c9daf"
 summary: "Chrome 扩展: 让 OpenClaw 驱动您现有的 Chrome 标签页"
 read_when: ["您希望 agent 驱动现有的 Chrome 标签页(工具栏按钮)","您需要通过 Tailscale 进行远程网关 + 本地浏览器自动化","您想了解浏览器接管的安全影响"]
 ---

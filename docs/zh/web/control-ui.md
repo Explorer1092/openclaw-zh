@@ -1,7 +1,7 @@
 ---
 title: "Control UI (浏览器)"
 sidebarTitle: "Control UI"
-mmh3_hash: "placeholder"
+mmh3_hash: "2c09312bd0025da1ebe44039feaab692"
 summary: "Gateway 的基于浏览器的 Control UI(聊天、节点、配置)"
 read_when: ["您想从浏览器操作 Gateway","您想要无需 SSH 隧道的 Tailnet 访问"]
 ---

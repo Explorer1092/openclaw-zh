@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "placeholder"
+mmh3_hash: "5a4d9669dcfe5c2f5f7084374543dd45"
 summary: "精选的最常用 OpenClaw 文档链接。"
 read_when:
   - 您想快速访问关键文档页面

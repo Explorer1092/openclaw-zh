@@ -253,7 +253,10 @@ requireMention? yes -> 被提及吗？ no -> 仅存储以供上下文使用
 某些 Channel 配置支持限制**特定群组/房间/Channel 内**可用的工具。
 
 - `tools`：允许/拒绝整个群组的工具。
-- `toolsBySender`：群组内的每个发送者覆盖（键是发送者 ID/用户名/电子邮件/电话号码，取决于 Channel）。使用 `"*"` 作为通配符。
+- `toolsBySender`：群组内的每个发送者覆盖。
+  使用显式键前缀：
+  `id:<senderId>`、`e164:<phone>`、`username:<handle>`、`name:<displayName>` 以及 `"*"` 通配符。
+  旧版无前缀键仍被接受，仅匹配 `id:`。
 
 解析顺序（最具体的获胜）：
 

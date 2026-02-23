@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will-be-updated"
+mmh3_hash: "ab7adbde4bffd25c03fef69e8d751a1f"
 summary: "使用 vLLM 运行 OpenClaw（OpenAI 兼容的本地服务器）"
 read_when:
   - 您想要针对本地 vLLM 服务器运行 OpenClaw

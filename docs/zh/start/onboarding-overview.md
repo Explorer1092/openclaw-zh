@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "placeholder"
+mmh3_hash: "4d3f392c50d299ed0f590af253e99da8"
 summary: "OpenClaw 引导选项和流程概述"
 read_when:
   - 选择引导路径

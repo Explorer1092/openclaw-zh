@@ -1,6 +1,6 @@
 ---
 title: "Exec 批准"
-mmh3_hash: "will-be-updated"
+mmh3_hash: "bde04075159a16ea62394c691416b383"
 summary: "Exec 批准、允许列表和沙盒逃逸提示"
 read_when:
   - 配置 exec 批准或允许列表

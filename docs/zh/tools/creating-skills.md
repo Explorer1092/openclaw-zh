@@ -1,6 +1,6 @@
 ---
 title: "创建自定义技能"
-mmh3_hash: "will-be-updated"
+mmh3_hash: "bb7c2f0a9bd57300f5fdf0c7031464f3"
 summary: "使用 SKILL.md 构建和测试自定义工作区技能"
 read_when:
   - 您正在工作区中创建新的自定义技能

@@ -1,7 +1,7 @@
 ---
 title: "斜杠命令"
 sidebarTitle: "斜杠命令"
-mmh3_hash: "451f22e8c31ad0df4aafaec296f055ea"
+mmh3_hash: "e0640fd85d8cbb432d4c8f1cc0de9646"
 summary: "斜杠命令: 文本 vs 原生、配置和支持的命令"
 read_when: ["使用或配置聊天命令","调试命令路由或权限"]
 ---
@@ -50,8 +50,9 @@ read_when: ["使用或配置聊天命令","调试命令路由或权限"]
 - `commands.bash`(默认 `false`)启用 `! <cmd>` 运行主机 shell 命令(`/bash <cmd>` 是别名;需要 `tools.elevated` 允许列表)。
 - `commands.bashForegroundMs`(默认 `2000`)控制 bash 在切换到后台模式之前等待多长时间(`0` 立即后台运行)。
 - `commands.config`(默认 `false`)启用 `/config`(读取/写入 `openclaw.json`)。
-- `commands.debug`(默认 `false`)启用 `/debug`(仅运行时覆盖)。
-- `commands.useAccessGroups`(默认 `true`)对命令强制执行允许列表/策略。
+- `commands.debug`（默认 `false`）启用 `/debug`（仅运行时覆盖）。
+- `commands.allowFrom`（可选）设置命令授权的每提供商允许列表。配置时，它是命令和指令的唯一授权来源（频道允许列表/配对和 `commands.useAccessGroups` 被忽略）。使用 `"*"` 作为全局默认值；提供商特定的键覆盖它。
+- `commands.useAccessGroups`（默认 `true`）在未设置 `commands.allowFrom` 时对命令强制执行允许列表/策略。
 
 ## 命令列表
 
@@ -62,10 +63,18 @@ read_when: ["使用或配置聊天命令","调试命令路由或权限"]
 - `/status`(显示当前状态;当可用时包括当前模型提供商的提供商使用/配额)
 - `/allowlist`(列出/添加/删除允许列表条目)
 - `/approve <id> allow-once|allow-always|deny`(解决 exec 批准提示)
-- `/context [list|detail|json]`(解释"上下文";`detail` 显示每个文件 + 每个工具 + 每个技能 + 系统提示大小)
-- `/whoami`(显示您的发送者 id;别名: `/id`)
-- `/subagents list|stop|log|info|send`(检查、停止、记录或消息当前会话的子 agent 运行)
-- `/config show|get|set|unset`(将配置持久化到磁盘,仅所有者;需要 `commands.config: true`)
+- `/export-session [path]`（别名：`/export`）（将当前会话导出为包含完整系统提示的 HTML）
+- `/context [list|detail|json]`（解释"上下文"；`detail` 显示每个文件 + 每个工具 + 每个技能 + 系统提示大小）
+- `/whoami`（显示您的发送者 id；别名：`/id`）
+- `/session ttl <duration|off>`（管理会话级别设置，例如 TTL）
+- `/subagents list|kill|log|info|send|steer|spawn`（检查、控制或生成当前会话的子代理运行）
+- `/agents`（列出此会话的线程绑定代理）
+- `/focus <target>`（Discord：将此线程或新线程绑定到会话/子代理目标）
+- `/unfocus`（Discord：删除当前线程绑定）
+- `/kill <id|#|all>`（立即中止一个或所有运行中的子代理；无确认消息）
+- `/steer <id|#> <message>`（立即引导运行中的子代理：运行中时就地，否则中止当前工作并在引导消息上重启）
+- `/tell <id|#> <message>`（`/steer` 的别名）
+- `/config show|get|set|unset`（将配置持久化到磁盘，仅所有者；需要 `commands.config: true`）
 - `/debug show|set|unset|reset`(运行时覆盖,仅所有者;需要 `commands.debug: true`)
 - `/usage off|tokens|full|cost`(每响应使用页脚或本地成本摘要)
 - `/tts off|always|inbound|tagged|status|provider|limit|summary|audio`(控制 TTS;参见 [/tts](/tts))
@@ -137,9 +146,10 @@ read_when: ["使用或配置聊天命令","调试命令路由或权限"]
 ```
 
 注意:
-- `/model` 和 `/model list` 显示紧凑的编号选择器(模型系列 + 可用提供商)。
-- `/model <#>` 从该选择器中选择(并在可能时优先使用当前提供商)。
-- `/model status` 显示详细视图,包括配置的提供商端点(`baseUrl`)和 API 模式(`api`)(可用时)。
+- `/model` 和 `/model list` 显示紧凑的编号选择器（模型系列 + 可用提供商）。
+- 在 Discord 上，`/model` 和 `/models` 打开带有提供商和模型下拉列表以及提交步骤的交互式选择器。
+- `/model <#>` 从该选择器中选择（并在可能时优先使用当前提供商）。
+- `/model status` 显示详细视图，包括配置的提供商端点（`baseUrl`）和 API 模式（`api`）（可用时）。
 
 ## 调试覆盖
 

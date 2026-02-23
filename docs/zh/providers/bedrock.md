@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will-be-updated"
+mmh3_hash: "ca743a702d507b01c782e2b2c41c84a4"
 summary: "在 OpenClaw 中使用 Amazon Bedrock（Converse API）模型"
 read_when:
   - 您想要在 OpenClaw 中使用 Amazon Bedrock 模型

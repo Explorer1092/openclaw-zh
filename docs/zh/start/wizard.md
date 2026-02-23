@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "placeholder"
+mmh3_hash: "65760ce517bcce06f4090348be97e692"
 summary: "CLI 入门向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
 read_when:
   - 运行或配置入门向导

@@ -1,7 +1,7 @@
 ---
 title: "grammY 集成 (Telegram Bot API)"
 sidebarTitle: "grammY"
-mmh3_hash: "fb2bcad25ad61682d5e3917a99ed4310"
+mmh3_hash: "f294366605890db1337edd5184deefb2"
 summary: "通过 grammY 集成 Telegram Bot API 及设置说明"
 read_when: ["使用 Telegram 或 grammY 路径时"]
 ---
@@ -20,7 +20,7 @@ read_when: ["使用 Telegram 或 grammY 路径时"]
 - **Webhook 支持：** `webhook-set.ts` 封装 `setWebhook/deleteWebhook`；`webhook.ts` 托管回调，具有健康检查 + 优雅关闭功能。当设置 `channels.telegram.webhookUrl` + `channels.telegram.webhookSecret` 时 Gateway 启用 webhook 模式（否则使用长轮询）。
 - **会话：** 直接聊天折叠到 agent 主会话 (`agent:<agentId>:<mainKey>`)；群组使用 `agent:<agentId>:telegram:group:<chatId>`；回复路由回同一频道。
 - **配置选项：** `channels.telegram.botToken`、`channels.telegram.dmPolicy`、`channels.telegram.groups`（白名单 + 提及默认值）、`channels.telegram.allowFrom`、`channels.telegram.groupAllowFrom`、`channels.telegram.groupPolicy`、`channels.telegram.mediaMaxMb`、`channels.telegram.linkPreview`、`channels.telegram.proxy`、`channels.telegram.webhookSecret`、`channels.telegram.webhookUrl`、`channels.telegram.webhookHost`。
-- **实时流式预览：** 可选的 `channels.telegram.streamMode` 发送临时消息并使用 `editMessageText` 更新它。这与 channel 块流式传输是分开的。
+- **实时流式预览：** `channels.telegram.streaming`（`off | partial | block | progress`）发送临时消息并使用 `editMessageText` 更新它。这与 channel 块流式传输是分开的。
 - **测试：** grammy 模拟涵盖 DM + 群组提及门控和出站发送；仍欢迎更多媒体/webhook 测试用例。
 
 开放问题

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will-be-updated"
+mmh3_hash: "828e38c2d39b20ec0dc413b85044aae5"
 summary: "Hugging Face Inference 设置（身份验证 + 模型选择）"
 read_when:
   - 您想要在 OpenClaw 中使用 Hugging Face Inference

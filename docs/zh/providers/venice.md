@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will-be-updated"
+mmh3_hash: "a733eab952fe86c681aff8f9286d41a8"
 title: "Venice AI（Venice 亮点）"
 summary: "在 OpenClaw 中使用 Venice AI 注重隐私的模型"
 read_when:

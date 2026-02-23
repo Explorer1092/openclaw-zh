@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c8c7926b79b101ed9ddc81df88811724"
+mmh3_hash: "dd8140d4da5c7cee1216fe54c42316eb"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
@@ -193,6 +193,8 @@ openclaw channels add
   },
 }
 ```
+
+如果您使用 `connectionMode: "webhook"`，请设置 `verificationToken`。Feishu webhook 服务器默认绑定到 `127.0.0.1`；仅当您有意需要不同的绑定地址时才设置 `webhookHost`。
 
 ### 通过环境变量配置
 
@@ -528,13 +530,18 @@ Feishu 通过交互式卡片支持流式回复。启用后，机器人在生成�
 
 关键选项：
 
-| 设置                                              | 描述                         | 默认值    |
-| ------------------------------------------------- | ---------------------------- | --------- |
-| `channels.feishu.enabled`                         | 启用/禁用 Channel            | `true`    |
-| `channels.feishu.domain`                          | API 域（`feishu` 或 `lark`） | `feishu`  |
-| `channels.feishu.accounts.<id>.appId`             | App ID                       | -         |
-| `channels.feishu.accounts.<id>.appSecret`         | App Secret                   | -         |
-| `channels.feishu.accounts.<id>.domain`            | 每个帐户的 API 域覆盖        | `feishu`  |
+| 设置                                              | 描述                            | 默认值           |
+| ------------------------------------------------- | ------------------------------- | ---------------- |
+| `channels.feishu.enabled`                         | 启用/禁用 Channel               | `true`           |
+| `channels.feishu.domain`                          | API 域（`feishu` 或 `lark`）    | `feishu`         |
+| `channels.feishu.connectionMode`                  | 事件传输模式                    | `websocket`      |
+| `channels.feishu.verificationToken`               | Webhook 模式必填                | -                |
+| `channels.feishu.webhookPath`                     | Webhook 路由路径                | `/feishu/events` |
+| `channels.feishu.webhookHost`                     | Webhook 绑定主机                | `127.0.0.1`      |
+| `channels.feishu.webhookPort`                     | Webhook 绑定端口                | `3000`           |
+| `channels.feishu.accounts.<id>.appId`             | App ID                          | -                |
+| `channels.feishu.accounts.<id>.appSecret`         | App Secret                      | -                |
+| `channels.feishu.accounts.<id>.domain`            | 每个帐户的 API 域覆盖           | `feishu`         |
 | `channels.feishu.dmPolicy`                        | DM 策略                      | `pairing` |
 | `channels.feishu.allowFrom`                       | DM 白名单（open_id 列表）    | -         |
 | `channels.feishu.groupPolicy`                     | 群组策略                     | `open`    |

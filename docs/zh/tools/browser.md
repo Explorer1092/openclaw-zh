@@ -1,7 +1,7 @@
 ---
 title: "浏览器 (openclaw 管理)"
 sidebarTitle: "浏览器"
-mmh3_hash: "will-be-updated"
+mmh3_hash: "d671cce88d120b8e45394e3faa509216"
 summary: "集成浏览器控制服务 + 操作命令"
 read_when:
   - 添加代理控制的浏览器自动化

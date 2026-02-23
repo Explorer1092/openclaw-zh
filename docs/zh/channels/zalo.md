@@ -1,7 +1,7 @@
 ---
 title: "Zalo (Bot API)"
 sidebarTitle: "Zalo"
-mmh3_hash: "05ae6bece57a3d78b5b71e4ed048a3e6"
+mmh3_hash: "b1fb51f1cd9df1012f2f3222642279fe"
 summary: "Zalo bot 支持状态、功能和配置"
 read_when: ["Working on Zalo features or webhooks"]
 ---
@@ -13,7 +13,7 @@ read_when: ["Working on Zalo features or webhooks"]
 Zalo 作为插件提供，未与核心安装包捆绑。
 - 通过 CLI 安装：`openclaw plugins install @openclaw/zalo`
 - 或在新手引导过程中选择 **Zalo** 并确认安装提示
-- 详情：[插件](/plugin)
+- 详情：[插件](/tools/plugin)
 
 ## 快速设置（新手）
 1) 安装 Zalo 插件：
@@ -93,7 +93,7 @@ Zalo 是一款专注于越南市场的消息应用；其 Bot API 允许 Gateway 
 - 批准方式：
   - `openclaw pairing list zalo`
   - `openclaw pairing approve zalo <CODE>`
-- 配对是默认的 token 交换机制。详情：[配对](/start/pairing)
+- 配对是默认的 token 交换机制。详情：[配对](/channels/pairing)
 - `channels.zalo.allowFrom` 接受数字用户 ID（不支持用户名查找）。
 
 ## 长轮询 vs webhook
@@ -103,6 +103,9 @@ Zalo 是一款专注于越南市场的消息应用；其 Bot API 允许 Gateway 
   - Webhook URL 必须使用 HTTPS。
   - Zalo 发送带有 `X-Bot-Api-Secret-Token` 头的事件用于验证。
   - Gateway HTTP 在 `channels.zalo.webhookPath` 处理 webhook 请求（默认为 webhook URL 路径）。
+  - 请求必须使用 `Content-Type: application/json`（或 `+json` 媒体类型）。
+  - 重复事件（`event_name + message_id`）在短暂的重放窗口内被忽略。
+  - 突发流量按路径/来源进行限速，可能返回 HTTP 429。
 
 **注意：** 根据 Zalo API 文档，getUpdates（轮询）和 webhook 互斥。
 

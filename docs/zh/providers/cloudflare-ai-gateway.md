@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will-be-updated"
+mmh3_hash: "41ed3fe3091863baa324b20fdeedfece"
 title: "Cloudflare AI Gateway"
 summary: "Cloudflare AI Gateway 设置（身份验证 + 模型选择）"
 read_when:
