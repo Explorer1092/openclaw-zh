@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b7749797174edb242640556c516ff3b0"
+mmh3_hash: "8e307f6f72fce65b789ce642d4f80451"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
   - 在本地或 CI 中运行测试
@@ -92,7 +92,7 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - 花费金钱/使用速率限制
   - 优先运行缩小的子集而不是"所有内容"
   - 实时运行将获取 `~/.profile` 以获取缺失的 API 密钥
-  - Anthropic 密钥轮换：设置 `OPENCLAW_LIVE_ANTHROPIC_KEYS="sk-...,sk-..."`（或 `OPENCLAW_LIVE_ANTHROPIC_KEY=sk-...`）或多个 `ANTHROPIC_API_KEY*` 变量；测试将在速率限制时重试
+  - API 密钥轮换（特定于 Provider）：以逗号/分号格式设置 `*_API_KEYS`，或设置 `*_API_KEY_1`、`*_API_KEY_2`（例如 `OPENAI_API_KEYS`、`ANTHROPIC_API_KEYS`、`GEMINI_API_KEYS`），或通过 `OPENCLAW_LIVE_*_KEY` 进行每次实时覆盖；测试将在速率限制响应时重试
 
 ## 我应该运行哪个套件？
 

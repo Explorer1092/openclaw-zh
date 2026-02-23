@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a2be6bf4d14098ec2a1ee0371ed0a8b2"
+mmh3_hash: "4cf285a7c8dfcf24c3d7ca5c9a764731"
 summary: "安装 OpenClaw — 安装程序脚本、npm/pnpm、从源码、Docker 等"
 read_when:
   - 您需要入门快速入门之外的安装方法
@@ -27,6 +27,10 @@ title: "安装"
 <Tip>
 **安装程序脚本**是安装 OpenClaw 的推荐方式。它在一步中处理 Node 检测、安装和引导。
 </Tip>
+
+<Warning>
+对于 VPS/云主机，请尽量避免使用第三方"1 键"市场镜像。推荐使用干净的基础 OS 镜像（例如 Ubuntu LTS），然后使用安装程序脚本自行安装 OpenClaw。
+</Warning>
 
 <AccordionGroup>
   <Accordion title="安装程序脚本" icon="rocket" defaultOpen>

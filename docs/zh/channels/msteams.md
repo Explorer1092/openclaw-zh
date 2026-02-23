@@ -1,9 +1,10 @@
 ---
 title: "Microsoft Teams (插件)"
 sidebarTitle: "Microsoft Teams"
-mmh3_hash: "8093a88e6d5a4bfc4039fc938c24a63f"
+mmh3_hash: "55ae31dc6582d8ae095410cb11422ed0"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
-read_when: ["Working on MS Teams channel features"]
+read_when:
+  - 开发 MS Teams 频道功能
 ---
 # Microsoft Teams (插件)
 
@@ -432,6 +433,7 @@ Teams markdown 比 Slack 或 Discord 更受限:
 - `channels.msteams.teams.<teamId>.channels.<conversationId>.requireMention`: 每频道覆盖。
 - `channels.msteams.teams.<teamId>.channels.<conversationId>.tools`: 每频道工具策略覆盖(`allow`/`deny`/`alsoAllow`)。
 - `channels.msteams.teams.<teamId>.channels.<conversationId>.toolsBySender`: 每频道每发送者工具策略覆盖(支持 `"*"` 通配符)。
+- `toolsBySender` 键应使用显式前缀：`id:`、`e164:`、`username:`、`name:`（旧版无前缀键仍映射到 `id:`）。
 - `channels.msteams.sharePointSiteId`: 群聊/频道中文件上传的 SharePoint 站点 ID(见[在群聊中发送文件](#sending-files-in-group-chats))。
 
 ## 路由 & 会话
@@ -481,6 +483,7 @@ Teams 最近在同一底层数据模型上引入了两种频道 UI 样式:
 
 没有 Graph 权限,带有图像的频道消息将仅作为文本接收(bot 无法访问图像内容)。
 默认情况下,OpenClaw 仅从 Microsoft/Teams 主机名下载媒体。使用 `channels.msteams.mediaAllowHosts` 覆盖(使用 `["*"]` 允许任何主机)。
+Authorization 标头仅附加到 `channels.msteams.mediaAuthAllowHosts` 中的主机（默认为 Graph + Bot Framework 主机）。保持此列表严格（避免多租户后缀）。
 
 ## 在群聊中发送文件
 

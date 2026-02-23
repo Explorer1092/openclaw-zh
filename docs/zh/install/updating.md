@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "854460caea22854cf92004f9bd703f20"
+mmh3_hash: "d62eb0001e8d99b58aa127a98db77761"
 summary: "安全地更新 OpenClaw (全局安装或源码), 加上回滚策略"
 read_when:
   - 更新 OpenClaw
@@ -69,6 +69,32 @@ openclaw update --channel stable
 有关通道语义和发布说明, 请参见 [开发通道](/install/development-channels)。
 
 注意: 在 npm 安装上, gateway 会在启动时记录更新提示 (检查当前通道标签)。通过 `update.checkOnStart: false` 禁用。
+
+### 核心自动更新程序（可选）
+
+自动更新程序**默认关闭**，是核心 Gateway 功能（不是插件）。
+
+```json
+{
+  "update": {
+    "channel": "stable",
+    "auto": {
+      "enabled": true,
+      "stableDelayHours": 6,
+      "stableJitterHours": 12,
+      "betaCheckIntervalHours": 1
+    }
+  }
+}
+```
+
+行为：
+
+- `stable`：当看到新版本时，OpenClaw 等待 `stableDelayHours`，然后应用 `stableJitterHours` 中的确定性每安装抖动（分散部署）。
+- `beta`：按 `betaCheckIntervalHours` 节奏检查（默认：每小时），并在有可用更新时应用。
+- `dev`：不自动应用；使用手动 `openclaw update`。
+
+使用 `openclaw update --dry-run` 在启用自动化之前预览更新操作。
 
 然后:
 

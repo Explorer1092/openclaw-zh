@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d1e0f899098fae2d9ed76f7a088b742c"
+mmh3_hash: "0e561a578e4f63de0dc9150596628b9e"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
@@ -127,6 +127,7 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
 
     - `agents.defaults.models` 定义模型目录并作为 `/model` 的允许列表。
     - 模型引用使用 `provider/model` 格式(例如 `anthropic/claude-opus-4-6`)。
+    - `agents.defaults.imageMaxDimensionPx` 控制转录/工具图像缩放（默认 `1200`）；在截图密集的运行中，较低的值通常可以减少视觉 token 使用量。
     - 参见[模型 CLI](/concepts/models)了解在聊天中切换模型,参见[模型故障转移](/concepts/model-failover)了解认证轮换和备用行为。
     - 对于自定义/自托管提供商,请参阅参考文档中的[自定义提供商](/gateway/configuration-reference#custom-providers-and-base-urls)。
 
@@ -182,6 +183,10 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     {
       session: {
         dmScope: "per-channel-peer",  // 推荐用于多用户
+        threadBindings: {
+          enabled: true,
+          ttlHours: 24,
+        },
         reset: {
           mode: "daily",
           atHour: 4,
@@ -192,6 +197,7 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     ```
 
     - `dmScope`: `main`(共享) | `per-peer` | `per-channel-peer` | `per-account-channel-peer`
+    - `threadBindings`: 线程绑定 Session 路由的全局默认值（Discord 支持 `/focus`、`/unfocus`、`/agents` 和 `/session ttl`）。
     - 参见[Session 管理](/concepts/session)了解范围、身份链接和发送策略。
     - 参见[完整参考文档](/gateway/configuration-reference#session)了解所有字段。
 

@@ -1,9 +1,11 @@
 ---
 title: "Mattermost (插件)"
 sidebarTitle: "Mattermost"
-mmh3_hash: "b5ce4bbdd1dc0bfe1177065304387183"
+mmh3_hash: "38168a3076007355e37d04de18759b03"
 summary: "Mattermost bot 设置和 OpenClaw 配置"
-read_when: ["Setting up Mattermost","Debugging Mattermost routing"]
+read_when:
+  - 设置 Mattermost
+  - 调试 Mattermost 路由
 ---
 
 # Mattermost (插件)
@@ -92,6 +94,7 @@ Mattermost 会自动响应私信。频道行为由 `chatmode` 控制：
 - 默认：`channels.mattermost.groupPolicy = "allowlist"`（需提及才能触发）。
 - 使用 `channels.mattermost.groupAllowFrom` 将发送者加入白名单（用户 ID 或 `@username`）。
 - 公开频道：`channels.mattermost.groupPolicy="open"`（需提及才能触发）。
+- 运行时注意：如果完全没有 `channels.mattermost` 块，运行时群组策略回退为 `allowlist`（即使设置了 `channels.defaults.groupPolicy`）。
 
 ## 出站投递目标
 在使用 `openclaw message send` 或 cron/webhooks 时，使用以下目标格式：
@@ -101,6 +104,26 @@ Mattermost 会自动响应私信。频道行为由 `chatmode` 控制：
 - `@username` 用于私信（通过 Mattermost API 解析）
 
 单独的 ID 会被视为频道。
+
+## Reactions（message 工具）
+
+- 使用 `message action=react` 配合 `channel=mattermost`。
+- `messageId` 是 Mattermost post id。
+- `emoji` 接受 `thumbsup` 或 `:+1:` 等名称（冒号可选）。
+- 设置 `remove=true`（布尔值）以移除 reaction。
+- Reaction 添加/移除事件作为系统事件转发到路由的 agent 会话。
+
+示例：
+
+```
+message action=react channel=mattermost target=channel:<channelId> messageId=<postId> emoji=thumbsup
+message action=react channel=mattermost target=channel:<channelId> messageId=<postId> emoji=thumbsup remove=true
+```
+
+配置：
+
+- `channels.mattermost.actions.reactions`：启用/禁用 reaction 操作（默认 true）。
+- 每账户覆盖：`channels.mattermost.accounts.<id>.actions.reactions`。
 
 ## 多账户
 Mattermost 支持在 `channels.mattermost.accounts` 下配置多个账户：
