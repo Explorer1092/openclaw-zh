@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0b129d241e420156b5462cb4d39fe351"
+mmh3_hash: "ed41a647ed25a27d661123e4a989c31a"
 title: IRC
 description: 将 OpenClaw 连接到 IRC Channels 和直接消息。
 summary: "IRC 插件设置、访问控制和故障排除"
