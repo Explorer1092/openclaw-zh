@@ -239,7 +239,7 @@ exec ssh -T bot@mac-mini.tailnet-1234.ts.net imsg "$@"
   <Accordion title="多账户模式">
     iMessage 支持 `channels.imessage.accounts` 下的每账户配置。
 
-    每个账户可以覆盖字段，如 `cliPath`、`dbPath`、`allowFrom`、`groupPolicy`、`mediaMaxMb` 和历史设置。
+    每个账户可以覆盖字段，如 `cliPath`、`dbPath`、`allowFrom`、`groupPolicy`、`mediaMaxMb`、历史设置和附件根目录 allowlist。
 
   </Accordion>
 </AccordionGroup>
@@ -339,7 +339,9 @@ openclaw channels status --probe
     检查：
 
     - `channels.imessage.remoteHost`
+    - `channels.imessage.remoteAttachmentRoots`
     - 从 gateway 主机进行 SSH/SCP 密钥认证
+    - 主机密钥存在于 gateway 主机的 `~/.ssh/known_hosts` 中
     - 运行 Messages 的 Mac 上的远程路径可读性
 
   </Accordion>
