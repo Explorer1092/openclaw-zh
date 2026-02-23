@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cbb3a79e185c209b6f00a69d0de5469d"
+mmh3_hash: "will be updated"
 summary: "将 Gateway 身份验证委托给受信任的反向代理（Pomerium、Caddy、nginx + OAuth）"
 read_when:
   - 在身份感知代理后面运行 OpenClaw
@@ -40,8 +40,8 @@ read_when:
 ```json5
 {
   gateway: {
-    // 必须绑定到网络接口（不是回环）
-    bind: "lan",
+    // 对于同主机代理设置使用回环；对于远程代理主机使用 lan/custom
+    bind: "loopback",
 
     // 关键：仅在此处添加您的代理 IP
     trustedProxies: ["10.0.0.1", "172.17.0.1"],
@@ -62,6 +62,8 @@ read_when:
   },
 }
 ```
+
+如果 `gateway.bind` 为 `loopback`，请在 `gateway.trustedProxies` 中包含回环代理地址（`127.0.0.1`、`::1` 或等效的回环 CIDR）。
 
 ### 配置参考
 
