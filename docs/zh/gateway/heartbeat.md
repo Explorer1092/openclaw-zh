@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will be updated"
+mmh3_hash: "8153f1467f658cb951e66b81d988b540"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息

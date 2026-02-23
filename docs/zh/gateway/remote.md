@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will be updated"
+mmh3_hash: "65ef9568e0c112d6c75b7ccebebc4579"
 summary: "使用 SSH 隧道(Gateway WS)和 Tailnet 进行远程访问"
 read_when:
   - 运行或故障排除远程 Gateway 设置

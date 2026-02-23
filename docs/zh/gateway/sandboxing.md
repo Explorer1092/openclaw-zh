@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "will be updated"
+mmh3_hash: "983446498ca6beeb87d8fd38280136df"
 summary: "OpenClaw 沙盒的工作原理:模式、作用域、工作空间访问和镜像"
 title: 沙盒
 read_when: "您想要沙盒的专门解释或需要调整 agents.defaults.sandbox。"

@@ -1,7 +1,7 @@
 ---
 title: "网关协议 (WebSocket)"
 sidebarTitle: "网关协议"
-mmh3_hash: "will be updated"
+mmh3_hash: "356eec235567be44caf1c820146a13d9"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 gateway WS 客户端
