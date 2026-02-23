@@ -1,9 +1,10 @@
 ---
 title: "Matrix (插件)"
 sidebarTitle: "Matrix"
-mmh3_hash: "fa04bea4da7f947336b76f25bc029e65"
+mmh3_hash: "fdd9b548af71afd0841eee27f3f5ccd5"
 summary: "Matrix 支持状态、功能和配置"
-read_when: ["Working on Matrix channel features"]
+read_when:
+  - 开发 Matrix 频道功能
 ---
 # Matrix (插件)
 
@@ -173,6 +174,7 @@ E2EE 配置（启用端到端加密）：
 ## 房间（群组）
 
 - 默认：`channels.matrix.groupPolicy = "allowlist"`（需要提及）。使用 `channels.defaults.groupPolicy` 在未设置时覆盖默认值。
+- 运行时注意：如果 `channels.matrix` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行房间检查（即使设置了 `channels.defaults.groupPolicy`）。
 - 使用 `channels.matrix.groups` 将房间加入白名单（房间 ID 或别名；当目录搜索找到单个精确匹配时，名称会被解析为 ID）：
 
 ```json5
