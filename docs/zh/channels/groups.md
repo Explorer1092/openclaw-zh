@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4b9cabf81cb2845ba01ba51e908dc5c1"
+mmh3_hash: "736e296cbe08d2f6a8196f1d2cc2e49c"
 summary: "跨界面（WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams）的群聊行为"
 read_when:
   - 更改群聊行为或提及门控
@@ -190,6 +190,7 @@ requireMention? yes -> 被提及吗？ no -> 仅存储以供上下文使用
 - 群组 DM 单独控制（`channels.discord.dm.*`、`channels.slack.dm.*`）。
 - Telegram 白名单可以匹配用户 ID（`"123456789"`、`"telegram:123456789"`、`"tg:123456789"`）或用户名（`"@alice"` 或 `"alice"`）；前缀不区分大小写。
 - 默认值为 `groupPolicy: "allowlist"`；如果您的群组白名单为空，则阻止群组消息。
+- 运行时安全：当 provider 块完全缺失（`channels.<provider>` 不存在）时，群组策略回退到失败关闭模式（通常为 `allowlist`），而不是继承 `channels.defaults.groupPolicy`。
 
 群组消息的快速心智模型（评估顺序）：
 
@@ -276,7 +277,7 @@ requireMention? yes -> 被提及吗？ no -> 仅存储以供上下文使用
         "-1001234567890": {
           tools: { deny: ["exec", "read", "write"] },
           toolsBySender: {
-            "123456789": { alsoAllow: ["exec"] },
+            "id:123456789": { alsoAllow: ["exec"] },
           },
         },
       },
