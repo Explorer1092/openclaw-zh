@@ -1,9 +1,11 @@
 ---
 title: "聊天频道"
 sidebarTitle: "聊天频道"
-mmh3_hash: "8e58e1fc78186535584b959dfc5d4fea"
+mmh3_hash: "67d3b1dffbfa8721edc942c17140d376"
 summary: "OpenClaw 可以连接的消息平台"
-read_when: ["You want to choose a chat channel for OpenClaw","You need a quick overview of supported messaging platforms"]
+read_when:
+  - 选择 OpenClaw 的聊天频道
+  - 需要支持的消息平台快速概览
 ---
 # 聊天频道
 
@@ -24,6 +26,7 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 c
 - [BlueBubbles](/channels/bluebubbles) — **推荐用于 iMessage**；使用 BlueBubbles macOS 服务器 REST API，功能完整支持（编辑、撤回、效果、反应、群组管理 — 编辑功能目前在 macOS 26 Tahoe 上损坏）。
 - [iMessage (旧版)](/channels/imessage) — 通过 imsg CLI 的旧版 macOS 集成（已弃用，新设置请使用 BlueBubbles）。
 - [Microsoft Teams](/channels/msteams) — Bot Framework；企业支持（插件，需单独安装）。
+- [Synology Chat](/channels/synology-chat) — 通过 outgoing+incoming webhook 连接群晖 NAS Chat（插件，需单独安装）。
 - [LINE](/channels/line) — LINE Messaging API bot（插件，需单独安装）。
 - [Nextcloud Talk](/channels/nextcloud-talk) — 通过 Nextcloud Talk 自托管聊天（插件，需单独安装）。
 - [Matrix](/channels/matrix) — Matrix 协议（插件，需单独安装）。
