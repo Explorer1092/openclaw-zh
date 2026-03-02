@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1ed4a4f766157c585b8b19a0befab77c"
+mmh3_hash: "b70de2430223a38508a740c88bd77258"
 summary: "在 GCP Compute Engine VM（Docker）上全天候运行 OpenClaw Gateway，具有持久状态"
 read_when:
   - 您希望 OpenClaw 在 GCP 上全天候运行
@@ -112,10 +112,11 @@ gcloud services enable compute.googleapis.com
 
 **机器类型：**
 
-| 类型     | 规格                     | 成本             | 注意事项           |
-| -------- | ------------------------ | ---------------- | ------------------ |
-| e2-small | 2 vCPU，2GB RAM          | 每月约 $12       | 推荐               |
-| e2-micro | 2 vCPU（共享），1GB RAM  | 符合免费套餐资格 | 可能在负载下 OOM   |
+| 类型      | 规格                     | 成本             | 注意事项                          |
+| --------- | ------------------------ | ---------------- | --------------------------------- |
+| e2-medium | 2 vCPU，4GB RAM          | 每月约 $25       | 对于本地 Docker 构建最可靠        |
+| e2-small  | 2 vCPU，2GB RAM          | 每月约 $12       | Docker 构建的最低推荐             |
+| e2-micro  | 2 vCPU（共享），1GB RAM  | 符合免费套餐资格 | Docker 构建 OOM 频繁（退出 137）  |
 
 **CLI：**
 
@@ -345,6 +346,16 @@ docker compose build
 docker compose up -d openclaw-gateway
 ```
 
+如果构建因 `pnpm install --frozen-lockfile` 期间的 `Killed` / 退出代码 137 而失败，VM 内存不足。至少使用 `e2-small`，或使用 `e2-medium` 以获得更可靠的首次构建。
+
+绑定到 LAN（`OPENCLAW_GATEWAY_BIND=lan`）时，在继续之前配置受信任的浏览器来源：
+
+```bash
+docker compose run --rm openclaw-cli config set gateway.controlUi.allowedOrigins '["http://127.0.0.1:18789"]' --strict-json
+```
+
+如果更改了 Gateway 端口，请将 `18789` 替换为您配置的端口。
+
 验证二进制文件：
 
 ```bash
@@ -389,7 +400,20 @@ gcloud compute ssh openclaw-gateway --zone=us-central1-a -- -L 18789:127.0.0.1:1
 
 `http://127.0.0.1:18789/`
 
-粘贴您的 Gateway 令牌。
+获取新鲜的带令牌仪表板链接：
+
+```bash
+docker compose run --rm openclaw-cli dashboard --no-open
+```
+
+粘贴该 URL 中的令牌。
+
+如果控制 UI 显示 `unauthorized` 或 `disconnected (1008): pairing required`，请批准浏览器设备：
+
+```bash
+docker compose run --rm openclaw-cli devices list
+docker compose run --rm openclaw-cli devices approve <requestId>
+```
 
 ---
 

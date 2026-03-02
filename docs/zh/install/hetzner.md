@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8edbf3cbb6b09f6979f042b9c0807816"
+mmh3_hash: "cecdc37a6179f630b3a0f6e0204829e1"
 summary: "在廉价的 Hetzner VPS（Docker）上全天候运行 OpenClaw Gateway，具有持久状态和嵌入的二进制文件"
 read_when:
   - 您希望 OpenClaw 在云 VPS 上全天候运行（不是您的笔记本电脑）
@@ -16,6 +16,14 @@ title: "Hetzner"
 使用 Docker 在 Hetzner VPS 上运行持久的 OpenClaw Gateway，具有持久状态、嵌入的二进制文件和安全的重启行为。
 
 如果您想要"OpenClaw 全天候运行，每月约 $5"，这是最简单可靠的设置。Hetzner 定价会变化；选择最小的 Debian/Ubuntu VPS，如果遇到 OOM 则扩展。
+
+安全模型提醒：
+
+- 当所有人处于同一信任边界且运行时仅用于业务时，公司共享代理是可以的。
+- 保持严格隔离：专用 VPS/运行时 + 专用账户；该主机上不要有个人 Apple/Google/浏览器/密码管理器配置文件。
+- 如果用户对彼此具有对抗性，按 Gateway/主机/OS 用户拆分。
+
+请参阅[安全](/gateway/security)和 [VPS 托管](/vps)。
 
 ## 我们在做什么（简单术语）？
 

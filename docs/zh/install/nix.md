@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eae870bd6a73bcb11f47d00f2d5d4aa8"
+mmh3_hash: "fb720af57f1ef523bb98519381eaf35d"
 summary: "使用 Nix 声明式安装 OpenClaw"
 read_when:
   - 您想要可重现、可回滚的安装
@@ -58,15 +58,17 @@ OPENCLAW_NIX_MODE=1
 在 macOS 上，GUI 应用程序不会自动继承 shell 环境变量。你也可以通过 defaults 启用 Nix 模式：
 
 ```bash
-defaults write bot.molt.mac openclaw.nixMode -bool true
+defaults write ai.openclaw.mac openclaw.nixMode -bool true
 ```
 
 ### 配置 + 状态路径
 
 OpenClaw 从 `OPENCLAW_CONFIG_PATH` 读取 JSON5 配置，并将可变数据存储在 `OPENCLAW_STATE_DIR` 中。
+如果需要，还可以设置 `OPENCLAW_HOME` 来控制内部路径解析使用的基础主目录。
 
-- `OPENCLAW_STATE_DIR` (默认: `~/.openclaw`)
-- `OPENCLAW_CONFIG_PATH` (默认: `$OPENCLAW_STATE_DIR/openclaw.json`)
+- `OPENCLAW_HOME`（默认优先级：`HOME` / `USERPROFILE` / `os.homedir()`）
+- `OPENCLAW_STATE_DIR`（默认：`~/.openclaw`）
+- `OPENCLAW_CONFIG_PATH`（默认：`$OPENCLAW_STATE_DIR/openclaw.json`）
 
 在 Nix 下运行时，将这些显式设置为 Nix 管理的位置，以便运行时状态和配置远离不可变存储。
 

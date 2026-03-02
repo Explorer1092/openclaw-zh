@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d17012037be99b21551e471d40df53bf"
+mmh3_hash: "5c809e821f437eb702c5aa64f56cd4cf"
 title: "Docker (可选)"
 sidebarTitle: "Docker"
 summary: "OpenClaw 的可选 Docker 设置和引导"
@@ -25,12 +25,17 @@ Docker 是**可选的**。仅在您希望使用容器化网关或验证 Docker �
 
 ## 要求
 
-- Docker Desktop(或 Docker Engine)+ Docker Compose v2
+- Docker Desktop（或 Docker Engine）+ Docker Compose v2
+- 镜像构建至少需要 2 GB RAM（在 1 GB 主机上 `pnpm install` 可能因 OOM 被杀死，退出代码 137）
 - 足够的磁盘空间用于镜像 + 日志
 
-## 容器化网关(Docker Compose)
+## 容器化网关（Docker Compose）
 
-### 快速开始(推荐)
+### 快速开始（推荐）
+
+<Note>
+此处的 Docker 默认值假设绑定模式（`lan`/`loopback`），而不是主机别名。在 `gateway.bind` 中使用绑定模式值（例如 `lan` 或 `loopback`），而不是主机别名如 `0.0.0.0` 或 `localhost`。
+</Note>
 
 从仓库根目录:
 
@@ -48,9 +53,14 @@ Docker 是**可选的**。仅在您希望使用容器化网关或验证 Docker �
 
 可选环境变量:
 
+- `OPENCLAW_IMAGE` — 使用远程镜像而不是本地构建（例如 `ghcr.io/openclaw/openclaw:latest`）
 - `OPENCLAW_DOCKER_APT_PACKAGES` — 在构建期间安装额外的 apt 软件包
 - `OPENCLAW_EXTRA_MOUNTS` — 添加额外的主机绑定挂载
 - `OPENCLAW_HOME_VOLUME` — 在命名卷中持久化 `/home/node`
+- `OPENCLAW_SANDBOX` — 选择启用 Docker Gateway 沙盒引导。仅显式真值才能启用：`1`、`true`、`yes`、`on`
+- `OPENCLAW_INSTALL_DOCKER_CLI` — 本地镜像构建的构建参数透传（`1` 在镜像中安装 Docker CLI）。当 `OPENCLAW_SANDBOX=1` 用于本地构建时，`docker-setup.sh` 会自动设置此项。
+- `OPENCLAW_DOCKER_SOCKET` — 覆盖 Docker socket 路径（默认：`DOCKER_HOST=unix://...` 路径，否则为 `/var/run/docker.sock`）
+- `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` — 紧急解除：允许 CLI/引导客户端路径访问受信任私有网络的 `ws://` 目标（默认仅限回环）
 
 完成后:
 
@@ -65,7 +75,97 @@ Docker 是**可选的**。仅在您希望使用容器化网关或验证 Docker �
 
 在 VPS 上运行？请参阅 [Hetzner (Docker VPS)](/install/hetzner)。
 
-### Shell 助手(可选)
+### 为 Docker Gateway 启用代理沙盒（选择启用）
+
+`docker-setup.sh` 还可以为 Docker 部署引导 `agents.defaults.sandbox.*`。
+
+通过以下方式启用：
+
+```bash
+export OPENCLAW_SANDBOX=1
+./docker-setup.sh
+```
+
+自定义 socket 路径（例如无根 Docker）：
+
+```bash
+export OPENCLAW_SANDBOX=1
+export OPENCLAW_DOCKER_SOCKET=/run/user/1000/docker.sock
+./docker-setup.sh
+```
+
+注意：
+
+- 脚本仅在沙盒先决条件通过后才挂载 `docker.sock`。
+- 如果沙盒设置无法完成，脚本会将 `agents.defaults.sandbox.mode` 重置为 `off`，以避免重新运行时出现陈旧/损坏的沙盒配置。
+- 如果 `Dockerfile.sandbox` 缺失，脚本会打印警告并继续；如果需要，使用 `scripts/sandbox-setup.sh` 构建 `openclaw-sandbox:bookworm-slim`。
+- 对于非本地 `OPENCLAW_IMAGE` 值，镜像必须已包含 Docker CLI 支持以执行沙盒。
+
+### 自动化/CI（非交互式，无 TTY 噪音）
+
+对于脚本和 CI，使用 `-T` 禁用 Compose 伪 TTY 分配：
+
+```bash
+docker compose run -T --rm openclaw-cli gateway probe
+docker compose run -T --rm openclaw-cli devices list --json
+```
+
+如果您的自动化未导出 Claude session 变量，在 `docker-compose.yml` 中将它们保持未设置现在默认解析为空值，以避免重复的"变量未设置"警告。
+
+### 共享网络安全说明（CLI + Gateway）
+
+`openclaw-cli` 使用 `network_mode: "service:openclaw-gateway"`，以便 CLI 命令可以在 Docker 中可靠地通过 `127.0.0.1` 访问 Gateway。
+
+将此视为共享信任边界：回环绑定不是这两个容器之间的隔离。如果需要更强的隔离，请从单独的容器/主机网络路径运行命令，而不是使用捆绑的 `openclaw-cli` 服务。
+
+为了减少 CLI 进程被入侵时的影响，compose 配置在 `openclaw-cli` 上删除了 `NET_RAW`/`NET_ADMIN` 并启用了 `no-new-privileges`。
+
+### 使用远程镜像（跳过本地构建）
+
+官方预构建镜像发布在：
+
+- [GitHub Container Registry 包](https://github.com/openclaw/openclaw/pkgs/container/openclaw)
+
+使用镜像名称 `ghcr.io/openclaw/openclaw`（不要使用名称相似的 Docker Hub 镜像）。
+
+常用标签：
+
+- `main` — 来自 `main` 的最新构建
+- `<version>` — 发布标签构建（例如 `2026.2.26`）
+- `latest` — 最新稳定发布标签
+
+### 基础镜像元数据
+
+主要 Docker 镜像目前使用：
+
+- `node:22-bookworm`
+
+Docker 镜像现在发布 OCI 基础镜像注释（sha256 为示例）：
+
+- `org.opencontainers.image.base.name=docker.io/library/node:22-bookworm`
+- `org.opencontainers.image.base.digest=sha256:cd7bcd2e7a1e6f72052feb023c7f6b722205d3fcab7bbcbd2d1bfdab10b1e935`
+- `org.opencontainers.image.source=https://github.com/openclaw/openclaw`
+- `org.opencontainers.image.url=https://openclaw.ai`
+- `org.opencontainers.image.documentation=https://docs.openclaw.ai/install/docker`
+- `org.opencontainers.image.licenses=MIT`
+- `org.opencontainers.image.title=OpenClaw`
+- `org.opencontainers.image.description=OpenClaw gateway and CLI runtime container image`
+- `org.opencontainers.image.revision=<git-sha>`
+- `org.opencontainers.image.version=<tag-or-main>`
+- `org.opencontainers.image.created=<rfc3339 timestamp>`
+
+默认情况下，设置脚本从源码构建镜像。要拉取预构建镜像，请在运行脚本前设置 `OPENCLAW_IMAGE`：
+
+```bash
+export OPENCLAW_IMAGE="ghcr.io/openclaw/openclaw:latest"
+./docker-setup.sh
+```
+
+脚本检测到 `OPENCLAW_IMAGE` 不是默认的 `openclaw:local`，将运行 `docker pull` 而不是 `docker build`。其他所有内容（引导、Gateway 启动、令牌生成）的工作方式相同。
+
+`docker-setup.sh` 仍从仓库根目录运行，因为它使用本地的 `docker-compose.yml` 和辅助文件。`OPENCLAW_IMAGE` 跳过本地镜像构建时间；它不会替换 compose/设置工作流。
+
+### Shell 助手（可选）
 
 为了更方便的日常 Docker 管理，请安装 `ClawDock`：
 
@@ -296,27 +396,59 @@ docker compose run --rm openclaw-cli channels add --channel discord --token "<to
 
 ### 健康检查
 
+容器探针端点（无需认证）：
+
+```bash
+curl -fsS http://127.0.0.1:18789/healthz
+curl -fsS http://127.0.0.1:18789/readyz
+```
+
+别名：`/health` 和 `/ready`。
+
+Docker 镜像包含内置的 `HEALTHCHECK`，在后台 ping `/healthz`。简单来说：Docker 持续检查 OpenClaw 是否仍然响应。如果检查持续失败，Docker 将容器标记为 `unhealthy`，编排系统（Docker Compose 重启策略、Swarm、Kubernetes 等）可以自动重启或替换它。
+
+经过认证的深度健康快照（Gateway + Channels）：
+
 ```bash
 docker compose exec openclaw-gateway node dist/index.js health --token "$OPENCLAW_GATEWAY_TOKEN"
 ```
 
-### E2E 冒烟测试(Docker)
+### E2E 冒烟测试（Docker）
 
 ```bash
 scripts/e2e/onboard-docker.sh
 ```
 
-### QR 导入冒烟测试(Docker)
+### QR 导入冒烟测试（Docker）
 
 ```bash
 pnpm test:docker:qr
 ```
 
+### LAN vs 回环（Docker Compose）
+
+`docker-setup.sh` 默认将 `OPENCLAW_GATEWAY_BIND=lan`，以便通过 Docker 端口发布的主机访问 `http://127.0.0.1:18789` 有效。
+
+- `lan`（默认）：主机浏览器 + 主机 CLI 可以访问已发布的 Gateway 端口。
+- `loopback`：只有容器网络命名空间内的进程才能直接访问 Gateway；主机已发布的端口访问可能失败。
+
+设置脚本还在引导后固定 `gateway.mode=local`，以便 Docker CLI 命令默认以本地回环为目标。
+
+旧配置说明：在 `gateway.bind` 中使用绑定模式值（`lan` / `loopback` / `custom` / `tailnet` / `auto`），而不是主机别名（`0.0.0.0`、`127.0.0.1`、`localhost`、`::`、`::1`）。
+
+如果您看到 `Gateway target: ws://172.x.x.x:18789` 或来自 Docker CLI 命令的重复 `pairing required` 错误，请运行：
+
+```bash
+docker compose run --rm openclaw-cli config set gateway.mode local
+docker compose run --rm openclaw-cli config set gateway.bind lan
+docker compose run --rm openclaw-cli devices list --url ws://127.0.0.1:18789
+```
+
 ### 注意
 
-- 网关绑定默认为 `lan` 用于容器使用。
+- Gateway 绑定默认为 `lan` 用于容器使用（`OPENCLAW_GATEWAY_BIND`）。
 - Dockerfile CMD 使用 `--allow-unconfigured`；挂载的配置中 `gateway.mode` 不为 `local` 也会启动。覆盖 CMD 以强制执行守卫。
-- 网关容器是会话的真实来源(`~/.openclaw/agents/<agentId>/sessions/`)。
+- Gateway 容器是会话的真实来源（`~/.openclaw/agents/<agentId>/sessions/`）。
 
 ## 代理沙盒(主机网关 + Docker 工具)
 
@@ -354,7 +486,9 @@ pnpm test:docker:qr
   - `"ro"` 将沙盒工作空间保留在 `/workspace`，并将代理工作空间只读挂载到 `/agent`(禁用 `write`/`edit`/`apply_patch`)
   - `"rw"` 将代理工作空间读写挂载到 `/workspace`
 - 自动清理：空闲 > 24 小时或年龄 > 7 天
-- 网络：默认为 `none`(明确选择加入，如果需要出口)
+- 网络：默认为 `none`（明确选择加入，如果需要出口）
+  - `host` 被阻止。
+  - `container:<id>` 默认被阻止（命名空间加入风险）。
 - 默认允许：`exec`、`process`、`read`、`write`、`edit`、`sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`session_status`
 - 默认拒绝：`browser`、`canvas`、`nodes`、`cron`、`discord`、`gateway`
 
@@ -362,9 +496,12 @@ pnpm test:docker:qr
 
 如果计划在 `setupCommand` 中安装软件包，请注意：
 
-- 默认 `docker.network` 为 `"none"`(无出口)。
+- 默认 `docker.network` 为 `"none"`（无出口）。
+- `docker.network: "host"` 被阻止。
+- `docker.network: "container:<id>"` 默认被阻止。
+- 紧急解除覆盖：`agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`。
 - `readOnlyRoot: true` 阻止软件包安装。
-- `user` 必须是 root 才能使用 `apt-get`(省略 `user` 或设置 `user: "0:0"`)。
+- `user` 必须是 root 才能使用 `apt-get`（省略 `user` 或设置 `user: "0:0"`）。
   OpenClaw 在 `setupCommand`(或 docker 配置)更改时自动重新创建容器，除非容器**最近使用过**(约 5 分钟内)。热容器会记录一条警告，其中包含确切的 `openclaw sandbox recreate ...` 命令。
 
 ```json5
@@ -419,7 +556,8 @@ pnpm test:docker:qr
 
 强化旋钮位于 `agents.defaults.sandbox.docker` 下：
 `network`、`user`、`pidsLimit`、`memory`、`memorySwap`、`cpus`、`ulimits`、
-`seccompProfile`、`apparmorProfile`、`dns`、`extraHosts`。
+`seccompProfile`、`apparmorProfile`、`dns`、`extraHosts`、
+`dangerouslyAllowContainerNamespaceJoin`（仅限紧急解除）。
 
 多代理：通过 `agents.list[].sandbox.{docker,browser,prune}.*` 覆盖每个代理的 `agents.defaults.sandbox.{docker,browser,prune}.*`
 (当 `agents.defaults.sandbox.scope` / `agents.list[].sandbox.scope` 为 `"shared"` 时被忽略)。

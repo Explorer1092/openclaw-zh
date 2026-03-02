@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3c3b64437f0dbb49c5e696cfc7d2e5bc"
+mmh3_hash: "435924a64793144d1303ac4122601d6f"
 title: "开发频道"
 sidebarTitle: "开发频道"
 summary: "稳定版、测试版和开发版频道：语义、切换和标记"
@@ -57,7 +57,9 @@ openclaw update --channel dev
 
 ## 标记最佳实践
 
-- 标记你希望 git checkout 登陆的版本（`vYYYY.M.D` 或 `vYYYY.M.D-<patch>`）。
+- 标记你希望 git checkout 登陆的版本（stable 用 `vYYYY.M.D`，beta 用 `vYYYY.M.D-beta.N`）。
+- `vYYYY.M.D.beta.N` 也被识别以保持兼容性，但首选 `-beta.N`。
+- 旧版 `vYYYY.M.D-<patch>` 标签仍被识别为 stable（非 beta）。
 - 保持标签不可变：永远不要移动或重用标签。
 - npm dist-tags 仍然是 npm 安装的事实来源：
   - `latest` → stable
