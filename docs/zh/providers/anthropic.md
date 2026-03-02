@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e9605fade594176b7e880fc4403fbf79"
+mmh3_hash: "579e1e0555563b004ae9538bded3cb46"
 title: "Anthropic (Claude)"
 sidebarTitle: "Anthropic"
 summary: "在 OpenClaw 中通过 API 密钥或 setup-token 使用 Anthropic Claude"
@@ -37,6 +37,15 @@ openclaw onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
 }
 ```
 
+## 思考默认值（Claude 4.6）
+
+- 当没有设置明确的思考级别时，Anthropic Claude 4.6 模型在 OpenClaw 中默认使用 `adaptive` 思考模式。
+- 您可以按消息覆盖（`/think:<level>`）或在模型参数中设置：
+  `agents.defaults.models["anthropic/<model>"].params.thinking`。
+- 相关 Anthropic 文档：
+  - [自适应思考](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking)
+  - [扩展思考](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
+
 ## Prompt 缓存 (Anthropic API)
 
 OpenClaw 支持 Anthropic 的 prompt 缓存功能。这是**仅限 API** 的功能；订阅身份验证不遵守缓存设置。
@@ -69,6 +78,42 @@ OpenClaw 支持 Anthropic 的 prompt 缓存功能。这是**仅限 API** 的功�
 
 当使用 Anthropic API Key 身份验证时，OpenClaw 会自动为所有 Anthropic 模型应用 `cacheRetention: "short"`（5 分钟缓存）。您可以通过在配置中显式设置 `cacheRetention` 来覆盖此设置。
 
+### 按 Agent 的 cacheRetention 覆盖
+
+使用模型级参数作为基准，然后通过 `agents.list[].params` 覆盖特定 Agent。
+
+```json5
+{
+  agents: {
+    defaults: {
+      model: { primary: "anthropic/claude-opus-4-6" },
+      models: {
+        "anthropic/claude-opus-4-6": {
+          params: { cacheRetention: "long" }, // 大多数 Agent 的基准
+        },
+      },
+    },
+    list: [
+      { id: "research", default: true },
+      { id: "alerts", params: { cacheRetention: "none" } }, // 仅覆盖此 Agent
+    ],
+  },
+}
+```
+
+缓存相关参数的配置合并顺序：
+
+1. `agents.defaults.models["provider/model"].params`
+2. `agents.list[].params`（匹配 `id`，按键覆盖）
+
+这允许一个 Agent 保持长期缓存，而同一模型上的另一个 Agent 禁用缓存，以避免对突发/低重用流量产生写入成本。
+
+### Bedrock Claude 注意事项
+
+- Bedrock 上的 Anthropic Claude 模型（`amazon-bedrock/*anthropic.claude*`）在配置时接受 `cacheRetention` 透传。
+- 非 Anthropic Bedrock 模型在运行时强制设置为 `cacheRetention: "none"`。
+- Anthropic API 密钥智能默认值也会在没有设置显式值时为 Claude-on-Bedrock 模型引用生成 `cacheRetention: "short"`。
+
 ### 旧参数
 
 旧的 `cacheControlTtl` 参数仍然支持以保持向后兼容性：
@@ -100,6 +145,13 @@ Anthropic 的 1M 上下文窗口处于 beta 阶段。在 OpenClaw 中，通过 `
 ```
 
 OpenClaw 将此映射到 Anthropic 请求的 `anthropic-beta: context-1m-2025-08-07`。
+
+仅当 `params.context1m` 显式设置为 `true` 时，此功能才会激活。
+
+要求：Anthropic 必须允许该凭据使用长上下文（通常是 API 密钥计费，或启用了 Extra Usage 的订阅账户）。否则 Anthropic 会返回：
+`HTTP 429: rate_limit_error: Extra usage is required for long context requests`。
+
+注意：当使用 OAuth/订阅令牌（`sk-ant-oat-*`）时，Anthropic 当前会拒绝 `context-1m-*` beta 请求。OpenClaw 会自动跳过 OAuth 身份验证的 context1m beta 标头，并保留所需的 OAuth beta。
 
 ## 选项 B：Claude setup-token
 
@@ -157,8 +209,8 @@ openclaw onboard --auth-choice setup-token
 
 **找不到提供商 "anthropic" 的 API 密钥**
 
-- 身份验证是**按代理**的。新代理不继承主代理的密钥。
-- 为该代理重新运行入门，或在网关主机上粘贴 setup-token / API 密钥，
+- 身份验证是**按 Agent** 的。新 Agent 不继承主 Agent 的密钥。
+- 为该 Agent 重新运行入门，或在网关主机上粘贴 setup-token / API 密钥，
   然后使用 `openclaw models status` 验证。
 
 **找不到配置文件 `anthropic:default` 的凭据**

@@ -1,12 +1,16 @@
 ---
 title: "Ollama"
-mmh3_hash: "89ffbde31078b93441575956f808a87a"
+mmh3_hash: "d807ea7a055622b1f5c23a92046f8e85"
 summary: "使用 Ollama 运行 OpenClaw (本地 LLM 运行时)"
 read_when: ["您想通过 Ollama 使用本地模型运行 OpenClaw","您需要 Ollama 设置和配置指导"]
 ---
 # Ollama
 
-Ollama 是一个本地 LLM 运行时,可以轻松在您的机器上运行开源模型。OpenClaw 与 Ollama 的原生 API (`/api/chat`) 集成,支持流式传输和工具调用,并且当您使用 `OLLAMA_API_KEY`(或身份验证配置文件)选择加入并且不定义显式的 `models.providers.ollama` 条目时,可以**自动发现支持工具的模型**。
+Ollama 是一个本地 LLM 运行时，可以轻松在您的机器上运行开源模型。OpenClaw 与 Ollama 的原生 API (`/api/chat`) 集成，支持流式传输和工具调用，并且当您使用 `OLLAMA_API_KEY`（或身份验证配置文件）选择加入并且不定义显式的 `models.providers.ollama` 条目时，可以**自动发现支持工具的模型**。
+
+<Warning>
+**远程 Ollama 用户**：请勿在 OpenClaw 中使用 `/v1` OpenAI 兼容 URL（`http://host:11434/v1`）。这会破坏工具调用，模型可能将原始工具 JSON 作为纯文本输出。请改用原生 Ollama API URL：`baseUrl: "http://host:11434"`（无 `/v1`）。
+</Warning>
 
 ## 快速开始
 
@@ -24,7 +28,7 @@ ollama pull qwen2.5-coder:32b
 ollama pull deepseek-r1:32b
 ```
 
-3. 为 OpenClaw 启用 Ollama(任何值都有效;Ollama 不需要真正的密钥):
+3. 为 OpenClaw 启用 Ollama（任何值都有效；Ollama 不需要真正的密钥）：
 
 ```bash
 # 设置环境变量
@@ -34,7 +38,7 @@ export OLLAMA_API_KEY="ollama-local"
 openclaw config set models.providers.ollama.apiKey "ollama-local"
 ```
 
-4. 使用 Ollama 模型:
+4. 使用 Ollama 模型：
 
 ```json5
 {
@@ -46,27 +50,27 @@ openclaw config set models.providers.ollama.apiKey "ollama-local"
 }
 ```
 
-## 模型发现(隐式提供商)
+## 模型发现（隐式提供商）
 
-当您设置 `OLLAMA_API_KEY`(或身份验证配置文件)并且**不**定义 `models.providers.ollama` 时,OpenClaw 从本地 Ollama 实例 `http://127.0.0.1:11434` 发现模型:
+当您设置 `OLLAMA_API_KEY`（或身份验证配置文件）并且**不**定义 `models.providers.ollama` 时，OpenClaw 从本地 Ollama 实例 `http://127.0.0.1:11434` 发现模型：
 
 - 查询 `/api/tags` 和 `/api/show`
 - 仅保留报告 `tools` 功能的模型
 - 当模型报告 `thinking` 时标记 `reasoning`
-- 从 `model_info["<arch>.context_length"]` 读取 `contextWindow`(如果可用)
+- 从 `model_info["<arch>.context_length"]` 读取 `contextWindow`（如果可用）
 - 将 `maxTokens` 设置为上下文窗口的 10 倍
 - 将所有成本设置为 `0`
 
-这避免了手动模型条目,同时使目录与 Ollama 的功能保持一致。
+这避免了手动模型条目，同时使目录与 Ollama 的功能保持一致。
 
-要查看哪些模型可用:
+要查看哪些模型可用：
 
 ```bash
 ollama list
 openclaw models list
 ```
 
-要添加新模型,只需使用 Ollama 拉取它:
+要添加新模型，只需使用 Ollama 拉取它：
 
 ```bash
 ollama pull mistral
@@ -74,21 +78,21 @@ ollama pull mistral
 
 新模型将自动被发现并可用。
 
-如果您明确设置 `models.providers.ollama`,则跳过自动发现,您必须手动定义模型(见下文)。
+如果您明确设置 `models.providers.ollama`，则跳过自动发现，您必须手动定义模型（见下文）。
 
 ## 配置
 
-### 基本设置(隐式发现)
+### 基本设置（隐式发现）
 
-启用 Ollama 的最简单方法是通过环境变量:
+启用 Ollama 的最简单方法是通过环境变量：
 
 ```bash
 export OLLAMA_API_KEY="ollama-local"
 ```
 
-### 显式设置(手动模型)
+### 显式设置（手动模型）
 
-在以下情况下使用显式配置:
+在以下情况下使用显式配置：
 
 - Ollama 在另一个主机/端口上运行。
 - 您想强制使用特定的上下文窗口或模型列表。
@@ -119,11 +123,11 @@ export OLLAMA_API_KEY="ollama-local"
 }
 ```
 
-如果设置了 `OLLAMA_API_KEY`,您可以在提供商条目中省略 `apiKey`,OpenClaw 将为可用性检查填充它。
+如果设置了 `OLLAMA_API_KEY`，您可以在提供商条目中省略 `apiKey`，OpenClaw 将为可用性检查填充它。
 
-### 自定义基础 URL(显式配置)
+### 自定义基础 URL（显式配置）
 
-如果 Ollama 在不同的主机或端口上运行(显式配置禁用自动发现,因此请手动定义模型):
+如果 Ollama 在不同的主机或端口上运行（显式配置禁用自动发现，因此请手动定义模型）：
 
 ```json5
 {
@@ -131,16 +135,21 @@ export OLLAMA_API_KEY="ollama-local"
     providers: {
       ollama: {
         apiKey: "ollama-local",
-        baseUrl: "http://ollama-host:11434",
+        baseUrl: "http://ollama-host:11434", // 无 /v1 - 使用原生 Ollama API URL
+        api: "ollama", // 显式设置以保证原生工具调用行为
       },
     },
   },
 }
 ```
 
+<Warning>
+请勿在 URL 中添加 `/v1`。`/v1` 路径使用 OpenAI 兼容模式，其中工具调用不可靠。请使用不带路径后缀的基础 Ollama URL。
+</Warning>
+
 ### 模型选择
 
-配置后,您的所有 Ollama 模型都可用:
+配置后，您的所有 Ollama 模型都可用：
 
 ```json5
 {
@@ -159,7 +168,7 @@ export OLLAMA_API_KEY="ollama-local"
 
 ### 推理模型
 
-当 Ollama 在 `/api/show` 中报告 `thinking` 时,OpenClaw 将模型标记为具有推理能力:
+当 Ollama 在 `/api/show` 中报告 `thinking` 时，OpenClaw 将模型标记为具有推理能力：
 
 ```bash
 ollama pull deepseek-r1:32b
@@ -167,15 +176,19 @@ ollama pull deepseek-r1:32b
 
 ### 模型成本
 
-Ollama 是免费的并在本地运行,因此所有模型成本都设置为 $0。
+Ollama 是免费的并在本地运行，因此所有模型成本都设置为 $0。
 
 ### 流式配置
 
-OpenClaw 的 Ollama 集成默认使用**原生 Ollama API** (`/api/chat`),它完全支持同时进行流式传输和工具调用。无需特殊配置。
+OpenClaw 的 Ollama 集成默认使用**原生 Ollama API** (`/api/chat`)，它完全支持同时进行流式传输和工具调用。无需特殊配置。
 
 #### 旧版 OpenAI 兼容模式
 
-如果您需要使用 OpenAI 兼容端点(例如,在仅支持 OpenAI 格式的代理后面),请显式设置 `api: "openai-completions"`:
+<Warning>
+**工具调用在 OpenAI 兼容模式下不可靠。** 仅当您需要代理的 OpenAI 格式且不依赖原生工具调用行为时，才使用此模式。
+</Warning>
+
+如果您需要使用 OpenAI 兼容端点（例如，在仅支持 OpenAI 格式的代理后面），请显式设置 `api: "openai-completions"`：
 
 ```json5
 {
@@ -184,6 +197,7 @@ OpenClaw 的 Ollama 集成默认使用**原生 Ollama API** (`/api/chat`),它完
       ollama: {
         baseUrl: "http://ollama-host:11434/v1",
         api: "openai-completions",
+        injectNumCtxForOpenAICompat: true, // 默认: true
         apiKey: "ollama-local",
         models: [...]
       }
@@ -192,23 +206,41 @@ OpenClaw 的 Ollama 集成默认使用**原生 Ollama API** (`/api/chat`),它完
 }
 ```
 
-注意: OpenAI 兼容端点可能不支持同时进行流式传输 + 工具调用。您可能需要在模型配置中使用 `params: { streaming: false }` 禁用流式传输。
+此模式可能不支持同时进行流式传输 + 工具调用。您可能需要在模型配置中使用 `params: { streaming: false }` 禁用流式传输。
+
+当 `api: "openai-completions"` 与 Ollama 一起使用时，OpenClaw 默认注入 `options.num_ctx`，以防止 Ollama 静默回退到 4096 上下文窗口。如果您的代理/上游拒绝未知的 `options` 字段，请禁用此行为：
+
+```json5
+{
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "http://ollama-host:11434/v1",
+        api: "openai-completions",
+        injectNumCtxForOpenAICompat: false,
+        apiKey: "ollama-local",
+        models: [...]
+      }
+    }
+  }
+}
+```
 
 ### 上下文窗口
 
-对于自动发现的模型,OpenClaw 使用 Ollama 报告的上下文窗口(如果可用),否则默认为 `8192`。您可以在显式提供商配置中覆盖 `contextWindow` 和 `maxTokens`。
+对于自动发现的模型，OpenClaw 使用 Ollama 报告的上下文窗口（如果可用），否则默认为 `8192`。您可以在显式提供商配置中覆盖 `contextWindow` 和 `maxTokens`。
 
 ## 故障排除
 
 ### Ollama 未检测到
 
-确保 Ollama 正在运行,并且您设置了 `OLLAMA_API_KEY`(或身份验证配置文件),并且您**没有**定义显式的 `models.providers.ollama` 条目:
+确保 Ollama 正在运行，并且您设置了 `OLLAMA_API_KEY`（或身份验证配置文件），并且您**没有**定义显式的 `models.providers.ollama` 条目：
 
 ```bash
 ollama serve
 ```
 
-并且 API 可访问:
+并且 API 可访问：
 
 ```bash
 curl http://localhost:11434/api/tags
@@ -216,12 +248,12 @@ curl http://localhost:11434/api/tags
 
 ### 没有可用的模型
 
-OpenClaw 仅自动发现报告工具支持的模型。如果您的模型未列出,请:
+OpenClaw 仅自动发现报告工具支持的模型。如果您的模型未列出，请：
 
-- 拉取支持工具的模型,或
+- 拉取支持工具的模型，或
 - 在 `models.providers.ollama` 中显式定义模型。
 
-要添加模型:
+要添加模型：
 
 ```bash
 ollama list  # 查看已安装的内容
@@ -231,7 +263,7 @@ ollama pull llama3.3     # 或其他模型
 
 ### 连接被拒绝
 
-检查 Ollama 是否在正确的端口上运行:
+检查 Ollama 是否在正确的端口上运行：
 
 ```bash
 # 检查 Ollama 是否正在运行

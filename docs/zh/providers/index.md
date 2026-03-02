@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3cf2936d3da4139aeae7cbc3af895d2d"
+mmh3_hash: "eebf4c50600e7d606d57eca35327ce1f"
 title: "模型提供商"
 sidebarTitle: "模型提供商"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
@@ -36,28 +36,29 @@ Venice 是我们推荐的 Venice AI 设置，用于隐私优先的推理，并�
 
 ## 提供商文档
 
-- [OpenAI (API + Codex)](/providers/openai)
-- [Anthropic (API + Claude Code CLI)](/providers/anthropic)
-- [Qwen (OAuth)](/providers/qwen)
-- [OpenRouter](/providers/openrouter)
-- [LiteLLM（统一网关）](/providers/litellm)
-- [Vercel AI Gateway](/providers/vercel-ai-gateway)
-- [Together AI](/providers/together)
-- [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-- [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
-- [Mistral](/providers/mistral)
-- [OpenCode Zen](/providers/opencode)
 - [Amazon Bedrock](/providers/bedrock)
-- [Z.AI](/providers/zai)
-- [Xiaomi](/providers/xiaomi)
+- [Anthropic (API + Claude Code CLI)](/providers/anthropic)
+- [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
 - [GLM 模型](/providers/glm)
-- [MiniMax](/providers/minimax)
-- [Venice（Venice AI，注重隐私）](/providers/venice)
 - [Hugging Face (Inference)](/providers/huggingface)
-- [Ollama（本地模型）](/providers/ollama)
-- [vLLM（本地模型）](/providers/vllm)
-- [Qianfan](/providers/qianfan)
+- [Kilocode](/providers/kilocode)
+- [LiteLLM（统一网关）](/providers/litellm)
+- [MiniMax](/providers/minimax)
+- [Mistral](/providers/mistral)
+- [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
 - [NVIDIA](/providers/nvidia)
+- [Ollama（本地模型）](/providers/ollama)
+- [OpenAI (API + Codex)](/providers/openai)
+- [OpenCode Zen](/providers/opencode)
+- [OpenRouter](/providers/openrouter)
+- [Qianfan](/providers/qianfan)
+- [Qwen (OAuth)](/providers/qwen)
+- [Together AI](/providers/together)
+- [Vercel AI Gateway](/providers/vercel-ai-gateway)
+- [Venice（Venice AI，注重隐私）](/providers/venice)
+- [vLLM（本地模型）](/providers/vllm)
+- [Xiaomi](/providers/xiaomi)
+- [Z.AI](/providers/zai)
 
 ## 转录提供商
 
