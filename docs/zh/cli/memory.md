@@ -1,7 +1,7 @@
 ---
 title: "`openclaw memory`"
 sidebarTitle: "openclaw memory"
-mmh3_hash: "253317e45f2ae07885dc1d17448c0f83"
+mmh3_hash: "67235a3ed6663b350c0bd36c450f439f"
 summary: "`openclaw memory` 的 CLI 参考(状态/索引/搜索)"
 read_when:
   - 您想索引或搜索语义内存
