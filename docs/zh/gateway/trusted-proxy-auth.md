@@ -1,10 +1,11 @@
 ---
-mmh3_hash: "4174a659eaaefaf31e71f267317f0bec"
+mmh3_hash: "0f999a542e8f7332f566f9ecc050cea3"
 summary: "将 Gateway 身份验证委托给受信任的反向代理（Pomerium、Caddy、nginx + OAuth）"
 read_when:
   - 在身份感知代理后面运行 OpenClaw
   - 在 OpenClaw 前面设置 Pomerium、Caddy 或 nginx with OAuth
   - 修复反向代理设置的 WebSocket 1008 未授权错误
+  - 决定在哪里设置 HSTS 和其他 HTTP 强化标头
 ---
 
 # 受信任代理身份验证
@@ -34,6 +35,16 @@ read_when:
 3. OpenClaw 检查请求是否来自**受信任的代理 IP**（在 `gateway.trustedProxies` 中配置）
 4. OpenClaw 从配置的标头中提取用户身份
 5. 如果一切正常，则请求被授权
+
+## Control UI 配对行为
+
+当 `gateway.auth.mode = "trusted-proxy"` 处于活动状态且请求通过受信任代理检查时,Control UI WebSocket Session 无需设备配对身份即可连接。
+
+含义:
+
+- 在此模式下,配对不再是 Control UI 访问的主要门禁。
+- 您的反向代理认证策略和 `allowUsers` 成为有效的访问控制。
+- 仅将 Gateway 入口锁定到受信任的代理 IP(`gateway.trustedProxies` + 防火墙)。
 
 ## 配置
 
@@ -74,6 +85,51 @@ read_when:
 | `gateway.auth.trustedProxy.userHeader`      | 是   | 包含经过身份验证的用户身份的标头名称                             |
 | `gateway.auth.trustedProxy.requiredHeaders` | 否   | 请求被信任必须存在的其他标头                                     |
 | `gateway.auth.trustedProxy.allowUsers`      | 否   | 用户身份白名单。空表示允许所有经过身份验证的用户。               |
+
+## TLS 终止和 HSTS
+
+使用一个 TLS 终止点并在那里应用 HSTS。
+
+### 推荐模式:代理 TLS 终止
+
+当您的反向代理处理 `https://control.example.com` 的 HTTPS 时,在代理处为该域设置 `Strict-Transport-Security`。
+
+- 适合面向互联网的部署。
+- 将证书 + HTTP 强化策略保留在一处。
+- OpenClaw 可以在代理后面保持在 loopback HTTP 上。
+
+示例标头值:
+
+```text
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+```
+
+### Gateway TLS 终止
+
+如果 OpenClaw 本身直接提供 HTTPS(无 TLS 终止代理),请设置:
+
+```json5
+{
+  gateway: {
+    tls: { enabled: true },
+    http: {
+      securityHeaders: {
+        strictTransportSecurity: "max-age=31536000; includeSubDomains",
+      },
+    },
+  },
+}
+```
+
+`strictTransportSecurity` 接受字符串标头值,或 `false` 以显式禁用。
+
+### 推出指南
+
+- 从较短的 max age 开始(例如 `max-age=300`),同时验证流量。
+- 仅在信心高时增加到长期值(例如 `max-age=31536000`)。
+- 仅在每个子域都已准备好 HTTPS 时添加 `includeSubDomains`。
+- 仅在您有意满足完整域集的预加载要求时使用预加载。
+- 仅 loopback 的本地开发不受益于 HSTS。
 
 ## 代理设置示例
 
