@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3f4d2188bd0887bc50d661820bce1efa"
+mmh3_hash: "0b1b25237ca0f1d17b77d38442c16fd5"
 summary: "OpenClaw 如何构建提示词上下文并报告令牌使用情况 + 成本"
 read_when:
   - 解释令牌使用情况、成本或上下文窗口
@@ -18,7 +18,7 @@ OpenClaw 在每次运行时组装自己的系统提示词。它包括：
 - Tool 列表 + 简短描述
 - Skills 列表（仅元数据；指令按需使用 `read` 加载）
 - 自我更新指令
-- 工作空间 + 引导文件（新建时为 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`，存在时为 `MEMORY.md` 和/或 `memory.md`）。大型文件被 `agents.defaults.bootstrapMaxChars`（默认：20000）截断，总引导注入由 `agents.defaults.bootstrapTotalMaxChars`（默认：24000）限制。`memory/*.md` 文件通过内存 Tools 按需提供，不会自动注入。
+- 工作空间 + 引导文件（新建时为 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`，存在时为 `MEMORY.md` 和/或 `memory.md`）。大型文件被 `agents.defaults.bootstrapMaxChars`（默认：20000）截断，总引导注入由 `agents.defaults.bootstrapTotalMaxChars`（默认：150000）限制。`memory/*.md` 文件通过内存 Tools 按需提供，不会自动注入。
 - 时间（UTC + 用户时区）
 - 回复标签 + 心跳行为
 - 运行时元数据（主机/OS/模型/思考）
@@ -35,6 +35,12 @@ OpenClaw 在每次运行时组装自己的系统提示词。它包括：
 - 附件/转录（图像、音频、文件）
 - 压缩摘要和修剪工件
 - Provider 包装器或安全标头（不可见，但仍计数）
+
+对于图像，OpenClaw 在调用提供商之前对转录/工具图像有效负载进行缩小处理。
+使用 `agents.defaults.imageMaxDimensionPx`（默认：`1200`）进行调整：
+
+- 较低的值通常减少视觉令牌使用量和有效负载大小。
+- 较高的值为 OCR/UI 密集型截图保留更多视觉细节。
 
 有关每个注入文件、Tools、Skills 和系统提示词大小的实用细分，请使用 `/context list` 或 `/context detail`。参见[上下文](/concepts/context)。
 
@@ -71,6 +77,10 @@ Provider 提示词缓存仅在缓存 TTL 窗口内适用。OpenClaw 可以选择
 
 Heartbeat 可以在空闲间隙中保持缓存**温暖**。如果您的模型缓存 TTL 为 `1h`，将心跳间隔设置为略低于该值（例如 `55m`）可以避免重新缓存完整提示词，从而降低缓存写入成本。
 
+在多 Agent 设置中，您可以保留一个共享模型配置，并使用 `agents.list[].params.cacheRetention` 按 Agent 调整缓存行为。
+
+有关完整的逐项指南，请参阅[提示词缓存](/reference/prompt-caching)。
+
 对于 Anthropic API 定价，缓存读取比输入令牌便宜得多，而缓存写入以更高的乘数计费。有关最新费率和 TTL 乘数，请参阅 Anthropic 的提示词缓存定价：[https://docs.anthropic.com/docs/build-with-claude/prompt-caching](https://docs.anthropic.com/docs/build-with-claude/prompt-caching)
 
 ### 示例：使用 Heartbeat 保持 1h 缓存温暖
@@ -88,10 +98,55 @@ agents:
       every: "55m"
 ```
 
+### 示例：混合流量的按 Agent 缓存策略
+
+```yaml
+agents:
+  defaults:
+    model:
+      primary: "anthropic/claude-opus-4-6"
+    models:
+      "anthropic/claude-opus-4-6":
+        params:
+          cacheRetention: "long" # 大多数 Agent 的默认基准
+  list:
+    - id: "research"
+      default: true
+      heartbeat:
+        every: "55m" # 为深度会话保持长缓存温暖
+    - id: "alerts"
+      params:
+        cacheRetention: "none" # 避免突发通知的缓存写入
+```
+
+`agents.list[].params` 合并在所选模型的 `params` 之上，因此您只能覆盖 `cacheRetention` 并继承其他模型默认值不变。
+
+### 示例：启用 Anthropic 1M 上下文 beta 标头
+
+Anthropic 的 1M 上下文窗口目前处于 beta 阶段。当您在支持的 Opus 或 Sonnet 模型上启用 `context1m` 时，OpenClaw 可以注入所需的 `anthropic-beta` 值。
+
+```yaml
+agents:
+  defaults:
+    models:
+      "anthropic/claude-opus-4-6":
+        params:
+          context1m: true
+```
+
+这映射到 Anthropic 的 `context-1m-2025-08-07` beta 标头。
+
+仅当在该模型条目上设置 `context1m: true` 时才适用。
+
+要求：凭据必须符合长上下文使用条件（API 密钥计费，或启用了 Extra Usage 的订阅）。如果不符合，Anthropic 会响应 `HTTP 429: rate_limit_error: Extra usage is required for long context requests`。
+
+如果您使用 OAuth/订阅令牌（`sk-ant-oat-*`）验证 Anthropic，OpenClaw 会跳过 `context-1m-*` beta 标头，因为 Anthropic 当前以 HTTP 401 拒绝该组合。
+
 ## 减少令牌压力的技巧
 
 - 使用 `/compact` 总结长会话。
 - 在工作流中修剪大型 Tool 输出。
+- 对于截图密集型会话，降低 `agents.defaults.imageMaxDimensionPx`。
 - 保持 Skill 描述简短（Skill 列表被注入到提示词中）。
 - 对于冗长的探索性工作，优先使用较小的模型。
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7860fe386b00246b3466f8de828d851e"
+mmh3_hash: "1c554769abee831371177581452e00bc"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志
@@ -19,6 +19,7 @@ sidebarTitle: "向导参考"
   <Step title="现有配置检测">
     - 如果 `~/.openclaw/openclaw.json` 存在，选择 **Keep / Modify / Reset**。
     - 重新运行向导**不会**清除任何内容，除非您明确选择 **Reset**（或传递 `--reset`）。
+    - CLI `--reset` 默认为 `config+creds+sessions`；使用 `--reset-scope full` 也删除工作空间。
     - 如果配置无效或包含旧密钥，向导会停止并要求您在继续之前运行 `openclaw doctor`。
     - Reset 使用 `trash`（从不使用 `rm`）并提供范围：
       - 仅配置
@@ -32,7 +33,7 @@ sidebarTitle: "向导参考"
     - **OpenAI Code（Codex）订阅（Codex CLI）**：如果 `~/.codex/auth.json` 存在，向导可以重用它。
     - **OpenAI Code（Codex）订阅（OAuth）**：浏览器流程；粘贴 `code#state`。
       - 当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.2`。
-    - **OpenAI API 密钥**：如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后保存到 `~/.openclaw/.env`，以便 launchd 可以读取它。
+    - **OpenAI API 密钥**：如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将其存储在身份验证配置文件中。
     - **xAI（Grok）API 密钥**：提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。
     - **OpenCode Zen（多模型代理）**：提示输入 `OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`，在 https://opencode.ai/auth 获取）。
     - **API 密钥**：为您存储密钥。
@@ -50,6 +51,7 @@ sidebarTitle: "向导参考"
     - **Skip**：尚未配置身份验证。
     - 从检测到的选项中选择默认模型（或手动输入 Provider/模型）。
     - 向导运行模型检查，如果配置的模型未知或缺少身份验证，则发出警告。
+    - API 密钥存储模式默认为明文身份验证配置文件值。使用 `--secret-input-mode ref` 改为存储环境支持的引用（例如 `keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`）。
     - OAuth 凭据位于 `~/.openclaw/credentials/oauth.json`；身份验证配置文件位于 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`（API 密钥 + OAuth）。
     - 更多详情：[/concepts/oauth](/concepts/oauth)
     <Note>
@@ -237,6 +239,7 @@ Gateway 通过 RPC 暴露向导流程（`wizard.start`、`wizard.next`、`wizard
 - `agents.defaults.workspace`
 - `agents.defaults.model` / `models.providers`（如果选择 Minimax）
 - `gateway.*`（模式、绑定、身份验证、Tailscale）
+- `session.dmScope`（行为详情：[CLI 引导参考](/start/wizard-cli-reference#outputs-and-internals)）
 - `channels.telegram.botToken`、`channels.discord.token`、`channels.signal.*`、`channels.imessage.*`
 - Channel 白名单（Slack/Discord/Matrix/Microsoft Teams），当您在提示期间选择加入时（名称在可能的情况下解析为 ID）。
 - `skills.install.nodeManager`
