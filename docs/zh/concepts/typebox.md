@@ -1,17 +1,19 @@
 ---
 title: "TypeBox 作为协议真相来源"
 sidebarTitle: "TypeBox 协议真相来源"
-mmh3_hash: "307d18b3012571f3d0347bf992634bd1"
+mmh3_hash: "dc39a3c4115d66f1971894580f1f4240"
 summary: "TypeBox schemas 作为 gateway protocol 的单一真相来源"
-read_when: ["更新 protocol schemas 或 codegen"]
+read_when:
+  - 更新 protocol schemas 或 codegen
 ---
+
 # TypeBox 作为协议真相来源
 
 最后更新: 2026-01-10
 
 TypeBox 是 TypeScript 优先的 schema 库。我们使用它定义 **Gateway WebSocket protocol**(握手、request/response、server events)。这些 schemas 驱动 **runtime 验证**、**JSON Schema 导出** 和 macOS app 的 **Swift codegen**。一个真相来源;其他一切都是生成的。
 
-如果你想要更高层次的 protocol context,请从 [Gateway architecture](/zh/concepts/architecture) 开始。
+如果你想要更高层次的 protocol context,请从 [Gateway architecture](/concepts/architecture) 开始。
 
 ## 心智模型(30 秒)
 
@@ -37,7 +39,7 @@ Client                    Gateway
 常见 methods + events:
 
 | 类别 | 示例 | 注意 |
-| --- | --- | --- |
+| --------- | --------------------------------------------------------- | ---------------------------------- |
 | Core | `connect`, `health`, `status` | `connect` 必须是第一个 |
 | Messaging | `send`, `poll`, `agent`, `agent.wait` | 副作用需要 `idempotencyKey` |
 | Chat | `chat.history`, `chat.send`, `chat.abort`, `chat.inject` | WebChat 使用这些 |
@@ -107,7 +109,12 @@ Hello-ok response:
     "protocol": 2,
     "server": { "version": "dev", "connId": "ws-1" },
     "features": { "methods": ["health"], "events": ["tick"] },
-    "snapshot": { "presence": [], "health": {}, "stateVersion": { "presence": 0, "health": 0 }, "uptimeMs": 0 },
+    "snapshot": {
+      "presence": [],
+      "health": {},
+      "stateVersion": { "presence": 0, "health": 0 },
+      "uptimeMs": 0
+    },
     "policy": { "maxPayload": 1048576, "maxBufferedBytes": 1048576, "tickIntervalMs": 30000 }
   }
 }
@@ -139,22 +146,24 @@ import { WebSocket } from "ws";
 const ws = new WebSocket("ws://127.0.0.1:18789");
 
 ws.on("open", () => {
-  ws.send(JSON.stringify({
-    type: "req",
-    id: "c1",
-    method: "connect",
-    params: {
-      minProtocol: 3,
-      maxProtocol: 3,
-      client: {
-        id: "cli",
-        displayName: "example",
-        version: "dev",
-        platform: "node",
-        mode: "cli"
-      }
-    }
-  }));
+  ws.send(
+    JSON.stringify({
+      type: "req",
+      id: "c1",
+      method: "connect",
+      params: {
+        minProtocol: 3,
+        maxProtocol: 3,
+        client: {
+          id: "cli",
+          displayName: "example",
+          version: "dev",
+          platform: "node",
+          mode: "cli",
+        },
+      },
+    }),
+  );
 });
 
 ws.on("message", (data) => {
@@ -173,7 +182,7 @@ ws.on("message", (data) => {
 
 示例:添加返回 `{ ok: true, text }` 的新 `system.echo` request。
 
-1) **Schema (真相来源)**
+1. **Schema (真相来源)**
 
 添加到 `src/gateway/protocol/schema.ts`:
 
@@ -201,16 +210,15 @@ export type SystemEchoParams = Static<typeof SystemEchoParamsSchema>;
 export type SystemEchoResult = Static<typeof SystemEchoResultSchema>;
 ```
 
-2) **验证**
+2. **验证**
 
 在 `src/gateway/protocol/index.ts` 中,导出 AJV validator:
 
 ```ts
-export const validateSystemEchoParams =
-  ajv.compile<SystemEchoParams>(SystemEchoParamsSchema);
+export const validateSystemEchoParams = ajv.compile<SystemEchoParams>(SystemEchoParamsSchema);
 ```
 
-3) **Server 行为**
+3. **Server 行为**
 
 在 `src/gateway/server-methods/system.ts` 中添加 handler:
 
@@ -225,13 +233,13 @@ export const systemHandlers: GatewayRequestHandlers = {
 
 在 `src/gateway/server-methods.ts` 中注册它(已合并 `systemHandlers`),然后将 `"system.echo"` 添加到 `src/gateway/server.ts` 中的 `METHODS`。
 
-4) **重新生成**
+4. **重新生成**
 
 ```bash
 pnpm protocol:check
 ```
 
-5) **Tests + docs**
+5. **Tests + docs**
 
 在 `src/gateway/server.*.test.ts` 中添加 server 测试,并在文档中注释该 method。
 
@@ -257,15 +265,16 @@ Swift 生成器发出:
 - `NonEmptyString` 是 IDs 和 method/event 名称的默认值。
 - 顶级 `GatewayFrame` 在 `type` 上使用 **discriminator**。
 - 具有副作用的 Methods 通常需要参数中的 `idempotencyKey`(例如:`send`、`poll`、`agent`、`chat.send`)。
+- `agent` 接受可选的 `internalEvents` 用于 runtime 生成的编排 context(例如 subagent/cron 任务完成交接);将其视为内部 API 表面。
 
 ## 实时 schema JSON
 
 生成的 JSON Schema 位于 repo 的 `dist/protocol.schema.json`。发布的原始文件通常可从以下位置获得:
 
-- https://raw.githubusercontent.com/openclaw/openclaw/main/dist/protocol.schema.json
+- [https://raw.githubusercontent.com/openclaw/openclaw/main/dist/protocol.schema.json](https://raw.githubusercontent.com/openclaw/openclaw/main/dist/protocol.schema.json)
 
 ## 当你更改 schemas 时
 
-1) 更新 TypeBox schemas。
-2) 运行 `pnpm protocol:check`。
-3) 提交重新生成的 schema + Swift models。
+1. 更新 TypeBox schemas。
+2. 运行 `pnpm protocol:check`。
+3. 提交重新生成的 schema + Swift models。
