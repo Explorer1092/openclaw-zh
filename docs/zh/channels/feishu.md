@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dd8140d4da5c7cee1216fe54c42316eb"
+mmh3_hash: "6585b32a8a025ec432b4218ead047d7b"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
@@ -203,6 +203,36 @@ export FEISHU_APP_ID="cli_xxx"
 export FEISHU_APP_SECRET="xxx"
 ```
 
+### 配额优化标志
+
+您可以使用两个可选标志来减少 Feishu API 使用量：
+
+- `typingIndicator`（默认 `true`）：设为 `false` 时，跳过输入 reaction 调用。
+- `resolveSenderNames`（默认 `true`）：设为 `false` 时，跳过发送者个人资料查询调用。
+
+在顶层或每个账户设置它们：
+
+```json5
+{
+  channels: {
+    feishu: {
+      typingIndicator: false,
+      resolveSenderNames: false,
+      accounts: {
+        main: {
+          appId: "cli_xxx",
+          appSecret: "xxx",
+          typingIndicator: true,
+          resolveSenderNames: false,
+        },
+      },
+    },
+  },
+}
+```
+
+---
+
 ### Lark（全球）域
 
 如果您的租户在 Lark（国际）上，请将域设置为 `lark`（或完整域字符串）。您可以在 `channels.feishu.domain` 或每个帐户（`channels.feishu.accounts.<id>.domain`）设置它。
@@ -316,14 +346,36 @@ openclaw pairing approve feishu <CODE>
 }
 ```
 
-### 仅允许群组中的特定用户
+### 仅允许特定群组
 
 ```json5
 {
   channels: {
     feishu: {
       groupPolicy: "allowlist",
-      groupAllowFrom: ["ou_xxx", "ou_yyy"],
+      // Feishu 群组 ID（chat_id）格式如：oc_xxx
+      groupAllowFrom: ["oc_xxx", "oc_yyy"],
+    },
+  },
+}
+```
+
+### 允许特定用户在群组中运行控制命令（例如 /reset、/new）
+
+除了允许群组本身，控制命令还受**发送者** open_id 的限制。
+
+```json5
+{
+  channels: {
+    feishu: {
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["oc_xxx"],
+      groups: {
+        oc_xxx: {
+          // Feishu 用户 ID（open_id）格式如：ou_xxx
+          allowFrom: ["ou_user1", "ou_user2"],
+        },
+      },
     },
   },
 }
@@ -427,6 +479,7 @@ openclaw pairing list feishu
 {
   channels: {
     feishu: {
+      defaultAccount: "main",
       accounts: {
         main: {
           appId: "cli_xxx",
@@ -444,6 +497,8 @@ openclaw pairing list feishu
   },
 }
 ```
+
+`defaultAccount` 控制当出站 API 没有显式指定 `accountId` 时使用哪个 Feishu 账户。
 
 ### 消息限制
 
@@ -535,6 +590,7 @@ Feishu 通过交互式卡片支持流式回复。启用后，机器人在生成�
 | `channels.feishu.enabled`                         | 启用/禁用 Channel               | `true`           |
 | `channels.feishu.domain`                          | API 域（`feishu` 或 `lark`）    | `feishu`         |
 | `channels.feishu.connectionMode`                  | 事件传输模式                    | `websocket`      |
+| `channels.feishu.defaultAccount`                  | 出站路由的默认账户 ID           | `default`        |
 | `channels.feishu.verificationToken`               | Webhook 模式必填                | -                |
 | `channels.feishu.webhookPath`                     | Webhook 路由路径                | `/feishu/events` |
 | `channels.feishu.webhookHost`                     | Webhook 绑定主机                | `127.0.0.1`      |

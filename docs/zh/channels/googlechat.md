@@ -138,24 +138,27 @@ your-domain.com {
 
 使用这些标识符进行投递和 allowlist：
 
-- 私聊：`users/<userId>`（推荐）或原始电子邮件 `name@example.com`（可变主体）。
+- 私聊：`users/<userId>`（推荐）。
+- 原始电子邮件 `name@example.com` 是可变的，仅在 `channels.googlechat.dangerouslyAllowNameMatching: true` 时用于直接 allowlist 匹配。
 - 已弃用：`users/<email>` 被视为用户 ID，而非电子邮件 allowlist。
 - 空间：`spaces/<spaceId>`。
 
 ## 配置要点
+
 ```json5
 {
   channels: {
-    "googlechat": {
+    googlechat: {
       enabled: true,
       serviceAccountFile: "/path/to/service-account.json",
+      // 或 serviceAccountRef: { source: "file", provider: "filemain", id: "/channels/googlechat/serviceAccount" }
       audienceType: "app-url",
       audience: "https://gateway.example.com/googlechat",
       webhookPath: "/googlechat",
       botUser: "users/1234567890", // 可选；帮助提及检测
       dm: {
         policy: "pairing",
-        allowFrom: ["users/1234567890", "name@example.com"]
+        allowFrom: ["users/1234567890"],
       },
       groupPolicy: "allowlist",
       groups: {
@@ -163,23 +166,27 @@ your-domain.com {
           allow: true,
           requireMention: true,
           users: ["users/1234567890"],
-          systemPrompt: "Short answers only."
-        }
+          systemPrompt: "Short answers only.",
+        },
       },
       actions: { reactions: true },
       typingIndicator: "message",
-      mediaMaxMb: 20
-    }
-  }
+      mediaMaxMb: 20,
+    },
+  },
 }
 ```
 
 注意：
 - 服务账号凭据也可以通过 `serviceAccount`（JSON 字符串）内联传递。
+- 也支持 `serviceAccountRef`（env/file SecretRef），包括 `channels.googlechat.accounts.<id>.serviceAccountRef` 下的每账户引用。
 - 如果未设置 `webhookPath`，默认 webhook 路径为 `/googlechat`。
+- `dangerouslyAllowNameMatching` 重新启用可变电子邮件主体匹配用于 allowlist（紧急兼容模式）。
 - 当启用 `actions.reactions` 时，可通过 `reactions` 工具和 `channels action` 使用表情回应。
 - `typingIndicator` 支持 `none`、`message`（默认）和 `reaction`（reaction 需要用户 OAuth）。
 - 附件通过 Chat API 下载并存储在媒体管道中（大小受 `mediaMaxMb` 限制）。
+
+Secrets 参考详情：[Secrets 管理](/gateway/secrets)。
 
 ## 故障排除
 

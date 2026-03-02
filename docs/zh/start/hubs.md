@@ -8,17 +8,23 @@ title: "文档中心"
 
 # 文档中心
 
-使用这些中心页面查找所有文档,包括左侧导航中未显示的深度分析和参考文档。
+<Note>
+如果您是 OpenClaw 新用户，请从[入门指南](/start/getting-started)开始。
+</Note>
+
+使用这些中心页面查找所有文档，包括左侧导航中未显示的深度分析和参考文档。
 
 ## 从这里开始
 
 - [首页](/)
-- [快速开始](/start/getting-started)
+- [入门指南](/start/getting-started)
+- [快速开始](/start/quickstart)
 - [初次引导](/start/onboarding)
 - [设置向导](/start/wizard)
 - [设置](/start/setup)
 - [Dashboard (本地 Gateway)](http://127.0.0.1:18789/)
 - [帮助](/help)
+- [文档目录](/start/docs-directory)
 - [配置](/gateway/configuration)
 - [配置示例](/gateway/configuration-examples)
 - [OpenClaw assistant](/start/openclaw)
@@ -35,6 +41,7 @@ title: "文档中心"
 ## 核心概念
 
 - [架构](/concepts/architecture)
+- [特性](/concepts/features)
 - [网络中心](/network)
 - [Agent 运行时](/concepts/agent)
 - [Agent 工作区](/concepts/agent-workspace)
@@ -44,7 +51,6 @@ title: "文档中心"
 - [多 Agent 路由](/concepts/multi-agent)
 - [压缩](/concepts/compaction)
 - [Session](/concepts/session)
-- [Session (别名)](/concepts/sessions)
 - [Session 修剪](/concepts/session-pruning)
 - [Session 工具](/concepts/session-tool)
 - [队列](/concepts/queue)
@@ -55,9 +61,9 @@ title: "文档中心"
 - [在线状态](/concepts/presence)
 - [发现和传输](/gateway/discovery)
 - [Bonjour](/gateway/bonjour)
-- [Channel 路由](/concepts/channel-routing)
-- [群组](/concepts/groups)
-- [群组消息](/concepts/group-messages)
+- [Channel 路由](/channels/channel-routing)
+- [群组](/channels/groups)
+- [群组消息](/channels/group-messages)
 - [模型故障转移](/concepts/model-failover)
 - [OAuth](/concepts/oauth)
 
@@ -67,12 +73,12 @@ title: "文档中心"
 - [模型提供商中心](/providers/models)
 - [WhatsApp](/channels/whatsapp)
 - [Telegram](/channels/telegram)
-- [Telegram (grammY 说明)](/channels/grammy)
 - [Slack](/channels/slack)
 - [Discord](/channels/discord)
 - [Mattermost](/channels/mattermost) (插件)
 - [Signal](/channels/signal)
-- [iMessage](/channels/imessage)
+- [BlueBubbles (iMessage)](/channels/bluebubbles)
+- [iMessage (旧版)](/channels/imessage)
 - [位置解析](/channels/location)
 - [WebChat](/web/webchat)
 - [Webhook](/automation/webhook)
@@ -81,6 +87,7 @@ title: "文档中心"
 ## Gateway 和运维
 
 - [Gateway 运维手册](/gateway)
+- [网络模型](/gateway/network-model)
 - [Gateway 配对](/gateway/pairing)
 - [Gateway 锁](/gateway/gateway-lock)
 - [后台进程](/gateway/background-process)
@@ -110,7 +117,7 @@ title: "文档中心"
 - [模型](/concepts/models)
 - [子 Agent](/tools/subagents)
 - [Agent send CLI](/tools/agent-send)
-- [终端 UI](/tui)
+- [终端 UI](/web/tui)
 - [浏览器控制](/tools/browser)
 - [浏览器 (Linux 故障排查)](/tools/browser-linux-troubleshooting)
 - [投票](/automation/poll)
@@ -173,10 +180,12 @@ title: "文档中心"
 ## 实验 (探索性)
 
 - [Onboarding 配置协议](/experiments/onboarding-config-protocol)
-- [Cron 加固说明](/experiments/plans/cron-add-hardening)
-- [群组策略加固说明](/experiments/plans/group-policy-hardening)
 - [研究: 记忆](/experiments/research/memory)
 - [模型配置探索](/experiments/proposals/model-config)
+
+## 项目
+
+- [致谢](/reference/credits)
 
 ## 测试和发布
 
