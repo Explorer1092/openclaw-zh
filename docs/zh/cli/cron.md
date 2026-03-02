@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e07e23bf8d5196a184172ad1c4349856"
+mmh3_hash: "7c32c97bbae6c5aa9de393c48175b2c9"
 title: "`openclaw cron`"
 sidebarTitle: "openclaw cron"
 summary: "`openclaw cron` 的 CLI 参考(安排和运行后台作业)"
@@ -10,7 +10,7 @@ read_when:
 
 # `openclaw cron`
 
-管理Gateway调度程序的 cron 作业。
+管理 Gateway 调度程序的 cron 作业。
 
 相关:
 
@@ -23,6 +23,11 @@ read_when:
 注意:一次性(`--at`)作业默认在成功后删除。使用 `--keep-after-run` 来保留它们。
 
 注意:重复作业现在在连续错误后使用指数重试退避(30秒 → 1分钟 → 5分钟 → 15分钟 → 60分钟),然后在下次成功运行后返回正常计划。
+
+注意:保留/清理由配置控制:
+
+- `cron.sessionRetention`(默认 `24h`)清理已完成的隔离运行 Session。
+- `cron.runLog.maxBytes` + `cron.runLog.keepLines` 清理 `~/.openclaw/cron/runs/<jobId>.jsonl`。
 
 ## 常见编辑
 
@@ -38,7 +43,7 @@ openclaw cron edit <job-id> --announce --channel telegram --to "123456789"
 openclaw cron edit <job-id> --no-deliver
 ```
 
-向特定Channel通知:
+向特定 Channel 通知:
 
 ```bash
 openclaw cron edit <job-id> --announce --channel slack --to "channel:C1234567890"

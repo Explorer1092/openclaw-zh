@@ -1,7 +1,7 @@
 ---
 title: "Cron 作业"
 sidebarTitle: "Cron 作业"
-mmh3_hash: "3b0e7d5f8dcca9fd56fd8687c137e5ee"
+mmh3_hash: "55d91b0b079b0d97a7bd2b31232500fc"
 summary: "Gateway 调度器的 Cron 作业 + 唤醒"
 read_when:
   - 调度后台作业或唤醒时
@@ -131,7 +131,7 @@ Main 作业将系统事件排队,并可选地唤醒心跳运行器。
 - `wakeMode: "now"` (默认): 事件触发立即的心跳运行。
 - `wakeMode: "next-heartbeat"`: 事件等待下一次预定的心跳。
 
-当你想要正常的心跳提示词 + main session 上下文时,这是最合适的。
+当你想要正常的心跳提示词 + main session 上��文时,这是最合适的。
 参见 [心跳](/gateway/heartbeat)。
 
 #### Isolated 作业 (专用 cron 会话)
@@ -328,8 +328,41 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
 ## 存储 & 历史
 
 - 作业存储: `~/.openclaw/cron/jobs.json` (Gateway 管理的 JSON)。
-- 运行历史: `~/.openclaw/cron/runs/<jobId>.jsonl` (JSONL, 自动修剪)。
+- 运行历史: `~/.openclaw/cron/runs/<jobId>.jsonl` (JSONL, 自动按大小和行数修剪)。
+- `sessions.json` 中的 isolated cron 运行会话按 `cron.sessionRetention` 修剪(默认 `24h`;设置 `false` 以禁用)。
 - 覆盖存储路径: 配置中的 `cron.store`。
+
+## 重试策略
+
+当作业失败时,OpenClaw 将错误分类为 **瞬时** (可重试) 或 **永久** (立即禁用)。
+
+### 瞬时错误 (重试)
+
+- 速率限制 (429, 请求过多, 资源耗尽)
+- 网络错误 (超时, ECONNRESET, 获取失败, socket)
+- 服务器错误 (5xx)
+- 与 Cloudflare 相关的错误
+
+### 永久错误 (不重试)
+
+- 认证失败 (无效 API 密钥, 未授权)
+- 配置或验证错误
+- 其他非瞬时错误
+
+### 默认行为 (无配置)
+
+**一次性作业 (`schedule.kind: "at"`):**
+
+- 瞬时错误: 以指数退避 (30秒 → 1分钟 → 5分钟) 重试最多 3 次。
+- 永久错误: 立即禁用。
+- 成功或跳过: 禁用 (如果 `deleteAfterRun: true` 则删除)。
+
+**重复作业 (`cron` / `every`):**
+
+- 任何错误: 在下一次预定运行前应用指数退避 (30秒 → 1分钟 → 5分钟 → 15分钟 → 60分钟)。
+- 作业保持启用状态;退避在下次成功运行后重置。
+
+配置 `cron.retry` 以覆盖这些默认值 (参见 [配置](/automation/cron-jobs#configuration))。
 
 ## 配置
 
@@ -339,11 +372,28 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
     enabled: true, // 默认 true
     store: "~/.openclaw/cron/jobs.json",
     maxConcurrentRuns: 1, // 默认 1
-    webhook: "https://example.invalid/legacy", // 已弃用: 仅用于存储的 notify:true 旧版作业的回退
-    webhookToken: "replace-with-dedicated-webhook-token", // 可选: webhook 模式的 Bearer token
+    // 可选: 覆盖一次性作业的重试策略
+    retry: {
+      maxAttempts: 3,
+      backoffMs: [60000, 120000, 300000],
+      retryOn: ["rate_limit", "network", "server_error"],
+    },
+    webhook: "https://example.invalid/legacy", // 已弃用: 存储的 notify:true 旧版作业的回退
+    webhookToken: "replace-with-dedicated-webhook-token", // 可选: webhook 模式的 bearer token
+    sessionRetention: "24h", // 持续时间字符串或 false
+    runLog: {
+      maxBytes: "2mb", // 默认 2_000_000 字节
+      keepLines: 2000, // 默认 2000
+    },
   },
 }
 ```
+
+运行日志修剪行为:
+
+- `cron.runLog.maxBytes`: 修剪前的最大运行日志文件大小。
+- `cron.runLog.keepLines`: 修剪时,仅保留最新的 N 行。
+- 两者都适用于 `cron/runs/<jobId>.jsonl` 文件。
 
 Webhook 行为:
 
@@ -358,6 +408,85 @@ Webhook 行为:
 
 - `cron.enabled: false` (配置)
 - `OPENCLAW_SKIP_CRON=1` (环境变量)
+
+## 维护
+
+Cron 有两个内置的维护路径: isolated 运行会话保留和运行日志修剪。
+
+### 默认值
+
+- `cron.sessionRetention`: `24h` (设置 `false` 以禁用运行会话修剪)
+- `cron.runLog.maxBytes`: `2_000_000` 字节
+- `cron.runLog.keepLines`: `2000`
+
+### 工作原理
+
+- Isolated 运行会创建会话条目 (`...:cron:<jobId>:run:<uuid>`) 和记录文件。
+- 清理程序会删除早于 `cron.sessionRetention` 的过期运行会话条目。
+- 对于不再被会话存储引用的已删除运行会话,OpenClaw 会归档记录文件并在相同的保留窗口内清除旧的已删除归档。
+- 每次运行追加后,会检查 `cron/runs/<jobId>.jsonl` 的大小:
+  - 如果文件大小超过 `runLog.maxBytes`,则将其修剪到最新的 `runLog.keepLines` 行。
+
+### 高频调度器的性能注意事项
+
+高频 cron 设置可能会产生大量运行会话和运行日志占用。维护已内置,但宽松的限制仍然会造成不必要的 IO 和清理工作。
+
+需要关注的:
+
+- 有许多 isolated 运行的长 `cron.sessionRetention` 窗口
+- 与大 `runLog.maxBytes` 结合的高 `cron.runLog.keepLines`
+- 许多嘈杂的重复作业写入相同的 `cron/runs/<jobId>.jsonl`
+
+应对措施:
+
+- 在调试/审计需求允许的范围内保持 `cron.sessionRetention` 尽量短
+- 用适当的 `runLog.maxBytes` 和 `runLog.keepLines` 保持运行日志有界
+- 将嘈杂的后台作业移至 isolated 模式,并使用避免不必要干扰的传递规则
+- 定期使用 `openclaw cron runs` 检查增长情况,并在日志变大之前调整保留策略
+
+### 自定义示例
+
+将运行会话保留一周并允许更大的运行日志:
+
+```json5
+{
+  cron: {
+    sessionRetention: "7d",
+    runLog: {
+      maxBytes: "10mb",
+      keepLines: 5000,
+    },
+  },
+}
+```
+
+禁用 isolated 运行会话修剪但保持运行日志修剪:
+
+```json5
+{
+  cron: {
+    sessionRetention: false,
+    runLog: {
+      maxBytes: "5mb",
+      keepLines: 3000,
+    },
+  },
+}
+```
+
+针对高频 cron 使用调整(示例):
+
+```json5
+{
+  cron: {
+    sessionRetention: "12h",
+    runLog: {
+      maxBytes: "3mb",
+      keepLines: 1500,
+    },
+  },
+}
+```
 
 ## CLI 快速开始
 
@@ -452,12 +581,6 @@ openclaw cron edit <jobId> --agent ops
 openclaw cron edit <jobId> --clear-agent
 ```
 
-强制现有 cron 作业精确按计划运行(无错峰):
-
-```bash
-openclaw cron edit <jobId> --exact
-```
-
 手动运行(强制是默认,使用 `--due` 仅在到期时运行):
 
 ```bash
@@ -472,6 +595,12 @@ openclaw cron edit <jobId> \
   --message "Updated prompt" \
   --model "opus" \
   --thinking low
+```
+
+强制现有 cron 作业精确按计划运行(无错峰):
+
+```bash
+openclaw cron edit <jobId> --exact
 ```
 
 运行历史:
@@ -505,7 +634,7 @@ openclaw system event --mode now --text "Next heartbeat: check battery."
 - OpenClaw 在连续错误后对重复作业应用指数重试退避:
   30秒、1分钟、5分钟、15分钟,然后重试之间 60 分钟。
 - 退避在下次成功运行后自动重置。
-- 一次性 (`at`) 作业在终端运行 (`ok`、`error` 或 `skipped`) 后禁用且不重试。
+- 一次性 (`at`) 作业对瞬时错误(速率限制、网络、server_error)进行最多 3 次带退避的重试;永久错误立即禁用。参见 [重试策略](/automation/cron-jobs#retry-policy)。
 
 ### Telegram 传递到了错误的地方
 

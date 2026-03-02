@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6de46c3de10fbafeabc92c1216a7f8d2"
+mmh3_hash: "446f63d21960c7c1df21c5c033d231ef"
 summary: "mac 应用如何嵌入 Gateway WebChat 以及如何调试它"
 read_when:
   - 调试 mac WebChat 视图或 loopback 端口
@@ -22,7 +22,7 @@ macOS 菜单栏应用将 WebChat UI 嵌入为原生 SwiftUI 视图。它连接�
   dist/OpenClaw.app/Contents/MacOS/OpenClaw --webchat
   ```
 
-- 日志: `./scripts/clawlog.sh` (子系统 `bot.molt`, 类别 `WebChatSwiftUI`)。
+- 日志: `./scripts/clawlog.sh` (子系统 `ai.openclaw`, 类别 `WebChatSwiftUI`)。
 
 ## 连接方式
 

@@ -28,6 +28,7 @@ openclaw memory status --deep --index --verbose
 openclaw memory index
 openclaw memory index --verbose
 openclaw memory search "release checklist"
+openclaw memory search --query "release checklist"
 openclaw memory status --agent main
 openclaw memory index --agent main --verbose
 ```
@@ -36,8 +37,14 @@ openclaw memory index --agent main --verbose
 
 通用:
 
-- `--agent <id>`:范围限定到单个Agent(默认:所有配置的Agent)。
+- `--agent <id>`:范围限定到单个 Agent(默认:所有配置的 Agent)。
 - `--verbose`:在探测和索引期间发出详细日志。
+
+`memory search`:
+
+- 查询输入:传递位置参数 `[query]` 或 `--query <text>`。
+- 如果两者都提供,`--query` 优先。
+- 如果两者都未提供,命令以错误退出。
 
 注意:
 

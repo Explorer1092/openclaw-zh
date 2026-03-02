@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "65ef9568e0c112d6c75b7ccebebc4579"
+mmh3_hash: "307f1628faa5888289177022bc850d08"
 summary: "使用 SSH 隧道(Gateway WS)和 Tailnet 进行远程访问"
 read_when:
   - 运行或故障排除远程 Gateway 设置
@@ -108,8 +108,8 @@ Gateway 调用/探测凭证解析现在遵循一个共享契约:
 
 - 显式凭证(`--token`、`--password` 或工具 `gatewayToken`)始终优先。
 - 本地模式默认值:
-  - 令牌:`OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token`
-  - 密码:`OPENCLAW_GATEWAY_PASSWORD` -> `gateway.auth.password`
+  - 令牌:`OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token` -> `gateway.remote.token`
+  - 密码:`OPENCLAW_GATEWAY_PASSWORD` -> `gateway.auth.password` -> `gateway.remote.password`
 - 远程模式默认值:
   - 令牌:`gateway.remote.token` -> `OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token`
   - 密码:`OPENCLAW_GATEWAY_PASSWORD` -> `gateway.remote.password` -> `gateway.auth.password`
@@ -134,8 +134,10 @@ macOS 菜单栏应用程序可以端到端驱动相同的设置(远程状态检�
 简短版本:**保持 Gateway 仅回环**,除非您确定需要绑定。
 
 - **回环 + SSH/Tailscale Serve** 是最安全的默认值(无公共暴露)。
+- 明文 `ws://` 默认仅限回环。对于受信任的私有网络,在客户端进程上设置 `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` 作为紧急措施。
 - **非回环绑定**(`lan`/`tailnet`/`custom`,或当回环不可用时的 `auto`)必须使用认证令牌/密码。
-- `gateway.remote.token` **仅**用于远程 CLI 调用 — 它**不**启用本地认证。
+- `gateway.remote.token` / `.password` 是客户端凭证来源。它们本身**不**配置服务器认证。
+- 本地调用路径可以在未设置 `gateway.auth.*` 时使用 `gateway.remote.*` 作为回退。
 - `gateway.remote.tlsFingerprint` 在使用 `wss://` 时固定远程 TLS 证书。
 - **Tailscale Serve** 可以在 `gateway.auth.allowTailscale: true` 时通过身份标头对 Control UI/WebSocket 流量进行身份验证;HTTP API 端点仍然需要令牌/密码认证。此无令牌流程假设 Gateway 主机是可信的。如果您想要令牌/密码,请将其设置为 `false`。
 - 将 Browser 控制视为操作员访问:仅 Tailnet + 故意节点配对。

@@ -1,7 +1,7 @@
 ---
 title: "`openclaw doctor`"
 sidebarTitle: "openclaw doctor"
-mmh3_hash: "8c5dff9a72961b1780071f10032faf09"
+mmh3_hash: "10c6616d3886e91b28fc7ab438c99983"
 summary: "`openclaw doctor` 的 CLI 参考(健康检查 + 指导性修复)"
 read_when:
   - 您有连接/认证问题并想要指导性修复
@@ -10,9 +10,10 @@ read_when:
 
 # `openclaw doctor`
 
-Gateway和Channel的健康检查 + 快速修复。
+Gateway 和 Channel 的健康检查 + 快速修复。
 
 相关:
+
 - 故障排除:[故障排除](/gateway/troubleshooting)
 - 安全审计:[安全](/gateway/security)
 
@@ -25,8 +26,12 @@ openclaw doctor --deep
 ```
 
 注意:
+
 - 交互式提示(如钥匙串/OAuth 修复)仅在 stdin 是 TTY 且**未**设置 `--non-interactive` 时运行。无头运行(cron、Telegram、无终端)将跳过提示。
 - `--fix`(`--repair` 的别名)将备份写入 `~/.openclaw/openclaw.json.bak` 并删除未知的配置键,列出每个删除。
+- 状态完整性检查现在可以检测 Session 目录中的孤立记录文件,并可以将其归档为 `.deleted.<timestamp>` 以安全回收空间。
+- Doctor 包括内存搜索就绪检查,当缺少嵌入凭据时可以推荐 `openclaw configure --section model`。
+- 如果启用了沙箱模式但 Docker 不可用,doctor 会报告一个高优先级警告并提供修复方法(`安装 Docker` 或 `openclaw config set agents.defaults.sandbox.mode off`)。
 
 ## macOS:`launchctl` 环境覆盖
 

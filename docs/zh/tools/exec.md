@@ -1,7 +1,7 @@
 ---
 title: "Exec 工具"
 sidebarTitle: "Exec 工具"
-mmh3_hash: "9abd0d0253f9d24e197b7fd4a0e36446"
+mmh3_hash: "e1549ffdffd05fc2fd0ed5f78f8bbc78"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
 read_when:
   - 使用或修改 exec 工具
@@ -35,6 +35,7 @@ read_when:
 - `node` 需要配对的节点（伴侣应用或无头节点主机）。
 - 如果有多个节点可用，设置 `exec.node` 或 `tools.exec.node` 以选择一个。
 - 在非 Windows 主机上，exec 在设置时使用 `SHELL`；如果 `SHELL` 是 `fish`，它会优先选择 `PATH` 中的 `bash`（或 `sh`）以避免与 fish 不兼容的脚本，如果两者都不存在则回退到 `SHELL`。
+- 在 Windows 主机上，exec 优先发现 PowerShell 7（`pwsh`）（Program Files、ProgramW6432，然后 PATH），然后回退到 Windows PowerShell 5.1。
 - 主机执行（`gateway`/`node`）拒绝 `env.PATH` 和加载器覆盖（`LD_*`/`DYLD_*`）以防止二进制劫持或注入代码。
 - 重要：沙盒**默认关闭**。如果沙盒关闭且显式配置/请求了 `host=sandbox`，exec 现在会安全失败而不是静默地在 Gateway 主机上运行。启用沙盒或使用带有批准的 `host=gateway`。
 - 脚本预检（针对常见的 Python/Node shell 语法错误）仅检查有效 `workdir` 边界内的文件。如果脚本路径解析到 `workdir` 之外，则跳过该文件的预检。
@@ -49,7 +50,7 @@ read_when:
 - `tools.exec.node`（默认：未设置）
 - `tools.exec.pathPrepend`：要为 exec 运行前置到 `PATH` 的目录列表（仅 Gateway + 沙盒）。
 - `tools.exec.safeBins`：可以在没有显式允许列表条目的情况下运行的仅 stdin 安全二进制文件。有关行为详细信息，请参见 [安全 bin](/tools/exec-approvals#safe-bins-stdin-only)。
-- `tools.exec.safeBinTrustedDirs`：用于 `safeBins` 路径检查的额外显式受信任目录。`PATH` 条目永远不会自动受信任。
+- `tools.exec.safeBinTrustedDirs`：用于 `safeBins` 路径检查的额外显式受信任目录。`PATH` 条目永远不会自动受信任。内置默认值为 `/bin` 和 `/usr/bin`。
 - `tools.exec.safeBinProfiles`：每个安全 bin 的可选自定义 argv 策略（`minPositional`、`maxPositional`、`allowedValueFlags`、`deniedFlags`）。
 
 示例：

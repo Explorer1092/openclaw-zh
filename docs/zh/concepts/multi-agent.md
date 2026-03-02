@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5d813a6e938644e82312301dfe5c50ac"
+mmh3_hash: "8bef1d0f67c449470a05ef4e5bb7a6e1"
 summary: "Multi-agent 路由:隔离的 agents、channel accounts 和 bindings"
 title: "多智能体路由"
 sidebarTitle: "多智能体路由"
@@ -21,17 +21,17 @@ status: active
 
 Auth profiles 是 **每个 agent 的**。每个 agent 从自己的位置读取:
 
-```
+```text
 ~/.openclaw/agents/<agentId>/agent/auth-profiles.json
 ```
 
 Main agent 凭据 **不** 自动共享。永远不要在 agents 之间重用 `agentDir`(它会导致 auth/session 冲突)。如果你想共享 creds,将 `auth-profiles.json` 复制到另一个 agent 的 `agentDir`。
 
-Skills 通过每个 workspace 的 `skills/` 文件夹按 agent 分配,共享 skills 可从 `~/.openclaw/skills` 获得。参见 [Skills: per-agent vs shared](/zh/tools/skills#per-agent-vs-shared-skills)。
+Skills 通过每个 workspace 的 `skills/` 文件夹按 agent 分配,共享 skills 可从 `~/.openclaw/skills` 获得。参见 [Skills: per-agent vs shared](/tools/skills#per-agent-vs-shared-skills)。
 
 Gateway 可以托管 **一个 agent**(默认)或 **多个 agents** 并排。
 
-**Workspace 注意:** 每个 agent 的 workspace 是 **默认 cwd**,而不是硬沙盒。相对路径在 workspace 内解析,但绝对路径可以到达其他主机位置,除非启用沙盒。参见 [Sandboxing](/zh/gateway/sandboxing)。
+**Workspace 注意:** 每个 agent 的 workspace 是 **默认 cwd**,而不是硬沙盒。相对路径在 workspace 内解析,但绝对路径可以到达其他主机位置,除非启用沙盒。参见 [Sandboxing](/gateway/sandboxing)。
 
 ## 路径(快速映射)
 
@@ -138,25 +138,32 @@ openclaw channels status --probe
   agents: {
     list: [
       { id: "alex", workspace: "~/.openclaw/workspace-alex" },
-      { id: "mia", workspace: "~/.openclaw/workspace-mia" }
-    ]
+      { id: "mia", workspace: "~/.openclaw/workspace-mia" },
+    ],
   },
   bindings: [
-    { agentId: "alex", match: { channel: "whatsapp", peer: { kind: "direct", id: "+15551230001" } } },
-    { agentId: "mia",  match: { channel: "whatsapp", peer: { kind: "direct", id: "+15551230002" } } }
+    {
+      agentId: "alex",
+      match: { channel: "whatsapp", peer: { kind: "direct", id: "+15551230001" } },
+    },
+    {
+      agentId: "mia",
+      match: { channel: "whatsapp", peer: { kind: "direct", id: "+15551230002" } },
+    },
   ],
   channels: {
     whatsapp: {
       dmPolicy: "allowlist",
-      allowFrom: ["+15551230001", "+15551230002"]
-    }
-  }
+      allowFrom: ["+15551230001", "+15551230002"],
+    },
+  },
 }
 ```
 
 注意:
+
 - DM 访问控制是 **每个 WhatsApp account 的全局**(pairing/allowlist),而不是每个 agent 的。
-- 对于共享 groups,将 group 绑定到一个 agent 或使用 [Broadcast groups](/zh/broadcast-groups)。
+- 对于共享 groups,将 group 绑定到一个 agent 或使用 [Broadcast groups](/channels/broadcast-groups)。
 
 ## 路由规则(消息如何选择 agent)
 
@@ -173,9 +180,23 @@ Bindings 是 **确定性的**,**最具体的获胜**:
 
 如果同一层级中有多个 bindings 匹配,则配置顺序中的第一个获胜。如果一个 binding 设置了多个匹配字段(例如 `peer` + `guildId`),则所有指定字段都是必需的(`AND` 语义)。
 
+重要的 account-scope 细节:
+
+- 省略 `accountId` 的 binding 仅匹配默认 account。
+- 使用 `accountId: "*"` 作为所有 accounts 的 channel 范围后备。
+- 如果你后来为同一 agent 添加带有显式 account id 的相同 binding,OpenClaw 会将现有的仅 channel binding 升级为 account 范围,而不是重复。
+
 ## 多个 accounts / 电话号码
 
 支持 **多个 accounts** 的 Channels(例如 WhatsApp)使用 `accountId` 标识每个登录。每个 `accountId` 可以路由到不同的 agent,因此一个服务器可以托管多个电话号码而不混合 sessions。
+
+如果你想在省略 `accountId` 时设置 channel 范围的默认 account,请设置 `channels.<channel>.defaultAccount`(可选)。未设置时,如果存在 `default` 则 OpenClaw 回退到它,否则回退到第一个配置的 account id(排序后)。
+
+支持此模式的常见 channels 包括:
+
+- `whatsapp`、`telegram`、`discord`、`slack`、`signal`、`imessage`
+- `irc`、`line`、`googlechat`、`mattermost`、`matrix`、`nextcloud-talk`
+- `bluebubbles`、`zalo`、`zalouser`、`nostr`、`feishu`
 
 ## 概念
 
@@ -184,7 +205,104 @@ Bindings 是 **确定性的**,**最具体的获胜**:
 - `binding`: 通过 `(channel, accountId, peer)` 将入站消息路由到 `agentId`,并可选地使用 guild/team ids。
 - 直接聊天折叠到 `agent:<agentId>:<mainKey>`(每个 agent 的"main";`session.mainKey`)。
 
-## 示例:两个 WhatsApps → 两个 agents
+## 平台示例
+
+### Discord bots per agent
+
+每个 Discord bot account 映射到唯一的 `accountId`。将每个 account 绑定到 agent 并为每个 bot 保留允许列表。
+
+```json5
+{
+  agents: {
+    list: [
+      { id: "main", workspace: "~/.openclaw/workspace-main" },
+      { id: "coding", workspace: "~/.openclaw/workspace-coding" },
+    ],
+  },
+  bindings: [
+    { agentId: "main", match: { channel: "discord", accountId: "default" } },
+    { agentId: "coding", match: { channel: "discord", accountId: "coding" } },
+  ],
+  channels: {
+    discord: {
+      groupPolicy: "allowlist",
+      accounts: {
+        default: {
+          token: "DISCORD_BOT_TOKEN_MAIN",
+          guilds: {
+            "123456789012345678": {
+              channels: {
+                "222222222222222222": { allow: true, requireMention: false },
+              },
+            },
+          },
+        },
+        coding: {
+          token: "DISCORD_BOT_TOKEN_CODING",
+          guilds: {
+            "123456789012345678": {
+              channels: {
+                "333333333333333333": { allow: true, requireMention: false },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+注意:
+
+- 邀请每个 bot 到 guild 并启用 Message Content Intent。
+- Tokens 位于 `channels.discord.accounts.<id>.token`(默认 account 可使用 `DISCORD_BOT_TOKEN`)。
+
+### Telegram bots per agent
+
+```json5
+{
+  agents: {
+    list: [
+      { id: "main", workspace: "~/.openclaw/workspace-main" },
+      { id: "alerts", workspace: "~/.openclaw/workspace-alerts" },
+    ],
+  },
+  bindings: [
+    { agentId: "main", match: { channel: "telegram", accountId: "default" } },
+    { agentId: "alerts", match: { channel: "telegram", accountId: "alerts" } },
+  ],
+  channels: {
+    telegram: {
+      accounts: {
+        default: {
+          botToken: "123456:ABC...",
+          dmPolicy: "pairing",
+        },
+        alerts: {
+          botToken: "987654:XYZ...",
+          dmPolicy: "allowlist",
+          allowFrom: ["tg:123456789"],
+        },
+      },
+    },
+  },
+}
+```
+
+注意:
+
+- 通过 BotFather 为每个 agent 创建一个 bot 并复制每个 token。
+- Tokens 位于 `channels.telegram.accounts.<id>.botToken`(默认 account 可使用 `TELEGRAM_BOT_TOKEN`)。
+
+### WhatsApp numbers per agent
+
+在启动 gateway 之前链接每个 account:
+
+```bash
+openclaw channels login --channel whatsapp --account personal
+openclaw channels login --channel whatsapp --account biz
+```
 
 `~/.openclaw/openclaw.json` (JSON5):
 
@@ -261,24 +379,25 @@ Bindings 是 **确定性的**,**最具体的获胜**:
         id: "chat",
         name: "Everyday",
         workspace: "~/.openclaw/workspace-chat",
-        model: "anthropic/claude-sonnet-4-5"
+        model: "anthropic/claude-sonnet-4-5",
       },
       {
         id: "opus",
         name: "Deep Work",
         workspace: "~/.openclaw/workspace-opus",
-        model: "anthropic/claude-opus-4-5"
-      }
-    ]
+        model: "anthropic/claude-opus-4-6",
+      },
+    ],
   },
   bindings: [
     { agentId: "chat", match: { channel: "whatsapp" } },
-    { agentId: "opus", match: { channel: "telegram" } }
-  ]
+    { agentId: "opus", match: { channel: "telegram" } },
+  ],
 }
 ```
 
 注意:
+
 - 如果你对 channel 有多个 accounts,将 `accountId` 添加到 binding(例如 `{ channel: "whatsapp", accountId: "personal" }`)。
 - 要将单个 DM/group 路由到 Opus,同时将其余部分保留在 chat 上,为该 peer 添加 `match.peer` binding;peer 匹配始终优于 channel 范围规则。
 
@@ -290,14 +409,27 @@ Bindings 是 **确定性的**,**最具体的获胜**:
 {
   agents: {
     list: [
-      { id: "chat", name: "Everyday", workspace: "~/.openclaw/workspace-chat", model: "anthropic/claude-sonnet-4-5" },
-      { id: "opus", name: "Deep Work", workspace: "~/.openclaw/workspace-opus", model: "anthropic/claude-opus-4-5" }
-    ]
+      {
+        id: "chat",
+        name: "Everyday",
+        workspace: "~/.openclaw/workspace-chat",
+        model: "anthropic/claude-sonnet-4-5",
+      },
+      {
+        id: "opus",
+        name: "Deep Work",
+        workspace: "~/.openclaw/workspace-opus",
+        model: "anthropic/claude-opus-4-6",
+      },
+    ],
   },
   bindings: [
-    { agentId: "opus", match: { channel: "whatsapp", peer: { kind: "dm", id: "+15551234567" } } },
-    { agentId: "chat", match: { channel: "whatsapp" } }
-  ]
+    {
+      agentId: "opus",
+      match: { channel: "whatsapp", peer: { kind: "direct", id: "+15551234567" } },
+    },
+    { agentId: "chat", match: { channel: "whatsapp" } },
+  ],
 }
 ```
 
@@ -317,32 +449,41 @@ Peer bindings 始终获胜,因此将它们保留在 channel 范围规则之上�
         workspace: "~/.openclaw/workspace-family",
         identity: { name: "Family Bot" },
         groupChat: {
-          mentionPatterns: ["@family", "@familybot", "@Family Bot"]
+          mentionPatterns: ["@family", "@familybot", "@Family Bot"],
         },
         sandbox: {
           mode: "all",
-          scope: "agent"
+          scope: "agent",
         },
         tools: {
-          allow: ["exec", "read", "sessions_list", "sessions_history", "sessions_send", "sessions_spawn", "session_status"],
-          deny: ["write", "edit", "apply_patch", "browser", "canvas", "nodes", "cron"]
-        }
-      }
-    ]
+          allow: [
+            "exec",
+            "read",
+            "sessions_list",
+            "sessions_history",
+            "sessions_send",
+            "sessions_spawn",
+            "session_status",
+          ],
+          deny: ["write", "edit", "apply_patch", "browser", "canvas", "nodes", "cron"],
+        },
+      },
+    ],
   },
   bindings: [
     {
       agentId: "family",
       match: {
         channel: "whatsapp",
-        peer: { kind: "group", id: "120363999999999999@g.us" }
-      }
-    }
-  ]
+        peer: { kind: "group", id: "120363999999999999@g.us" },
+      },
+    },
+  ],
 }
 ```
 
 注意:
+
 - Tool allow/deny 列表是 **tools**,而不是 skills。如果 skill 需要运行二进制文件,请确保允许 `exec` 并且二进制文件存在于 sandbox 中。
 - 对于更严格的 gating,设置 `agents.list[].groupChat.mentionPatterns` 并为 channel 保持启用 group 允许列表。
 
@@ -386,10 +527,11 @@ Peer bindings 始终获胜,因此将它们保留在 channel 范围规则之上�
 注意:`setupCommand` 位于 `sandbox.docker` 下,在容器创建时运行一次。当解析的 scope 为 `"shared"` 时,忽略每个 agent 的 `sandbox.docker.*` 覆盖。
 
 **优势:**
+
 - **安全隔离**:限制不受信任的 agents 的 tools
 - **资源控制**:沙盒特定 agents,同时将其他 agents 保留在主机上
 - **灵活的 policies**:每个 agent 不同的权限
 
 注意:`tools.elevated` 是 **全局的** 并且基于发送者;它不能按 agent 配置。如果你需要每个 agent 的边界,使用 `agents.list[].tools` 拒绝 `exec`。对于 group 定位,使用 `agents.list[].groupChat.mentionPatterns`,以便 @mentions 清晰地映射到预期的 agent。
 
-参见 [Multi-Agent Sandbox & Tools](/zh/multi-agent-sandbox-tools) 了解详细示例。
+参见 [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) 了解详细示例。

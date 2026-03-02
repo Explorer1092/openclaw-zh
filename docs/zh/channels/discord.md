@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "16e5bd90e6e2a69dca37e787a2a74415"
+mmh3_hash: "6f9b9ca5346b4cbc88b206298912aae0"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -398,7 +398,8 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
     `allowlist` 行为：
 
     - 公会必须匹配 `channels.discord.guilds`（首选 `id`，接受 slug）
-    - 可选的发送者 allowlist：`users`（ID 或名称）和 `roles`（仅角色 ID）；如果配置了任一项，当发送者匹配 `users` 或 `roles` 时被允许
+    - 可选的发送者 allowlist：`users`（推荐使用稳定 ID）和 `roles`（仅角色 ID）；如果配置了任一项，当发送者匹配 `users` 或 `roles` 时被允许
+    - 直接名称/标签匹配默认禁用；仅作为紧急兼容模式启用 `channels.discord.dangerouslyAllowNameMatching: true`
     - 名称/标签对 `users` 受支持，但 ID 更安全；`openclaw security audit` 会在使用名称/标签条目时发出警告
     - 如果公会配置了 `channels`，未列出的频道被拒绝
     - 如果公会没有 `channels` 块，该 allowlist 公会中的所有频道都被允许
@@ -635,7 +636,8 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
     - `/focus <target>` 将当前/新线程绑定到 subagent/会话目标
     - `/unfocus` 移除当前线程绑定
     - `/agents` 显示活动运行和绑定状态
-    - `/session ttl <duration|off>` 检查/更新焦点绑定的自动取消焦点 TTL
+    - `/session idle <duration|off>` 检查/更新焦点绑定的自动取消焦点不活动时间
+    - `/session max-age <duration|off>` 检查/更新焦点绑定的硬性最大存活时间
 
     配置：
 
@@ -644,14 +646,16 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
   session: {
     threadBindings: {
       enabled: true,
-      ttlHours: 24,
+      idleHours: 24,
+      maxAgeHours: 0,
     },
   },
   channels: {
     discord: {
       threadBindings: {
         enabled: true,
-        ttlHours: 24,
+        idleHours: 24,
+        maxAgeHours: 0,
         spawnSubagentSessions: false, // 选择启用
       },
     },
@@ -664,9 +668,10 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
     - `session.threadBindings.*` 设置全局默认值。
     - `channels.discord.threadBindings.*` 覆盖 Discord 行为。
     - `spawnSubagentSessions` 必须为 true 以自动创建/绑定线程用于 `sessions_spawn({ thread: true })`。
+    - `spawnAcpSessions` 必须为 true 以自动创建/绑定线程用于 ACP（`/acp spawn ... --thread ...` 或 `sessions_spawn({ runtime: "acp", thread: true })`）。
     - 如果账户禁用了线程绑定，`/focus` 和相关线程绑定操作不可用。
 
-    参见 [Sub-agents](/tools/subagents) 和 [Configuration Reference](/gateway/configuration-reference)。
+    参见 [Sub-agents](/tools/subagents)、[ACP Agents](/tools/acp-agents) 和 [Configuration Reference](/gateway/configuration-reference)。
 
   </Accordion>
 
@@ -768,7 +773,7 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
     说明：
 
     - allowlist 可以使用 `pk:<memberId>`
-    - 成员显示名称按名称/slug 匹配
+    - 仅当 `channels.discord.dangerouslyAllowNameMatching: true` 时，成员显示名称按名称/slug 匹配
     - 查找使用原始消息 ID 并受时间窗口约束
     - 如果查找失败，代理消息被视为 bot 消息并丢弃，除非 `allowBots=true`
 
@@ -918,6 +923,8 @@ OpenClaw 可以加入 Discord 语音频道进行实时连续对话。这与语�
             channelId: "234567890123456789",
           },
         ],
+        daveEncryption: true,
+        decryptionFailureTolerance: 24,
         tts: {
           provider: "openai",
           openai: { voice: "alloy" },
@@ -932,6 +939,10 @@ OpenClaw 可以加入 Discord 语音频道进行实时连续对话。这与语�
 
 - `voice.tts` 仅覆盖语音播放的 `messages.tts`。
 - 语音默认启用；设置 `channels.discord.voice.enabled=false` 以禁用它。
+- `voice.daveEncryption` 和 `voice.decryptionFailureTolerance` 传递给 `@discordjs/voice` 的 join 选项。
+- 如果未设置，`@discordjs/voice` 的默认值为 `daveEncryption=true` 和 `decryptionFailureTolerance=24`。
+- OpenClaw 还会监视接收解密失败，并在短时间窗口内多次失败后通过离开/重新加入语音频道自动恢复。
+- 如果接收日志反复显示 `DecryptionFailed(UnencryptedWhenPassthroughDisabled)`，这可能是 [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419) 中追踪的上游 `@discordjs/voice` 接收 bug。
 
 ## 语音消息
 
@@ -986,6 +997,40 @@ openclaw logs --follow
 
   </Accordion>
 
+  <Accordion title="长时间运行的处理程序超时或重复回复">
+
+    典型日志：
+
+    - `Listener DiscordMessageListener timed out after 30000ms for event MESSAGE_CREATE`
+    - `Slow listener detected ...`
+
+    规范配置：
+
+    - 单账户：`channels.discord.eventQueue.listenerTimeout`
+    - 多账户：`channels.discord.accounts.<accountId>.eventQueue.listenerTimeout`
+
+    推荐基线：
+
+```json5
+{
+  channels: {
+    discord: {
+      accounts: {
+        default: {
+          eventQueue: {
+            listenerTimeout: 120000,
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+    在其他地方添加备用超时控制之前，先调整这个值。
+
+  </Accordion>
+
   <Accordion title="权限审计不匹配">
     `channels status --probe` 权限检查仅适用于数字频道 ID。
 
@@ -1007,6 +1052,18 @@ openclaw logs --follow
     如果你设置 `channels.discord.allowBots=true`，使用严格的提及和 allowlist 规则以避免循环行为。
 
   </Accordion>
+
+  <Accordion title="语音 STT 因 DecryptionFailed(...) 而中断">
+
+    - 保持 OpenClaw 最新（`openclaw update`）以确保 Discord 语音接收恢复逻辑存在
+    - 确认 `channels.discord.voice.daveEncryption=true`（默认值）
+    - 从 `channels.discord.voice.decryptionFailureTolerance=24`（上游默认值）开始，仅在需要时调整
+    - 监控日志：
+      - `discord voice: DAVE decrypt failures detected`
+      - `discord voice: repeated decrypt failures; attempting rejoin`
+    - 如果自动重新加入后故障仍然存在，收集日志并与 [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419) 比对
+
+  </Accordion>
 </AccordionGroup>
 
 ## 配置参考指针
@@ -1020,6 +1077,7 @@ openclaw logs --follow
 - 启动/认证：`enabled`、`token`、`accounts.*`、`allowBots`
 - policy：`groupPolicy`、`dm.*`、`guilds.*`、`guilds.*.channels.*`
 - 命令：`commands.native`、`commands.useAccessGroups`、`configWrites`、`slashCommand.*`
+- 事件队列：`eventQueue.listenerTimeout`（规范），`eventQueue.maxQueueSize`、`eventQueue.maxConcurrency`
 - 回复/历史：`replyToMode`、`historyLimit`、`dmHistoryLimit`、`dms.*.historyLimit`
 - 投递：`textChunkLimit`、`chunkMode`、`maxLinesPerMessage`
 - 流式传输：`streaming`（旧版别名：`streamMode`）、`draftChunk`、`blockStreaming`、`blockStreamingCoalesce`

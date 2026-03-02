@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "983446498ca6beeb87d8fd38280136df"
+mmh3_hash: "4320b8a3fde58821c0fb3fff04488c5e"
 summary: "OpenClaw 沙盒的工作原理:模式、作用域、工作空间访问和镜像"
 title: 沙盒
 read_when: "您想要沙盒的专门解释或需要调整 agents.defaults.sandbox。"
@@ -23,7 +23,7 @@ Gateway 保持在主机上;启用时工具执行在隔离沙盒中运行。
   - 默认情况下,沙盒 Browser 容器使用专用 Docker 网络(`openclaw-sandbox-browser`)而不是全局 `bridge` 网络。
     通过 `agents.defaults.sandbox.browser.network` 配置。
   - 可选的 `agents.defaults.sandbox.browser.cdpSourceRange` 使用 CIDR 允许列表限制容器边缘 CDP 入口(例如 `172.21.0.1/32`)。
-  - noVNC 观察者访问默认受密码保护;OpenClaw 发出解析到观察者 Session 的短期令牌 URL。
+  - noVNC 观察者访问默认受密码保护;OpenClaw 发出一个短期令牌 URL,服务于本地引导页面,并通过 URL 片段(而非查询/标头日志)中的密码打开 noVNC。
   - `agents.defaults.sandbox.browser.allowHostControl` 允许沙盒 Session 显式定位主机 Browser。
   - 可选的允许列表门控 `target: "custom"`: `allowedControlUrls`、`allowedControlHosts`、`allowedControlPorts`。
 
@@ -122,6 +122,14 @@ scripts/sandbox-setup.sh
 
 注意:默认镜像**不**包含 Node。如果 Skill 需要 Node(或其他运行时),要么烘焙自定义镜像,要么通过 `sandbox.docker.setupCommand` 安装(需要网络出口 + 可写根 + root 用户)。
 
+如果您想要功能更齐全的沙盒镜像(包含常用工具,如 `curl`、`jq`、`nodejs`、`python3`、`git`),构建:
+
+```bash
+scripts/sandbox-common-setup.sh
+```
+
+然后将 `agents.defaults.sandbox.docker.image` 设置为 `openclaw-sandbox-common:bookworm-slim`。
+
 沙盒 Browser 镜像:
 
 ```bash
@@ -131,8 +139,17 @@ scripts/sandbox-browser-setup.sh
 默认情况下,沙盒容器以**无网络**运行。
 使用 `agents.defaults.sandbox.docker.network` 覆盖。
 
+安全默认值:
+
+- `network: "host"` 被阻止。
+- `network: "container:<id>"` 默认被阻止(命名空间加入绕过风险)。
+- 紧急覆盖:`agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true`。
+
 Docker 安装和容器化 Gateway 在此:
 [Docker](/install/docker)
+
+对于 Docker Gateway 部署,`docker-setup.sh` 可以引导沙盒配置。
+设置 `OPENCLAW_SANDBOX=1`(或 `true`/`yes`/`on`)以启用该路径。您可以使用 `OPENCLAW_DOCKER_SOCKET` 覆盖 socket 位置。完整设置和环境参考:[Docker](/install/docker#enable-agent-sandbox-for-docker-gateway-opt-in)。
 
 ## setupCommand(一次性容器设置)
 
@@ -147,6 +164,7 @@ Docker 安装和容器化 Gateway 在此:
 常见陷阱:
 
 - 默认 `docker.network` 是 `"none"`(无出口),因此包安装将失败。
+- `docker.network: "container:<id>"` 需要 `dangerouslyAllowContainerNamespaceJoin: true`,仅用于紧急情况。
 - `readOnlyRoot: true` 阻止写入;设置 `readOnlyRoot: false` 或烘焙自定义镜像。
 - `user` 必须是 root 才能进行包安装(省略 `user` 或设置 `user: "0:0"`)。
 - Sandbox Exec **不**继承主机 `process.env`。使用 `agents.defaults.sandbox.docker.env`(或自定义镜像)为 Skill API 密钥。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7c43ac48736c73daaaefba0edcf3a757"
+mmh3_hash: "8ea488e3912c40d7b5fbf94c857af405"
 summary: "向多个 Agents 广播 WhatsApp 消息"
 read_when:
   - 配置广播组
@@ -440,4 +440,4 @@ interface OpenClawConfig {
 
 - [多 Agent 配置](/tools/multi-agent-sandbox-tools)
 - [路由配置](/channels/channel-routing)
-- [Session 管理](/concepts/sessions)
+- [Session 管理](/concepts/session)

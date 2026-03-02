@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a978438cfe21b92544bf46f3fc77dc73"
+mmh3_hash: "3ad5fc6ff3e832f5e64cf76a2b9f6fe7"
 summary: "OpenClaw 加载环境变量的位置和优先级顺序"
 read_when:
   - 您需要知道加载哪些环境变量,以及按什么顺序
@@ -57,6 +57,17 @@ OpenClaw 从多个来源提取环境变量。规则是**永不覆盖现有值**�
 - `OPENCLAW_LOAD_SHELL_ENV=1`
 - `OPENCLAW_SHELL_ENV_TIMEOUT_MS=15000`
 
+## 运行时注入的环境变量
+
+OpenClaw 还会向衍生的子进程注入上下文标记：
+
+- `OPENCLAW_SHELL=exec`：为通过 `exec` 工具运行的命令设置。
+- `OPENCLAW_SHELL=acp`：为 ACP 运行时后端进程衍生（例如 `acpx`）设置。
+- `OPENCLAW_SHELL=acp-client`：为 `openclaw acp client` 衍生 ACP 桥接进程时设置。
+- `OPENCLAW_SHELL=tui-local`：为本地 TUI `!` Shell 命令设置。
+
+这些是运行时标记（不需要用户配置）。可以在 Shell/profile 逻辑中使用它们来应用特定于上下文的规则。
+
 ## 配置中的环境变量替换
 
 您可以使用 `${VAR_NAME}` 语法直接在配置字符串值中引用环境变量:
@@ -75,11 +86,14 @@ OpenClaw 从多个来源提取环境变量。规则是**永不覆盖现有值**�
 
 有关完整详细信息,请参见 [配置：环境变量替换](/gateway/configuration#env-var-substitution-in-config)。
 
-## 日志记录
+## Secret refs 与 `${ENV}` 字符串
 
-| 变量                   | 目的                                                                                                                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `OPENCLAW_LOG_LEVEL`   | 覆盖文件和控制台的日志级别（例如 `debug`、`trace`）。优先于配置中的 `logging.level` 和 `logging.consoleLevel`。无效值会被忽略并发出警告。 |
+OpenClaw 支持两种环境驱动的模式：
+
+- 配置值中的 `${VAR}` 字符串替换。
+- SecretRef 对象（`{ source: "env", provider: "default", id: "VAR" }`），用于支持 Secret 引用的字段。
+
+两者都在激活时从进程环境解析。SecretRef 详细信息记录在 [Secrets 管理](/gateway/secrets) 中。
 
 ## 与路径相关的环境变量
 
@@ -88,6 +102,12 @@ OpenClaw 从多个来源提取环境变量。规则是**永不覆盖现有值**�
 | `OPENCLAW_HOME`        | 覆盖用于所有内部路径解析的主目录（`~/.openclaw/`、Agent 目录、会话、凭据）。在将 OpenClaw 作为专用服务用户运行时很有用。 |
 | `OPENCLAW_STATE_DIR`   | 覆盖状态目录（默认 `~/.openclaw`）。                                                                      |
 | `OPENCLAW_CONFIG_PATH` | 覆盖配置文件路径（默认 `~/.openclaw/openclaw.json`）。                                                   |
+
+## 日志记录
+
+| 变量                   | 目的                                                                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `OPENCLAW_LOG_LEVEL`   | 覆盖文件和控制台的日志级别（例如 `debug`、`trace`）。优先于配置中的 `logging.level` 和 `logging.consoleLevel`。无效值会被忽略并发出警告。 |
 
 ### `OPENCLAW_HOME`
 

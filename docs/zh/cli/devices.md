@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c2b582becddf69c7e121f404faf45acc"
+mmh3_hash: "2caaa6dd99f421c7cba4dfa941c51b9c"
 title: "`openclaw devices`"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
@@ -20,6 +20,25 @@ read_when:
 ```
 openclaw devices list
 openclaw devices list --json
+```
+
+### `openclaw devices remove <deviceId>`
+
+删除一个已配对的设备条目。
+
+```
+openclaw devices remove <deviceId>
+openclaw devices remove <deviceId> --json
+```
+
+### `openclaw devices clear --yes [--pending]`
+
+批量清除已配对的设备。
+
+```
+openclaw devices clear --yes
+openclaw devices clear --yes --pending
+openclaw devices clear --yes --pending --json
 ```
 
 ### `openclaw devices approve [requestId] [--latest]`
@@ -70,3 +89,5 @@ openclaw devices revoke --device <deviceId> --role node
 
 - 令牌轮换返回新令牌(敏感)。将其视为机密。
 - 这些命令需要 `operator.pairing`(或 `operator.admin`)范围。
+- `devices clear` 有意通过 `--yes` 进行门控。
+- 如果本地回环上的配对范围不可用(且未传递显式 `--url`),list/approve 可以使用本地配对回退。

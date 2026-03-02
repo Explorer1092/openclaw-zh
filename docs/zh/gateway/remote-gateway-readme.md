@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "87bf4412fac7ce5cb041560321c509cc"
+mmh3_hash: "1fe7e7599c96ea2e5ef719bcf24a89bc"
 summary: "OpenClaw.app 连接到远程 Gateway 的 SSH 隧道设置"
 read_when: "通过 SSH 将 macOS 应用程序连接到远程 Gateway"
 title: "远程 Gateway 设置"
@@ -85,7 +85,7 @@ open /path/to/OpenClaw.app
 
 ### 创建 PLIST 文件
 
-将此保存为 `~/Library/LaunchAgents/bot.molt.ssh-tunnel.plist`:
+将此保存为 `~/Library/LaunchAgents/ai.openclaw.ssh-tunnel.plist`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -93,7 +93,7 @@ open /path/to/OpenClaw.app
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>bot.molt.ssh-tunnel</string>
+    <string>ai.openclaw.ssh-tunnel</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/ssh</string>
@@ -111,7 +111,7 @@ open /path/to/OpenClaw.app
 ### 加载 Launch Agent
 
 ```bash
-launchctl bootstrap gui/$UID ~/Library/LaunchAgents/bot.molt.ssh-tunnel.plist
+launchctl bootstrap gui/$UID ~/Library/LaunchAgents/ai.openclaw.ssh-tunnel.plist
 ```
 
 隧道现在将:
@@ -136,13 +136,13 @@ lsof -i :18789
 **重启隧道:**
 
 ```bash
-launchctl kickstart -k gui/$UID/bot.molt.ssh-tunnel
+launchctl kickstart -k gui/$UID/ai.openclaw.ssh-tunnel
 ```
 
 **停止隧道:**
 
 ```bash
-launchctl bootout gui/$UID/bot.molt.ssh-tunnel
+launchctl bootout gui/$UID/ai.openclaw.ssh-tunnel
 ```
 
 ---

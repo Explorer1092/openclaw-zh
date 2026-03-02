@@ -1,9 +1,12 @@
 ---
 title: "Chrome 扩展 (浏览器中继)"
 sidebarTitle: "Chrome 扩展"
-mmh3_hash: "7a2c399e503a55900f94f603658c9daf"
+mmh3_hash: "832320662b1c1c0bc01eb2ce2af7ab12"
 summary: "Chrome 扩展: 让 OpenClaw 驱动您现有的 Chrome 标签页"
-read_when: ["您希望 agent 驱动现有的 Chrome 标签页(工具栏按钮)","您需要通过 Tailscale 进行远程网关 + 本地浏览器自动化","您想了解浏览器接管的安全影响"]
+read_when:
+  - 您希望 agent 驱动现有的 Chrome 标签页(工具栏按钮)
+  - 您需要通过 Tailscale 进行远程 Gateway + 本地浏览器自动化
+  - 您想了解浏览器接管的安全影响
 ---
 
 # Chrome 扩展 (浏览器中继)
@@ -15,7 +18,8 @@ OpenClaw Chrome 扩展让 agent 控制您的**现有 Chrome 标签页**(您的�
 ## 它是什么(概念)
 
 有三个部分:
-- **浏览器控制服务**(网关或节点): agent/工具调用的 API(通过网关)
+
+- **浏览器控制服务**(Gateway 或节点): agent/工具调用的 API(通过 Gateway)
 - **本地中继服务器**(本地回环 CDP): 在控制服务器和扩展之间桥接(默认为 `http://127.0.0.1:18792`)
 - **Chrome MV3 扩展**: 使用 `chrome.debugger` 附加到活动标签页并将 CDP 消息管道传输到中继
 
@@ -23,42 +27,45 @@ OpenClaw Chrome 扩展让 agent 控制您的**现有 Chrome 标签页**(您的�
 
 ## 安装/加载(未打包)
 
-1) 将扩展安装到稳定的本地路径:
+1. 将扩展安装到稳定的本地路径:
 
 ```bash
 openclaw browser extension install
 ```
 
-2) 打印已安装的扩展目录路径:
+2. 打印已安装的扩展目录路径:
 
 ```bash
 openclaw browser extension path
 ```
 
-3) Chrome → `chrome://extensions`
+3. Chrome → `chrome://extensions`
+
 - 启用"开发者模式"
 - "加载已解压的扩展程序" → 选择上面打印的目录
 
-4) 固定扩展。
+4. 固定扩展。
 
 ## 更新(无构建步骤)
 
 扩展作为静态文件包含在 OpenClaw 发布版本(npm 包)中。没有单独的"构建"步骤。
 
 升级 OpenClaw 后:
+
 - 重新运行 `openclaw browser extension install` 以刷新 OpenClaw 状态目录下的已安装文件。
 - Chrome → `chrome://extensions` → 在扩展上点击"重新加载"。
 
-## 使用它（首次设置 Gateway 令牌）
+## 使用它(首次设置 Gateway 令牌)
 
-OpenClaw 附带一个名为 `chrome` 的内置浏览器配置文件，该配置文件定位到默认端口上的扩展中继。
+OpenClaw 附带一个名为 `chrome` 的内置浏览器配置文件,该配置文件定位到默认端口上的扩展中继。
 
-在第一次附加之前，打开扩展选项并设置：
+在第一次附加之前,打开扩展选项并设置:
 
-- `Port`（默认 `18792`）
-- `Gateway token`（必须与 `gateway.auth.token` / `OPENCLAW_GATEWAY_TOKEN` 匹配）
+- `Port`(默认 `18792`)
+- `Gateway token`(必须与 `gateway.auth.token` / `OPENCLAW_GATEWAY_TOKEN` 匹配)
 
-使用它：
+使用它:
+
 - CLI: `openclaw browser --browser-profile chrome tabs`
 - Agent 工具: 使用 `profile="chrome"` 的 `browser`
 
@@ -71,6 +78,18 @@ openclaw browser create-profile \
   --cdp-url http://127.0.0.1:18792 \
   --color "#00AA00"
 ```
+
+### 自定义 Gateway 端口
+
+如果您使用自定义 Gateway 端口,扩展中继端口会自动派生:
+
+**扩展中继端口 = Gateway 端口 + 3**
+
+示例: 如果 `gateway.port: 19001`,则:
+
+- 扩展中继端口: `19004`(Gateway + 3)
+
+在扩展选项页中将扩展配置为使用派生的中继端口。
 
 ## 附加/分离(工具栏按钮)
 
@@ -89,34 +108,36 @@ openclaw browser create-profile \
 
 - `ON`: 已附加;OpenClaw 可以驱动该标签页。
 - `…`: 正在连接到本地中继。
-- `!`: 中继无法访问(最常见: 浏览器中继服务器未在此机器上运行)。
+- `!`: 中继无法访问/未通过认证(最常见: 中继服务器未运行,或 Gateway 令牌缺失/错误)。
 
-如果您看到 `!`：
-- 确保网关在本地运行（默认设置），或者如果网关在其他地方运行，在此机器上运行节点主机。
-- 打开扩展选项页面；它验证中继可达性 + gateway-token 身份验证。
+如果您看到 `!`:
 
-## 远程网关(使用节点主机)
+- 确保 Gateway 在本地运行(默认设置),或者如果 Gateway 在其他地方运行,在此机器上运行节点主机。
+- 打开扩展选项页面;它验证中继可达性 + gateway-token 身份验证。
 
-### 本地网关(与 Chrome 相同的机器) — 通常**无需额外步骤**
+## 远程 Gateway(使用节点主机)
 
-如果网关与 Chrome 在同一台机器上运行,它会在本地回环上启动浏览器控制服务并自动启动中继服务器。扩展与本地中继通信; CLI/工具调用发送到网关。
+### 本地 Gateway(与 Chrome 相同的机器) — 通常**无需额外步骤**
 
-### 远程网关(网关在其他地方运行) — **运行节点主机**
+如果 Gateway 与 Chrome 在同一台机器上运行,它会在本地回环上启动浏览器控制服务并自动启动中继服务器。扩展与本地中继通信; CLI/工具调用发送到 Gateway。
 
-如果您的网关在另一台机器上运行,在运行 Chrome 的机器上启动节点主机。网关将把浏览器操作代理到该节点;扩展 + 中继保持在浏览器机器本地。
+### 远程 Gateway(Gateway 在其他地方运行) — **运行节点主机**
+
+如果您的 Gateway 在另一台机器上运行,在运行 Chrome 的机器上启动节点主机。Gateway 将把浏览器操作代理到该节点;扩展 + 中继保持在浏览器机器本地。
 
 如果连接了多个节点,使用 `gateway.nodes.browser.node` 固定一个或设置 `gateway.nodes.browser.mode`。
 
 ## 沙箱(工具容器)
 
-如果您的 agent 会话被沙箱化(`agents.defaults.sandbox.mode != "off"`),`browser` 工具可能受到限制:
+如果您的 agent Session 被沙箱化(`agents.defaults.sandbox.mode != "off"`),`browser` 工具可能受到限制:
 
-- 默认情况下,沙箱会话通常定位到**沙箱浏览器**(`target="sandbox"`),而不是您的主机 Chrome。
+- 默认情况下,沙箱 Session 通常定位到**沙箱浏览器**(`target="sandbox"`),而不是您的主机 Chrome。
 - Chrome 扩展中继接管需要控制**主机**浏览器控制服务器。
 
 选项:
-- 最简单: 从**非沙箱**会话/agent 使用扩展。
-- 或允许沙箱会话的主机浏览器控制:
+
+- 最简单: 从**非沙箱** Session/agent 使用扩展。
+- 或允许沙箱 Session 的主机浏览器控制:
 
 ```json5
 {
@@ -124,11 +145,11 @@ openclaw browser create-profile \
     defaults: {
       sandbox: {
         browser: {
-          allowHostControl: true
-        }
-      }
-    }
-  }
+          allowHostControl: true,
+        },
+      },
+    },
+  },
 }
 ```
 
@@ -138,7 +159,7 @@ openclaw browser create-profile \
 
 ## 远程访问提示
 
-- 将网关和节点主机保持在同一 tailnet 上;避免将中继端口暴露给局域网或公共互联网。
+- 将 Gateway 和节点主机保持在同一 tailnet 上;避免将中继端口暴露给局域网或公共互联网。
 - 有意配对节点;如果您不想远程控制,禁用浏览器代理路由(`gateway.nodes.browser.mode="off"`)。
 
 ## "扩展路径"的工作原理
@@ -156,18 +177,19 @@ CLI 有意**不**打印 `node_modules` 路径。始终先运行 `openclaw browse
 - 扩展使用 Chrome 的调试器 API(`chrome.debugger`)。附加时,模型可以:
   - 在该标签页中点击/输入/导航
   - 读取页面内容
-  - 访问标签页的已登录会话可以访问的任何内容
+  - 访问标签页的已登录 Session 可以访问的任何内容
 - **这不像**专用的 openclaw 管理配置文件那样隔离。
   - 如果您附加到您的日常驱动配置文件/标签页,您就授予了对该账户状态的访问权限。
 
 建议:
-- 优先使用专用的 Chrome 配置文件(与您的个人浏览分开)进行扩展中继使用。
-- 将网关和任何节点主机仅保持在 tailnet 上;依赖网关认证 + 节点配对。
-- 避免通过局域网（`0.0.0.0`）暴露中继端口并避免 Funnel（公共）。
-- 中继阻止非扩展来源，并对 `/cdp` 和 `/extension` 都要求 gateway-token 身份验证。
 
-相关：
+- 优先使用专用的 Chrome 配置文件(与您的个人浏览分开)进行扩展中继使用。
+- 将 Gateway 和任何节点主机仅保持在 tailnet 上;依赖 Gateway 认证 + 节点配对。
+- 避免通过局域网(`0.0.0.0`)暴露中继端口并避免 Funnel(公共)。
+- 中继阻止非扩展来源,并对 `/cdp` 和 `/extension` 都要求 gateway-token 身份验证。
+
+相关:
+
 - 浏览器工具概述: [浏览器](/tools/browser)
 - 安全审计: [安全](/gateway/security)
 - Tailscale 设置: [Tailscale](/gateway/tailscale)
-
