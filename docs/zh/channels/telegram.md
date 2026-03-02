@@ -1,7 +1,7 @@
 ---
 title: "Telegram (Bot API)"
 sidebarTitle: "Telegram"
-mmh3_hash: "69913b538c12679c1356eddcd50f2624"
+mmh3_hash: "5ccda7c7bb1b69a70570e93127a81a2f"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook
@@ -116,8 +116,10 @@ Token 解析顺序为账户感知。实际上，配置值优先于环境变量�
     - `disabled`
 
     `channels.telegram.allowFrom` 接受数字 Telegram 用户 ID。`telegram:` / `tg:` 前缀被接受并规范化。
+    `dmPolicy: "allowlist"` 时空的 `allowFrom` 会阻止所有私信，且会被配置验证拒绝。
     新手引导向导接受 `@username` 输入并将其解析为数字 ID。
     如果您升级后配置中含有 `@username` allowlist 条目，运行 `openclaw doctor --fix` 解析它们（尽力而为；需要 Telegram bot token）。
+    如果之前依赖配对存储 allowlist 文件，`openclaw doctor --fix` 可以在 allowlist 迁移流程中将条目恢复到 `channels.telegram.allowFrom`（例如当 `dmPolicy: "allowlist"` 尚无显式 ID 时）。
 
     ### 查找您的 Telegram 用户 ID
 
@@ -141,7 +143,9 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     有两个独立的控制：
 
     1. **允许哪些群组**（`channels.telegram.groups`）
-       - 无 `groups` 配置：允许所有群组
+       - 无 `groups` 配置：
+         - `groupPolicy: "open"` 时：任何群组均可通过群组 ID 检查
+         - `groupPolicy: "allowlist"`（默认）时：群组被阻止，直到添加 `groups` 条目（或 `"*"`）
        - 配置了 `groups`：作为 allowlist（使用显式 ID 或 `"*"`）
 
     2. **群组中允许哪些发送者**（`channels.telegram.groupPolicy`）
@@ -150,7 +154,9 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
        - `disabled`
 
     `groupAllowFrom` 用于群组发送者过滤。如果未设置，Telegram 回退到 `allowFrom`。
-    `groupAllowFrom` 条目必须是数字 Telegram 用户 ID。
+    `groupAllowFrom` 条目应使用数字 Telegram 用户 ID（`telegram:` / `tg:` 前缀被规范化）。
+    非数字条目在发送者授权时被忽略。
+    安全边界（`2026.2.25+`）：群组发送者授权**不**继承 DM 配对存储批准。配对仅用于 DM。对于群组，请设置 `groupAllowFrom` 或每群组/每主题 `allowFrom`。
     运行时注意：如果 `channels.telegram` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组策略评估（即使 `channels.defaults.groupPolicy` 已设置）。
 
     示例：在一个特定群组中允许任何成员：
@@ -385,16 +391,18 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     - `react`（`chatId`、`messageId`、`emoji`）
     - `deleteMessage`（`chatId`、`messageId`）
     - `editMessage`（`chatId`、`messageId`、`content`）
+    - `createForumTopic`（`chatId`、`name`、可选 `iconColor`、`iconCustomEmojiId`）
 
-    频道消息操作提供人性化别名（`send`、`react`、`delete`、`edit`、`sticker`、`sticker-search`）。
+    频道消息操作提供人性化别名（`send`、`react`、`delete`、`edit`、`sticker`、`sticker-search`、`topic-create`）。
 
     门控控制：
 
     - `channels.telegram.actions.sendMessage`
-    - `channels.telegram.actions.editMessage`
     - `channels.telegram.actions.deleteMessage`
     - `channels.telegram.actions.reactions`
     - `channels.telegram.actions.sticker`（默认：禁用）
+
+    注意：`edit` 和 `topic-create` 目前默认启用，没有单独的 `channels.telegram.actions.*` 开关。
 
     Reaction 移除语义：[/tools/reactions](/tools/reactions)
 
@@ -555,6 +563,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     注意：
 
     - `own` 表示仅用户对 bot 发送消息的 reaction（通过已发送消息缓存尽力而为）。
+    - Reaction 事件仍遵守 Telegram 访问控制（`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`）；未授权的发送者被丢弃。
     - Telegram 在 reaction 更新中不提供线程 ID。
       - 非论坛群组路由到群组聊天会话
       - 论坛群组路由到群组通用主题会话（`:topic:1`），而非确切的原始主题
@@ -611,6 +620,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     - 设置 `channels.telegram.webhookSecret`（当设置了 webhook URL 时必填）
     - 可选 `channels.telegram.webhookPath`（默认 `/telegram-webhook`）
     - 可选 `channels.telegram.webhookHost`（默认 `127.0.0.1`）
+    - 可选 `channels.telegram.webhookPort`（默认 `8787`）
 
     Webhook 模式的默认本地监听器绑定到 `127.0.0.1:8787`。
 
@@ -717,9 +727,14 @@ dig +short api.telegram.org AAAA
 - `channels.telegram.botToken`：bot token（BotFather）。
 - `channels.telegram.tokenFile`：从文件路径读取 token。
 - `channels.telegram.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
-- `channels.telegram.allowFrom`：私信 allowlist（数字 Telegram 用户 ID）。`open` 需要 `"*"`。`openclaw doctor --fix` 可以将旧版 `@username` 条目解析为 ID。
+- `channels.telegram.defaultTo`：当没有提供显式 `--reply-to` 时，CLI `--deliver` 使用的默认 Telegram 目标。
+- `channels.telegram.allowFrom`：私信 allowlist（数字 Telegram 用户 ID）。`allowlist` 需要至少一个发送者 ID。`open` 需要 `"*"`。`openclaw doctor --fix` 可以将旧版 `@username` 条目解析为 ID，并可在 allowlist 迁移流程中从配对存储文件恢复条目。
+- 多账户优先级：
+  - `channels.telegram.accounts.default.allowFrom` 和 `channels.telegram.accounts.default.groupAllowFrom` 仅适用于 `default` 账户。
+  - 命名账户在账户级别值未设置时继承 `channels.telegram.allowFrom` 和 `channels.telegram.groupAllowFrom`。
+  - 命名账户不继承 `channels.telegram.accounts.default.allowFrom` / `groupAllowFrom`。
 - `channels.telegram.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。
-- `channels.telegram.groupAllowFrom`：群组发送者 allowlist（数字 Telegram 用户 ID）。`openclaw doctor --fix` 可以将旧版 `@username` 条目解析为 ID。
+- `channels.telegram.groupAllowFrom`：群组发送者 allowlist（数字 Telegram 用户 ID）。`openclaw doctor --fix` 可以将旧版 `@username` 条目解析为 ID。非数字条目在授权时被忽略。群组授权不使用 DM 配对存储回退（`2026.2.25+`）。
 - `channels.telegram.groups`：每群组默认值 + allowlist（使用 `"*"` 作为全局默认值）。
   - `channels.telegram.groups.<id>.groupPolicy`：每群组 groupPolicy 覆盖（`open | allowlist | disabled`）。
   - `channels.telegram.groups.<id>.requireMention`：提及门控默认值。
@@ -746,6 +761,7 @@ dig +short api.telegram.org AAAA
 - `channels.telegram.webhookSecret`：webhook 密钥（设置 webhookUrl 时必填）。
 - `channels.telegram.webhookPath`：本地 webhook 路径（默认 `/telegram-webhook`）。
 - `channels.telegram.webhookHost`：本地 webhook 绑定主机（默认 `127.0.0.1`）。
+- `channels.telegram.webhookPort`：本地 webhook 绑定端口（默认 `8787`）。
 - `channels.telegram.actions.reactions`：门控 Telegram 工具 reaction。
 - `channels.telegram.actions.sendMessage`：门控 Telegram 工具消息发送。
 - `channels.telegram.actions.deleteMessage`：门控 Telegram 工具消息删除。
@@ -759,7 +775,7 @@ Telegram 特定高优先级字段：
 
 - 启动/认证：`enabled`、`botToken`、`tokenFile`、`accounts.*`
 - 访问控制：`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`、`groups.*.topics.*`
-- 命令/菜单：`commands.native`、`customCommands`
+- 命令/菜单：`commands.native`、`commands.nativeSkills`、`customCommands`
 - 线程/回复：`replyToMode`
 - 流式传输：`streaming`（预览）、`blockStreaming`
 - 格式化/传递：`textChunkLimit`、`chunkMode`、`linkPreview`、`responsePrefix`

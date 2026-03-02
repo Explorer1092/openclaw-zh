@@ -1,13 +1,13 @@
 ---
 title: "Zalo (Bot API)"
 sidebarTitle: "Zalo"
-mmh3_hash: "b1fb51f1cd9df1012f2f3222642279fe"
+mmh3_hash: "a79540c48c9293ca1e847afd71c157ba"
 summary: "Zalo bot 支持状态、功能和配置"
 read_when: ["Working on Zalo features or webhooks"]
 ---
 # Zalo (Bot API)
 
-状态：实验性。仅支持私信；根据 Zalo 文档，群组功能即将推出。
+状态：实验性。支持私信；群组处理可通过显式群组策略控制使用。
 
 ## 需要插件
 Zalo 作为插件提供，未与核心安装包捆绑。
@@ -45,7 +45,7 @@ Zalo 是一款专注于越南市场的消息应用；其 Bot API 允许 Gateway 
 - 由 Gateway 拥有的 Zalo Bot API 频道。
 - 确定性路由：回复返回到 Zalo；模型不选择频道。
 - 私信共享 agent 的主会话。
-- 尚不支持群组（Zalo 文档表示"即将推出"）。
+- 群组通过策略控制（`groupPolicy` + `groupAllowFrom`）支持，默认为失败关闭的 allowlist 行为。
 
 ## 设置（快速路径）
 
@@ -96,6 +96,16 @@ Zalo 是一款专注于越南市场的消息应用；其 Bot API 允许 Gateway 
 - 配对是默认的 token 交换机制。详情：[配对](/channels/pairing)
 - `channels.zalo.allowFrom` 接受数字用户 ID（不支持用户名查找）。
 
+## 访问控制（群组）
+
+- `channels.zalo.groupPolicy` 控制群组入站处理：`open | allowlist | disabled`。
+- 默认行为为失败关闭：`allowlist`。
+- `channels.zalo.groupAllowFrom` 限制哪些发送者 ID 可以在群组中触发 bot。
+- 如果 `groupAllowFrom` 未设置，Zalo 回退到 `allowFrom` 进行发送者检查。
+- `groupPolicy: "disabled"` 阻止所有群组消息。
+- `groupPolicy: "open"` 允许任何群组成员（需要提及）。
+- 运行时注意：如果 `channels.zalo` 完全缺失，运行时仍会回退到 `groupPolicy="allowlist"` 以确保安全。
+
 ## 长轮询 vs webhook
 - 默认：长轮询（无需公共 URL）。
 - Webhook 模式：设置 `channels.zalo.webhookUrl` 和 `channels.zalo.webhookSecret`。
@@ -119,7 +129,7 @@ Zalo 是一款专注于越南市场的消息应用；其 Bot API 允许 Gateway 
 | 功能 | 状态 |
 |---------|--------|
 | 私信 | ✅ 支持 |
-| 群组 | ❌ 即将推出（根据 Zalo 文档） |
+| 群组 | ⚠️ 支持（带策略控制，默认 allowlist）|
 | 媒体（图片） | ✅ 支持 |
 | 反应 | ❌ 不支持 |
 | 主题 | ❌ 不支持 |
@@ -153,6 +163,8 @@ Provider 选项：
 - `channels.zalo.tokenFile`：从文件路径读取 token。
 - `channels.zalo.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
 - `channels.zalo.allowFrom`：私信白名单（用户 ID）。`open` 需要 `"*"`。向导会要求输入数字 ID。
+- `channels.zalo.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。
+- `channels.zalo.groupAllowFrom`：群组发送者白名单（用户 ID）。未设置时回退到 `allowFrom`。
 - `channels.zalo.mediaMaxMb`：入站/出站媒体上限（MB，默认 5）。
 - `channels.zalo.webhookUrl`：启用 webhook 模式（需要 HTTPS）。
 - `channels.zalo.webhookSecret`：webhook secret（8-256 字符）。
@@ -166,6 +178,8 @@ Provider 选项：
 - `channels.zalo.accounts.<id>.enabled`：启用/禁用账户。
 - `channels.zalo.accounts.<id>.dmPolicy`：每个账户的私信策略。
 - `channels.zalo.accounts.<id>.allowFrom`：每个账户的白名单。
+- `channels.zalo.accounts.<id>.groupPolicy`：每个账户的群组策略。
+- `channels.zalo.accounts.<id>.groupAllowFrom`：每个账户的群组发送者白名单。
 - `channels.zalo.accounts.<id>.webhookUrl`：每个账户的 webhook URL。
 - `channels.zalo.accounts.<id>.webhookSecret`：每个账户的 webhook secret。
 - `channels.zalo.accounts.<id>.webhookPath`：每个账户的 webhook 路径。
