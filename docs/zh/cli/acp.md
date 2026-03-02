@@ -1,6 +1,6 @@
 ---
 title: "acp"
-mmh3_hash: "a042b72c106197b8e6bdb96c8bac4459"
+mmh3_hash: "e135751dc55bc031dafd93a894c59489"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:
   - 设置基于 ACP 的 IDE 集成
@@ -9,7 +9,7 @@ read_when:
 
 # acp
 
-运行与 OpenClaw Gateway 通信的 ACP(Agent Client Protocol)桥接。
+运行与 OpenClaw Gateway 通信的 [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) 桥接。
 
 此命令通过 stdio 与 IDE 进行 ACP 通信,并通过 WebSocket 将提示转发到 Gateway。它将 ACP Session 映射到 Gateway Session 密钥。
 
@@ -48,6 +48,13 @@ openclaw acp client --server-args --url wss://gateway-host:18789 --token-file ~/
 # 覆盖服务器命令(默认:openclaw)
 openclaw acp client --server "node" --server-args openclaw.mjs acp --url ws://127.0.0.1:19001
 ```
+
+权限模型(客户端调试模式):
+
+- 自动批准基于允许列表,仅适用于受信任的核心工具 ID。
+- `read` 自动批准的范围限定于当前工作目录(设置了 `--cwd` 时)。
+- 未知/非核心工具名称、超出范围的读取操作以及危险工具始终需要明确的提示批准。
+- 服务器提供的 `toolCall.kind` 被视为不受信任的元数据(不是授权来源)。
 
 ## 如何使用
 
@@ -169,6 +176,8 @@ openclaw acp --session agent:qa:bug-123
 
 - `--token` 和 `--password` 在某些系统上可能在本地进程列表中可见。
 - 首选 `--token-file`/`--password-file` 或环境变量(`OPENCLAW_GATEWAY_TOKEN`、`OPENCLAW_GATEWAY_PASSWORD`)。
+- ACP 运行时后端子进程接收 `OPENCLAW_SHELL=acp`,可用于特定于上下文的 shell/配置规则。
+- `openclaw acp client` 在生成的桥接进程上设置 `OPENCLAW_SHELL=acp-client`。
 
 ### `acp client` 选项
 

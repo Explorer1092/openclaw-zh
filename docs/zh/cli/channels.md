@@ -1,7 +1,7 @@
 ---
 title: "`openclaw channels`"
 sidebarTitle: "openclaw channels"
-mmh3_hash: "cdda8936a1199b3f99618357bd32fdf4"
+mmh3_hash: "029b2a49534a494a76e4e9f6be2d536e"
 summary: "`openclaw channels` 的 CLI 参考(账户、状态、登录/登出、日志)"
 read_when:
   - 您想添加/删除 Channel 账户(WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (插件)/Signal/iMessage)
@@ -36,6 +36,26 @@ openclaw channels remove --channel telegram --delete
 ```
 
 提示:`openclaw channels add --help` 显示每个 Channel 的标志(令牌、应用令牌、signal-cli 路径等)。
+
+不带标志运行 `openclaw channels add` 时,交互式向导可以提示:
+
+- 每个所选 Channel 的账户 ID
+- 这些账户的可选显示名称
+- `现在将已配置的 Channel 账户绑定到 Agent 吗?`
+
+如果您确认立即绑定,向导会询问哪个 Agent 应拥有每个已配置的 Channel 账户,并写入账户范围的路由绑定。
+
+您也可以稍后通过 `openclaw agents bindings`、`openclaw agents bind` 和 `openclaw agents unbind` 管理相同的路由规则(参见 [agents](/cli/agents))。
+
+当您向仍使用单账户顶层设置的 Channel 添加非默认账户(尚未有 `channels.<channel>.accounts` 条目)时,OpenClaw 会将账户范围的单账户顶层值移动到 `channels.<channel>.accounts.default`,然后写入新账户。这保留了原始账户行为同时迁移到多账户结构。
+
+路由行为保持一致:
+
+- 现有的仅 Channel 绑定(无 `accountId`)继续匹配默认账户。
+- `channels add` 在非交互模式下不会自动创建或重写绑定。
+- 交互式设置可以选择性地添加账户范围的绑定。
+
+如果您的配置已处于混合状态(存在命名账户、缺少 `default`,且仍设置了顶层单账户值),请运行 `openclaw doctor --fix` 将账户范围的值移动到 `accounts.default`。
 
 ## 登录/登出(交互式)
 
