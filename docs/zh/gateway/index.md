@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8c8cf440b1366e75dec8f7454b63dfa9"
+mmh3_hash: "646d30b5b777a8390c4188c609d045d7"
 summary: "Gateway 服务、生命周期和操作手册"
 read_when:
   - 运行或调试 Gateway 进程
@@ -16,6 +16,12 @@ title: "Gateway 服务手册"
   </Card>
   <Card title="配置" icon="sliders" href="/gateway/configuration">
     面向任务的设置指南 + 完整配置参考。
+  </Card>
+  <Card title="Secrets 管理" icon="key-round" href="/gateway/secrets">
+    SecretRef 契约、运行时快照行为以及迁移/重载操作。
+  </Card>
+  <Card title="Secrets 计划契约" icon="shield-check" href="/gateway/secrets-plan-contract">
+    确切的 `secrets apply` 目标/路径规则和仅引用 auth-profile 行为。
   </Card>
 </CardGroup>
 
@@ -95,6 +101,7 @@ openclaw gateway status --json
 openclaw gateway install
 openclaw gateway restart
 openclaw gateway stop
+openclaw secrets reload
 openclaw logs --follow
 openclaw doctor
 ```

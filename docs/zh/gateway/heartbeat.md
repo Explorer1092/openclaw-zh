@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8153f1467f658cb951e66b81d988b540"
+mmh3_hash: "cdc003e2e2cc625db728b6bc378dac42"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -19,7 +19,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 
 1. 保持 Heartbeat 启用(默认为 `30m`,或对于 Anthropic OAuth/setup-token 为 `1h`)或设置您自己的节奏。
 2. 在 Agent 工作空间中创建一个微小的 `HEARTBEAT.md` 清单(可选但推荐)。
-3. 决定 Heartbeat 消息应该去哪里(`target: "last"` 是默认值)。
+3. 决定 Heartbeat 消息应该去哪里(`target: "none"` 是默认值;设置 `target: "last"` 以路由到最后的联系人)。
 4. 可选:启用 Heartbeat Reasoning 传递以提高透明度。
 5. 可选:将 Heartbeat 限制在活动时间(本地时间)。
 
@@ -31,7 +31,8 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last",
+        target: "last", // 显式传递到最后的联系人(默认为 "none")
+        directPolicy: "allow", // 默认:允许直接/DM 目标;设置 "block" 以抑制
         // activeHours: { start: "08:00", end: "24:00" },
         // includeReasoning: true, // 可选:也发送单独的 `Reasoning:` 消息
       },
@@ -76,7 +77,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
         every: "30m", // 默认:30m(0m 禁用)
         model: "anthropic/claude-opus-4-6",
         includeReasoning: false, // 默认:false(可用时传递单独的 Reasoning: 消息)
-        target: "last", // last | none | <channel id>(核心或 Plugin,例如"bluebubbles")
+        target: "last", // 默认:none | 选项:last | none | <channel id>(核心或 Plugin,例如"bluebubbles")
         to: "+15551234567", // 可选的特定 Channel 覆盖
         accountId: "ops-bot", // 可选的多账户 Channel ID
         prompt: "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
@@ -107,7 +108,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last",
+        target: "last", // 显式传递到最后的联系人(默认为 "none")
       },
     },
     list: [
@@ -136,7 +137,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last",
+        target: "last", // 显式传递到最后的联系人(默认为 "none")
         activeHours: {
           start: "09:00",
           end: "22:00",
@@ -198,9 +199,12 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
   - 显式 Session 键(从 `openclaw sessions --json` 或 [Sessions CLI](/cli/sessions) 复制)。
   - Session 键格式:参见 [Session](/concepts/session) 和 [群组](/channels/groups)。
 - `target`:
-  - `last`(默认):传递到最后使用的外部 Channel。
+  - `last`:传递到最后使用的外部 Channel。
   - 显式 Channel:`whatsapp` / `telegram` / `discord` / `googlechat` / `slack` / `msteams` / `signal` / `imessage`。
-  - `none`:运行 Heartbeat 但**不要**外部传递。
+  - `none`(默认):运行 Heartbeat 但**不要**外部传递。
+- `directPolicy`:控制直接/DM 传递行为:
+  - `allow`(默认):允许直接/DM Heartbeat 传递。
+  - `block`:抑制直接/DM 传递(`reason=dm-blocked`)。
 - `to`:可选的接收者覆盖(特定 Channel 的 ID,例如 WhatsApp 的 E.164 或 Telegram 聊天 ID)。对于 Telegram 话题/线程,使用 `<chatId>:topic:<messageThreadId>`。
 - `accountId`:多账户 Channel 的可选账户 ID。当 `target: "last"` 时,账户 ID 适用于已解析的最后一个 Channel(如果支持账户);否则被忽略。如果账户 ID 与已解析 Channel 的已配置账户不匹配,则跳过传递。
 - `prompt`:覆盖默认提示正文(不合并)。
@@ -218,6 +222,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 - Heartbeat 默认在 Agent 的主 Session 中运行(`agent:<id>:<mainKey>`),或当 `session.scope = "global"` 时为 `global`。设置 `session` 以覆盖到特定的 Channel Session(Discord/WhatsApp/等)。
 - `session` 仅影响运行上下文;传递由 `target` 和 `to` 控制。
 - 要传递到特定的 Channel/接收者,设置 `target` + `to`。使用 `target: "last"`,传递使用该 Session 的最后一个外部 Channel。
+- Heartbeat 传递默认允许直接/DM 目标。设置 `directPolicy: "block"` 以在仍然运行 Heartbeat 轮次的同时抑制直接目标发送。
 - 如果主队列繁忙,Heartbeat 被跳过并稍后重试。
 - 如果 `target` 解析为无外部目标,运行仍然发生,但不发送出站消息。
 - 仅 Heartbeat 的回复**不会**保持 Session 活动;最后的 `updatedAt` 被恢复,因此空闲过期正常运行。

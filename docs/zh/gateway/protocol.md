@@ -1,7 +1,7 @@
 ---
 title: "网关协议 (WebSocket)"
 sidebarTitle: "网关协议"
-mmh3_hash: "356eec235567be44caf1c820146a13d9"
+mmh3_hash: "9a550d25b349c65d550ebf736a08e84c"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 gateway WS 客户端
@@ -178,6 +178,7 @@ Gateway 将这些视为**声明**并强制执行服务器端 allowlists。
 
 - 当 exec 请求需要批准时,gateway 广播 `exec.approval.requested`。
 - Operator 客户端通过调用 `exec.approval.resolve` 解决(需要 `operator.approvals` 作用域)。
+- 对于 `host=node`,`exec.approval.request` 必须包含 `systemRunPlan`(规范的 `argv`/`cwd`/`rawCommand`/session 元数据)。缺少 `systemRunPlan` 的请求会被拒绝。
 
 ## 版本控制
 
@@ -202,6 +203,29 @@ Gateway 将这些视为**声明**并强制执行服务器端 allowlists。
 - **本地**连接包括 loopback 和 gateway 主机自己的 tailnet 地址(因此同主机 tailnet 绑定仍然可以自动批准)。
 - 所有 WS 客户端在 `connect` 期间必须包含 `device` 身份(operator + node)。Control UI **仅**在启用 `gateway.controlUi.dangerouslyDisableDeviceAuth` 时才能省略它,用于紧急使用。
 - 所有连接必须签署服务器提供的 `connect.challenge` nonce。
+
+### 设备认证迁移诊断
+
+对于仍使用预挑战签名行为的旧版客户端,`connect` 现在在 `error.details.code` 下返回 `DEVICE_AUTH_*` 详细代码,并附带稳定的 `error.details.reason`。
+
+常见迁移失败:
+
+| 消息                        | details.code                     | details.reason           | 含义                                               |
+| --------------------------- | -------------------------------- | ------------------------ | -------------------------------------------------- |
+| `device nonce required`     | `DEVICE_AUTH_NONCE_REQUIRED`     | `device-nonce-missing`   | 客户端省略了 `device.nonce`(或发送了空值)。        |
+| `device nonce mismatch`     | `DEVICE_AUTH_NONCE_MISMATCH`     | `device-nonce-mismatch`  | 客户端使用过时/错误的 nonce 签名。                 |
+| `device signature invalid`  | `DEVICE_AUTH_SIGNATURE_INVALID`  | `device-signature`       | 签名有效负载与 v2 有效负载不匹配。                  |
+| `device signature expired`  | `DEVICE_AUTH_SIGNATURE_EXPIRED`  | `device-signature-stale` | 签名时间戳超出允许的偏差。                          |
+| `device identity mismatch`  | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch`     | `device.id` 与公钥指纹不匹配。                     |
+| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key`      | 公钥格式/规范化失败。                               |
+
+迁移目标:
+
+- 始终等待 `connect.challenge`。
+- 签署包含服务器 nonce 的 v2 有效负载。
+- 在 `connect.params.device.nonce` 中发送相同的 nonce。
+- 首选签名有效负载为 `v3`,除 device/client/role/scopes/token/nonce 字段外,还绑定 `platform` 和 `deviceFamily`。
+- 旧版 `v2` 签名仍接受以保持兼容性,但配对设备元数据固定仍控制重连时的命令策略。
 
 ## TLS + 固定
 
