@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1735f24f196079043ea55ff2956bac85"
+mmh3_hash: "f3348837b86218cb11537d76ab542453"
 summary: "WebSocket gateway 架构、组件和客户端流程"
 read_when:
   - 在 gateway protocol、clients 或 transports 上工作
@@ -90,7 +90,9 @@ sequenceDiagram
 - 所有 WS 客户端(operators + nodes)在 `connect` 时包含**设备身份**。
 - 新设备 ID 需要配对批准;Gateway 为后续连接颁发**设备 token**。
 - **本地**连接(loopback 或 gateway 主机自己的 tailnet 地址)可以自动批准以保持同主机 UX 流畅。
-- **非本地**连接必须签署 `connect.challenge` nonce 并需要显式批准。
+- 所有连接必须签署 `connect.challenge` nonce。
+- Signature payload `v3` 还绑定 `platform` + `deviceFamily`;gateway 在重新连接时固定已配对的元数据,并在元数据更改时要求重新配对。
+- **非本地**连接仍然需要显式批准。
 - Gateway auth (`gateway.auth.*`)仍然适用于**所有**连接,无论是本地还是远程。
 
 详细信息:[Gateway protocol](/gateway/protocol)、[Pairing](/channels/pairing)、[Security](/gateway/security)。

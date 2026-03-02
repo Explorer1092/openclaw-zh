@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e351566812f9c2b6ba5fa0de32bac099"
+mmh3_hash: "789c94b8c51b0486d00159fc90c09ae6"
 summary: "Model provider 概述,包含示例配置 + CLI 流程"
 read_when:
   - 你需要按 provider 的 model 设置参考
@@ -42,6 +42,9 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 - 可选轮换: `OPENAI_API_KEYS`、`OPENAI_API_KEY_1`、`OPENAI_API_KEY_2`,以及 `OPENCLAW_LIVE_OPENAI_KEY`(单个覆盖)
 - 示例 model: `openai/gpt-5.1-codex`
 - CLI: `openclaw onboard --auth-choice openai-api-key`
+- 默认 transport 为 `auto`(WebSocket 优先,SSE 后备)
+- 通过 `agents.defaults.models["openai/<model>"].params.transport` 按 model 覆盖(`"sse"`、`"websocket"` 或 `"auto"`)
+- OpenAI Responses WebSocket 预热默认通过 `params.openaiWsWarmup`(`true`/`false`)启用
 
 ```json5
 {
@@ -69,6 +72,8 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 - Auth: OAuth (ChatGPT)
 - 示例 model: `openai-codex/gpt-5.3-codex`
 - CLI: `openclaw onboard --auth-choice openai-codex` 或 `openclaw models auth login --provider openai-codex`
+- 默认 transport 为 `auto`(WebSocket 优先,SSE 后备)
+- 通过 `agents.defaults.models["openai-codex/<model>"].params.transport` 按 model 覆盖(`"sse"`、`"websocket"` 或 `"auto"`)
 
 ```json5
 {
@@ -101,6 +106,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Providers: `google-vertex`、`google-antigravity`、`google-gemini-cli`
 - Auth: Vertex 使用 gcloud ADC;Antigravity/Gemini CLI 使用它们各自的 auth 流程
+- 注意: Antigravity 和 Gemini CLI OAuth 在 OpenClaw 中属于非官方集成。有用户报告在使用第三方客户端后 Google 账户受到限制。请查看 Google 条款,若选择继续请使用非关键账户。
 - Antigravity OAuth 作为捆绑 plugin 提供(`google-antigravity-auth`,默认禁用)。
   - 启用: `openclaw plugins enable google-antigravity-auth`
   - 登录: `openclaw models auth login --provider google-antigravity --set-default`
@@ -124,18 +130,31 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 - 示例 model: `vercel-ai-gateway/anthropic/claude-opus-4.6`
 - CLI: `openclaw onboard --auth-choice ai-gateway-api-key`
 
+### Kilo Gateway
+
+- Provider: `kilocode`
+- Auth: `KILOCODE_API_KEY`
+- 示例 model: `kilocode/anthropic/claude-opus-4.6`
+- CLI: `openclaw onboard --kilocode-api-key <key>`
+- Base URL: `https://api.kilo.ai/api/gateway/`
+- 扩展内置 catalog 包含 GLM-5 Free、MiniMax M2.5 Free、GPT-5.2、Gemini 3 Pro Preview、Gemini 3 Flash Preview、Grok Code Fast 1 和 Kimi K2.5。
+
+参见 [/providers/kilocode](/providers/kilocode) 了解设置详细信息。
+
 ### 其他内置 providers
 
 - OpenRouter: `openrouter` (`OPENROUTER_API_KEY`)
 - 示例 model: `openrouter/anthropic/claude-sonnet-4-5`
+- Kilo Gateway: `kilocode` (`KILOCODE_API_KEY`)
+- 示例 model: `kilocode/anthropic/claude-opus-4.6`
 - xAI: `xai` (`XAI_API_KEY`)
+- Mistral: `mistral` (`MISTRAL_API_KEY`)
+- 示例 model: `mistral/mistral-large-latest`
+- CLI: `openclaw onboard --auth-choice mistral-api-key`
 - Groq: `groq` (`GROQ_API_KEY`)
 - Cerebras: `cerebras` (`CEREBRAS_API_KEY`)
   - Cerebras 上的 GLM models 使用 ids `zai-glm-4.7` 和 `zai-glm-4.6`。
   - OpenAI 兼容 base URL: `https://api.cerebras.ai/v1`。
-- Mistral: `mistral` (`MISTRAL_API_KEY`)
-  - 示例 model: `mistral/mistral-large-latest`
-  - CLI: `openclaw onboard --auth-choice mistral-api-key`
 - GitHub Copilot: `github-copilot` (`COPILOT_GITHUB_TOKEN` / `GH_TOKEN` / `GITHUB_TOKEN`)
 - Hugging Face Inference: `huggingface` (`HUGGINGFACE_HUB_TOKEN` 或 `HF_TOKEN`) — OpenAI 兼容 router;示例 model: `huggingface/deepseek-ai/DeepSeek-R1`;CLI: `openclaw onboard --auth-choice huggingface-api-key`。参见 [Hugging Face (Inference)](/providers/huggingface)。
 
@@ -161,10 +180,11 @@ Kimi K2 model IDs:
 - `moonshot/kimi-k2-thinking`
 - `moonshot/kimi-k2-thinking-turbo`
   {/_moonshot-kimi-k2-model-refs:end_/ && null}
+
 ```json5
 {
   agents: {
-    defaults: { model: { primary: "moonshot/kimi-k2.5" } }
+    defaults: { model: { primary: "moonshot/kimi-k2.5" } },
   },
   models: {
     mode: "merge",
@@ -173,10 +193,10 @@ Kimi K2 model IDs:
         baseUrl: "https://api.moonshot.ai/v1",
         apiKey: "${MOONSHOT_API_KEY}",
         api: "openai-completions",
-        models: [{ id: "kimi-k2.5", name: "Kimi K2.5" }]
-      }
-    }
-  }
+        models: [{ id: "kimi-k2.5", name: "Kimi K2.5" }],
+      },
+    },
+  },
 }
 ```
 
@@ -207,6 +227,7 @@ openclaw models auth login --provider qwen-portal --set-default
 ```
 
 Model refs:
+
 - `qwen-portal/coder-model`
 - `qwen-portal/vision-model`
 
@@ -288,7 +309,7 @@ Synthetic 在 `synthetic` provider 后面提供 Anthropic 兼容的 models:
 ```json5
 {
   agents: {
-    defaults: { model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.1" } }
+    defaults: { model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.1" } },
   },
   models: {
     mode: "merge",
@@ -297,10 +318,10 @@ Synthetic 在 `synthetic` provider 后面提供 Anthropic 兼容的 models:
         baseUrl: "https://api.synthetic.new/anthropic",
         apiKey: "${SYNTHETIC_API_KEY}",
         api: "anthropic-messages",
-        models: [{ id: "hf:MiniMaxAI/MiniMax-M2.1", name: "MiniMax M2.1" }]
-      }
-    }
-  }
+        models: [{ id: "hf:MiniMaxAI/MiniMax-M2.1", name: "MiniMax M2.1" }],
+      },
+    },
+  },
 }
 ```
 
@@ -320,7 +341,7 @@ Ollama 是一个本地 LLM runtime,提供 OpenAI 兼容的 API:
 - Provider: `ollama`
 - Auth: 不需要(本地 server)
 - 示例 model: `ollama/llama3.3`
-- 安装: https://ollama.ai
+- 安装: [https://ollama.ai](https://ollama.ai)
 
 ```bash
 # 安装 Ollama,然后 pull model:
@@ -330,8 +351,8 @@ ollama pull llama3.3
 ```json5
 {
   agents: {
-    defaults: { model: { primary: "ollama/llama3.3" } }
-  }
+    defaults: { model: { primary: "ollama/llama3.3" } },
+  },
 }
 ```
 
@@ -372,8 +393,8 @@ export VLLM_API_KEY="vllm-local"
   agents: {
     defaults: {
       model: { primary: "lmstudio/minimax-m2.1-gs32" },
-      models: { "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" } }
-    }
+      models: { "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" } },
+    },
   },
   models: {
     providers: {
@@ -389,17 +410,19 @@ export VLLM_API_KEY="vllm-local"
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 200000,
-            maxTokens: 8192
-          }
-        ]
-      }
-    }
-  }
+            maxTokens: 8192,
+          },
+        ],
+      },
+    },
+  },
 }
 ```
 
 注意:
-- 对于自定义 providers,`reasoning`、`input`、`cost`、`contextWindow` 和 `maxTokens` 是可选的。省略时,OpenClaw 默认为:
+
+- 对于自定义 providers,`reasoning`、`input`、`cost`、`contextWindow` 和 `maxTokens` 是可选的。
+  省略时,OpenClaw 默认为:
   - `reasoning: false`
   - `input: ["text"]`
   - `cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }`

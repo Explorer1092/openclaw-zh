@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e2f175be0836873ca707cd1d6f901a19"
+mmh3_hash: "2517349b384303b4c2e65179273bd1c5"
 summary: "Context window + compaction: OpenClaw 如何将 sessions 保持在 model 限制内"
 read_when:
   - 你想了解自动 compaction 和 /compact
@@ -23,6 +23,7 @@ Compaction **持久化** 在 session 的 JSONL 历史记录中。
 ## 配置
 
 使用你的 `openclaw.json` 中的 `agents.defaults.compaction` 设置来配置 compaction 行为(模式、目标 tokens 等)。
+Compaction 摘要默认保留不透明标识符(`identifierPolicy: "strict"`)。你可以通过 `identifierPolicy: "off"` 覆盖此设置,或通过 `identifierPolicy: "custom"` 和 `identifierInstructions` 提供自定义文本。
 
 ## 自动 compaction(默认开启)
 
@@ -38,6 +39,7 @@ Compaction **持久化** 在 session 的 JSONL 历史记录中。
 ## 手动 compaction
 
 使用 `/compact`(可选带有说明)强制进行 compaction 传递:
+
 ```
 /compact Focus on decisions and open questions
 ```
@@ -53,8 +55,17 @@ Context window 特定于 model。OpenClaw 使用配置的 provider catalog 中�
 
 参见 [/concepts/session-pruning](/concepts/session-pruning) 了解 pruning 详细信息。
 
+## OpenAI 服务端 compaction
+
+OpenClaw 还支持 OpenAI Responses 服务端 compaction 提示,适用于兼容的直接 OpenAI 模型。这与本地 OpenClaw compaction 是分开的,可以并行运行。
+
+- 本地 compaction: OpenClaw 进行摘要并持久化到 session JSONL 中。
+- 服务端 compaction: 当启用 `store` + `context_management` 时,OpenAI 在 provider 侧压缩 context。
+
+参见 [OpenAI provider](/providers/openai) 了解 model 参数和覆盖设置。
+
 ## 提示
 
 - 当 sessions 感觉陈旧或 context 臃肿时使用 `/compact`。
-- 大型工具输出已经被截断;pruning 可以进一步减少工具结果的堆积。
+- 大型工具输出��经被截断;pruning 可以进一步减少工具结果的堆积。
 - 如果需要全新的开始,`/new` 或 `/reset` 会启动新的 session id。
