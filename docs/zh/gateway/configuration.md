@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0e561a578e4f63de0dc9150596628b9e"
+mmh3_hash: "f454670b13738d742cecc91d9ca91a1f"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
@@ -185,7 +185,8 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
         dmScope: "per-channel-peer",  // 推荐用于多用户
         threadBindings: {
           enabled: true,
-          ttlHours: 24,
+          idleHours: 24,
+          maxAgeHours: 0,
         },
         reset: {
           mode: "daily",
@@ -197,7 +198,7 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     ```
 
     - `dmScope`: `main`(共享) | `per-peer` | `per-channel-peer` | `per-account-channel-peer`
-    - `threadBindings`: 线程绑定 Session 路由的全局默认值（Discord 支持 `/focus`、`/unfocus`、`/agents` 和 `/session ttl`）。
+    - `threadBindings`: 线程绑定 Session 路由的全局默认值（Discord 支持 `/focus`、`/unfocus`、`/agents`、`/session idle` 和 `/session max-age`）。
     - 参见[Session 管理](/concepts/session)了解范围、身份链接和发送策略。
     - 参见[完整参考文档](/gateway/configuration-reference#session)了解所有字段。
 
@@ -241,6 +242,7 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
 
     - `every`:持续时间字符串(`30m`、`2h`)。设置 `0m` 禁用。
     - `target`: `last` | `whatsapp` | `telegram` | `discord` | `none`
+    - `directPolicy`: `allow`(默认)或 `block`,用于 DM 风格的 heartbeat 目标
     - 参见[Heartbeat](/gateway/heartbeat)完整指南。
 
   </Accordion>
@@ -252,11 +254,17 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
         enabled: true,
         maxConcurrentRuns: 2,
         sessionRetention: "24h",
+        runLog: {
+          maxBytes: "2mb",
+          keepLines: 2000,
+        },
       },
     }
     ```
 
-    参见[Cron 作业](/automation/cron-jobs)功能概览和 CLI 示例。
+    - `sessionRetention`:从 `sessions.json` 中清理已完成的独立运行 Session(默认 `24h`;设置 `false` 禁用)。
+    - `runLog`:按大小和保留行数清理 `cron/runs/<jobId>.jsonl`。
+    - 参见[Cron 作业](/automation/cron-jobs)功能概览和 CLI 示例。
 
   </Accordion>
 
@@ -376,6 +384,10 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
 
 ## 配置 RPC(编程更新)
 
+<Note>
+控制平面写入 RPC(`config.apply`、`config.patch`、`update.run`)对每个 `deviceId+clientIp` 限速为 **每 60 秒 3 次请求**。当达到限制时,RPC 返回 `UNAVAILABLE` 并附带 `retryAfterMs`。
+</Note>
+
 <AccordionGroup>
   <Accordion title="config.apply(完整替换)">
     验证 + 写入完整配置并在一步中重启 Gateway。
@@ -391,6 +403,8 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
     - `sessionKey`(可选) — 用于重启后唤醒 ping 的 Session 键
     - `note`(可选) — 重启哨兵的注释
     - `restartDelayMs`(可选) — 重启前的延迟(默认 2000)
+
+    当某次重启已在挂起/进行中时,重启请求会被合并,且两次重启周期之间有 30 秒的冷却期。
 
     ```bash
     openclaw gateway call config.get --params '{}'  # 捕获 payload.hash
@@ -415,6 +429,8 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
     - `raw`(字符串) — 仅包含要更改的键的 JSON5
     - `baseHash`(必需) — 来自 `config.get` 的配置哈希
     - `sessionKey`、`note`、`restartDelayMs` — 与 `config.apply` 相同
+
+    重启行为与 `config.apply` 相同:合并待处理的重启请求,以及重启周期之间 30 秒的冷却期。
 
     ```bash
     openclaw gateway call config.patch --params '{

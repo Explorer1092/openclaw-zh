@@ -1,7 +1,7 @@
 ---
 title: "诊断"
 sidebarTitle: "诊断"
-mmh3_hash: "827d58af15703f9ba0faf7a71cab3895"
+mmh3_hash: "7156372ddb65fab5c5bd755a165bae87"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
 read_when: ["添加或修改 doctor 迁移","引入破坏性配置更改"]
 ---
@@ -111,6 +111,7 @@ Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁�
 - `agent.*` → `agents.defaults` + `tools.*`(tools/elevated/exec/sandbox/subagents)
 - `agent.model`/`allowedModels`/`modelAliases`/`modelFallbacks`/`imageModelFallbacks`
   → `agents.defaults.models` + `agents.defaults.model.primary/fallbacks` + `agents.defaults.imageModel.primary/fallbacks`
+- `browser.ssrfPolicy.allowPrivateNetwork` → `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork`
 
 ### 2b) OpenCode Zen provider 覆盖
 如果您手动添加了 `models.providers.opencode`(或 `opencode-zen`),它会覆盖来自 `@mariozechner/pi-ai` 的内置 OpenCode Zen 目录。这可能会强制每个模型使用单个 API 或将成本清零。Doctor 会发出警告,以便您可以删除覆盖并恢复每个模型的 API 路由 + 成本。
@@ -133,6 +134,8 @@ Doctor 可以将较旧的磁盘布局迁移到当前结构:
 Doctor 检查:
 - **状态目录缺失**:警告灾难性状态丢失,提示重新创建目录,并提醒您它无法恢复丢失的数据。
 - **状态目录权限**:验证可写性;提供修复权限(并在检测到所有者/组不匹配时发出 `chown` 提示)。
+- **macOS 云同步状态目录**:当状态解析到 iCloud Drive(`~/Library/Mobile Documents/com~apple~CloudDocs/...`)或 `~/Library/CloudStorage/...` 下时发出警告,因为同步备份路径可能导致较慢的 I/O 和锁/同步竞争。
+- **Linux SD 或 eMMC 状态目录**:当状态解析到 `mmcblk*` 挂载源时发出警告,因为 SD 或 eMMC 支持的随机 I/O 在 Session 和凭证写入下可能更慢且磨损更快。
 - **Session 目录缺失**:`sessions/` 和 session 存储目录是持久化历史和避免 `ENOENT` 崩溃所必需的。
 - **Transcript 不匹配**:当最近的 session 条目缺少 transcript 文件时发出警告。
 - **主 session"1 行 JSONL"**:当主 transcript 只有一行时标记(历史未累积)。
@@ -196,4 +199,4 @@ Doctor 持久化任何配置更改并标记向导元数据以记录 doctor 运�
 ### 19) Workspace 提示(备份 + 内存系统)
 当缺失时,Doctor 建议 workspace 内存系统,并在 workspace 尚未在 git 下时打印备份提示。
 
-有关 workspace 结构和 git 备份的完整指南(推荐私有 GitHub 或 GitLab),请参见 [/zh/concepts/agent-workspace](/zh/concepts/agent-workspace)。
+有关 workspace 结构和 git 备份的完整指南(推荐私有 GitHub 或 GitLab),请参见 [/concepts/agent-workspace](/concepts/agent-workspace)。

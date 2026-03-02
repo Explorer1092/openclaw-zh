@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eb88b3e7b59df6ce844fbcac19b4ebf3"
+mmh3_hash: "1248db138784e1ff6d9437849093e67d"
 summary: "后台 exec 执行和进程管理"
 read_when:
   - 添加或修改后台 exec 行为
@@ -29,6 +29,7 @@ OpenClaw 通过 `exec` 工具运行 shell 命令,并在内存中保留长时间�
 - 当后台化(显式或超时)时,工具返回 `status: "running"` + `sessionId` 和一小段尾部输出。
 - 输出保存在内存中,直到 session 被轮询或清除。
 - 如果 `process` 工具被禁止,`exec` 同步运行并忽略 `yieldMs`/`background`。
+- 派生的 exec 命令会收到 `OPENCLAW_SHELL=exec`,用于上下文感知的 shell/profile 规则。
 
 ## 子进程桥接
 

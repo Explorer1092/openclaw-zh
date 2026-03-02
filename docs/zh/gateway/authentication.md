@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4cab445e7495a63d6d971910613bab6b"
+mmh3_hash: "021d0dfdd24793a4f0c09433576b3fca"
 summary: "模型认证:OAuth、API 密钥和 setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
@@ -12,6 +12,7 @@ title: "认证"
 OpenClaw 支持模型提供商的 OAuth 和 API 密钥认证。对于 Anthropic 账户,我们推荐使用 **API 密钥**。对于 Claude 订阅访问,使用通过 `claude setup-token` 创建的长期令牌。
 
 完整的 OAuth 流程和存储布局请参见 [/concepts/oauth](/concepts/oauth)。
+对于基于 SecretRef 的认证(`env`/`file`/`exec` providers),请参见 [Secrets Management](/gateway/secrets)。
 
 ## 推荐的 Anthropic 设置(API 密钥)
 
@@ -78,6 +79,11 @@ This credential is only authorized for use with Claude Code and cannot be used f
 openclaw models auth paste-token --provider anthropic
 openclaw models auth paste-token --provider openrouter
 ```
+
+Auth profile refs 也支持静态凭证:
+
+- `api_key` 凭证可以使用 `keyRef: { source, provider, id }`
+- `token` 凭证可以使用 `tokenRef: { source, provider, id }`
 
 自动化友好的检查(过期/缺失时退出 `1`,即将过期时退出 `2`):
 
