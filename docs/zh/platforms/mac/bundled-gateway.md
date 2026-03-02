@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "ba94631336f82e23221e1751439fc332"
 title: "macOS 上的网关 (外部 launchd)"
 sidebarTitle: "macOS 网关"
-mmh3_hash: "11fec5e45294949b7e6b52b9e0a77286"
 summary: "macOS 上的网关运行时(外部 launchd 服务)"
 read_when: ["打包 OpenClaw.app","调试 macOS 网关 launchd 服务","为 macOS 安装网关 CLI"]
 ---
@@ -25,22 +25,27 @@ macOS 应用的 **Install CLI** 按钮通过 npm/pnpm 运行相同的流程(不�
 ## Launchd(网关作为 LaunchAgent)
 
 标签:
-- `bot.molt.gateway`(或 `bot.molt.<profile>`;旧版 `com.openclaw.*` 可能保留)
+
+- `ai.openclaw.gateway`(或 `ai.openclaw.<profile>`;旧版 `com.openclaw.*` 可能保留)
 
 Plist 位置(每个用户):
-- `~/Library/LaunchAgents/bot.molt.gateway.plist`
-  (或 `~/Library/LaunchAgents/bot.molt.<profile>.plist`)
+
+- `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
+  (或 `~/Library/LaunchAgents/ai.openclaw.<profile>.plist`)
 
 管理器:
+
 - macOS 应用在本地模式下拥有 LaunchAgent 安装/更新。
 - CLI 也可以安装它:`openclaw gateway install`。
 
 行为:
+
 - "OpenClaw Active" 启用/禁用 LaunchAgent。
 - 应用退出**不会**停止网关(launchd 保持其活跃)。
 - 如果网关已在配置的端口上运行,应用会附加到它而不是启动新的。
 
 日志记录:
+
 - launchd stdout/err:`/tmp/openclaw/openclaw-gateway.log`
 
 ## 版本兼容性
@@ -52,7 +57,9 @@ macOS 应用会检查网关版本与其自身版本的兼容性。如果不兼�
 ```bash
 openclaw --version
 
-OPENCLAW_SKIP_CHANNELS=1 OPENCLAW_SKIP_CANVAS_HOST=1 openclaw gateway --port 18999 --bind loopback
+OPENCLAW_SKIP_CHANNELS=1 \
+OPENCLAW_SKIP_CANVAS_HOST=1 \
+openclaw gateway --port 18999 --bind loopback
 ```
 
 然后:

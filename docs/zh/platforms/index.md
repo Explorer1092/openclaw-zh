@@ -1,16 +1,17 @@
 ---
+mmh3_hash: "ab6c79205f3323652f03018de68748cf"
 title: "平台"
-mmh3_hash: "3bb8d10477a4b4fec1539b7f8503f514"
 summary: "平台支持概述(网关 + 配套应用)"
 read_when: ["寻找 OS 支持或安装路径","决定在哪里运行网关"]
 ---
+
 # 平台
 
 OpenClaw 核心用 TypeScript 编写。**推荐使用 Node 作为运行时**。
 不推荐在网关中使用 Bun(WhatsApp/Telegram 错误)。
 
 存在 macOS(菜单栏应用)和移动节点(iOS/Android)的配套应用。计划推出 Windows 和
-Linux 配套应用,但网关今天已完全支持。
+Linux 配套应用,但网关今��已完全支持。
 也计划推出 Windows 的原生配套应用;推荐通过 WSL2 运行网关。
 
 ## 选择你的 OS
@@ -24,10 +25,10 @@ Linux 配套应用,但网关今天已完全支持。
 ## VPS 和托管
 
 - VPS 中心: [VPS 托管](/vps)
-- Fly.io: [Fly.io](/platforms/fly)
-- Hetzner (Docker): [Hetzner](/platforms/hetzner)
-- GCP (Compute Engine): [GCP](/platforms/gcp)
-- exe.dev (VM + HTTPS 代理): [exe.dev](/platforms/exe-dev)
+- Fly.io: [Fly.io](/install/fly)
+- Hetzner (Docker): [Hetzner](/install/hetzner)
+- GCP (Compute Engine): [GCP](/install/gcp)
+- exe.dev (VM + HTTPS 代理): [exe.dev](/install/exe-dev)
 
 ## 常见链接
 
@@ -46,5 +47,6 @@ Linux 配套应用,但网关今天已完全支持。
 - 修复/迁移: `openclaw doctor`(提供安装或修复服务)
 
 服务目标取决于 OS:
-- macOS: LaunchAgent(`bot.molt.gateway` 或 `bot.molt.<profile>`;旧版 `com.openclaw.*`)
+
+- macOS: LaunchAgent(`ai.openclaw.gateway` 或 `ai.openclaw.<profile>`;旧版 `com.openclaw.*`)
 - Linux/WSL2: systemd 用户服务(`openclaw-gateway[-<profile>].service`)

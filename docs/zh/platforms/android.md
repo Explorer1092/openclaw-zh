@@ -1,28 +1,30 @@
 ---
+mmh3_hash: "a87fced291861951866fdc07cc3579e0"
 title: "Android 应用 (节点)"
 sidebarTitle: "Android"
-mmh3_hash: "1f09608f709041e9ff3a56a95bbd0f30"
-summary: "Android 应用(节点):连接运行手册 + Canvas/Chat/Camera"
+summary: "Android 应用(节点):连接运行手册 + Connect/Chat/Voice/Canvas 命令界面"
 read_when: ["配对或重新连接 Android 节点","调试 Android 网关发现或认证","验证跨客户端的聊天历史一致性"]
 ---
 
 # Android 应用 (节点)
 
 ## 支持概览
+
 - 角色:配套节点应用(Android 不托管网关)。
 - 需要网关:是(在 macOS、Linux 或 Windows via WSL2 上运行)。
-- 安装:[入门指南](/start/getting-started) + [配对](/gateway/pairing)。
+- 安装:[入门指南](/start/getting-started) + [配对](/channels/pairing)。
 - 网关:[运行手册](/gateway) + [配置](/gateway/configuration)。
   - 协议:[网关协议](/gateway/protocol)(节点 + 控制平面)。
 
 ## 系统控制
+
 系统控制(launchd/systemd)位于网关主机上。参见[网关](/gateway)。
 
 ## 连接运行手册
 
 Android 节点应用 ⇄ (mDNS/NSD + WebSocket) ⇄ **网关**
 
-Android 直接连接到网关 WebSocket(默认 `ws://<host>:18789`)并使用网关拥有的配对。
+Android 直接连接到网关 WebSocket(默认 `ws://<host>:18789`)并使用设备配对(`role: node`)。
 
 ### 前置条件
 
@@ -40,6 +42,7 @@ openclaw gateway --port 18789 --verbose
 ```
 
 在日志中确认你看到类似内容:
+
 - `listening on ws://0.0.0.0:18789`
 
 对于仅 tailnet 设置(推荐用于 Vienna ⇄ London),将网关绑定到 tailnet IP:
@@ -61,8 +64,8 @@ dns-sd -B _openclaw-gw._tcp local.
 
 Android NSD/mDNS 发现不会跨网络。如果你的 Android 节点和网关在不同网络但通过 Tailscale 连接,请改用广域 Bonjour / 单播 DNS-SD:
 
-1) 在网关主机上设置 DNS-SD 区域(例如 `openclaw.internal.`)并发布 `_openclaw-gw._tcp` 记录。
-2) 配置 Tailscale 分割 DNS,将你选择的域指向该 DNS 服务器。
+1. 在网关主机上设置 DNS-SD 区域(例如 `openclaw.internal.`)并发布 `_openclaw-gw._tcp` 记录。
+2. 配置 Tailscale 分割 DNS,将你选择的域指向该 DNS 服务器。
 
 详细信息和 CoreDNS 配置示例:[Bonjour](/gateway/bonjour)。
 
@@ -71,11 +74,12 @@ Android NSD/mDNS 发现不会跨网络。如果你的 Android 节点和网关在
 在 Android 应用中:
 
 - 应用通过**前台服务**(持久通知)保持其网关连接活跃。
-- 打开**设置**。
-- 在**已发现的网关**下,选择你的网关并点击**连接**。
-- 如果 mDNS 被阻止,使用**高级 → 手动网关**(主机 + 端口)并**连接(手动)**。
+- 打开 **Connect** 标签。
+- 使用 **Setup Code** 或 **Manual** 模式。
+- 如果发现被阻止,在**高级控件**中使用手动主机/端口(以及需要时的 TLS/token/密码)。
 
 首次成功配对后,Android 在启动时自动重新连接:
+
 - 手动端点(如果启用),否则
 - 最后发现的网关(尽力而为)。
 
@@ -84,32 +88,36 @@ Android NSD/mDNS 发现不会跨网络。如果你的 Android 节点和网关在
 在网关机器上:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <requestId>
+openclaw devices list
+openclaw devices approve <requestId>
+openclaw devices reject <requestId>
 ```
 
-配对详情:[网关配对](/gateway/pairing)。
+配对详情:[配对](/channels/pairing)。
 
 ### 5) 验证节点已连接
 
 - 通过节点状态:
+
   ```bash
   openclaw nodes status
   ```
+
 - 通过网关:
+
   ```bash
   openclaw gateway call node.list --params "{}"
   ```
 
 ### 6) 聊天 + 历史
 
-Android 节点的聊天表使用网关的**主会话键**(`main`),因此历史和回复与 WebChat 和其他客户端共享:
+Android Chat 标签支持会话选择(默认 `main`,以及其他现有会话):
 
 - 历史:`chat.history`
 - 发送:`chat.send`
 - 推送更新(尽力而为):`chat.subscribe` → `event:"chat"`
 
-### 7) Canvas + 相机
+### 7) Canvas + 屏幕 + 相机
 
 #### 网关 Canvas 主机(推荐用于 Web 内容)
 
@@ -117,9 +125,9 @@ Android 节点的聊天表使用网关的**主会话键**(`main`),因此历史�
 
 注意:节点从网关 HTTP 服务器加载 canvas(与 `gateway.port` 相同端口,默认 `18789`)。
 
-1) 在网关主机上创建 `~/.openclaw/workspace/canvas/index.html`。
+1. 在网关主机上创建 `~/.openclaw/workspace/canvas/index.html`。
 
-2) 将节点导航到它(局域网):
+2. 将节点导航到它(局域网):
 
 ```bash
 openclaw nodes invoke --node "<Android Node>" --command canvas.navigate --params '{"url":"http://<gateway-hostname>.local:18789/__openclaw__/canvas/"}'
@@ -131,11 +139,30 @@ Tailnet(可选):如果两个设备都在 Tailscale 上,使用 MagicDNS 名称或
 A2UI 主机位于 `http://<gateway-host>:18789/__openclaw__/a2ui/`。
 
 Canvas 命令(仅前台):
+
 - `canvas.eval`、`canvas.snapshot`、`canvas.navigate`(使用 `{"url":""}` 或 `{"url":"/"}` 返回到默认脚手架)。`canvas.snapshot` 返回 `{ format, base64 }`(默认 `format="jpeg"`)。
 - A2UI:`canvas.a2ui.push`、`canvas.a2ui.reset`(`canvas.a2ui.pushJSONL` 旧版别名)
 
 相机命令(仅前台;权限门控):
+
 - `camera.snap`(jpg)
 - `camera.clip`(mp4)
 
 参见[相机节点](/nodes/camera)了解参数和 CLI 帮助器。
+
+屏幕命令:
+
+- `screen.record`(mp4;仅前台)
+
+### 8) 语音 + 扩展 Android 命令界面
+
+- 语音:Android 在 Voice 标签中使用单一麦克风开/关流程,支持转录捕获和 TTS 播放(配置后使用 ElevenLabs,否则回退到系统 TTS)。
+- 语音唤醒/对话模式切换目前已从 Android UX/运行时中移除。
+- 其他 Android 命令族(可用性取决于设备 + 权限):
+  - `device.status`、`device.info`、`device.permissions`、`device.health`
+  - `notifications.list`、`notifications.actions`
+  - `photos.latest`
+  - `contacts.search`、`contacts.add`
+  - `calendar.events`、`calendar.add`
+  - `motion.activity`、`motion.pedometer`
+  - `app.update`
