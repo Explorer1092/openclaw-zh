@@ -1,21 +1,24 @@
 ---
+mmh3_hash: "74894acec8078885c21943da46ef676d"
 title: "语音叠加层生命周期 (macOS)"
 sidebarTitle: "语音叠加层"
-mmh3_hash: "2f9e847ec523e79d407607199790f1db"
 summary: "唤醒词和按下说话重叠时的语音叠加层生命周期"
 read_when: ["调整语音叠加层行为"]
 ---
+
 # 语音叠加层生命周期 (macOS)
 
 受众:macOS 应用贡献者。目标:在唤醒词和按下说话重叠时保持语音叠加层可预测。
 
-### 当前意图
+## 当前意图
+
 - 如果叠加层已经从唤醒词可见,并且用户按下热键,热键会话*采用*现有文本,
   而不是重置它。叠加层在按住热键时保持打开。当用户释放时:如果有修剪的
   文本则发送,否则关闭。
 - 仅唤醒词在静默时仍自动发送;按下说话在释放时立即发送。
 
-### 已实现(2025 年 12 月 9 日)
+## 已实现(2025 年 12 月 9 日)
+
 - 叠加层会话现在为每个捕获(唤醒词或按下说话)携带令牌。当令牌不匹配时,
   部分/最终/发送/关闭/级别更新被丢弃,避免陈旧的回调。
 - 按下说话采用任何可见的叠加层文本作为前缀(因此在唤醒叠加层打开时按下
@@ -25,7 +28,8 @@ read_when: ["调整语音叠加层行为"]
   `voicewake.ptt` 和 `voicewake.chime` 中发出(会话开始、部分、最终、
   发送、关闭、提示音原因)。
 
-### 后续步骤
+## 后续步骤
+
 1. **VoiceSessionCoordinator(actor)**
    - 一次拥有一个 `VoiceSession`。
    - API(基于令牌):`beginWakeCapture`、`beginPushToTalk`、`updatePartial`、
@@ -45,22 +49,25 @@ read_when: ["调整语音叠加层行为"]
    - 按下说话:无延迟;唤醒词:自动发送的可选延迟。
    - 在按下说话完成后对唤醒运行时应用短冷却,以便唤醒词不会立即重新触发。
 5. **日志记录**
-   - 协调器在子系统 `bot.molt`、类别 `voicewake.overlay` 和
+   - 协调器在子系统 `ai.openclaw`、类别 `voicewake.overlay` 和
      `voicewake.chime` 中发出 `.info` 日志。
    - 关键事件:`session_started`、`adopted_by_push_to_talk`、`partial`、
      `finalized`、`send`、`dismiss`、`cancel`、`cooldown`。
 
-### 调试清单
+## 调试清单
+
 - 在重现粘性叠加层时流式传输日志:
 
   ```bash
-  sudo log stream --predicate 'subsystem == "bot.molt" AND category CONTAINS "voicewake"' --level info --style compact
+  sudo log stream --predicate 'subsystem == "ai.openclaw" AND category CONTAINS "voicewake"' --level info --style compact
   ```
+
 - 验证只有一个活动会话令牌;陈旧的回调应该被协调器丢弃。
 - 确保按下说话释放始终使用活动令牌调用 `endCapture`;如果文本为空,
   期望 `dismiss` 而没有提示音或发送。
 
-### 迁移步骤(建议)
+## 迁移步骤(建议)
+
 1. 添加 `VoiceSessionCoordinator`、`VoiceSession` 和 `VoiceSessionPublisher`。
 2. 重构 `VoiceWakeRuntime` 以创建/更新/结束会话,而不是直接触摸
    `VoiceWakeOverlayController`。
