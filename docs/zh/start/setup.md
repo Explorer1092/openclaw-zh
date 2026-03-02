@@ -1,7 +1,7 @@
 ---
 title: "设置"
 sidebarTitle: "设置"
-mmh3_hash: "a7305dc2e87b72b18c460f65227cb24a"
+mmh3_hash: "5aea8e85a8bbcedd2cc06e65eece4616"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器

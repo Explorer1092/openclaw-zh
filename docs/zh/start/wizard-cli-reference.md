@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d62f7d15404aab36ea79de496561a222"
+mmh3_hash: "dc7ed7ca07a3899c7d2a163b152a1e8e"
 summary: "CLI 引导流程、身份验证/模型设置、输出和内部的完整参考"
 read_when:
   - 您需要 openclaw onboard 的详细行为
