@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "74489d7c770de2b2b0238e7211065138"
+mmh3_hash: "77922b0169bd84da932bb9705a802c5f"
 summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
 read_when:
   - Setting up Slack or debugging Slack socket/HTTP mode
@@ -153,6 +153,12 @@ openclaw gateway
     - `dm.groupEnabled` (群组私信默认 false)
     - `dm.groupChannels` (可选 MPIM 白名单)
 
+    多账户优先级:
+
+    - `channels.slack.accounts.default.allowFrom` 仅适用于 `default` 账户。
+    - 命名账户在未设置自身 `allowFrom` 时继承 `channels.slack.allowFrom`。
+    - 命名账户不继承 `channels.slack.accounts.default.allowFrom`。
+
     私信配对使用 `openclaw pairing approve slack <code>`。
 
   </Tab>
@@ -172,6 +178,7 @@ openclaw gateway
 
     - 在启动时解析频道白名单条目和私信白名单条目 (当 token 访问允许时)
     - 未解析的条目保持配置状态
+    - 入站授权匹配默认以 ID 为优先；直接 username/slug 匹配需要 `channels.slack.dangerouslyAllowNameMatching: true`
 
   </Tab>
 
@@ -202,7 +209,8 @@ openclaw gateway
 
 - Slack 的原生命令自动模式默认**关闭** (`commands.native: "auto"` 不会启用 Slack 原生命令)。
 - 使用 `channels.slack.commands.native: true` (或全局 `commands.native: true`) 启用原生 Slack 命令处理器。
-- 当原生命令启用时,在 Slack 中注册匹配的 slash 命令 (`/<command>` 名称)。
+- 当原生命令启用时,在 Slack 中注册匹配的 slash 命令 (`/<command>` 名称),但有一个例外：
+  - 为 status 命令注册 `/agentstatus`（Slack 保留了 `/status`）
 - 如果未启用原生命令,你可以通过 `channels.slack.slashCommand` 运行单个配置的 slash 命令。
 - 原生参数菜单现在会自适应渲染策略：
   - 最多 5 个选项：按钮块
@@ -352,7 +360,11 @@ Slack 操作通过 `channels.slack.actions.*` 控制。
         "channels:read",
         "groups:history",
         "im:history",
+        "im:read",
+        "im:write",
         "mpim:history",
+        "mpim:read",
+        "mpim:write",
         "users:read",
         "app_mentions:read",
         "reactions:read",
@@ -513,6 +525,7 @@ channels:
   重点 Slack 字段:
   - 模式/认证: `mode`, `botToken`, `appToken`, `signingSecret`, `webhookPath`, `accounts.*`
   - 私信访问: `dm.enabled`, `dmPolicy`, `allowFrom` (旧版: `dm.policy`, `dm.allowFrom`), `dm.groupEnabled`, `dm.groupChannels`
+  - 兼容性开关: `dangerouslyAllowNameMatching`（紧急模式；非必要保持关闭）
   - 频道访问: `groupPolicy`, `channels.*`, `channels.*.users`, `channels.*.requireMention`
   - 线程/历史: `replyToMode`, `replyToModeByChatType`, `thread.*`, `historyLimit`, `dmHistoryLimit`, `dms.*.historyLimit`
   - 传递: `textChunkLimit`, `chunkMode`, `mediaMaxMb`, `streaming`, `nativeStreaming`

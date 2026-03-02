@@ -1,7 +1,7 @@
 ---
 title: "Mattermost (插件)"
 sidebarTitle: "Mattermost"
-mmh3_hash: "38168a3076007355e37d04de18759b03"
+mmh3_hash: "225b35823464218b6b0b14c06e12421d"
 summary: "Mattermost bot 设置和 OpenClaw 配置"
 read_when:
   - 设置 Mattermost
@@ -92,7 +92,8 @@ Mattermost 会自动响应私信。频道行为由 `chatmode` 控制：
 
 ## 频道（群组）
 - 默认：`channels.mattermost.groupPolicy = "allowlist"`（需提及才能触发）。
-- 使用 `channels.mattermost.groupAllowFrom` 将发送者加入白名单（用户 ID 或 `@username`）。
+- 使用 `channels.mattermost.groupAllowFrom` 将发送者加入白名单（推荐使用用户 ID）。
+- `@username` 匹配是可变的，仅在 `channels.mattermost.dangerouslyAllowNameMatching: true` 时启用。
 - 公开频道：`channels.mattermost.groupPolicy="open"`（需提及才能触发）。
 - 运行时注意：如果完全没有 `channels.mattermost` 块，运行时群组策略回退为 `allowlist`（即使设置了 `channels.defaults.groupPolicy`）。
 

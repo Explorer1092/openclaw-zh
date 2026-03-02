@@ -23,6 +23,7 @@ openclaw onboard --non-interactive \
   --mode local \
   --auth-choice apiKey \
   --anthropic-api-key "$ANTHROPIC_API_KEY" \
+  --secret-input-mode plaintext \
   --gateway-port 18789 \
   --gateway-bind loopback \
   --install-daemon \
@@ -31,6 +32,22 @@ openclaw onboard --non-interactive \
 ```
 
 添加 `--json` 以获得机器可读的摘要。
+
+使用 `--secret-input-mode ref` 在身份验证配置文件中存储环境支持的引用，而不是明文值。
+向导流程中提供了环境引用和配置的提供商引用（`file` 或 `exec`）之间的交互式选择。
+
+在非交互式 `ref` 模式中，提供商环境变量必须在进程环境中设置。
+不带匹配环境变量传递内联密钥标志现在会快速失败。
+
+示例：
+
+```bash
+openclaw onboard --non-interactive \
+  --mode local \
+  --auth-choice openai-api-key \
+  --secret-input-mode ref \
+  --accept-risk
+```
 
 ## Provider 特定示例
 
@@ -87,6 +104,16 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
+  <Accordion title="Mistral 示例">
+    ```bash
+    openclaw onboard --non-interactive \
+      --mode local \
+      --auth-choice mistral-api-key \
+      --mistral-api-key "$MISTRAL_API_KEY" \
+      --gateway-port 18789 \
+      --gateway-bind loopback
+    ```
+  </Accordion>
   <Accordion title="Synthetic 示例">
     ```bash
     openclaw onboard --non-interactive \
@@ -122,6 +149,24 @@ openclaw onboard --non-interactive \
     ```
 
     `--custom-api-key` 是可选的。如果省略，引导会检查 `CUSTOM_API_KEY`。
+
+    Ref 模式变体：
+
+    ```bash
+    export CUSTOM_API_KEY="your-key"
+    openclaw onboard --non-interactive \
+      --mode local \
+      --auth-choice custom-api-key \
+      --custom-base-url "https://llm.example.com/v1" \
+      --custom-model-id "foo-large" \
+      --secret-input-mode ref \
+      --custom-provider-id "my-custom" \
+      --custom-compatibility anthropic \
+      --gateway-port 18789 \
+      --gateway-bind loopback
+    ```
+
+    在此模式下，引导将 `apiKey` 存储为 `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`。
 
   </Accordion>
 </AccordionGroup>

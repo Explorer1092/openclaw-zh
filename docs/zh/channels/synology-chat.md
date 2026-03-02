@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3c55c3ce139713cdc5968bf96ba17879"
+mmh3_hash: "3f6732f13d9453a8172cced2955b4937"
 title: "Synology Chat"
 summary: "Synology Chat webhook 设置与 OpenClaw 配置"
 read_when:
@@ -72,6 +72,7 @@ openclaw plugins install ./extensions/synology-chat
 
 - `dmPolicy: "allowlist"` 是推荐的默认设置。
 - `allowedUserIds` 接受 Synology 用户 ID 的列表（或逗号分隔的字符串）。
+- 在 `allowlist` 模式下，空的 `allowedUserIds` 列表被视为配置错误，webhook 路由将不会启动（使用 `dmPolicy: "open"` 允许所有人）。
 - `dmPolicy: "open"` 允许任何发送者。
 - `dmPolicy: "disabled"` 阻止私信。
 - 配对审批方式：

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "469b0cea70fbdbbe39c61e35dbdbf6ae"
+mmh3_hash: "60c3c00fe62178e90b55481320b6924c"
 summary: "OpenClaw Plugins/Extensions：发现、配置和安全"
 read_when:
   - 添加或修改 Plugins/Extensions
@@ -34,6 +34,7 @@ Npm 规范**仅限注册表**（包名 + 可选版本/标签）。Git/URL/文件
 3. 重启 Gateway，然后在 `plugins.entries.<id>.config` 下配置。
 
 参见 [Voice Call](/plugins/voice-call) 获取具体的 Plugin 示例。
+寻找第三方列表？请参见 [社区 Plugins](/plugins/community)。
 
 ## 可用的 Plugins（官方）
 
@@ -107,6 +108,15 @@ OpenClaw 按顺序扫描：
 
 内置 Plugins 必须通过 `plugins.entries.<id>.enabled` 或 `openclaw plugins enable <id>` 显式启用。已安装的 Plugins 默认启用，但可以以相同方式禁用。
 
+安全强化说明：
+
+- 如果 `plugins.allow` 为空且非内置 Plugins 可被发现，OpenClaw 会在启动时记录带有 Plugin ID 和来源的警告。
+- 候选路径在发现准入前经过安全检查。OpenClaw 在以下情况下阻止候选项：
+  - 扩展入口解析到 Plugin 根目录之外（包括符号链接/路径遍历逃逸），
+  - Plugin 根/来源路径对所有人可写，
+  - 非内置 Plugins 的路径所有权可疑（POSIX 所有者既不是当前 uid 也不是 root）。
+- 没有安装/加载路径来源的已加载非内置 Plugins 会发出警告，以便您可以固定信任（`plugins.allow`）或安装跟踪（`plugins.installs`）。
+
 每个 Plugin 必须在其根目录中包含一个 `openclaw.plugin.json` 文件。如果路径指向文件，则 Plugin 根目录是文件的目录，并且必须包含清单。
 
 如果多个 Plugins 解析为相同的 ID，则上述顺序中的第一个匹配项获胜，较低优先级的副本将被忽略。
@@ -127,6 +137,8 @@ Plugin 目录可能包含带有 `openclaw.extensions` 的 `package.json`：
 每个条目都成为一个 Plugin。如果包列出多个扩展，则 Plugin ID 变为 `name/<fileBase>`。
 
 如果您的 Plugin 导入 npm 依赖项，请在该目录中安装它们，以便 `node_modules` 可用（`npm install` / `pnpm install`）。
+
+安全防护：`openclaw.extensions` 的每个条目在符号链接解析后必须保持在 Plugin 目录内。逃出包目录的条目将被拒绝。
 
 安全说明：`openclaw plugins install` 使用 `npm install --ignore-scripts` 安装 Plugin 依赖项（不运行生命周期脚本）。保持 Plugin 依赖树为"纯 JS/TS"，避免需要 `postinstall` 构建的包。
 
@@ -268,6 +280,7 @@ openclaw plugins install ./plugin.tgz           # 从本地 tarball 安装
 openclaw plugins install ./plugin.zip           # 从本地 zip 安装
 openclaw plugins install -l ./extensions/voice-call # 链接（不复制）用于开发
 openclaw plugins install @openclaw/voice-call # 从 npm 安装
+openclaw plugins install @openclaw/voice-call --pin # 存储确切解析的 name@version
 openclaw plugins update <id>
 openclaw plugins update --all
 openclaw plugins enable <id>
@@ -276,6 +289,7 @@ openclaw plugins doctor
 ```
 
 `plugins update` 仅适用于在 `plugins.installs` 下跟踪的 npm 安装。
+如果存储的完整性元数据在更新之间发生变化，OpenClaw 会发出警告并要求确认（使用全局 `--yes` 绕过提示）。
 
 Plugins 也可以注册自己的顶级命令（示例：`openclaw voicecall`）。
 
@@ -288,21 +302,28 @@ Plugins 导出：
 
 ## Plugin Hooks
 
-Plugins 可以提供 Hooks 并在运行时注册它们。这使 Plugin 能够捆绑事件驱动的自动化，而无需单独的 Hook 包安装。
+Plugins 可以在运行时注册 Hooks。这使 Plugin 能够捆绑事件驱动的自动化，而无需单独的 Hook 包安装。
 
 ### 示例
 
-```
-import { registerPluginHooksFromDir } from "openclaw/plugin-sdk";
-
+```ts
 export default function register(api) {
-  registerPluginHooksFromDir(api, "./hooks");
+  api.registerHook(
+    "command:new",
+    async () => {
+      // Hook 逻辑在这里。
+    },
+    {
+      name: "my-plugin.command-new",
+      description: "Runs when /new is invoked",
+    },
+  );
 }
 ```
 
 注意：
 
-- Hook 目录遵循正常的 Hook 结构（`HOOK.md` + `handler.ts`）。
+- 通过 `api.registerHook(...)` 显式注册 Hooks。
 - Hook 资格规则仍然适用（OS/bins/env/config 要求）。
 - Plugin 管理的 Hooks 在 `openclaw hooks list` 中显示为 `plugin:<id>`。
 - 您无法通过 `openclaw hooks` 启用/禁用 Plugin 管理的 Hooks；改为启用/禁用 Plugin。
@@ -396,6 +417,29 @@ export default function (api) {
 - `meta.aliases` 为规范化和 CLI 输入添加备用 ID。
 - `meta.preferOver` 列出当两者都配置时跳过自动启用的 Channel ID。
 - `meta.detailLabel` 和 `meta.systemImage` 让 UI 显示更丰富的 Channel 标签/图标。
+
+### Channel 引导 Hooks
+
+Channel Plugins 可以在 `plugin.onboarding` 上定义可选的引导 Hooks：
+
+- `configure(ctx)` 是基础设置流程。
+- `configureInteractive(ctx)` 可以完全拥有已配置和未配置状态的交互式设置。
+- `configureWhenConfigured(ctx)` 仅在 Channel 已配置时覆盖行为。
+
+向导中的 Hook 优先级：
+
+1. `configureInteractive`（如果存在）
+2. `configureWhenConfigured`（仅当 Channel 状态已配置时）
+3. 回退到 `configure`
+
+上下文详情：
+
+- `configureInteractive` 和 `configureWhenConfigured` 接收：
+  - `configured`（`true` 或 `false`）
+  - `label`（提示使用的面向用户的 Channel 名称）
+  - 加上共享的 config/runtime/prompter/options 字段
+- 返回 `"skip"` 使选择和账户跟踪保持不变。
+- 返回 `{ cfg, accountId? }` 应用配置更新并记录账户选择。
 
 ### 编写新的消息 Channel（分步指南）
 

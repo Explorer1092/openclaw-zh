@@ -32,6 +32,7 @@ sidebarTitle: "CLI 参考"
   <Step title="现有配置检测">
     - 如果 `~/.openclaw/openclaw.json` 存在，选择 Keep、Modify 或 Reset。
     - 重新运行向导不会清除任何内容，除非您明确选择 Reset（或传递 `--reset`）。
+    - CLI `--reset` 默认为 `config+creds+sessions`；使用 `--reset-scope full` 也删除工作空间。
     - 如果配置无效或包含旧密钥，向导会停止并要求您在继续之前运行 `openclaw doctor`。
     - Reset 使用 `trash` 并提供范围：
       - 仅配置
@@ -135,7 +136,7 @@ sidebarTitle: "CLI 参考"
 
   </Accordion>
   <Accordion title="OpenAI API 密钥">
-    如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后保存到 `~/.openclaw/.env`，以便 launchd 可以读取它。
+    如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将凭据存储在身份验证配置文件中。
 
     当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.1-codex`。
 
@@ -167,6 +168,10 @@ sidebarTitle: "CLI 参考"
   <Accordion title="自定义 Provider">
     适用于 OpenAI 兼容和 Anthropic 兼容的端点。
 
+    交互式引导支持与其他提供商 API 密钥流程相同的 API 密钥存储选择：
+    - **立即粘贴 API 密钥**（明文）
+    - **使用密钥引用**（环境引用或配置的提供商引用，带预检验证）
+
     非交互式标志：
     - `--auth-choice custom-api-key`
     - `--custom-base-url`
@@ -191,6 +196,24 @@ sidebarTitle: "CLI 参考"
 - OAuth 凭据：`~/.openclaw/credentials/oauth.json`
 - 身份验证配置文件（API 密钥 + OAuth）：`~/.openclaw/agents/<agentId>/agent/auth-profiles.json`
 
+API 密钥存储模式：
+
+- 默认引导行为将 API 密钥作为明文值保存在身份验证配置文件中。
+- `--secret-input-mode ref` 启用引用模式，而不是明文密钥存储。
+  在交互式引导中，您可以选择以下任一方式：
+  - 环境变量引用（例如 `keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`）
+  - 配置的提供商引用（`file` 或 `exec`），带提供商别名 + id
+- 交互式引用模式在保存之前运行快速预检验证。
+  - 环境引用：验证变量名 + 当前引导环境中的非空值。
+  - 提供商引用：验证提供商配置并解析请求的 id。
+  - 如果预检失败，引导显示错误并允许您重试。
+- 在非交互式模式中，`--secret-input-mode ref` 仅支持环境支持。
+  - 在引导进程环境中设置提供商环境变量。
+  - 内联密钥标志（例如 `--openai-api-key`）需要设置该环境变量；否则引导快速失败。
+  - 对于自定义提供商，非交互式 `ref` 模式将 `models.providers.<id>.apiKey` 存储为 `{ source: "env", provider: "default", id: "CUSTOM_API_KEY" }`。
+  - 在该自定义提供商的情况下，`--custom-api-key` 需要设置 `CUSTOM_API_KEY`；否则引导快速失败。
+- 现有的明文设置继续正常工作。
+
 <Note>
 无头和服务器提示：在具有浏览器的机器上完成 OAuth，然后将 `~/.openclaw/credentials/oauth.json`（或 `$OPENCLAW_STATE_DIR/credentials/oauth.json`）复制到 Gateway 主机。
 </Note>
@@ -202,6 +225,7 @@ sidebarTitle: "CLI 参考"
 - `agents.defaults.workspace`
 - `agents.defaults.model` / `models.providers`（如果选择 Minimax）
 - `gateway.*`（模式、绑定、身份验证、Tailscale）
+- `session.dmScope`（本地引导在未设置时将此默认为 `per-channel-peer`；现有显式值会被保留）
 - `channels.telegram.botToken`、`channels.discord.token`、`channels.signal.*`、`channels.imessage.*`
 - Channel 白名单（Slack、Discord、Matrix、Microsoft Teams），当您在提示期间选择加入时（名称在可能的情况下解析为 ID）
 - `skills.install.nodeManager`

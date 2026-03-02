@@ -1,7 +1,7 @@
 ---
 title: "Microsoft Teams (插件)"
 sidebarTitle: "Microsoft Teams"
-mmh3_hash: "55ae31dc6582d8ae095410cb11422ed0"
+mmh3_hash: "942b9670790d2f4399140fb8276256d6"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when:
   - 开发 MS Teams 频道功能
@@ -79,7 +79,9 @@ OpenClaw 将自动提供本地安装路径。
 
 **DM 访问**
 - 默认: `channels.msteams.dmPolicy = "pairing"`。未知发送者被忽略,直到批准。
-- `channels.msteams.allowFrom` 接受 AAD 对象 ID、UPN 或显示名称。当凭据允许时,向导通过 Microsoft Graph 将名称解析为 ID。
+- `channels.msteams.allowFrom` 应使用稳定的 AAD 对象 ID。
+- UPN/显示名称是可变的；直接匹配默认禁用，仅在 `channels.msteams.dangerouslyAllowNameMatching: true` 时启用。
+- 当凭据允许时,向导通过 Microsoft Graph 将名称解析为 ID。
 
 **群组访问**
 - 默认: `channels.msteams.groupPolicy = "allowlist"` (阻止,除非添加 `groupAllowFrom`)。使用 `channels.defaults.groupPolicy` 在未设置时覆盖默认值。
@@ -418,7 +420,8 @@ Teams markdown 比 Slack 或 Discord 更受限:
 - `channels.msteams.webhook.port` (默认 `3978`)
 - `channels.msteams.webhook.path` (默认 `/api/messages`)
 - `channels.msteams.dmPolicy`: `pairing | allowlist | open | disabled` (默认: pairing)
-- `channels.msteams.allowFrom`: DM 白名单(AAD 对象 ID、UPN 或显示名称)。当 Graph 访问可用时,向导在设置期间将名称解析为 ID。
+- `channels.msteams.allowFrom`: DM 白名单(推荐使用 AAD 对象 ID)。当 Graph 访问可用时,向导在设置期间将名称解析为 ID。
+- `channels.msteams.dangerouslyAllowNameMatching`: 紧急开关，重新启用可变 UPN/显示名称匹配。
 - `channels.msteams.textChunkLimit`: 出站文本块大小。
 - `channels.msteams.chunkMode`: `length` (默认)或 `newline` 在长度分块之前在空行(段落边界)上拆分。
 - `channels.msteams.mediaAllowHosts`: 入站附件主机白名单(默认为 Microsoft/Teams 域)。
