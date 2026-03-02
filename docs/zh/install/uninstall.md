@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fef73a9a0c7297a2a66f4100e23bcbd2"
+mmh3_hash: "78da244abf8bac6e063e746b8dd91147"
 title: "卸载"
 sidebarTitle: "卸载"
 summary: "完全卸载 OpenClaw (CLI, 服务, 状态, 工作区)"
@@ -79,14 +79,14 @@ rm -rf /Applications/OpenClaw.app
 
 ### macOS (launchd)
 
-默认标签为 `bot.molt.gateway` (或 `bot.molt.<profile>`; 旧版 `com.openclaw.*` 可能仍存在):
+默认标签为 `ai.openclaw.gateway`（或 `ai.openclaw.<profile>`；旧版 `com.openclaw.*` 可能仍存在）：
 
 ```bash
-launchctl bootout gui/$UID/bot.molt.gateway
-rm -f ~/Library/LaunchAgents/bot.molt.gateway.plist
+launchctl bootout gui/$UID/ai.openclaw.gateway
+rm -f ~/Library/LaunchAgents/ai.openclaw.gateway.plist
 ```
 
-如果你使用了配置文件，请将标签和 plist 名称替换为 `bot.molt.<profile>`。如果存在，请删除任何旧版 `com.openclaw.*` plist。
+如果你使用了配置文件，请将标签和 plist 名称替换为 `ai.openclaw.<profile>`。如果存在，请删除任何旧版 `com.openclaw.*` plist。
 
 ### Linux (systemd 用户单元)
 

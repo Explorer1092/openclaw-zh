@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5de8447a1e8dd263c6d6552fa1894ca0"
+mmh3_hash: "46bc7ae7ac7928b9c3b85e17fbc06f91"
 summary: "OpenClaw 是一个可在任何操作系统上运行的 AI agent 多通道 gateway。"
 read_when:
   - 向新人介绍 OpenClaw
@@ -90,7 +90,7 @@ Gateway 是会话、路由和通道连接的单一真实来源。
     用于聊天、配置、会话和节点的浏览器仪表板。
   </Card>
   <Card title="移动节点" icon="smartphone">
-    配对 iOS 和 Android 节点，支持 Canvas。
+    配对 iOS 和 Android 节点，支持 Canvas、相机/屏幕和语音工作流。
   </Card>
 </Columns>
 
@@ -165,7 +165,7 @@ Gateway 启动后打开浏览器控制 UI。
     WhatsApp、Telegram、Discord 等的通道特定设置。
   </Card>
   <Card title="节点" href="/nodes" icon="smartphone">
-    具有配对和 Canvas 的 iOS 和 Android 节点。
+    iOS 和 Android 节点，支持配对、Canvas、相机/屏幕和设备操作。
   </Card>
   <Card title="帮助" href="/help" icon="life-buoy">
     常见修复和故障排除入口点。

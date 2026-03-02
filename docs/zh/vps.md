@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "19185f782ce250c2b3cd9681dc3f7d37"
+mmh3_hash: "4b0d1a5d6f37ceb228d96daae56dadcd"
 summary: "OpenClaw 的 VPS 托管中心 (Oracle/Fly/Hetzner/GCP/exe.dev)"
 read_when:
   - 您想在云中运行 Gateway
@@ -34,8 +34,64 @@ title: "VPS 托管"
 远程访问: [Gateway 远程](/gateway/remote)
 平台中心: [平台](/platforms)
 
+## VPS 上的公司共享代理
+
+当用户处于同一信任边界时（例如一个公司团队），且代理仅用于业务，这是一个有效的设置。
+
+- 将其保留在专用运行时（VPS/VM/容器 + 专用 OS 用户/账户）上。
+- 不要将该运行时登录到个人 Apple/Google 账户或个人浏览器/密码管理器配置文件。
+- 如果用户对彼此具有对抗性，按 Gateway/主机/OS 用户拆分。
+
+安全模型详情：[安全](/gateway/security)
+
 ## 将节点与 VPS 一起使用
 
-您可以将 Gateway 保留在云中,并在本地设备 (Mac/iOS/Android/无头) 上配对**节点**。节点提供本地屏幕/相机/canvas 和 `system.run` 功能,而 Gateway 保留在云中。
+您可以将 Gateway 保留在云中，并在本地设备（Mac/iOS/Android/无头）上配对**节点**。节点提供本地屏幕/相机/canvas 和 `system.run` 功能，而 Gateway 保留在云中。
 
 文档: [节点](/nodes), [节点 CLI](/cli/nodes)
+
+## 小型 VM 和 ARM 主机的启动调优
+
+如果 CLI 命令在低功耗 VM（或 ARM 主机）上感觉缓慢，请启用 Node 的模块编译缓存：
+
+```bash
+grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF'
+export NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+mkdir -p /var/tmp/openclaw-compile-cache
+export OPENCLAW_NO_RESPAWN=1
+EOF
+source ~/.bashrc
+```
+
+- `NODE_COMPILE_CACHE` 改善重复命令的启动时间。
+- `OPENCLAW_NO_RESPAWN=1` 避免自重生路径带来的额外启动开销。
+- 第一次命令运行时预热缓存；后续运行速度更快。
+- 有关 Raspberry Pi 的具体信息，请参阅 [Raspberry Pi](/platforms/raspberry-pi)。
+
+### systemd 调优清单（可选）
+
+对于使用 `systemd` 的 VM 主机，请考虑：
+
+- 为稳定的启动路径添加服务环境：
+  - `OPENCLAW_NO_RESPAWN=1`
+  - `NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache`
+- 保持重启行为明确：
+  - `Restart=always`
+  - `RestartSec=2`
+  - `TimeoutStartSec=90`
+- 首选 SSD 支持的磁盘用于状态/缓存路径，以减少随机 I/O 冷启动惩罚。
+
+示例：
+
+```bash
+sudo systemctl edit openclaw
+```
+
+```ini
+[Service]
+Environment=OPENCLAW_NO_RESPAWN=1
+Environment=NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+Restart=always
+RestartSec=2
+TimeoutStartSec=90
+```

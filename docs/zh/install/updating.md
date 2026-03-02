@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d62eb0001e8d99b58aa127a98db77761"
+mmh3_hash: "5b32220ae274de24f35ce5f0f45a1c0c"
 summary: "安全地更新 OpenClaw (全局安装或源码), 加上回滚策略"
 read_when:
   - 更新 OpenClaw
@@ -195,7 +195,7 @@ openclaw logs --follow
 
 如果您受监管:
 
-- macOS launchd (app-bundled LaunchAgent): `launchctl kickstart -k gui/$UID/bot.molt.gateway` (使用 `bot.molt.<profile>`; 旧版 `com.openclaw.*` 仍然有效)
+- macOS launchd (app-bundled LaunchAgent): `launchctl kickstart -k gui/$UID/ai.openclaw.gateway` (使用 `ai.openclaw.<profile>`; 旧版 `com.openclaw.*` 仍然有效)
 - Linux systemd 用户服务: `systemctl --user restart openclaw-gateway[-<profile>].service`
 - Windows (WSL2): `systemctl --user restart openclaw-gateway[-<profile>].service`
   - `launchctl`/`systemctl` 仅在服务已安装时有效; 否则运行 `openclaw gateway install`。
