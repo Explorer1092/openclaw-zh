@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8e307f6f72fce65b789ce642d4f80451"
+mmh3_hash: "4e038886c239ee79b252775de61532c4"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
   - 在本地或 CI 中运行测试
@@ -102,6 +102,23 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 - 触及 Gateway 网络/WS 协议/配对：添加 `pnpm test:e2e`
 - 调试"我的机器人宕机"/Provider 特定故障/工具调用：运行缩小的 `pnpm test:live`
 
+## 实时：Android node 能力扫描
+
+- 测试：`src/gateway/android-node.capabilities.live.test.ts`
+- 脚本：`pnpm android:test:integration`
+- 目标：调用已连接的 Android node 当前**宣告的每个命令**，并断言命令契约行为。
+- 范围：
+  - 预先配置/手动设置（套件不安装/运行/配对应用）。
+  - 针对所选 Android node 的逐命令 Gateway `node.invoke` 验证。
+- 所需预设置：
+  - Android 应用已连接 + 配对到 Gateway。
+  - 应用保持在前台。
+  - 已为您期望通过的能力授予权限/捕获同意。
+- 可选目标覆盖：
+  - `OPENCLAW_ANDROID_NODE_ID` 或 `OPENCLAW_ANDROID_NODE_NAME`。
+  - `OPENCLAW_ANDROID_GATEWAY_URL` / `OPENCLAW_ANDROID_GATEWAY_TOKEN` / `OPENCLAW_ANDROID_GATEWAY_PASSWORD`。
+- 完整 Android 设置详情：[Android 应用](/platforms/android)
+
 ## 实时：模型冒烟测试（配置文件密钥）
 
 实时测试分为两层，以便我们可以隔离故障：
@@ -201,7 +218,7 @@ OPENCLAW_LIVE_SETUP_TOKEN=1 OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-to
   - `pnpm test:live`（或直接调用 Vitest 时使用 `OPENCLAW_LIVE_TEST=1`）
   - `OPENCLAW_LIVE_CLI_BACKEND=1`
 - 默认值：
-  - 模型：`claude-cli/claude-sonnet-4-5`
+  - 模型：`claude-cli/claude-sonnet-4-6`
   - 命令：`claude`
   - 参数：`["-p","--output-format","json","--dangerously-skip-permissions"]`
 - 覆盖（可选）：
@@ -220,7 +237,7 @@ OPENCLAW_LIVE_SETUP_TOKEN=1 OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-to
 
 ```bash
 OPENCLAW_LIVE_CLI_BACKEND=1 \
-  OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-sonnet-4-5" \
+  OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-sonnet-4-6" \
   pnpm test:live src/gateway/gateway-cli-backend.live.test.ts
 ```
 
@@ -320,6 +337,12 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - 测试：`src/media-understanding/providers/deepgram/audio.live.test.ts`
 - 启用：`DEEPGRAM_API_KEY=... DEEPGRAM_LIVE_TEST=1 pnpm test:live src/media-understanding/providers/deepgram/audio.live.test.ts`
 
+## BytePlus 编码计划实时测试
+
+- 测试：`src/agents/byteplus.live.test.ts`
+- 启用：`BYTEPLUS_API_KEY=... BYTEPLUS_LIVE_TEST=1 pnpm test:live src/agents/byteplus.live.test.ts`
+- 可选模型覆盖：`BYTEPLUS_CODING_MODEL=ark-code-latest`
+
 ## Docker 运行器（可选的"在 Linux 中工作"检查）
 
 这些在仓库 Docker 镜像内运行 `pnpm test:live`，挂载您的本地配置目录和工作空间（并在挂载时获取 `~/.profile`）：
@@ -329,6 +352,11 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - 引导向导（TTY，完整脚手架）：`pnpm test:docker:onboard`（脚本：`scripts/e2e/onboard-docker.sh`）
 - Gateway 网络（两个容器，WS 身份验证 + 健康）：`pnpm test:docker:gateway-network`（脚本：`scripts/e2e/gateway-network-docker.sh`）
 - Plugins（自定义扩展加载 + 注册表冒烟测试）：`pnpm test:docker:plugins`（脚本：`scripts/e2e/plugins-docker.sh`）
+
+手动 ACP 纯文本线程冒烟测试（非 CI）：
+
+- `bun scripts/dev/discord-acp-plain-language-smoke.ts --channel <discord-channel-id> ...`
+- 保留此脚本用于回归/调试工作流。ACP 线程路由验证可能再次需要它，请勿删除。
 
 有用的环境变量：
 
@@ -346,15 +374,15 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 
 这些是没有真实 Providers 的"真实管道"回归测试：
 
-- Gateway 工具调用（模拟 OpenAI，真实 Gateway + Agent 循环）：`src/gateway/gateway.tool-calling.mock-openai.test.ts`
-- Gateway 向导（WS `wizard.start`/`wizard.next`，写入配置 + 强制执行身份验证）：`src/gateway/gateway.wizard.e2e.test.ts`
+- Gateway 工具调用（模拟 OpenAI，真实 Gateway + Agent 循环）：`src/gateway/gateway.test.ts`（用例："runs a mock OpenAI tool call end-to-end via gateway agent loop"）
+- Gateway 向导（WS `wizard.start`/`wizard.next`，写入配置 + 强制执行身份验证）：`src/gateway/gateway.test.ts`（用例："runs wizard over ws and writes auth token config"）
 
 ## Agent 可靠性评估（Skills）
 
 我们已经有一些 CI 安全测试，行为类似于"Agent 可靠性评估"：
 
-- 通过真实 Gateway + Agent 循环模拟工具调用（`src/gateway/gateway.tool-calling.mock-openai.test.ts`）。
-- 验证会话连接和配置效果的端到端向导流程（`src/gateway/gateway.wizard.e2e.test.ts`）。
+- 通过真实 Gateway + Agent 循环模拟工具调用（`src/gateway/gateway.test.ts`）。
+- 验证会话连接和配置效果的端到端向导流程（`src/gateway/gateway.test.ts`）。
 
 Skills 仍缺少的内容（参见 [Skills](/tools/skills)）：
 

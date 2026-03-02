@@ -1,7 +1,7 @@
 ---
 title: "语音唤醒"
 sidebarTitle: "语音唤醒"
-mmh3_hash: "50da0bdeefff096f1a69b9b55cf8a3f6"
+mmh3_hash: "0763bec9373c950103591d6669114087"
 summary: "全局语音唤醒词 (Gateway 拥有) 以及它们如何在 Node 间同步"
 read_when: ["更改语音唤醒词行为或默认值","添加需要唤醒词同步的新 Node 平台"]
 ---
@@ -12,7 +12,8 @@ OpenClaw 将 **唤醒词视为由 Gateway 拥有的单个全局列表**。
 
 - **没有每个 Node 的自定义唤醒词**。
 - **任何 Node/应用 UI 都可以编辑** 该列表；更改由 Gateway 持久化并广播给所有人。
-- 每个设备仍然保留自己的 **语音唤醒启用/禁用** 开关 (本地 UX + 权限不同)。
+- macOS 和 iOS 保留本地**语音唤醒启用/禁用**开关（本地 UX + 权限不同）。
+- Android 目前保持语音唤醒关闭，在 Voice 标签页中使用手动麦克风流程。
 
 ## 存储 (Gateway 主机)
 
@@ -61,5 +62,5 @@ OpenClaw 将 **唤醒词视为由 Gateway 拥有的单个全局列表**。
 
 ### Android Node
 
-- 在设置中暴露唤醒词编辑器。
-- 通过 Gateway WS 调用 `voicewake.set`，以便编辑同步到任何地方。
+- 语音唤醒目前在 Android 运行时/Settings 中已禁用。
+- Android 语音使用 Voice 标签页中的手动麦克风捕获，而不是唤醒词触发。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "18243e380b951eab0de03c03d97368a8"
+mmh3_hash: "bbe51442fd5fad18f8de3855f8738eec"
 summary: "OpenClaw 的症状优先故障排除中心"
 read_when:
   - OpenClaw 无法正常工作且您需要最快的修复路径
@@ -35,6 +35,12 @@ openclaw logs --follow
 - `openclaw channels status --probe` → 通道报告 `connected` 或 `ready`。
 - `openclaw logs --follow` → 稳定活动,无重复的致命错误。
 
+## Anthropic 长上下文 429
+
+如果您看到：
+`HTTP 429: rate_limit_error: Extra usage is required for long context requests`，
+请前往 [/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context)。
+
 ## 决策树
 
 ```mermaid
@@ -63,7 +69,7 @@ flowchart TD
     openclaw status
     openclaw gateway status
     openclaw channels status --probe
-    openclaw pairing list <channel>
+    openclaw pairing list --channel <channel> [--account <id>]
     openclaw logs --follow
     ```
 

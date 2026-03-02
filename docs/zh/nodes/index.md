@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fd3ea03592c8aca5b232c73c944edcf8"
+mmh3_hash: "1aff5975c509cc27fc5b3bc1171804fc"
 summary: "Node 的配对、功能、权限和 canvas/camera/screen/system 的 CLI 辅助工具"
 read_when:
   - 将 iOS/Android Node 配对到 Gateway
@@ -91,9 +91,9 @@ openclaw node restart
 在 gateway host 上:
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <requestId>
-openclaw nodes list
+openclaw devices list
+openclaw devices approve <requestId>
+openclaw nodes status
 ```
 
 命名选项:
@@ -255,6 +255,33 @@ openclaw nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"
 - 在能力被通告之前, 必须在 Android 设备上接受权限提示。
 - 没有电话功能的仅 Wi-Fi 设备不会通告 `sms.send`。
 
+## Android 设备 + 个人数据命令
+
+当启用相应能力时，Android node 可以宣告额外的命令族。
+
+可用的命令族：
+
+- `device.status`、`device.info`、`device.permissions`、`device.health`
+- `notifications.list`、`notifications.actions`
+- `photos.latest`
+- `contacts.search`、`contacts.add`
+- `calendar.events`、`calendar.add`
+- `motion.activity`、`motion.pedometer`
+- `app.update`
+
+调用示例：
+
+```bash
+openclaw nodes invoke --node <idOrNameOrIp> --command device.status --params '{}'
+openclaw nodes invoke --node <idOrNameOrIp> --command notifications.list --params '{}'
+openclaw nodes invoke --node <idOrNameOrIp> --command photos.latest --params '{"limit":1}'
+```
+
+注意：
+
+- 运动命令受可用传感器的能力门控。
+- `app.update` 受 node 运行时的权限 + 策略门控。
+
 ## 系统命令 (node host / mac node)
 
 macOS node 暴露 `system.run`, `system.notify` 和 `system.execApprovals.get/set`。
@@ -271,7 +298,11 @@ openclaw nodes notify --node <idOrNameOrIp> --title "Ping" --body "Gateway ready
 
 - `system.run` 在载荷中返回 stdout/stderr/退出代码。
 - `system.notify` 尊重 macOS 应用上的通知权限状态。
+- 无法识别的 node `platform` / `deviceFamily` 元数据使用保守的默认允许列表，该列表不包括 `system.run` 和 `system.which`。如果您有意需要未知平台的这些命令，请通过 `gateway.nodes.allowCommands` 显式添加它们。
 - `system.run` 支持 `--cwd`, `--env KEY=VAL`, `--command-timeout` 和 `--needs-screen-recording`。
+- 对于 shell 包装器（`bash|sh|zsh ... -c/-lc`），请求范围内的 `--env` 值会缩减为显式允许列表（`TERM`、`LANG`、`LC_*`、`COLORTERM`、`NO_COLOR`、`FORCE_COLOR`）。
+- 对于允许列表模式下的始终允许决策，已知的分发包装器（`env`、`nice`、`nohup`、`stdbuf`、`timeout`）会持久化内部可执行文件路径而不是包装器路径。如果解包不安全，则不会自动持久化允许列表条目。
+- 在允许列表模式下，Windows node host 上通过 `cmd.exe /c` 的 shell 包装器运行需要批准（仅允许列表条目不会自动允许包装器形式）。
 - `system.notify` 支持 `--priority <passive|active|timeSensitive>` 和 `--delivery <system|overlay|auto>`。
 - Node host 忽略 `PATH` 覆盖并移除危险的启动/shell 键（`DYLD_*`、`LD_*`、`NODE_OPTIONS`、`PYTHON*`、`PERL*`、`RUBYOPT`、`SHELLOPTS`、`PS4`）。如果需要额外的 PATH 条目，请配置 node host 服务环境（或将工具安装在标准位置），而不是通过 `--env` 传递 `PATH`。
 - 在 macOS node 模式下, `system.run` 受 macOS 应用中的 exec 批准门控 (Settings → Exec approvals)。
