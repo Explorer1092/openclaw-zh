@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4b6cf7cdb8a8c6e451a21263d646142b"
+mmh3_hash: "7655b0a95f5ba1ab81fce95c50317dcd"
 summary: "Terminal UI（TUI）：从任何机器连接到 Gateway"
 read_when:
   - 您想要 TUI 的入门友好演练
@@ -114,6 +114,7 @@ Session 生命周期：
 - 在行前加上 `!` 以在 TUI 主机上运行本地 Shell 命令。
 - TUI 每个会话提示一次以允许本地执行；拒绝会使会话的 `!` 保持禁用状态。
 - 命令在 TUI 工作目录中的全新、非交互式 Shell 中运行（没有持久的 `cd`/env）。
+- 本地 Shell 命令在其环境中接收 `OPENCLAW_SHELL=tui-local`。
 - 单独的 `!` 作为普通消息发送；前导空格不触发本地执行。
 
 ## 工具输出

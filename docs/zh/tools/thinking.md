@@ -1,7 +1,7 @@
 ---
 title: "思考级别 (/think 指令)"
 sidebarTitle: "思考级别"
-mmh3_hash: "4db80635931eb8b5bd7f2c3e1a891da5"
+mmh3_hash: "b9f0317692492160575d1546d643379f"
 summary: "/think + /verbose 的指令语法以及它们如何影响模型推理"
 read_when:
   - 调整 thinking 或 verbose 指令解析或默认值
@@ -12,15 +12,17 @@ read_when:
 ## 它做什么
 
 - 任何入站正文中的内联指令：`/t <level>`、`/think:<level>` 或 `/thinking <level>`。
-- 级别（别名）：`off | minimal | low | medium | high | xhigh`（仅 GPT-5.2 + Codex 模型）
+- 级别（别名）：`off | minimal | low | medium | high | xhigh | adaptive`
   - minimal → "think"
   - low → "think hard"
   - medium → "think harder"
   - high → "ultrathink"（最大预算）
   - xhigh → "ultrathink+"（仅 GPT-5.2 + Codex 模型）
+  - adaptive → Provider 管理的自适应推理预算（支持 Anthropic Claude 4.6 模型系列）
   - `x-high`、`x_high`、`extra-high`、`extra high` 和 `extra_high` 映射到 `xhigh`。
   - `highest`、`max` 映射到 `high`。
-- 提供商注意事项：
+- Provider 注意事项：
+  - Anthropic Claude 4.6 模型在未设置显式 thinking 级别时默认为 `adaptive`。
   - Z.AI（`zai/*`）仅支持二进制 thinking（`on`/`off`）。任何非 `off` 级别都被视为 `on`（映射到 `low`）。
 
 ## 解析顺序
@@ -28,7 +30,7 @@ read_when:
 1. 消息上的内联指令（仅适用于该消息）。
 2. 会话覆盖（通过发送仅指令消息设置）。
 3. 全局默认值（配置中的 `agents.defaults.thinkingDefault`）。
-4. 回退：推理能力模型为 low；否则为 off。
+4. 回退：Anthropic Claude 4.6 模型为 `adaptive`，其他推理能力模型为 `low`，否则为 `off`。
 
 ## 设置会话默认值
 
