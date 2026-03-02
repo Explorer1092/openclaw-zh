@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "736e296cbe08d2f6a8196f1d2cc2e49c"
-summary: "跨界面（WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams）的群聊行为"
+mmh3_hash: "e824db5cf1dc2c84d3f1aaf889d0cad7"
+summary: "跨界面（WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams/Zalo）的群聊行为"
 read_when:
   - 更改群聊行为或提及门控
 title: "群组"
@@ -8,7 +8,7 @@ title: "群组"
 
 # 群组
 
-OpenClaw 在各个界面上一致地处理群聊：WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams。
+OpenClaw 在各个界面上一致地处理群聊：WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams、Zalo。
 
 ## 初学者介绍（2 分钟）
 
@@ -183,7 +183,8 @@ requireMention? yes -> 被提及吗？ no -> 仅存储以供上下文使用
 注意：
 
 - `groupPolicy` 与提及门控（需要 @提及）分开。
-- WhatsApp/Telegram/Signal/iMessage/Microsoft Teams：使用 `groupAllowFrom`（回退：显式 `allowFrom`）。
+- WhatsApp/Telegram/Signal/iMessage/Microsoft Teams/Zalo：使用 `groupAllowFrom`（回退：显式 `allowFrom`）。
+- DM 配对审批（`*-allowFrom` 存储条目）仅适用于 DM 访问；群组发送者授权明确留给群组白名单。
 - Discord：白名单使用 `channels.discord.guilds.<id>.channels`。
 - Slack：白名单使用 `channels.slack.channels`。
 - Matrix：白名单使用 `channels.matrix.groups`（房间 ID、别名或名称）。使用 `channels.matrix.groupAllowFrom` 限制发送者；也支持每个房间的 `users` 白名单。

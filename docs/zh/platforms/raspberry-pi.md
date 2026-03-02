@@ -1,6 +1,6 @@
 ---
+mmh3_hash: "219057cbb8e470b6718fc32c187f3316"
 title: "在 Raspberry Pi 上运行 OpenClaw"
-mmh3_hash: "ca01ac4c8fe26d6c7db55ed6187aeb91"
 summary: "在 Raspberry Pi 上运行 OpenClaw(经济型自托管设置)"
 read_when: ["在 Raspberry Pi 上设置 OpenClaw","在 ARM 设备上运行 OpenClaw","构建廉价的始终在线个人 AI"]
 ---
@@ -12,6 +12,7 @@ read_when: ["在 Raspberry Pi 上设置 OpenClaw","在 ARM 设备上运行 OpenC
 在 Raspberry Pi 上运行持久的、始终在线的 OpenClaw 网关,一次性成本约 **35-80 美元**(无月费)。
 
 非常适合:
+
 - 全天候个人 AI 助手
 - 家庭自动化中心
 - 低功耗、始终可用的 Telegram/WhatsApp 机器人
@@ -27,7 +28,7 @@ read_when: ["在 Raspberry Pi 上设置 OpenClaw","在 ARM 设备上运行 OpenC
 | **Pi 3B+** | 1GB | ⚠️ 慢 | 可以工作但缓慢 |
 | **Pi Zero 2 W** | 512MB | ❌ | 不推荐 |
 
-**最低规格:** 1GB RAM,1 核,500MB 磁盘  
+**最低规格:** 1GB RAM,1 核,500MB 磁盘
 **推荐:** 2GB+ RAM,64 位操作系统,16GB+ SD 卡(或 USB SSD)
 
 ## 你需要什么
@@ -131,6 +132,7 @@ openclaw onboard --install-daemon
 ```
 
 按照向导操作:
+
 1. **网关模式:** Local
 2. **认证:** 推荐 API 密钥(无头 Pi 上 OAuth 可能很麻烦)
 3. **通道:** Telegram 最容易开始
@@ -187,6 +189,55 @@ lsblk
 ```
 
 有关设置,请参阅 [Pi USB 启动指南](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#usb-mass-storage-boot)。
+
+### 加速 CLI 启动(模块编译缓存)
+
+在低功耗 Pi 主机上,启用 Node 的模块编译缓存可以让重复的 CLI 运行更快:
+
+```bash
+grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF'
+export NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+mkdir -p /var/tmp/openclaw-compile-cache
+export OPENCLAW_NO_RESPAWN=1
+EOF
+source ~/.bashrc
+```
+
+注意:
+
+- `NODE_COMPILE_CACHE` 加速后续运行(`status`、`health`、`--help`)。
+- `/var/tmp` 比 `/tmp` 在重启后更持久。
+- `OPENCLAW_NO_RESPAWN=1` 避免 CLI 自重启带来的额外启动开销。
+- 第一次运行会预热缓存;后续运行受益最大。
+
+### systemd 启动调整(可选)
+
+如果此 Pi 主要运行 OpenClaw,添加服务插件以减少重启抖动并保持启动环境稳定:
+
+```bash
+sudo systemctl edit openclaw
+```
+
+```ini
+[Service]
+Environment=OPENCLAW_NO_RESPAWN=1
+Environment=NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+Restart=always
+RestartSec=2
+TimeoutStartSec=90
+```
+
+然后应用:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart openclaw
+```
+
+如果可能,将 OpenClaw 状态/缓存保存在 SSD 支持的存储上,以避免冷启动期间 SD 卡随机 I/O 瓶颈。
+
+`Restart=` 策略如何帮助自动恢复:
+[systemd 可以自动化服务恢复](https://www.redhat.com/en/blog/systemd-automate-recovery)。
 
 ### 减少内存使用
 
@@ -311,6 +362,7 @@ sudo systemctl restart openclaw
 ### ARM 二进制问题
 
 如果技能失败并显示"exec format error":
+
 1. 检查二进制文件是否有 ARM64 构建
 2. 尝试从源代码构建
 3. 或使用支持 ARM 的 Docker 容器
@@ -348,6 +400,6 @@ echo 'wireless-power off' | sudo tee -a /etc/network/interfaces
 
 - [Linux 指南](/platforms/linux) — 通用 Linux 设置
 - [DigitalOcean 指南](/platforms/digitalocean) — 云替代方案
-- [Hetzner 指南](/platforms/hetzner) — Docker 设置
+- [Hetzner 指南](/install/hetzner) — Docker 设置
 - [Tailscale](/gateway/tailscale) — 远程访问
 - [节点](/nodes) — 将你的笔记本电脑/手机与 Pi 网关配对

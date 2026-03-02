@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ed41a647ed25a27d661123e4a989c31a"
+mmh3_hash: "50e682ea8d385c1ce8e421bf8084b1d3"
 title: IRC
 description: 将 OpenClaw 连接到 IRC Channels 和直接消息。
 summary: "IRC 插件设置、访问控制和故障排除"
@@ -57,7 +57,7 @@ IRC Channels 有两个单独的"门"：
 - 每个 Channel 控制（Channel + 发送者 + 提及规则）：`channels.irc.groups["#channel"]`
 - `channels.irc.groupPolicy="open"` 允许未配置的 Channels（**默认情况下仍然有提及门控**）
 
-白名单条目可以使用昵称或 `nick!user@host` 形式。
+白名单条目应使用稳定的发送者身份（`nick!user@host`）。裸昵称匹配是可变的，仅在 `channels.irc.dangerouslyAllowNameMatching: true` 时启用。
 
 ### 常见问题：`allowFrom` 用于 DM，不是 Channels
 

@@ -1,7 +1,7 @@
 ---
 title: "聊天频道"
 sidebarTitle: "聊天频道"
-mmh3_hash: "67d3b1dffbfa8721edc942c17140d376"
+mmh3_hash: "5bbdefee6c1ff71749cca087307e0e90"
 summary: "OpenClaw 可以连接的消息平台"
 read_when:
   - 选择 OpenClaw 的聊天频道
@@ -44,6 +44,5 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 c
   在磁盘上存储更多状态。
 - 群组行为因 channel 而异；参见[群组](/channels/groups)。
 - 为安全起见会强制执行私信配对和白名单；参见[安全](/gateway/security)。
-- Telegram 内部机制：[grammY 注释](/channels/grammy)。
 - 故障排除：[Channel 故障排除](/channels/troubleshooting)。
 - 模型提供商单独记录；参见[模型提供商](/providers/models)。

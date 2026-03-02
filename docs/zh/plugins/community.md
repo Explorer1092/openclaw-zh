@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0c0a8f881ab66f27b79ca45b082e4ae0"
+mmh3_hash: "cea5b227dee90a643f3897e1f28922d3"
 title: "社区插件"
 summary: "社区插件：质量标准、托管要求与 PR 提交路径"
 read_when:
@@ -43,3 +43,10 @@ read_when:
   npm: `@scope/package`
   repo: `https://github.com/org/repo`
   install: `openclaw plugins install @scope/package`
+
+## 已收录插件
+
+- **WeChat** — 通过 WeChatPadPro（iPad 协议）将 OpenClaw 连接到 WeChat 个人账户。支持文本、图片和文件交换，以及关键词触发的对话。
+  npm: `@icesword760/openclaw-wechat`
+  repo: `https://github.com/icesword0760/openclaw-wechat`
+  install: `openclaw plugins install @icesword760/openclaw-wechat`

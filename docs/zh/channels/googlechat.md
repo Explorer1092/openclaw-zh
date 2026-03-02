@@ -1,7 +1,7 @@
 ---
 title: "Google Chat (Chat API)"
 sidebarTitle: "Google Chat"
-mmh3_hash: "0206b5b886cc57fadb89542f5a00732d"
+mmh3_hash: "6824921dee21db3aa1be85a442dd7743"
 summary: "Google Chat 应用支持状态、功能和配置"
 read_when: ["Working on Google Chat channel features"]
 ---
