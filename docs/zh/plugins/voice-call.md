@@ -1,10 +1,10 @@
 ---
-mmh3_hash: "8ceed1c51bc03969f8d8dc299b77a31a"
+mmh3_hash: "d3007d95a7949e29dcb0de318f64c8fa"
+title: "语音通话 Plugin"
 summary: "语音通话 Plugin: 通过 Twilio/Telnyx/Plivo 的出站 + 入站通话(Plugin 安装 + 配置 + CLI)"
 read_when:
   - 您想从 OpenClaw 拨打出站语音电话
   - 您正在配置或开发 voice-call Plugin
-title: "语音通话 Plugin"
 ---
 
 # 语音通话(Plugin)
@@ -70,6 +70,14 @@ cd ./extensions/voice-call && pnpm install
             authToken: "...",
           },
 
+          telnyx: {
+            apiKey: "...",
+            connectionId: "...",
+            // 来自 Telnyx Mission Control Portal 的 Telnyx webhook 公钥
+            // (Base64 字符串;也可以通过 TELNYX_PUBLIC_KEY 设置)。
+            publicKey: "...",
+          },
+
           plivo: {
             authId: "MAxxxxxxxxxxxxxxxxxxxx",
             authToken: "...",
@@ -79,6 +87,12 @@ cd ./extensions/voice-call && pnpm install
           serve: {
             port: 3334,
             path: "/voice/webhook",
+          },
+
+          // Webhook 安全性(推荐用于隧道/代理)
+          webhookSecurity: {
+            allowedHosts: ["voice.example.com"],
+            trustedProxyIPs: ["100.64.0.1"],
           },
 
           // 公共暴露(选择一个)
@@ -93,6 +107,10 @@ cd ./extensions/voice-call && pnpm install
           streaming: {
             enabled: true,
             streamPath: "/voice/stream",
+            preStartTimeoutMs: 5000,
+            maxPendingConnections: 32,
+            maxPendingConnectionsPerIp: 4,
+            maxConnections: 128,
           },
         },
       },
@@ -106,10 +124,76 @@ cd ./extensions/voice-call && pnpm install
 - Twilio/Telnyx 需要**公开可访问的** webhook URL。
 - Plivo 需要**公开可访问的** webhook URL。
 - `mock` 是本地开发 provider(无网络调用)。
+- Telnyx 需要 `telnyx.publicKey`（或 `TELNYX_PUBLIC_KEY`），除非 `skipSignatureVerification` 为 true。
 - `skipSignatureVerification` 仅用于本地测试。
 - 如果您使用 ngrok 免费层,将 `publicUrl` 设置为确切的 ngrok URL;始终强制执行签名验证。
 - `tunnel.allowNgrokFreeTierLoopbackBypass: true` 允许**仅当** `tunnel.provider="ngrok"` 且 `serve.bind` 为 loopback(ngrok 本地 agent)时具有无效签名的 Twilio webhook。仅用于本地开发。
 - Ngrok 免费层 URL 可能会更改或添加间隙行为;如果 `publicUrl` 漂移,Twilio 签名将失败。对于生产,首选稳定域或 Tailscale funnel。
+- 流式传输安全默认值:
+  - `streaming.preStartTimeoutMs` 关闭从未发送有效 `start` 帧的套接字。
+  - `streaming.maxPendingConnections` 限制未认证的预启动套接字总数。
+  - `streaming.maxPendingConnectionsPerIp` 限制每个源 IP 的未认证预启动套接字数。
+  - `streaming.maxConnections` 限制总打开媒体流套接字数(待处理 + 活跃)。
+
+## 陈旧通话清理器
+
+使用 `staleCallReaperSeconds` 结束从未收到终止 webhook 的通话
+(例如,从未完成的通知模式通话)。默认值为 `0`(禁用)。
+
+推荐范围:
+
+- **生产:** 通知式流程使用 `120`–`300` 秒。
+- 将此值保持**高于 `maxDurationSeconds`**,以便正常通话可以完成。好的起始点是 `maxDurationSeconds + 30–60` 秒。
+
+示例:
+
+```json5
+{
+  plugins: {
+    entries: {
+      "voice-call": {
+        config: {
+          maxDurationSeconds: 300,
+          staleCallReaperSeconds: 360,
+        },
+      },
+    },
+  },
+}
+```
+
+## Webhook 安全性
+
+当代理或隧道位于 Gateway 前面时,Plugin 重建用于签名验证的公共 URL。这些选项控制信任哪些转发头。
+
+`webhookSecurity.allowedHosts` 将转发头中的主机加入允许列表。
+
+`webhookSecurity.trustForwardingHeaders` 在没有允许列表的情况下信任转发头。
+
+`webhookSecurity.trustedProxyIPs` 仅在请求远程 IP 与列表匹配时才信任转发头。
+
+Twilio 和 Plivo 启用了 webhook 重放保护。重放的有效 webhook 请求会被确认,但跳过副作用。
+
+Twilio 对话轮次在 `<Gather>` 回调中包含每轮令牌,因此陈旧/重放的语音回调无法满足较新的待处理转录轮次。
+
+使用稳定公共主机的示例:
+
+```json5
+{
+  plugins: {
+    entries: {
+      "voice-call": {
+        config: {
+          publicUrl: "https://voice.example.com/voice/webhook",
+          webhookSecurity: {
+            allowedHosts: ["voice.example.com"],
+          },
+        },
+      },
+    },
+  },
+}
+```
 
 ## 通话的 TTS
 
