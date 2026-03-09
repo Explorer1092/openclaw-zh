@@ -1,7 +1,7 @@
 ---
 title: "Kilo Gateway Provider 集成设计"
 description: "将 Kilo Gateway 作为一等 Provider 集成到 OpenClaw 的设计方案"
-mmh3_hash: "9ce97e5f3119dc9ebb23ab4d21d60c2d"
+mmh3_hash: "84c89a9233709c1ea456375cb9bd444b"
 ---
 
 # Kilo Gateway Provider 集成设计
@@ -468,7 +468,7 @@ const needsNonImageSanitize =
             "id": "anthropic/claude-opus-4.6",
             "name": "Anthropic: Claude Opus 4.6"
           },
-          { "id": "minimax/minimax-m2.1:free", "name": "Minimax: Minimax M2.1" }
+          { "id": "minimax/minimax-m2.5:free", "name": "Minimax: Minimax M2.5" }
         ]
       }
     }

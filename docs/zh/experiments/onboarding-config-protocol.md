@@ -1,6 +1,6 @@
 ---
 title: "引导 + 配置协议"
-mmh3_hash: "bf8d49119729cb78d9b86a49dd1e598d"
+mmh3_hash: "6cd889ac010c6d5e7322204efa561a1f"
 summary: "引导向导和配置架构的 RPC 协议说明"
 read_when: "更改引导向导步骤或配置架构端点"
 ---
@@ -22,10 +22,14 @@ read_when: "更改引导向导步骤或配置架构端点"
 - `wizard.cancel` 参数: `{ sessionId }`
 - `wizard.status` 参数: `{ sessionId }`
 - `config.schema` 参数: `{}`
+- `config.schema.lookup` 参数: `{ path }`
+  - `path` 接受标准配置字段以及斜杠分隔的插件 id，例如 `plugins.entries.pack/one.config`。
 
 响应(结构)
+
 - 向导: `{ sessionId, done, step?, status?, error? }`
 - 配置架构: `{ schema, uiHints, version, generatedAt }`
+- 配置架构查找: `{ path, schema, hint?, hintPath?, children[] }`
 
 ## UI 提示
 - `uiHints` 按路径键入;可选元数据(label/help/group/order/advanced/sensitive/placeholder)。
