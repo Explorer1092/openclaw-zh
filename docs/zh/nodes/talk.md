@@ -1,7 +1,7 @@
 ---
 title: "对讲模式"
 sidebarTitle: "对讲模式"
-mmh3_hash: "85c3713b2d01e50da9bdc71fd0cbc15d"
+mmh3_hash: "96a377d016440da2ab789445e467b1ad"
 summary: "对讲模式: 使用 ElevenLabs TTS 的连续语音对话"
 read_when: ["在 macOS/iOS/Android 上实现对讲模式","更改语音/TTS/打断行为"]
 ---
@@ -56,6 +56,7 @@ read_when: ["在 macOS/iOS/Android 上实现对讲模式","更改语音/TTS/打�
     modelId: "eleven_v3",
     outputFormat: "mp3_44100_128",
     apiKey: "elevenlabs_api_key",
+    silenceTimeoutMs: 1500,
     interruptOnSpeech: true,
   },
 }
@@ -64,6 +65,7 @@ read_when: ["在 macOS/iOS/Android 上实现对讲模式","更改语音/TTS/打�
 默认值:
 
 - `interruptOnSpeech`: true
+- `silenceTimeoutMs`: 未设置时，Talk 保持平台默认暂停窗口后再发送转录（macOS 和 Android 上为 `700 ms`，iOS 上为 `900 ms`）
 - `voiceId`: 回退到 `ELEVENLABS_VOICE_ID` / `SAG_VOICE_ID` (或当 API 密钥可用时的第一个 ElevenLabs 语音)
 - `modelId`: 未设置时默认为 `eleven_v3`
 - `apiKey`: 回退到 `ELEVENLABS_API_KEY` (或 Gateway shell 配置文件，如果可用)

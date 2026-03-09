@@ -1,6 +1,6 @@
 ---
 title: "音频与语音笔记"
-mmh3_hash: "b17b2a4e104c00bf6f4bc6f5bfce3176"
+mmh3_hash: "9980a805ceb2432c578006feeb44a2a2"
 summary: "入站音频/语音笔记如何下载、转录并注入到回复中"
 read_when:
   - 更改音频转录或媒体处理时
@@ -110,6 +110,23 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 }
 ```
 
+### 将转录回显到聊天（可选启用）
+
+```json5
+{
+  tools: {
+    media: {
+      audio: {
+        enabled: true,
+        echoTranscript: true, // 默认为 false
+        echoFormat: '📝 "{transcript}"', // 可选，支持 {transcript}
+        models: [{ provider: "openai", model: "gpt-4o-mini-transcribe" }],
+      },
+    },
+  },
+}
+```
+
 ## 说明与限制
 
 - Provider 认证遵循标准模型认证顺序（认证配置文件、环境变量、`models.providers.*.apiKey`）。
@@ -118,11 +135,25 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 - Mistral 设置详情：[Mistral](/providers/mistral)。
 - 音频 Provider 可以通过 `tools.media.audio` 覆盖 `baseUrl`、`headers` 和 `providerOptions`。
 - 默认大小上限为 20MB（`tools.media.audio.maxBytes`）。超大音频将跳过该模型并尝试下一个条目。
+- 小于 1024 字节的微小/空音频文件会在 Provider/CLI 转录之前被跳过。
 - 音频的默认 `maxChars` **未设置**（完整转录）。设置 `tools.media.audio.maxChars` 或每个条目的 `maxChars` 以修剪输出。
 - OpenAI 自动默认值为 `gpt-4o-mini-transcribe`；设置 `model: "gpt-4o-transcribe"` 以获得更高准确性。
 - 使用 `tools.media.audio.attachments` 处理多个语音笔记（`mode: "all"` + `maxAttachments`）。
 - 转录可通过 `{{Transcript}}` 在模板中使用。
+- `tools.media.audio.echoTranscript` 默认关闭；启用它可在 Agent 处理之前将转录确认发送回原始聊天。
+- `tools.media.audio.echoFormat` 自定义回显文本（占位符：`{transcript}`）。
 - CLI 标准输出有上限（5MB）；保持 CLI 输出简洁。
+
+### 代理环境支持
+
+基于 Provider 的音频转录遵循标准出站代理环境变量：
+
+- `HTTPS_PROXY`
+- `HTTP_PROXY`
+- `https_proxy`
+- `http_proxy`
+
+如果未设置代理环境变量，则使用直接出口。如果代理配置格式错误，OpenClaw 会记录警告并回退到直接获取。
 
 ## 群组中的提及检测
 
@@ -140,11 +171,18 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 - 如果预检期间转录失败（超时、API 错误等），将根据仅文本的提及检测来处理消息。
 - 这确保混合消息（文本 + 音频）永远不会被错误地丢弃。
 
+**按 Telegram 群组/话题退出：**
+
+- 将 `channels.telegram.groups.<chatId>.disableAudioPreflight: true` 设置为跳过该群组的预检转录提及检查。
+- 将 `channels.telegram.groups.<chatId>.topics.<threadId>.disableAudioPreflight` 设置为按话题覆盖（`true` 跳过，`false` 强制启用）。
+- 默认为 `false`（当满足提及门控条件时启用预检）。
+
 **示例：** 用户在设置了 `requireMention: true` 的 Telegram 群组中发送语音笔记，说"嘿 @Claude，今天天气怎么样？" 语音笔记被转录，检测到提及，Agent 回复。
 
 ## 常见问题
 
 - 范围规则使用首次匹配获胜。`chatType` 标准化为 `direct`、`group` 或 `room`。
 - 确保你的 CLI 退出码为 0 并打印纯文本；JSON 需要通过 `jq -r .text` 处理。
+- 对于 `parakeet-mlx`，如果传递 `--output-dir`，当 `--output-format` 为 `txt`（或省略）时，OpenClaw 读取 `<output-dir>/<media-basename>.txt`；非 `txt` 输出格式回退到 stdout 解析。
 - 保持合理的超时时间（`timeoutSeconds`，默认 60 秒）以避免阻塞回复队列。
 - 预检转录仅处理**第一个**音频附件用于提及检测。其他音频在主媒体理解阶段处理。

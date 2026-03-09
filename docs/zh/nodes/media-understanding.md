@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "78c668d79cbd671653ce6c7415f5a966"
+mmh3_hash: "60d5682ee9072677e3fdc4c9cd3e74d4"
 summary: "入站图像/音频/视频理解 (可选), 带有 provider + CLI 回退"
 read_when:
   - 设计或重构媒体理解
@@ -58,6 +58,8 @@ OpenClaw 可以在回复管道运行之前**总结入站媒体** (图像/音频/
       },
       audio: {
         /* 可选覆盖 */
+        echoTranscript: true,
+        echoFormat: '📝 "{transcript}"',
       },
       video: {
         /* 可选覆盖 */
@@ -124,6 +126,7 @@ CLI 模板还可以使用:
 规则:
 
 - 如果媒体超过 `maxBytes`，该模型被跳过，**尝试下一个模型**。
+- 小于 **1024 字节**的音频文件在 Provider/CLI 转录之前被视为空/损坏并跳过。
 - 如果模型返回超过 `maxChars`，输出会被修剪。
 - `prompt` 默认为简单的 "Describe the {media}." 加上 `maxChars` 指导（仅图像/视频）。
 - 如果 `<capability>.enabled: true` 但未配置模型，OpenClaw 尝试
@@ -160,6 +163,17 @@ CLI 模板还可以使用:
 
 注意: 二进制检测在 macOS/Linux/Windows 上是尽力而为的；确保 CLI 在 `PATH` 上（我们会扩展 `~`），或者使用完整的命令路径设置明确的 CLI 模型。
 
+### 代理环境支持（Provider 模型）
+
+当启用基于 Provider 的**音频**和**视频**媒体理解时，OpenClaw 遵循标准出站代理环境变量进行 Provider HTTP 调用：
+
+- `HTTPS_PROXY`
+- `HTTP_PROXY`
+- `https_proxy`
+- `http_proxy`
+
+如果未设置代理环境变量，媒体理解使用直接出口。如果代理值格式错误，OpenClaw 会记录警告并回退到直接获取。
+
 ## 功能 (可选)
 
 如果你设置 `capabilities`，条目仅针对那些媒体类型运行。对于共享
@@ -181,23 +195,13 @@ CLI 模板还可以使用:
 | Audio (音频)   | OpenAI, Groq, Deepgram, Google, Mistral        | 提供商转录 (Whisper/Deepgram/Gemini/Voxtral)。 |
 | Video (视频)   | Google (Gemini API)                           | 提供商视频理解。                      |
 
-## 推荐提供商
+## 模型选择指南
 
-**Image (图像)**
-
-- 首选你的活动模型（如果它支持图像）。
-- 良好的默认值: `openai/gpt-5.2`, `anthropic/claude-opus-4-6`, `google/gemini-3-pro-preview`。
-
-**Audio (音频)**
-
-- `openai/gpt-4o-mini-transcribe`, `groq/whisper-large-v3-turbo`, `deepgram/nova-3`，或 `mistral/voxtral-mini-latest`。
-- CLI 回退: `whisper-cli` (whisper-cpp) 或 `whisper`。
-- Deepgram 设置: [Deepgram (音频转录)](/providers/deepgram)。
-
-**Video (视频)**
-
-- `google/gemini-3-flash-preview` (快速), `google/gemini-3-pro-preview` (更丰富)。
-- CLI 回退: `gemini` CLI (支持视频/音频上的 `read_file`)。
+- 在质量和安全性重要时，优先为每种媒体功能选择最强的最新一代模型。
+- 对于处理不受信任输入的工具型 Agent，避免使用旧版/较弱的媒体模型。
+- 为每种功能至少保留一个回退以确保可用性（质量模型 + 更快/更便宜的模型）。
+- 当 Provider API 不可用时，CLI 回退（`whisper-cli`、`whisper`、`gemini`）非常有用。
+- `parakeet-mlx` 说明：使用 `--output-dir` 时，当输出格式为 `txt`（或未指定）时，OpenClaw 读取 `<output-dir>/<media-basename>.txt`；非 `txt` 格式回退到 stdout。
 
 ## 附件策略
 
@@ -317,9 +321,9 @@ CLI 模板还可以使用:
 {
   tools: {
     media: {
-      image: { models: [{ provider: "google", model: "gemini-3-pro-preview", capabilities: ["image", "video", "audio"] }] },
-      audio: { models: [{ provider: "google", model: "gemini-3-pro-preview", capabilities: ["image", "video", "audio"] }] },
-      video: { models: [{ provider: "google", model: "gemini-3-pro-preview", capabilities: ["image", "video", "audio"] }] }
+      image: { models: [{ provider: "google", model: "gemini-3.1-pro-preview", capabilities: ["image", "video", "audio"] }] },
+      audio: { models: [{ provider: "google", model: "gemini-3.1-pro-preview", capabilities: ["image", "video", "audio"] }] },
+      video: { models: [{ provider: "google", model: "gemini-3.1-pro-preview", capabilities: ["image", "video", "audio"] }] }
     }
   }
 }

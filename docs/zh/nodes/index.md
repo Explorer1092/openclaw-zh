@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1aff5975c509cc27fc5b3bc1171804fc"
+mmh3_hash: "1f5b2066ea87c598d76091f8b06cdc52"
 summary: "Node 的配对、功能、权限和 canvas/camera/screen/system 的 CLI 辅助工具"
 read_when:
   - 将 iOS/Android Node 配对到 Gateway
@@ -76,8 +76,10 @@ openclaw node run --host 127.0.0.1 --port 18790 --display-name "Build Node"
 
 注意:
 
-- token 是 gateway 配置中的 `gateway.auth.token` (gateway host 上的 `~/.openclaw/openclaw.json`)。
-- `openclaw node run` 读取 `OPENCLAW_GATEWAY_TOKEN` 进行认证。
+- `openclaw node run` 支持 token 或 password 认证。
+- 首选环境变量：`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`。
+- 配置回退为 `gateway.auth.token` / `gateway.auth.password`；在远程模式下，`gateway.remote.token` / `gateway.remote.password` 也可用。
+- 旧版 `CLAWDBOT_GATEWAY_*` 环境变量被 node host 认证解析有意忽略。
 
 ### 启动 node host (服务)
 
@@ -217,10 +219,9 @@ openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10 --no-
 
 注意:
 
-- `screen.record` 要求 node 应用在前台。
-- Android 会在录制前显示系统屏幕捕获提示。
+- `screen.record` 可用性取决于 node 平台。
 - 屏幕录制上限为 `<= 60s`。
-- `--no-audio` 禁用麦克风捕获 (iOS/Android 支持; macOS 使用系统捕获音频)。
+- `--no-audio` 在支持的平台上禁用麦克风捕获。
 - 当有多个屏幕可用时, 使用 `--screen <index>` 选择显示器。
 
 ## 位置 (nodes)
@@ -267,7 +268,6 @@ openclaw nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"
 - `contacts.search`、`contacts.add`
 - `calendar.events`、`calendar.add`
 - `motion.activity`、`motion.pedometer`
-- `app.update`
 
 调用示例：
 
@@ -280,7 +280,6 @@ openclaw nodes invoke --node <idOrNameOrIp> --command photos.latest --params '{"
 注意：
 
 - 运动命令受可用传感器的能力门控。
-- `app.update` 受 node 运行时的权限 + 策略门控。
 
 ## 系统命令 (node host / mac node)
 
