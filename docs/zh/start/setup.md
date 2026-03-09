@@ -1,7 +1,7 @@
 ---
 title: "设置"
 sidebarTitle: "设置"
-mmh3_hash: "5aea8e85a8bbcedd2cc06e65eece4616"
+mmh3_hash: "a30d241b1944964140306e41046390db"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器
@@ -130,7 +130,7 @@ openclaw health
 
 - **WhatsApp**: `~/.openclaw/credentials/whatsapp/<accountId>/creds.json`
 - **Telegram 机器人令牌**: 配置/环境变量 或 `channels.telegram.tokenFile`
-- **Discord 机器人令牌**: 配置/环境变量（尚不支持令牌文件）
+- **Discord 机器人令牌**: 配置/环境变量或 SecretRef（env/file/exec Providers）
 - **Slack 令牌**: 配置/环境变量（`channels.slack.*`）
 - **配对白名单**:
   - `~/.openclaw/credentials/<channel>-allowFrom.json`（默认账户）

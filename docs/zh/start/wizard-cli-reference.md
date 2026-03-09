@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dc7ed7ca07a3899c7d2a163b152a1e8e"
+mmh3_hash: "ff79fc3b2de806321f595f251624c094"
 summary: "CLI 引导流程、身份验证/模型设置、输出和内部的完整参考"
 read_when:
   - 您需要 openclaw onboard 的详细行为
@@ -50,6 +50,13 @@ sidebarTitle: "CLI 参考"
   <Step title="Gateway">
     - 提示端口、绑定、身份验证模式和 Tailscale 暴露。
     - 建议：即使对于回环也保持令牌身份验证启用，以便本地 WS 客户端必须进行身份验证。
+    - 在 Token 模式下，交互式引导提供：
+      - **生成/存储明文 Token**（默认）
+      - **使用 SecretRef**（选择加入）
+    - 在密码模式下，交互式引导也支持明文或 SecretRef 存储。
+    - 非交互式 Token SecretRef 路径：`--gateway-token-ref-env <ENV_VAR>`。
+      - 要求引导进程环境中有非空的环境变量。
+      - 不能与 `--gateway-token` 一起使用。
     - 仅当您完全信任每个本地进程时才禁用身份验证。
     - 非回环绑定仍然需要身份验证。
   </Step>
@@ -132,7 +139,7 @@ sidebarTitle: "CLI 参考"
   <Accordion title="OpenAI Code 订阅（OAuth）">
     浏览器流程；粘贴 `code#state`。
 
-    当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.3-codex`。
+    当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.4`。
 
   </Accordion>
   <Accordion title="OpenAI API 密钥">
@@ -156,7 +163,7 @@ sidebarTitle: "CLI 参考"
   <Accordion title="Cloudflare AI Gateway">
     提示输入帐户 ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。更多详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)。
   </Accordion>
-  <Accordion title="MiniMax M2.1">
+  <Accordion title="MiniMax M2.5">
     配置自动写入。更多详情：[MiniMax](/providers/minimax)。
   </Accordion>
   <Accordion title="Synthetic（Anthropic 兼容）">
@@ -224,6 +231,7 @@ API 密钥存储模式：
 
 - `agents.defaults.workspace`
 - `agents.defaults.model` / `models.providers`（如果选择 Minimax）
+- `tools.profile`（本地引导在未设置时默认为 `"coding"`；现有显式值会被保留）
 - `gateway.*`（模式、绑定、身份验证、Tailscale）
 - `session.dmScope`（本地引导在未设置时将此默认为 `per-channel-peer`；现有显式值会被保留）
 - `channels.telegram.botToken`、`channels.discord.token`、`channels.signal.*`、`channels.imessage.*`

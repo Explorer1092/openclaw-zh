@@ -1,7 +1,7 @@
 ---
 title: "入门 (macOS 应用)"
 sidebarTitle: "macOS 入门"
-mmh3_hash: "b480b973eaeef58d51c0ca753ad56f74"
+mmh3_hash: "91bd983466203ed68df90642b153e81b"
 summary: "OpenClaw 的首次运行入门流程（macOS 应用）"
 read_when: ["设计 macOS 入门助手","实现认证或身份设置"]
 ---
@@ -30,6 +30,8 @@ read_when: ["设计 macOS 入门助手","实现认证或身份设置"]
 
 - 默认情况下，OpenClaw 是个人 Agent：一个受信任的操作员边界。
 - 共享/多用户设置需要锁定（分离信任边界，保持工具访问最小化，并遵循[安全](/gateway/security)）。
+- 本地引导现在将新配置默认为 `tools.profile: "coding"`，使全新的本地设置在不强制使用不受限的 `full` 配置文件的情况下保留文件系统/运行时工具。
+- 如果启用了 Hooks/Webhooks 或其他不受信任的内容源，请使用强大的现代模型层，并保持严格的工具策略/沙箱。
 
 </Step>
 <Step title="本地 vs 远程">

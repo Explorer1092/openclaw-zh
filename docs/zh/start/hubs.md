@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4169d862857c765858d49b87708617ec"
+mmh3_hash: "3b6082eaf36d937019d0dda5f0b31d03"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图
@@ -110,6 +110,7 @@ title: "文档中心"
 - [OpenProse](/prose)
 - [CLI 参考](/cli)
 - [Exec 工具](/tools/exec)
+- [PDF 工具](/tools/pdf)
 - [提升模式](/tools/elevated)
 - [Cron 任务](/automation/cron-jobs)
 - [Cron vs Heartbeat](/automation/cron-vs-heartbeat)
