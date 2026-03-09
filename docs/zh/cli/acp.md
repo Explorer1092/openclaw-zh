@@ -1,6 +1,6 @@
 ---
+mmh3_hash: "66172a8205fcd9bc02dac5e363e256f7"
 title: "acp"
-mmh3_hash: "e135751dc55bc031dafd93a894c59489"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:
   - 设置基于 ACP 的 IDE 集成
@@ -93,6 +93,48 @@ openclaw acp --session agent:qa:bug-123
 
 每个 ACP Session 映射到单个 Gateway Session 密钥。一个 Agent 可以有多个 Session;除非您覆盖密钥或标签,否则 ACP 默认为隔离的 `acp:<uuid>` Session。
 
+## 从 `acpx` 使用(Codex、Claude 及其他 ACP 客户端)
+
+如果您希望 Codex 或 Claude Code 等编码 Agent 通过 ACP 与您的 OpenClaw 机器人通信,请使用 `acpx` 及其内置的 `openclaw` 目标。
+
+典型流程:
+
+1. 运行 Gateway,确保 ACP 桥接可以访问它。
+2. 将 `acpx openclaw` 指向 `openclaw acp`。
+3. 指定您希望编码 Agent 使用的 OpenClaw Session 密钥。
+
+示例:
+
+```bash
+# 向您的默认 OpenClaw ACP Session 发送一次性请求
+acpx openclaw exec "Summarize the active OpenClaw session state."
+
+# 使用持久命名 Session 进行后续对话
+acpx openclaw sessions ensure --name codex-bridge
+acpx openclaw -s codex-bridge --cwd /path/to/repo \
+  "Ask my OpenClaw work agent for recent context relevant to this repo."
+```
+
+如果您希望 `acpx openclaw` 每次都指向特定 Gateway 和 Session 密钥,请在 `~/.acpx/config.json` 中覆盖 `openclaw` Agent 命令:
+
+```json
+{
+  "agents": {
+    "openclaw": {
+      "command": "env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 openclaw acp --url ws://127.0.0.1:18789 --token-file ~/.openclaw/gateway.token --session agent:main:main"
+    }
+  }
+}
+```
+
+对于本地 OpenClaw 仓库,请使用直接 CLI 入口点而非开发运行器,以保持 ACP 流的干净。例如:
+
+```bash
+env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 node openclaw.mjs acp ...
+```
+
+这是让 Codex、Claude Code 或其他支持 ACP 的客户端从 OpenClaw Agent 获取上下文信息的最简方式,无需抓取终端输出。
+
 ## Zed 编辑器设置
 
 在 `~/.config/zed/settings.json` 中添加自定义 ACP 代理(或使用 Zed 的设置 UI):
@@ -176,6 +218,10 @@ openclaw acp --session agent:qa:bug-123
 
 - `--token` 和 `--password` 在某些系统上可能在本地进程列表中可见。
 - 首选 `--token-file`/`--password-file` 或环境变量(`OPENCLAW_GATEWAY_TOKEN`、`OPENCLAW_GATEWAY_PASSWORD`)。
+- Gateway 身份验证解析遵循其他 Gateway 客户端使用的共享约定:
+  - 本地模式:环境变量 (`OPENCLAW_GATEWAY_*`) -> `gateway.auth.*` -> 当 `gateway.auth.*` 未设置时回退到 `gateway.remote.*`
+  - 远程模式:`gateway.remote.*` 带有按远程优先规则的环境变量/配置回退
+  - `--url` 是覆盖安全的,不重用隐式配置/环境变量凭据;请传递显式 `--token`/`--password`(或文件变体)
 - ACP 运行时后端子进程接收 `OPENCLAW_SHELL=acp`,可用于特定于上下文的 shell/配置规则。
 - `openclaw acp client` 在生成的桥接进程上设置 `OPENCLAW_SHELL=acp-client`。
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7c32c97bbae6c5aa9de393c48175b2c9"
+mmh3_hash: "3e8c85f7da2a46a023ca97db400e6bed"
 title: "`openclaw cron`"
 sidebarTitle: "openclaw cron"
 summary: "`openclaw cron` 的 CLI 参考(安排和运行后台作业)"
@@ -24,6 +24,8 @@ read_when:
 
 注意:重复作业现在在连续错误后使用指数重试退避(30秒 → 1分钟 → 5分钟 → 15分钟 → 60分钟),然后在下次成功运行后返回正常计划。
 
+注意:`openclaw cron run` 现在在手动运行排队执行后立即返回。成功响应包括 `{ ok: true, enqueued: true, runId }`;使用 `openclaw cron runs --id <job-id>` 跟踪最终结果。
+
 注意:保留/清理由配置控制:
 
 - `cron.sessionRetention`(默认 `24h`)清理已完成的隔离运行 Session。
@@ -43,8 +45,28 @@ openclaw cron edit <job-id> --announce --channel telegram --to "123456789"
 openclaw cron edit <job-id> --no-deliver
 ```
 
+为隔离作业启用轻量级引导上下文:
+
+```bash
+openclaw cron edit <job-id> --light-context
+```
+
 向特定 Channel 通知:
 
 ```bash
 openclaw cron edit <job-id> --announce --channel slack --to "channel:C1234567890"
 ```
+
+使用轻量级引导上下文创建隔离作业:
+
+```bash
+openclaw cron add \
+  --name "Lightweight morning brief" \
+  --cron "0 7 * * *" \
+  --session isolated \
+  --message "Summarize overnight updates." \
+  --light-context \
+  --no-deliver
+```
+
+`--light-context` 仅适用于隔离的 Agent 轮次作业。对于 cron 运行,轻量级模式将引导上下文保持为空,而不是注入完整的工作区引导集。

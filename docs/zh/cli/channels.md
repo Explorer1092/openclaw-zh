@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "3b2005c27bfd368251c08a3bbb9a7aa8"
 title: "`openclaw channels`"
 sidebarTitle: "openclaw channels"
-mmh3_hash: "029b2a49534a494a76e4e9f6be2d536e"
 summary: "`openclaw channels` 的 CLI 参考(账户、状态、登录/登出、日志)"
 read_when:
   - 您想添加/删除 Channel 账户(WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost (插件)/Signal/iMessage)
@@ -69,6 +69,7 @@ openclaw channels logout --channel whatsapp
 - 运行 `openclaw status --deep` 进行广泛探测。
 - 使用 `openclaw doctor` 获取指导性修复。
 - `openclaw channels list` 打印 `Claude: HTTP 403 ... user:profile` → 使用快照需要 `user:profile` 范围。使用 `--no-usage`,或提供 claude.ai 会话密钥(`CLAUDE_WEB_SESSION_KEY` / `CLAUDE_WEB_COOKIE`),或通过 Claude Code CLI 重新认证。
+- `openclaw channels status` 在 Gateway 无法访问时回退到仅配置摘要。如果支持的 Channel 凭据通过 SecretRef 配置但在当前命令路径中不可用,它会将该账户报告为已配置但带有降级说明,而不是显示为未配置。
 
 ## 能力探测
 
@@ -99,3 +100,4 @@ openclaw channels resolve --channel matrix "Project Room"
 
 - 使用 `--kind user|group|auto` 强制目标类型。
 - 当多个条目共享相同名称时,解析优先选择活动匹配项。
+- `channels resolve` 是只读的。如果所选账户通过 SecretRef 配置但该凭据在当前命令路径中不可用,命令将返回降级的未解析结果并附带说明,而不是中止整个运行。
