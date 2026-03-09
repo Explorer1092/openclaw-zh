@@ -1,6 +1,7 @@
 ---
-mmh3_hash: "aa451ea59b00a56f2c62f05f312bca94"
+mmh3_hash: "6219ff32980a4e8ac5946ee492937ffb"
 title: "工具循环检测"
+description: "配置可选的防护机制，防止重复性或停滞的工具调用循环"
 summary: "如何启用和调整检测重复工具调用循环的防护机制"
 read_when:
   - 用户反映 Agent 陷入重复工具调用的僵局
@@ -30,14 +31,14 @@ OpenClaw 可防止 Agent 陷入重复的工具调用模式。
   tools: {
     loopDetection: {
       enabled: false,
-      historySize: 20,
-      detectorCooldownMs: 12000,
-      repeatThreshold: 3,
-      criticalThreshold: 6,
+      historySize: 30,
+      warningThreshold: 10,
+      criticalThreshold: 20,
+      globalCircuitBreakerThreshold: 30,
       detectors: {
-        repeatedFailure: true,
-        knownPollLoop: true,
-        repeatingNoProgress: true,
+        genericRepeat: true,
+        knownPollNoProgress: true,
+        pingPong: true,
       },
     },
   },
@@ -55,8 +56,8 @@ OpenClaw 可防止 Agent 陷入重复的工具调用模式。
         tools: {
           loopDetection: {
             enabled: true,
-            repeatThreshold: 2,
-            criticalThreshold: 5,
+            warningThreshold: 8,
+            criticalThreshold: 16,
           },
         },
       },
@@ -69,18 +70,20 @@ OpenClaw 可防止 Agent 陷入重复的工具调用模式。
 
 - `enabled`：总开关。`false` 表示不执行任何循环检测。
 - `historySize`：用于分析的近期工具调用保留数量。
-- `detectorCooldownMs`：无进展检测器使用的时间窗口。
-- `repeatThreshold`：触发警告/阻断的最小重复次数。
-- `criticalThreshold`：可触发更严格处理的更高阈值。
-- `detectors.repeatedFailure`：检测相同调用路径上的重复失败尝试。
-- `detectors.knownPollLoop`：检测已知的轮询类循环。
-- `detectors.repeatingNoProgress`：检测无状态变化的高频重复调用。
+- `warningThreshold`：将模式归类为仅警告的阈值。
+- `criticalThreshold`：阻断重复循环模式的阈值。
+- `globalCircuitBreakerThreshold`：全局无进展断路器阈值。
+- `detectors.genericRepeat`：检测相同工具 + 相同参数的重复模式。
+- `detectors.knownPollNoProgress`：检测已知的无状态变化的轮询类模式。
+- `detectors.pingPong`：检测交替乒乓模式。
 
 ## 推荐设置
 
 - 从 `enabled: true`、默认值不变开始。
+- 保持阈值有序：`warningThreshold < criticalThreshold < globalCircuitBreakerThreshold`。
 - 如果出现误报：
-  - 提高 `repeatThreshold` 和/或 `criticalThreshold`
+  - 提高 `warningThreshold` 和/或 `criticalThreshold`
+  - （可选）提高 `globalCircuitBreakerThreshold`
   - 仅禁用导致问题的检测器
   - 降低 `historySize` 以减少历史上下文的严格程度
 

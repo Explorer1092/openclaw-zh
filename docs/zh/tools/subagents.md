@@ -1,7 +1,7 @@
 ---
 title: "子 Agent"
 sidebarTitle: "子 Agent"
-mmh3_hash: "77040eb64435438be48793a4499db2c0"
+mmh3_hash: "5c29863eeac9aa1500b993ca81a1e80c"
 summary: "子 Agent：生成隔离的 Agent 运行，将结果公告回请求者聊天"
 read_when:
   - 您想通过 Agent 进行后台/并行工作
@@ -214,7 +214,11 @@ read_when:
 
 - 公告步骤在子 Agent Session 内运行（不在请求者 Session 中）。
 - 如果子 Agent 回复恰好是 `ANNOUNCE_SKIP`，则不发布任何内容。
-- 否则，公告回复通过后续 `agent` 调用（`deliver=true`）发布到请求者聊天 Channel。
+- 否则投递取决于请求者深度：
+  - 顶层请求者 Session 使用带外部投递的后续 `agent` 调用（`deliver=true`）
+  - 嵌套请求者子 Agent Session 接收内部后续注入（`deliver=false`），以便编排器可在 Session 内综合子 Agent 结果
+  - 如果嵌套请求者子 Agent Session 已消失，OpenClaw 在可用时回退到该 Session 的请求者
+- 子 Agent 完成聚合在构建嵌套完成结果时的作用域限于当前请求者运行，防止过期的先前运行子 Agent 输出泄漏到当前公告中。
 - 公告回复在 Channel 适配器上可用时保留线程/主题路由。
 - 公告上下文被规范化为稳定的内部事件块：
   - 来源（`subagent` 或 `cron`）

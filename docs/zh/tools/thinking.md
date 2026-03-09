@@ -1,7 +1,7 @@
 ---
 title: "思考级别 (/think 指令)"
 sidebarTitle: "思考级别"
-mmh3_hash: "b9f0317692492160575d1546d643379f"
+mmh3_hash: "d0fad8241a9bf2e0ebc62697241ac827"
 summary: "/think + /verbose 的指令语法以及它们如何影响模型推理"
 read_when:
   - 调整 thinking 或 verbose 指令解析或默认值
@@ -24,6 +24,7 @@ read_when:
 - Provider 注意事项：
   - Anthropic Claude 4.6 模型在未设置显式 thinking 级别时默认为 `adaptive`。
   - Z.AI（`zai/*`）仅支持二进制 thinking（`on`/`off`）。任何非 `off` 级别都被视为 `on`（映射到 `low`）。
+  - Moonshot（`moonshot/*`）将 `/think off` 映射到 `thinking: { type: "disabled" }`，将任何非 `off` 级别映射到 `thinking: { type: "enabled" }`。当 thinking 启用时，Moonshot 只接受 `tool_choice` 为 `auto|none`；OpenClaw 会将不兼容的值标准化为 `auto`。
 
 ## 解析顺序
 

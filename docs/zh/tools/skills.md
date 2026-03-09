@@ -1,7 +1,7 @@
 ---
 title: "Skill (OpenClaw)"
 sidebarTitle: "Skill"
-mmh3_hash: "e4dca537c3a05ca5886f4f96c24bf4af"
+mmh3_hash: "c79e1752e880542d53d65b48f20edd2a"
 summary: "Skill: 管理 vs 工作区、门控规则和配置/环境接线"
 read_when:
   - 添加或修改 Skill
@@ -59,6 +59,7 @@ ClawHub 是 OpenClaw 的公共 Skill 注册表。在 [https://clawhub.com](https
 
 - 将第三方 Skill 视为**不受信任的代码**。在启用之前阅读它们。
 - 对于不受信任的输入和有风险的工具,优先使用沙箱运行。参见 [沙箱](/gateway/sandboxing)。
+- 工作区和额外目录的 Skill 发现只接受 Skill 根目录和 `SKILL.md` 文件，其解析的 realpath 须保持在配置的根目录内。
 - `skills.entries.*.env` 和 `skills.entries.*.apiKey` 将秘密注入该 agent 转换的**主机**进程(而非沙箱)。将秘密排除在提示和日志之外。
 - 有关更广泛的威胁模型和检查清单,请参见 [安全](/gateway/security)。
 

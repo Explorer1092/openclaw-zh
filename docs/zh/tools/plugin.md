@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "60c3c00fe62178e90b55481320b6924c"
+mmh3_hash: "bc62ffc6f4c414b2c6c1cbb2893387ac"
 summary: "OpenClaw Plugins/Extensions：发现、配置和安全"
 read_when:
   - 添加或修改 Plugins/Extensions
@@ -83,6 +83,22 @@ const result = await api.runtime.tts.textToSpeechTelephony({
 - 使用核心 `messages.tts` 配置（OpenAI 或 ElevenLabs）。
 - 返回 PCM 音频缓冲区 + 采样率。Plugins 必须为 Providers 重新采样/编码。
 - 电话不支持 Edge TTS。
+
+对于 STT/语音转录，Plugins 可以调用：
+
+```ts
+const { text } = await api.runtime.stt.transcribeAudioFile({
+  filePath: "/tmp/inbound-audio.ogg",
+  cfg: api.config,
+  // 当无法可靠推断 MIME 类型时可选填写：
+  mime: "audio/ogg",
+});
+```
+
+注意：
+
+- 使用核心媒体理解音频配置（`tools.media.audio`）和 Provider 回退顺序。
+- 当没有产生转录输出时（例如跳过/不支持的输入），返回 `{ text: undefined }`。
 
 ## 发现和优先级
 
@@ -211,6 +227,7 @@ OpenClaw 还可以合并**外部 Channel 目录**（例如，MPM 注册表导出
 - `allow`：白名单（可选）
 - `deny`：黑名单（可选；拒绝优先）
 - `load.paths`：额外的 Plugin 文件/目录
+- `slots`：独占槽选择器，例如 `memory` 和 `contextEngine`
 - `entries.<id>`：每个 Plugin 的切换 + 配置
 
 配置更改**需要重启 Gateway**。
@@ -231,12 +248,24 @@ OpenClaw 还可以合并**外部 Channel 目录**（例如，MPM 注册表导出
   plugins: {
     slots: {
       memory: "memory-core", // 或 "none" 以禁用内存 Plugins
+      contextEngine: "legacy", // 或 Plugin id，例如 "lossless-claw"
     },
   },
 }
 ```
 
-如果多个 Plugins 声明 `kind: "memory"`，则只加载选定的一个。其他将被禁用并带有诊断信息。
+支持的独占插槽：
+
+- `memory`：活动内存 Plugin（`"none"` 禁用内存 Plugins）
+- `contextEngine`：活动上下文引擎 Plugin（`"legacy"` 是内置默认值）
+
+如果多个 Plugins 声明 `kind: "memory"` 或 `kind: "context-engine"`，则只加载选定的 Plugin。其他将被禁用并带有诊断信息。
+
+### 上下文引擎 Plugins
+
+上下文引擎 Plugins 负责 Session 上下文的摄取、组装和压缩编排。从 Plugin 中通过 `api.registerContextEngine(id, factory)` 注册，然后使用 `plugins.slots.contextEngine` 选择活动引擎。
+
+当您的 Plugin 需要替换或扩展默认上下文管道（而不仅仅是添加内存搜索或 Hooks）时使用此功能。
 
 ## Control UI（Schema + 标签）
 
@@ -300,6 +329,37 @@ Plugins 导出：
 - 函数：`(api) => { ... }`
 - 对象：`{ id, name, configSchema, register(api) { ... } }`
 
+上下文引擎 Plugins 也可以注册运行时拥有的上下文管理器：
+
+```ts
+export default function (api) {
+  api.registerContextEngine("lossless-claw", () => ({
+    info: { id: "lossless-claw", name: "Lossless Claw", ownsCompaction: true },
+    async ingest() {
+      return { ingested: true };
+    },
+    async assemble({ messages }) {
+      return { messages, estimatedTokens: 0 };
+    },
+    async compact() {
+      return { ok: true, compacted: false };
+    },
+  }));
+}
+```
+
+然后在配置中启用它：
+
+```json5
+{
+  plugins: {
+    slots: {
+      contextEngine: "lossless-claw",
+    },
+  },
+}
+```
+
 ## Plugin Hooks
 
 Plugins 可以在运行时注册 Hooks。这使 Plugin 能够捆绑事件驱动的自动化，而无需单独的 Hook 包安装。
@@ -327,6 +387,59 @@ export default function register(api) {
 - Hook 资格规则仍然适用（OS/bins/env/config 要求）。
 - Plugin 管理的 Hooks 在 `openclaw hooks list` 中显示为 `plugin:<id>`。
 - 您无法通过 `openclaw hooks` 启用/禁用 Plugin 管理的 Hooks；改为启用/禁用 Plugin。
+
+### Agent 生命周期 Hooks（`api.on`）
+
+对于类型化的运行时生命周期 Hooks，使用 `api.on(...)`：
+
+```ts
+export default function register(api) {
+  api.on(
+    "before_prompt_build",
+    (event, ctx) => {
+      return {
+        prependSystemContext: "Follow company style guide.",
+      };
+    },
+    { priority: 10 },
+  );
+}
+```
+
+提示构建的重要 Hooks：
+
+- `before_model_resolve`：在 Session 加载前运行（`messages` 不可用）。用于确定性地覆盖 `modelOverride` 或 `providerOverride`。
+- `before_prompt_build`：在 Session 加载后运行（`messages` 可用）。用于调整提示输入。
+- `before_agent_start`：旧版兼容 Hook。优先使用上述两个明确的 Hooks。
+
+核心强制 Hook 策略：
+
+- 操作员可以通过 `plugins.entries.<id>.hooks.allowPromptInjection: false` 按 Plugin 禁用提示修改 Hooks。
+- 禁用时，OpenClaw 阻止 `before_prompt_build`，并忽略旧版 `before_agent_start` 返回的提示修改字段，同时保留旧版 `modelOverride` 和 `providerOverride`。
+
+`before_prompt_build` 结果字段：
+
+- `prependContext`：将文本前置到此次运行的用户提示。最适合每轮或动态内容。
+- `systemPrompt`：完整系统提示覆盖。
+- `prependSystemContext`：将文本前置到当前系统提示。
+- `appendSystemContext`：将文本追加到当前系统提示。
+
+内嵌运行时中的提示构建顺序：
+
+1. 将 `prependContext` 应用到用户提示。
+2. 提供时应用 `systemPrompt` 覆盖。
+3. 应用 `prependSystemContext + 当前系统提示 + appendSystemContext`。
+
+合并和优先级说明：
+
+- Hook 处理程序按优先级运行（越高越先）。
+- 对于合并的上下文字段，值按执行顺序连接。
+- `before_prompt_build` 的值在旧版 `before_agent_start` 回退值之前应用。
+
+迁移指南：
+
+- 将静态指导从 `prependContext` 移至 `prependSystemContext`（或 `appendSystemContext`），以便 Providers 可以缓存稳定的系统前缀内容。
+- 将 `prependContext` 保留用于应与用户消息绑定的每轮动态上下文。
 
 ## Provider Plugins（模型身份验证）
 
