@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5c809e821f437eb702c5aa64f56cd4cf"
+mmh3_hash: "8119469c1e34736179346207c6500bef"
 title: "Docker (可选)"
 sidebarTitle: "Docker"
 summary: "OpenClaw 的可选 Docker 设置和引导"
@@ -28,6 +28,7 @@ Docker 是**可选的**。仅在您希望使用容器化网关或验证 Docker �
 - Docker Desktop（或 Docker Engine）+ Docker Compose v2
 - 镜像构建至少需要 2 GB RAM（在 1 GB 主机上 `pnpm install` 可能因 OOM 被杀死，退出代码 137）
 - 足够的磁盘空间用于镜像 + 日志
+- 如果在 VPS/公共主机上运行，请查阅[网络暴露安全加固](/gateway/security#04-network-exposure-bind--port--firewall)，特别是 Docker `DOCKER-USER` 防火墙策略。
 
 ## 容器化网关（Docker Compose）
 
@@ -55,23 +56,22 @@ Docker 是**可选的**。仅在您希望使用容器化网关或验证 Docker �
 
 - `OPENCLAW_IMAGE` — 使用远程镜像而不是本地构建（例如 `ghcr.io/openclaw/openclaw:latest`）
 - `OPENCLAW_DOCKER_APT_PACKAGES` — 在构建期间安装额外的 apt 软件包
+- `OPENCLAW_EXTENSIONS` — 在构建时预安装扩展依赖项（空格分隔的扩展名称，例如 `diagnostics-otel matrix`）
 - `OPENCLAW_EXTRA_MOUNTS` — 添加额外的主机绑定挂载
 - `OPENCLAW_HOME_VOLUME` — 在命名卷中持久化 `/home/node`
 - `OPENCLAW_SANDBOX` — 选择启用 Docker Gateway 沙盒引导。仅显式真值才能启用：`1`、`true`、`yes`、`on`
 - `OPENCLAW_INSTALL_DOCKER_CLI` — 本地镜像构建的构建参数透传（`1` 在镜像中安装 Docker CLI）。当 `OPENCLAW_SANDBOX=1` 用于本地构建时，`docker-setup.sh` 会自动设置此项。
 - `OPENCLAW_DOCKER_SOCKET` — 覆盖 Docker socket 路径（默认：`DOCKER_HOST=unix://...` 路径，否则为 `/var/run/docker.sock`）
 - `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` — 紧急解除：允许 CLI/引导客户端路径访问受信任私有网络的 `ws://` 目标（默认仅限回环）
+- `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0` — 当您需要 WebGL/3D 兼容性时，禁用容器浏览器硬化标志 `--disable-3d-apis`、`--disable-software-rasterizer`、`--disable-gpu`。
+- `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` — 当浏览器流程需要扩展时保持扩展启用（默认在沙盒浏览器中禁用扩展）。
+- `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>` — 设置 Chromium 渲染器进程限制；设置为 `0` 可跳过该标志并使用 Chromium 默认行为。
 
 完成后:
 
 - 在浏览器中打开 `http://127.0.0.1:18789/`。
-- 将令牌粘贴到控制 UI(设置 → 令牌)。
+- 将令牌粘贴到控制 UI（设置 → 令牌）。
 - 再次需要 URL？运行 `docker compose run --rm openclaw-cli dashboard --no-open`。
-
-它将配置/工作空间写入主机:
-
-- `~/.openclaw/`
-- `~/.openclaw/workspace`
 
 在 VPS 上运行？请参阅 [Hetzner (Docker VPS)](/install/hetzner)。
 
@@ -277,6 +277,27 @@ export OPENCLAW_DOCKER_APT_PACKAGES="ffmpeg build-essential"
 
 - 这接受空格分隔的 apt 软件包名称列表。
 - 如果更改 `OPENCLAW_DOCKER_APT_PACKAGES`，请重新运行 `docker-setup.sh` 以重建镜像。
+
+### 预安装扩展依赖项（可选）
+
+带有自己 `package.json` 的扩展（例如 `diagnostics-otel`、`matrix`、`msteams`）在首次加载时安装其 npm 依赖项。要将这些依赖项烘焙到镜像中，请在运行 `docker-setup.sh` 之前设置 `OPENCLAW_EXTENSIONS`：
+
+```bash
+export OPENCLAW_EXTENSIONS="diagnostics-otel matrix"
+./docker-setup.sh
+```
+
+或直接构建时：
+
+```bash
+docker build --build-arg OPENCLAW_EXTENSIONS="diagnostics-otel matrix" .
+```
+
+注意：
+
+- 这接受扩展目录名称的空格分隔列表（在 `extensions/` 下）。
+- 只有带有 `package.json` 的扩展才受影响；没有 `package.json` 的轻量级插件会被忽略。
+- 如果更改 `OPENCLAW_EXTENSIONS`，请重新运行 `docker-setup.sh` 以重建镜像。
 
 ### 高级用户/功能完整容器(选择启用)
 

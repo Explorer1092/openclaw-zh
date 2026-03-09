@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "60032b6ce363e611a5c38949d83d22f7"
+mmh3_hash: "f6734b4d6ae3917053c28ee173d627e0"
 summary: "在无根 Podman 容器中运行 OpenClaw"
 read_when:
   - 您想要使用 Podman 而不是 Docker 的容器化 Gateway
@@ -32,6 +32,11 @@ title: "Podman"
 ```
 
 （或设置 `OPENCLAW_PODMAN_QUADLET=1`；使用 `--container` 仅安装容器和启动脚本。）
+
+可选的构建时环境变量（在运行 `setup-podman.sh` 之前设置）：
+
+- `OPENCLAW_DOCKER_APT_PACKAGES` — 在镜像构建期间安装额外的 apt 软件包
+- `OPENCLAW_EXTENSIONS` — 预安装扩展依赖项（空格分隔的扩展名称，例如 `diagnostics-otel matrix`）
 
 **2. 启动 Gateway**（手动，用于快速冒烟测试）：
 

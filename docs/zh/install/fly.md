@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "86dcbb2ecfc725f6fc6b94c929ecb653"
+mmh3_hash: "340fdd7343f6c117ca75e0d5fce8c96e"
 title: Fly.io
 description: 在 Fly.io 上部署 OpenClaw
 ---
@@ -12,7 +12,7 @@ description: 在 Fly.io 上部署 OpenClaw
 
 - 安装的 [flyctl CLI](https://fly.io/docs/hands-on/install-flyctl/)
 - Fly.io 帐户（免费套餐可用）
-- 模型身份验证：Anthropic API 密钥（或其他 Provider 密钥）
+- 模型身份验证：您选择的模型 Provider 的 API 密钥
 - Channel 凭据：Discord 机器人令牌、Telegram 令牌等
 
 ## 初学者快速路径

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fb720af57f1ef523bb98519381eaf35d"
+mmh3_hash: "26d5e1c585dbbb20237a16ff8340a5c7"
 summary: "使用 Nix 声明式安装 OpenClaw"
 read_when:
   - 您想要可重现、可回滚的安装
@@ -24,7 +24,7 @@ What I need you to do:
 1. Check if Determinate Nix is installed (if not, install it)
 2. Create a local flake at ~/code/openclaw-local using templates/agent-first/flake.nix
 3. Help me create a Telegram bot (@BotFather) and get my chat ID (@userinfobot)
-4. Set up secrets (bot token, Anthropic key) - plain files at ~/.secrets/ is fine
+4. Set up secrets (bot token, model provider API key) - plain files at ~/.secrets/ is fine
 5. Fill in the template placeholders and run home-manager switch
 6. Verify: launchd running, bot responds to messages
 
