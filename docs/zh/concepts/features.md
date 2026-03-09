@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "90ddf789989866f16f3177450e417691"
+mmh3_hash: "e7df28e5d2a5fb0380a13bb585486a07"
 summary: "OpenClaw 跨 Channels、路由、媒体和用户体验的功能。"
 read_when:
   - 您想要 OpenClaw 支持内容的完整列表
@@ -46,7 +46,7 @@ title: "Features"
 - 可选的语音笔记转录 Hook
 - WebChat 和 macOS 菜单栏应用
 - 具有配对、Canvas、摄像头、屏幕录制、位置和语音功能的 iOS 节点
-- 具有配对、Connect 标签、聊天 sessions、语音标签、Canvas/摄像头/屏幕，以及设备、通知、联系人/日历、运动、照片、短信和应用更新命令的 Android 节点
+- 具有配对、Connect 标签、聊天 sessions、语音标签、Canvas/摄像头，以及设备、通知、联系人/日历、运动、照片和短信命令的 Android 节点
 
 <Note>
 旧版 Claude、Codex、Gemini 和 Opencode 路径已被移除。Pi 是唯一的编码 Agent 路径。

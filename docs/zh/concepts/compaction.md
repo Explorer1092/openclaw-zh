@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2517349b384303b4c2e65179273bd1c5"
+mmh3_hash: "47320c34cd9b10a64d73b4b95bc94ce0"
 summary: "Context window + compaction: OpenClaw 如何将 sessions 保持在 model 限制内"
 read_when:
   - 你想了解自动 compaction 和 /compact
@@ -24,6 +24,36 @@ Compaction **持久化** 在 session 的 JSONL 历史记录中。
 
 使用你的 `openclaw.json` 中的 `agents.defaults.compaction` 设置来配置 compaction 行为(模式、目标 tokens 等)。
 Compaction 摘要默认保留不透明标识符(`identifierPolicy: "strict"`)。你可以通过 `identifierPolicy: "off"` 覆盖此设置,或通过 `identifierPolicy: "custom"` 和 `identifierInstructions` 提供自定义文本。
+
+你可以通过 `agents.defaults.compaction.model` 为 compaction 摘要指定不同的模型。当你的主模型是本地或小型模型,而你希望 compaction 摘要由更强大的模型生成时,此功能非常有用。该覆盖接受任意 `provider/model-id` 字符串:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "model": "openrouter/anthropic/claude-sonnet-4-5"
+      }
+    }
+  }
+}
+```
+
+这也适用于本地模型,例如专用于摘要的第二个 Ollama 模型或专门针对 compaction 微调的模型:
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "model": "ollama/llama3.1:8b"
+      }
+    }
+  }
+}
+```
+
+未设置时,compaction 使用 agent 的主模型。
 
 ## 自动 compaction(默认开启)
 

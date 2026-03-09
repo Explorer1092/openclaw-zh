@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ea3045cf8cb50e9920c09cd12960210b"
+mmh3_hash: "1812967938ddcb71bc04d35ce9bc1a9e"
 title: "Memory"
 summary: "OpenClaw memory 如何工作(workspace 文件 + 自动内存刷新)"
 read_when:
@@ -95,7 +95,8 @@ OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md` 上构建小型向量索引,以
 - Local 模式使用 node-llama-cpp,可能需要 `pnpm approve-builds`。
 - 使用 sqlite-vec(在可用时)在 SQLite 内加速向量搜索。
 
-远程 embeddings **需要** embedding provider 的 API key。OpenClaw 从 auth profiles、`models.providers.*.apiKey` 或环境变量解析 keys。Codex OAuth 仅涵盖 chat/completions,**不** 满足 memory search 的 embeddings。对于 Gemini,使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。对于 Voyage,使用 `VOYAGE_API_KEY` 或 `models.providers.voyage.apiKey`。对于 Mistral,使用 `MISTRAL_API_KEY` 或 `models.providers.mistral.apiKey`。当使用自定义 OpenAI 兼容端点时,设置 `memorySearch.remote.apiKey`(和可选的 `memorySearch.remote.headers`)。
+远程 embeddings **需要** embedding provider 的 API key。OpenClaw 从 auth profiles、`models.providers.*.apiKey` 或环境变量解析 keys。Codex OAuth 仅涵盖 chat/completions,**不** 满足 memory search 的 embeddings。对于 Gemini,使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。对于 Voyage,使用 `VOYAGE_API_KEY` 或 `models.providers.voyage.apiKey`。对于 Mistral,使用 `MISTRAL_API_KEY` 或 `models.providers.mistral.apiKey`。Ollama 通常不需要真实 API key(当本地策略需要时,像 `OLLAMA_API_KEY=ollama-local` 这样的占位符就足够了)。
+当使用自定义 OpenAI 兼容端点时,设置 `memorySearch.remote.apiKey`(和可选的 `memorySearch.remote.headers`)。
 
 ### QMD 后端(实验性)
 
@@ -118,6 +119,25 @@ OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md` 上构建小型向量索引,以
 - Boot 刷新现在默认在后台运行,因此聊天启动不会被阻塞;设置 `memory.qmd.update.waitForBootSync = true` 以保留之前的阻塞行为。
 - 搜索通过 `memory.qmd.searchMode` 运行(默认 `qmd search --json`;还支持 `vsearch` 和 `query`)。如果所选模式在您的 QMD 构建中拒绝标志,OpenClaw 会使用 `qmd query` 重试。如果 QMD 失败或二进制文件丢失,OpenClaw 会自动回退到内置 SQLite 管理器,以便 memory tools 继续工作。
 - **第一次搜索可能很慢**:QMD 可能在第一次 `qmd query` 运行时下载本地 GGUF 模型(重排序/查询扩展)。
+  - OpenClaw 在运行 QMD 时会自动设置 `XDG_CONFIG_HOME`/`XDG_CACHE_HOME`。
+  - 如果你想手动预下载模型(并预热 OpenClaw 使用的同一索引),可以使用 agent 的 XDG 目录运行一次性查询。
+
+    OpenClaw 的 QMD 状态位于你的**状态目录**下(默认为 `~/.openclaw`)。你可以通过导出 OpenClaw 使用的相同 XDG 变量,让 `qmd` 指向完全相同的索引:
+
+    ```bash
+    # 选择 OpenClaw 使用的同一状态目录
+    STATE_DIR="${OPENCLAW_STATE_DIR:-$HOME/.openclaw}"
+
+    export XDG_CONFIG_HOME="$STATE_DIR/agents/main/qmd/xdg-config"
+    export XDG_CACHE_HOME="$STATE_DIR/agents/main/qmd/xdg-cache"
+
+    # (可选)强制刷新索引 + embeddings
+    qmd update
+    qmd embed
+
+    # 预热/触发首次模型下载
+    qmd query "test" -c memory-root --json >/dev/null 2>&1
+    ```
 
 **配置界面(`memory.qmd.*`)**
 
@@ -128,7 +148,14 @@ OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md` 上构建小型向量索引,以
 - `sessions`:选择加入 session JSONL 索引(`enabled`、`retentionDays`、`exportDir`)。
 - `update`:控制刷新节奏和维护执行:(`interval`、`debounceMs`、`onBoot`、`waitForBootSync`、`embedInterval`、`commandTimeoutMs`、`updateTimeoutMs`、`embedTimeoutMs`)。
 - `limits`:限制召回 payload(`maxResults`、`maxSnippetChars`、`maxInjectedChars`、`timeoutMs`)。
-- `scope`:与 [`session.sendPolicy`](/gateway/configuration#session) 相同的 schema。默认仅 DM(`deny` 所有,`allow` 直接聊天)。
+- `scope`:与 [`session.sendPolicy`](/gateway/configuration#session) 相同的 schema。默认仅 DM(`deny` 所有,`allow` 直接聊天);放宽以在群组/channel 中显示 QMD 结果。
+  - `match.keyPrefix` 匹配 **规范化的** session key(小写,去除任何开头的 `agent:<id>:`)。示例:`discord:channel:`。
+  - `match.rawKeyPrefix` 匹配 **原始** session key(小写),包含 `agent:<id>:`。示例:`agent:main:discord:`。
+  - 遗留:`match.keyPrefix: "agent:..."` 仍被视为原始 key 前缀,但为了清晰起见,优先使用 `rawKeyPrefix`。
+- 当 `scope` 拒绝搜索时,OpenClaw 记录一个带有派生 `channel`/`chatType` 的警告,以便更容易调试空结果。
+- 来自 workspace 之外的片段在 `memory_search` 结果中显示为 `qmd/<collection>/<relative-path>`;`memory_get` 理解该前缀并从配置的 QMD collection root 读取。
+- 当 `memory.qmd.sessions.enabled = true` 时,OpenClaw 将经过清理的 session 记录(User/Assistant 轮)导出到 `~/.openclaw/agents/<id>/qmd/sessions/` 下的专用 QMD collection 中,以便 `memory_search` 可以召回最近的对话,而无需触及内置 SQLite 索引。
+- 当 `memory.citations` 为 `auto`/`on` 时,`memory_search` 片段现在包含 `Source: <path#line>` 页脚;设置 `memory.citations = "off"` 以将路径元数据保持为内部(agent 仍接收路径用于 `memory_get`,但片段文本省略页脚,system prompt 警告 agent 不要引用它)。
 
 **示例**
 
@@ -144,6 +171,10 @@ memory: {
       default: "deny",
       rules: [
         { action: "allow", match: { chatType: "direct" } },
+        // 规范化 session-key 前缀(去除 `agent:<id>:`)。
+        { action: "deny", match: { keyPrefix: "discord:channel:" } },
+        // 原始 session-key 前缀(包含 `agent:<id>:`)。
+        { action: "deny", match: { rawKeyPrefix: "agent:main:discord:" } },
       ]
     },
     paths: [
@@ -217,7 +248,7 @@ agents: {
 如果你不想设置 API key,使用 `memorySearch.provider = "local"` 或设置 `memorySearch.fallback = "none"`。
 
 后备:
-- `memorySearch.fallback` 可以是 `openai`、`gemini`、`voyage`、`mistral`、`local` 或 `none`。
+- `memorySearch.fallback` 可以是 `openai`、`gemini`、`voyage`、`mistral`、`ollama`、`local` 或 `none`。
 - 仅当主 embedding provider 失败时才使用后备 provider。
 
 批量索引(OpenAI + Gemini + Voyage):
@@ -264,14 +295,14 @@ Local 模式:
 ### Memory tools 如何工作
 
 - `memory_search` 从 `MEMORY.md` + `memory/**/*.md` 语义搜索 Markdown chunks(~400 token 目标,80-token 重叠)。它返回片段文本(上限 ~700 字符)、文件路径、行范围、分数、provider/model 以及我们是否从 local → remote embeddings 后备。不返回完整的文件 payload。
-- `memory_get` 读取特定的 memory Markdown 文件(workspace 相对),可选地从起始行开始并读取 N 行。仅当在 `memorySearch.extraPaths` 中明确列出时,才允许 `MEMORY.md` / `memory/` 之外的路径。
+- `memory_get` 读取特定的 memory Markdown 文件(workspace 相对),可选地从起始行开始并读取 N 行。`MEMORY.md` / `memory/` 之外的路径将被拒绝。
 - 仅当 `memorySearch.enabled` 对 agent 解析为 true 时,两个 tools 才启用。
 
 ### 索引什么(以及何时)
 
-- 文件类型:仅 Markdown(`MEMORY.md`、`memory/**/*.md`,加上 `memorySearch.extraPaths` 下的任何 `.md` 文件)。
+- 文件类型:仅 Markdown(`MEMORY.md`、`memory/**/*.md`)。
 - 索引存储:每个 agent 的 SQLite 位于 `~/.openclaw/memory/<agentId>.sqlite`(可通过 `agents.defaults.memorySearch.store.path` 配置,支持 `{agentId}` token)。
-- 新鲜度:`MEMORY.md`、`memory/` 和 `memorySearch.extraPaths` 上的 watcher 标记索引为脏(去抖动 1.5s)。同步在 session 开始时、搜索时或在间隔上调度,并异步运行。Session transcripts 使用 delta 阈值触发后台同步。
+- 新鲜度:`MEMORY.md` + `memory/` 上的 watcher 标记索引为脏(去抖动 1.5s)。同步在 session 开始时、搜索时或在间隔上调度,并异步运行。Session transcripts 使用 delta 阈值触发后台同步。
 - 重新索引触发器:索引存储 embedding **provider/model + 端点指纹 + chunking 参数**。如果其中任何一个更改,OpenClaw 会自动重置并重新索引整个 store。
 
 ### 混合搜索(BM25 + vector)
@@ -479,7 +510,7 @@ agents: {
 
 ### Local embedding 自动下载
 
-- 默认 local embedding model: `hf:ggml-org/embeddinggemma-300M-GGUF/embeddinggemma-300M-Q8_0.gguf` (~0.6 GB)。
+- 默认 local embedding model: `hf:ggml-org/embeddinggemma-300m-qat-q8_0-GGUF/embeddinggemma-300m-qat-Q8_0.gguf` (~0.6 GB)。
 - 当 `memorySearch.provider = "local"` 时,`node-llama-cpp` 解析 `modelPath`;如果 GGUF 缺失,它 **自动下载** 到缓存(或如果设置了 `local.modelCacheDir`),然后加载它。下载在重试时恢复。
 - Native 构建要求:运行 `pnpm approve-builds`,选择 `node-llama-cpp`,然后 `pnpm rebuild node-llama-cpp`。
 - 后备:如果 local 设置失败并且 `memorySearch.fallback = "openai"`,我们自动切换到远程 embeddings(`openai/text-embedding-3-small`,除非覆盖)并记录原因。

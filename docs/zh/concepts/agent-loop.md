@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "22fe4ce349e42e6412c19d01f272415d"
+mmh3_hash: "556eafe8f4994542e0c86300ea994a20"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:
   - 你需要了解 agent loop 或生命周期事件的详细流程
@@ -80,7 +80,7 @@ OpenClaw 有两个 hook 系统:
 这些运行在 agent loop 或 gateway 管道内:
 
 - **`before_model_resolve`**: 在 pre-session 阶段运行(无 `messages`),在 model 解析之前确定性地覆盖 provider/model。
-- **`before_prompt_build`**: 在 session 加载后运行(带 `messages`),在 prompt 提交之前注入 `prependContext`/`systemPrompt`。
+- **`before_prompt_build`**: 在 session 加载后运行(带 `messages`),在 prompt 提交之前注入 `prependContext`、`systemPrompt`、`prependSystemContext` 或 `appendSystemContext`。使用 `prependContext` 处理每轮动态文本,使用 system-context 字段处理应位于 system prompt 空间中的稳定指导。
 - **`before_agent_start`**: 旧版兼容性 hook,可能在任一阶段运行;优先使用上述显式 hook。
 - **`agent_end`**: 完成后检查最终 message 列表和运行元数据。
 - **`before_compaction` / `after_compaction`**: 观察或注释 compaction 循环。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4f9ed3fef2921f26d09ee02cc684d464"
+mmh3_hash: "0fd8d15a8f49cdba582f35d9912b445c"
 summary: "Agent workspace: 位置、布局和备份策略"
 read_when:
   - 你需要解释 agent workspace 或其文件布局
@@ -33,6 +33,7 @@ workspace 是 agent 的家。它是用于文件工具和 workspace context 的�
 ```
 
 `openclaw onboard`、`openclaw configure` 或 `openclaw setup` 将创建 workspace 并在缺失时填充 bootstrap 文件。
+沙盒种子复制仅接受 workspace 内的常规文件;解析到源 workspace 之外的 symlink/hardlink 别名将被忽略。
 
 如果你已经自己管理 workspace 文件,可以禁用 bootstrap 文件创建:
 
