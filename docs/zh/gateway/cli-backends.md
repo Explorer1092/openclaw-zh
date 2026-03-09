@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7aeba4e77b1ac68586e3d6cf1c78e043"
+mmh3_hash: "6427954063cd417b61d6088853c4190e"
 summary: "CLI backend:通过本地 AI CLI 的纯文本回退"
 read_when:
   - 您希望在 API 提供商失败时有一个可靠的回退
@@ -30,7 +30,7 @@ openclaw agent --message "hi" --model claude-cli/opus-4.6
 Codex CLI 也可以开箱即用:
 
 ```bash
-openclaw agent --message "hi" --model codex-cli/gpt-5.3-codex
+openclaw agent --message "hi" --model codex-cli/gpt-5.4
 ```
 
 如果您的 Gateway 在 launchd/systemd 下运行并且 PATH 很少,只需添加命令路径:
@@ -173,8 +173,8 @@ OpenClaw 将 base64 图像写入临时文件。如果设置了 `imageArg`,这些
 OpenClaw 为 `claude-cli` 附带默认值:
 
 - `command: "claude"`
-- `args: ["-p", "--output-format", "json", "--dangerously-skip-permissions"]`
-- `resumeArgs: ["-p", "--output-format", "json", "--dangerously-skip-permissions", "--resume", "{sessionId}"]`
+- `args: ["-p", "--output-format", "json", "--permission-mode", "bypassPermissions"]`
+- `resumeArgs: ["-p", "--output-format", "json", "--permission-mode", "bypassPermissions", "--resume", "{sessionId}"]`
 - `modelArg: "--model"`
 - `systemPromptArg: "--append-system-prompt"`
 - `sessionArg: "--session-id"`

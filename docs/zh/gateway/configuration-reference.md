@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fe3f7b2c11efa49e6bb1b273733aac81"
+mmh3_hash: "1b297f6ff3b6c688874572ef2857852d"
 title: "配置参考"
 description: "~/.openclaw/openclaw.json 的完整字段级参考文档"
 summary: "每个 OpenClaw 配置键、默认值及 Channel 设置的完整参考"
@@ -444,6 +444,13 @@ Mattermost 以插件形式提供：`openclaw plugins install @openclaw/mattermos
       dmPolicy: "pairing",
       chatmode: "oncall", // oncall | onmessage | onchar
       oncharPrefixes: [">", "!"],
+      commands: {
+        native: true, // 需要选择启用
+        nativeSkills: true,
+        callbackPath: "/api/channels/mattermost/command",
+        // 反向代理/公共部署的可选显式 URL
+        callbackUrl: "https://gateway.example.com/api/channels/mattermost/command",
+      },
       textChunkLimit: 4000,
       chunkMode: "length",
     },
@@ -453,6 +460,11 @@ Mattermost 以插件形式提供：`openclaw plugins install @openclaw/mattermos
 
 聊天模式：`oncall`（@提及时响应，默认）、`onmessage`（每条消息）、`onchar`（以触发前缀开头的消息）。
 
+启用 Mattermost 原生命令时：
+
+- `commands.callbackPath` 必须是路径（例如 `/api/channels/mattermost/command`），而非完整 URL。
+- `commands.callbackUrl` 必须解析到 OpenClaw Gateway 端点，并可从 Mattermost 服务器访问。
+- 对于私有/tailnet/内部回调主机，Mattermost 可能需要 `ServiceSettings.AllowedUntrustedInternalConnections` 包含回调主机/域名。请使用主机/域名值，而非完整 URL。
 - `channels.mattermost.configWrites`：允许或拒绝 Mattermost 发起的配置写入。
 - `channels.mattermost.requireMention`：在频道中回复前是否需要 `@提及`。
 - 可选的 `channels.mattermost.defaultAccount` 在与已配置账户 ID 匹配时，覆盖默认账户选择。
@@ -723,7 +735,7 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 - 每个 Channel 覆盖：`channels.discord.commands.native`（布尔值或 `"auto"`）。`false` 清除之前注册的命令。
 - `channels.telegram.customCommands` 添加额外的 Telegram Bot 菜单条目。
 - `bash: true` 为主机 Shell 启用 `! <cmd>`。需要 `tools.elevated.enabled` 且发送者在 `tools.elevated.allowFrom.<channel>` 中。
-- `config: true` 启用 `/config`（读写 `openclaw.json`）。
+- `config: true` 启用 `/config`（读写 `openclaw.json`）。对于 Gateway `chat.send` 客户端，持久化 `/config set|unset` 写入还需要 `operator.admin`；只读 `/config show` 对普通写作用域的 operator 客户端仍然可用。
 - `channels.<provider>.configWrites` 按 Channel 控制配置修改（默认：true）。
 - `allowFrom` 按 Provider 设置。设置后，它是**唯一**的授权来源（Channel 允许列表/配对和 `useAccessGroups` 被忽略）。
 - `useAccessGroups: false` 在未设置 `allowFrom` 时，允许命令绕过访问组策略。
@@ -784,6 +796,21 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 }
 ```
 
+### `agents.defaults.bootstrapPromptTruncationWarning`
+
+控制 bootstrap 上下文被截断时 Agent 可见的警告文本。
+默认值：`"once"`。
+
+- `"off"`：从不向系统提示中注入警告文本。
+- `"once"`：每个唯一截断签名注入一次警告（推荐）。
+- `"always"`：当存在截断时每次运行都注入警告。
+
+```json5
+{
+  agents: { defaults: { bootstrapPromptTruncationWarning: "once" } }, // off | once | always
+}
+```
+
 ### `agents.defaults.imageMaxDimensionPx`
 
 在 Provider 调用前，对话记录/工具图像块中最长边的最大像素尺寸。
@@ -826,11 +853,11 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
     defaults: {
       models: {
         "anthropic/claude-opus-4-6": { alias: "opus" },
-        "minimax/MiniMax-M2.1": { alias: "minimax" },
+        "minimax/MiniMax-M2.5": { alias: "minimax" },
       },
       model: {
         primary: "anthropic/claude-opus-4-6",
-        fallbacks: ["minimax/MiniMax-M2.1"],
+        fallbacks: ["minimax/MiniMax-M2.5"],
       },
       imageModel: {
         primary: "openrouter/qwen/qwen-2.5-vl-72b-instruct:free",
@@ -873,14 +900,15 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 
 **内置别名快捷方式**（仅当模型在 `agents.defaults.models` 中时有效）：
 
-| 别名           | 模型                            |
-| -------------- | ------------------------------- |
-| `opus`         | `anthropic/claude-opus-4-6`     |
-| `sonnet`       | `anthropic/claude-sonnet-4-5`   |
-| `gpt`          | `openai/gpt-5.2`                |
-| `gpt-mini`     | `openai/gpt-5-mini`             |
-| `gemini`       | `google/gemini-3-pro-preview`   |
-| `gemini-flash` | `google/gemini-3-flash-preview` |
+| 别名                | 模型                                   |
+| ------------------- | -------------------------------------- |
+| `opus`              | `anthropic/claude-opus-4-6`            |
+| `sonnet`            | `anthropic/claude-sonnet-4-6`          |
+| `gpt`               | `openai/gpt-5.4`                       |
+| `gpt-mini`          | `openai/gpt-5-mini`                    |
+| `gemini`            | `google/gemini-3.1-pro-preview`        |
+| `gemini-flash`      | `google/gemini-3-flash-preview`        |
+| `gemini-flash-lite` | `google/gemini-3.1-flash-lite-preview` |
 
 你配置的别名始终优先于默认别名。
 
@@ -934,6 +962,7 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
         every: "30m", // 0m 禁用
         model: "openai/gpt-5.2-mini",
         includeReasoning: false,
+        lightContext: false, // 默认：false；true 仅从 workspace bootstrap 文件中保留 HEARTBEAT.md
         session: "main",
         to: "+15555550123",
         directPolicy: "allow", // allow（默认）| block
@@ -950,6 +979,7 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
 - `every`：持续时间字符串（ms/s/m/h）。默认值：`30m`。
 - `suppressToolErrorWarnings`：为 true 时，在心跳运行期间抑制工具错误警告载荷。
 - `directPolicy`：直接/私聊投递策略。`allow`（默认）允许直接目标投递。`block` 抑制直接目标投递并发出 `reason=dm-blocked`。
+- `lightContext`：为 true 时，心跳运行使用轻量级 bootstrap 上下文，仅从 workspace bootstrap 文件中保留 `HEARTBEAT.md`。
 - 每 Agent：设置 `agents.list[].heartbeat`。当任意 Agent 定义了 `heartbeat`，**只有那些 Agent** 运行心跳。
 - 心跳运行完整的 Agent 轮次 —— 间隔越短，Token 消耗越多。
 
@@ -2081,8 +2111,8 @@ Anthropic 兼容，内置 Provider。快捷方式：`openclaw onboard --auth-cho
   env: { SYNTHETIC_API_KEY: "sk-..." },
   agents: {
     defaults: {
-      model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.1" },
-      models: { "synthetic/hf:MiniMaxAI/MiniMax-M2.1": { alias: "MiniMax M2.1" } },
+      model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.5" },
+      models: { "synthetic/hf:MiniMaxAI/MiniMax-M2.5": { alias: "MiniMax M2.5" } },
     },
   },
   models: {
@@ -2094,8 +2124,8 @@ Anthropic 兼容，内置 Provider。快捷方式：`openclaw onboard --auth-cho
         api: "anthropic-messages",
         models: [
           {
-            id: "hf:MiniMaxAI/MiniMax-M2.1",
-            name: "MiniMax M2.1",
+            id: "hf:MiniMaxAI/MiniMax-M2.5",
+            name: "MiniMax M2.5",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -2113,15 +2143,15 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 
 </Accordion>
 
-<Accordion title="MiniMax M2.1（直连）">
+<Accordion title="MiniMax M2.5（直连）">
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "minimax/MiniMax-M2.1" },
+      model: { primary: "minimax/MiniMax-M2.5" },
       models: {
-        "minimax/MiniMax-M2.1": { alias: "Minimax" },
+        "minimax/MiniMax-M2.5": { alias: "Minimax" },
       },
     },
   },
@@ -2134,8 +2164,8 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
         api: "anthropic-messages",
         models: [
           {
-            id: "MiniMax-M2.1",
-            name: "MiniMax M2.1",
+            id: "MiniMax-M2.5",
+            name: "MiniMax M2.5",
             reasoning: false,
             input: ["text"],
             cost: { input: 15, output: 60, cacheRead: 2, cacheWrite: 10 },
@@ -2155,7 +2185,7 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 
 <Accordion title="本地模型（LM Studio）">
 
-参见 [本地模型](/gateway/local-models)。摘要：在高性能硬件上通过 LM Studio Responses API 运行 MiniMax M2.1；保留托管模型合并以作回退。
+参见 [本地模型](/gateway/local-models)。摘要：在高性能硬件上通过 LM Studio Responses API 运行 MiniMax M2.5；保留托管模型合并以作回退。
 
 </Accordion>
 
@@ -2206,6 +2236,9 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
     entries: {
       "voice-call": {
         enabled: true,
+        hooks: {
+          allowPromptInjection: false,
+        },
         config: { provider: "twilio" },
       },
     },
@@ -2218,8 +2251,10 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 - `allow`：可选允许列表（只有列出的 Plugin 会加载）。`deny` 优先。
 - `plugins.entries.<id>.apiKey`：Plugin 级别的 API 密钥便捷字段（当 Plugin 支持时）。
 - `plugins.entries.<id>.env`：Plugin 作用域的环境变量映射。
+- `plugins.entries.<id>.hooks.allowPromptInjection`：为 `false` 时，core 阻止 `before_prompt_build` 并忽略旧版 `before_agent_start` 中的 prompt 修改字段，同时保留旧版 `modelOverride` 和 `providerOverride`。
 - `plugins.entries.<id>.config`：Plugin 定义的配置对象（由 Plugin 架构验证）。
 - `plugins.slots.memory`：选择活动内存 Plugin ID，或设为 `"none"` 禁用内存 Plugin。
+- `plugins.slots.contextEngine`：选择活动 context engine Plugin ID；默认为 `"legacy"`，除非你安装并选择了其他 engine。
 - `plugins.installs`：由 `openclaw plugins update` 使用的 CLI 管理的安装元数据。
   - 包括 `source`、`spec`、`sourcePath`、`installPath`、`version`、`resolvedName`、`resolvedVersion`、`resolvedSpec`、`integrity`、`shasum`、`resolvedAt`、`installedAt`。
   - 将 `plugins.installs.*` 视为受管状态；建议使用 CLI 命令而非手动编辑。
@@ -2250,6 +2285,8 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
     color: "#FF4500",
     // headless: false,
     // noSandbox: false,
+    // extraArgs: [],
+    // relayBindHost: "0.0.0.0", // 仅当 extension relay 需跨命名空间可达时（例如 WSL2）
     // executablePath: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
     // attachOnly: false,
   },
@@ -2264,6 +2301,8 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 - 远程配置文件为仅附加模式（禁用启动/停止/重置）。
 - 自动检测顺序：Chromium 系默认浏览器 → Chrome → Brave → Edge → Chromium → Chrome Canary。
 - 控制服务：仅本地回环（端口由 `gateway.port` 派生，默认 `18791`）。
+- `extraArgs` 向本地 Chromium 启动追加额外的启动标志（例如 `--disable-gpu`、窗口大小或调试标志）。
+- `relayBindHost` 更改 Chrome extension relay 的监听地址。保留不设置以仅本地回环访问；仅当 relay 必须跨命名空间边界（例如 WSL2）且主机网络已受信任时，才设置为非本地回环地址（如 `0.0.0.0`）。
 
 ---
 
@@ -2347,6 +2386,7 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 - **旧版 bind 别名**：在 `gateway.bind` 中使用 bind 模式值（`auto`、`loopback`、`lan`、`tailnet`、`custom`），而非主机别名（`0.0.0.0`、`127.0.0.1`、`localhost`、`::`、`::1`）。
 - **Docker 说明**：默认 `loopback` bind 在容器内监听 `127.0.0.1`。使用 Docker 桥接网络（`-p 18789:18789`）时，流量到达 `eth0`，因此 Gateway 不可达。使用 `--network host`，或设置 `bind: "lan"`（或 `bind: "custom"` + `customBindHost: "0.0.0.0"`）以监听所有接口。
 - **认证**：默认必填。非本地回环 bind 需要共享 token/密码。引导向导默认生成 token。
+- 如果同时配置了 `gateway.auth.token` 和 `gateway.auth.password`（包括 SecretRef），请显式设置 `gateway.auth.mode` 为 `token` 或 `password`。当两者均已配置且 mode 未设置时，启动和服务安装/修复流程将失败。
 - `gateway.auth.mode: "none"`：显式无认证模式。仅用于受信任的本地回环设置；引导提示有意不提供此选项。
 - `gateway.auth.mode: "trusted-proxy"`：将认证委托给身份感知反向代理，并信任来自 `gateway.trustedProxies` 的身份标头（参见 [受信任代理认证](/gateway/trusted-proxy-auth)）。
 - `gateway.auth.allowTailscale`：为 `true` 时，Tailscale Serve 身份标头可满足 Control UI/WebSocket 认证（通过 `tailscale whois` 验证）；HTTP API 端点仍需 token/密码认证。此无 token 流程假设 Gateway 主机受信任。当 `tailscale.mode = "serve"` 时默认为 `true`。
@@ -2604,14 +2644,11 @@ openclaw gateway --port 19001
 - `source: "file"` id：绝对 JSON 指针（例如 `"/providers/openai/apiKey"`）
 - `source: "exec"` id 模式：`^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$`
 
-### 配置中支持的字段
+### 支持的凭证字段
 
-- `models.providers.<provider>.apiKey`
-- `skills.entries.<skillKey>.apiKey`
-- `channels.googlechat.serviceAccount`
-- `channels.googlechat.serviceAccountRef`
-- `channels.googlechat.accounts.<accountId>.serviceAccount`
-- `channels.googlechat.accounts.<accountId>.serviceAccountRef`
+- 规范矩阵：[SecretRef 凭证字段](/reference/secretref-credential-surface)
+- `secrets apply` 针对受支持的 `openclaw.json` 凭证路径。
+- `auth-profiles.json` 引用包含在运行时解析和审计覆盖中。
 
 ### 密钥 Provider 配置
 
@@ -2649,6 +2686,7 @@ openclaw gateway --port 19001
 - 如果配置了 `trustedDirs`，受信任目录检查将应用于解析后的目标路径。
 - `exec` 子环境默认最小化；使用 `passEnv` 显式传递所需变量。
 - 密钥引用在激活时解析为内存快照，之后请求路径仅读取快照。
+- 激活时应用活跃字段过滤：已启用字段上未解析的引用会导致启动/重载失败，非活跃字段则跳过并输出诊断信息。
 
 ---
 
@@ -2695,6 +2733,26 @@ openclaw gateway --port 19001
 - 默认日志文件：`/tmp/openclaw/openclaw-YYYY-MM-DD.log`。
 - 设置 `logging.file` 以使用固定路径。
 - `--verbose` 时 `consoleLevel` 提升为 `debug`。
+
+---
+
+## CLI
+
+```json5
+{
+  cli: {
+    banner: {
+      taglineMode: "off", // random | default | off
+    },
+  },
+}
+```
+
+- `cli.banner.taglineMode` 控制 banner 标语样式：
+  - `"random"`（默认）：轮换有趣/季节性标语。
+  - `"default"`：固定中性标语（`All your chats, one OpenClaw.`）。
+  - `"off"`：无标语文字（仍显示 banner 标题/版本）。
+- 如需隐藏整个 banner（不只是标语），设置环境变量 `OPENCLAW_HIDE_BANNER=1`。
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "187926f577dd32b15115b011596247a8"
+mmh3_hash: "fe497159b0ce1a361f9a33d213e1cb29"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
 read_when:
   - 您想从自己的 GPU 机器提供模型
@@ -12,20 +12,20 @@ title: "本地模型"
 
 本地是可行的,但 OpenClaw 期望大上下文 + 对提示注入的强大防御。小卡会截断上下文并泄漏安全性。目标高:**≥2 台最大配置的 Mac Studios 或等效的 GPU 设备(~$30k+)**。单个 **24 GB** GPU 仅适用于具有较高延迟的较轻提示。使用 **您可以运行的最大/完整大小模型变体**;大量量化或"小"检查点会增加提示注入风险(参见 [Security](/gateway/security))。
 
-## 推荐:LM Studio + MiniMax M2.1(Responses API,完整大小)
+## 推荐:LM Studio + MiniMax M2.5(Responses API,完整大小)
 
-当前最佳本地堆栈。在 LM Studio 中加载 MiniMax M2.1,启用本地服务器(默认 `http://127.0.0.1:1234`),并使用 Responses API 将推理与最终文本分开。
+当前最佳本地堆栈。在 LM Studio 中加载 MiniMax M2.5,启用本地服务器(默认 `http://127.0.0.1:1234`),并使用 Responses API 将推理与最终文本分开。
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "lmstudio/minimax-m2.1-gs32" },
+      model: { primary: "lmstudio/minimax-m2.5-gs32" },
       models: {
         "anthropic/claude-opus-4-6": { alias: "Opus" },
-        "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" }
-      }
-    }
+        "lmstudio/minimax-m2.5-gs32": { alias: "Minimax" },
+      },
+    },
   },
   models: {
     mode: "merge",
@@ -36,8 +36,8 @@ title: "本地模型"
         api: "openai-responses",
         models: [
           {
-            id: "minimax-m2.1-gs32",
-            name: "MiniMax M2.1 GS32",
+            id: "minimax-m2.5-gs32",
+            name: "MiniMax M2.5 GS32",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -52,8 +52,9 @@ title: "本地模型"
 ```
 
 **设置清单**
-- 安装 LM Studio:https://lmstudio.ai
-- 在 LM Studio 中,下载 **可用的最大 MiniMax M2.1 构建**(避免"small"/大量量化的变体),启动服务器,确认 `http://127.0.0.1:1234/v1/models` 列出它。
+
+- 安装 LM Studio:[https://lmstudio.ai](https://lmstudio.ai)
+- 在 LM Studio 中,下载 **可用的最大 MiniMax M2.5 构建**(避免"small"/大量量化的变体),启动服务器,确认 `http://127.0.0.1:1234/v1/models` 列出它。
 - 保持模型加载;冷加载会增加启动延迟。
 - 如果您的 LM Studio 构建不同,请调整 `contextWindow`/`maxTokens`。
 - 对于 WhatsApp,坚持使用 Responses API,以便仅发送最终文本。
@@ -68,14 +69,14 @@ title: "本地模型"
     defaults: {
       model: {
         primary: "anthropic/claude-sonnet-4-5",
-        fallbacks: ["lmstudio/minimax-m2.1-gs32", "anthropic/claude-opus-4-6"]
+        fallbacks: ["lmstudio/minimax-m2.5-gs32", "anthropic/claude-opus-4-6"],
       },
       models: {
         "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
-        "lmstudio/minimax-m2.1-gs32": { alias: "MiniMax Local" },
-        "anthropic/claude-opus-4-6": { alias: "Opus" }
-      }
-    }
+        "lmstudio/minimax-m2.5-gs32": { alias: "MiniMax Local" },
+        "anthropic/claude-opus-4-6": { alias: "Opus" },
+      },
+    },
   },
   models: {
     mode: "merge",
@@ -86,8 +87,8 @@ title: "本地模型"
         api: "openai-responses",
         models: [
           {
-            id: "minimax-m2.1-gs32",
-            name: "MiniMax M2.1 GS32",
+            id: "minimax-m2.5-gs32",
+            name: "MiniMax M2.5 GS32",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },

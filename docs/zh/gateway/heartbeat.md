@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cdc003e2e2cc625db728b6bc378dac42"
+mmh3_hash: "2323f42e9447e37d5c89d93e14f5c898"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -21,7 +21,8 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 2. 在 Agent 工作空间中创建一个微小的 `HEARTBEAT.md` 清单(可选但推荐)。
 3. 决定 Heartbeat 消息应该去哪里(`target: "none"` 是默认值;设置 `target: "last"` 以路由到最后的联系人)。
 4. 可选:启用 Heartbeat Reasoning 传递以提高透明度。
-5. 可选:将 Heartbeat 限制在活动时间(本地时间)。
+5. 可选:如果 Heartbeat 运行只需要 `HEARTBEAT.md`,使用轻量级 bootstrap 上下文。
+6. 可选:将 Heartbeat 限制在活动时间(本地时间)。
 
 示例配置:
 
@@ -33,6 +34,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
         every: "30m",
         target: "last", // 显式传递到最后的联系人(默认为 "none")
         directPolicy: "allow", // 默认:允许直接/DM 目标;设置 "block" 以抑制
+        lightContext: true, // 可选:仅从 bootstrap 文件中注入 HEARTBEAT.md
         // activeHours: { start: "08:00", end: "24:00" },
         // includeReasoning: true, // 可选:也发送单独的 `Reasoning:` 消息
       },
@@ -77,6 +79,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
         every: "30m", // 默认:30m(0m 禁用)
         model: "anthropic/claude-opus-4-6",
         includeReasoning: false, // 默认:false(可用时传递单独的 Reasoning: 消息)
+        lightContext: false, // 默认:false;true 仅从 workspace bootstrap 文件中保留 HEARTBEAT.md
         target: "last", // 默认:none | 选项:last | none | <channel id>(核心或 Plugin,例如"bluebubbles")
         to: "+15551234567", // 可选的特定 Channel 覆盖
         accountId: "ops-bot", // 可选的多账户 Channel ID
@@ -194,6 +197,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 - `every`:Heartbeat 间隔(持续时间字符串;默认单位 = 分钟)。
 - `model`:Heartbeat 运行的可选模型覆盖(`provider/model`)。
 - `includeReasoning`:启用时,在可用时也传递单独的 `Reasoning:` 消息(与 `/reasoning on` 相同的形状)。
+- `lightContext`:为 true 时,Heartbeat 运行使用轻量级 bootstrap 上下文,仅从 workspace bootstrap 文件中保留 `HEARTBEAT.md`。
 - `session`:Heartbeat 运行的可选 Session 键。
   - `main`(默认):Agent 主 Session。
   - 显式 Session 键(从 `openclaw sessions --json` 或 [Sessions CLI](/cli/sessions) 复制)。

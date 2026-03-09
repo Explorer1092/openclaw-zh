@@ -1,7 +1,7 @@
 ---
 title: "诊断"
 sidebarTitle: "诊断"
-mmh3_hash: "7156372ddb65fab5c5bd755a165bae87"
+mmh3_hash: "e9d8a2b4a8bf8a408a593b79ff62c28e"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
 read_when: ["添加或修改 doctor 迁移","引入破坏性配置更改"]
 ---
@@ -73,7 +73,7 @@ cat ~/.openclaw/openclaw.json
 - Gateway 运行时最佳实践检查(Node vs Bun,version-manager 路径)。
 - Gateway 端口冲突诊断(默认 `18789`)。
 - 开放 DM 策略的安全警告。
-- 未设置 `gateway.auth.token` 时的 Gateway 认证警告(本地模式;提供令牌生成)。
+- 本地令牌模式的 Gateway 认证检查(当没有令牌来源存在时提供令牌生成;不覆盖令牌 SecretRef 配置)。
 - Linux 上的 systemd linger 检查。
 - 源安装检查(pnpm workspace 不匹配,缺少 UI 资产,缺少 tsx 二进制文件)。
 - 写入更新的配置 + 向导元数据。
@@ -169,7 +169,20 @@ Doctor 检测旧版 gateway 服务(launchd/systemd/schtasks)并提供删除它�
 Doctor 为当前 workspace 打印符合条件/缺失/被阻止的 skills 的快速摘要。
 
 ### 12) Gateway 认证检查(本地令牌)
-当本地 gateway 上缺少 `gateway.auth` 时,Doctor 会发出警告并提供生成令牌。在自动化中使用 `openclaw doctor --generate-gateway-token` 强制创建令牌。
+
+Doctor 检查本地 Gateway 令牌认证就绪情况。
+
+- 如果令牌模式需要令牌且没有令牌来源,Doctor 提供生成令牌。
+- 如果 `gateway.auth.token` 是 SecretRef 管理的但不可用,Doctor 会发出警告且不会用明文覆盖它。
+- `openclaw doctor --generate-gateway-token` 仅在未配置令牌 SecretRef 时强制生成。
+
+### 12b) 只读 SecretRef 感知修复
+
+部分修复流程需要检查配置的凭证,同时不削弱运行时快速失败行为。
+
+- `openclaw doctor --fix` 现在对目标配置修复使用与状态类命令相同的只读 SecretRef 摘要模型。
+- 示例:Telegram `allowFrom` / `groupAllowFrom` `@username` 修复尝试在可用时使用配置的 bot 凭证。
+- 如果 Telegram bot token 通过 SecretRef 配置但在当前命令路径中不可用,Doctor 会报告凭证已配置但不可用,并跳过自动解析而不是崩溃或错误报告令牌缺失。
 
 ### 13) Gateway 健康检查 + 重启
 Doctor 运行健康检查,并在看起来不健康时提供重启 gateway。
@@ -185,6 +198,10 @@ Doctor 检查已安装的 supervisor 配置(launchd/systemd/schtasks)是否缺�
 - `openclaw doctor --yes` 接受默认修复提示。
 - `openclaw doctor --repair` 应用推荐的修复而不提示。
 - `openclaw doctor --repair --force` 覆盖自定义 supervisor 配置。
+- 如果令牌认证需要令牌且 `gateway.auth.token` 是 SecretRef 管理的,Doctor 服务安装/修复会验证 SecretRef 但不会将解析后的明文令牌值持久化到 supervisor 服务环境元数据中。
+- 如果令牌认证需要令牌且配置的令牌 SecretRef 未解析,Doctor 会以可操作的指导阻止安装/修复路径。
+- 如果同时配置了 `gateway.auth.token` 和 `gateway.auth.password` 且 `gateway.auth.mode` 未设置,Doctor 会阻止安装/修复直到明确设置模式。
+- 对于 Linux 用户 systemd 单元,Doctor 令牌漂移检查现在包括 `Environment=` 和 `EnvironmentFile=` 来源,用于比较服务认证元数据。
 - 您始终可以通过 `openclaw gateway install --force` 强制完全重写。
 
 ### 16) Gateway 运行时 + 端口诊断

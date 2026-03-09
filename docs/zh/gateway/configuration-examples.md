@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f46bb504e9dc5b98831ce32afdf8b181"
+mmh3_hash: "608b4453d037ab79337809dd4968cba7"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:
   - 学习如何配置 OpenClaw
@@ -528,7 +528,11 @@ title: "配置示例"
 }
 ```
 
-### Anthropic 订阅 + API 密钥,MiniMax 回退
+### Anthropic setup-token + API 密钥,MiniMax 回退
+
+<Warning>
+Anthropic 在过去限制了部分用户在 Claude Code 之外使用 setup-token。请将此视为用户自主选择的风险,并在依赖订阅认证之前验证 Anthropic 的当前条款。
+</Warning>
 
 ```json5
 {
@@ -561,7 +565,7 @@ title: "配置示例"
     workspace: "~/.openclaw/workspace",
     model: {
       primary: "anthropic/claude-opus-4-6",
-      fallbacks: ["minimax/MiniMax-M2.1"],
+      fallbacks: ["minimax/MiniMax-M2.5"],
     },
   },
 }
@@ -598,7 +602,7 @@ title: "配置示例"
 {
   agent: {
     workspace: "~/.openclaw/workspace",
-    model: { primary: "lmstudio/minimax-m2.1-gs32" },
+    model: { primary: "lmstudio/minimax-m2.5-gs32" },
   },
   models: {
     mode: "merge",
@@ -609,8 +613,8 @@ title: "配置示例"
         api: "openai-responses",
         models: [
           {
-            id: "minimax-m2.1-gs32",
-            name: "MiniMax M2.1 GS32",
+            id: "minimax-m2.5-gs32",
+            name: "MiniMax M2.5 GS32",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },

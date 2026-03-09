@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "021d0dfdd24793a4f0c09433576b3fca"
+mmh3_hash: "65498db5854e5197cce90bf0cb05481a"
 summary: "模型认证:OAuth、API 密钥和 setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
@@ -9,20 +9,22 @@ title: "认证"
 
 # 认证
 
-OpenClaw 支持模型提供商的 OAuth 和 API 密钥认证。对于 Anthropic 账户,我们推荐使用 **API 密钥**。对于 Claude 订阅访问,使用通过 `claude setup-token` 创建的长期令牌。
+OpenClaw 支持模型提供商的 OAuth 和 API 密钥认证。对于长期运行的 Gateway 主机,API 密钥通常是最可预测的选项。当提供商账户模式匹配时,也支持订阅/OAuth 流程。
 
 完整的 OAuth 流程和存储布局请参见 [/concepts/oauth](/concepts/oauth)。
 对于基于 SecretRef 的认证(`env`/`file`/`exec` providers),请参见 [Secrets Management](/gateway/secrets)。
+有关 `models status --probe` 使用的凭证资格/原因代码规则,请参见 [Auth Credential Semantics](/auth-credential-semantics)。
 
-## 推荐的 Anthropic 设置(API 密钥)
+## 推荐的设置(API 密钥,任意提供商)
 
-如果您直接使用 Anthropic,请使用 API 密钥。
+如果您在运行长期 Gateway,请从所选提供商的 API 密钥开始。
+对于 Anthropic,API 密钥认证是安全路径,推荐优先于订阅 setup-token 认证。
 
-1. 在 Anthropic Console 中创建一个 API 密钥。
+1. 在提供商控制台中创建一个 API 密钥。
 2. 将其放在 **Gateway 主机**(运行 `openclaw gateway` 的机器)上。
 
 ```bash
-export ANTHROPIC_API_KEY="..."
+export <PROVIDER>_API_KEY="..."
 openclaw models status
 ```
 
@@ -30,7 +32,7 @@ openclaw models status
 
 ```bash
 cat >> ~/.openclaw/.env <<'EOF'
-ANTHROPIC_API_KEY=...
+<PROVIDER>_API_KEY=...
 EOF
 ```
 
@@ -72,6 +74,10 @@ This credential is only authorized for use with Claude Code and cannot be used f
 ```
 
 …请改用 Anthropic API 密钥。
+
+<Warning>
+Anthropic setup-token 支持仅为技术兼容性。Anthropic 过去曾封锁 Claude Code 之外的部分订阅用途。仅在您认为政策风险可接受时使用,并请自行验证 Anthropic 的当前条款。
+</Warning>
 
 手动输入令牌(任何提供商;写入 `auth-profiles.json` 并更新配置):
 
@@ -154,5 +160,5 @@ openclaw models status
 
 ## 要求
 
-- Claude Max 或 Pro 订阅(用于 `claude setup-token`)
+- Anthropic 订阅账户(用于 `claude setup-token`)
 - 已安装 Claude Code CLI(`claude` 命令可用)

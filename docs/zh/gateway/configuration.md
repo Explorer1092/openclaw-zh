@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f454670b13738d742cecc91d9ca91a1f"
+mmh3_hash: "6c9272eb771877d722b5614f049feb95"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
@@ -292,6 +292,11 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     }
     ```
 
+    安全注意事项:
+    - 将所有 hook/webhook 负载内容视为不可信输入。
+    - 除非进行严格范围的调试,否则请禁用不安全内容绕过标志(`hooks.gmail.allowUnsafeExternalContent`、`hooks.mappings[].allowUnsafeExternalContent`)。
+    - 对于 hook 驱动的 Agent,建议使用强大的现代模型级别和严格的工具策略(例如,尽可能仅消息传递加沙盒)。
+
     参见[完整参考文档](/gateway/configuration-reference#hooks)了解所有映射选项和 Gmail 集成。
 
   </Accordion>
@@ -492,6 +497,43 @@ OpenClaw 从父进程读取环境变量,以及:
 - 在 `$include` 文件中工作
 - 内联替换:`"${BASE}/v1"` → `"https://api.example.com/v1"`
 
+</Accordion>
+
+<Accordion title="Secret refs(env、file、exec)">
+  对于支持 SecretRef 对象的字段,您可以使用:
+
+```json5
+{
+  models: {
+    providers: {
+      openai: { apiKey: { source: "env", provider: "default", id: "OPENAI_API_KEY" } },
+    },
+  },
+  skills: {
+    entries: {
+      "nano-banana-pro": {
+        apiKey: {
+          source: "file",
+          provider: "filemain",
+          id: "/skills/entries/nano-banana-pro/apiKey",
+        },
+      },
+    },
+  },
+  channels: {
+    googlechat: {
+      serviceAccountRef: {
+        source: "exec",
+        provider: "vault",
+        id: "channels/googlechat/serviceAccount",
+      },
+    },
+  },
+}
+```
+
+SecretRef 详情(包括 `env`/`file`/`exec` 的 `secrets.providers`)请参见 [Secrets 管理](/gateway/secrets)。
+支持的凭证路径列在 [SecretRef Credential Surface](/reference/secretref-credential-surface) 中。
 </Accordion>
 
 参见[环境](/help/environment)了解完整的优先级和来源。
