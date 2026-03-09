@@ -1,6 +1,6 @@
 ---
 title: "文本转语音(TTS)"
-mmh3_hash: "06134a3db851e893272914861d25fa47"
+mmh3_hash: "0f1fb25fa79680a460621e1459f5c359"
 summary: "用于出站回复的文本转语音(TTS)"
 read_when: ["为回复启用文本转语音","配置 TTS 提供程序或限制","使用 /tts 命令"]
 ---
@@ -197,11 +197,15 @@ TTS 配置位于 `openclaw.json` 中的 `messages.tts` 下。
 - `summaryModel`:用于自动摘要的可选廉价模型;默认为 `agents.defaults.model.primary`。
   - 接受 `provider/model` 或配置的模型别名。
 - `modelOverrides`:允许模型发出 TTS 指令(默认开启)。
+  - `allowProvider` 默认为 `false`（Provider 切换需要选择加入）。
 - `maxTextLength`:TTS 输入的硬上限(字符)。如果超过,`/tts audio` 失败。
 - `timeoutMs`:请求超时(毫秒)。
 - `prefsPath`:覆盖本地偏好 JSON 路径(提供程序/限制/摘要)。
 - `apiKey` 值回退到环境变量(`ELEVENLABS_API_KEY`/`XI_API_KEY`、`OPENAI_API_KEY`)。
 - `elevenlabs.baseUrl`:覆盖 ElevenLabs API 基础 URL。
+- `openai.baseUrl`:覆盖 OpenAI TTS 端点。
+  - 解析顺序：`messages.tts.openai.baseUrl` -> `OPENAI_TTS_BASE_URL` -> `https://api.openai.com/v1`
+  - 非默认值被视为 OpenAI 兼容 TTS 端点，因此接受自定义模型和语音名称。
 - `elevenlabs.voiceSettings`:
   - `stability`、`similarityBoost`、`style`:`0..1`
   - `useSpeakerBoost`:`true|false`
@@ -231,12 +235,12 @@ TTS 配置位于 `openclaw.json` 中的 `messages.tts` 下。
 ```
 Here you go.
 
-[[tts:provider=elevenlabs voiceId=pMsXgVXv3BLzUgSXRplE model=eleven_v3 speed=1.1]]
+[[tts:voiceId=pMsXgVXv3BLzUgSXRplE model=eleven_v3 speed=1.1]]
 [[tts:text]](laughs) Read the song once more.[[/tts:text]]
 ```
 
 可用的指令键(启用时):
-- `provider`(`openai` | `elevenlabs` | `edge`)
+- `provider`(`openai` | `elevenlabs` | `edge`，需要 `allowProvider: true`)
 - `voice`(OpenAI 语音)或 `voiceId`(ElevenLabs)
 - `model`(OpenAI TTS 模型或 ElevenLabs 模型 id)
 - `stability`、`similarityBoost`、`style`、`speed`、`useSpeakerBoost`
@@ -258,7 +262,7 @@ Here you go.
 }
 ```
 
-可选允许列表(在保持标签启用的同时禁用特定覆盖):
+可选允许列表（启用 Provider 切换，同时保持其他旋钮可配置）：
 
 ```json5
 {
@@ -266,11 +270,11 @@ Here you go.
     tts: {
       modelOverrides: {
         enabled: true,
-        allowProvider: false,
-        allowSeed: false
-      }
-    }
-  }
+        allowProvider: true,
+        allowSeed: false,
+      },
+    },
+  },
 }
 ```
 

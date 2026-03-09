@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "388401ebda2f46f6c6dc929e0892583a"
+mmh3_hash: "1eac6d40118741c0d5d0c36d74cc85b6"
 title: "CI 流水线"
 summary: "CI 任务图、范围控制门以及本地等效命令"
 read_when:
@@ -16,15 +16,15 @@ CI 在每次推送到 `main` 分支以及每个拉取请求时运行。它使用
 | 任务                | 用途                                            | 运行时机                  |
 | ------------------- | ----------------------------------------------- | ------------------------- |
 | `docs-scope`        | 检测是否仅有文档变更                            | 始终                      |
-| `changed-scope`     | 检测哪些区域发生变更（node/macos/android）      | 非文档 PR                 |
-| `check`             | TypeScript 类型检查、lint、格式化               | 非文档变更                |
+| `changed-scope`     | 检测哪些区域发生变更（node/macos/android/windows） | 非文档 PR              |
+| `check`             | TypeScript 类型检查、lint、格式化               | 推送到 `main`，或有 Node 相关变更的 PR |
 | `check-docs`        | Markdown lint + 断链检查                        | 文档变更时                |
 | `code-analysis`     | 代码行数阈值检查（1000 行）                     | 仅 PR                     |
 | `secrets`           | 检测泄露的密钥                                  | 始终                      |
 | `build-artifacts`   | 一次性构建 dist 并与其他任务共享                | 非文档、node 变更         |
 | `release-check`     | 验证 npm pack 内容                              | 构建后                    |
 | `checks`            | Node/Bun 测试 + 协议检查                        | 非文档、node 变更         |
-| `checks-windows`    | Windows 专项测试                                | 非文档、node 变更         |
+| `checks-windows`    | Windows 专项测试                                | 非文档、windows 相关变更  |
 | `macos`             | Swift lint/构建/测试 + TS 测试                  | 有 macOS 变更的 PR        |
 | `android`           | Gradle 构建 + 测试                              | 非文档、android 变更      |
 
@@ -41,7 +41,7 @@ CI 在每次推送到 `main` 分支以及每个拉取请求时运行。它使用
 | 运行器                            | 任务                                        |
 | --------------------------------- | ------------------------------------------- |
 | `blacksmith-16vcpu-ubuntu-2404`   | 大多数 Linux 任务，包括范围检测             |
-| `blacksmith-16vcpu-windows-2025`  | `checks-windows`                            |
+| `blacksmith-32vcpu-windows-2025`  | `checks-windows`                            |
 | `macos-latest`                    | `macos`、`ios`                              |
 
 ## 本地等效命令

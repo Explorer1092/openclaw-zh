@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1c554769abee831371177581452e00bc"
+mmh3_hash: "30788e86b375812e0a603d082599ab23"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志
@@ -41,7 +41,7 @@ sidebarTitle: "向导参考"
     - 更多详情：[Vercel AI Gateway](/providers/vercel-ai-gateway)
     - **Cloudflare AI Gateway**：提示输入帐户 ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。
     - 更多详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-    - **MiniMax M2.1**：配置自动写入。
+    - **MiniMax M2.5**：配置自动写入。
     - 更多详情：[MiniMax](/providers/minimax)
     - **Synthetic（Anthropic 兼容）**：提示输入 `SYNTHETIC_API_KEY`。
     - 更多详情：[Synthetic](/providers/synthetic)
@@ -66,6 +66,15 @@ sidebarTitle: "向导参考"
   <Step title="Gateway">
     - 端口、绑定、身份验证模式、Tailscale 暴露。
     - 身份验证建议：即使对于回环也保持 **Token**，以便本地 WS 客户端必须进行身份验证。
+    - 在 Token 模式下，交互式引导提供：
+      - **生成/存储明文 Token**（默认）
+      - **使用 SecretRef**（选择加入）
+      - 快速开始跨 `env`、`file` 和 `exec` Provider 重用现有 `gateway.auth.token` SecretRef，用于引导探测/仪表板引导。
+      - 如果该 SecretRef 已配置但无法解析，引导会提前失败，并给出明确的修复消息，而不是静默降级运行时身份验证。
+    - 在密码模式下，交互式引导也支持明文或 SecretRef 存储。
+    - 非交互式 Token SecretRef 路径：`--gateway-token-ref-env <ENV_VAR>`。
+      - 要求引导进程环境中有非空的环境变量。
+      - 不能与 `--gateway-token` 一起使用。
     - 仅当您完全信任每个本地进程时才禁用身份验证。
     - 非回环绑定仍然需要身份验证。
   </Step>
@@ -87,6 +96,9 @@ sidebarTitle: "向导参考"
       - 向导尝试通过 `loginctl enable-linger <user>` 启用 lingering，以便 Gateway 在注销后保持运行。
       - 可能提示输入 sudo（写入 `/var/lib/systemd/linger`）；它首先尝试不使用 sudo。
     - **运行时选择：**Node（推荐；WhatsApp/Telegram 需要）。**不推荐** Bun。
+    - 如果 Token 身份验证需要 Token 且 `gateway.auth.token` 由 SecretRef 管理，守护程序安装会验证它，但不会将解析的明文 Token 值持久化到守护进程服务环境元数据中。
+    - 如果 Token 身份验证需要 Token 且配置的 Token SecretRef 未解析，守护程序安装将被阻止，并提供可操作的指导。
+    - 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置，守护程序安装将被阻止，直到明确设置模式。
   </Step>
   <Step title="健康检查">
     - 启动 Gateway（如果需要）并运行 `openclaw health`。
@@ -123,6 +135,19 @@ openclaw onboard --non-interactive \
 ```
 
 添加 `--json` 以获得机器可读的摘要。
+
+非交互式模式下的 Gateway Token SecretRef：
+
+```bash
+export OPENCLAW_GATEWAY_TOKEN="your-token"
+openclaw onboard --non-interactive \
+  --mode local \
+  --auth-choice skip \
+  --gateway-auth token \
+  --gateway-token-ref-env OPENCLAW_GATEWAY_TOKEN
+```
+
+`--gateway-token` 和 `--gateway-token-ref-env` 互斥。
 
 <Note>
 `--json` **不**意味着非交互式模式。对于脚本，使用 `--non-interactive`（和 `--workspace`）。
@@ -238,6 +263,7 @@ Gateway 通过 RPC 暴露向导流程（`wizard.start`、`wizard.next`、`wizard
 
 - `agents.defaults.workspace`
 - `agents.defaults.model` / `models.providers`（如果选择 Minimax）
+- `tools.profile`（本地引导默认为 `"coding"` 如果未设置；保留现有的显式值）
 - `gateway.*`（模式、绑定、身份验证、Tailscale）
 - `session.dmScope`（行为详情：[CLI 引导参考](/start/wizard-cli-reference#outputs-and-internals)）
 - `channels.telegram.botToken`、`channels.discord.token`、`channels.signal.*`、`channels.imessage.*`

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ee5c7b544036867c260697c3e4675031"
+mmh3_hash: "c93184234bc642766747d578eefad951"
 summary: "审计哪些内容可以花钱、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API
@@ -65,24 +65,24 @@ OpenClaw 可以从以下位置获取凭证:
 - `memorySearch.provider = "gemini"` → Gemini 嵌入
 - `memorySearch.provider = "voyage"` → Voyage 嵌入
 - `memorySearch.provider = "mistral"` → Mistral 嵌入
+- `memorySearch.provider = "ollama"` → Ollama 嵌入（本地/自托管；通常无托管 API 计费）
 - 如果本地嵌入失败，可选回退到远程提供商
 
 您可以使用 `memorySearch.provider = "local"` 保持本地(无 API 使用)。
 
 请参见 [内存](/concepts/memory)。
 
-### 4) Web 搜索工具(Brave / Perplexity via OpenRouter)
+### 4) Web 搜索工具
 
-`web_search` 使用 API 密钥并可能产生使用费用:
+`web_search` 使用 API 密钥并可能根据您的 Provider 产生使用费用：
 
-- **Brave Search API**:`BRAVE_API_KEY` 或 `tools.web.search.apiKey`
-- **Perplexity**(通过 OpenRouter):`PERPLEXITY_API_KEY` 或 `OPENROUTER_API_KEY`
+- **Brave Search API**：`BRAVE_API_KEY` 或 `tools.web.search.apiKey`
+- **Gemini（Google Search）**：`GEMINI_API_KEY`
+- **Grok（xAI）**：`XAI_API_KEY`
+- **Kimi（Moonshot）**：`KIMI_API_KEY` 或 `MOONSHOT_API_KEY`
+- **Perplexity Search API**：`PERPLEXITY_API_KEY`
 
-**Brave 免费层(慷慨):**
-
-- **每月 2,000 个请求**
-- **每秒 1 个请求**
-- **需要信用卡**用于验证(除非升级,否则不收费)
+**Brave Search 免费积分：** 每个 Brave 计划每月包含 $5 的循环免费积分。Search 计划每 1,000 个请求收费 $5，因此积分涵盖每月 1,000 个请求，无需额外费用。在 Brave 仪表板中设置使用限额以避免意外收费。
 
 请参见 [Web 工具](/tools/web)。
 
