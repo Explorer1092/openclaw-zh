@@ -1,7 +1,7 @@
 ---
 title: "Cron 作业"
 sidebarTitle: "Cron 作业"
-mmh3_hash: "55d91b0b079b0d97a7bd2b31232500fc"
+mmh3_hash: "576cb6604aa4c90331c7aa91d89bda2c"
 summary: "Gateway 调度器的 Cron 作业 + 唤醒"
 read_when:
   - 调度后台作业或唤醒时
@@ -165,6 +165,7 @@ Isolated 作业在 session `cron:<jobId>` 中运行专用的 Agent 回合。
 - `message`: 必需的文本提示词。
 - `model` / `thinking`: 可选覆盖(见下文)。
 - `timeoutSeconds`: 可选超时覆盖。
+- `lightContext`: 可选轻量级引导模式，适用于不需要工作区引导文件注入的作业。
 
 传递配置:
 
@@ -217,6 +218,14 @@ Isolated 作业 (`agentTurn`) 可以覆盖模型和思考级别:
 1. 作业载荷覆盖(最高)
 2. Hook 特定默认值(例如 `hooks.gmail.model`)
 3. Agent 配置默认值
+
+### 轻量级引导上下文
+
+Isolated 作业 (`agentTurn`) 可以设置 `lightContext: true` 以使用轻量级引导上下文运行。
+
+- 适用于不需要工作区引导文件注入的计划任务。
+- 在实践中，嵌入式运行时使用 `bootstrapContextMode: "lightweight"` 运行，这有意保持 cron 引导上下文为空。
+- CLI 等价命令：`openclaw cron add --light-context ...` 和 `openclaw cron edit --light-context`。
 
 ### 传递 (Channel + 目标)
 
@@ -277,7 +286,8 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
   "wakeMode": "next-heartbeat",
   "payload": {
     "kind": "agentTurn",
-    "message": "Summarize overnight updates."
+    "message": "Summarize overnight updates.",
+    "lightContext": true
   },
   "delivery": {
     "mode": "announce",
@@ -339,6 +349,7 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
 ### 瞬时错误 (重试)
 
 - 速率限制 (429, 请求过多, 资源耗尽)
+- Provider 过载（例如 Anthropic `529 overloaded_error`，过载回退摘要）
 - 网络错误 (超时, ECONNRESET, 获取失败, socket)
 - 服务器错误 (5xx)
 - 与 Cloudflare 相关的错误
@@ -376,7 +387,7 @@ Telegram 通过 `message_thread_id` 支持论坛主题。对于 cron 传递,你�
     retry: {
       maxAttempts: 3,
       backoffMs: [60000, 120000, 300000],
-      retryOn: ["rate_limit", "network", "server_error"],
+      retryOn: ["rate_limit", "overloaded", "network", "server_error"],
     },
     webhook: "https://example.invalid/legacy", // 已弃用: 存储的 notify:true 旧版作业的回退
     webhookToken: "replace-with-dedicated-webhook-token", // 可选: webhook 模式的 bearer token
@@ -587,6 +598,8 @@ openclaw cron edit <jobId> --clear-agent
 openclaw cron run <jobId>
 openclaw cron run <jobId> --due
 ```
+
+`cron.run` 在手动运行加入队列后立即确认，而不是等到作业完成。成功的队列响应形如 `{ ok: true, enqueued: true, runId }`。如果作业已在运行或 `--due` 发现没有到期的作业，响应保持为 `{ ok: true, ran: false, reason }`。使用 `openclaw cron runs --id <jobId>` 或 `cron.runs` Gateway 方法来查看最终的完成条目。
 
 编辑现有作业(修补字段):
 

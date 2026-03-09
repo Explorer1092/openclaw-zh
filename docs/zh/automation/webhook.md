@@ -1,7 +1,7 @@
 ---
 title: "Webhook"
 sidebarTitle: "Webhook"
-mmh3_hash: "ae7e0b779461eef794a27c57b3646877"
+mmh3_hash: "332e7f67138b5e75cfea1fff8b1bef72"
 summary: "用于唤醒和隔离 Agent 运行的 Webhook 入口"
 read_when: ["添加或更改 webhook 端点时","将外部系统连接到 OpenClaw 时"]
 ---
@@ -157,7 +157,7 @@ Gateway 可以为外部触发器暴露一个小型 HTTP webhook 端点。
 ## 响应
 
 - `200` 对于 `/hooks/wake`
-- `202` 对于 `/hooks/agent` (异步运行已开始)
+- `200` 对于 `/hooks/agent` (异步运行已接受)
 - `401` 认证失败
 - `429` 来自同一客户端的重复认证失败后 (检查 `Retry-After`)
 - `400` 无效载荷

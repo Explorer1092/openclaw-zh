@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8e53bdc756c9817c2ffa45a42110b065"
+mmh3_hash: "dfb90f1c4fc8af7f30e58d16d9d9d730"
 summary: "Hooks：用于命令和生命周期事件的事件驱动自动化"
 read_when:
   - 您需要为 /new、/reset、/stop 和 Agent 生命周期事件设置事件驱动自动化
@@ -103,7 +103,9 @@ Hook Packs 是标准的 npm 包，通过 `package.json` 中的 `openclaw.hooks` 
 openclaw hooks install <path-or-spec>
 ```
 
-Npm 规范仅限注册表（包名 + 可选版本/标签）。Git/URL/文件规范会被拒绝。
+Npm 规范仅限注册表（包名 + 可选精确版本或 dist-tag）。Git/URL/文件规范和语义化版本范围会被拒绝。
+
+裸规范和 `@latest` 保持在稳定版本轨道。如果 npm 将其中任一解析为预发布版本，OpenClaw 会停止并要求你使用预发布标签（如 `@beta`/`@rc`）或精确的预发布版本显式选择。
 
 示例 `package.json`：
 
@@ -118,6 +120,7 @@ Npm 规范仅限注册表（包名 + 可选版本/标签）。Git/URL/文件规�
 ```
 
 每个条目指向一个包含 `HOOK.md` 和 `handler.ts`（或 `index.ts`）的 Hook 目录。Hook Packs 可以附带依赖项；它们将被安装在 `~/.openclaw/hooks/<id>` 下。
+每个 `openclaw.hooks` 条目在符号链接解析后必须保持在包目录内；逃逸的条目会被拒绝。
 
 安全说明：`openclaw hooks install` 使用 `npm install --ignore-scripts` 安装依赖项（不运行生命周期脚本）。保持 Hook Pack 依赖树为"纯 JS/TS"，避免依赖于 `postinstall` 构建的包。
 
@@ -238,6 +241,14 @@ export default myHandler;
 - **`command:reset`**：发出 `/reset` 命令时
 - **`command:stop`**：发出 `/stop` 命令时
 
+### Session 事件
+
+- **`session:compact:before`**：压缩历史记录摘要之前
+- **`session:compact:after`**：压缩完成后，带有摘要元数据
+
+内部 Hook 负载以 `type: "session"` 和 `action: "compact:before"` / `action: "compact:after"` 发出这些事件；监听器使用上述组合键订阅。
+具体的处理程序注册使用字面量键格式 `${type}:${action}`。对于这些事件，注册 `session:compact:before` 和 `session:compact:after`。
+
 ### Agent 事件
 
 - **`agent:bootstrap`**：在注入工作空间引导文件之前（Hooks 可以修改 `context.bootstrapFiles`）
@@ -253,7 +264,9 @@ Gateway 启动时触发：
 在接收或发送消息时触发：
 
 - **`message`**：所有消息事件（通用监听器）
-- **`message:received`**：从任何 Channel 接收到入站消息时
+- **`message:received`**：从任何 Channel 接收到入站消息时。在处理媒体理解之前早期触发。内容可能包含尚未处理的媒体附件的原始占位符，如 `<media:audio>`。
+- **`message:transcribed`**：消息完全处理后触发，包括音频转录和链接理解。此时，`transcript` 包含音频消息的完整转录文本。需要访问已转录音频内容时使用此 Hook。
+- **`message:preprocessed`**：在所有媒体 + 链接理解完成后对每条消息触发，让 Hooks 在 Agent 看到消息之前访问完全丰富的消息体（转录、图像描述、链接摘要）。
 - **`message:sent`**：出站消息成功发送时
 
 #### 消息事件上下文
@@ -292,6 +305,30 @@ Gateway 启动时触发：
   accountId?: string,     // 提供商账号 ID
   conversationId?: string, // 聊天/会话 ID
   messageId?: string,     // 提供商返回的消息 ID
+  isGroup?: boolean,      // 此出站消息是否属于群组/频道上下文
+  groupId?: string,       // 与 message:received 关联的群组/频道标识符
+}
+
+// message:transcribed 上下文
+{
+  body?: string,          // 丰富前的原始入站消息体
+  bodyForAgent?: string,  // Agent 可见的丰富消息体
+  transcript: string,     // 音频转录文本
+  channelId: string,      // Channel（例如 "telegram"、"whatsapp"）
+  conversationId?: string,
+  messageId?: string,
+}
+
+// message:preprocessed 上下文
+{
+  body?: string,          // 原始入站消息体
+  bodyForAgent?: string,  // 媒体/链接理解后的最终丰富消息体
+  transcript?: string,    // 有音频时的转录
+  channelId: string,      // Channel（例如 "telegram"、"whatsapp"）
+  conversationId?: string,
+  messageId?: string,
+  isGroup?: boolean,
+  groupId?: string,
 }
 ```
 
@@ -319,6 +356,13 @@ export default handler;
 这些 Hooks 不是事件流监听器；它们让 Plugins 在 OpenClaw 持久化 Tool 结果之前同步调整它们。
 
 - **`tool_result_persist`**：在将 Tool 结果写入会话记录之前对其进行转换。必须是同步的；返回更新后的 Tool 结果负载或 `undefined` 以保持原样。参见 [Agent Loop](/concepts/agent-loop)。
+
+### Plugin Hook 事件
+
+通过 Plugin Hook 运行器公开的压缩生命周期 Hooks：
+
+- **`before_compaction`**：在压缩前运行，带有计数/令牌元数据
+- **`after_compaction`**：在压缩后运行，带有压缩摘要元数据
 
 ### 未来事件
 
