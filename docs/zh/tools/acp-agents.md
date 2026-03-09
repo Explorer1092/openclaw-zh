@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "55c48b1d4913c5e9fadab42c2bfda4d4"
+mmh3_hash: "660e42ed8323769069c88a1e21e490e3"
 summary: "使用 ACP 运行时 Session 运行 Pi、Claude Code、Codex、OpenCode、Gemini CLI 及其他 harness Agent"
 read_when:
   - 通过 ACP 运行编程 harness
@@ -13,7 +13,7 @@ title: "ACP Agent"
 
 [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) Session 让 OpenClaw 通过 ACP 后端 Plugin 运行外部编程 harness（例如 Pi、Claude Code、Codex、OpenCode 和 Gemini CLI）。
 
-如果你用自然语言���诉 OpenClaw"在 Codex 里运行这个"或"在 thread 里启动 Claude Code"，OpenClaw 会将请求路由到 ACP 运行时（而非原生子 Agent 运行时）。
+如果你用自然语言告诉 OpenClaw"在 Codex 里运行这个"或"在 thread 里启动 Claude Code"，OpenClaw 会将请求路由到 ACP 运行时（而非原生子 Agent 运行时）。
 
 ## 快速操作流程
 
@@ -76,15 +76,138 @@ thread 绑定支持与适配器有关。如果当前 Channel 适配器不支持 
 绑定 thread 的 ACP 所需功能开关：
 
 - `acp.enabled=true`
-- `acp.dispatch.enabled=true`
+- `acp.dispatch.enabled` 默认开启（设置为 `false` 可暂停 ACP dispatch）
 - Channel 适配器 ACP thread 启动开关已启用（与适配器有关）
   - Discord：`channels.discord.threadBindings.spawnAcpSessions=true`
+  - Telegram：`channels.telegram.threadBindings.spawnAcpSessions=true`
 
 ### 支持 Thread 的 Channel
 
 - 任何公开 Session/thread 绑定能力的 Channel 适配器。
-- 当前内置支持：Discord。
+- 当前内置支持：
+  - Discord threads/channels
+  - Telegram 话题（群组/超级群组中的论坛话题以及 DM 话题）
 - Plugin Channel 可通过同一绑定接口添加支持。
+
+## Channel 专属设置
+
+对于非临时工作流，可在顶层 `bindings[]` 条目中配置持久化 ACP 绑定。
+
+### 绑定模型
+
+- `bindings[].type="acp"` 标记一个持久化 ACP 对话绑定。
+- `bindings[].match` 标识目标对话：
+  - Discord channel 或 thread：`match.channel="discord"` + `match.peer.id="<channelOrThreadId>"`
+  - Telegram 论坛话题：`match.channel="telegram"` + `match.peer.id="<chatId>:topic:<topicId>"`
+- `bindings[].agentId` 是所属 OpenClaw Agent id。
+- 可选的 ACP 覆盖位于 `bindings[].acp` 下：
+  - `mode`（`persistent` 或 `oneshot`）
+  - `label`
+  - `cwd`
+  - `backend`
+
+### 每个 Agent 的运行时默认值
+
+使用 `agents.list[].runtime` 为每个 Agent 定义一次 ACP 默认值：
+
+- `agents.list[].runtime.type="acp"`
+- `agents.list[].runtime.acp.agent`（harness id，例如 `codex` 或 `claude`）
+- `agents.list[].runtime.acp.backend`
+- `agents.list[].runtime.acp.mode`
+- `agents.list[].runtime.acp.cwd`
+
+ACP 绑定 Session 的覆盖优先级：
+
+1. `bindings[].acp.*`
+2. `agents.list[].runtime.acp.*`
+3. 全局 ACP 默认值（例如 `acp.backend`）
+
+示例：
+
+```json5
+{
+  agents: {
+    list: [
+      {
+        id: "codex",
+        runtime: {
+          type: "acp",
+          acp: {
+            agent: "codex",
+            backend: "acpx",
+            mode: "persistent",
+            cwd: "/workspace/openclaw",
+          },
+        },
+      },
+      {
+        id: "claude",
+        runtime: {
+          type: "acp",
+          acp: { agent: "claude", backend: "acpx", mode: "persistent" },
+        },
+      },
+    ],
+  },
+  bindings: [
+    {
+      type: "acp",
+      agentId: "codex",
+      match: {
+        channel: "discord",
+        accountId: "default",
+        peer: { kind: "channel", id: "222222222222222222" },
+      },
+      acp: { label: "codex-main" },
+    },
+    {
+      type: "acp",
+      agentId: "claude",
+      match: {
+        channel: "telegram",
+        accountId: "default",
+        peer: { kind: "group", id: "-1001234567890:topic:42" },
+      },
+      acp: { cwd: "/workspace/repo-b" },
+    },
+    {
+      type: "route",
+      agentId: "main",
+      match: { channel: "discord", accountId: "default" },
+    },
+    {
+      type: "route",
+      agentId: "main",
+      match: { channel: "telegram", accountId: "default" },
+    },
+  ],
+  channels: {
+    discord: {
+      guilds: {
+        "111111111111111111": {
+          channels: {
+            "222222222222222222": { requireMention: false },
+          },
+        },
+      },
+    },
+    telegram: {
+      groups: {
+        "-1001234567890": {
+          topics: { "42": { requireMention: false } },
+        },
+      },
+    },
+  },
+}
+```
+
+行为说明：
+
+- OpenClaw 在使用前确保已配置的 ACP Session 存在。
+- 该 channel 或话题中的消息路由到已配置的 ACP Session。
+- 在绑定对话中，`/new` 和 `/reset` 会就地重置同一 ACP Session key。
+- 临时运行时绑定（例如由 thread 聚焦流创建的）在存在时仍优先应用。
 
 ## 启动 ACP Session（接口）
 
@@ -120,6 +243,21 @@ thread 绑定支持与适配器有关。如果当前 Channel 适配器不支持 
   - `mode: "session"` 需要 `thread: true`
 - `cwd`（可选）：请求的运行时工作目录（由后端/运行时策略验证）。
 - `label`（可选）：用于 Session/横幅文本的操作员可见标签。
+- `streamTo`（可选）：`"parent"` 将初始 ACP 运行进度摘要以系统事件形式流式传回请求者 Session。
+  - 可用时，响应中包含 `streamLogPath`，指向 Session 范围内的 JSONL 日志（`<sessionId>.acp-stream.jsonl`），可用于追踪完整的中继历史。
+
+## Sandbox 兼容性
+
+ACP Session 目前在宿主运行时上运行，而不在 OpenClaw Sandbox 内部。
+
+当前限制：
+
+- 如果请求者 Session 已被沙箱化，则 `sessions_spawn({ runtime: "acp" })` 和 `/acp spawn` 的 ACP 启动将被阻止。
+  - 错误：`Sandboxed sessions cannot spawn ACP sessions because runtime="acp" runs on the host. Use runtime="subagent" from sandboxed sessions.`
+- 使用 `runtime: "acp"` 的 `sessions_spawn` 不支持 `sandbox: "require"`。
+  - 错误：`sessions_spawn sandbox="require" is unsupported for runtime="acp" because ACP sessions run outside the sandbox. Use runtime="subagent" or sandbox="inherit".`
+
+当需要强制沙箱执行时，请使用 `runtime: "subagent"`。
 
 ### 通过 `/acp` 命令
 
@@ -168,7 +306,9 @@ thread 绑定支持与适配器有关。如果当前 Channel 适配器不支持 
 注意事项：
 
 - 在不支持 thread 绑定的平面上，默认行为实际上等同于 `off`。
-- thread 绑定启动需要 Channel 策略支持（Discord：`channels.discord.threadBindings.spawnAcpSessions=true`）。
+- thread 绑定启动需要 Channel 策略支持：
+  - Discord：`channels.discord.threadBindings.spawnAcpSessions=true`
+  - Telegram：`channels.telegram.threadBindings.spawnAcpSessions=true`
 
 ## ACP 控制命令
 
@@ -237,6 +377,7 @@ thread 绑定支持与适配器有关。如果当前 Channel 适配器不支持 
 - `codex`
 - `opencode`
 - `gemini`
+- `kimi`
 
 当 OpenClaw 使用 acpx 后端时，优先使用这些值作为 `agentId`，除非你的 acpx 配置定义了自定义 Agent 别名。
 
@@ -250,10 +391,11 @@ ACP 核心基础配置：
 {
   acp: {
     enabled: true,
+    // 可选。默认为 true；设置为 false 可在保留 /acp 控制的同时暂停 ACP dispatch。
     dispatch: { enabled: true },
     backend: "acpx",
     defaultAgent: "codex",
-    allowedAgents: ["pi", "claude", "codex", "opencode", "gemini"],
+    allowedAgents: ["pi", "claude", "codex", "opencode", "gemini", "kimi"],
     maxConcurrentSessions: 8,
     stream: {
       coalesceIdleMs: 300,
@@ -299,7 +441,7 @@ thread 绑定配置与 Channel 适配器有关。Discord 示例：
 安装并启用 Plugin：
 
 ```bash
-openclaw plugins install @openclaw/acpx
+openclaw plugins install acpx
 openclaw config set plugins.entries.acpx.enabled true
 ```
 
@@ -317,7 +459,7 @@ openclaw plugins install ./extensions/acpx
 
 ### acpx 命令与版本配置
 
-默认情况下，`@openclaw/acpx` 使用 Plugin 本地固定二进制：
+默认情况下，acpx Plugin（发布为 `@openclaw/acpx`）使用 Plugin 本地固定二进制：
 
 1. 命令默认为 `extensions/acpx/node_modules/.bin/acpx`。
 2. 期望版本默认为扩展固定版本。
@@ -404,6 +546,8 @@ openclaw config set plugins.entries.acpx.config.nonInteractivePermissions fail
 | `--thread here requires running /acp spawn inside an active ... thread`  | `--thread here` 在 thread 上下文之外使用。                  | 移至目标 thread 或使用 `--thread auto`/`off`。                                                                                                                    |
 | `Only <user-id> can rebind this thread.`                                 | 另一用户拥有 thread 绑定。                                  | 以所有者身份重新绑定或使用不同 thread。                                                                                                                           |
 | `Thread bindings are unavailable for <channel>.`                         | 适配器不具备 thread 绑定能力。                              | 使用 `--thread off` 或移至支持的适配器/Channel。                                                                                                                  |
+| `Sandboxed sessions cannot spawn ACP sessions ...`                       | ACP 运行时在宿主侧；请求者 Session 已被沙箱化。             | 从沙箱化 Session 使用 `runtime="subagent"`，或从非沙箱化 Session 发起 ACP 启动。                                                                                  |
+| `sessions_spawn sandbox="require" is unsupported for runtime="acp" ...`  | 为 ACP 运行时请求了 `sandbox="require"`。                   | 使用 `runtime="subagent"` 进行强制沙箱化，或从非沙箱化 Session 以 `sandbox="inherit"` 使用 ACP。                                                                  |
 | ACP Session 缺少绑定 Session 的元数据                                   | ACP Session 元数据过期/已删除。                             | 使用 `/acp spawn` 重新创建，然后重新绑定/聚焦 thread。                                                                                                            |
 | `AcpRuntimeError: Permission prompt unavailable in non-interactive mode` | `permissionMode` 在非交互式 ACP Session 中阻止了写入/执行。 | 将 `plugins.entries.acpx.config.permissionMode` 设置为 `approve-all` 并重启 Gateway。参阅[权限配置](#permission-configuration)。                                  |
 | ACP Session 以极少输出提前失败                                          | 权限提示被 `permissionMode`/`nonInteractivePermissions` 阻止。 | 检查 Gateway 日志中的 `AcpRuntimeError`。如需完整权限，设置 `permissionMode=approve-all`；如需优雅降级，设置 `nonInteractivePermissions=deny`。                    |

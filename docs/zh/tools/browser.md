@@ -1,7 +1,7 @@
 ---
 title: "浏览器 (openclaw 管理)"
 sidebarTitle: "浏览器"
-mmh3_hash: "a31315d14c69d28db4b573aefbc59a05"
+mmh3_hash: "e071c9061c4551c82c96efc5f52e47f2"
 summary: "集成浏览器控制服务 + 操作命令"
 read_when:
   - 添加代理控制的浏览器自动化
@@ -92,7 +92,7 @@ openclaw browser --browser-profile openclaw snapshot
 - `browser.ssrfPolicy.allowPrivateNetwork` 仍作为兼容性旧版别名受支持。
 - `attachOnly: true` 意味着"永远不要启动本地浏览器;只有在它已经运行时才附加。"
 - `color` + 每个配置文件的 `color` 给浏览器 UI 着色,这样您就可以看到哪个配置文件处于活动状态。
-- 默认配置文件是 `chrome`(扩展中继)。使用 `defaultProfile: "openclaw"` 以使用托管浏览器。
+- 默认配置文件是 `openclaw`（OpenClaw 管理的独立浏览器）。使用 `defaultProfile: "chrome"` 以切换到 Chrome 扩展中继。
 - 自动检测顺序: 如果基于 Chromium,则使用系统默认浏览器;否则 Chrome → Brave → Edge → Chromium → Chrome Canary。
 - 本地 `openclaw` 配置文件自动分配 `cdpPort`/`cdpUrl` — 仅为远程 CDP 设置这些。
 
@@ -182,6 +182,42 @@ OpenClaw 在调用 `/json/*` 端点和连接到 CDP WebSocket 时保留认证。
 - 将 `<BROWSERLESS_API_KEY>` 替换为您的真实 Browserless 令牌。
 - 选择与您的 Browserless 账户匹配的区域端点(参见他们的文档)。
 
+## 直连 WebSocket CDP 提供商
+
+部分托管浏览器服务提供**直连 WebSocket** 端点，而非标准的基于 HTTP 的 CDP 发现（`/json/version`）。OpenClaw 同时支持这两种方式：
+
+- **HTTP(S) 端点**（如 Browserless）— OpenClaw 调用 `/json/version` 发现 WebSocket 调试器 URL，然后连接。
+- **WebSocket 端点**（`ws://` / `wss://`）— OpenClaw 直接连接，跳过 `/json/version`。适用于 [Browserbase](https://www.browserbase.com) 等直接提供 WebSocket URL 的服务。
+
+### Browserbase
+
+[Browserbase](https://www.browserbase.com) 是一个云端无头浏览器平台，内置 CAPTCHA 解决、隐身模式和住宅代理。
+
+```json5
+{
+  browser: {
+    enabled: true,
+    defaultProfile: "browserbase",
+    remoteCdpTimeoutMs: 3000,
+    remoteCdpHandshakeTimeoutMs: 5000,
+    profiles: {
+      browserbase: {
+        cdpUrl: "wss://connect.browserbase.com?apiKey=<BROWSERBASE_API_KEY>",
+        color: "#F97316",
+      },
+    },
+  },
+}
+```
+
+注意:
+
+- [注册](https://www.browserbase.com/sign-up)并从[概览控制台](https://www.browserbase.com/overview)复制您的 **API Key**。
+- 将 `<BROWSERBASE_API_KEY>` 替换为您的真实 Browserbase API 密钥。
+- Browserbase 在 WebSocket 连接时自动创建浏览器 Session，无需手动创建步骤。
+- 免费套餐允许一个并发 Session 和每月一个浏览器小时。详见[定价](https://www.browserbase.com/pricing)。
+- 完整 API 参考、SDK 指南和集成示例请参阅 [Browserbase 文档](https://docs.browserbase.com)。
+
 ## 安全
 
 关键思想:
@@ -267,6 +303,19 @@ openclaw browser create-profile \
 
 - 这种模式依赖于 Playwright-on-CDP 进行大多数操作(截图/快照/操作)。
 - 通过再次点击扩展图标分离。
+- 默认情况下中继仅监听本地回环。如果中继需要从其他网络命名空间访问（例如 Gateway 在 WSL2 中、Chrome 在 Windows 上），请将 `browser.relayBindHost` 设置为显式绑定地址（如 `0.0.0.0`），同时保持周围网络私有且经过身份验证。
+
+WSL2 / 跨命名空间示例：
+
+```json5
+{
+  browser: {
+    enabled: true,
+    relayBindHost: "0.0.0.0",
+    defaultProfile: "chrome",
+  },
+}
+```
 
 ## 隔离保证
 
@@ -564,6 +613,8 @@ JSON 中的角色快照包括 `refs` 加上一个小的 `stats` 块(行/字符/�
 ## 故障排除
 
 对于 Linux 特定问题(特别是 snap Chromium),请参见 [浏览器故障排除](/tools/browser-linux-troubleshooting)。
+
+对于 WSL2 Gateway + Windows Chrome 分主机设置，请参见 [WSL2 + Windows + 远程 Chrome CDP 故障排除](/tools/browser-wsl2-windows-remote-cdp-troubleshooting)。
 
 ## Agent 工具 + 控制的工作原理
 

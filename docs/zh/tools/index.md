@@ -1,6 +1,6 @@
 ---
 title: "工具(OpenClaw)"
-mmh3_hash: "19300d885c95694a6198bd3affe4c9ff"
+mmh3_hash: "a48aba15587cf5073df468962e35693b"
 summary: "OpenClaw 的 Agent 工具表面(浏览器、画布、节点、消息、cron)替代旧版 `openclaw-*` Skill"
 read_when:
   - 添加或修改 agent 工具
@@ -162,7 +162,7 @@ Plugin 可以注册超出核心集的**附加工具**(和 CLI 命令)。有关�
 
 - [Lobster](/tools/lobster): 带有可恢复批准的类型化工作流运行时(需要 Gateway 主机上的 Lobster CLI)。
 - [LLM Task](/tools/llm-task): 用于结构化工作流输出的仅 JSON LLM 步骤(可选架构验证)。
-- [Diffs](/tools/diffs): 用于文本前后对比或统一补丁的只读 diff 查看器和 PNG 渲染器。
+- [Diffs](/tools/diffs): 用于文本前后对比或统一补丁的只读 diff 查看器和 PNG 或 PDF 文件渲染器。
 
 ## 工具清单
 
@@ -244,7 +244,7 @@ OpenClaw 跟踪最近的工具调用历史,并在检测到重复无进展循环�
 
 ### `web_search`
 
-使用 Brave Search API 搜索网络。
+使用 Perplexity、Brave、Gemini、Grok 或 Kimi 搜索网络。
 
 核心参数:
 
@@ -391,21 +391,7 @@ OpenClaw 跟踪最近的工具调用历史,并在检测到重复无进展循环�
 
 分析一个或多个 PDF 文档。
 
-核心参数:
-
-- `pdf`（单个路径或 URL）
-- `pdfs`（多个路径或 URL,最多 10 个）
-- `prompt`（可选,默认为"分析此 PDF 文档。"）
-- `pages`（可选页面范围,如 `1-5` 或 `1,3,7-9`）
-- `model`（可选模型覆盖）
-- `maxBytesMb`（可选大小上限）
-
-注意:
-
-- Anthropic 和 Google 模型支持原生 PDF Provider 模式。
-- 非原生模型使用 PDF 提取回退,先文本,需要时使用光栅化页面图像。
-- `pages` 过滤仅在提取回退模式下支持。原生 Provider 在设置 `pages` 时返回明确的错误。
-- 默认值可通过 `agents.defaults.pdfModel`、`agents.defaults.pdfMaxBytesMb` 和 `agents.defaults.pdfMaxPages` 配置。
+完整行为、限制、配置和示例，请参阅 [PDF 工具](/tools/pdf)。
 
 ### `message`
 
@@ -457,14 +443,18 @@ OpenClaw 跟踪最近的工具调用历史,并在检测到重复无进展循环�
 核心操作:
 
 - `restart`（授权 + 发送 `SIGUSR1` 以进行进程内重启;`openclaw gateway` 就地重启）
-- `config.get` / `config.schema`
+- `config.schema.lookup`（一次检查一个配置路径，无需将完整 schema 加载到提示上下文）
+- `config.get`
 - `config.apply`（验证 + 写入配置 + 重启 + 唤醒）
 - `config.patch`（合并部分更新 + 重启 + 唤醒）
 - `update.run`（运行更新 + 重启 + 唤醒）
 
 注意:
 
+- `config.schema.lookup` 需要指定目标配置路径，例如 `gateway.auth` 或 `agents.list.*.heartbeat`。
+- 路径在寻址 `plugins.entries.<id>` 时可以包含斜线分隔的插件 id，例如 `plugins.entries.pack/one.config`。
 - 使用 `delayMs`（默认为 2000）以避免中断进行中的回复。
+- `config.schema` 仍可用于内部 Control UI 流程，不通过 agent `gateway` 工具公开。
 - `restart` 默认启用;使用 `commands.restart: false` 禁用它。
 
 ### `sessions_list` / `sessions_history` / `sessions_send` / `sessions_spawn` / `session_status`
@@ -476,7 +466,7 @@ OpenClaw 跟踪最近的工具调用历史,并在检测到重复无进展循环�
 - `sessions_list`: `kinds?`、`limit?`、`activeMinutes?`、`messageLimit?`（0 = 无）
 - `sessions_history`: `sessionKey`（或 `sessionId`）、`limit?`、`includeTools?`
 - `sessions_send`: `sessionKey`（或 `sessionId`）、`message`、`timeoutSeconds?`（0 = 即发即弃）
-- `sessions_spawn`: `task`、`label?`、`runtime?`、`agentId?`、`model?`、`thinking?`、`cwd?`、`runTimeoutSeconds?`、`thread?`、`mode?`、`cleanup?`、`sandbox?`、`attachments?`、`attachAs?`
+- `sessions_spawn`: `task`、`label?`、`runtime?`、`agentId?`、`model?`、`thinking?`、`cwd?`、`runTimeoutSeconds?`、`thread?`、`mode?`、`cleanup?`、`sandbox?`、`streamTo?`、`attachments?`、`attachAs?`
 - `session_status`: `sessionKey?`（默认当前;接受 `sessionId`）、`model?`（`default` 清除覆盖）
 
 注意:
@@ -487,6 +477,7 @@ OpenClaw 跟踪最近的工具调用历史,并在检测到重复无进展循环�
 - 当 `timeoutSeconds > 0` 时,`sessions_send` 等待最终完成。
 - 投递/公告在完成后发生,是尽力而为的;`status: "ok"` 确认 agent 运行完成,而不是公告已投递。
 - `sessions_spawn` 支持 `runtime: "subagent" | "acp"`（默认 `subagent`）。有关 ACP 运行时行为,请参见 [ACP Agents](/tools/acp-agents)。
+- 对于 ACP 运行时，`streamTo: "parent"` 将初始运行进度摘要以系统事件形式路由回请求者 Session，而非直接子交付。
 - `sessions_spawn` 启动子 agent 运行并将公告回复发布回请求者聊天。
   - 支持一次性模式（`mode: "run"`）和持久线程绑定模式（`mode: "session"` 与 `thread: true`）。
   - 如果 `thread: true` 且省略 `mode`,模式默认为 `session`。
@@ -500,6 +491,7 @@ OpenClaw 跟踪最近的工具调用历史,并在检测到重复无进展循环�
   - 通过 `tools.sessions_spawn.attachments`（`enabled`、`maxTotalBytes`、`maxFiles`、`maxFileBytes`、`retainOnSessionKeep`）配置限制。
   - `attachAs.mountPath` 是未来挂载实现的保留提示。
 - `sessions_spawn` 是非阻塞的,立即返回 `status: "accepted"`。
+- ACP `streamTo: "parent"` 响应可能包含 `streamLogPath`（Session 范围内的 `*.acp-stream.jsonl`），用于追踪进度历史。
 - `sessions_send` 运行回复乒乓（回复 `REPLY_SKIP` 以停止;最大轮次通过 `session.agentToAgent.maxPingPongTurns`,0–5）。
 - 乒乓后,目标 agent 运行**公告步骤**;回复 `ANNOUNCE_SKIP` 以抑制公告。
 - 沙箱限制: 当当前 Session 被沙箱化且 `agents.defaults.sandbox.sessionToolsVisibility: "spawned"` 时,OpenClaw 将 `tools.sessions.visibility` 限制为 `tree`。

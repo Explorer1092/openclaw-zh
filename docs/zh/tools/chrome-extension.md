@@ -1,7 +1,7 @@
 ---
 title: "Chrome 扩展 (浏览器中继)"
 sidebarTitle: "Chrome 扩展"
-mmh3_hash: "832320662b1c1c0bc01eb2ce2af7ab12"
+mmh3_hash: "4bf33550159dfe9bcdd2c60b68f96077"
 summary: "Chrome 扩展: 让 OpenClaw 驱动您现有的 Chrome 标签页"
 read_when:
   - 您希望 agent 驱动现有的 Chrome 标签页(工具栏按钮)
@@ -161,6 +161,7 @@ openclaw browser create-profile \
 
 - 将 Gateway 和节点主机保持在同一 tailnet 上;避免将中继端口暴露给局域网或公共互联网。
 - 有意配对节点;如果您不想远程控制,禁用浏览器代理路由(`gateway.nodes.browser.mode="off"`)。
+- 默认情况下中继仅监听本地回环。如果需要从其他网络命名空间（例如 Gateway 在 WSL2 中、Chrome 在 Windows 上）访问中继，请将 `browser.relayBindHost` 设置为 `0.0.0.0`，同时保持周围网络私有且经过身份验证。
 
 ## "扩展路径"的工作原理
 
