@@ -1,7 +1,7 @@
 ---
 title: "OAuth 认证"
 sidebarTitle: "OAuth 认证"
-mmh3_hash: "ed36f4f88e6209084162a30bad2ad8a0"
+mmh3_hash: "b6ea441a0621cc9a817c89b6629eb6c3"
 summary: "OpenClaw 中的 OAuth: token 交换、存储和多账户模式"
 read_when:
   - 你想端到端了解 OpenClaw OAuth
@@ -12,7 +12,11 @@ read_when:
 
 # OAuth 认证
 
-OpenClaw 通过 OAuth 支持提供它的 providers 的"subscription auth"(特别是 **OpenAI Codex (ChatGPT OAuth)**)。对于 Anthropic subscriptions,使用 **setup-token** 流程。本页面解释:
+OpenClaw 通过 OAuth 支持提供它的 providers 的"subscription auth"(特别是 **OpenAI Codex (ChatGPT OAuth)**)。对于 Anthropic subscriptions,使用 **setup-token** 流程。Anthropic 过去对某些在 Claude Code 之外的订阅使用进行了限制,因此请将其视为用户自主选择的风险并自行验证 Anthropic 当前政策。OpenAI Codex OAuth 明确支持在 OpenClaw 等外部工具中使用。
+
+对于生产环境的 Anthropic 使用,API key 认证是比订阅 setup-token 认证更安全的推荐路径。
+
+本页面解释:
 
 - OAuth **token 交换** 如何工作(PKCE)
 - tokens **存储** 在哪里(以及为什么)
@@ -55,6 +59,12 @@ Secrets 按 **agent** 存储:
 
 ## Anthropic setup-token (subscription auth)
 
+<Warning>
+Anthropic setup-token 支持是技术兼容性,而非政策保证。
+Anthropic 过去曾限制 Claude Code 之外的某些订阅使用。
+请自行决定是否使用订阅认证,并验证 Anthropic 当前条款。
+</Warning>
+
 在任何机器上运行 `claude setup-token`,然后将其粘贴到 OpenClaw 中:
 
 ```bash
@@ -77,7 +87,7 @@ openclaw models status
 
 OpenClaw 的交互式登录流程在 `@mariozechner/pi-ai` 中实现,并连接到向导/命令。
 
-### Anthropic (Claude Pro/Max) setup-token
+### Anthropic setup-token
 
 流程形状:
 
@@ -88,6 +98,8 @@ OpenClaw 的交互式登录流程在 `@mariozechner/pi-ai` 中实现,并连接�
 向导路径是 `openclaw onboard` → auth 选择 `setup-token` (Anthropic)。
 
 ### OpenAI Codex (ChatGPT OAuth)
+
+OpenAI Codex OAuth 明确支持在 Codex CLI 之外使用,包括 OpenClaw 工作流。
 
 流程形状(PKCE):
 

@@ -1,13 +1,13 @@
 ---
 title: "系统提示词 (System Prompt)"
 sidebarTitle: "系统提示词"
-mmh3_hash: "dc5d7605331325132be936e21f38e3dc"
+mmh3_hash: "1156c0c588984539ea0af86676c47a82"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
 read_when: ["编辑 system prompt 文本、tools 列表或 time/heartbeat 部分","更改 workspace bootstrap 或 skills 注入行为"]
 ---
 # 系统提示词 (System Prompt)
 
-OpenClaw 为每个 agent 运行构建自定义 system prompt。Prompt 由 **OpenClaw 拥有**,不使用 p-coding-agent 默认 prompt。
+OpenClaw 为每个 agent 运行构建自定义 system prompt。Prompt 由 **OpenClaw 拥有**,不使用 pi-coding-agent 默认 prompt。
 
 Prompt 由 OpenClaw 组装并注入到每个 agent 运行中。
 
@@ -36,7 +36,7 @@ System prompt 中的安全护栏是建议性的。它们指导 model 行为,但�
 OpenClaw 可以为 sub-agents 渲染更小的 system prompts。Runtime 为每次运行设置 `promptMode`(不是用户面向的配置):
 
 - `full` (默认):包括上述所有部分。
-- `minimal`: 用于 sub-agents;省略 **Skills**、**Memory Recall**、**OpenClaw Self-Update**、**Model Aliases**、**User Identity**、**Reply Tags**、**Messaging**、**Silent Replies** 和 **Heartbeats**。Tooling、Workspace、Sandbox、Current Date & Time(已知时)、Runtime 和注入的 context 保持可用。
+- `minimal`: 用于 sub-agents;省略 **Skills**、**Memory Recall**、**OpenClaw Self-Update**、**Model Aliases**、**User Identity**、**Reply Tags**、**Messaging**、**Silent Replies** 和 **Heartbeats**。Tooling、**Safety**、Workspace、Sandbox、Current Date & Time(已知时)、Runtime 和注入的 context 保持可用。
 - `none`: 仅返回基础身份行。
 
 当 `promptMode=minimal` 时,额外注入的 prompts 被标记为 **Subagent Context** 而不是 **Group Chat Context**。
@@ -58,7 +58,7 @@ Bootstrap 文件被修剪并附加在 **Project Context** 下,以便 model 无�
 
 > **注意:** `memory/*.md` 每日文件**不会**自动注入。它们通过 `memory_search` 和 `memory_get` 工具按需访问,因此除非 model 显式读取它们,否则不计入 context window。
 
-大文件用标记截断。每个文件的最大大小由 `agents.defaults.bootstrapMaxChars` 控制(默认:20000)。跨文件注入的总 bootstrap 内容上限由 `agents.defaults.bootstrapTotalMaxChars` 控制(默认:150000)。缺失的文件注入简短的缺失文件标记。
+大文件用标记截断。每个文件的最大大小由 `agents.defaults.bootstrapMaxChars` 控制(默认:20000)。跨文件注入的总 bootstrap 内容上限由 `agents.defaults.bootstrapTotalMaxChars` 控制(默认:150000)。缺失的文件注入简短的缺失文件标记。发生截断时,OpenClaw 可以在 Project Context 中注入警告块;使用 `agents.defaults.bootstrapPromptTruncationWarning`(`off`、`once`、`always`;默认:`once`)进行控制。
 
 Sub-agent sessions 仅注入 `AGENTS.md` 和 `TOOLS.md`(其他 bootstrap 文件被过滤掉以保持 sub-agent context 小巧)。
 

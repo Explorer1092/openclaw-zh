@@ -1,7 +1,7 @@
 ---
 title: "流式与分片"
 sidebarTitle: "流式与分片"
-mmh3_hash: "ceac72fa085fd60870a1f8428d87029d"
+mmh3_hash: "c44dbb858ae7b9b68634e43ce17465cc"
 summary: "Streaming + chunking 行为(block 回复、channel 预览 streaming、模式映射)"
 read_when:
   - 解释 streaming 或 chunking 在 channels 上如何工作
@@ -131,7 +131,7 @@ Block chunking 由 `EmbeddedBlockChunker` 实现:
 
 Telegram:
 
-- 使用 Bot API `sendMessage` + `editMessageText`。
+- 使用 `sendMessage` + `editMessageText` 在 DMs 和群组/话题中进行预览更新。
 - 当明确启用 Telegram block streaming 时跳过预览 streaming(以避免双重 streaming)。
 - `/reasoning stream` 可以将 reasoning 写入预览。
 

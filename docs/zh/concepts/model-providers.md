@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "789c94b8c51b0486d00159fc90c09ae6"
+mmh3_hash: "40141b27936c67991005005b3e3b336f"
 summary: "Model provider 概述,包含示例配置 + CLI 流程"
 read_when:
   - 你需要按 provider 的 model 设置参考
@@ -40,15 +40,16 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 - Provider: `openai`
 - Auth: `OPENAI_API_KEY`
 - 可选轮换: `OPENAI_API_KEYS`、`OPENAI_API_KEY_1`、`OPENAI_API_KEY_2`,以及 `OPENCLAW_LIVE_OPENAI_KEY`(单个覆盖)
-- 示例 model: `openai/gpt-5.1-codex`
+- 示例 model: `openai/gpt-5.4`、`openai/gpt-5.4-pro`
 - CLI: `openclaw onboard --auth-choice openai-api-key`
 - 默认 transport 为 `auto`(WebSocket 优先,SSE 后备)
 - 通过 `agents.defaults.models["openai/<model>"].params.transport` 按 model 覆盖(`"sse"`、`"websocket"` 或 `"auto"`)
 - OpenAI Responses WebSocket 预热默认通过 `params.openaiWsWarmup`(`true`/`false`)启用
+- 可通过 `agents.defaults.models["openai/<model>"].params.serviceTier` 启用 OpenAI 优先处理
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai/gpt-5.1-codex" } } },
+  agents: { defaults: { model: { primary: "openai/gpt-5.4" } } },
 }
 ```
 
@@ -59,6 +60,8 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 - 可选轮换: `ANTHROPIC_API_KEYS`、`ANTHROPIC_API_KEY_1`、`ANTHROPIC_API_KEY_2`,以及 `OPENCLAW_LIVE_ANTHROPIC_KEY`(单个覆盖)
 - 示例 model: `anthropic/claude-opus-4-6`
 - CLI: `openclaw onboard --auth-choice token` (粘贴 setup-token) 或 `openclaw models auth paste-token --provider anthropic`
+- 政策说明:setup-token 支持是技术兼容性,而非政策保证。Anthropic 过去曾限制 Claude Code 之外的某些订阅使用。请自行验证 Anthropic 当前条款,并根据你的风险承受能力做出决定。
+- 建议:对于生产环境,Anthropic API key 认证是比订阅 setup-token 认证更安全的推荐路径。
 
 ```json5
 {
@@ -70,14 +73,15 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `openai-codex`
 - Auth: OAuth (ChatGPT)
-- 示例 model: `openai-codex/gpt-5.3-codex`
+- 示例 model: `openai-codex/gpt-5.4`
 - CLI: `openclaw onboard --auth-choice openai-codex` 或 `openclaw models auth login --provider openai-codex`
 - 默认 transport 为 `auto`(WebSocket 优先,SSE 后备)
 - 通过 `agents.defaults.models["openai-codex/<model>"].params.transport` 按 model 覆盖(`"sse"`、`"websocket"` 或 `"auto"`)
+- 政策说明:OpenAI Codex OAuth 明确支持在外部工具/工作流(如 OpenClaw)中使用。
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai-codex/gpt-5.3-codex" } } },
+  agents: { defaults: { model: { primary: "openai-codex/gpt-5.4" } } },
 }
 ```
 
@@ -99,7 +103,8 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 - Provider: `google`
 - Auth: `GEMINI_API_KEY`
 - 可选轮换: `GEMINI_API_KEYS`、`GEMINI_API_KEY_1`、`GEMINI_API_KEY_2`、`GOOGLE_API_KEY` 后备,以及 `OPENCLAW_LIVE_GEMINI_KEY`(单个覆盖)
-- 示例 model: `google/gemini-3-pro-preview`
+- 示例 model: `google/gemini-3.1-pro-preview`、`google/gemini-3-flash-preview`、`google/gemini-3.1-flash-lite-preview`
+- 兼容性:使用 `google/gemini-3.1-flash-preview` 的旧版 OpenClaw 配置会规范化为 `google/gemini-3-flash-preview`,裸 `google/gemini-3.1-flash-lite` 会规范化为 `google/gemini-3.1-flash-lite-preview`
 - CLI: `openclaw onboard --auth-choice gemini-api-key`
 
 ### Google Vertex, Antigravity, and Gemini CLI
@@ -119,7 +124,7 @@ OpenClaw 附带 pi‑ai catalog。这些 providers **不需要** `models.provide
 
 - Provider: `zai`
 - Auth: `ZAI_API_KEY`
-- 示例 model: `zai/glm-4.7`
+- 示例 model: `zai/glm-5`
 - CLI: `openclaw onboard --auth-choice zai-api-key`
   - 别名:`z.ai/*` 和 `z-ai/*` 规范化为 `zai/*`
 
@@ -303,13 +308,13 @@ Synthetic 在 `synthetic` provider 后面提供 Anthropic 兼容的 models:
 
 - Provider: `synthetic`
 - Auth: `SYNTHETIC_API_KEY`
-- 示例 model: `synthetic/hf:MiniMaxAI/MiniMax-M2.1`
+- 示例 model: `synthetic/hf:MiniMaxAI/MiniMax-M2.5`
 - CLI: `openclaw onboard --auth-choice synthetic-api-key`
 
 ```json5
 {
   agents: {
-    defaults: { model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.1" } },
+    defaults: { model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.5" } },
   },
   models: {
     mode: "merge",
@@ -318,7 +323,7 @@ Synthetic 在 `synthetic` provider 后面提供 Anthropic 兼容的 models:
         baseUrl: "https://api.synthetic.new/anthropic",
         apiKey: "${SYNTHETIC_API_KEY}",
         api: "anthropic-messages",
-        models: [{ id: "hf:MiniMaxAI/MiniMax-M2.1", name: "MiniMax M2.1" }],
+        models: [{ id: "hf:MiniMaxAI/MiniMax-M2.5", name: "MiniMax M2.5" }],
       },
     },
   },
@@ -392,8 +397,8 @@ export VLLM_API_KEY="vllm-local"
 {
   agents: {
     defaults: {
-      model: { primary: "lmstudio/minimax-m2.1-gs32" },
-      models: { "lmstudio/minimax-m2.1-gs32": { alias: "Minimax" } },
+      model: { primary: "lmstudio/minimax-m2.5-gs32" },
+      models: { "lmstudio/minimax-m2.5-gs32": { alias: "Minimax" } },
     },
   },
   models: {
@@ -404,8 +409,8 @@ export VLLM_API_KEY="vllm-local"
         api: "openai-completions",
         models: [
           {
-            id: "minimax-m2.1-gs32",
-            name: "MiniMax M2.1",
+            id: "minimax-m2.5-gs32",
+            name: "MiniMax M2.5",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -429,6 +434,9 @@ export VLLM_API_KEY="vllm-local"
   - `contextWindow: 200000`
   - `maxTokens: 8192`
 - 推荐:设置与你的 proxy/model 限制匹配的显式值。
+- 对于非原生端点上的 `api: "openai-completions"`(任何主机不是 `api.openai.com` 的非空 `baseUrl`),OpenClaw 强制设置 `compat.supportsDeveloperRole: false` 以避免不支持 `developer` 角色的 provider 返回 400 错误。
+- 如果 `baseUrl` 为空/省略,OpenClaw 保持默认的 OpenAI 行为(解析为 `api.openai.com`)。
+- 为了安全起见,在非原生 `openai-completions` 端点上,显式的 `compat.supportsDeveloperRole: true` 仍会被覆盖。
 
 ## CLI 示例
 

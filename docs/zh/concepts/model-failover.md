@@ -1,7 +1,7 @@
 ---
 title: "模型故障转移"
 sidebarTitle: "模型故障转移"
-mmh3_hash: "e67e4e09e8849b96d9d65086f22f7f6f"
+mmh3_hash: "8ceebc5b37b9cd495f51db1db9f7ffce"
 summary: "OpenClaw 如何轮换 auth profiles 并跨 models 后备"
 read_when: ["诊断 auth profile 轮换、cooldowns 或 model 后备行为","更新 auth profiles 或 models 的 failover 规则"]
 ---
@@ -68,7 +68,7 @@ OpenClaw **每个 session 固定选择的 auth profile** 以保持 provider 缓�
 
 ## Cooldowns
 
-当 profile 由于 auth/rate‑limit 错误(或看起来像速率限制的超时)失败时,OpenClaw 将其标记为 cooldown 并移至下一个 profile。Format/invalid‑request 错误(例如 Cloud Code Assist tool call ID 验证失败)被视为值得 failover,并使用相同的 cooldowns。
+当 profile 由于 auth/rate‑limit 错误(或看起来像速率限制的超时)失败时,OpenClaw 将其标记为 cooldown 并移至下一个 profile。Format/invalid‑request 错误(例如 Cloud Code Assist tool call ID 验证失败)被视为值得 failover,并使用相同的 cooldowns。OpenAI 兼容的停止原因错误,如 `Unhandled stop reason: error`、`stop reason: error` 和 `reason: error`,被归类为超时/failover 信号。
 
 Cooldowns 使用指数退避:
 - 1 分钟

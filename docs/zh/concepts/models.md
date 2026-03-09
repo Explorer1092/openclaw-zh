@@ -1,7 +1,7 @@
 ---
 title: "模型 CLI"
 sidebarTitle: "模型 CLI"
-mmh3_hash: "2395eea0527b98b397af541db408ecb7"
+mmh3_hash: "1acc1bbe018a34ea24417d21056d8034"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when:
   - 添加或修改 models CLI (models list/set/scan/aliases/fallbacks)
@@ -27,10 +27,11 @@ OpenClaw 按以下顺序选择 models:
 - `agents.defaults.imageModel` **仅在** primary model 无法接受图像时使用。
 - 每个 agent 的默认值可以通过 `agents.list[].model` 加上 bindings 覆盖 `agents.defaults.model`(参见 [/concepts/multi-agent](/concepts/multi-agent))。
 
-## 快速 model 选择(轶事)
+## 快速 model 选择策略
 
-- **GLM**: 在编码/tool 调用方面稍好一些。
-- **MiniMax**: 在写作和氛围方面更好。
+- 将 primary 设置为你可用的最强最新一代 model。
+- 使用 fallbacks 处理对成本/延迟敏感的任务和低风险聊天。
+- 对于启用 tool 的 agent 或不可信输入,避免使用较旧/较弱的 model 层级。
 
 ## 设置向导(推荐)
 
@@ -146,7 +147,9 @@ openclaw models image-fallbacks clear
 始终显示 OAuth 状态(并包含在 `--json` 输出中)。如果配置的 provider 没有凭据,`models status` 打印 **Missing auth** 部分。JSON 包括 `auth.oauth`(警告窗口 + profiles)和 `auth.providers`(每个 provider 的有效 auth)。
 使用 `--check` 进行自动化(缺失/过期时退出 `1`,即将过期时退出 `2`)。
 
-首选的 Anthropic auth 是 Claude Code CLI setup-token(在任何地方运行;如果需要,在 gateway 主机上粘贴):
+Auth 选择取决于 provider/账户。对于始终在线的 gateway 主机,API keys 通常是最可预测的;也支持订阅 token 流程。
+
+示例(Anthropic setup-token):
 
 ```bash
 claude setup-token
@@ -191,6 +194,10 @@ openclaw models status
 
 匹配 provider IDs 的合并模式优先级:
 
-- agent `models.json` 中已有的非空 `apiKey`/`baseUrl` 优先。
+- agent `models.json` 中已有的非空 `baseUrl` 优先。
+- 仅当该 provider 在当前 config/auth-profile 上下文中不受 SecretRef 管理时,agent `models.json` 中的非空 `apiKey` 才优先。
+- SecretRef 管理的 provider `apiKey` 值从源标记(`ENV_VAR_NAME` 用于 env 引用,`secretref-managed` 用于 file/exec 引用)刷新,而不是持久化已解析的 secrets。
 - 空或缺失的 agent `apiKey`/`baseUrl` 回退到配置的 `models.providers`。
 - 其他 provider 字段从配置和规范化的 catalog 数据中刷新。
+
+此基于标记的持久化适用于 OpenClaw 重新生成 `models.json` 的任何时候,包括命令驱动的路径(如 `openclaw agent`)。
