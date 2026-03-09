@@ -1,7 +1,7 @@
 ---
 title: "Control UI (浏览器)"
 sidebarTitle: "Control UI"
-mmh3_hash: "412e5265cace03894db16e568563f6cc"
+mmh3_hash: "f1deb39f198a9942886894676091c15f"
 summary: "Gateway 的基于浏览器的 Control UI(聊天、Node、配置)"
 read_when:
   - 您想从浏览器操作 Gateway
@@ -60,6 +60,15 @@ openclaw devices approve <requestId>
 - 远程连接(LAN、Tailnet 等)需要明确批准。
 - 每个浏览器配置文件生成唯一的设备 ID,因此切换浏览器或
   清除浏览器数据将需要重新配对。
+
+## 语言支持
+
+Control UI 可以在首次加载时根据您的浏览器区域设置进行本地化,您也可以稍后从 Access 卡中的语言选择器进行覆盖。
+
+- 支持的区域设置: `en`、`zh-CN`、`zh-TW`、`pt-BR`、`de`、`es`
+- 非英语翻译在浏览器中延迟加载。
+- 选定的区域设置保存在浏览器存储中,并在未来访问时重用。
+- 缺少翻译的键会回退到英文。
 
 ## 它能做什么(今天)
 
@@ -210,13 +219,13 @@ http://localhost:5173/?gatewayUrl=ws://<gateway-host>:18789
 可选的一次性身份验证(如果需要):
 
 ```text
-http://localhost:5173/?gatewayUrl=wss://<gateway-host>:18789&token=<gateway-token>
+http://localhost:5173/?gatewayUrl=wss://<gateway-host>:18789#token=<gateway-token>
 ```
 
 注意事项:
 
 - `gatewayUrl` 在加载后存储在 localStorage 中并从 URL 中删除。
-- `token` 存储在 localStorage 中;`password` 仅保留在内存中。
+- `token` 导入到当前标签页的内存中并从 URL 中清除;不存储在 localStorage 中。`password` 仅保留在内存中。
 - 当设置了 `gatewayUrl` 时,UI 不回退到配置或环境凭据。请明确提供 `token`(或 `password`)。缺少显式凭据是错误。
 - 当 Gateway 在 TLS 后面(Tailscale Serve、HTTPS 代理等)时使用 `wss://`。
 - `gatewayUrl` 仅在顶层窗口(非嵌入)中被接受,以防止点击劫持。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7655b0a95f5ba1ab81fce95c50317dcd"
+mmh3_hash: "9f69f3b3a2275556d8446119e6fd9dbd"
 summary: "Terminal UI（TUI）：从任何机器连接到 Gateway"
 read_when:
   - 您想要 TUI 的入门友好演练
@@ -122,6 +122,12 @@ Session 生命周期：
 - 工具调用显示为带有参数 + 结果的卡片。
 - Ctrl+O 在折叠/展开视图之间切换。
 - 工具运行时，部分更新流式传输到同一卡片。
+
+## 终端颜色
+
+- TUI 将助手正文文本保持在您终端的默认前景色中，以便深色和浅色终端都保持可读性。
+- 如果您的终端使用浅色背景且自动检测不正确，请在启动 `openclaw tui` 前设置 `OPENCLAW_THEME=light`。
+- 要强制使用原始深色调色板，请设置 `OPENCLAW_THEME=dark`。
 
 ## 历史 + 流式传输
 

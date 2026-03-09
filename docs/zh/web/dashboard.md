@@ -1,7 +1,7 @@
 ---
 title: "Dashboard (Control UI)"
 sidebarTitle: "Dashboard"
-mmh3_hash: "75c2d05435c43f244c8ec7f546b89dc6"
+mmh3_hash: "f5fffae2240da1cb29480b8e040d0e37"
 summary: "Gateway Dashboard(Control UI)访问和身份验证"
 read_when: ["更改 Dashboard 身份验证或暴露模式"]
 ---
@@ -12,7 +12,7 @@ Gateway Dashboard 是默认情况下在 `/` 提供的浏览器 Control UI
 
 快速打开(本地 Gateway):
 
-- http://127.0.0.1:18789/(或 http://localhost:18789/)
+- [http://127.0.0.1:18789/](http://127.0.0.1:18789/)(或 [http://localhost:18789/](http://localhost:18789/))
 
 关键参考:
 
@@ -24,23 +24,28 @@ Gateway Dashboard 是默认情况下在 `/` 提供的浏览器 Control UI
 (令牌或密码)。请参见 [Gateway 配置](/gateway/configuration) 中的 `gateway.auth`。
 
 安全说明: Control UI 是**管理界面**(聊天、配置、exec 批准)。
-不要公开暴露它。UI 在首次加载后将令牌存储在 `localStorage` 中。
+不要公开暴露它。UI 将 Dashboard URL 令牌保留在当前标签页的内存中，并在加载后从 URL 中清除。
 首选 localhost、Tailscale Serve 或 SSH 隧道。
 
 ## 快速路径(推荐)
 
-- 引导后,CLI 现在使用您的令牌自动打开 Dashboard 并打印相同的令牌化链接。
-- 随时重新打开: `openclaw dashboard`(复制链接,如果可能则打开浏览器,如果无头则显示 SSH 提示)。
-- 令牌保持本地(仅查询参数);UI 在首次加载后将其剥离并保存在 localStorage 中。
+- 引导后，CLI 自动打开 Dashboard 并打印一个干净（无令牌）链接。
+- 随时重新打开: `openclaw dashboard`（复制链接，如果可能则打开浏览器，如果无头则显示 SSH 提示）。
+- 如果 UI 提示身份验证，将 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）中的令牌粘贴到 Control UI 设置中。
 
 ## 令牌基础(本地 vs 远程)
 
-- **Localhost**: 打开 `http://127.0.0.1:18789/`。如果您看到"unauthorized",运行 `openclaw dashboard` 并使用令牌化链接(`?token=...`)。
-- **令牌来源**: `gateway.auth.token`(或 `OPENCLAW_GATEWAY_TOKEN`);UI 在首次加载后存储它。
-- **非 localhost**: 使用 Tailscale Serve(如果 `gateway.auth.allowTailscale: true` 则无令牌)、带令牌的 tailnet 绑定或 SSH 隧道。请参见 [Web 界面](/web)。
+- **Localhost**: 打开 `http://127.0.0.1:18789/`。
+- **令牌来源**: `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）；`openclaw dashboard` 可以通过 URL 片段传递令牌以进行一次性引导，但 Control UI 不会将 Gateway 令牌持久化在 localStorage 中。
+- 如果 `gateway.auth.token` 由 SecretRef 管理，`openclaw dashboard` 会按设计打印/复制/打开一个无令牌 URL。这避免了在 shell 日志、剪贴板历史或浏览器启动参数中暴露外部管理的令牌。
+- 如果 `gateway.auth.token` 配置为 SecretRef 且在您当前的 shell 中未解析，`openclaw dashboard` 仍然打印无令牌 URL 以及可操作的身份验证设置指导。
+- **非 localhost**: 使用 Tailscale Serve（如果 `gateway.auth.allowTailscale: true` 则 Control UI/WebSocket 无令牌，假设 Gateway 主机受信任；HTTP API 仍需令牌/密码）、带令牌的 tailnet 绑定或 SSH 隧道。请参见 [Web 界面](/web)。
 
 ## 如果您看到"unauthorized" / 1008
 
-- 运行 `openclaw dashboard` 以获取新的令牌化链接。
-- 确保 Gateway 可访问(本地: `openclaw status`;远程: SSH 隧道 `ssh -N -L 18789:127.0.0.1:18789 user@host` 然后打开 `http://127.0.0.1:18789/?token=...`)。
-- 在 Dashboard 设置中,粘贴您在 `gateway.auth.token`(或 `OPENCLAW_GATEWAY_TOKEN`)中配置的相同令牌。
+- 确保 Gateway 可访问（本地: `openclaw status`；远程: SSH 隧道 `ssh -N -L 18789:127.0.0.1:18789 user@gateway-host` 然后打开 `http://127.0.0.1:18789/`）。
+- 从 Gateway 主机检索或提供令牌:
+  - 明文配置: `openclaw config get gateway.auth.token`
+  - SecretRef 管理的配置: 解析外部密钥提供商或在此 shell 中导出 `OPENCLAW_GATEWAY_TOKEN`，然后重新运行 `openclaw dashboard`
+  - 未配置令牌: `openclaw doctor --generate-gateway-token`
+- 在 Dashboard 设置中，将令牌粘贴到身份验证字段中，然后连接。
