@@ -1,6 +1,6 @@
 ---
 title: "安全 🔒"
-mmh3_hash: "42f9f90440fc43c403aad95fdc2c3468"
+mmh3_hash: "fbd687476f1e667c28bbde22e52e57c7"
 summary: "运行具有 shell 访问权限的 AI 网关的安全注意事项和威胁模型"
 read_when:
   - 添加扩大访问权限或自动化的功能
@@ -291,6 +291,15 @@ proxy_set_header X-Real-IP $remote_addr;
 ```nginx
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 ```
+
+## HSTS 和来源说明
+
+- OpenClaw Gateway 优先使用本地/回环。如果您在反向代理处终止 TLS，请在面向代理的 HTTPS 域上设置 HSTS。
+- 如果 Gateway 本身终止 HTTPS，您可以设置 `gateway.http.securityHeaders.strictTransportSecurity` 以从 OpenClaw 响应中发出 HSTS 标头。
+- 详细的部署指南见 [受信任代理认证](/gateway/trusted-proxy-auth#tls-termination-and-hsts)。
+- 对于非回环 Control UI 部署，默认情况下需要 `gateway.controlUi.allowedOrigins`。
+- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` 启用 Host 标头来源回退模式；将其视为危险的操作员选择策略。
+- 将 DNS 重绑定和代理-Host 标头行为视为部署加固问题；保持 `trustedProxies` 严格，避免将 Gateway 直接暴露到公共互联网。
 
 ## 本地会话日志存储在磁盘上
 
@@ -791,6 +800,15 @@ HTTP API 端点(例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`)仍然需
 
 重要:`tools.elevated` 是在主机上运行 exec 的全局基线逃逸舱口。保持 `tools.elevated.allowFrom` 严格,不要为陌生人启用它。您可以通过 `agents.list[].tools.elevated` 进一步限制每个 Agent 的提升权限。请参阅[提升模式](/tools/elevated)。
 
+### 子 Agent 委托护栏
+
+如果您允许 session 工具，请将委托的子 Agent 运行视为另一个边界决策：
+
+- 除非 Agent 确实需要委托，否则拒绝 `sessions_spawn`。
+- 将 `agents.list[].subagents.allowAgents` 限制为已知安全的目标 Agent。
+- 对于必须保持沙盒化的任何工作流，使用 `sandbox: "require"` 调用 `sessions_spawn`（默认为 `inherit`）。
+- 当目标子运行时未沙盒化时，`sandbox: "require"` 会快速失败。
+
 ## 浏览器控制风险
 
 启用浏览器控制使模型能够驾驶真实浏览器。如果该浏览器配置文件已经包含登录会话,模型可以访问这些账户和数据。将浏览器配置文件视为**敏感状态**:
@@ -805,6 +823,30 @@ HTTP API 端点(例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`)仍然需
 - Chrome 扩展中继的 CDP 端点受身份验证保护;只有 OpenClaw 客户端可以连接。
 - 当不需要时禁用浏览器代理路由(`gateway.nodes.browser.mode="off"`)。
 - Chrome 扩展中继模式**不**"更安全";它可以接管您现有的 Chrome 标签。假设它可以在该标签/配置文件可以访问的任何内容中充当您。
+
+### Browser SSRF 策略（受信任网络默认值）
+
+OpenClaw 的 Browser 网络策略默认为受信任操作员模型：除非您明确禁用，否则允许私有/内部目标。
+
+- 默认：`browser.ssrfPolicy.dangerouslyAllowPrivateNetwork: true`（未设置时为隐式）。
+- 旧版别名：`browser.ssrfPolicy.allowPrivateNetwork` 仍接受以保持兼容性。
+- 严格模式：设置 `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork: false` 以默认阻止私有/内部/特殊用途目标。
+- 在严格模式下，使用 `hostnameAllowlist`（如 `*.example.com` 的模式）和 `allowedHostnames`（精确主机例外，包括 `localhost` 等被阻止的名称）进行显式例外。
+- 导航在请求前检查，并在导航后对最终 `http(s)` URL 进行尽力二次检查，以减少基于重定向的转向。
+
+严格策略示例：
+
+```json5
+{
+  browser: {
+    ssrfPolicy: {
+      dangerouslyAllowPrivateNetwork: false,
+      hostnameAllowlist: ["*.example.com", "example.com"],
+      allowedHostnames: ["localhost"],
+    },
+  },
+}
+```
 
 ## 每个 Agent 访问配置文件(多 Agent)
 
@@ -934,7 +976,7 @@ HTTP API 端点(例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`)仍然需
 
 1. 轮换 Gateway 身份验证(`gateway.auth.token` / `OPENCLAW_GATEWAY_PASSWORD`)并重启。
 2. 在任何可以调用 Gateway 的机器上轮换远程客户端秘密(`gateway.remote.token` / `.password`)。
-3. 轮换提供商/API 凭证(WhatsApp 凭证、Slack/Discord 令牌、`auth-profiles.json` 中的模型/API 密钥)。
+3. 轮换提供商/API 凭证（WhatsApp 凭证、Slack/Discord 令牌、`auth-profiles.json` 中的模型/API 密钥，以及使用时的加密 secrets 有效负载值）。
 
 ### 审计
 
@@ -952,18 +994,18 @@ HTTP API 端点(例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`)仍然需
 
 ## 秘密扫描(detect-secrets)
 
-CI 在 `secrets` 作业中运行 `detect-secrets scan --baseline .secrets.baseline`。如果失败,则基线中尚未包含新候选项。
+CI 在 `secrets` 作业中运行 `detect-secrets` 预提交钩子。推送到 `main` 时始终运行全文件扫描。当基础提交可用时，Pull Request 使用变更文件快速路径，否则回退到全文件扫描。如果失败，说明有尚未在基线中的新候选项。
 
 ### 如果 CI 失败
 
 1. 在本地重现:
 
    ```bash
-   detect-secrets scan --baseline .secrets.baseline
+   pre-commit run --all-files detect-secrets
    ```
 
 2. 了解工具:
-   - `detect-secrets scan` 查找候选项并将它们与基线进行比较。
+   - `detect-secrets` 在 pre-commit 中运行 `detect-secrets-hook`，使用仓库的基线和排除项。
    - `detect-secrets audit` 打开交互式审查,将每个基线项标记为真实或误报。
 3. 对于真实秘密:轮换/删除它们,然后重新运行扫描以更新基线。
 4. 对于误报:运行交互式审计并将它们标记为误报:

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4320b8a3fde58821c0fb3fff04488c5e"
+mmh3_hash: "7f96b608669bed25df68a0a96430de90"
 summary: "OpenClaw 沙盒的工作原理:模式、作用域、工作空间访问和镜像"
 title: 沙盒
 read_when: "您想要沙盒的专门解释或需要调整 agents.defaults.sandbox。"
@@ -138,6 +138,32 @@ scripts/sandbox-browser-setup.sh
 
 默认情况下,沙盒容器以**无网络**运行。
 使用 `agents.defaults.sandbox.docker.network` 覆盖。
+
+捆绑的沙盒 Browser 镜像还为容器化工作负载应用保守的 Chromium 启动默认值。当前容器默认值包括：
+
+- `--remote-debugging-address=127.0.0.1`
+- `--remote-debugging-port=<derived from OPENCLAW_BROWSER_CDP_PORT>`
+- `--user-data-dir=${HOME}/.chrome`
+- `--no-first-run`
+- `--no-default-browser-check`
+- `--disable-3d-apis`
+- `--disable-gpu`
+- `--disable-dev-shm-usage`
+- `--disable-background-networking`
+- `--disable-extensions`
+- `--disable-features=TranslateUI`
+- `--disable-breakpad`
+- `--disable-crash-reporter`
+- `--disable-software-rasterizer`
+- `--no-zygote`
+- `--metrics-recording-only`
+- `--renderer-process-limit=2`
+- 启用 `noSandbox` 时，`--no-sandbox` 和 `--disable-setuid-sandbox`。
+- 三个图形加固标志（`--disable-3d-apis`、`--disable-software-rasterizer`、`--disable-gpu`）是可选的，在容器缺乏 GPU 支持时很有用。如果您的工作负载需要 WebGL 或其他 3D/浏览器功能，请设置 `OPENCLAW_BROWSER_DISABLE_GRAPHICS_FLAGS=0`。
+- `--disable-extensions` 默认启用，可以用 `OPENCLAW_BROWSER_DISABLE_EXTENSIONS=0` 禁用以支持依赖扩展的流程。
+- `--renderer-process-limit=2` 由 `OPENCLAW_BROWSER_RENDERER_PROCESS_LIMIT=<N>` 控制，`0` 保持 Chromium 的默认值。
+
+如果您需要不同的运行时配置，请使用自定义 Browser 镜像并提供自己的入口点。对于本地（非容器）Chromium 配置，使用 `browser.extraArgs` 追加额外的启动标志。
 
 安全默认值:
 

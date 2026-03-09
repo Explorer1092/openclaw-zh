@@ -1,7 +1,7 @@
 ---
 title: "网关协议 (WebSocket)"
 sidebarTitle: "网关协议"
-mmh3_hash: "9a550d25b349c65d550ebf736a08e84c"
+mmh3_hash: "5883550a7a2efd8be139927938afdf51"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 gateway WS 客户端
@@ -147,6 +147,8 @@ Gateway → Client:
 - `operator.admin`
 - `operator.approvals`
 - `operator.pairing`
+
+Method 作用域只是第一道门。通过 `chat.send` 访问的某些斜杠命令在此基础上应用更严格的命令级检查。例如，持久化的 `/config set` 和 `/config unset` 写入需要 `operator.admin`。
 
 ### Caps/commands/permissions(node)
 

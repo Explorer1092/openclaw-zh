@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bd2a47d101f769abc9be7484685410a4"
+mmh3_hash: "ee8c1a1425c0c5ecbb687c34e5ed16e4"
 summary: "从 Gateway 公开兼容 OpenAI 的 /v1/chat/completions HTTP 端点"
 read_when:
   - 集成期望 OpenAI Chat Completions 的工具
@@ -36,6 +36,7 @@ OpenClaw 的 Gateway 可以提供一个小的 OpenAI 兼容的 Chat Completions 
 - 此处的 HTTP Bearer 认证不是针对每个用户的狭窄范围模型。
 - 此端点的有效 Gateway token/password 应被视为所有者/操作员凭证。
 - 请求通过与受信任的操作员操作相同的控制平面 Agent 路径运行。
+- 此端点没有独立的非所有者/每用户工具边界；一旦调用者通过此处的 Gateway 认证，OpenClaw 将该调用者视为此 Gateway 的受信任操作员。
 - 如果目标 Agent 策略允许敏感工具,此端点可以使用它们。
 - 仅在 loopback/tailnet/私有入口保留此端点;不要将其直接暴露到公共互联网。
 
@@ -65,10 +66,10 @@ OpenClaw 的 Gateway 可以提供一个小的 OpenAI 兼容的 Chat Completions 
   gateway: {
     http: {
       endpoints: {
-        chatCompletions: { enabled: true }
-      }
-    }
-  }
+        chatCompletions: { enabled: true },
+      },
+    },
+  },
 }
 ```
 
@@ -81,10 +82,10 @@ OpenClaw 的 Gateway 可以提供一个小的 OpenAI 兼容的 Chat Completions 
   gateway: {
     http: {
       endpoints: {
-        chatCompletions: { enabled: false }
-      }
-    }
-  }
+        chatCompletions: { enabled: false },
+      },
+    },
+  },
 }
 ```
 

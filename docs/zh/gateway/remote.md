@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "307f1628faa5888289177022bc850d08"
+mmh3_hash: "2455ea16206e1aa9297a57095f595b5c"
 summary: "使用 SSH 隧道(Gateway WS)和 Tailnet 进行远程访问"
 read_when:
   - 运行或故障排除远程 Gateway 设置
@@ -104,9 +104,12 @@ ssh -N -L 18789:127.0.0.1:18789 user@host
 
 ## 凭证优先级
 
-Gateway 调用/探测凭证解析现在遵循一个共享契约:
+Gateway 调用/探测/状态路径、Discord exec-approval 监控和节点主机连接的凭证解析遵循一个共享契约:
 
-- 显式凭证(`--token`、`--password` 或工具 `gatewayToken`)始终优先。
+- 显式凭证(`--token`、`--password` 或工具 `gatewayToken`)在接受显式认证的调用路径上始终优先。
+- URL 覆盖安全性：
+  - CLI URL 覆盖（`--url`）从不复用隐式配置/环境凭证。
+  - 环境 URL 覆盖（`OPENCLAW_GATEWAY_URL`）只能使用环境凭证（`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`）。
 - 本地模式默认值:
   - 令牌:`OPENCLAW_GATEWAY_TOKEN` -> `gateway.auth.token` -> `gateway.remote.token`
   - 密码:`OPENCLAW_GATEWAY_PASSWORD` -> `gateway.auth.password` -> `gateway.remote.password`

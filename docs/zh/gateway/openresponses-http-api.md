@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "76c4db53a1ff881f3de3bf13bfc65a3c"
+mmh3_hash: "0c910c70547d9372cfade40e0569ed63"
 summary: "从 Gateway 公开兼容 OpenResponses 的 /v1/responses HTTP 端点"
 read_when:
   - 集成使用 OpenResponses API 的客户端
@@ -37,6 +37,7 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 - 此处的 HTTP Bearer 认证不是针对每个用户的狭窄范围模型。
 - 此端点的有效 Gateway token/password 应被视为所有者/操作员凭证。
 - 请求通过与受信任的操作员操作相同的控制平面 Agent 路径运行。
+- 此端点没有独立的非所有者/每用户工具边界；一旦调用者通过此处的 Gateway 认证，OpenClaw 将该调用者视为此 Gateway 的受信任操作员。
 - 如果目标 Agent 策略允许敏感工具,此端点可以使用它们。
 - 仅在 loopback/tailnet/私有入口保留此端点;不要将其直接暴露到公共互联网。
 
@@ -159,7 +160,7 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 }
 ```
 
-允许的 MIME 类型(当前):`image/jpeg`、`image/png`、`image/gif`、`image/webp`。
+允许的 MIME 类型(当前):`image/jpeg`、`image/png`、`image/gif`、`image/webp`、`image/heic`、`image/heif`。
 最大大小(当前):10MB。
 
 ## Files (`input_file`)
@@ -236,7 +237,14 @@ URL 获取默认值:
           images: {
             allowUrl: true,
             urlAllowlist: ["images.example.com"],
-            allowedMimes: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+            allowedMimes: [
+              "image/jpeg",
+              "image/png",
+              "image/gif",
+              "image/webp",
+              "image/heic",
+              "image/heif",
+            ],
             maxBytes: 10485760,
             maxRedirects: 3,
             timeoutMs: 10000,
@@ -262,6 +270,7 @@ URL 获取默认值:
 - `images.maxBytes`:10MB
 - `images.maxRedirects`:3
 - `images.timeoutMs`:10s
+- HEIC/HEIF `input_image` 源被接受并在投递给 Provider 前规范化为 JPEG。
 
 安全注意事项:
 
