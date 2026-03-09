@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "aeeb49b0ce77588086fac497961651d4"
+mmh3_hash: "f36aed91b22ec221754fe84b1b144714"
 summary: "`openclaw secrets` 的 CLI 参考(reload、audit、configure、apply)"
 read_when:
   - 在运行时重新解析 secret ref
@@ -10,12 +10,12 @@ title: "secrets"
 
 # `openclaw secrets`
 
-使用 `openclaw secrets` 将凭证从明文迁移到 SecretRef,并保持活跃的 secrets 运行时健康。
+使用 `openclaw secrets` 管理 SecretRef 并保持活跃的运行时快照健康。
 
 命令职责:
 
 - `reload`: Gateway RPC（`secrets.reload`），仅在完全成功时重新解析 ref 并原子性替换运行时快照（不写入配置）。
-- `audit`: 对配置 + 认证存储 + 遗留残留（`.env`、`auth.json`）中的明文、未解析 ref 和优先级漂移进行只读扫描。
+- `audit`: 对配置/身份验证/生成的模型存储和遗留残留中的明文、未解析 ref 和优先级漂移进行只读扫描。
 - `configure`: 交互式规划工具，用于 Provider 设置 + 目标映射 + 预检（需要 TTY）。
 - `apply`: 执行已保存的计划（`--dry-run` 仅用于验证），然后清除已迁移的明文残留。
 
@@ -37,6 +37,7 @@ CI/门控的退出码说明:
 相关文档:
 
 - Secrets 指南:[Secrets 管理](/gateway/secrets)
+- 凭据面:[SecretRef 凭据面](/reference/secretref-credential-surface)
 - 安全指南:[安全](/gateway/security)
 
 ## 重新加载运行时快照
@@ -60,8 +61,13 @@ openclaw secrets reload --json
 
 - 明文 secret 存储
 - 未解析的 ref
-- 优先级漂移（`auth-profiles` 覆盖配置 ref）
-- 遗留残留（`auth.json`、OAuth 范围外说明）
+- 优先级漂移(`auth-profiles.json` 凭据遮蔽 `openclaw.json` ref)
+- 生成的 `agents/*/agent/models.json` 残留(Provider `apiKey` 值和敏感 Provider 标头)
+- 遗留残留(遗留身份验证存储条目、OAuth 提醒)
+
+标头残留说明:
+
+- 敏感 Provider 标头检测基于名称启发式(常见身份验证/凭据标头名称和片段,例如 `authorization`、`x-api-key`、`token`、`secret`、`password` 和 `credential`)。
 
 ```bash
 openclaw secrets audit
@@ -94,6 +100,7 @@ openclaw secrets configure --plan-out /tmp/openclaw-secrets-plan.json
 openclaw secrets configure --apply --yes
 openclaw secrets configure --providers-only
 openclaw secrets configure --skip-provider-setup
+openclaw secrets configure --agent ops
 openclaw secrets configure --json
 ```
 
@@ -107,13 +114,15 @@ openclaw secrets configure --json
 
 - `--providers-only`: 仅配置 `secrets.providers`，跳过凭证映射。
 - `--skip-provider-setup`: 跳过 Provider 设置，将凭证映射到现有 Provider。
+- `--agent <id>`:将 `auth-profiles.json` 目标发现和写入范围限定到一个 Agent 存储。
 
 说明:
 
 - 需要交互式 TTY。
 - 不能同时使用 `--providers-only` 和 `--skip-provider-setup`。
-- `configure` 针对 `openclaw.json` 中含 secret 的字段。
-- 请包含所有您打算迁移的含 secret 字段（例如同时包含 `models.providers.*.apiKey` 和 `skills.entries.*.apiKey`），以便 audit 能达到干净状态。
+- `configure` 针对所选 Agent 范围内 `openclaw.json` 中含 secret 的字段以及 `auth-profiles.json`。
+- `configure` 支持直接在选择器流程中创建新的 `auth-profiles.json` 映射。
+- 规范支持的面:[SecretRef 凭据面](/reference/secretref-credential-surface)。
 - 在应用前执行预检解析。
 - 生成的计划默认启用清除选项（`scrubEnv`、`scrubAuthProfilesForProviderTargets`、`scrubLegacyAuthJson` 均已启用）。
 - 已迁移明文值的应用路径是单向的。
@@ -124,6 +133,7 @@ Exec Provider 安全说明:
 
 - Homebrew 安装通常会在 `/opt/homebrew/bin/*` 下暴露符号链接二进制文件。
 - 仅在受信任的包管理器路径需要时才设置 `allowSymlinkCommand: true`，并配合 `trustedDirs`（例如 `["/opt/homebrew"]`）使用。
+- 在 Windows 上，如果 Provider 路径的 ACL 验证不可用，OpenClaw 会失败关闭。仅对受信任的路径，在该 Provider 上设置 `allowInsecurePath: true` 以绕过路径安全检查。
 
 ## 应用已保存的计划
 

@@ -1,9 +1,11 @@
 ---
+mmh3_hash: "1af05fa128db462681aca53cfe246309"
 title: "`openclaw status`"
 sidebarTitle: "openclaw status"
-mmh3_hash: "4d5ec73e8822acbadde223c23767b47d"
 summary: "`openclaw status` 的 CLI 参考(诊断、探测、使用快照)"
-read_when: ["您想快速诊断Channel健康状况 + 最近的Session收件人","您想要用于调试的可粘贴\"全部\"状态"]
+read_when:
+  - 您想快速诊断 Channel 健康状况 + 最近的 Session 收件人
+  - 您想要用于调试的可粘贴"全部"状态
 ---
 
 # `openclaw status`
@@ -23,3 +25,5 @@ openclaw status --usage
 - 概述包括Gateway + Node主机服务安装/运行时状态(如果可用)。
 - 概述包括更新Channel + git SHA(用于源检出)。
 - 更新信息显示在概述中;如果有可用更新,状态会打印运行 `openclaw update` 的提示(参见 [更新](/install/updating))。
+- 只读状态界面(`status`、`status --json`、`status --all`)在可能的情况下解析支持的 SecretRef 用于其目标配置路径。
+- 如果支持的 Channel SecretRef 已配置但在当前命令路径中不可用,status 保持只读并报告降级输出而不是崩溃。人类可读输出显示警告(例如"configured token unavailable in this command path"),JSON 输出包含 `secretDiagnostics`。
