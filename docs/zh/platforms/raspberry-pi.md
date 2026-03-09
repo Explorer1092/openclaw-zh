@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "219057cbb8e470b6718fc32c187f3316"
+mmh3_hash: "170c669e21575f97abaca6bec5d2bec3"
 title: "在 Raspberry Pi 上运行 OpenClaw"
 summary: "在 Raspberry Pi 上运行 OpenClaw(经济型自托管设置)"
 read_when: ["在 Raspberry Pi 上设置 OpenClaw","在 ARM 设备上运行 OpenClaw","构建廉价的始终在线个人 AI"]
@@ -195,7 +195,7 @@ lsblk
 在低功耗 Pi 主机上,启用 Node 的模块编译缓存可以让重复的 CLI 运行更快:
 
 ```bash
-grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF'
+grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF' # pragma: allowlist secret
 export NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
 mkdir -p /var/tmp/openclaw-compile-cache
 export OPENCLAW_NO_RESPAWN=1

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a87fced291861951866fdc07cc3579e0"
+mmh3_hash: "a487ed6c33f3135a986887a0545c9920"
 title: "Android 应用 (节点)"
 sidebarTitle: "Android"
 summary: "Android 应用(节点):连接运行手册 + Connect/Chat/Voice/Canvas 命令界面"
@@ -117,7 +117,7 @@ Android Chat 标签支持会话选择(默认 `main`,以及其他现有会话):
 - 发送:`chat.send`
 - 推送更新(尽力而为):`chat.subscribe` → `event:"chat"`
 
-### 7) Canvas + 屏幕 + 相机
+### 7) Canvas + 相机
 
 #### 网关 Canvas 主机(推荐用于 Web 内容)
 
@@ -150,10 +150,6 @@ Canvas 命令(仅前台):
 
 参见[相机节点](/nodes/camera)了解参数和 CLI 帮助器。
 
-屏幕命令:
-
-- `screen.record`(mp4;仅前台)
-
 ### 8) 语音 + 扩展 Android 命令界面
 
 - 语音:Android 在 Voice 标签中使用单一麦克风开/关流程,支持转录捕获和 TTS 播放(配置后使用 ElevenLabs,否则回退到系统 TTS)。
@@ -165,4 +161,3 @@ Canvas 命令(仅前台):
   - `contacts.search`、`contacts.add`
   - `calendar.events`、`calendar.add`
   - `motion.activity`、`motion.pedometer`
-  - `app.update`

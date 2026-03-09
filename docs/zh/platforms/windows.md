@@ -1,7 +1,7 @@
 ---
 title: "Windows (WSL2)"
 sidebarTitle: "Windows"
-mmh3_hash: "c55c0a841c5a3c3aef1d4dafe97685fb"
+mmh3_hash: "b21926eb6a4d494647946040c42424f1"
 summary: "Windows(WSL2)支持 + 配套应用状态"
 read_when: ["在 Windows 上安装 OpenClaw","寻找 Windows 配套应用状态"]
 ---
@@ -49,6 +49,49 @@ openclaw configure
 
 ```
 openclaw doctor
+```
+
+## Windows 登录前自动启动 Gateway
+
+对于无头设置，确保即使没有人登录 Windows 也能运行完整的启动链。
+
+### 1) 无需登录即可保持用户服务运行
+
+在 WSL 内：
+
+```bash
+sudo loginctl enable-linger "$(whoami)"
+```
+
+### 2) 安装 OpenClaw Gateway 用户服务
+
+在 WSL 内：
+
+```bash
+openclaw gateway install
+```
+
+### 3) 在 Windows 启动时自动启动 WSL
+
+以管理员身份在 PowerShell 中：
+
+```powershell
+schtasks /create /tn "WSL Boot" /tr "wsl.exe -d Ubuntu --exec /bin/true" /sc onstart /ru SYSTEM
+```
+
+将 `Ubuntu` 替换为你的发行版名称（来自：
+
+```powershell
+wsl --list --verbose
+```
+
+### 验证启动链
+
+重启后（在 Windows 登录之前），从 WSL 检查：
+
+```bash
+systemctl --user is-enabled openclaw-gateway
+systemctl --user status openclaw-gateway --no-pager
 ```
 
 ## 高级:通过局域网公开 WSL 服务(portproxy)
