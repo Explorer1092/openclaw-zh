@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e59cf18e00284f860ccd7a9dc16a5e81"
+mmh3_hash: "f1bceecf50516512307dd7ecbc38d045"
 title: "常见问题解答"
 sidebarTitle: "常见问题"
 summary: "关于 OpenClaw 设置、配置和使用的常见问题解答"
@@ -32,6 +32,7 @@ read_when:
   - [安装和引导通常需要多长时间?](#how-long-does-install-and-onboarding-usually-take)
   - [安装程序卡住了？如何获取更多反馈?](#installer-stuck-how-do-i-get-more-feedback)
   - [Windows 安装提示找不到 git 或无法识别 openclaw](#windows-install-says-git-not-found-or-openclaw-not-recognized)
+  - [Windows exec 输出显示乱码中文，怎么办?](#windows-exec-output-shows-garbled-chinese-text-what-should-i-do)
   - [文档没有回答我的问题——如何获得更好的答案?](#the-docs-didnt-answer-my-question-how-do-i-get-a-better-answer)
   - [如何在 Linux 上安装 OpenClaw?](#how-do-i-install-openclaw-on-linux)
   - [如何在 VPS 上安装 OpenClaw?](#how-do-i-install-openclaw-on-a-vps)
@@ -102,6 +103,7 @@ read_when:
   - [我设置了 `gateway.bind: "lan"`（或 `"tailnet"`），但现在什么都不监听/UI 显示未授权](#i-set-gatewaybind-lan-or-tailnet-and-now-nothing-listens-the-ui-says-unauthorized)
   - [为什么现在在 localhost 上需要令牌?](#why-do-i-need-a-token-on-localhost-now)
   - [更改配置后需要重启吗?](#do-i-have-to-restart-after-changing-config)
+  - [如何禁用有趣的 CLI 标语?](#how-do-i-disable-funny-cli-taglines)
   - [如何启用网络搜索（和网络抓取）?](#how-do-i-enable-web-search-and-web-fetch)
   - [config.apply 清除了我的配置。如何恢复并避免这种情况?](#configapply-wiped-my-config-how-do-i-recover-and-avoid-this)
   - [如何在设备间运行带有专业工作节点的中央 Gateway?](#how-do-i-run-a-central-gateway-with-specialized-workers-across-devices)
@@ -146,9 +148,9 @@ read_when:
   - [可以使用自托管模型（llama.cpp、vLLM、Ollama）吗?](#can-i-use-selfhosted-models-llamacpp-vllm-ollama)
   - [OpenClaw、Flawd 和 Krill 使用什么模型?](#what-do-openclaw-flawd-and-krill-use-for-models)
   - [如何即时切换模型（无需重启）?](#how-do-i-switch-models-on-the-fly-without-restarting)
-  - [可以将 GPT 5.2 用于日常任务，将 Codex 5.3 用于编码吗?](#can-i-use-gpt-52-for-daily-tasks-and-codex-53-for-coding)
+  - [可以将 GPT 5.2 用于日常任务，将 Codex 5.4 用于编码吗?](#can-i-use-gpt-52-for-daily-tasks-and-codex-53-for-coding)
   - [为什么看到"模型 … 不被允许"然后没有回复?](#why-do-i-see-model-is-not-allowed-and-then-no-reply)
-  - [为什么看到"未知模型：minimax/MiniMax-M2.1"?](#why-do-i-see-unknown-model-minimaxminimaxm21)
+  - [为什么看到"未知模型：minimax/MiniMax-M2.5"?](#why-do-i-see-unknown-model-minimaxminimaxm25)
   - [可以将 MiniMax 作为默认值，将 OpenAI 用于复杂任务吗?](#can-i-use-minimax-as-my-default-and-openai-for-complex-tasks)
   - [opus / sonnet / gpt 是内置快捷方式吗?](#are-opus-sonnet-gpt-builtin-shortcuts)
   - [如何定义/覆盖模型快捷方式（别名）?](#how-do-i-defineoverride-model-shortcuts-aliases)
@@ -557,6 +559,34 @@ Set-PSDebug -Trace 0
 如果您想要最流畅的 Windows 设置，请使用 **WSL2** 而不是原生 Windows。
 文档：[Windows](/platforms/windows)。
 
+### Windows exec 输出显示乱码中文，怎么办
+
+这通常是原生 Windows Shell 上的控制台代码页不匹配问题。
+
+症状：
+
+- `system.run`/`exec` 输出将中文渲染为乱码
+- 同一命令在另一个终端配置中看起来正常
+
+PowerShell 快速解决方法：
+
+```powershell
+chcp 65001
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+$OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+```
+
+然后重启 Gateway 并重试您的命令：
+
+```powershell
+openclaw gateway restart
+```
+
+如果您在最新版 OpenClaw 上仍然遇到此问题，请在以下地址跟踪/报告：
+
+- [Issue #30640](https://github.com/openclaw/openclaw/issues/30640)
+
 ### 文档没有回答我的问题——如何获得更好的答案
 
 使用**可破解（git）安装**，这样您就拥有了完整的源代码和本地文档，然后从那个文件夹向您的机器人（或 Claude/Codex）提问，以便它能读取仓库并精确回答。
@@ -682,7 +712,7 @@ claude setup-token
 
 ### Codex 认证如何工作
 
-OpenClaw 通过 OAuth（ChatGPT 登录）支持 **OpenAI Code (Codex)**。向导可以运行 OAuth 流程，并在适当时将默认模型设置为 `openai-codex/gpt-5.3-codex`。参阅[模型提供商](/concepts/model-providers)和[向导](/start/wizard)。
+OpenClaw 通过 OAuth（ChatGPT 登录）支持 **OpenAI Code (Codex)**。向导可以运行 OAuth 流程，并在适当时将默认模型设置为 `openai-codex/gpt-5.4`。参阅[模型提供商](/concepts/model-providers)和[向导](/start/wizard)。
 
 ### 支持 OpenAI 订阅认证（Codex OAuth）吗
 
@@ -703,7 +733,7 @@ Gemini CLI 使用**插件认证流程**，而不是 `openclaw.json` 中的客户
 
 ### 本地模型适合日常聊天吗
 
-通常不适合。OpenClaw 需要大上下文 + 强安全性；小模型会截断并泄漏。如果必须使用，请在本地运行您能运行的**最大** MiniMax M2.1 构建（LM Studio），并参阅 [/gateway/local-models](/gateway/local-models)。较小/量化的模型会增加提示注入风险——参阅[安全性](/gateway/security)。
+通常不适合。OpenClaw 需要大上下文 + 强安全性；小模型会截断并泄漏。如果必须使用，请在本地运行您能运行的**最大** MiniMax M2.5 构建（LM Studio），并参阅 [/gateway/local-models](/gateway/local-models)。较小/量化的模型会增加提示注入风险——参阅[安全性](/gateway/security)。
 
 ### 如何让托管模型流量保留在特定区域
 
@@ -1307,6 +1337,25 @@ Gateway 监视配置并支持热重载：
 - `gateway.reload.mode: "hybrid"`（默认）：热应用安全更改，对于关键更改重启
 - 也支持 `hot`、`restart`、`off`
 
+### 如何禁用有趣的 CLI 标语
+
+在配置中设置 `cli.banner.taglineMode`：
+
+```json5
+{
+  cli: {
+    banner: {
+      taglineMode: "off", // random | default | off
+    },
+  },
+}
+```
+
+- `off`：隐藏标语文本但保留横幅标题/版本行。
+- `default`：每次使用 `All your chats, one OpenClaw.`。
+- `random`：轮换有趣/季节性标语（默认行为）。
+- 如果您完全不需要横幅，请设置环境变量 `OPENCLAW_HIDE_BANNER=1`。
+
 ### 如何启用网络搜索（和网络抓取）
 
 `web_fetch` 无需 API 密钥即可工作。`web_search` 需要 Brave Search API 密钥。**推荐：** 运行 `openclaw configure --section web` 将其存储在 `tools.web.search.apiKey` 中。环境替代方案：为 Gateway 进程设置 `BRAVE_API_KEY`。
@@ -1836,7 +1885,7 @@ agents.defaults.model.primary
 **可靠（性格少些）：** `openai/gpt-5.2`——几乎与 Opus 一样好，只是性格少些。
 **预算：** `zai/glm-4.7`。
 
-MiniMax M2.1 有自己的文档：[MiniMax](/providers/minimax) 和[本地模型](/gateway/local-models)。
+MiniMax M2.5 有自己的文档：[MiniMax](/providers/minimax) 和[本地模型](/gateway/local-models)。
 
 经验法则：对于高风险工作使用**您能负担得起的最佳模型**，对于日常聊天或摘要使用更便宜的模型。您可以按代理路由模型，并使用子代理并行化长任务（每个子代理消耗令牌）。参阅[模型](/concepts/models)和[子代理](/tools/subagents)。
 
@@ -1869,8 +1918,9 @@ MiniMax M2.1 有自己的文档：[MiniMax](/providers/minimax) 和[本地模型
 
 ### OpenClaw、Flawd 和 Krill 使用什么模型
 
-- **OpenClaw + Flawd：** Anthropic Opus（`anthropic/claude-opus-4-6`）——参阅 [Anthropic](/providers/anthropic)。
-- **Krill：** MiniMax M2.1（`minimax/MiniMax-M2.1`）——参阅 [MiniMax](/providers/minimax)。
+- 这些部署可能不同，并随时间变化；没有固定的提供商推荐。
+- 通过 `openclaw models status` 检查每个 Gateway 的当前运行时设置。
+- 对于安全敏感/启用工具的 Agent，使用可用的最强最新一代模型。
 
 ### 如何即时切换模型（无需重启）
 
@@ -1915,12 +1965,12 @@ MiniMax M2.1 有自己的文档：[MiniMax](/providers/minimax) 和[本地模型
 如果您想返回默认值，从 `/model` 中选择它（或发送 `/model <default provider/model>`）。
 使用 `/model status` 确认哪个认证配置处于活跃状态。
 
-### 可以将 GPT 5.2 用于日常任务，将 Codex 5.3 用于编码吗
+### 可以将 GPT 5.2 用于日常任务，将 Codex 5.4 用于编码吗
 
 可以。设置一个为默认值，按需切换：
 
-- **快速切换（每会话）：** `/model gpt-5.2` 用于日常任务，`/model gpt-5.3-codex` 用于编码。
-- **默认 + 切换：** 将 `agents.defaults.model.primary` 设置为 `openai/gpt-5.2`，然后在编码时切换到 `openai-codex/gpt-5.3-codex`（或反之）。
+- **快速切换（每会话）：** `/model gpt-5.2` 用于日常任务，`/model openai-codex/gpt-5.4` 用于编码（Codex OAuth）。
+- **默认 + 切换：** 将 `agents.defaults.model.primary` 设置为 `openai/gpt-5.2`，然后在编码时切换到 `openai-codex/gpt-5.4`（或反之）。
 - **子代理：** 将编码任务路由到具有不同默认模型的子代理。
 
 参阅[模型](/concepts/models)和[斜杠命令](/tools/slash-commands)。
@@ -1935,7 +1985,7 @@ Model "provider/model" is not allowed. Use /model to list available models.
 
 该错误**代替**正常回复返回。修复：将模型添加到 `agents.defaults.models`，删除允许列表，或从 `/model list` 中选择模型。
 
-### 为什么看到"未知模型：minimax/MiniMax-M2.1"
+### 为什么看到"未知模型：minimax/MiniMax-M2.5"
 
 这意味着**提供商未配置**（找不到 MiniMax 提供商配置或认证配置），因此无法解析模型。此检测的修复在 **2026.1.12** 中（写作时尚未发布）。
 
@@ -1943,7 +1993,7 @@ Model "provider/model" is not allowed. Use /model to list available models.
 
 1. 升级到 **2026.1.12**（或从源代码 `main` 运行），然后重启 Gateway。
 2. 确保 MiniMax 已配置（向导或 JSON），或者环境/认证配置中存在 MiniMax API 密钥，以便可以注入提供商。
-3. 使用准确的模型 ID（区分大小写）：`minimax/MiniMax-M2.1` 或 `minimax/MiniMax-M2.1-lightning`。
+3. 使用准确的模型 ID（区分大小写）：`minimax/MiniMax-M2.5` 或 `minimax/MiniMax-M2.5-highspeed`。
 4. 运行：
 
    ```bash
@@ -1966,9 +2016,9 @@ Model "provider/model" is not allowed. Use /model to list available models.
   env: { MINIMAX_API_KEY: "sk-...", OPENAI_API_KEY: "sk-..." },
   agents: {
     defaults: {
-      model: { primary: "minimax/MiniMax-M2.1" },
+      model: { primary: "minimax/MiniMax-M2.5" },
       models: {
-        "minimax/MiniMax-M2.1": { alias: "minimax" },
+        "minimax/MiniMax-M2.5": { alias: "minimax" },
         "openai/gpt-5.2": { alias: "gpt" },
       },
     },
@@ -1995,11 +2045,12 @@ Model "provider/model" is not allowed. Use /model to list available models.
 是的。OpenClaw 提供了一些默认简写（仅在 `agents.defaults.models` 中存在该模型时应用）：
 
 - `opus` → `anthropic/claude-opus-4-6`
-- `sonnet` → `anthropic/claude-sonnet-4-5`
-- `gpt` → `openai/gpt-5.2`
+- `sonnet` → `anthropic/claude-sonnet-4-6`
+- `gpt` → `openai/gpt-5.4`
 - `gpt-mini` → `openai/gpt-5-mini`
-- `gemini` → `google/gemini-3-pro-preview`
+- `gemini` → `google/gemini-3.1-pro-preview`
 - `gemini-flash` → `google/gemini-3-flash-preview`
+- `gemini-flash-lite` → `google/gemini-3.1-flash-lite-preview`
 
 如果您设置了具有相同名称的自己的别名，您的值优先。
 

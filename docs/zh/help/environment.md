@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3ad5fc6ff3e832f5e64cf76a2b9f6fe7"
+mmh3_hash: "b37b353a7bf9cdd9ca6e695ba4edc2c8"
 summary: "OpenClaw 加载环境变量的位置和优先级顺序"
 read_when:
   - 您需要知道加载哪些环境变量,以及按什么顺序
@@ -67,6 +67,12 @@ OpenClaw 还会向衍生的子进程注入上下文标记：
 - `OPENCLAW_SHELL=tui-local`：为本地 TUI `!` Shell 命令设置。
 
 这些是运行时标记（不需要用户配置）。可以在 Shell/profile 逻辑中使用它们来应用特定于上下文的规则。
+
+## UI 环境变量
+
+- `OPENCLAW_THEME=light`：当您的终端有浅色背景时，强制使用浅色 TUI 调色板。
+- `OPENCLAW_THEME=dark`：强制使用深色 TUI 调色板。
+- `COLORFGBG`：如果您的终端导出了此变量，OpenClaw 使用背景颜色提示自动选择 TUI 调色板。
 
 ## 配置中的环境变量替换
 

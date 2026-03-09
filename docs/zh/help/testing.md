@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4e038886c239ee79b252775de61532c4"
+mmh3_hash: "45fd18b7e52ce1ad248f1675b2b5d0cb"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
   - 在本地或 CI 中运行测试
@@ -137,7 +137,7 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - `pnpm test:live`（或直接调用 Vitest 时使用 `OPENCLAW_LIVE_TEST=1`）
 - 设置 `OPENCLAW_LIVE_MODELS=modern`（或 `all`，modern 的别名）以实际运行此套件；否则它会跳过以保持 `pnpm test:live` 专注于 Gateway 冒烟测试
 - 如何选择模型：
-  - `OPENCLAW_LIVE_MODELS=modern` 运行现代白名单（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.1、Grok 4）
+  - `OPENCLAW_LIVE_MODELS=modern` 运行现代白名单（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.5、Grok 4）
   - `OPENCLAW_LIVE_MODELS=all` 是现代白名单的别名
   - 或 `OPENCLAW_LIVE_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,..."`（逗号白名单）
 - 如何选择 Providers：
@@ -168,7 +168,7 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 - 如何启用：
   - `pnpm test:live`（或直接调用 Vitest 时使用 `OPENCLAW_LIVE_TEST=1`）
 - 如何选择模型：
-  - 默认：现代白名单（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.1、Grok 4）
+  - 默认：现代白名单（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.5、Grok 4）
   - `OPENCLAW_LIVE_GATEWAY_MODELS=all` 是现代白名单的别名
   - 或设置 `OPENCLAW_LIVE_GATEWAY_MODELS="provider/model"`（或逗号列表）以缩小范围
 - 如何选择 Providers（避免"OpenRouter 所有内容"）：
@@ -220,10 +220,10 @@ OPENCLAW_LIVE_SETUP_TOKEN=1 OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-to
 - 默认值：
   - 模型：`claude-cli/claude-sonnet-4-6`
   - 命令：`claude`
-  - 参数：`["-p","--output-format","json","--dangerously-skip-permissions"]`
+  - 参数：`["-p","--output-format","json","--permission-mode","bypassPermissions"]`
 - 覆盖（可选）：
   - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-opus-4-6"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.3-codex"`
+  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.4"`
   - `OPENCLAW_LIVE_CLI_BACKEND_COMMAND="/full/path/to/claude"`
   - `OPENCLAW_LIVE_CLI_BACKEND_ARGS='["-p","--output-format","json","--permission-mode","bypassPermissions"]'`
   - `OPENCLAW_LIVE_CLI_BACKEND_CLEAR_ENV='["ANTHROPIC_API_KEY","ANTHROPIC_API_KEY_OLD"]'`
@@ -252,7 +252,7 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
   - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 - 跨多个 Providers 的工具调用：
-  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,google/gemini-3-flash-preview,zai/glm-4.7,minimax/minimax-m2.1" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,google/gemini-3-flash-preview,zai/glm-4.7,minimax/minimax-m2.5" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 - Google 焦点（Gemini API 密钥 + Antigravity）：
   - Gemini（API 密钥）：`OPENCLAW_LIVE_GATEWAY_MODELS="google/gemini-3-flash-preview" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
@@ -276,14 +276,14 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 这是我们期望保持工作的"常见模型"运行：
 
 - OpenAI（非 Codex）：`openai/gpt-5.2`（可选：`openai/gpt-5.1`）
-- OpenAI Codex：`openai-codex/gpt-5.3-codex`（可选：`openai-codex/gpt-5.3-codex-codex`）
+- OpenAI Codex：`openai-codex/gpt-5.4`
 - Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-5`）
-- Google（Gemini API）：`google/gemini-3-pro-preview` 和 `google/gemini-3-flash-preview`（避免旧的 Gemini 2.x 模型）
+- Google（Gemini API）：`google/gemini-3.1-pro-preview` 和 `google/gemini-3-flash-preview`（避免旧的 Gemini 2.x 模型）
 - Google（Antigravity）：`google-antigravity/claude-opus-4-6-thinking` 和 `google-antigravity/gemini-3-flash`
 - Z.AI（GLM）：`zai/glm-4.7`
-- MiniMax：`minimax/minimax-m2.1`
+- MiniMax：`minimax/minimax-m2.5`
 
-使用工具 + 图像运行 Gateway 冒烟测试：`OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,openai-codex/gpt-5.3-codex,anthropic/claude-opus-4-6,google/gemini-3-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/minimax-m2.1" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+使用工具 + 图像运行 Gateway 冒烟测试：`OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,openai-codex/gpt-5.4,anthropic/claude-opus-4-6,google/gemini-3.1-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/minimax-m2.5" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 ### 基线：工具调用（Read + 可选 Exec）
 
@@ -293,7 +293,7 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-5`）
 - Google：`google/gemini-3-flash-preview`（或 `google/gemini-3-pro-preview`）
 - Z.AI（GLM）：`zai/glm-4.7`
-- MiniMax：`minimax/minimax-m2.1`
+- MiniMax：`minimax/minimax-m2.5`
 
 可选的额外覆盖（很好有）：
 

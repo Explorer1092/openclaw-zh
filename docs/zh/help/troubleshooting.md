@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bbe51442fd5fad18f8de3855f8738eec"
+mmh3_hash: "8084cb2cd10dd06d950e60b1f4d7decd"
 summary: "OpenClaw 的症状优先故障排除中心"
 read_when:
   - OpenClaw 无法正常工作且您需要最快的修复路径
@@ -40,6 +40,30 @@ openclaw logs --follow
 如果您看到：
 `HTTP 429: rate_limit_error: Extra usage is required for long context requests`，
 请前往 [/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context)。
+
+## Plugin 安装因缺少 openclaw extensions 而失败
+
+如果安装失败并提示 `package.json missing openclaw.extensions`，则该 Plugin 包使用了 OpenClaw 不再接受的旧格式。
+
+在 Plugin 包中修复：
+
+1. 在 `package.json` 中添加 `openclaw.extensions`。
+2. 将条目指向构建后的运行时文件（通常是 `./dist/index.js`）。
+3. 重新发布 Plugin 并再次运行 `openclaw plugins install <npm-spec>`。
+
+示例：
+
+```json
+{
+  "name": "@openclaw/my-plugin",
+  "version": "1.2.3",
+  "openclaw": {
+    "extensions": ["./dist/index.js"]
+  }
+}
+```
+
+参考：[/tools/plugin#distribution-npm](/tools/plugin#distribution-npm)
 
 ## 决策树
 
@@ -266,6 +290,7 @@ flowchart TD
 
     - [/gateway/troubleshooting#browser-tool-fails](/gateway/troubleshooting#browser-tool-fails)
     - [/tools/browser-linux-troubleshooting](/tools/browser-linux-troubleshooting)
+    - [/tools/browser-wsl2-windows-remote-cdp-troubleshooting](/tools/browser-wsl2-windows-remote-cdp-troubleshooting)
     - [/tools/chrome-extension](/tools/chrome-extension)
 
   </Accordion>
