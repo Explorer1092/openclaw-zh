@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "e9ee576fa092daf16b3d07c9efb4acd8"
 title: "`openclaw plugins`"
 sidebarTitle: "openclaw plugins"
-mmh3_hash: "e97dc701bfd25e13118e7406c61edf30"
 summary: "`openclaw plugins` 的 CLI 参考(列表、安装、启用/禁用、doctor)"
 read_when:
   - 您想安装或管理进程内Gateway插件
@@ -44,7 +44,11 @@ openclaw plugins install <npm-spec> --pin
 
 安全注意事项:像运行代码一样对待 Plugin 安装。优先使用固定版本。
 
-Npm 规范**仅限注册表**(包名称 + 可选版本/标签)。Git/URL/文件规范被拒绝。依赖项安装使用 `--ignore-scripts` 运行以确保安全。
+Npm 规范**仅限注册表**(包名称 + 可选**精确版本**或**发行标签**)。Git/URL/文件规范和语义版本范围被拒绝。依赖项安装使用 `--ignore-scripts` 运行以确保安全。
+
+裸规范和 `@latest` 保持稳定轨道。如果 npm 将其中任一解析为预发布版本,OpenClaw 会停止并要求您使用预发布标签(例如 `@beta`/`@rc`)或精确的预发布版本(例如 `@1.2.3-beta.4`)明确选择加入。
+
+如果裸安装规范匹配捆绑的 Plugin ID(例如 `diffs`),OpenClaw 会直接安装捆绑的 Plugin。要安装同名的 npm 包,请使用显式范围规范(例如 `@scope/diffs`)。
 
 支持的存档:`.zip`、`.tgz`、`.tar.gz`、`.tar`。
 

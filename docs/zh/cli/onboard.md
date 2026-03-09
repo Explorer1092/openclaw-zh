@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "9eaf24462ddc63684cfe5460af11ac42"
 title: "`openclaw onboard`"
 sidebarTitle: "openclaw onboard"
-mmh3_hash: "27b64506787a42048d4aeea1b888a942"
 summary: "`openclaw onboard` 的 CLI 参考(交互式入职向导)"
 read_when:
   - 您想要 Gateway、工作区、身份验证、Channel 和 Skill 的指导性设置
@@ -61,6 +61,28 @@ openclaw onboard --non-interactive \
 - 在入职流程环境中设置提供商环境变量(例如 `OPENAI_API_KEY`)。
 - 除非也设置了该环境变量,否则不要传递内联密钥标志(例如 `--openai-api-key`)。
 - 如果在没有必要环境变量的情况下传递内联密钥标志,入职会快速失败并提供指导。
+
+非交互模式下的 Gateway 令牌选项:
+
+- `--gateway-auth token --gateway-token <token>` 存储明文令牌。
+- `--gateway-auth token --gateway-token-ref-env <name>` 将 `gateway.auth.token` 存储为 env SecretRef。
+- `--gateway-token` 和 `--gateway-token-ref-env` 互斥。
+- `--gateway-token-ref-env` 要求入职流程环境中存在非空环境变量。
+- 使用 `--install-daemon` 时,当令牌身份验证需要令牌,SecretRef 管理的 Gateway 令牌会被验证但不会作为已解析的明文持久化到监督服务环境元数据中。
+- 使用 `--install-daemon` 时,如果令牌模式需要令牌且配置的令牌 SecretRef 未解析,入职会失败关闭并提供修复指引。
+- 使用 `--install-daemon` 时,如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置,入职会阻止安装直到明确设置模式。
+
+示例:
+
+```bash
+export OPENCLAW_GATEWAY_TOKEN="your-token"
+openclaw onboard --non-interactive \
+  --mode local \
+  --auth-choice skip \
+  --gateway-auth token \
+  --gateway-token-ref-env OPENCLAW_GATEWAY_TOKEN \
+  --accept-risk
+```
 
 交互式入职与引用模式的行为:
 
