@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7750ec790df775f14e8f8db041eeed7f"
+mmh3_hash: "6f2fa88fbc5b8f45abf54e4a5562274d"
 title: "Gateway CLI"
 sidebarTitle: "Gateway CLI"
 summary: "OpenClaw Gateway CLI(`openclaw gateway`) — 运行、查询和发现Gateway"
@@ -48,7 +48,8 @@ openclaw gateway run
 - `--bind <loopback|lan|tailnet|auto|custom>`:监听器绑定模式。
 - `--auth <token|password>`:身份验证模式覆盖。
 - `--token <token>`:令牌覆盖(同时为进程设置 `OPENCLAW_GATEWAY_TOKEN`)。
-- `--password <password>`:密码覆盖(同时为进程设置 `OPENCLAW_GATEWAY_PASSWORD`)。
+- `--password <password>`:密码覆盖。警告:内联密码可能在本地进程列表中暴露。
+- `--password-file <path>`:从文件读取 Gateway 密码。
 - `--tailscale <off|serve|funnel>`:通过 Tailscale 公开Gateway。
 - `--tailscale-reset-on-exit`:关闭时重置 Tailscale serve/funnel 配置。
 - `--allow-unconfigured`:允许在配置中没有 `gateway.mode=local` 的情况下启动Gateway。
@@ -105,6 +106,12 @@ openclaw gateway status --json
 - `--timeout <ms>`:探测超时(默认 `10000`)。
 - `--no-probe`:跳过 RPC 探测(仅服务视图)。
 - `--deep`:也扫描系统级服务。
+
+注意:
+
+- `gateway status` 在可能的情况下解析已配置的身份验证 SecretRef 用于探测身份验证。
+- 如果所需的身份验证 SecretRef 在此命令路径中未解析,探测身份验证可能失败;显式传递 `--token`/`--password` 或先解析密钥源。
+- 在 Linux systemd 安装中,服务身份验证漂移检查从单元读取 `Environment=` 和 `EnvironmentFile=` 值(包括 `%h`、带引号的路径、多个文件和可选的 `-` 文件)。
 
 ### `gateway probe`
 
@@ -163,6 +170,11 @@ openclaw gateway uninstall
 注意:
 
 - `gateway install` 支持 `--port`、`--runtime`、`--token`、`--force`、`--json`。
+- 当令牌身份验证需要令牌且 `gateway.auth.token` 由 SecretRef 管理时,`gateway install` 会验证 SecretRef 是否可解析,但不会将已解析的令牌持久化到服务环境元数据中。
+- 如果令牌身份验证需要令牌且配置的令牌 SecretRef 未解析,安装将失败关闭而不是持久化回退的明文。
+- 对于 `gateway run` 的密码身份验证,优先使用 `OPENCLAW_GATEWAY_PASSWORD`、`--password-file` 或 SecretRef 支持的 `gateway.auth.password`,而非内联 `--password`。
+- 在推断身份验证模式下,仅 shell 的 `OPENCLAW_GATEWAY_PASSWORD`/`CLAWDBOT_GATEWAY_PASSWORD` 不会放宽安装令牌要求;安装托管服务时请使用持久配置(`gateway.auth.password` 或配置 `env`)。
+- 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置,安装将被阻止直到明确设置模式。
 - 生命周期命令接受 `--json` 用于脚本编写。
 
 ## 发现Gateway(Bonjour)

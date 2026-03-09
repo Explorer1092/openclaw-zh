@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a2c3b03a51f9d79f489517b6e201819a"
+mmh3_hash: "12160b959712d5fbd6545cb2edc361de"
 title: "`openclaw hooks`"
 sidebarTitle: "openclaw hooks"
 summary: "`openclaw hooks` 的 CLI 参考(Agent Hook)"
@@ -194,7 +194,9 @@ openclaw hooks install <npm-spec> --pin
 
 从本地文件夹/存档或 npm 安装 Hook 包。
 
-Npm 规范**仅限注册表**(包名称 + 可选版本/标签)。Git/URL/文件规范被拒绝。依赖项安装使用 `--ignore-scripts` 运行以确保安全。
+Npm 规范**仅限注册表**(包名称 + 可选**精确版本**或**发行标签**)。Git/URL/文件规范和语义版本范围被拒绝。依赖项安装使用 `--ignore-scripts` 运行以确保安全。
+
+裸规范和 `@latest` 保持稳定轨道。如果 npm 将其中任一解析为预发布版本,OpenClaw 会停止并要求您使用预发布标签(例如 `@beta`/`@rc`)或精确的预发布版本明确选择加入。
 
 **它的作用:**
 

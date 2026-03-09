@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d2866e248124c920dc2e8a307aa6bf00"
+mmh3_hash: "f4ffca8e70e31e546e6f4e96538d6255"
 title: "daemon"
 summary: "`openclaw daemon` 的 CLI 参考（Gateway 服务管理的旧版别名）"
 read_when:
@@ -38,6 +38,14 @@ openclaw daemon uninstall
 - `status`：`--url`、`--token`、`--password`、`--timeout`、`--no-probe`、`--deep`、`--json`
 - `install`：`--port`、`--runtime <node|bun>`、`--token`、`--force`、`--json`
 - 生命周期（`uninstall|start|stop|restart`）：`--json`
+
+注意:
+
+- `status` 在可能的情况下解析已配置的身份验证 SecretRef 用于探测身份验证。
+- 在 Linux systemd 安装中,`status` 令牌漂移检查包括 `Environment=` 和 `EnvironmentFile=` 单元来源。
+- 当令牌身份验证需要令牌且 `gateway.auth.token` 由 SecretRef 管理时,`install` 会验证 SecretRef 是否可解析,但不会将已解析的令牌持久化到服务环境元数据中。
+- 如果令牌身份验证需要令牌且配置的令牌 SecretRef 未解析,安装将失败关闭。
+- 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置,安装将被阻止直到明确设置模式。
 
 ## 推荐
 

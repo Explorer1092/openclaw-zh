@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "7dfe1c74a8252bb1a9b0a8b237241a0a"
 title: "CLI 参考"
 sidebarTitle: "CLI 参考"
-mmh3_hash: "a985e19d26a5d3d7e0bb7555f880d43a"
 summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
 read_when:
   - 添加或修改 CLI 命令或选项
@@ -21,6 +21,7 @@ read_when:
 - [`completion`](/cli/completion)
 - [`doctor`](/cli/doctor)
 - [`dashboard`](/cli/dashboard)
+- [`backup`](/cli/backup)
 - [`reset`](/cli/reset)
 - [`uninstall`](/cli/uninstall)
 - [`update`](/cli/update)
@@ -105,6 +106,9 @@ openclaw [--dev] [--profile <name>] <command>
   completion
   doctor
   dashboard
+  backup
+    create
+    verify
   security
     audit
   secrets
@@ -361,6 +365,7 @@ openclaw [--dev] [--profile <name>] <command>
 - `--gateway-bind <loopback|lan|tailnet|auto|custom>`
 - `--gateway-auth <token|password>`
 - `--gateway-token <token>`
+- `--gateway-token-ref-env <name>`(非交互;将 `gateway.auth.token` 存储为 env SecretRef;要求该环境变量已设置;不能与 `--gateway-token` 组合)
 - `--gateway-password <password>`
 - `--remote-url <url>`
 - `--remote-token <token>`
@@ -745,6 +750,7 @@ OpenClaw 可以在 OAuth/API 凭据可用时显示提供商使用/配额。
 - `--token <token>`
 - `--auth <token|password>`
 - `--password <password>`
+- `--password-file <path>`
 - `--tailscale <off|serve|funnel>`
 - `--tailscale-reset-on-exit`
 - `--allow-unconfigured`
@@ -826,13 +832,15 @@ Gateway CLI 助手(对 RPC 子命令使用 `--url`、`--token`、`--password`、
 
 有关回退行为和扫描策略,请参见 [/concepts/models](/concepts/models)。
 
-首选 Anthropic 身份验证(setup-token):
+Anthropic setup-token(支持):
 
 ```bash
 claude setup-token
 openclaw models auth setup-token --provider anthropic
 openclaw models status
 ```
+
+政策说明:这是技术兼容性。Anthropic 过去曾在 Claude Code 之外的某些订阅使用中设置限制;在生产中依赖 setup-token 之前,请确认当前的 Anthropic 条款。
 
 ### `models`(根)
 
@@ -1001,6 +1009,11 @@ openclaw models status
 - `node uninstall`
 - `node stop`
 - `node restart`
+
+身份验证说明:
+
+- `node` 从环境变量/配置解析 Gateway 身份验证(无 `--token`/`--password` 标志):`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`,然后是 `gateway.auth.*`,并通过 `gateway.remote.*` 支持远程模式。
+- 遗留的 `CLAWDBOT_GATEWAY_*` 环境变量有意忽略用于 Node 主机身份验证解析。
 
 ## Nodes
 
