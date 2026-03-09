@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eebf4c50600e7d606d57eca35327ce1f"
+mmh3_hash: "4f0cdd0ca3dd09d8679f3a26df4f5b4c"
 title: "模型提供商"
 sidebarTitle: "模型提供商"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
@@ -13,15 +13,6 @@ read_when:
 OpenClaw 可以使用多个 LLM 提供商。选择一个提供商，进行身份验证，然后将默认模型设置为 `provider/model`。
 
 正在寻找聊天频道文档（WhatsApp/Telegram/Discord/Slack/Mattermost (插件)/等）？参见 [Channels](/channels)。
-
-## 亮点：Venice (Venice AI)
-
-Venice 是我们推荐的 Venice AI 设置，用于隐私优先的推理，并可选择将 Opus 用于困难任务。
-
-- 默认：`venice/llama-3.3-70b`
-- 最佳整体：`venice/claude-opus-45`（Opus 仍然是最强的）
-
-参见 [Venice AI](/providers/venice)。
 
 ## 快速开始
 
@@ -66,6 +57,6 @@ Venice 是我们推荐的 Venice AI 设置，用于隐私优先的推理，并�
 
 ## 社区工具
 
-- [Claude Max API Proxy](/providers/claude-max-api-proxy) - 将 Claude Max/Pro 订阅用作 OpenAI 兼容的 API 端点
+- [Claude Max API Proxy](/providers/claude-max-api-proxy) - 用于 Claude 订阅凭据的社区代理（使用前请验证 Anthropic 政策/条款）
 
 有关完整的提供商目录（xAI、Groq、Mistral 等）和高级配置，请参见[模型提供商](/concepts/model-providers)。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0340f5ed8cf06507d80f252f833ab871"
+mmh3_hash: "07862d691e3dbb2a93ca6c3fd5e5aa7d"
 title: "Vercel AI Gateway"
 sidebarTitle: "Vercel AI Gateway"
 summary: "Vercel AI Gateway 设置 (身份验证 + 模型选择)"
@@ -12,6 +12,8 @@ read_when: ["您想将 Vercel AI Gateway 与 OpenClaw 一起使用","您需要 A
 - 提供商: `vercel-ai-gateway`
 - 身份验证: `AI_GATEWAY_API_KEY`
 - API: Anthropic Messages 兼容
+- OpenClaw 自动发现 Gateway `/v1/models` 目录，因此 `/models vercel-ai-gateway`
+  包含当前模型引用，如 `vercel-ai-gateway/openai/gpt-5.4`。
 
 ## 快速开始
 

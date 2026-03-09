@@ -1,7 +1,7 @@
 ---
 title: "Synthetic"
 sidebarTitle: "Synthetic"
-mmh3_hash: "4a7b33863f9135d6df4727008ebec619"
+mmh3_hash: "713b6ebe47ae111dbf217168ac644c95"
 summary: "在 OpenClaw 中使用 Synthetic 的 Anthropic 兼容 API"
 read_when: ["您想使用 Synthetic 作为模型提供商","您需要 Synthetic API 密钥或基础 URL 设置"]
 ---
@@ -21,7 +21,7 @@ openclaw onboard --auth-choice synthetic-api-key
 默认模型设置为:
 
 ```
-synthetic/hf:MiniMaxAI/MiniMax-M2.1
+synthetic/hf:MiniMaxAI/MiniMax-M2.5
 ```
 
 ## 配置示例
@@ -31,8 +31,8 @@ synthetic/hf:MiniMaxAI/MiniMax-M2.1
   env: { SYNTHETIC_API_KEY: "sk-..." },
   agents: {
     defaults: {
-      model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.1" },
-      models: { "synthetic/hf:MiniMaxAI/MiniMax-M2.1": { alias: "MiniMax M2.1" } }
+      model: { primary: "synthetic/hf:MiniMaxAI/MiniMax-M2.5" },
+      models: { "synthetic/hf:MiniMaxAI/MiniMax-M2.5": { alias: "MiniMax M2.1" } }
     }
   },
   models: {
@@ -44,7 +44,7 @@ synthetic/hf:MiniMaxAI/MiniMax-M2.1
         api: "anthropic-messages",
         models: [
           {
-            id: "hf:MiniMaxAI/MiniMax-M2.1",
+            id: "hf:MiniMaxAI/MiniMax-M2.5",
             name: "MiniMax M2.1",
             reasoning: false,
             input: ["text"],
@@ -68,7 +68,7 @@ synthetic/hf:MiniMaxAI/MiniMax-M2.1
 
 | 模型 ID | 上下文窗口 | 最大令牌 | 推理 | 输入 |
 | --- | --- | --- | --- | --- |
-| `hf:MiniMaxAI/MiniMax-M2.1` | 192000 | 65536 | false | text |
+| `hf:MiniMaxAI/MiniMax-M2.5` | 192000 | 65536 | false | text |
 | `hf:moonshotai/Kimi-K2-Thinking` | 256000 | 8192 | true | text |
 | `hf:zai-org/GLM-4.7` | 198000 | 128000 | false | text |
 | `hf:deepseek-ai/DeepSeek-R1-0528` | 128000 | 8192 | false | text |

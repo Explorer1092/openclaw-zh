@@ -1,13 +1,13 @@
 ---
 title: "OpenAI"
 sidebarTitle: "OpenAI"
-mmh3_hash: "3e1d72c154d9d9bc6d4e5d61c9196727"
+mmh3_hash: "f562614e21e95f43e8a0590233359074"
 summary: "在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI"
 read_when: ["您想在 OpenClaw 中使用 OpenAI 模型","您想使用 Codex 订阅身份验证而不是 API 密钥"]
 ---
 # OpenAI
 
-OpenAI 为 GPT 模型提供开发者 API。Codex 支持**ChatGPT 登录**以进行订阅访问，或**API 密钥**登录以进行基于使用量的访问。Codex cloud 需要 ChatGPT 登录。
+OpenAI 为 GPT 模型提供开发者 API。Codex 支持**ChatGPT 登录**以进行订阅访问，或**API 密钥**登录以进行基于使用量的访问。Codex cloud 需要 ChatGPT 登录。OpenAI 明确支持在 OpenClaw 等外部工具/工作流中使用订阅 OAuth。
 
 ## 选项 A: OpenAI API 密钥 (OpenAI Platform)
 
@@ -27,9 +27,11 @@ openclaw onboard --openai-api-key "$OPENAI_API_KEY"
 ```json5
 {
   env: { OPENAI_API_KEY: "sk-..." },
-  agents: { defaults: { model: { primary: "openai/gpt-5.2" } } },
+  agents: { defaults: { model: { primary: "openai/gpt-5.4" } } },
 }
 ```
+
+OpenAI 当前的 API 模型文档列出了 `gpt-5.4` 和 `gpt-5.4-pro` 用于直接 OpenAI API 使用。OpenClaw 通过 `openai/*` Responses 路径转发两者。
 
 ## 选项 B: OpenAI Code (Codex) 订阅
 
@@ -50,9 +52,11 @@ openclaw models auth login --provider openai-codex
 
 ```json5
 {
-  agents: { defaults: { model: { primary: "openai-codex/gpt-5.3-codex" } } },
+  agents: { defaults: { model: { primary: "openai-codex/gpt-5.4" } } },
 }
 ```
+
+OpenAI 当前的 Codex 文档将 `gpt-5.4` 列为当前 Codex 模型。OpenClaw 将其映射为 `openai-codex/gpt-5.4` 用于 ChatGPT/Codex OAuth 使用。
 
 ### 传输默认值
 
@@ -75,9 +79,9 @@ OpenClaw 使用 `pi-ai` 进行模型流式传输。对于 `openai/*` 和 `openai
 {
   agents: {
     defaults: {
-      model: { primary: "openai-codex/gpt-5.3-codex" },
+      model: { primary: "openai-codex/gpt-5.4" },
       models: {
-        "openai-codex/gpt-5.3-codex": {
+        "openai-codex/gpt-5.4": {
           params: {
             transport: "auto",
           },
@@ -99,7 +103,7 @@ OpenAI 文档将预热描述为可选。OpenClaw 默认为 `openai/*` 启用预�
   agents: {
     defaults: {
       models: {
-        "openai/gpt-5.2": {
+        "openai/gpt-5.4": {
           params: {
             openaiWsWarmup: false,
           },
@@ -117,7 +121,7 @@ OpenAI 文档将预热描述为可选。OpenClaw 默认为 `openai/*` 启用预�
   agents: {
     defaults: {
       models: {
-        "openai/gpt-5.2": {
+        "openai/gpt-5.4": {
           params: {
             openaiWsWarmup: true,
           },
@@ -127,6 +131,28 @@ OpenAI 文档将预热描述为可选。OpenClaw 默认为 `openai/*` 启用预�
   },
 }
 ```
+
+### OpenAI 优先处理
+
+OpenAI 的 API 通过 `service_tier=priority` 提供优先处理。在 OpenClaw 中，将 `agents.defaults.models["openai/<model>"].params.serviceTier` 设置为在直接 `openai/*` Responses 请求上传递该字段。
+
+```json5
+{
+  agents: {
+    defaults: {
+      models: {
+        "openai/gpt-5.4": {
+          params: {
+            serviceTier: "priority",
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+支持的值为 `auto`、`default`、`flex` 和 `priority`。
 
 ### OpenAI Responses 服务端压缩
 
@@ -146,7 +172,7 @@ OpenAI 文档将预热描述为可选。OpenClaw 默认为 `openai/*` 启用预�
   agents: {
     defaults: {
       models: {
-        "azure-openai-responses/gpt-5.2": {
+        "azure-openai-responses/gpt-5.4": {
           params: {
             responsesServerCompaction: true,
           },
@@ -164,7 +190,7 @@ OpenAI 文档将预热描述为可选。OpenClaw 默认为 `openai/*` 启用预�
   agents: {
     defaults: {
       models: {
-        "openai/gpt-5.2": {
+        "openai/gpt-5.4": {
           params: {
             responsesServerCompaction: true,
             responsesCompactThreshold: 120000,
@@ -183,7 +209,7 @@ OpenAI 文档将预热描述为可选。OpenClaw 默认为 `openai/*` 启用预�
   agents: {
     defaults: {
       models: {
-        "openai/gpt-5.2": {
+        "openai/gpt-5.4": {
           params: {
             responsesServerCompaction: false,
           },

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "14e84c865592f9238039c226b10c903e"
+mmh3_hash: "b72b2be67a402a15e760d05c122c0256"
 title: "模型提供商"
 sidebarTitle: "模型提供商示例"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
@@ -11,15 +11,6 @@ read_when:
 # 模型提供商
 
 OpenClaw 可以使用多个 LLM 提供商。选择一个，进行身份验证，然后将默认模型设置为 `provider/model`。
-
-## 亮点：Venice (Venice AI)
-
-Venice 是我们推荐的 Venice AI 设置，用于隐私优先的推理，并可选择将 Opus 用于最困难的任务。
-
-- 默认：`venice/llama-3.3-70b`
-- 最佳整体：`venice/claude-opus-45`（Opus 仍然是最强的）
-
-参见 [Venice AI](/providers/venice)。
 
 ## 快速开始（两步）
 

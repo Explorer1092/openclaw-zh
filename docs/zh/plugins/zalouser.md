@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "f384fae582061a2fcd25796ea57e7152"
-summary: "Zalo Personal Plugin: 通过 zca-cli 的 QR 登录 + 消息(Plugin 安装 + channel 配置 + CLI + Tool)"
+mmh3_hash: "2b67da9291dc43d271eda96405f4ca7a"
+summary: "Zalo Personal Plugin: 通过原生 zca-js 的 QR 登录 + 消息(Plugin 安装 + channel 配置 + Tool)"
 read_when:
   - 您想要 OpenClaw 中的 Zalo Personal(非官方)支持
   - 您正在配置或开发 zalouser Plugin
@@ -9,7 +9,7 @@ title: "Zalo Personal Plugin"
 
 # Zalo Personal(Plugin)
 
-通过 Plugin 为 OpenClaw 提供 Zalo Personal 支持,使用 `zca-cli` 自动化正常的 Zalo 用户帐户。
+通过 Plugin 为 OpenClaw 提供 Zalo Personal 支持,使用原生 `zca-js` 自动化正常的 Zalo 用户帐户。
 
 > **警告:** 非官方自动化可能导致帐户暂停/封禁。使用风险自负。
 
@@ -22,6 +22,8 @@ Channel id 为 `zalouser`,以明确表明这会自动化**个人 Zalo 用户帐�
 此 Plugin 在 **Gateway 进程内**运行。
 
 如果您使用远程 Gateway,请在**运行 Gateway 的机器**上安装/配置它,然后重启 Gateway。
+
+不需要外部 `zca`/`openzca` CLI 二进制文件。
 
 ## 安装
 
@@ -41,14 +43,6 @@ cd ./extensions/zalouser && pnpm install
 ```
 
 之后重启 Gateway。
-
-## 先决条件: zca-cli
-
-Gateway 机器必须在 `PATH` 上有 `zca`:
-
-```bash
-zca --version
-```
 
 ## 配置
 
@@ -80,3 +74,5 @@ openclaw directory peers list --channel zalouser --query "name"
 Tool 名称: `zalouser`
 
 操作: `send`、`image`、`link`、`friends`、`groups`、`me`、`status`
+
+Channel 消息操作也支持 `react` 用于消息反应。

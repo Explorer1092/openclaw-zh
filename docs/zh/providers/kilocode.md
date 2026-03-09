@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6899a7b14b1b6e51d915e2383a3aadcf"
+mmh3_hash: "2ec622b343ff7fd8fe1f1d25e222e569"
 summary: "在 OpenClaw 中使用 Kilo Gateway 的统一 API 访问多种模型"
 read_when:
   - 您希望用一个 API 密钥访问多种 LLM
@@ -25,40 +25,47 @@ openclaw onboard --kilocode-api-key <key>
 或设置环境变量：
 
 ```bash
-export KILOCODE_API_KEY="your-api-key"
+export KILOCODE_API_KEY="<your-kilocode-api-key>" # pragma: allowlist secret
 ```
 
 ## 配置片段
 
 ```json5
 {
-  env: { KILOCODE_API_KEY: "sk-..." },
+  env: { KILOCODE_API_KEY: "<your-kilocode-api-key>" }, // pragma: allowlist secret
   agents: {
     defaults: {
-      model: { primary: "kilocode/anthropic/claude-opus-4.6" },
+      model: { primary: "kilocode/kilo/auto" },
     },
   },
 }
 ```
 
-## 已收录的模型引用
+## 默认模型
 
-内置 Kilo Gateway 目录目前收录以下模型引用：
+默认模型为 `kilocode/kilo/auto`，这是一个智能路由模型，会根据任务自动选择最合适的底层模型：
 
-- `kilocode/anthropic/claude-opus-4.6`（默认）
-- `kilocode/z-ai/glm-5:free`
-- `kilocode/minimax/minimax-m2.5:free`
-- `kilocode/anthropic/claude-sonnet-4.5`
-- `kilocode/openai/gpt-5.2`
-- `kilocode/google/gemini-3-pro-preview`
-- `kilocode/google/gemini-3-flash-preview`
-- `kilocode/x-ai/grok-code-fast-1`
-- `kilocode/moonshotai/kimi-k2.5`
+- 规划、调试和编排任务路由到 Claude Opus
+- 代码编写和探索任务路由到 Claude Sonnet
+
+## 可用模型
+
+OpenClaw 在启动时从 Kilo Gateway 动态发现可用模型。使用 `/models kilocode` 查看您账户可用的完整模型列表。
+
+网关上的任何模型都可以使用 `kilocode/` 前缀：
+
+```
+kilocode/kilo/auto              （默认 - 智能路由）
+kilocode/anthropic/claude-sonnet-4
+kilocode/openai/gpt-5.2
+kilocode/google/gemini-3-pro-preview
+...以及更多
+```
 
 ## 注意事项
 
-- 模型引用格式为 `kilocode/<provider>/<model>`（例如 `kilocode/anthropic/claude-opus-4.6`）。
-- 默认模型：`kilocode/anthropic/claude-opus-4.6`
+- 模型引用格式为 `kilocode/<model-id>`（例如 `kilocode/anthropic/claude-sonnet-4`）。
+- 默认模型：`kilocode/kilo/auto`
 - Base URL：`https://api.kilo.ai/api/gateway/`
 - 更多模型/Provider 选项，请参阅 [/concepts/model-providers](/concepts/model-providers)。
 - Kilo Gateway 底层使用 Bearer token 携带您的 API 密钥。

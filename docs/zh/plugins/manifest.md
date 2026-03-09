@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3965f012677574575f0d2519b6720151"
+mmh3_hash: "05aa18f7c83259e56b9de79f64ab0b3c"
 summary: "Plugin 清单 + JSON schema 要求(严格配置验证)"
 read_when:
   - 您正在构建 OpenClaw Plugin
@@ -12,7 +12,7 @@ title: "Plugin 清单"
 每个 Plugin **必须**在 **Plugin 根目录**中提供 `openclaw.plugin.json` 文件。
 OpenClaw 使用此清单在**不执行 Plugin 代码**的情况下验证配置。缺少或无效的清单被视为 Plugin 错误并阻止配置验证。
 
-请参见完整的 Plugin 系统指南: [Plugin](/plugin)。
+请参见完整的 Plugin 系统指南: [Plugins](/tools/plugin)。
 
 ## 必需字段
 
@@ -34,7 +34,7 @@ OpenClaw 使用此清单在**不执行 Plugin 代码**的情况下验证配置�
 
 可选键:
 
-- `kind`(字符串): Plugin 类型(示例: `"memory"`)。
+- `kind`(字符串): Plugin 类型(示例: `"memory"`、`"context-engine"`)。
 - `channels`(数组): 此 Plugin 注册的 channel id(示例: `["matrix"]`)。
 - `providers`(数组): 此 Plugin 注册的 provider id。
 - `skills`(数组): 要加载的 skill 目录(相对于 Plugin 根目录)。
@@ -60,4 +60,7 @@ OpenClaw 使用此清单在**不执行 Plugin 代码**的情况下验证配置�
 
 - 清单对**所有 Plugin 都是必需的**,包括本地文件系统加载。
 - 运行时仍然单独加载 Plugin 模块;清单仅用于发现 + 验证。
+- 专属 Plugin 类型通过 `plugins.slots.*` 选择。
+  - `kind: "memory"` 通过 `plugins.slots.memory` 选择。
+  - `kind: "context-engine"` 通过 `plugins.slots.contextEngine` 选择（默认：内置 `legacy`）。
 - 如果您的 Plugin 依赖于本机模块,请记录构建步骤和任何包管理器 allowlist 要求(例如 pnpm `allow-build-scripts` + `pnpm rebuild <package>`)。
