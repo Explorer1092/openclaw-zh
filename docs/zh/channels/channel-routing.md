@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7b52f2063faca1f73fb340d4ad7cd4b3"
+mmh3_hash: "1106321bd2d74fed06580e922b780914"
 summary: "每个 Channel（WhatsApp、Telegram、Discord、Slack）的路由规则和共享上下文"
 read_when:
   - 更改 Channel 路由或收件箱行为
@@ -14,7 +14,7 @@ OpenClaw 将回复**路由回消息来源的 Channel**。模型不选择 Channel
 
 - **Channel**：`whatsapp`、`telegram`、`discord`、`slack`、`signal`、`imessage`、`webchat`。
 - **AccountId**：每个 Channel 的帐户实例（如果支持）。
-- 可选的 Channel 默认账户：`channels.<channel>.defaultAccount` 选择在出站路径未指定 `accountId` 时使用哪个账户。
+- 可选的 Channel 默认账户：`channels.<channel>.defaultAccount` 选择在出站路径未指定 `accountId` 时使用哪个账户。在多账户设置中，当配置了两个或更多账户时，请设置显式默认账户（`defaultAccount` 或 `accounts.default`）。
 - **AgentId**：隔离的工作空间 + Session 存储（"大脑"）。
 - **SessionKey**：用于存储上下文和控制并发的存储桶键。
 

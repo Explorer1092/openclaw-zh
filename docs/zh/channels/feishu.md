@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6585b32a8a025ec432b4218ead047d7b"
+mmh3_hash: "adeb588427296782985c3898650d5764"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
@@ -13,18 +13,14 @@ Feishu（Lark）是公司用于消息传递和协作的团队聊天平台。此 
 
 ---
 
-## 需要 Plugin
+## 捆绑 Plugin
 
-安装 Feishu Plugin：
+Feishu 随当前 OpenClaw 版本捆绑提供，无需单独安装 Plugin。
+
+如果您使用的是旧版构建或不包含捆绑 Feishu 的自定义安装，请手动安装：
 
 ```bash
 openclaw plugins install @openclaw/feishu
-```
-
-本地检出（从 git 仓库运行时）：
-
-```bash
-openclaw plugins install ./extensions/feishu
 ```
 
 ---
@@ -110,6 +106,8 @@ Lark（全球）租户应使用 [https://open.larksuite.com/app](https://open.la
       "application:application.app_message_stats.overview:readonly",
       "application:application:self_manage",
       "application:bot.menu:write",
+      "cardkit:card:read",
+      "cardkit:card:write",
       "contact:user.employee_id:readonly",
       "corehr:file:download",
       "event:ip_list",
@@ -195,6 +193,17 @@ openclaw channels add
 ```
 
 如果您使用 `connectionMode: "webhook"`，请设置 `verificationToken`。Feishu webhook 服务器默认绑定到 `127.0.0.1`；仅当您有意需要不同的绑定地址时才设置 `webhookHost`。
+
+#### Verification Token（webhook 模式）
+
+使用 webhook 模式时，请在配置中设置 `channels.feishu.verificationToken`。获取该值的步骤：
+
+1. 在 Feishu 开放平台中打开您的应用
+2. 前往**开发配置** → **事件与回调**
+3. 打开**加密策略**选项卡
+4. 复制 **Verification Token**
+
+![Verification Token 位置](../images/feishu-verification-token.png)
 
 ### 通过环境变量配置
 

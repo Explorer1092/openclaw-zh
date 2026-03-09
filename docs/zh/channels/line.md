@@ -1,7 +1,7 @@
 ---
 title: "LINE (插件)"
 sidebarTitle: "LINE"
-mmh3_hash: "6e787d41c781134fd27c1d91240bd052"
+mmh3_hash: "f4a732c26eb2423ace46833ffbaefa7b"
 summary: "LINE Messaging API 插件设置、配置和使用"
 read_when:
   - 连接 OpenClaw 到 LINE
@@ -45,6 +45,10 @@ https://gateway-host/line/webhook
 gateway 会响应 LINE 的 webhook 验证（GET）和入站事件（POST）。
 如果您需要自定义路径，请设置 `channels.line.webhookPath` 或
 `channels.line.accounts.<id>.webhookPath` 并相应更新 URL。
+
+安全注意：
+
+- LINE 签名验证依赖于请求体（对原始请求体进行 HMAC 计算），因此 OpenClaw 在验证之前会应用严格的预认证请求体限制和超时。
 
 ## 配置
 

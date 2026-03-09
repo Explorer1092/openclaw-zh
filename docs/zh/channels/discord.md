@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6f9b9ca5346b4cbc88b206298912aae0"
+mmh3_hash: "7bcb4e95a3e671053f096eb98c9741ec"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -414,6 +414,7 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
       guilds: {
         "123456789012345678": {
           requireMention: true,
+          ignoreOtherMentions: true,
           users: ["987654321098765432"],
           roles: ["123456789012345678"],
           channels: {
@@ -441,6 +442,7 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
     - 在支持的情况下隐式回复到 bot 的行为
 
     `requireMention` 按公会/频道配置（`channels.discord.guilds...`）。
+    `ignoreOtherMentions` 可选地丢弃提及了其他用户/角色（但未提及 bot）的消息（不包括 @everyone/@here）。
 
     群组 DM：
 
@@ -843,6 +845,13 @@ OpenClaw 支持 Discord components v2 容器用于 agent 消息。使用带有 `
     - `agentFilter`、`sessionFilter`、`cleanupAfterResolve`
 
     当 `target` 是 `channel` 或 `both` 时，批准提示在频道中可见。只有配置的批准者可以使用按钮；其他用户收到临时拒绝。批准提示包括命令文本，因此仅在受信任的频道中启用频道投递。如果无法从会话键派生频道 ID，OpenClaw 回退到 DM 投递。
+
+    此处理程序的 Gateway 认证使用与其他 Gateway 客户端相同的共享凭据解析契约：
+
+    - 环境变量优先的本地认证（`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`，然后 `gateway.auth.*`）
+    - 在本地模式下，当 `gateway.auth.*` 未设置时，可将 `gateway.remote.*` 用作回退
+    - 适用时通过 `gateway.remote.*` 支持远程模式
+    - URL 覆盖是安全的：CLI 覆盖不重用隐式凭据，环境变量覆盖仅使用环境变量凭据
 
     如果批准失败并显示未知批准 ID，请验证批准者列表和功能启用。
 

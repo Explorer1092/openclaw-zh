@@ -1,7 +1,7 @@
 ---
 title: "Telegram (Bot API)"
 sidebarTitle: "Telegram"
-mmh3_hash: "5ccda7c7bb1b69a70570e93127a81a2f"
+mmh3_hash: "a5a1700ef78ff0c715b1b1fcbff2f129"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook
@@ -236,13 +236,16 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
     要求：
 
-    - `channels.telegram.streaming` 为 `off | partial | block | progress`（默认：`off`）
+    - `channels.telegram.streaming` 为 `off | partial | block | progress`（默认：`partial`）
     - `progress` 在 Telegram 上映射到 `partial`（与跨频道命名兼容）
     - 旧版 `channels.telegram.streamMode` 和布尔值 `streaming` 会自动映射
 
-    适用于私聊和群组/主题。
+    对于纯文本回复：
 
-    对于纯文本回复，OpenClaw 保留相同的预览消息并在原地进行最终编辑（不发送第二条消息）。
+    - 私信：OpenClaw 保留相同的预览消息并在原地进行最终编辑（不发送第二条消息）
+    - 群组/主题：OpenClaw 保留相同的预览消息并在原地进行最终编辑（不发送第二条消息）
+
+    对于复杂回复（例如媒体负载），OpenClaw 回退到正常最终传递，然后清理预览消息。
 
     对于复杂回复（例如媒体负载），OpenClaw 回退到正常的最终传递，然后清理预览消息。
 
@@ -438,6 +441,89 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     - 输入操作仍包含 `message_thread_id`
 
     主题继承：主题条目继承群组设置，除非被覆盖（`requireMention`、`allowFrom`、`skills`、`systemPrompt`、`enabled`、`groupPolicy`）。
+    `agentId` 仅适用于主题级别，不从群组默认值继承。
+
+    **每主题 Agent 路由**：每个主题可以通过在主题配置中设置 `agentId` 路由到不同的 agent。这使每个主题拥有自己独立的工作区、记忆和会话。示例：
+
+    ```json5
+    {
+      channels: {
+        telegram: {
+          groups: {
+            "-1001234567890": {
+              topics: {
+                "1": { agentId: "main" },      // 通用主题 → main agent
+                "3": { agentId: "zu" },        // 开发主题 → zu agent
+                "5": { agentId: "coder" }      // 代码审查 → coder agent
+              }
+            }
+          }
+        }
+      }
+    }
+    ```
+
+    每个主题拥有自己的会话键：`agent:zu:telegram:group:-1001234567890:topic:3`
+
+    **持久化 ACP 主题绑定**：论坛主题可以通过顶层类型化 ACP 绑定固定 ACP 工具会话：
+
+    - `bindings[]` 中使用 `type: "acp"` 和 `match.channel: "telegram"`
+
+    示例：
+
+    ```json5
+    {
+      agents: {
+        list: [
+          {
+            id: "codex",
+            runtime: {
+              type: "acp",
+              acp: {
+                agent: "codex",
+                backend: "acpx",
+                mode: "persistent",
+                cwd: "/workspace/openclaw",
+              },
+            },
+          },
+        ],
+      },
+      bindings: [
+        {
+          type: "acp",
+          agentId: "codex",
+          match: {
+            channel: "telegram",
+            accountId: "default",
+            peer: { kind: "group", id: "-1001234567890:topic:42" },
+          },
+        },
+      ],
+      channels: {
+        telegram: {
+          groups: {
+            "-1001234567890": {
+              topics: {
+                "42": {
+                  requireMention: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    此功能目前仅限于群组和超级群组中的论坛主题。
+
+    **从聊天生成线程绑定 ACP**：
+
+    - `/acp spawn <agent> --thread here|auto` 可将当前 Telegram 主题绑定到新的 ACP 会话。
+    - 后续主题消息直接路由到绑定的 ACP 会话（无需 `/acp steer`）。
+    - 成功绑定后，OpenClaw 在主题内固定生成确认消息。
+    - 需要 `channels.telegram.threadBindings.spawnAcpSessions=true`。
 
     模板上下文包括：
 
@@ -632,7 +718,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
   <Accordion title="限制、重试和 CLI 目标">
     - `channels.telegram.textChunkLimit` 默认为 4000。
     - `channels.telegram.chunkMode="newline"` 在长度分割之前优先考虑段落边界（空行）。
-    - `channels.telegram.mediaMaxMb`（默认 5）限制入站 Telegram 媒体下载/处理大小。
+    - `channels.telegram.mediaMaxMb`（默认 100）限制入站和出站 Telegram 媒体大小。
     - `channels.telegram.timeoutSeconds` 覆盖 Telegram API 客户端超时（如果未设置，使用 grammY 默认值）。
     - 群组上下文历史使用 `channels.telegram.historyLimit` 或 `messages.groupChat.historyLimit`（默认 50）；`0` 禁用。
     - 私信历史控制：
@@ -646,6 +732,28 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 openclaw message send --channel telegram --target 123456789 --message "hi"
 openclaw message send --channel telegram --target @name --message "hi"
 ```
+
+    Telegram 轮询使用 `openclaw message poll` 并支持论坛主题：
+
+```bash
+openclaw message poll --channel telegram --target 123456789 \
+  --poll-question "Ship it?" --poll-option "Yes" --poll-option "No"
+openclaw message poll --channel telegram --target -1001234567890:topic:42 \
+  --poll-question "Pick a time" --poll-option "10am" --poll-option "2pm" \
+  --poll-duration-seconds 300 --poll-public
+```
+
+    仅 Telegram 的轮询标志：
+
+    - `--poll-duration-seconds`（5-600）
+    - `--poll-anonymous`
+    - `--poll-public`
+    - `--thread-id` 用于论坛主题（或使用 `:topic:` 目标）
+
+    操作门控：
+
+    - `channels.telegram.actions.sendMessage=false` 禁用出站 Telegram 消息，包括轮询
+    - `channels.telegram.actions.poll=false` 禁用 Telegram 轮询创建，同时保留常规发送
 
   </Accordion>
 </AccordionGroup>
@@ -729,7 +837,10 @@ dig +short api.telegram.org AAAA
 - `channels.telegram.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
 - `channels.telegram.defaultTo`：当没有提供显式 `--reply-to` 时，CLI `--deliver` 使用的默认 Telegram 目标。
 - `channels.telegram.allowFrom`：私信 allowlist（数字 Telegram 用户 ID）。`allowlist` 需要至少一个发送者 ID。`open` 需要 `"*"`。`openclaw doctor --fix` 可以将旧版 `@username` 条目解析为 ID，并可在 allowlist 迁移流程中从配对存储文件恢复条目。
+- `channels.telegram.actions.poll`：启用或禁用 Telegram 轮询创建（默认：启用；仍需要 `sendMessage`）。
 - 多账户优先级：
+  - 当配置了两个或更多账户 ID 时，设置 `channels.telegram.defaultAccount`（或包含 `channels.telegram.accounts.default`）以使默认路由明确。
+  - 如果两者都未设置，OpenClaw 回退到第一个规范化账户 ID，`openclaw doctor` 会发出警告。
   - `channels.telegram.accounts.default.allowFrom` 和 `channels.telegram.accounts.default.groupAllowFrom` 仅适用于 `default` 账户。
   - 命名账户在账户级别值未设置时继承 `channels.telegram.allowFrom` 和 `channels.telegram.groupAllowFrom`。
   - 命名账户不继承 `channels.telegram.accounts.default.allowFrom` / `groupAllowFrom`。
@@ -742,17 +853,20 @@ dig +short api.telegram.org AAAA
   - `channels.telegram.groups.<id>.allowFrom`：每群组发送者 allowlist 覆盖。
   - `channels.telegram.groups.<id>.systemPrompt`：群组的额外系统提示。
   - `channels.telegram.groups.<id>.enabled`：为 `false` 时禁用群组。
-  - `channels.telegram.groups.<id>.topics.<threadId>.*`：每主题覆盖（与群组相同的字段）。
+  - `channels.telegram.groups.<id>.topics.<threadId>.*`：每主题覆盖（与群组相同的字段 + 仅主题的 `agentId`）。
+  - `channels.telegram.groups.<id>.topics.<threadId>.agentId`：将此主题路由到特定 agent（覆盖群组级别和绑定路由）。
   - `channels.telegram.groups.<id>.topics.<threadId>.groupPolicy`：每主题 groupPolicy 覆盖（`open | allowlist | disabled`）。
   - `channels.telegram.groups.<id>.topics.<threadId>.requireMention`：每主题提及门控覆盖。
+  - 顶层 `bindings[]` 中使用 `type: "acp"` 和 `match.peer.id` 为规范主题 ID `chatId:topic:topicId`：持久化 ACP 主题绑定字段（参见 [ACP Agents](/tools/acp-agents#channel-specific-settings)）。
+  - `channels.telegram.direct.<id>.topics.<threadId>.agentId`：将私信主题路由到特定 agent（与论坛主题行为相同）。
 - `channels.telegram.capabilities.inlineButtons`：`off | dm | group | all | allowlist`（默认：allowlist）。
 - `channels.telegram.accounts.<account>.capabilities.inlineButtons`：每账户覆盖。
 - `channels.telegram.replyToMode`：`off | first | all`（默认：`off`）。
 - `channels.telegram.textChunkLimit`：出站分块大小（字符）。
 - `channels.telegram.chunkMode`：`length`（默认）或 `newline`，在长度分块之前按空行（段落边界）分割。
 - `channels.telegram.linkPreview`：切换出站消息的链接预览（默认：true）。
-- `channels.telegram.streaming`：`off | partial | block | progress`（实时流式预览；默认：`off`；`progress` 映射到 `partial`）。
-- `channels.telegram.mediaMaxMb`：入站/出站媒体上限（MB）。
+- `channels.telegram.streaming`：`off | partial | block | progress`（实时流式预览；默认：`partial`；`progress` 映射到 `partial`；`block` 为旧版预览模式兼容）。Telegram 预览流式传输使用单个预览消息，在原地编辑。
+- `channels.telegram.mediaMaxMb`：入站/出站 Telegram 媒体上限（MB，默认：100）。
 - `channels.telegram.retry`：出站 Telegram API 调用的重试策略（attempts、minDelayMs、maxDelayMs、jitter）。
 - `channels.telegram.network.autoSelectFamily`：覆盖 Node autoSelectFamily（true=启用，false=禁用）。在 Node 22+ 上默认启用，WSL2 默认禁用。
 - `channels.telegram.network.dnsResultOrder`：覆盖 DNS 结果顺序（`ipv4first` 或 `verbatim`）。在 Node 22+ 上默认为 `ipv4first`。
@@ -774,7 +888,7 @@ dig +short api.telegram.org AAAA
 Telegram 特定高优先级字段：
 
 - 启动/认证：`enabled`、`botToken`、`tokenFile`、`accounts.*`
-- 访问控制：`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`、`groups.*.topics.*`
+- 访问控制：`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`、`groups.*.topics.*`、顶层 `bindings[]`（`type: "acp"`）
 - 命令/菜单：`commands.native`、`commands.nativeSkills`、`customCommands`
 - 线程/回复：`replyToMode`
 - 流式传输：`streaming`（预览）、`blockStreaming`

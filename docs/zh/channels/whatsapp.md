@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp（Web 频道）"
 sidebarTitle: "WhatsApp"
-mmh3_hash: "1e93012b3f54ffd0e11e831ac1dc8520"
+mmh3_hash: "7c8d551a030a18eab28fca39cb4bad95"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
@@ -310,7 +310,8 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 
   <Accordion title="媒体大小限制和回退行为">
     - 入站媒体保存上限：`channels.whatsapp.mediaMaxMb`（默认 `50`）
-    - 自动回复的出站媒体上限：`agents.defaults.mediaMaxMb`（默认 `5MB`）
+    - 出站媒体发送上限：`channels.whatsapp.mediaMaxMb`（默认 `50`）
+    - 每账户覆盖：`channels.whatsapp.accounts.<accountId>.mediaMaxMb`
     - 图像自动优化（调整大小/质量扫描）以符合限制
     - 媒体发送失败时，第一项回退发送文本警告而非静默丢弃响应
   </Accordion>

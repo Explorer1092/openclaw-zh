@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "77922b0169bd84da932bb9705a802c5f"
+mmh3_hash: "93e18a887fb20403ebf1e75c8d09059f"
 summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
 read_when:
   - Setting up Slack or debugging Slack socket/HTTP mode
@@ -324,6 +324,20 @@ Slack 操作通过 `channels.slack.actions.*` 控制。
 - Slack 期望 shortcode (例如 `"eyes"`)。
 - 使用 `""` 禁用频道或账户的反应。
 
+## 输入反应回退
+
+`typingReaction` 在 OpenClaw 处理回复时，向入站 Slack 消息添加临时反应，运行完成后再移除该反应。这是 Slack 原生 assistant 输入不可用时（尤其在私信中）的有效备选方案。
+
+解析顺序:
+
+- `channels.slack.accounts.<accountId>.typingReaction`
+- `channels.slack.typingReaction`
+
+注意:
+
+- Slack 期望 shortcode（例如 `"hourglass_flowing_sand"`）。
+- 反应是尽力而为的，回复或失败路径完成后会自动尝试清理。
+
 ## Manifest 和权限检查清单
 
 <AccordionGroup>
@@ -367,6 +381,7 @@ Slack 操作通过 `channels.slack.actions.*` 控制。
         "mpim:write",
         "users:read",
         "app_mentions:read",
+        "assistant:write",
         "reactions:read",
         "reactions:write",
         "pins:read",

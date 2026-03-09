@@ -1,7 +1,7 @@
 ---
 title: "Google Chat (Chat API)"
 sidebarTitle: "Google Chat"
-mmh3_hash: "6824921dee21db3aa1be85a442dd7743"
+mmh3_hash: "12a4a9b2df184bde5b9d8ff3eb0bf9aa"
 summary: "Google Chat 应用支持状态、功能和配置"
 read_when: ["Working on Google Chat channel features"]
 ---
@@ -124,6 +124,8 @@ your-domain.com {
 ## 工作原理
 
 1. Google Chat 向网关发送 webhook POST 请求。每个请求都包含一个 `Authorization: Bearer <token>` 头。
+   - 当请求头存在时，OpenClaw 在读取/解析完整 webhook 请求体之前先验证 bearer 认证。
+   - 请求体中携带 `authorizationEventObject.systemIdToken` 的 Google Workspace Add-on 请求通过更严格的预认证请求体预算支持。
 2. OpenClaw 根据配置的 `audienceType` + `audience` 验证 token：
    - `audienceType: "app-url"` → audience 是您的 HTTPS webhook URL。
    - `audienceType: "project-number"` → audience 是 Cloud 项目编号。

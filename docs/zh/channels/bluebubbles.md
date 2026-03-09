@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3d9fba422712392947f8ecd98845918c"
+mmh3_hash: "9978abce7eac894b5dc90a69f1c039ae"
 summary: "通过 BlueBubbles macOS 服务器使用 iMessage（REST 发送/接收、输入中、反应、配对、高级操作）。"
 read_when:
   - 设置 BlueBubbles channel
@@ -43,7 +43,7 @@ title: "BlueBubbles"
 安全说明：
 
 - 始终设置 webhook 密码。
-- Webhook 身份验证始终是必需的。OpenClaw 会拒绝 BlueBubbles webhook 请求，除非它们包含与 `channels.bluebubbles.password` 匹配的 password/guid（例如 `?password=<password>` 或 `x-password`），无论 loopback/代理拓扑如何。
+- Webhook 身份验证始终是必需的。OpenClaw 会拒绝 BlueBubbles webhook 请求，除非它们包含与 `channels.bluebubbles.password` 匹配的 password/guid（例如 `?password=<password>` 或 `x-password`），无论 loopback/代理拓扑如何。密码验证在读取/解析完整 webhook 请求体之前进行。
 
 ## 保持 Messages.app 运行（VM / 无头设置）
 
