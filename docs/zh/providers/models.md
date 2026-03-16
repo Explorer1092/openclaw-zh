@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b72b2be67a402a15e760d05c122c0256"
+mmh3_hash: "803a61e42feea090f3146120297db7b1"
 title: "模型提供商"
 sidebarTitle: "模型提供商示例"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
@@ -33,7 +33,7 @@ OpenClaw 可以使用多个 LLM 提供商。选择一个，进行身份验证，
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
 - [Mistral](/providers/mistral)
 - [Synthetic](/providers/synthetic)
-- [OpenCode Zen](/providers/opencode)
+- [OpenCode (Zen + Go)](/providers/opencode)
 - [Z.AI](/providers/zai)
 - [GLM 模型](/providers/glm)
 - [MiniMax](/providers/minimax)

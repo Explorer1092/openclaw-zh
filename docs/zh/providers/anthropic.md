@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "579e1e0555563b004ae9538bded3cb46"
+mmh3_hash: "a4a529de7314e782ab6db1df82e68185"
 title: "Anthropic (Claude)"
 sidebarTitle: "Anthropic"
 summary: "在 OpenClaw 中通过 API 密钥或 setup-token 使用 Anthropic Claude"
@@ -46,13 +46,41 @@ openclaw onboard --anthropic-api-key "$ANTHROPIC_API_KEY"
   - [自适应思考](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking)
   - [扩展思考](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
 
-## Prompt 缓存 (Anthropic API)
+## Fast 模式（Anthropic API）
+
+OpenClaw 的共享 `/fast` 切换也支持直接 Anthropic API 密钥流量。
+
+- `/fast on` 映射到 `service_tier: "auto"`
+- `/fast off` 映射到 `service_tier: "standard_only"`
+- 配置默认值：
+
+```json5
+{
+  agents: {
+    defaults: {
+      models: {
+        "anthropic/claude-sonnet-4-5": {
+          params: { fastMode: true },
+        },
+      },
+    },
+  },
+}
+```
+
+重要限制：
+
+- 此功能**仅限 API 密钥**。Anthropic setup-token / OAuth 身份验证不支持 OpenClaw fast 模式服务层注入。
+- OpenClaw 仅对直接 `api.anthropic.com` 请求注入 Anthropic 服务层。如果您通过代理或网关路由 `anthropic/*`，`/fast` 不会修改 `service_tier`。
+- Anthropic 在响应的 `usage.service_tier` 中报告有效层级。在没有 Priority Tier 容量的账户上，`service_tier: "auto"` 仍可能解析为 `standard`。
+
+## Prompt 缓存（Anthropic API）
 
 OpenClaw 支持 Anthropic 的 prompt 缓存功能。这是**仅限 API** 的功能；订阅身份验证不遵守缓存设置。
 
 ### 配置
 
-在您的 model 配置中使用 `cacheRetention` 参数：
+在您的模型配置中使用 `cacheRetention` 参数：
 
 | 值      | 缓存持续时间 | 描述                         |
 | ------- | ------------ | ---------------------------- |
@@ -128,7 +156,8 @@ OpenClaw 在 Anthropic API 请求中包含 `extended-cache-ttl-2025-04-11` beta 
 
 ## 1M 上下文窗口（Anthropic beta）
 
-Anthropic 的 1M 上下文窗口处于 beta 阶段。在 OpenClaw 中，通过 `params.context1m: true` 为支持的 Opus/Sonnet 模型逐个启用。
+Anthropic 的 1M 上下文窗口处于 beta 阶段。在 OpenClaw 中，通过为支持的 Opus/Sonnet 模型设置
+`params.context1m: true` 来逐个启用。
 
 ```json5
 {

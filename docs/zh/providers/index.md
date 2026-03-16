@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4f0cdd0ca3dd09d8679f3a26df4f5b4c"
+mmh3_hash: "e16c858f3b82170613d221cee96b316f"
 title: "模型提供商"
 sidebarTitle: "模型提供商"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
@@ -12,7 +12,7 @@ read_when:
 
 OpenClaw 可以使用多个 LLM 提供商。选择一个提供商，进行身份验证，然后将默认模型设置为 `provider/model`。
 
-正在寻找聊天频道文档（WhatsApp/Telegram/Discord/Slack/Mattermost (插件)/等）？参见 [Channels](/channels)。
+正在寻找聊天频道文档（WhatsApp/Telegram/Discord/Slack/Mattermost（插件）/等）？参见 [Channels](/channels)。
 
 ## 快速开始
 
@@ -38,9 +38,9 @@ OpenClaw 可以使用多个 LLM 提供商。选择一个提供商，进行身份
 - [Mistral](/providers/mistral)
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)
 - [NVIDIA](/providers/nvidia)
-- [Ollama（本地模型）](/providers/ollama)
+- [Ollama（云端 + 本地模型）](/providers/ollama)
 - [OpenAI (API + Codex)](/providers/openai)
-- [OpenCode Zen](/providers/opencode)
+- [OpenCode (Zen + Go)](/providers/opencode)
 - [OpenRouter](/providers/openrouter)
 - [Qianfan](/providers/qianfan)
 - [Qwen (OAuth)](/providers/qwen)

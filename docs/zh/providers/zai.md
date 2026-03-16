@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "38bc88ac3e6e238c05adbe1e4be1aef2"
+mmh3_hash: "3e4970d3a3fecf20917ce99c440b7a4c"
 title: "Z.AI"
 sidebarTitle: "Z.AI"
 summary: "将 Z.AI (GLM 模型) 与 OpenClaw 一起使用"
@@ -15,9 +15,17 @@ Z.AI 是 **GLM** 模型的 API 平台。它为 GLM 提供 REST API，并使用 A
 ## CLI 设置
 
 ```bash
-openclaw onboard --auth-choice zai-api-key
-# 或非交互式
-openclaw onboard --zai-api-key "$ZAI_API_KEY"
+# Coding Plan Global，推荐给 Coding Plan 用户
+openclaw onboard --auth-choice zai-coding-global
+
+# Coding Plan CN（中国区），推荐给 Coding Plan 用户
+openclaw onboard --auth-choice zai-coding-cn
+
+# 通用 API
+openclaw onboard --auth-choice zai-global
+
+# 通用 API CN（中国区）
+openclaw onboard --auth-choice zai-cn
 ```
 
 ## 配置片段
