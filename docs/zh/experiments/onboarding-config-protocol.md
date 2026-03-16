@@ -1,6 +1,6 @@
 ---
 title: "引导 + 配置协议"
-mmh3_hash: "6cd889ac010c6d5e7322204efa561a1f"
+mmh3_hash: "b28e4cccb8e961a4cf714cc161caedae"
 summary: "引导向导和配置架构的 RPC 协议说明"
 read_when: "更改引导向导步骤或配置架构端点"
 ---

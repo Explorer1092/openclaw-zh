@@ -1,7 +1,7 @@
 ---
 title: "Kilo Gateway Provider 集成设计"
 description: "将 Kilo Gateway 作为一等 Provider 集成到 OpenClaw 的设计方案"
-mmh3_hash: "84c89a9233709c1ea456375cb9bd444b"
+mmh3_hash: "c93d9f45d4470736e576d482b955705a"
 ---
 
 # Kilo Gateway Provider 集成设计
