@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9eaf24462ddc63684cfe5460af11ac42"
+mmh3_hash: "9e5fef268aa36ba39e85e6f7cfa1a474"
 title: "`openclaw onboard`"
 sidebarTitle: "openclaw onboard"
 summary: "`openclaw onboard` 的 CLI 参考(交互式入职向导)"
@@ -44,6 +44,18 @@ openclaw onboard --non-interactive \
 
 `--custom-api-key` 在非交互模式下是可选的。如果省略,入职检查 `CUSTOM_API_KEY`。
 
+非交互式 Ollama:
+
+```bash
+openclaw onboard --non-interactive \
+  --auth-choice ollama \
+  --custom-base-url "http://ollama-host:11434" \
+  --custom-model-id "qwen3.5:27b" \
+  --accept-risk
+```
+
+`--custom-base-url` 默认为 `http://127.0.0.1:11434`。`--custom-model-id` 是可选的;如果省略,入职使用 Ollama 建议的默认值。云模型 ID(例如 `kimi-k2.5:cloud`)在此处也有效。
+
 将提供商密钥存储为引用而不是明文:
 
 ```bash
@@ -84,7 +96,14 @@ openclaw onboard --non-interactive \
   --accept-risk
 ```
 
-交互式入职与引用模式的行为:
+非交互式本地 Gateway 健康检查:
+
+- 除非您传递 `--skip-health`,否则入职会等待可达的本地 Gateway 才成功退出。
+- `--install-daemon` 首先启动托管 Gateway 安装路径。没有它,您必须已经有一个本地 Gateway 在运行,例如 `openclaw gateway run`。
+- 如果您只想在自动化中进行配置/工作区/引导写入,请使用 `--skip-health`。
+- 在原生 Windows 上,`--install-daemon` 首先尝试计划任务,如果任务创建被拒绝则回退到每用户启动文件夹登录项。
+
+使用引用模式的交互式入职行为:
 
 - 在提示时选择**使用密钥引用**。
 - 然后选择:

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3e8c85f7da2a46a023ca97db400e6bed"
+mmh3_hash: "42db034597ed88c53d6093b52f3167b7"
 title: "`openclaw cron`"
 sidebarTitle: "openclaw cron"
 summary: "`openclaw cron` 的 CLI 参考(安排和运行后台作业)"
@@ -30,6 +30,8 @@ read_when:
 
 - `cron.sessionRetention`(默认 `24h`)清理已完成的隔离运行 Session。
 - `cron.runLog.maxBytes` + `cron.runLog.keepLines` 清理 `~/.openclaw/cron/runs/<jobId>.jsonl`。
+
+升级说明:如果您有当前传递/存储格式之前的旧版 cron 作业,请运行 `openclaw doctor --fix`。Doctor 现在规范化遗留的 cron 字段(`jobId`、`schedule.cron`、顶层传递字段、payload `provider` 传递别名),并在配置了 `cron.webhook` 的情况下将简单的 `notify: true` webhook 回退作业迁移为显式 webhook 传递。
 
 ## 常见编辑
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7dfe1c74a8252bb1a9b0a8b237241a0a"
+mmh3_hash: "37cb19dd979df55bbcf215d6686c1624"
 title: "CLI 参考"
 sidebarTitle: "CLI 参考"
 summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
@@ -286,7 +286,8 @@ openclaw [--dev] [--profile <name>] <command>
 
 - `openclaw plugins list` — 发现插件(使用 `--json` 进行机器输出)。
 - `openclaw plugins info <id>` — 显示插件的详细信息。
-- `openclaw plugins install <path|.tgz|npm-spec>` — 安装插件(或将插件路径添加到 `plugins.load.paths`)。
+- `openclaw plugins install <path|.tgz|npm-spec|plugin@marketplace>` — 安装插件(或将插件路径添加到 `plugins.load.paths`)。
+- `openclaw plugins marketplace list <marketplace>` — 在安装前列出市场条目。
 - `openclaw plugins enable <id>` / `disable <id>` — 切换 `plugins.entries.<id>.enabled`。
 - `openclaw plugins doctor` — 报告插件加载错误。
 
@@ -339,7 +340,7 @@ openclaw [--dev] [--profile <name>] <command>
 - `--non-interactive`
 - `--mode <local|remote>`
 - `--flow <quickstart|advanced|manual>`(manual 是 advanced 的别名)
-- `--auth-choice <setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ai-gateway-api-key|moonshot-api-key|moonshot-api-key-cn|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|mistral-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|custom-api-key|skip>`
+- `--auth-choice <setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ollama|ai-gateway-api-key|moonshot-api-key|moonshot-api-key-cn|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|mistral-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|opencode-go|custom-api-key|skip>`
 - `--token-provider <id>`(非交互;与 `--auth-choice token` 一起使用)
 - `--token <token>`(非交互;与 `--auth-choice token` 一起使用)
 - `--token-profile-id <id>`(非交互;默认:`<provider>:manual`)
@@ -356,8 +357,9 @@ openclaw [--dev] [--profile <name>] <command>
 - `--zai-api-key <key>`
 - `--minimax-api-key <key>`
 - `--opencode-zen-api-key <key>`
-- `--custom-base-url <url>`(非交互;与 `--auth-choice custom-api-key` 一起使用)
-- `--custom-model-id <id>`(非交互;与 `--auth-choice custom-api-key` 一起使用)
+- `--opencode-go-api-key <key>`
+- `--custom-base-url <url>`(非交互;与 `--auth-choice custom-api-key` 或 `--auth-choice ollama` 一起使用)
+- `--custom-model-id <id>`(非交互;与 `--auth-choice custom-api-key` 或 `--auth-choice ollama` 一起使用)
 - `--custom-api-key <key>`(非交互;可选;与 `--auth-choice custom-api-key` 一起使用;省略时回退到 `CUSTOM_API_KEY`)
 - `--custom-provider-id <id>`(非交互;可选自定义提供商 ID)
 - `--custom-compatibility <openai|anthropic>`(非交互;可选;默认 `openai`)
@@ -676,7 +678,7 @@ OpenClaw 可以在 OAuth/API 凭据可用时显示提供商使用/配额。
 注意:
 
 - 数据直接来自提供商使用端点(无估计)。
-- 提供商:Anthropic、GitHub Copilot、OpenAI Codex OAuth,以及启用这些提供商插件时的 Gemini CLI/Antigravity。
+- 提供商:Anthropic、GitHub Copilot、OpenAI Codex OAuth,以及通过捆绑的 `google` 插件和配置了 Antigravity 的 Gemini CLI。
 - 如果不存在匹配的凭据,则隐藏使用情况。
 - 详细信息:参见 [使用跟踪](/concepts/usage-tracking)。
 
@@ -780,9 +782,11 @@ OpenClaw 可以在 OAuth/API 凭据可用时显示提供商使用/配额。
 注意:
 
 - `gateway status` 默认使用服务的解析端口/配置探测 Gateway RPC(使用 `--url/--token/--password` 覆盖)。
-- `gateway status` 支持 `--no-probe`、`--deep` 和 `--json` 用于脚本编写。
+- `gateway status` 支持 `--no-probe`、`--deep`、`--require-rpc` 和 `--json` 用于脚本编写。
 - `gateway status` 在可以检测到遗留或额外的 Gateway 服务时也会显示它们(`--deep` 添加系统级扫描)。配置文件命名的 OpenClaw 服务被视为一流的,不会被标记为"额外"。
 - `gateway status` 打印 CLI 使用的配置路径与服务可能使用的配置(服务环境),以及解析的探测目标 URL。
+- 如果 Gateway 身份验证 SecretRef 在当前命令路径中未解析,`gateway status --json` 仅在探测连接/身份验证失败时报告 `rpc.authWarning`(探测成功时警告被抑制)。
+- 在 Linux systemd 安装中,状态令牌漂移检查包括 `Environment=` 和 `EnvironmentFile=` 单元来源。
 - `gateway install|uninstall|start|stop|restart` 支持 `--json` 用于脚本编写(默认输出保持人性化)。
 - `gateway install` 默认为 Node 运行时;**不推荐** bun(WhatsApp/Telegram 错误)。
 - `gateway install` 选项:`--port`、`--runtime`、`--token`、`--force`、`--json`。
@@ -1012,7 +1016,7 @@ openclaw models status
 
 身份验证说明:
 
-- `node` 从环境变量/配置解析 Gateway 身份验证(无 `--token`/`--password` 标志):`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`,然后是 `gateway.auth.*`,并通过 `gateway.remote.*` 支持远程模式。
+- `node` 从环境变量/配置解析 Gateway 身份验证(无 `--token`/`--password` 标志):`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`,然后是 `gateway.auth.*`。在本地模式下,Node 主机有意忽略 `gateway.remote.*`;在 `gateway.mode=remote` 模式下,`gateway.remote.*` 按远程优先规则参与。
 - 遗留的 `CLAWDBOT_GATEWAY_*` 环境变量有意忽略用于 Node 主机身份验证解析。
 
 ## Nodes

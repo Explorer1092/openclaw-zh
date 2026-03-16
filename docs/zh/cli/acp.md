@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "66172a8205fcd9bc02dac5e363e256f7"
+mmh3_hash: "ad6ac38e0d3862116f4703c583896b6e"
 title: "acp"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:
@@ -12,6 +12,33 @@ read_when:
 运行与 OpenClaw Gateway 通信的 [Agent Client Protocol (ACP)](https://agentclientprotocol.com/) 桥接。
 
 此命令通过 stdio 与 IDE 进行 ACP 通信,并通过 WebSocket 将提示转发到 Gateway。它将 ACP Session 映射到 Gateway Session 密钥。
+
+`openclaw acp` 是一个由 Gateway 支持的 ACP 桥接,而非完整的 ACP 原生编辑器运行时。它专注于 Session 路由、提示传递和基本流式更新。
+
+## 兼容性矩阵
+
+| ACP 功能区域                                                          | 状态       | 说明                                                                                                                                                                                                                                                 |
+| --------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `initialize`、`newSession`、`prompt`、`cancel`                        | 已实现     | 通过 stdio 到 Gateway chat/send + abort 的核心桥接流程。                                                                                                                                                                                             |
+| `listSessions`、斜杠命令                                              | 已实现     | Session 列表针对 Gateway Session 状态工作;命令通过 `available_commands_update` 进行通告。                                                                                                                                                           |
+| `loadSession`                                                         | 部分实现   | 将 ACP Session 重新绑定到 Gateway Session 密钥,并重播已存储的用户/助手文本历史。工具/系统历史尚未重建。                                                                                                                                             |
+| 提示内容(`text`、嵌入的 `resource`、图像)                            | 部分实现   | 文本/资源被平铺为聊天输入;图像成为 Gateway 附件。                                                                                                                                                                                                   |
+| Session 模式                                                          | 部分实现   | 支持 `session/set_mode`,桥接为思考级别、工具详细程度、推理、使用详情和提升操作提供初始 Gateway 支持的 Session 控制。更广泛的 ACP 原生模式/配置界面仍在范围外。                                                                                      |
+| Session 信息和使用更新                                                | 部分实现   | 桥接从缓存的 Gateway Session 快照发出 `session_info_update` 和尽力而为的 `usage_update` 通知。使用是近似值,仅在 Gateway 将总令牌数据标记为最新时才发送。                                                                                             |
+| 工具流式传输                                                          | 部分实现   | `tool_call` / `tool_call_update` 事件包含原始 I/O、文本内容以及当 Gateway 工具参数/结果暴露时的尽力而为的文件位置。嵌入式终端和更丰富的 diff 原生输出仍未暴露。                                                                                     |
+| 每 Session MCP 服务器(`mcpServers`)                                  | 不支持     | 桥接模式拒绝每 Session MCP 服务器请求。请在 OpenClaw Gateway 或 Agent 上配置 MCP。                                                                                                                                                                   |
+| 客户端文件系统方法(`fs/read_text_file`、`fs/write_text_file`)       | 不支持     | 桥接不调用 ACP 客户端文件系统方法。                                                                                                                                                                                                                  |
+| 客户端终端方法(`terminal/*`)                                          | 不支持     | 桥接不创建 ACP 客户端终端或通过工具调用流式传输终端 ID。                                                                                                                                                                                             |
+| Session 计划/思考流式传输                                             | 不支持     | 桥接目前发出输出文本和工具状态,而非 ACP 计划或思考更新。                                                                                                                                                                                            |
+
+## 已知限制
+
+- `loadSession` 重播已存储的用户和助手文本历史,但不重建历史工具调用、系统通知或更丰富的 ACP 原生事件类型。
+- 如果多个 ACP 客户端共享同一个 Gateway Session 密钥,事件和取消路由是尽力而为的,而非严格按每个客户端隔离。当您需要干净的编辑器本地轮次时,请优先使用默认的隔离 `acp:<uuid>` Session。
+- Gateway 停止状态被转换为 ACP 停止原因,但该映射不如完全 ACP 原生运行时那么丰富。
+- 初始 Session 控制目前仅暴露 Gateway 旋钮的一个子集:思考级别、工具详细程度、推理、使用详情和提升操作。模型选择和执行主机控制尚未作为 ACP 配置选项暴露。
+- `session_info_update` 和 `usage_update` 来自 Gateway Session 快照,而非实时 ACP 原生运行时计账。使用是近似值,不含成本数据,仅在 Gateway 将总令牌数据标记为最新时才发出。
+- 工具跟进数据是尽力而为的。桥接可以暴露出现在已知工具参数/结果中的文件路径,但尚未发出 ACP 终端或结构化文件差异。
 
 ## 用法
 
@@ -92,6 +119,8 @@ openclaw acp --session agent:qa:bug-123
 ```
 
 每个 ACP Session 映射到单个 Gateway Session 密钥。一个 Agent 可以有多个 Session;除非您覆盖密钥或标签,否则 ACP 默认为隔离的 `acp:<uuid>` Session。
+
+每 Session 的 `mcpServers` 在桥接模式下不受支持。如果 ACP 客户端在 `newSession` 或 `loadSession` 期间发送它们,桥接会返回明确的错误而非静默忽略。
 
 ## 从 `acpx` 使用(Codex、Claude 及其他 ACP 客户端)
 
@@ -219,7 +248,7 @@ env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 node openclaw.mjs acp ...
 - `--token` 和 `--password` 在某些系统上可能在本地进程列表中可见。
 - 首选 `--token-file`/`--password-file` 或环境变量(`OPENCLAW_GATEWAY_TOKEN`、`OPENCLAW_GATEWAY_PASSWORD`)。
 - Gateway 身份验证解析遵循其他 Gateway 客户端使用的共享约定:
-  - 本地模式:环境变量 (`OPENCLAW_GATEWAY_*`) -> `gateway.auth.*` -> 当 `gateway.auth.*` 未设置时回退到 `gateway.remote.*`
+  - 本地模式:环境变量 (`OPENCLAW_GATEWAY_*`) -> `gateway.auth.*` -> 当 `gateway.auth.*` 未设置时回退到 `gateway.remote.*`(已配置但未解析的本地 SecretRef 失败关闭)
   - 远程模式:`gateway.remote.*` 带有按远程优先规则的环境变量/配置回退
   - `--url` 是覆盖安全的,不重用隐式配置/环境变量凭据;请传递显式 `--token`/`--password`(或文件变体)
 - ACP 运行时后端子进程接收 `OPENCLAW_SHELL=acp`,可用于特定于上下文的 shell/配置规则。

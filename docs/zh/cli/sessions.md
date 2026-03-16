@@ -1,7 +1,7 @@
 ---
 title: "`openclaw sessions`"
 sidebarTitle: "openclaw sessions"
-mmh3_hash: "a32a51b6b6511ebd229312e7c360628b"
+mmh3_hash: "948fd89550f6353e7f0b6dc32a34a66c"
 summary: "`openclaw sessions` 的 CLI 参考(列出存储的 Session + 使用情况)"
 read_when:
   - 您想列出存储的 Session 并查看最近的活动
@@ -25,6 +25,8 @@ openclaw sessions --json
 - `--agent <id>`:一个已配置的 Agent 存储
 - `--all-agents`:聚合所有已配置的 Agent 存储
 - `--store <path>`:显式存储路径(不能与 `--agent` 或 `--all-agents` 组合使用)
+
+`openclaw sessions --all-agents` 读取已配置的 Agent 存储。Gateway 和 ACP Session 发现范围更广:它们还包括在默认 `agents/` 根目录或模板化 `session.store` 根目录下找到的仅磁盘存储。这些发现的存储必须解析为 Agent 根目录内的常规 `sessions.json` 文件;符号链接和根目录外路径会被跳过。
 
 JSON 示例:
 
@@ -56,7 +58,7 @@ openclaw sessions cleanup --dry-run
 openclaw sessions cleanup --agent work --dry-run
 openclaw sessions cleanup --all-agents --dry-run
 openclaw sessions cleanup --enforce
-openclaw sessions cleanup --enforce --active-key "agent:main:telegram:dm:123"
+openclaw sessions cleanup --enforce --active-key "agent:main:telegram:direct:123"
 openclaw sessions cleanup --json
 ```
 

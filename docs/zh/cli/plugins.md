@@ -1,21 +1,22 @@
 ---
-mmh3_hash: "e9ee576fa092daf16b3d07c9efb4acd8"
+mmh3_hash: "3362042daa8fa3e56a0916bb1751fa55"
 title: "`openclaw plugins`"
 sidebarTitle: "openclaw plugins"
-summary: "`openclaw plugins` 的 CLI 参考(列表、安装、启用/禁用、doctor)"
+summary: "`openclaw plugins` 的 CLI 参考(列表、安装、市场、卸载、启用/禁用、doctor)"
 read_when:
-  - 您想安装或管理进程内Gateway插件
+  - 您想安装或管理 Gateway 插件或兼容包
   - 您想调试插件加载失败
 ---
 
 # `openclaw plugins`
 
-管理Gateway插件/扩展(在进程内加载)。
+管理 Gateway 插件/扩展和兼容包。
 
 相关:
 
-- Plugin系统:[Plugin](/tools/plugin)
-- Plugin清单 + 架构:[Plugin清单](/plugins/manifest)
+- Plugin 系统:[Plugins](/tools/plugin)
+- 包兼容性:[Plugin bundles](/plugins/bundles)
+- Plugin 清单 + 架构:[Plugin manifest](/plugins/manifest)
 - 安全加固:[安全](/gateway/security)
 
 ## 命令
@@ -29,28 +30,66 @@ openclaw plugins uninstall <id>
 openclaw plugins doctor
 openclaw plugins update <id>
 openclaw plugins update --all
+openclaw plugins marketplace list <marketplace>
 ```
 
-捆绑Plugin随 OpenClaw 一起提供,但默认禁用。使用 `plugins enable` 激活它们。
+捆绑插件随 OpenClaw 一起提供,但默认禁用。使用 `plugins enable` 激活它们。
 
-所有Plugin必须附带一个带有内联 JSON Schema 的 `openclaw.plugin.json` 文件(`configSchema`,即使为空)。缺少/无效的清单或架构会阻止Plugin加载并导致配置验证失败。
+原生 OpenClaw 插件必须附带内联 JSON Schema 的 `openclaw.plugin.json`(`configSchema`,即使为空)。兼容包改用其自己的包清单。
+
+`plugins list` 显示 `Format: openclaw` 或 `Format: bundle`。详细的 list/info 输出还显示包子类型(`codex`、`claude` 或 `cursor`)以及检测到的包能力。
 
 ### 安装
 
 ```bash
 openclaw plugins install <path-or-spec>
 openclaw plugins install <npm-spec> --pin
+openclaw plugins install <plugin>@<marketplace>
+openclaw plugins install <plugin> --marketplace <marketplace>
 ```
 
-安全注意事项:像运行代码一样对待 Plugin 安装。优先使用固定版本。
+安全注意事项:像运行代码一样对待插件安装。优先使用固定版本。
 
 Npm 规范**仅限注册表**(包名称 + 可选**精确版本**或**发行标签**)。Git/URL/文件规范和语义版本范围被拒绝。依赖项安装使用 `--ignore-scripts` 运行以确保安全。
 
 裸规范和 `@latest` 保持稳定轨道。如果 npm 将其中任一解析为预发布版本,OpenClaw 会停止并要求您使用预发布标签(例如 `@beta`/`@rc`)或精确的预发布版本(例如 `@1.2.3-beta.4`)明确选择加入。
 
-如果裸安装规范匹配捆绑的 Plugin ID(例如 `diffs`),OpenClaw 会直接安装捆绑的 Plugin。要安装同名的 npm 包,请使用显式范围规范(例如 `@scope/diffs`)。
+如果裸安装规范匹配捆绑的插件 ID(例如 `diffs`),OpenClaw 会直接安装捆绑的插件。要安装同名的 npm 包,请使用显式范围规范(例如 `@scope/diffs`)。
 
 支持的存档:`.zip`、`.tgz`、`.tar.gz`、`.tar`。
+
+Claude 市场安装也受支持。
+
+当市场名称存在于 Claude 的本地注册表缓存 `~/.claude/plugins/known_marketplaces.json` 中时,使用 `plugin@marketplace` 简写:
+
+```bash
+openclaw plugins marketplace list <marketplace-name>
+openclaw plugins install <plugin-name>@<marketplace-name>
+```
+
+当您想显式传递市场来源时,使用 `--marketplace`:
+
+```bash
+openclaw plugins install <plugin-name> --marketplace <marketplace-name>
+openclaw plugins install <plugin-name> --marketplace <owner/repo>
+openclaw plugins install <plugin-name> --marketplace ./my-marketplace
+```
+
+市场来源可以是:
+
+- 来自 `~/.claude/plugins/known_marketplaces.json` 的 Claude 已知市场名称
+- 本地市场根目录或 `marketplace.json` 路径
+- GitHub 仓库简写(例如 `owner/repo`)
+- git URL
+
+对于本地路径和存档,OpenClaw 自动检测:
+
+- 原生 OpenClaw 插件(`openclaw.plugin.json`)
+- Codex 兼容包(`.codex-plugin/plugin.json`)
+- Claude 兼容包(`.claude-plugin/plugin.json` 或默认 Claude 组件布局)
+- Cursor 兼容包(`.cursor-plugin/plugin.json`)
+
+兼容包安装到正常的扩展根目录,并参与相同的 list/info/enable/disable 流程。目前支持包 Skill、Claude 命令 Skill、Claude `settings.json` 默认值、Cursor 命令 Skill 和兼容 Codex Hook 目录;其他检测到的包能力显示在诊断/信息中,但尚未连接到运行时执行。
 
 使用 `--link` 避免复制本地目录(添加到 `plugins.load.paths`):
 
@@ -68,9 +107,9 @@ openclaw plugins uninstall <id> --dry-run
 openclaw plugins uninstall <id> --keep-files
 ```
 
-`uninstall` 从 `plugins.entries`、`plugins.installs`、Plugin允许列表和适用时链接的 `plugins.load.paths` 条目中删除Plugin记录。对于活动内存Plugin,内存插槽重置为 `memory-core`。
+`uninstall` 从 `plugins.entries`、`plugins.installs`、插件允许列表和适用时链接的 `plugins.load.paths` 条目中删除插件记录。对于活动内存插件,内存插槽重置为 `memory-core`。
 
-默认情况下,卸载还会删除活动状态目录扩展根目录(`$OPENCLAW_STATE_DIR/extensions/<id>`)下的Plugin安装目录。使用 `--keep-files` 在磁盘上保留文件。
+默认情况下,卸载还会删除活动状态目录扩展根目录(`$OPENCLAW_STATE_DIR/extensions/<id>`)下的插件安装目录。使用 `--keep-files` 在磁盘上保留文件。
 
 `--keep-config` 作为 `--keep-files` 的已弃用别名受支持。
 
@@ -82,6 +121,6 @@ openclaw plugins update --all
 openclaw plugins update <id> --dry-run
 ```
 
-更新仅适用于从 npm 安装的 Plugin(在 `plugins.installs` 中跟踪)。
+更新仅适用于 `plugins.installs` 中跟踪的安装,目前为 npm 和市场安装。
 
 当存在已存储的完整性哈希且获取的构件哈希发生变化时,OpenClaw 会打印警告并在继续前请求确认。在 CI/非交互运行中使用全局 `--yes` 跳过提示。

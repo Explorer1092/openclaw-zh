@@ -1,7 +1,7 @@
 ---
 title: "`openclaw setup`"
 sidebarTitle: "openclaw setup"
-mmh3_hash: "f248499e0824fe167411b8032f8bbb57"
+mmh3_hash: "705738b0c6213962ef42c7b1199550c0"
 summary: "`openclaw setup` 的 CLI 参考(初始化配置 + 工作区)"
 read_when:
   - 您正在进行首次运行设置而不使用完整的入职向导
@@ -10,9 +10,10 @@ read_when:
 
 # `openclaw setup`
 
-初始化 `~/.openclaw/openclaw.json` 和Agent工作区。
+初始化 `~/.openclaw/openclaw.json` 和 Agent 工作区。
 
 相关:
+
 - 入门:[入门](/start/getting-started)
 - 向导:[入职](/start/onboarding)
 

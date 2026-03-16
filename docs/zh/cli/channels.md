@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3b2005c27bfd368251c08a3bbb9a7aa8"
+mmh3_hash: "969364bfd9b14179daf9293e21265491"
 title: "`openclaw channels`"
 sidebarTitle: "openclaw channels"
 summary: "`openclaw channels` 的 CLI 参考(账户、状态、登录/登出、日志)"
@@ -32,10 +32,11 @@ openclaw channels logs --channel all
 
 ```bash
 openclaw channels add --channel telegram --token <bot-token>
+openclaw channels add --channel nostr --private-key "$NOSTR_PRIVATE_KEY"
 openclaw channels remove --channel telegram --delete
 ```
 
-提示:`openclaw channels add --help` 显示每个 Channel 的标志(令牌、应用令牌、signal-cli 路径等)。
+提示:`openclaw channels add --help` 显示每个 Channel 的标志(令牌、私钥、应用令牌、signal-cli 路径等)。
 
 不带标志运行 `openclaw channels add` 时,交互式向导可以提示:
 

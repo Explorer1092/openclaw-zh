@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2caaa6dd99f421c7cba4dfa941c51b9c"
+mmh3_hash: "7620043213161351426e99f9fc30070a"
 title: "`openclaw devices`"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
@@ -91,3 +91,40 @@ openclaw devices revoke --device <deviceId> --role node
 - 这些命令需要 `operator.pairing`(或 `operator.admin`)范围。
 - `devices clear` 有意通过 `--yes` 进行门控。
 - 如果本地回环上的配对范围不可用(且未传递显式 `--url`),list/approve 可以使用本地配对回退。
+
+## 令牌漂移恢复检查清单
+
+当 Control UI 或其他客户端持续出现 `AUTH_TOKEN_MISMATCH` 或 `AUTH_DEVICE_TOKEN_MISMATCH` 时使用此检查清单。
+
+1. 确认当前 Gateway 令牌来源:
+
+```bash
+openclaw config get gateway.auth.token
+```
+
+2. 列出已配对设备并识别受影响的设备 ID:
+
+```bash
+openclaw devices list
+```
+
+3. 为受影响的设备轮换 operator 令牌:
+
+```bash
+openclaw devices rotate --device <deviceId> --role operator
+```
+
+4. 如果轮换还不够,删除过期配对并重新批准:
+
+```bash
+openclaw devices remove <deviceId>
+openclaw devices list
+openclaw devices approve <requestId>
+```
+
+5. 使用当前共享令牌/密码重试客户端连接。
+
+相关:
+
+- [Dashboard 身份验证故障排除](/web/dashboard#if-you-see-unauthorized-1008)
+- [Gateway 故障排除](/gateway/troubleshooting#dashboard-control-ui-connectivity)

@@ -1,16 +1,16 @@
 ---
 title: "`openclaw message`"
 sidebarTitle: "openclaw message"
-mmh3_hash: "3a1ea70448414239f5ba2dad6b88fdd2"
-summary: "`openclaw message` 的 CLI 参考(发送 + Channel操作)"
+mmh3_hash: "0fd309643c3123d394786b2c1a7707d8"
+summary: "`openclaw message` 的 CLI 参考(发送 + Channel 操作)"
 read_when:
   - 添加或修改消息 CLI 操作
-  - 更改出站Channel行为
+  - 更改出站 Channel 行为
 ---
 
 # `openclaw message`
 
-用于发送消息和Channel操作的单一出站命令
+用于发送消息和 Channel 操作的单一出站命令
 (Discord/Google Chat/Slack/Mattermost(插件)/Telegram/WhatsApp/Signal/iMessage/MS Teams)。
 
 ## 用法
@@ -19,34 +19,34 @@ read_when:
 openclaw message <subcommand> [flags]
 ```
 
-Channel选择:
+Channel 选择:
 
-- 如果配置了多个Channel,则需要 `--channel`。
-- 如果恰好配置了一个Channel,它将成为默认值。
+- 如果配置了多个 Channel,则需要 `--channel`。
+- 如果恰好配置了一个 Channel,它将成为默认值。
 - 值:`whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams`(Mattermost 需要插件)
 
 目标格式(`--target`):
 
 - WhatsApp:E.164 或组 JID
 - Telegram:聊天 ID 或 `@username`
-- Discord:`channel:<id>` 或 `user:<id>`(或 `<@id>` 提及;原始数字 ID 被视为Channel)
+- Discord:`channel:<id>` 或 `user:<id>`(或 `<@id>` 提及;原始数字 ID 被视为 Channel)
 - Google Chat:`spaces/<spaceId>` 或 `users/<userId>`
-- Slack:`channel:<id>` 或 `user:<id>`(接受原始Channel ID)
-- Mattermost(插件):`channel:<id>`、`user:<id>` 或 `@username`(裸 ID 被视为Channel)
+- Slack:`channel:<id>` 或 `user:<id>`(接受原始 Channel ID)
+- Mattermost(插件):`channel:<id>`、`user:<id>` 或 `@username`(裸 ID 被视为 Channel)
 - Signal:`+E.164`、`group:<id>`、`signal:+E.164`、`signal:group:<id>` 或 `username:<name>`/`u:<name>`
 - iMessage:句柄、`chat_id:<id>`、`chat_guid:<guid>` 或 `chat_identifier:<id>`
 - MS Teams:对话 ID(`19:...@thread.tacv2`)或 `conversation:<id>` 或 `user:<aad-object-id>`
 
 名称查找:
 
-- 对于受支持的提供商(Discord/Slack等),像 `Help` 或 `#help` 这样的Channel名称通过目录缓存解析。
+- 对于受支持的提供商(Discord/Slack 等),像 `Help` 或 `#help` 这样的 Channel 名称通过目录缓存解析。
 - 在缓存未命中时,如果提供商支持,OpenClaw 将尝试实时目录查找。
 
 ## 常用标志
 
 - `--channel <name>`
 - `--account <id>`
-- `--target <dest>`(用于 send/poll/read 等的目标Channel或用户)
+- `--target <dest>`(用于 send/poll/read 等的目标 Channel 或用户)
 - `--targets <name>`(重复;仅广播)
 - `--json`
 - `--dry-run`
@@ -61,6 +61,7 @@ Channel选择:
   - 必需:`--target`,加上 `--message` 或 `--media`
   - 可选:`--media`、`--reply-to`、`--thread-id`、`--gif-playback`
   - 仅限 Telegram:`--buttons`(需要 `channels.telegram.capabilities.inlineButtons` 允许它)
+  - 仅限 Telegram:`--force-document`(将图像和 GIF 作为文档发送以避免 Telegram 压缩)
   - 仅限 Telegram:`--thread-id`(论坛主题 ID)
   - 仅限 Slack:`--thread-id`(线程时间戳;`--reply-to` 使用相同字段)
   - 仅限 WhatsApp:`--gif-playback`
@@ -180,13 +181,14 @@ Channel选择:
 ### 广播
 
 - `broadcast`
-  - Channel:任何配置的Channel;使用 `--channel all` 定位所有提供商
+  - Channel:任何配置的 Channel;使用 `--channel all` 定位所有提供商
   - 必需:`--targets`(重复)
   - 可选:`--message`、`--media`、`--dry-run`
 
 ## 示例
 
 发送 Discord 回复:
+
 ```
 openclaw message send --channel discord \
   --target channel:123 --message "hi" --reply-to 456
@@ -203,6 +205,7 @@ openclaw message send --channel discord \
 完整 schema 请参见 [Discord 组件](/channels/discord#interactive-components)。
 
 创建 Discord 投票:
+
 ```
 openclaw message poll --channel discord \
   --target channel:123 \
@@ -212,6 +215,7 @@ openclaw message poll --channel discord \
 ```
 
 创建 Telegram 投票(2 分钟后自动关闭):
+
 ```
 openclaw message poll --channel telegram \
   --target @mychat \
@@ -221,12 +225,14 @@ openclaw message poll --channel telegram \
 ```
 
 发送 Teams 主动消息:
+
 ```
 openclaw message send --channel msteams \
   --target conversation:19:abc@thread.tacv2 --message "hi"
 ```
 
 创建 Teams 投票:
+
 ```
 openclaw message poll --channel msteams \
   --target conversation:19:abc@thread.tacv2 \
@@ -235,12 +241,14 @@ openclaw message poll --channel msteams \
 ```
 
 在 Slack 中反应:
+
 ```
 openclaw message react --channel slack \
   --target C123 --message-id 456 --emoji "✅"
 ```
 
 在 Signal 组中反应:
+
 ```
 openclaw message react --channel signal \
   --target signal:group:abc123 --message-id 1737630212345 \
@@ -248,7 +256,15 @@ openclaw message react --channel signal \
 ```
 
 发送 Telegram 内联按钮:
+
 ```
 openclaw message send --channel telegram --target @mychat --message "Choose:" \
   --buttons '[ [{"text":"Yes","callback_data":"cmd:yes"}], [{"text":"No","callback_data":"cmd:no"}] ]'
+```
+
+将 Telegram 图像作为文档发送以避免压缩:
+
+```bash
+openclaw message send --channel telegram --target @mychat \
+  --media ./diagram.png --force-document
 ```

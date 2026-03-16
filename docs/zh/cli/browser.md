@@ -1,12 +1,12 @@
 ---
 title: "`openclaw browser`"
 sidebarTitle: "openclaw browser"
-mmh3_hash: "0e14b484ab016e757c1de877fa50617b"
-summary: "`openclaw browser` 的 CLI 参考(配置文件、标签、操作、扩展中继)"
+mmh3_hash: "2a93bc2b74d987ef41f92abc45f1e7a0"
+summary: "`openclaw browser` 的 CLI 参考(配置文件、标签、操作、Chrome MCP 和 CDP)"
 read_when:
   - 您使用 `openclaw browser` 并想要常见任务的示例
   - 您想通过节点主机控制在另一台机器上运行的浏览器
-  - 您想使用 Chrome 扩展中继(通过工具栏按钮附加/分离)
+  - 您想通过 Chrome MCP 附加到本地已登录的 Chrome
 ---
 
 # `openclaw browser`
@@ -16,7 +16,6 @@ read_when:
 相关:
 
 - 浏览器工具 + API:[Browser tool](/tools/browser)
-- Chrome 扩展中继:[Chrome extension](/tools/chrome-extension)
 
 ## 常用标志
 
@@ -29,7 +28,7 @@ read_when:
 ## 快速入门(本地)
 
 ```bash
-openclaw browser --browser-profile chrome tabs
+openclaw browser profiles
 openclaw browser --browser-profile openclaw start
 openclaw browser --browser-profile openclaw open https://example.com
 openclaw browser --browser-profile openclaw snapshot
@@ -38,12 +37,15 @@ openclaw browser --browser-profile openclaw snapshot
 ## 配置文件
 
 配置文件是命名的浏览器路由配置。实际上:
+
 - `openclaw`:启动/附加到专用的 OpenClaw 管理的 Chrome 实例(隔离的用户数据目录)。
-- `chrome`:通过 Chrome 扩展中继控制现有的 Chrome 标签。
+- `user`:通过 Chrome DevTools MCP 控制您现有的已登录 Chrome Session。
+- 自定义 CDP 配置文件:指向本地或远程 CDP 端点。
 
 ```bash
 openclaw browser profiles
 openclaw browser create-profile --name work --color "#FF5A36"
+openclaw browser create-profile --name chrome-live --driver existing-session
 openclaw browser delete-profile --name work
 ```
 
@@ -84,20 +86,17 @@ openclaw browser click <ref>
 openclaw browser type <ref> "hello"
 ```
 
-## Chrome 扩展中继(通过工具栏按钮附加)
+## 通过 MCP 使用现有 Chrome
 
-此模式允许 Agent 控制您手动附加的现有 Chrome 标签(它不会自动附加)。
-
-将未打包的扩展安装到稳定路径:
+使用内置的 `user` 配置文件,或创建您自己的 `existing-session` 配置文件:
 
 ```bash
-openclaw browser extension install
-openclaw browser extension path
+openclaw browser --browser-profile user tabs
+openclaw browser create-profile --name chrome-live --driver existing-session
+openclaw browser --browser-profile chrome-live tabs
 ```
 
-然后 Chrome → `chrome://extensions` → 启用"开发者模式" → "加载已解压的扩展程序" → 选择打印的文件夹。
-
-完整指南:[Chrome extension](/tools/chrome-extension)
+此路径仅限主机。对于 Docker、无头服务器、Browserless 或其他远程设置,请改用 CDP 配置文件。
 
 ## 远程浏览器控制(节点主机代理)
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a50c01dd561f84a142bb4e2158d17141"
+mmh3_hash: "d496728c8d5c47bfcf19a90789914904"
 title: "`openclaw node`"
 summary: "`openclaw node` 的 CLI 参考(无头 Node 主机)"
 read_when:
@@ -61,7 +61,8 @@ openclaw node run --host <gateway-host> --port 18789
 
 - 首先检查 `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`。
 - 然后本地配置回退:`gateway.auth.token` / `gateway.auth.password`。
-- 在本地模式下,当 `gateway.auth.*` 未设置时,`gateway.remote.token` / `gateway.remote.password` 也可用作回退。
+- 在本地模式下,Node 主机有意不继承 `gateway.remote.token` / `gateway.remote.password`。
+- 如果 `gateway.auth.token` / `gateway.auth.password` 通过 SecretRef 显式配置且未解析,Node 身份验证解析失败关闭(无远程回退掩盖)。
 - 在 `gateway.mode=remote` 模式下,远程客户端字段(`gateway.remote.token` / `gateway.remote.password`)也按远程优先规则可用。
 - 遗留的 `CLAWDBOT_GATEWAY_*` 环境变量对 Node 主机身份验证解析被忽略。
 

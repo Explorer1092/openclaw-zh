@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "55e789f0eff61460536a9eced4be02f5"
+mmh3_hash: "1d1c3c55a39a3e901a2e433591a92003"
 title: "`openclaw agent`"
 sidebarTitle: "openclaw agent"
 summary: "`openclaw agent` 的 CLI 参考(通过 Gateway 发送一轮 Agent)"
@@ -27,4 +27,5 @@ openclaw agent --agent ops --message "Generate report" --deliver --reply-channel
 
 ## 注意事项
 
-- 当此命令触发 `models.json` 重新生成时,SecretRef 管理的 Provider 凭据将以非密钥标记形式保留(例如环境变量名称或 `secretref-managed`),而不是解析后的明文密钥。
+- 当此命令触发 `models.json` 重新生成时,SecretRef 管理的 Provider 凭据将以非密钥标记形式保留(例如环境变量名称、`secretref-env:ENV_VAR_NAME` 或 `secretref-managed`),而不是解析后的明文密钥。
+- 标记写入具有来源权威性:OpenClaw 从活动来源配置快照持久化标记,而非从已解析的运行时密钥值。
