@@ -1,7 +1,7 @@
 ---
 title: "子 Agent"
 sidebarTitle: "子 Agent"
-mmh3_hash: "5c29863eeac9aa1500b993ca81a1e80c"
+mmh3_hash: "89ccc3a0d63c87041e4d691143f0beea"
 summary: "子 Agent：生成隔离的 Agent 运行，将结果公告回请求者聊天"
 read_when:
   - 您想通过 Agent 进行后台/并行工作
@@ -182,6 +182,7 @@ read_when:
 
 ### 按深度划分的工具策略
 
+- 角色和控制范围在生成时写入 Session 元数据。这防止扁平或还原的 Session 键意外重新获得编排器权限。
 - **深度 1（编排器，当 `maxSpawnDepth >= 2`）**：获取 `sessions_spawn`、`subagents`、`sessions_list`、`sessions_history`，以便管理其子 Agent。其他 Session/系统工具仍被拒绝。
 - **深度 1（叶子，当 `maxSpawnDepth == 1`）**：无 Session 工具（当前默认行为）。
 - **深度 2（叶子工作者）**：无 Session 工具 — `sessions_spawn` 在深度 2 始终被拒绝。不能生成更多子 Agent。

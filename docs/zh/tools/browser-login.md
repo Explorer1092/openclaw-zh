@@ -1,47 +1,55 @@
 ---
 title: "浏览器登录与 X/Twitter 发帖"
 sidebarTitle: "浏览器登录"
-mmh3_hash: "c5ae4f43605f02a3be63e757d4cc288a"
+mmh3_hash: "96b945df1bc94cb2205172b0bc5e5768"
 summary: "浏览器自动化 + X/Twitter 发帖的手动登录"
-read_when: ["需要登录网站以进行浏览器自动化","想要发布更新到 X/Twitter"]
+read_when:
+  - 需要登录网站以进行浏览器自动化
+  - 想要发布更新到 X/Twitter
 ---
 
-# 浏览器登录与 X/Twitter 发帖
+# 浏览器登录 + X/Twitter 发帖
 
-## 手动登录(推荐)
+## 手动登录（推荐）
 
-当网站需要登录时,在**主机**浏览器配置文件(openclaw 浏览器)中**手动登录**。
+当网站需要登录时，**在宿主**浏览器配置文件（openclaw 浏览器）中**手动登录**。
 
-**不要**向模型提供您的凭据。自动登录通常会触发反机器人防御,并可能锁定账户。
+**不要**将你的凭据提供给模型。自动登录通常会触发反机器人防御，可能导致账号被锁定。
 
-返回主浏览器文档: [浏览器](/tools/browser)。
+返回浏览器主文档：[Browser](/tools/browser)。
 
-## 使用哪个 Chrome 配置文件?
+## 使用的是哪个 Chrome 配置文件？
 
-OpenClaw 控制一个**专用的 Chrome 配置文件**(名为 `openclaw`,橙色调 UI)。这与您的日常浏览器配置文件是分开的。
+OpenClaw 控制一个**专用 Chrome 配置文件**（名为 `openclaw`，带橙色调 UI）。这与你日常使用的浏览器配置文件是分开的。
 
-两种简单的访问方式:
+对于 Agent 浏览器工具调用：
 
-1) **让 agent 打开浏览器**,然后您自己登录。
-2) **通过 CLI 打开**:
+- 默认选择：Agent 应使用其隔离的 `openclaw` 浏览器。
+- 仅在现有已登录 Session 重要且用户在电脑旁可以点击/批准任何附加提示时，才使用 `profile="user"`。
+- 如果你有多个用户浏览器配置文件，请显式指定配置文件而非猜测。
+
+两种简便访问方式：
+
+1. **让 Agent 打开浏览器**，然后自己登录。
+2. **通过 CLI 打开**：
 
 ```bash
 openclaw browser start
 openclaw browser open https://x.com
 ```
 
-如果您有多个配置文件,传递 `--browser-profile <名称>`(默认是 `openclaw`)。
+如果你有多个配置文件，使用 `--browser-profile <name>`（默认为 `openclaw`）。
 
-## X/Twitter: 推荐流程
+## X/Twitter：推荐流程
 
-- **读取/搜索/线程:** 使用**主机**浏览器(手动登录)。
-- **发布更新:** 使用**主机**浏览器(手动登录)。
+- **阅读/搜索/Threads：** 使用**宿主**浏览器（手动登录）。
+- **发布更新：** 使用**宿主**浏览器（手动登录）。
 
-## 沙箱 + 主机浏览器访问
+## 沙盒 + 宿主浏览器访问
 
-沙箱浏览器会话**更有可能**触发机器人检测。对于 X/Twitter(和其他严格的网站),优先使用**主机**浏览器。
+沙盒浏览器 Session **更容易**触发机器人检测。对于 X/Twitter（以及其他严格的网站），优先使用**宿主**浏览器。
 
-如果 agent 被沙箱化,浏览器工具默认使用沙箱。要允许主机控制:
+如果 Agent 处于沙盒中，浏览器工具默认使用沙盒。要允许宿主控制：
 
 ```json5
 {
@@ -50,19 +58,18 @@ openclaw browser open https://x.com
       sandbox: {
         mode: "non-main",
         browser: {
-          allowHostControl: true
-        }
-      }
-    }
-  }
+          allowHostControl: true,
+        },
+      },
+    },
+  },
 }
 ```
 
-然后定位到主机浏览器:
+然后定向到宿主浏览器：
 
 ```bash
 openclaw browser open https://x.com --browser-profile openclaw --target host
 ```
 
-或者禁用发布更新的 agent 的沙箱功能。
-
+或者为负责发帖更新的 Agent 禁用沙盒。

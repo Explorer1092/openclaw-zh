@@ -1,19 +1,19 @@
 ---
 title: "Web 工具"
 sidebarTitle: "Web 工具"
-mmh3_hash: "67fc26f53b086ac516c9ee625250c0c6"
-summary: "Web 搜索 + 获取工具（Brave、Gemini、Grok、Kimi 和 Perplexity Provider）"
+mmh3_hash: "6fb043c344bb47a01b5a2905e966e49a"
+summary: "Web 搜索 + 获取工具（Brave、Firecrawl、Gemini、Grok、Kimi 和 Perplexity Provider）"
 read_when:
   - 您想启用 web_search 或 web_fetch
-  - 您需要 Brave 或 Perplexity Search API 密钥设置
+  - 您需要 Provider API 密钥设置
   - 您想使用 Gemini 配合 Google Search grounding
 ---
 
 # Web 工具
 
-OpenClaw 提供两个轻量级 Web 工具:
+OpenClaw 提供两个轻量级 Web 工具：
 
-- `web_search` — 使用 Brave Search API、Gemini 配合 Google Search grounding、Grok、Kimi 或 Perplexity Search API 搜索网络。
+- `web_search` — 使用 Brave Search API、Firecrawl Search、Gemini 配合 Google Search grounding、Grok、Kimi 或 Perplexity Search API 搜索网络。
 - `web_fetch` — HTTP 获取 + 可读提取（HTML → markdown/text）。
 
 这些**不是**浏览器自动化。对于 JS 密集型网站或登录，使用 [浏览器工具](/tools/browser)。
@@ -24,18 +24,20 @@ OpenClaw 提供两个轻量级 Web 工具:
 - 结果按查询缓存 15 分钟（可配置）。
 - `web_fetch` 执行普通的 HTTP GET 并提取可读内容（HTML → markdown/text）。它**不**执行 JavaScript。
 - `web_fetch` 默认启用（除非明确禁用）。
+- 内置 Firecrawl Plugin 在启用时还添加了 `firecrawl_search` 和 `firecrawl_scrape`。
 
 有关特定 Provider 的详细信息，请参见 [Brave Search 设置](/brave-search) 和 [Perplexity Search 设置](/perplexity)。
 
 ## 选择搜索 Provider
 
-| Provider                  | 结果类型                          | Provider 专属过滤器                          | 备注                                                                           | API 密钥                                     |
-| ------------------------- | --------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------- |
-| **Brave Search API**      | 带摘要的结构化结果                | `country`、`language`、`ui_lang`、时间       | 支持 Brave `llm-context` 模式                                                  | `BRAVE_API_KEY`                             |
-| **Gemini**                | AI 综合答案 + 引用                | —                                            | 使用 Google Search grounding                                                   | `GEMINI_API_KEY`                            |
-| **Grok**                  | AI 综合答案 + 引用                | —                                            | 使用 xAI Web 接地响应                                                          | `XAI_API_KEY`                               |
-| **Kimi**                  | AI 综合答案 + 引用                | —                                            | 使用 Moonshot 网络搜索                                                         | `KIMI_API_KEY` / `MOONSHOT_API_KEY`         |
-| **Perplexity Search API** | 带摘要的结构化结果                | `country`、`language`、时间、`domain_filter` | 支持内容提取控制；OpenRouter 使用 Sonar 兼容路径                               | `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` |
+| Provider                  | 结果类型                          | Provider 专属过滤器                                      | 备注                                                                           | API 密钥                                     |
+| ------------------------- | --------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------- |
+| **Brave Search API**      | 带摘要的结构化结果                | `country`、`language`、`ui_lang`、时间                   | 支持 Brave `llm-context` 模式                                                  | `BRAVE_API_KEY`                             |
+| **Firecrawl Search**      | 带摘要的结构化结果                | 使用 `firecrawl_search` 获取 Firecrawl 特定搜索选项      | 最适合将搜索与 Firecrawl 抓取/提取配对使用                                     | `FIRECRAWL_API_KEY`                         |
+| **Gemini**                | AI 综合答案 + 引用                | —                                                        | 使用 Google Search grounding                                                   | `GEMINI_API_KEY`                            |
+| **Grok**                  | AI 综合答案 + 引用                | —                                                        | 使用 xAI Web 接地响应                                                          | `XAI_API_KEY`                               |
+| **Kimi**                  | AI 综合答案 + 引用                | —                                                        | 使用 Moonshot 网络搜索                                                         | `KIMI_API_KEY` / `MOONSHOT_API_KEY`         |
+| **Perplexity Search API** | 带摘要的结构化结果                | `country`、`language`、时间、`domain_filter`             | 支持内容提取控制；OpenRouter 使用 Sonar 兼容路径                               | `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` |
 
 ### 自动检测
 
@@ -46,8 +48,15 @@ OpenClaw 提供两个轻量级 Web 工具:
 3. **Grok** — `XAI_API_KEY` 环境变量或 `tools.web.search.grok.apiKey` 配置
 4. **Kimi** — `KIMI_API_KEY` / `MOONSHOT_API_KEY` 环境变量或 `tools.web.search.kimi.apiKey` 配置
 5. **Perplexity** — `PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `tools.web.search.perplexity.apiKey` 配置
+6. **Firecrawl** — `FIRECRAWL_API_KEY` 环境变量或 `tools.web.search.firecrawl.apiKey` 配置
 
 如果未找到密钥，则回退到 Brave（您将收到缺少密钥错误，提示您配置一个）。
+
+运行时 SecretRef 行为：
+
+- Web 工具 SecretRef 在 Gateway 启动/重新加载时原子性解析。
+- 在自动检测模式下，OpenClaw 仅解析所选 Provider 的密钥。未选中的 Provider SecretRef 保持非活动状态，直到被选中。
+- 如果所选 Provider SecretRef 未解析且没有 Provider 环境回退，启动/重新加载会快速失败。
 
 ## 设置 Web 搜索
 
@@ -73,9 +82,27 @@ OpenClaw 提供两个轻量级 Web 工具:
 
 ### 在哪里存储密钥
 
-**通过配置：** 运行 `openclaw configure --section web`。根据 Provider，密钥存储在 `tools.web.search.apiKey` 或 `tools.web.search.perplexity.apiKey` 下。
+**通过配置：** 运行 `openclaw configure --section web`。它将密钥存储在 Provider 特定的配置路径下：
 
-**通过环境：** 在 Gateway 进程环境中设置 `PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `BRAVE_API_KEY`。对于 Gateway 安装，将其放在 `~/.openclaw/.env` 中（或您的服务环境）。参见 [环境变量](/help/faq#how-does-openclaw-load-environment-variables)。
+- Brave：`tools.web.search.apiKey`
+- Firecrawl：`tools.web.search.firecrawl.apiKey`
+- Gemini：`tools.web.search.gemini.apiKey`
+- Grok：`tools.web.search.grok.apiKey`
+- Kimi：`tools.web.search.kimi.apiKey`
+- Perplexity：`tools.web.search.perplexity.apiKey`
+
+所有这些字段也支持 SecretRef 对象。
+
+**通过环境：** 在 Gateway 进程环境中设置 Provider 环境变量：
+
+- Brave：`BRAVE_API_KEY`
+- Firecrawl：`FIRECRAWL_API_KEY`
+- Gemini：`GEMINI_API_KEY`
+- Grok：`XAI_API_KEY`
+- Kimi：`KIMI_API_KEY` 或 `MOONSHOT_API_KEY`
+- Perplexity：`PERPLEXITY_API_KEY` 或 `OPENROUTER_API_KEY`
+
+对于 Gateway 安装，将其放在 `~/.openclaw/.env` 中（或您的服务环境）。参见 [环境变量](/help/faq#how-does-openclaw-load-environment-variables)。
 
 ### 配置示例
 
@@ -94,6 +121,34 @@ OpenClaw 提供两个轻量级 Web 工具:
   },
 }
 ```
+
+**Firecrawl Search：**
+
+```json5
+{
+  plugins: {
+    entries: {
+      firecrawl: {
+        enabled: true,
+      },
+    },
+  },
+  tools: {
+    web: {
+      search: {
+        enabled: true,
+        provider: "firecrawl",
+        firecrawl: {
+          apiKey: "fc-...", // 如果设置了 FIRECRAWL_API_KEY 则可选
+          baseUrl: "https://api.firecrawl.dev",
+        },
+      },
+    },
+  },
+}
+```
+
+当您在引导或 `openclaw configure --section web` 中选择 Firecrawl 时，OpenClaw 会自动启用内置 Firecrawl Plugin，使得 `web_search`、`firecrawl_search` 和 `firecrawl_scrape` 均可用。
 
 **Brave LLM Context 模式：**
 
@@ -201,11 +256,13 @@ Gemini 模型支持内置的 [Google Search grounding](https://ai.google.dev/gem
 
 - `tools.web.search.enabled` 不能为 `false`（默认：启用）
 - 您选择的 Provider 的 API 密钥：
-  - **Brave**: `BRAVE_API_KEY` 或 `tools.web.search.apiKey`
-  - **Gemini**: `GEMINI_API_KEY` 或 `tools.web.search.gemini.apiKey`
-  - **Grok**: `XAI_API_KEY` 或 `tools.web.search.grok.apiKey`
-  - **Kimi**: `KIMI_API_KEY`、`MOONSHOT_API_KEY` 或 `tools.web.search.kimi.apiKey`
-  - **Perplexity**: `PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `tools.web.search.perplexity.apiKey`
+  - **Brave**：`BRAVE_API_KEY` 或 `tools.web.search.apiKey`
+  - **Firecrawl**：`FIRECRAWL_API_KEY` 或 `tools.web.search.firecrawl.apiKey`
+  - **Gemini**：`GEMINI_API_KEY` 或 `tools.web.search.gemini.apiKey`
+  - **Grok**：`XAI_API_KEY` 或 `tools.web.search.grok.apiKey`
+  - **Kimi**：`KIMI_API_KEY`、`MOONSHOT_API_KEY` 或 `tools.web.search.kimi.apiKey`
+  - **Perplexity**：`PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `tools.web.search.perplexity.apiKey`
+- 以上所有 Provider 密钥字段均支持 SecretRef 对象。
 
 ### 配置
 
@@ -227,7 +284,7 @@ Gemini 模型支持内置的 [Google Search grounding](https://ai.google.dev/gem
 
 ### 工具参数
 
-所有参数适用于 Brave 和原生 Perplexity Search API（除非另有说明）。
+参数取决于所选的 Provider。
 
 Perplexity 的 OpenRouter / Sonar 兼容路径仅支持 `query` 和 `freshness`。如果您设置了 `tools.web.search.perplexity.baseUrl` / `model`，使用 `OPENROUTER_API_KEY`，或配置了 `sk-or-...` 密钥，仅 Search API 的过滤器会返回明确错误。
 
@@ -244,6 +301,8 @@ Perplexity 的 OpenRouter / Sonar 兼容路径仅支持 `query` 和 `freshness`�
 | `domain_filter`       | 域名允许/拒绝列表数组（仅限 Perplexity）                |
 | `max_tokens`          | 总内容预算，默认 25000（仅限 Perplexity）               |
 | `max_tokens_per_page` | 每页令牌限制，默认 2048（仅限 Perplexity）              |
+
+Firecrawl `web_search` 支持 `query` 和 `count`。对于 Firecrawl 特定的控制（如 `sources`、`categories`、结果抓取或抓取超时），使用内置 Firecrawl Plugin 中的 `firecrawl_search`。
 
 **示例：**
 
@@ -298,6 +357,7 @@ await web_search({
 
 - `tools.web.fetch.enabled` 不能为 `false`（默认：启用）
 - 可选的 Firecrawl 回退：设置 `tools.web.fetch.firecrawl.apiKey` 或 `FIRECRAWL_API_KEY`。
+- `tools.web.fetch.firecrawl.apiKey` 支持 SecretRef 对象。
 
 ### web_fetch 配置
 
@@ -339,6 +399,8 @@ await web_search({
 
 - `web_fetch` 首先使用 Readability（主要内容提取），然后是 Firecrawl（如果配置）。如果两者都失败，工具返回错误。
 - Firecrawl 请求使用规避机器人模式并默认缓存结果。
+- Firecrawl SecretRef 仅在 Firecrawl 处于活动状态时解析（`tools.web.fetch.enabled !== false` 且 `tools.web.fetch.firecrawl.enabled !== false`）。
+- 如果 Firecrawl 处于活动状态且其 SecretRef 未解析且没有 `FIRECRAWL_API_KEY` 回退，启动/重新加载会快速失败。
 - `web_fetch` 默认发送类似 Chrome 的 User-Agent 和 `Accept-Language`；如果需要，覆盖 `userAgent`。
 - `web_fetch` 阻止私有/内部主机名并重新检查重定向（使用 `maxRedirects` 限制）。
 - `maxChars` 被限制为 `tools.web.fetch.maxCharsCap`。
