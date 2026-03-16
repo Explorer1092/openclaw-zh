@@ -1,7 +1,7 @@
 ---
 title: "Telegram (Bot API)"
 sidebarTitle: "Telegram"
-mmh3_hash: "a5a1700ef78ff0c715b1b1fcbff2f129"
+mmh3_hash: "a1f5a80b8a484935e1f5bd8c417b2160"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook
@@ -121,6 +121,8 @@ Token 解析顺序为账户感知。实际上，配置值优先于环境变量�
     如果您升级后配置中含有 `@username` allowlist 条目，运行 `openclaw doctor --fix` 解析它们（尽力而为；需要 Telegram bot token）。
     如果之前依赖配对存储 allowlist 文件，`openclaw doctor --fix` 可以在 allowlist 迁移流程中将条目恢复到 `channels.telegram.allowFrom`（例如当 `dmPolicy: "allowlist"` 尚无显式 ID 时）。
 
+    对于单用户 bot，推荐使用 `dmPolicy: "allowlist"` 配合显式数字 `allowFrom` ID，以便将访问策略持久化在配置中（而不是依赖之前的配对审批）。
+
     ### 查找您的 Telegram 用户 ID
 
     更安全的方式（无需第三方 bot）：
@@ -175,6 +177,31 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
   },
 }
 ```
+
+    示例：在一个特定群组中只允许特定用户：
+
+```json5
+{
+  channels: {
+    telegram: {
+      groups: {
+        "-1001234567890": {
+          requireMention: true,
+          allowFrom: ["8734062810", "745123456"],
+        },
+      },
+    },
+  },
+}
+```
+
+    <Warning>
+      常见错误：`groupAllowFrom` 不是 Telegram 群组 allowlist。
+
+      - 将负数 Telegram 群组或超级群组聊天 ID（如 `-1001234567890`）放在 `channels.telegram.groups` 下。
+      - 将 Telegram 用户 ID（如 `8734062810`）放在 `groupAllowFrom` 下，用于限制哪些成员可以在允许的群组中触发 bot。
+      - 只有当您希望允许群组内的任何成员与 bot 交互时，才使用 `groupAllowFrom: ["*"]`。
+    </Warning>
 
   </Tab>
 
@@ -247,8 +274,6 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
     对于复杂回复（例如媒体负载），OpenClaw 回退到正常最终传递，然后清理预览消息。
 
-    对于复杂回复（例如媒体负载），OpenClaw 回退到正常的最终传递，然后清理预览消息。
-
     预览流式传输与块流式传输分离。当为 Telegram 显式启用块流式传输时，OpenClaw 跳过预览流以避免双重流式传输。
 
     仅 Telegram 的推理流：
@@ -307,7 +332,8 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
     常见设置失败：
 
-    - `setMyCommands failed` 通常意味着到 `api.telegram.org` 的出站 DNS/HTTPS 被阻止。
+    - `setMyCommands failed` 带 `BOT_COMMANDS_TOO_MUCH` 表示修剪后 Telegram 菜单仍然溢出；减少插件/技能/自定义命令，或禁用 `channels.telegram.commands.native`。
+    - `setMyCommands failed` 带网络/fetch 错误通常意味着到 `api.telegram.org` 的出站 DNS/HTTPS 被阻止。
 
     ### 设备配对命令（`device-pair` 插件）
 
@@ -675,6 +701,34 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
   </Accordion>
 
+  <Accordion title="Exec 审批">
+    Telegram 支持在审批者私信中进行 exec 审批，也可以选择在发起聊天或主题中发布审批提示。
+
+    配置路径：
+
+    - `channels.telegram.execApprovals.enabled`
+    - `channels.telegram.execApprovals.approvers`
+    - `channels.telegram.execApprovals.target`（`dm` | `channel` | `both`，默认：`dm`）
+    - `agentFilter`、`sessionFilter`
+
+    审批者必须是数字 Telegram 用户 ID。当 `enabled` 为 false 或 `approvers` 为空时，Telegram 不作为 exec 审批客户端。审批请求回退到其他已配置的审批路由或 exec 审批后备策略。
+
+    传递规则：
+
+    - `target: "dm"` 仅向已配置的审批者私信发送审批提示
+    - `target: "channel"` 将提示发回到发起的 Telegram 聊天/主题
+    - `target: "both"` 同时发送到审批者私信和发起的聊天/主题
+
+    只有已配置的审批者才能批准或拒绝。非审批者无法使用 `/approve`，也无法使用 Telegram 审批按钮。
+
+    频道传递在聊天中显示命令文本，因此仅在受信任的群组/主题中启用 `channel` 或 `both`。当提示落在论坛主题中时，OpenClaw 为审批提示和审批后续跟进保留该主题。
+
+    内联审批按钮还取决于 `channels.telegram.capabilities.inlineButtons` 是否允许目标表面（`dm`、`group` 或 `all`）。
+
+    相关文档：[Exec 审批](/tools/exec-approvals)
+
+  </Accordion>
+
   <Accordion title="来自 Telegram 事件和命令的配置写入">
     频道配置写入默认启用（`configWrites !== false`）。
 
@@ -750,6 +804,11 @@ openclaw message poll --channel telegram --target -1001234567890:topic:42 \
     - `--poll-public`
     - `--thread-id` 用于论坛主题（或使用 `:topic:` 目标）
 
+    Telegram 发送还支持：
+
+    - `--buttons` 用于内联键盘（当 `channels.telegram.capabilities.inlineButtons` 允许时）
+    - `--force-document` 将出站图片和 GIF 作为文档发送，而非压缩照片或动画媒体上传
+
     操作门控：
 
     - `channels.telegram.actions.sendMessage=false` 禁用出站 Telegram 消息，包括轮询
@@ -784,7 +843,8 @@ openclaw message poll --channel telegram --target -1001234567890:topic:42 \
 
     - 授权您的发送者身份（配对和/或数字 `allowFrom`）
     - 即使群组策略为 `open`，命令授权仍然适用
-    - `setMyCommands failed` 通常表示到 `api.telegram.org` 的 DNS/HTTPS 可达性问题
+    - `setMyCommands failed` 带 `BOT_COMMANDS_TOO_MUCH` 表示原生菜单条目过多；减少插件/技能/自定义命令或禁用原生菜单
+    - `setMyCommands failed` 带网络/fetch 错误通常表示到 `api.telegram.org` 的 DNS/HTTPS 可达性问题
 
   </Accordion>
 
@@ -833,7 +893,7 @@ dig +short api.telegram.org AAAA
 
 - `channels.telegram.enabled`：启用/禁用频道启动。
 - `channels.telegram.botToken`：bot token（BotFather）。
-- `channels.telegram.tokenFile`：从文件路径读取 token。
+- `channels.telegram.tokenFile`：从文件路径读取 token。符号链接被拒绝。
 - `channels.telegram.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
 - `channels.telegram.defaultTo`：当没有提供显式 `--reply-to` 时，CLI `--deliver` 使用的默认 Telegram 目标。
 - `channels.telegram.allowFrom`：私信 allowlist（数字 Telegram 用户 ID）。`allowlist` 需要至少一个发送者 ID。`open` 需要 `"*"`。`openclaw doctor --fix` 可以将旧版 `@username` 条目解析为 ID，并可在 allowlist 迁移流程中从配对存储文件恢复条目。
@@ -859,6 +919,12 @@ dig +short api.telegram.org AAAA
   - `channels.telegram.groups.<id>.topics.<threadId>.requireMention`：每主题提及门控覆盖。
   - 顶层 `bindings[]` 中使用 `type: "acp"` 和 `match.peer.id` 为规范主题 ID `chatId:topic:topicId`：持久化 ACP 主题绑定字段（参见 [ACP Agents](/tools/acp-agents#channel-specific-settings)）。
   - `channels.telegram.direct.<id>.topics.<threadId>.agentId`：将私信主题路由到特定 agent（与论坛主题行为相同）。
+- `channels.telegram.execApprovals.enabled`：启用 Telegram 作为此账户的聊天端 exec 审批客户端。
+- `channels.telegram.execApprovals.approvers`：允许批准或拒绝 exec 请求的 Telegram 用户 ID。启用 exec 审批时必填。
+- `channels.telegram.execApprovals.target`：`dm | channel | both`（默认：`dm`）。`channel` 和 `both` 在存在时保留发起的 Telegram 主题。
+- `channels.telegram.execApprovals.agentFilter`：转发审批提示的可选 agent ID 过滤器。
+- `channels.telegram.execApprovals.sessionFilter`：转发审批提示的可选会话键过滤器（子字符串或正则表达式）。
+- `channels.telegram.accounts.<account>.execApprovals`：每账户 Telegram exec 审批路由和审批者授权覆盖。
 - `channels.telegram.capabilities.inlineButtons`：`off | dm | group | all | allowlist`（默认：allowlist）。
 - `channels.telegram.accounts.<account>.capabilities.inlineButtons`：每账户覆盖。
 - `channels.telegram.replyToMode`：`off | first | all`（默认：`off`）。
@@ -887,8 +953,9 @@ dig +short api.telegram.org AAAA
 
 Telegram 特定高优先级字段：
 
-- 启动/认证：`enabled`、`botToken`、`tokenFile`、`accounts.*`
+- 启动/认证：`enabled`、`botToken`、`tokenFile`、`accounts.*`（`tokenFile` 必须指向普通文件；符号链接被拒绝）
 - 访问控制：`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`、`groups.*.topics.*`、顶层 `bindings[]`（`type: "acp"`）
+- exec 审批：`execApprovals`、`accounts.*.execApprovals`
 - 命令/菜单：`commands.native`、`commands.nativeSkills`、`customCommands`
 - 线程/回复：`replyToMode`
 - 流式传输：`streaming`（预览）、`blockStreaming`

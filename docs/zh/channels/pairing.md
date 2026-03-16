@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6c6ea9f54cd7d942cef80e667f6bfbab"
+mmh3_hash: "a39a77f3aaf722fc041c9ee3e533b277"
 summary: "配对概述：批准谁可以私信您 + 哪些节点可以加入"
 read_when:
   - 设置 DM 访问控制
@@ -36,21 +36,21 @@ openclaw pairing list telegram
 openclaw pairing approve telegram <CODE>
 ```
 
-支持的 Channels：`telegram`、`whatsapp`、`signal`、`imessage`、`discord`、`slack`、`feishu`。
+支持的 Channel：`telegram`、`whatsapp`、`signal`、`imessage`、`discord`、`slack`、`feishu`。
 
 ### 状态存储位置
 
 存储在 `~/.openclaw/credentials/` 下：
 
 - 待处理请求：`<channel>-pairing.json`
-- 已批准的白名单存储：
+- 已批准的 allowlist 存储：
   - 默认账户：`<channel>-allowFrom.json`
   - 非默认账户：`<channel>-<accountId>-allowFrom.json`
 
 账户范围行为：
 
-- 非默认账户仅读写其范围内的白名单文件。
-- 默认账户使用无范围的 channel 级别白名单文件。
+- 非默认账户仅读写其范围内的 allowlist 文件。
+- 默认账户使用无范围的 Channel 级别 allowlist 文件。
 
 将这些视为敏感信息（它们控制对您的助手的访问）。
 
@@ -71,7 +71,7 @@ openclaw pairing approve telegram <CODE>
 设置代码是 base64 编码的 JSON 负载，包含：
 
 - `url`：Gateway WebSocket URL（`ws://...` 或 `wss://...`）
-- `token`：短期配对令牌
+- `bootstrapToken`：用于初始配对握手的短期单设备引导令牌
 
 在其有效期内，将设置代码视为密码。
 

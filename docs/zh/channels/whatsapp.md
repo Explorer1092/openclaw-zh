@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp（Web 频道）"
 sidebarTitle: "WhatsApp"
-mmh3_hash: "7c8d551a030a18eab28fca39cb4bad95"
+mmh3_hash: "0a919d65e9d7d91b3811bce2a81f6edf"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由

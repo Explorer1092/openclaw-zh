@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1106321bd2d74fed06580e922b780914"
+mmh3_hash: "116f7e6ba59e7ffb6c9a5d85b958b0ee"
 summary: "每个 Channel（WhatsApp、Telegram、Discord、Slack）的路由规则和共享上下文"
 read_when:
   - 更改 Channel 路由或收件箱行为
@@ -14,7 +14,8 @@ OpenClaw 将回复**路由回消息来源的 Channel**。模型不选择 Channel
 
 - **Channel**：`whatsapp`、`telegram`、`discord`、`slack`、`signal`、`imessage`、`webchat`。
 - **AccountId**：每个 Channel 的帐户实例（如果支持）。
-- 可选的 Channel 默认账户：`channels.<channel>.defaultAccount` 选择在出站路径未指定 `accountId` 时使用哪个账户。在多账户设置中，当配置了两个或更多账户时，请设置显式默认账户（`defaultAccount` 或 `accounts.default`）。
+- 可选的 Channel 默认账户：`channels.<channel>.defaultAccount` 选择在出站路径未指定 `accountId` 时使用哪个账户。
+  - 在多账户设置中，当配置了两个或更多账户时，请设置显式默认账户（`defaultAccount` 或 `accounts.default`）。没有它，回退路由可能会选择第一个规范化的账户 ID。
 - **AgentId**：隔离的工作空间 + Session 存储（"大脑"）。
 - **SessionKey**：用于存储上下文和控制并发的存储桶键。
 
@@ -38,6 +39,18 @@ OpenClaw 将回复**路由回消息来源的 Channel**。模型不选择 Channel
 
 - `agent:main:telegram:group:-1001234567890:topic:42`
 - `agent:main:discord:channel:123456:thread:987654`
+
+## 主 DM 路由固定
+
+当 `session.dmScope` 为 `main` 时，私信可能共享一个主会话。
+为防止会话的 `lastRoute` 被非所有者的私信覆盖，
+在以下所有条件均满足时，OpenClaw 从 `allowFrom` 推断一个固定的所有者：
+
+- `allowFrom` 恰好有一个非通配符条目。
+- 该条目可以被规范化为该 Channel 的具体发送者 ID。
+- 入站私信发送者与该固定所有者不匹配。
+
+在不匹配的情况下，OpenClaw 仍记录入站会话元数据，但跳过更新主会话的 `lastRoute`。
 
 ## 路由规则（如何选择 Agent）
 
@@ -101,6 +114,8 @@ Session 存储位于状态目录下（默认 `~/.openclaw`）：
 - JSONL 记录与存储并存
 
 您可以通过 `session.store` 和 `{agentId}` 模板覆盖存储路径。
+
+Gateway 和 ACP 会话发现也会扫描默认 `agents/` 根目录下以及模板化 `session.store` 根目录下的磁盘支持的 Agent 存储。发现的存储必须位于该已解析的 Agent 根目录内，并使用常规的 `sessions.json` 文件。符号链接和根目录外的路径会被忽略。
 
 ## WebChat 行为
 

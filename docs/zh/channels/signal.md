@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fd0c1431a356c50b255274db75a2a50d"
+mmh3_hash: "ea3e98c000f55b5651bd8c110f11d81c"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置路径和号码模型"
 read_when:
   - 设置 Signal 支持
@@ -14,7 +14,7 @@ title: "Signal"
 ## 先决条件
 
 - 在服务器上安装 OpenClaw（以下 Linux 流程在 Ubuntu 24 上测试）。
-- `signal-cli` 在 gateway 运行的主机上可用。
+- `signal-cli` 在 Gateway 运行的主机上可用。
 - 一个可以接收验证短信的电话号码（用于 SMS 注册路径）。
 - 浏览器访问 Signal 验证码（`signalcaptchas.org`）用于注册。
 
@@ -25,7 +25,7 @@ title: "Signal"
 3. 选择一个设置路径：
    - **路径 A（二维码链接）：** `signal-cli link -n "OpenClaw"` 然后用 Signal 扫描。
    - **路径 B（SMS 注册）：** 使用验证码 + SMS 验证注册专用号码。
-4. 配置 OpenClaw 并重启 gateway。
+4. 配置 OpenClaw 并重启 Gateway。
 5. 发送首条私信并批准配对（`openclaw pairing approve signal <CODE>`）。
 
 最小配置：
@@ -46,18 +46,18 @@ title: "Signal"
 
 字段参考：
 
-| 字段        | 描述                                              |
-| ----------- | ------------------------------------------------- |
-| `account`   | E.164 格式的 Bot 电话号码 (`+15551234567`)        |
-| `cliPath`   | `signal-cli` 的路径（如果在 `PATH` 中则为 `signal-cli`） |
-| `dmPolicy`  | DM 访问策略（推荐 `pairing`）                      |
-| `allowFrom` | 允许发送 DM 的电话号码或 `uuid:<id>` 值             |
+| 字段 | 描述 |
+| --- | --- |
+| `account` | E.164 格式的 Bot 电话号码（`+15551234567`） |
+| `cliPath` | `signal-cli` 的路径（如果在 `PATH` 中则为 `signal-cli`） |
+| `dmPolicy` | DM 访问策略（推荐 `pairing`） |
+| `allowFrom` | 允许发送 DM 的电话号码或 `uuid:<id>` 值 |
 
 ## 它是什么
 
-- 通过 `signal-cli` 提供 Signal channel（非嵌入式 libsignal）。
+- 通过 `signal-cli` 提供 Signal Channel（非嵌入式 libsignal）。
 - 确定性路由：回复始终返回到 Signal。
-- DM 共享 agent 的主会话；群组是隔离的（`agent:<agentId>:signal:group:<groupId>`）。
+- DM 共享 Agent 的主 Session；群组是隔离的（`agent:<agentId>:signal:group:<groupId>`）。
 
 ## 配置写入
 
@@ -82,7 +82,7 @@ title: "Signal"
 1. 安装 `signal-cli`（JVM 或原生构建）。
 2. 链接 bot 账号：
    - `signal-cli link -n "OpenClaw"` 然后在 Signal 中扫描二维码。
-3. 配置 Signal 并启动 gateway。
+3. 配置 Signal 并启动 Gateway。
 
 示例：
 
@@ -108,7 +108,7 @@ title: "Signal"
 
 1. 获取一个可以接收 SMS 的号码（或用于座机的语音验证）。
    - 使用专用 bot 号码以避免账户/会话冲突。
-2. 在 gateway 主机上安装 `signal-cli`：
+2. 在 Gateway 主机上安装 `signal-cli`：
 
 ```bash
 VERSION=$(curl -Ls -o /dev/null -w %{url_effective} https://github.com/AsamK/signal-cli/releases/latest | sed -e 's/^.*\/v//')
@@ -139,10 +139,10 @@ signal-cli -a +<BOT_PHONE_NUMBER> register --captcha '<SIGNALCAPTCHA_URL>'
 signal-cli -a +<BOT_PHONE_NUMBER> verify <VERIFICATION_CODE>
 ```
 
-4. 配置 OpenClaw，重启 gateway，验证 channel：
+4. 配置 OpenClaw，重启 Gateway，验证 Channel：
 
 ```bash
-# 如果您将 gateway 作为用户 systemd 服务运行：
+# 如果您将 Gateway 作为用户 systemd 服务运行：
 systemctl --user restart openclaw-gateway
 
 # 然后验证：
@@ -196,15 +196,17 @@ DM：
 
 - `channels.signal.groupPolicy = open | allowlist | disabled`。
 - 当设置为 `allowlist` 时，`channels.signal.groupAllowFrom` 控制谁可以在群组中触发。
+- `channels.signal.groups["<group-id>" | "*"]` 可以用 `requireMention`、`tools` 和 `toolsBySender` 覆盖群组行为。
+- 对于多账户设置中的每账户覆盖，使用 `channels.signal.accounts.<id>.groups`。
 - 运行时注意：如果 `channels.signal` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组检查（即使 `channels.defaults.groupPolicy` 已设置）。
 
 ## 工作原理（行为）
 
-- `signal-cli` 作为守护进程运行；gateway 通过 SSE 读取事件。
-- 入站消息被规范化为共享 channel 信封。
+- `signal-cli` 作为守护进程运行；Gateway 通过 SSE 读取事件。
+- 入站消息被规范化为共享 Channel 信封。
 - 回复始终路由回相同的号码或群组。
 
-## 媒体 + 限制
+## 媒体和限制
 
 - 出站文本按 `channels.signal.textChunkLimit` 分块（默认 4000）。
 - 可选换行分块：设置 `channels.signal.chunkMode="newline"` 以在长度分块之前按空行（段落边界）分割。
@@ -213,7 +215,7 @@ DM：
 - 使用 `channels.signal.ignoreAttachments` 跳过媒体下载。
 - 群组历史上下文使用 `channels.signal.historyLimit`（或 `channels.signal.accounts.*.historyLimit`），回退到 `messages.groupChat.historyLimit`。设置 `0` 禁用（默认 50）。
 
-## 输入指示 + 已读回执
+## 输入指示和已读回执
 
 - **输入指示**：OpenClaw 通过 `signal-cli sendTyping` 发送输入信号，并在回复运行时刷新它们。
 - **已读回执**：当 `channels.signal.sendReadReceipts` 为 true 时，OpenClaw 转发允许的 DM 的已读回执。
@@ -238,8 +240,8 @@ message action=react channel=signal target=signal:group:<groupId> targetAuthor=u
 
 - `channels.signal.actions.reactions`：启用/禁用 reaction 操作（默认 true）。
 - `channels.signal.reactionLevel`：`off | ack | minimal | extensive`。
-  - `off`/`ack` 禁用 agent reaction（message 工具 `react` 会报错）。
-  - `minimal`/`extensive` 启用 agent reaction 并设置指导级别。
+  - `off`/`ack` 禁用 Agent reaction（message 工具 `react` 会报错）。
+  - `minimal`/`extensive` 启用 Agent reaction 并设置指导级别。
 - 每账户覆盖：`channels.signal.accounts.<id>.actions.reactions`、`channels.signal.accounts.<id>.reactionLevel`。
 
 ## 投递目标（CLI/cron）
@@ -294,11 +296,11 @@ grep -i "signal" "/tmp/openclaw/openclaw-$(date +%Y-%m-%d).log" | tail -20
 
 ## 配置参考（Signal）
 
-完整配置：[Configuration](/gateway/configuration)
+完整配置：[配置](/gateway/configuration)
 
-提供商选项：
+Provider 选项：
 
-- `channels.signal.enabled`：启用/禁用 channel 启动。
+- `channels.signal.enabled`：启用/禁用 Channel 启动。
 - `channels.signal.account`：bot 账号的 E.164。
 - `channels.signal.cliPath`：`signal-cli` 的路径。
 - `channels.signal.httpUrl`：完整守护进程 URL（覆盖 host/port）。
@@ -313,6 +315,8 @@ grep -i "signal" "/tmp/openclaw/openclaw-$(date +%Y-%m-%d).log" | tail -20
 - `channels.signal.allowFrom`：DM allowlist（E.164 或 `uuid:<id>`）。`open` 需要 `"*"`。Signal 没有用户名；使用电话/UUID id。
 - `channels.signal.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。
 - `channels.signal.groupAllowFrom`：群组发送者 allowlist。
+- `channels.signal.groups`：按 Signal 群组 id（或 `"*"`）键入的每群组覆盖。支持的字段：`requireMention`、`tools`、`toolsBySender`。
+- `channels.signal.accounts.<id>.groups`：多账户设置中 `channels.signal.groups` 的每账户版本。
 - `channels.signal.historyLimit`：作为上下文包含的最大群组消息数（0 禁用）。
 - `channels.signal.dmHistoryLimit`：用户回合的 DM 历史限制。每用户覆盖：`channels.signal.dms["<phone_or_uuid>"].historyLimit`。
 - `channels.signal.textChunkLimit`：出站分块大小（字符）。

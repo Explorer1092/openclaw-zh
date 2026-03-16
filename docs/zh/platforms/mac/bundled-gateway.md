@@ -1,58 +1,58 @@
 ---
-mmh3_hash: "ba94631336f82e23221e1751439fc332"
-title: "macOS 上的网关 (外部 launchd)"
-sidebarTitle: "macOS 网关"
-summary: "macOS 上的网关运行时(外部 launchd 服务)"
-read_when: ["打包 OpenClaw.app","调试 macOS 网关 launchd 服务","为 macOS 安装网关 CLI"]
+mmh3_hash: "436b46516045d8e37eb1e91320f0e52b"
+title: "macOS 上的 Gateway (外部 launchd)"
+summary: "macOS 上的 Gateway 运行时（外部 launchd 服务）"
+read_when:
+  - 打包 OpenClaw.app
+  - 调试 macOS gateway launchd 服务
+  - 为 macOS 安装 gateway CLI
 ---
 
-# macOS 上的网关 (外部 launchd)
+# macOS 上的 Gateway（外部 launchd）
 
-OpenClaw.app 不再捆绑 Node/Bun 或网关运行时。macOS 应用期望**外部**
-`openclaw` CLI 安装,不会将网关作为子进程生成,并管理每个用户的 launchd
-服务以保持网关运行(或附加到现有的本地网关,如果已经在运行)。
+OpenClaw.app 不再捆绑 Node/Bun 或 Gateway 运行时。macOS 应用期望一个**外部** `openclaw` CLI 安装，不将 Gateway 作为子进程生成，并管理每用户 launchd 服务以保持 Gateway 运行（或在已有本地 Gateway 运行时附加到它）。
 
-## 安装 CLI(本地模式所需)
+## 安装 CLI（本地模式必需）
 
-你需要在 Mac 上安装 Node 22+,然后全局安装 `openclaw`:
+Mac 上的默认运行时是 Node 24。Node 22 LTS，当前 `22.16+`，仍然用于兼容性。然后全局安装 `openclaw`：
 
 ```bash
 npm install -g openclaw@<version>
 ```
 
-macOS 应用的 **Install CLI** 按钮通过 npm/pnpm 运行相同的流程(不推荐 bun 用于网关运行时)。
+macOS 应用的 **Install CLI** 按钮通过 npm/pnpm 运行相同流程（不推荐 bun 用于 Gateway 运行时）。
 
-## Launchd(网关作为 LaunchAgent)
+## Launchd（Gateway 作为 LaunchAgent）
 
-标签:
+标签：
 
-- `ai.openclaw.gateway`(或 `ai.openclaw.<profile>`;旧版 `com.openclaw.*` 可能保留)
+- `ai.openclaw.gateway`（或 `ai.openclaw.<profile>`；旧版 `com.openclaw.*` 可能仍然存在）
 
-Plist 位置(每个用户):
+Plist 位置（每用户）：
 
 - `~/Library/LaunchAgents/ai.openclaw.gateway.plist`
-  (或 `~/Library/LaunchAgents/ai.openclaw.<profile>.plist`)
+  （或 `~/Library/LaunchAgents/ai.openclaw.<profile>.plist`）
 
-管理器:
+管理器：
 
 - macOS 应用在本地模式下拥有 LaunchAgent 安装/更新。
-- CLI 也可以安装它:`openclaw gateway install`。
+- CLI 也可以安装它：`openclaw gateway install`。
 
-行为:
+行为：
 
 - "OpenClaw Active" 启用/禁用 LaunchAgent。
-- 应用退出**不会**停止网关(launchd 保持其活跃)。
-- 如果网关已在配置的端口上运行,应用会附加到它而不是启动新的。
+- 应用退出**不会**停止 gateway（launchd 保持它存活）。
+- 如果 Gateway 已经在配置的端口上运行，应用会附加到它而不是启动一个新的。
 
-日志记录:
+日志：
 
-- launchd stdout/err:`/tmp/openclaw/openclaw-gateway.log`
+- launchd stdout/err：`/tmp/openclaw/openclaw-gateway.log`
 
 ## 版本兼容性
 
-macOS 应用会检查网关版本与其自身版本的兼容性。如果不兼容,请更新全局 CLI 以匹配应用版本。
+macOS 应用检查 gateway 版本与其自身版本的兼容性。如果不兼容，更新全局 CLI 以匹配应用版本。
 
-## 冒烟测试
+## 冒烟检查
 
 ```bash
 openclaw --version
@@ -62,7 +62,7 @@ OPENCLAW_SKIP_CANVAS_HOST=1 \
 openclaw gateway --port 18999 --bind loopback
 ```
 
-然后:
+然后：
 
 ```bash
 openclaw gateway call health --url ws://127.0.0.1:18999 --timeout 3000

@@ -1,71 +1,76 @@
 ---
 title: "Linux 应用"
 sidebarTitle: "Linux"
-mmh3_hash: "a552dba0aad012049d71d6cbe70bb284"
-summary: "Linux 支持 + 配套应用状态"
-read_when: ["寻找 Linux 配套应用状态","规划平台覆盖或贡献"]
+mmh3_hash: "94de149caa7b944c73cdf1a501a18a13"
+summary: "Linux 支持 + 伴侣应用状态"
+read_when:
+  - 查找 Linux 伴侣应用状态
+  - 规划平台覆盖或贡献
 ---
+
 # Linux 应用
 
-网关在 Linux 上完全支持。**推荐使用 Node 作为运行时**。
-不推荐在网关中使用 Bun(WhatsApp/Telegram 错误)。
+Gateway 在 Linux 上完全受支持。**Node 是推荐的运行时**。
+不推荐 Bun 用于 Gateway（WhatsApp/Telegram 错误）。
 
-计划推出原生 Linux 配套应用。如果你想帮助构建,欢迎贡献。
+原生 Linux 伴侣应用正在计划中。如果你想帮助构建，欢迎贡献。
 
-## 初学者快速路径(VPS)
+## 初学者快速路径（VPS）
 
-1) 安装 Node 22+  
-2) `npm i -g openclaw@latest`  
-3) `openclaw onboard --install-daemon`  
-4) 从你的笔记本电脑: `ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`  
-5) 打开 `http://127.0.0.1:18789/` 并粘贴你的令牌
+1. 安装 Node 24（推荐；Node 22 LTS，当前 `22.16+`，仍然用于兼容性）
+2. `npm i -g openclaw@latest`
+3. `openclaw onboard --install-daemon`
+4. 从你的笔记本：`ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
+5. 打开 `http://127.0.0.1:18789/` 并粘贴你的 token
 
-逐步 VPS 指南: [exe.dev](/platforms/exe-dev)
+逐步 VPS 指南：[exe.dev](/install/exe-dev)
 
 ## 安装
-- [入门指南](/start/getting-started)
-- [安装和更新](/install/updating)
-- 可选流程: [Bun(实验性)](/install/bun)、[Nix](/install/nix)、[Docker](/install/docker)
 
-## 网关
-- [网关运行手册](/gateway)
+- [入门](/start/getting-started)
+- [安装和更新](/install/updating)
+- 可选流程：[Bun（实验性）](/install/bun)、[Nix](/install/nix)、[Docker](/install/docker)
+
+## Gateway
+
+- [Gateway 手册](/gateway)
 - [配置](/gateway/configuration)
 
-## 网关服务安装(CLI)
+## Gateway 服务安装（CLI）
 
-使用以下其中之一:
+使用以下之一：
 
 ```
 openclaw onboard --install-daemon
 ```
 
-或:
+或：
 
 ```
 openclaw gateway install
 ```
 
-或:
+或：
 
 ```
 openclaw configure
 ```
 
-提示时选择 **Gateway service**。
+在提示时选择 **Gateway service**。
 
-修复/迁移:
+修复/迁移：
 
 ```
 openclaw doctor
 ```
 
-## 系统控制(systemd 用户单元)
-OpenClaw 默认安装 systemd **用户**服务。对于共享或始终在线的服务器,
-使用 **系统**服务。完整的单元示例和指导位于[网关运行手册](/gateway)中。
+## 系统控制（systemd 用户单元）
 
-最小设置:
+OpenClaw 默认安装 systemd **用户**服务。对于共享或始终在线的服务器，使用**系统**服务。完整的单元示例和指导位于 [Gateway 手册](/gateway)。
 
-创建 `~/.config/systemd/user/openclaw-gateway[-<profile>].service`:
+最小设置：
+
+创建 `~/.config/systemd/user/openclaw-gateway[-<profile>].service`：
 
 ```
 [Unit]
@@ -82,7 +87,7 @@ RestartSec=5
 WantedBy=default.target
 ```
 
-启用它:
+启用它：
 
 ```
 systemctl --user enable --now openclaw-gateway[-<profile>].service
