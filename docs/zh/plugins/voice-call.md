@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d3007d95a7949e29dcb0de318f64c8fa"
+mmh3_hash: "d6ed3503861a0f80d9c115acc7ef7633"
 title: "语音通话 Plugin"
 summary: "语音通话 Plugin: 通过 Twilio/Telnyx/Plivo 的出站 + 入站通话(Plugin 安装 + 配置 + CLI)"
 read_when:

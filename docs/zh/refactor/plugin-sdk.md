@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0a85a80738c552fc70119660aa07482e"
+mmh3_hash: "84e287327a578a8e0f8f77ddd70ecbd0"
 summary: "计划: 为所有消息连接器提供一个干净的插件 SDK + 运行时"
 read_when: ["定义或重构插件架构","将通道连接器迁移到插件 SDK/运行时"]
 ---
@@ -22,7 +22,7 @@ read_when: ["定义或重构插件架构","将通道连接器迁移到插件 SDK
 - 配置助手: `buildChannelConfigSchema`、`setAccountEnabledInConfigSection`、`deleteAccountFromConfigSection`、
   `applyAccountNameToChannelSection`。
 - 配对助手: `PAIRING_APPROVED_MESSAGE`、`formatPairingApproveHint`。
-- 引导助手: `promptChannelAccessConfig`、`addWildcardAllowFrom`、引导类型。
+- 引导入口点: 主机所有的 `setup` + `setupWizard`；避免使用宽泛的公共引导助手。
 - 工具参数助手: `createActionGate`、`readStringParam`、`readNumberParam`、`readReactionParams`、`jsonResult`。
 - 文档链接助手: `formatDocsLink`。
 
@@ -183,4 +183,4 @@ export type PluginRuntime = {
 - 新的连接器模板仅依赖于 SDK + 运行时。
 - 外部插件可以在没有核心源访问的情况下开发和更新。
 
-相关文档: [插件](/plugin)、[通道](/channels/index)、[配置](/gateway/configuration)。
+相关文档: [插件](/tools/plugin)、[通道](/channels/index)、[配置](/gateway/configuration)。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f69f3b3a2275556d8446119e6fd9dbd"
+mmh3_hash: "4c483b15414d5cd6b615b035bbd41d54"
 summary: "Terminal UI（TUI）：从任何机器连接到 Gateway"
 read_when:
   - 您想要 TUI 的入门友好演练

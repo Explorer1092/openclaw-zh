@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1eac6d40118741c0d5d0c36d74cc85b6"
+mmh3_hash: "e7d595761aade425bfabe546d8c00137"
 title: "CI 流水线"
 summary: "CI 任务图、范围控制门以及本地等效命令"
 read_when:
@@ -17,13 +17,13 @@ CI 在每次推送到 `main` 分支以及每个拉取请求时运行。它使用
 | ------------------- | ----------------------------------------------- | ------------------------- |
 | `docs-scope`        | 检测是否仅有文档变更                            | 始终                      |
 | `changed-scope`     | 检测哪些区域发生变更（node/macos/android/windows） | 非文档 PR              |
-| `check`             | TypeScript 类型检查、lint、格式化               | 推送到 `main`，或有 Node 相关变更的 PR |
+| `check`             | TypeScript 类型检查、lint、格式化               | 非文档、node 相关变更     |
 | `check-docs`        | Markdown lint + 断链检查                        | 文档变更时                |
-| `code-analysis`     | 代码行数阈值检查（1000 行）                     | 仅 PR                     |
 | `secrets`           | 检测泄露的密钥                                  | 始终                      |
-| `build-artifacts`   | 一次性构建 dist 并与其他任务共享                | 非文档、node 变更         |
-| `release-check`     | 验证 npm pack 内容                              | 构建后                    |
-| `checks`            | Node/Bun 测试 + 协议检查                        | 非文档、node 变更         |
+| `build-artifacts`   | 一次性构建 dist 并与 `release-check` 共享       | 推送到 `main`、node 变更  |
+| `release-check`     | 验证 npm pack 内容                              | 推送到 `main`，构建后     |
+| `checks`            | Node 测试 + PR 协议检查；push 时 Bun 兼容测试  | 非文档、node 变更         |
+| `compat-node22`     | 最低支持 Node 运行时兼容性                      | 推送到 `main`、node 变更  |
 | `checks-windows`    | Windows 专项测试                                | 非文档、windows 相关变更  |
 | `macos`             | Swift lint/构建/测试 + TS 测试                  | 有 macOS 变更的 PR        |
 | `android`           | Gradle 构建 + 测试                              | 非文档、android 变更      |
@@ -32,9 +32,11 @@ CI 在每次推送到 `main` 分支以及每个拉取请求时运行。它使用
 
 任务排列顺序使得廉价检查先于昂贵检查失败：
 
-1. `docs-scope` + `code-analysis` + `check`（并行，约 1-2 分钟）
-2. `build-artifacts`（依赖上述任务）
-3. `checks`、`checks-windows`、`macos`、`android`（依赖构建）
+1. `docs-scope` + `changed-scope` + `check` + `secrets`（并行，先运行廉价门控）
+2. PR：`checks`（Linux Node 测试拆分为 2 个分片）、`checks-windows`、`macos`、`android`
+3. 推送到 `main`：`build-artifacts` + `release-check` + Bun 兼容性 + `compat-node22`
+
+范围逻辑位于 `scripts/ci-changed-scope.mjs`，并由 `src/scripts/ci-changed-scope.test.ts` 中的单元测试覆盖。
 
 ## 运行器
 

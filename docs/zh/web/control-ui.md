@@ -1,7 +1,7 @@
 ---
 title: "Control UI (浏览器)"
 sidebarTitle: "Control UI"
-mmh3_hash: "f1deb39f198a9942886894676091c15f"
+mmh3_hash: "88a5caca73e513bf446257434c2d460c"
 summary: "Gateway 的基于浏览器的 Control UI(聊天、Node、配置)"
 read_when:
   - 您想从浏览器操作 Gateway

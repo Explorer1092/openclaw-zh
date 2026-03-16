@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "1f5b2066ea87c598d76091f8b06cdc52"
-summary: "Node 的配对、功能、权限和 canvas/camera/screen/system 的 CLI 辅助工具"
+mmh3_hash: "73ea25e2b7b2481e0be63248274da0ff"
+summary: "Node 的配对、功能、权限和 canvas/camera/screen/device/notifications/system 的 CLI 辅助工具"
 read_when:
   - 将 iOS/Android Node 配对到 Gateway
   - 使用 node canvas/camera 获取 agent 上下文
@@ -10,7 +10,7 @@ title: "节点"
 
 # 节点
 
-**node** 是连接到 Gateway **WebSocket** (与操作员相同的端口) 并具有 `role: "node"` 的配套设备 (macOS/iOS/Android/无头), 并通过 `node.invoke` 暴露命令界面 (例如 `canvas.*`, `camera.*`, `system.*`)。协议详情: [Gateway 协议](/gateway/protocol)。
+**node** 是连接到 Gateway **WebSocket** (与操作员相同的端口) 并具有 `role: "node"` 的配套设备 (macOS/iOS/Android/无头), 并通过 `node.invoke` 暴露命令界面 (例如 `canvas.*`, `camera.*`, `device.*`, `notifications.*`, `system.*`)。协议详情: [Gateway 协议](/gateway/protocol)。
 
 旧版传输: [Bridge 协议](/gateway/bridge-protocol) (TCP JSONL; 当前 node 已弃用/移除)。
 

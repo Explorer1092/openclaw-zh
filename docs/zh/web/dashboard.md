@@ -1,7 +1,7 @@
 ---
 title: "Dashboard (Control UI)"
 sidebarTitle: "Dashboard"
-mmh3_hash: "f5fffae2240da1cb29480b8e040d0e37"
+mmh3_hash: "f6d9099487110ae8d2fc6256ea244ea6"
 summary: "Gateway Dashboard(Control UI)访问和身份验证"
 read_when: ["更改 Dashboard 身份验证或暴露模式"]
 ---
