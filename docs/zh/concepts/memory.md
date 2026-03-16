@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1812967938ddcb71bc04d35ce9bc1a9e"
+mmh3_hash: "012dff63e25c1f2fe7bef694216ba3d2"
 title: "Memory"
 summary: "OpenClaw memory 如何工作(workspace 文件 + 自动内存刷新)"
 read_when:
@@ -22,6 +22,8 @@ Memory search tools 由活动 memory plugin 提供(默认:`memory-core`)。使�
   - 在 session 开始时读取今天 + 昨天。
 - `MEMORY.md` (可选)
   - 精选的长期内存。
+  - 如果 `MEMORY.md` 和 `memory.md` 都存在于 workspace 根目录,OpenClaw 只加载 `MEMORY.md`。
+  - 小写的 `memory.md` 仅在 `MEMORY.md` 不存在时用作备用。
   - **仅在主要私有 session 中加载**(从不在 group contexts 中)。
 
 这些文件位于 workspace 下(`agents.defaults.workspace`,默认 `~/.openclaw/workspace`)。参见 [Agent workspace](/concepts/agent-workspace) 了解完整布局。
@@ -59,15 +61,16 @@ OpenClaw 为这些 Markdown 文件提供两个面向 agent 的工具:
           enabled: true,
           softThresholdTokens: 4000,
           systemPrompt: "Session nearing compaction. Store durable memories now.",
-          prompt: "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store."
-        }
-      }
-    }
-  }
+          prompt: "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store.",
+        },
+      },
+    },
+  },
 }
 ```
 
 详细信息:
+
 - **软阈值**: 当 session token 估计值超过 `contextWindow - reserveTokensFloor - softThresholdTokens` 时触发 flush。
 - **默认静默**: prompts 包含 `NO_REPLY`,因此不会传递任何内容。
 - **两个 prompts**: 用户 prompt 加上 system prompt 附加提醒。
@@ -94,6 +97,7 @@ OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md` 上构建小型向量索引,以
   6. 否则 memory search 保持禁用,直到配置。
 - Local 模式使用 node-llama-cpp,可能需要 `pnpm approve-builds`。
 - 使用 sqlite-vec(在可用时)在 SQLite 内加速向量搜索。
+- `memorySearch.provider = "ollama"` 也支持本地/自托管 Ollama embeddings(`/api/embeddings`),但不会自动选择。
 
 远程 embeddings **需要** embedding provider 的 API key。OpenClaw 从 auth profiles、`models.providers.*.apiKey` 或环境变量解析 keys。Codex OAuth 仅涵盖 chat/completions,**不** 满足 memory search 的 embeddings。对于 Gemini,使用 `GEMINI_API_KEY` 或 `models.providers.google.apiKey`。对于 Voyage,使用 `VOYAGE_API_KEY` 或 `models.providers.voyage.apiKey`。对于 Mistral,使用 `MISTRAL_API_KEY` 或 `models.providers.mistral.apiKey`。Ollama 通常不需要真实 API key(当本地策略需要时,像 `OLLAMA_API_KEY=ollama-local` 这样的占位符就足够了)。
 当使用自定义 OpenAI 兼容端点时,设置 `memorySearch.remote.apiKey`(和可选的 `memorySearch.remote.headers`)。
@@ -118,6 +122,7 @@ OpenClaw 可以在 `MEMORY.md` 和 `memory/*.md` 上构建小型向量索引,以
 - Gateway 现在在启动时初始化 QMD 管理器,因此即使在第一次 `memory_search` 调用之前也会激活定期更新定时器。
 - Boot 刷新现在默认在后台运行,因此聊天启动不会被阻塞;设置 `memory.qmd.update.waitForBootSync = true` 以保留之前的阻塞行为。
 - 搜索通过 `memory.qmd.searchMode` 运行(默认 `qmd search --json`;还支持 `vsearch` 和 `query`)。如果所选模式在您的 QMD 构建中拒绝标志,OpenClaw 会使用 `qmd query` 重试。如果 QMD 失败或二进制文件丢失,OpenClaw 会自动回退到内置 SQLite 管理器,以便 memory tools 继续工作。
+- OpenClaw 目前不公开 QMD embed 批大小调整;批处理行为由 QMD 本身控制。
 - **第一次搜索可能很慢**:QMD 可能在第一次 `qmd query` 运行时下载本地 GGUF 模型(重排序/查询扩展)。
   - OpenClaw 在运行 QMD 时会自动设置 `XDG_CONFIG_HOME`/`XDG_CACHE_HOME`。
   - 如果你想手动预下载模型(并预热 OpenClaw 使用的同一索引),可以使用 agent 的 XDG 目录运行一次性查询。
@@ -184,6 +189,11 @@ memory: {
 }
 ```
 
+**引用与回退**
+
+- `memory.citations` 适用于所有后端(`auto`/`on`/`off`)。
+- 当 `qmd` 运行时,我们标记 `status().backend = "qmd"`,以便诊断显示哪个引擎提供了结果。如果 QMD 子进程退出或 JSON 输出无法解析,搜索管理器记录警告并返回内置 provider(现有 Markdown embeddings),直到 QMD 恢复。
+
 ### 额外的 memory 路径
 
 如果你想索引默认 workspace 布局之外的 Markdown 文件,添加显式路径:
@@ -201,8 +211,44 @@ agents: {
 注意:
 - 路径可以是绝对的或 workspace 相对的。
 - 目录递归扫描 `.md` 文件。
-- 仅索引 Markdown 文件。
+- 默认情况下,只有 Markdown 文件被索引。
+- 如果 `memorySearch.multimodal.enabled = true`,OpenClaw 也会索引 `extraPaths` 下支持的图片/音频文件。默认 memory 根目录(`MEMORY.md`、`memory.md`、`memory/**/*.md`)仅保持 Markdown。
 - 忽略 Symlinks(文件或目录)。
+
+### 多模态 memory 文件(Gemini 图片 + 音频)
+
+使用 Gemini embedding 2 时,OpenClaw 可以从 `memorySearch.extraPaths` 索引图片和音频文件:
+
+```json5
+agents: {
+  defaults: {
+    memorySearch: {
+      provider: "gemini",
+      model: "gemini-embedding-2-preview",
+      extraPaths: ["assets/reference", "voice-notes"],
+      multimodal: {
+        enabled: true,
+        modalities: ["image", "audio"], // 或 ["all"]
+        maxFileBytes: 10000000
+      },
+      remote: {
+        apiKey: "YOUR_GEMINI_API_KEY"
+      }
+    }
+  }
+}
+```
+
+注意:
+- 多模态 memory 目前仅支持 `gemini-embedding-2-preview`。
+- 多模态索引仅适用于通过 `memorySearch.extraPaths` 发现的文件。
+- 此阶段支持的模态:图片和音频。
+- 启用多模态 memory 时,`memorySearch.fallback` 必须保持 `"none"`。
+- 匹配的图片/音频文件字节在索引期间上传到配置的 Gemini embedding 端点。
+- 支持的图片扩展名:`.jpg`、`.jpeg`、`.png`、`.webp`、`.gif`、`.heic`、`.heif`。
+- 支持的音频扩展名:`.mp3`、`.wav`、`.ogg`、`.opus`、`.m4a`、`.aac`、`.flac`。
+- 搜索查询仍然是文本,但 Gemini 可以将这些文本查询与索引的图片/音频 embeddings 进行比较。
+- `memory_get` 仍然只读取 Markdown;二进制文件可以被搜索,但不会作为原始文件内容返回。
 
 ### Gemini embeddings (native)
 
@@ -226,6 +272,27 @@ agents: {
 - `remote.baseUrl` 是可选的(默认为 Gemini API 基础 URL)。
 - `remote.headers` 允许你在需要时添加额外的 headers。
 - 默认 model: `gemini-embedding-001`。
+- `gemini-embedding-2-preview` 也受支持:8192 token 限制和可配置维度(768 / 1536 / 3072,默认 3072)。
+
+#### Gemini Embedding 2 (preview)
+
+```json5
+agents: {
+  defaults: {
+    memorySearch: {
+      provider: "gemini",
+      model: "gemini-embedding-2-preview",
+      outputDimensionality: 3072,  // 可选: 768、1536 或 3072(默认)
+      remote: {
+        apiKey: "YOUR_GEMINI_API_KEY"
+      }
+    }
+  }
+}
+```
+
+> **重新索引要求:** 从 `gemini-embedding-001`(768 维)切换到 `gemini-embedding-2-preview`(3072 维)会改变向量大小。如果你在 768、1536 和 3072 之间更改 `outputDimensionality` 也是如此。
+> 当检测到 model 或维度变化时,OpenClaw 会自动重新索引。
 
 如果你想使用 **自定义 OpenAI 兼容端点**(OpenRouter、vLLM 或 proxy),你可以使用 OpenAI provider 的 `remote` 配置:
 
@@ -359,7 +426,7 @@ BM25(全文)相反:在精确 tokens 上很强,在释义上较弱。混合搜索�
 
 #### MMR 重排序(多样性)
 
-当混合搜索返回结果时,多个 chunks 可能包含相似或重叠的内容。
+当混合搜索返回结果时,多个 chunks 可能包含相似或重叠的内容。例如,搜索"家庭网络设置"可能返回来自不同每日笔记的五个几乎相同的片段,它们都提到相同的路由器配置。
 
 **MMR(最大边际相关性)**重新排序结果以平衡相关性与多样性,确保顶部结果涵盖查询的不同方面,而不是重复相同的信息。
 
@@ -373,19 +440,92 @@ BM25(全文)相反:在精确 tokens 上很强,在释义上较弱。混合搜索�
 - `lambda = 0.0` → 最大多样性(忽略相关性)
 - 默认:`0.7`(平衡,略微偏重相关性)
 
+**示例 — 查询:"家庭网络设置"**
+
+给定这些 memory 文件:
+
+```
+memory/2026-02-10.md  → "Configured Omada router, set VLAN 10 for IoT devices"
+memory/2026-02-08.md  → "Configured Omada router, moved IoT to VLAN 10"
+memory/2026-02-05.md  → "Set up AdGuard DNS on 192.168.10.2"
+memory/network.md     → "Router: Omada ER605, AdGuard: 192.168.10.2, VLAN 10: IoT"
+```
+
+没有 MMR — 前 3 个结果:
+
+```
+1. memory/2026-02-10.md  (score: 0.92)  ← router + VLAN
+2. memory/2026-02-08.md  (score: 0.89)  ← router + VLAN (几乎重复!)
+3. memory/network.md     (score: 0.85)  ← 参考文档
+```
+
+使用 MMR (λ=0.7) — 前 3 个结果:
+
+```
+1. memory/2026-02-10.md  (score: 0.92)  ← router + VLAN
+2. memory/network.md     (score: 0.85)  ← 参考文档(多样!)
+3. memory/2026-02-05.md  (score: 0.78)  ← AdGuard DNS(多样!)
+```
+
+2月8日的近似重复被排除,agent 获得三个不同的信息片段。
+
+**何时启用:** 如果你注意到 `memory_search` 返回冗余或几乎重复的片段,特别是每日笔记通常在不同天重复类似信息时。
+
 #### 时间衰减(近期增强)
 
-每日记录随时间积累数百个有日期的文件。**时间衰减**根据每个结果的年龄对分数应用指数乘数,使近期记忆自然排名更高,而旧记忆逐渐淡出。
+具有每日笔记的 agent 随时间积累数百个有日期的文件。没有衰减,六个月前措辞良好的笔记可能会超过关于同一主题的昨天更新。
 
-**长青文件永远不会衰减:**
-- `MEMORY.md`(根 memory 文件)
-- `memory/` 中的非日期文件(例如 `memory/projects.md`、`memory/network.md`)
+**时间衰减**根据每个结果的年龄对分数应用指数乘数,使近期记忆自然排名更高,而旧记忆逐渐淡出:
+
+```
+decayedScore = score × e^(-λ × ageInDays)
+```
+
+其中 `λ = ln(2) / halfLifeDays`。
 
 默认半衰期 30 天时:
 - 今天的记录:**100%** 原始分数
 - 7 天前:**~84%**
 - 30 天前:**50%**
 - 90 天前:**12.5%**
+- 180 天前:**~1.6%**
+
+**长青文件永远不会衰减:**
+- `MEMORY.md`(根 memory 文件)
+- `memory/` 中的非日期文件(例如 `memory/projects.md`、`memory/network.md`)
+- 这些包含应始终正常排名的持久参考信息。
+
+**有日期的每日文件**(`memory/YYYY-MM-DD.md`)使用从文件名提取的日期。其他来源(例如 session transcripts)回退到文件修改时间(`mtime`)。
+
+**示例 — 查询:"Rod 的工作时间表是什么?"**
+
+给定这些 memory 文件(今天是 2 月 10 日):
+
+```
+memory/2025-09-15.md  → "Rod works Mon-Fri, standup at 10am, pairing at 2pm"  (148 天前)
+memory/2026-02-10.md  → "Rod has standup at 14:15, 1:1 with Zeb at 14:45"    (今天)
+memory/2026-02-03.md  → "Rod started new team, standup moved to 14:15"        (7 天前)
+```
+
+没有衰减:
+
+```
+1. memory/2025-09-15.md  (score: 0.91)  ← 最佳语义匹配,但已过时!
+2. memory/2026-02-10.md  (score: 0.82)
+3. memory/2026-02-03.md  (score: 0.80)
+```
+
+有衰减(halfLife=30):
+
+```
+1. memory/2026-02-10.md  (score: 0.82 × 1.00 = 0.82)  ← 今天,无衰减
+2. memory/2026-02-03.md  (score: 0.80 × 0.85 = 0.68)  ← 7 天,轻微衰减
+3. memory/2025-09-15.md  (score: 0.91 × 0.03 = 0.03)  ← 148 天,几乎消失
+```
+
+尽管具有最佳原始语义匹配,过时的 9 月笔记降到底部。
+
+**何时启用:** 如果你的 agent 有几个月的每日笔记,并且你发现旧的、过时的信息超过了近期 context。30 天的半衰期对于每日笔记密集的工作流效果很好;如果你经常引用旧笔记,请增加它(例如 90 天)。
 
 #### 配置
 

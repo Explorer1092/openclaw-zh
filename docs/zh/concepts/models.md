@@ -1,7 +1,7 @@
 ---
 title: "模型 CLI"
 sidebarTitle: "模型 CLI"
-mmh3_hash: "1acc1bbe018a34ea24417d21056d8034"
+mmh3_hash: "4e5188f2bfafb66020e3173958688009"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when:
   - 添加或修改 models CLI (models list/set/scan/aliases/fallbacks)
@@ -19,54 +19,54 @@ OpenClaw 按以下顺序选择 models:
 
 1. **Primary** model (`agents.defaults.model.primary` 或 `agents.defaults.model`)。
 2. `agents.defaults.model.fallbacks` 中的 **Fallbacks**(按顺序)。
-3. **Provider auth failover** 在移动到下一个 model 之前在 provider 内部发生。
+3. **Provider auth failover** 在移动到下一个 model 之前发生在 provider 内部。
 
 相关:
 
-- `agents.defaults.models` 是 OpenClaw 可以使用的 models 的允许列表/catalog(加上 aliases)。
-- `agents.defaults.imageModel` **仅在** primary model 无法接受图像时使用。
-- 每个 agent 的默认值可以通过 `agents.list[].model` 加上 bindings 覆盖 `agents.defaults.model`(参见 [/concepts/multi-agent](/concepts/multi-agent))。
+- `agents.defaults.models` 是 OpenClaw 可以使用的 models 的允许列表/catalog(加上别名)。
+- `agents.defaults.imageModel` 仅在**主 model 无法接受图像时**使用。
+- 每个 agent 的默认值可以通过 `agents.list[].model` 加绑定覆盖 `agents.defaults.model`(参见 [/concepts/multi-agent](/concepts/multi-agent))。
 
-## 快速 model 选择策略
+## 快速 model 策略
 
-- 将 primary 设置为你可用的最强最新一代 model。
-- 使用 fallbacks 处理对成本/延迟敏感的任务和低风险聊天。
-- 对于启用 tool 的 agent 或不可信输入,避免使用较旧/较弱的 model 层级。
+- 将你的 primary 设置为你可用的最强最新一代 model。
+- 使用 fallbacks 进行成本/延迟敏感的任务和较低风险的聊天。
+- 对于启用 tool 的 agents 或不受信任的输入,避免使用旧的/较弱的 model 层。
 
 ## 设置向导(推荐)
 
-如果你不想手动编辑配置,请运行 onboarding 向导:
+如果你不想手动编辑配置,运行设置向导:
 
 ```bash
 openclaw onboard
 ```
 
-它可以为常见 providers 设置 model + auth,包括 **OpenAI Code (Codex) subscription** (OAuth) 和 **Anthropic** (推荐 API key;也支持 `claude setup-token`)。
+它可以为常见 providers 设置 model + auth,包括 **OpenAI Code (Codex) 订阅**(OAuth)和 **Anthropic**(API key 或 `claude setup-token`)。
 
-## 配置键(概述)
+## 配置 keys(概述)
 
 - `agents.defaults.model.primary` 和 `agents.defaults.model.fallbacks`
 - `agents.defaults.imageModel.primary` 和 `agents.defaults.imageModel.fallbacks`
-- `agents.defaults.models` (允许列表 + aliases + provider 参数)
-- `models.providers` (写入 `models.json` 的自定义 providers)
+- `agents.defaults.models`(允许列表 + 别名 + provider 参数)
+- `models.providers`(写入 `models.json` 的自定义 providers)
 
-Model refs 规范化为小写。Provider 别名如 `z.ai/*` 规范化为 `zai/*`。
+Model refs 规范化为小写。像 `z.ai/*` 这样的 provider 别名规范化为 `zai/*`。
 
-Provider 配置示例(包括 OpenCode Zen)位于 [/gateway/configuration](/gateway/configuration#opencode-zen-multi-model-proxy)。
+Provider 配置示例(包括 OpenCode)位于 [/gateway/configuration](/gateway/configuration#opencode)。
 
-## "Model is not allowed"(以及为什么回复停止)
+## "Model 不被允许"(以及为什么回复停止)
 
-如果设置了 `agents.defaults.models`,它将成为 `/model` 和 session 覆盖的 **允许列表**。当用户选择不在该允许列表中的 model 时,OpenClaw 返回:
+如果设置了 `agents.defaults.models`,它将成为 `/model` 和 session 覆盖的**允许列表**。当用户选择不在该允许列表中的 model 时,OpenClaw 返回:
 
 ```
 Model "provider/model" is not allowed. Use /model to list available models.
 ```
 
-这发生在生成正常回复 **之前**,因此消息可能会感觉像"没有响应"。修复方法是:
+这发生在**正常回复生成之前**,因此该消息可能感觉像"没有响应"。修复方法是:
 
 - 将 model 添加到 `agents.defaults.models`,或
 - 清除允许列表(删除 `agents.defaults.models`),或
-- 从 `/model list` 中选择一个 model。
+- 从 `/model list` 选择 model。
 
 示例允许列表配置:
 
@@ -82,9 +82,9 @@ Model "provider/model" is not allowed. Use /model to list available models.
 }
 ```
 
-## 在聊天中切换 models (`/model`)
+## 在聊天中切换 models(`/model`)
 
-你可以在不重启的情况下为当前 session 切换 models:
+你可以在不重新启动的情况下切换当前 session 的 models:
 
 ```
 /model
@@ -96,13 +96,13 @@ Model "provider/model" is not allowed. Use /model to list available models.
 
 注意:
 
-- `/model`(和 `/model list`)是紧凑的编号选择器(model family + 可用 providers)。
-- 在 Discord 上,`/model` 和 `/models` 会打开带有 provider 和 model 下拉列表及提交步骤的交互式选择器。
+- `/model`(和 `/model list`)是紧凑的编号选择器(model 系列 + 可用 providers)。
+- 在 Discord 上,`/model` 和 `/models` 打开带有 provider 和 model 下拉列表以及提交步骤的交互式选择器。
 - `/model <#>` 从该选择器中选择。
-- `/model status` 是详细视图(auth 候选和配置时的 provider 端点 `baseUrl` + `api` 模式)。
-- Model refs 通过在 **第一个** `/` 上拆分来解析。输入 `/model <ref>` 时使用 `provider/model`。
-- 如果 model ID 本身包含 `/`(OpenRouter 样式),你必须包含 provider 前缀(例如:`/model openrouter/moonshotai/kimi-k2`)。
-- 如果省略 provider,OpenClaw 将输入视为别名或 **默认 provider** 的 model(仅当 model ID 中没有 `/` 时才有效)。
+- `/model status` 是详细视图(auth 候选者,以及在配置时,provider 端点 `baseUrl` + `api` 模式)。
+- Model refs 通过在**第一个** `/` 上分割来解析。在输入 `/model <ref>` 时使用 `provider/model`。
+- 如果 model ID 本身包含 `/`(OpenRouter 样式),你必须包含 provider 前缀(示例:`/model openrouter/moonshotai/kimi-k2`)。
+- 如果省略 provider,OpenClaw 将输入视为别名或**默认 provider** 的 model(仅当 model ID 中没有 `/` 时有效)。
 
 完整命令行为/配置:[Slash commands](/tools/slash-commands)。
 
@@ -133,21 +133,22 @@ openclaw models image-fallbacks clear
 
 ### `models list`
 
-默认显示配置的 models。有用的 flags:
+默认显示已配置的 models。有用的 flags:
 
-- `--all`: 完整 catalog
-- `--local`: 仅本地 providers
-- `--provider <name>`: 按 provider 过滤
-- `--plain`: 每行一个 model
-- `--json`: 机器可读输出
+- `--all`:完整 catalog
+- `--local`:仅本地 providers
+- `--provider <name>`:按 provider 过滤
+- `--plain`:每行一个 model
+- `--json`:机器可读输出
 
 ### `models status`
 
-显示解析的 primary model、fallbacks、image model 以及配置的 providers 的 auth 概述。它还显示在 auth store 中找到的 profiles 的 OAuth 过期状态(默认在 24 小时内警告)。`--plain` 仅打印解析的 primary model。
-始终显示 OAuth 状态(并包含在 `--json` 输出中)。如果配置的 provider 没有凭据,`models status` 打印 **Missing auth** 部分。JSON 包括 `auth.oauth`(警告窗口 + profiles)和 `auth.providers`(每个 provider 的有效 auth)。
-使用 `--check` 进行自动化(缺失/过期时退出 `1`,即将过期时退出 `2`)。
+显示已解析的 primary model、fallbacks、image model 以及已配置 providers 的 auth 概述。它还显示在 auth store 中找到的 profiles 的 OAuth 过期状态(默认在 24 小时内警告)。`--plain` 仅打印已解析的 primary model。
+OAuth 状态始终显示(并包含在 `--json` 输出中)。如果已配置的 provider 没有凭据,`models status` 打印 **Missing auth** 部分。
+JSON 包含 `auth.oauth`(警告窗口 + profiles)和 `auth.providers`(每个 provider 的有效 auth)。
+使用 `--check` 进行自动化(当缺失/过期时退出 `1`,当即将过期时退出 `2`)。
 
-Auth 选择取决于 provider/账户。对于始终在线的 gateway 主机,API keys 通常是最可预测的;也支持订阅 token 流程。
+Auth 选择取决于 provider/账户。对于始终在线的 gateway 主机,API keys 通常是最可预测的;订阅 token 流程也受支持。
 
 示例(Anthropic setup-token):
 
@@ -158,26 +159,26 @@ openclaw models status
 
 ## 扫描(OpenRouter 免费 models)
 
-`openclaw models scan` 检查 OpenRouter 的 **免费 model catalog**,并可以选择性地探测 models 的 tool 和 image 支持。
+`openclaw models scan` 检查 OpenRouter 的**免费 model catalog**,并可以选择性地探测 models 以获得 tool 和 image 支持。
 
 关键 flags:
 
-- `--no-probe`: 跳过实时探测(仅元数据)
-- `--min-params <b>`: 最小参数大小(十亿)
-- `--max-age-days <days>`: 跳过较旧的 models
-- `--provider <name>`: provider 前缀过滤器
-- `--max-candidates <n>`: fallback 列表大小
-- `--set-default`: 将 `agents.defaults.model.primary` 设置为第一个选择
-- `--set-image`: 将 `agents.defaults.imageModel.primary` 设置为第一个 image 选择
+- `--no-probe`:跳过实时探测(仅元数据)
+- `--min-params <b>`:最小参数大小(十亿)
+- `--max-age-days <days>`:跳过较旧的 models
+- `--provider <name>`:provider 前缀过滤器
+- `--max-candidates <n>`:fallback 列表大小
+- `--set-default`:将 `agents.defaults.model.primary` 设置为第一个选择
+- `--set-image`:将 `agents.defaults.imageModel.primary` 设置为第一个图像选择
 
-探测需要 OpenRouter API key(来自 auth profiles 或 `OPENROUTER_API_KEY`)。没有 key,使用 `--no-probe` 仅列出候选。
+探测需要 OpenRouter API key(来自 auth profiles 或 `OPENROUTER_API_KEY`)。没有 key 时,使用 `--no-probe` 仅列出候选者。
 
 扫描结果按以下排名:
 
-1. Image 支持
+1. 图像支持
 2. Tool 延迟
 3. Context 大小
-4. 参数计数
+4. 参数数量
 
 输入
 
@@ -186,18 +187,20 @@ openclaw models status
 - 可选过滤器:`--max-age-days`、`--min-params`、`--provider`、`--max-candidates`
 - 探测控制:`--timeout`、`--concurrency`
 
-在 TTY 中运行时,你可以交互式地选择 fallbacks。在非交互式模式下,传递 `--yes` 以接受默认值。
+在 TTY 中运行时,你可以交互式地选择 fallbacks。在非交互模式下,传递 `--yes` 接受默认值。
 
-## Models registry (`models.json`)
+## Models 注册表(`models.json`)
 
-`models.providers` 中的自定义 providers 写入 agent 目录下的 `models.json`(默认 `~/.openclaw/agents/<agentId>/models.json`)。除非 `models.mode` 设置为 `replace`,否则此文件默认合并。
+`models.providers` 中的自定义 providers 写入 agent 目录下的 `models.json`(默认 `~/.openclaw/agents/<agentId>/agent/models.json`)。除非将 `models.mode` 设置为 `replace`,否则默认合并此文件。
 
 匹配 provider IDs 的合并模式优先级:
 
-- agent `models.json` 中已有的非空 `baseUrl` 优先。
-- 仅当该 provider 在当前 config/auth-profile 上下文中不受 SecretRef 管理时,agent `models.json` 中的非空 `apiKey` 才优先。
-- SecretRef 管理的 provider `apiKey` 值从源标记(`ENV_VAR_NAME` 用于 env 引用,`secretref-managed` 用于 file/exec 引用)刷新,而不是持久化已解析的 secrets。
-- 空或缺失的 agent `apiKey`/`baseUrl` 回退到配置的 `models.providers`。
-- 其他 provider 字段从配置和规范化的 catalog 数据中刷新。
+- agent `models.json` 中已存在的非空 `baseUrl` 优先。
+- agent `models.json` 中的非空 `apiKey` 仅在该 provider 不受当前 config/auth-profile context 的 SecretRef 管理时优先。
+- SecretRef 管理的 provider `apiKey` 值从源标记刷新(`ENV_VAR_NAME` 用于 env refs,`secretref-managed` 用于 file/exec refs),而不是持久化已解析的 secrets。
+- SecretRef 管理的 provider header 值从源标记刷新(`secretref-env:ENV_VAR_NAME` 用于 env refs,`secretref-managed` 用于 file/exec refs)。
+- 空或缺失的 agent `apiKey`/`baseUrl` 回退到 config `models.providers`。
+- 其他 provider 字段从 config 和规范化 catalog 数据中刷新。
 
-此基于标记的持久化适用于 OpenClaw 重新生成 `models.json` 的任何时候,包括命令驱动的路径(如 `openclaw agent`)。
+标记持久性是源权威的:OpenClaw 从活跃源 config 快照(解析前)写入标记,而不是从已解析的运行时 secret 值。
+这适用于 OpenClaw 重新生成 `models.json` 的任何时候,包括像 `openclaw agent` 这样的命令驱动路径。
