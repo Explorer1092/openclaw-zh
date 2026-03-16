@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0c910c70547d9372cfade40e0569ed63"
+mmh3_hash: "13da0765c1c78ca4e18dd0b98dcdd509"
 summary: "从 Gateway 公开兼容 OpenResponses 的 /v1/responses HTTP 端点"
 read_when:
   - 集成使用 OpenResponses API 的客户端
@@ -16,96 +16,35 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 - `POST /v1/responses`
 - 与 Gateway 相同的端口(WS + HTTP 多路复用):`http://<gateway-host>:<port>/v1/responses`
 
-在底层,请求作为正常的 Gateway Agent 运行执行(与 `openclaw agent` 相同的代码路径),因此路由/权限/配置与您的 Gateway 匹配。
+底层请求作为普通 Gateway Agent 运行执行(与 `openclaw agent` 相同的代码路径),因此路由/权限/配置与您的 Gateway 匹配。
 
-## 认证
+## 认证、安全和路由
 
-使用 Gateway 认证配置。发送 Bearer 令牌:
+操作行为与 [OpenAI Chat Completions](/gateway/openai-http-api) 相同:
 
-- `Authorization: Bearer <token>`
+- 使用带有普通 Gateway 认证配置的 `Authorization: Bearer <token>`
+- 将端点视为 Gateway 实例的完整操作员访问
+- 使用 `model: "openclaw:<agentId>"`、`model: "agent:<agentId>"` 或 `x-openclaw-agent-id` 选择 Agent
+- 使用 `x-openclaw-session-key` 进行明确的 Session 路由
 
-注意:
-
-- 当 `gateway.auth.mode="token"` 时,使用 `gateway.auth.token`(或 `OPENCLAW_GATEWAY_TOKEN`)。
-- 当 `gateway.auth.mode="password"` 时,使用 `gateway.auth.password`(或 `OPENCLAW_GATEWAY_PASSWORD`)。
-- 如果配置了 `gateway.auth.rateLimit` 且发生太多认证失败,端点返回 `429` 和 `Retry-After`。
-
-## 安全边界(重要)
-
-将此端点视为 Gateway 实例的**完全操作员访问**界面。
-
-- 此处的 HTTP Bearer 认证不是针对每个用户的狭窄范围模型。
-- 此端点的有效 Gateway token/password 应被视为所有者/操作员凭证。
-- 请求通过与受信任的操作员操作相同的控制平面 Agent 路径运行。
-- 此端点没有独立的非所有者/每用户工具边界；一旦调用者通过此处的 Gateway 认证，OpenClaw 将该调用者视为此 Gateway 的受信任操作员。
-- 如果目标 Agent 策略允许敏感工具,此端点可以使用它们。
-- 仅在 loopback/tailnet/私有入口保留此端点;不要将其直接暴露到公共互联网。
-
-参见 [Security](/gateway/security) 和 [Remote access](/gateway/remote)。
-
-## 选择 Agent
-
-不需要自定义标头:在 OpenResponses `model` 字段中编码 Agent ID:
-
-- `model: "openclaw:<agentId>"`(示例:`"openclaw:main"`、`"openclaw:beta"`)
-- `model: "agent:<agentId>"`(别名)
-
-或通过标头定位特定的 OpenClaw Agent:
-
-- `x-openclaw-agent-id: <agentId>`(默认:`main`)
-
-高级:
-
-- `x-openclaw-session-key: <sessionKey>` 以完全控制 Session 路由。
-
-## 启用端点
-
-将 `gateway.http.endpoints.responses.enabled` 设置为 `true`:
-
-```json5
-{
-  gateway: {
-    http: {
-      endpoints: {
-        responses: { enabled: true },
-      },
-    },
-  },
-}
-```
-
-## 禁用端点
-
-将 `gateway.http.endpoints.responses.enabled` 设置为 `false`:
-
-```json5
-{
-  gateway: {
-    http: {
-      endpoints: {
-        responses: { enabled: false },
-      },
-    },
-  },
-}
-```
+使用 `gateway.http.endpoints.responses.enabled` 启用或禁用此端点。
 
 ## Session 行为
 
-默认情况下,端点是**每个请求无状态的**(每次调用生成一个新的 Session 键)。
+默认情况下端点**每请求无状态**(每次调用生成新的 Session 键)。
 
-如果请求包含 OpenResponses `user` 字符串,Gateway 从中派生一个稳定的 Session 键,因此重复调用可以共享 Agent Session。
+如果请求包含 OpenResponses `user` 字符串,Gateway 从中派生稳定的 Session 键,以便重复调用可以共享 Agent Session。
 
 ## 请求形状(支持)
 
-请求遵循基于 Item 的输入的 OpenResponses API。当前支持:
+请求遵循带有基于 Item 输入的 OpenResponses API。当前支持:
 
 - `input`:字符串或 Item 对象数组。
 - `instructions`:合并到系统提示中。
-- `tools`:客户端工具定义(Function Tool)。
+- `tools`:客户端工具定义(函数工具)。
 - `tool_choice`:过滤或要求客户端工具。
 - `stream`:启用 SSE 流式传输。
-- `max_output_tokens`:尽力而为的输出限制(Provider 依赖)。
+- `max_output_tokens`:尽力输出限制(取决于提供商)。
 - `user`:稳定的 Session 路由。
 
 接受但**当前忽略**:
@@ -117,15 +56,15 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 - `previous_response_id`
 - `truncation`
 
-## Items (input)
+## Items(输入)
 
 ### `message`
 
 角色:`system`、`developer`、`user`、`assistant`。
 
-- `system` 和 `developer` 附加到系统提示。
+- `system` 和 `developer` 被追加到系统提示。
 - 最近的 `user` 或 `function_call_output` Item 成为"当前消息"。
-- 较早的 user/assistant 消息作为上下文的历史包含在内。
+- 较早的 user/assistant 消息作为历史上下文包含。
 
 ### `function_call_output`(基于轮次的工具)
 
@@ -141,17 +80,17 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 
 ### `reasoning` 和 `item_reference`
 
-接受以实现架构兼容性,但在构建提示时忽略。
+接受以保证 schema 兼容性,但在构建提示时被忽略。
 
-## Tools(客户端 Function Tool)
+## 工具(客户端函数工具)
 
 使用 `tools: [{ type: "function", function: { name, description?, parameters? } }]` 提供工具。
 
-如果 Agent 决定调用工具,响应返回 `function_call` 输出 Item。然后,您使用 `function_call_output` 发送后续请求以继续轮次。
+如果 Agent 决定调用工具,响应返回 `function_call` 输出 Item。然后您发送带有 `function_call_output` 的后续请求以继续轮次。
 
-## Images (`input_image`)
+## 图像(`input_image`)
 
-支持 base64 或 URL 源:
+支持 base64 或 URL 来源:
 
 ```json
 {
@@ -163,9 +102,9 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 允许的 MIME 类型(当前):`image/jpeg`、`image/png`、`image/gif`、`image/webp`、`image/heic`、`image/heif`。
 最大大小(当前):10MB。
 
-## Files (`input_file`)
+## 文件(`input_file`)
 
-支持 base64 或 URL 源:
+支持 base64 或 URL 来源:
 
 ```json
 {
@@ -186,23 +125,23 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 当前行为:
 
 - 文件内容被解码并添加到**系统提示**,而不是用户消息,因此它保持短暂(不在 Session 历史中持久化)。
-- PDF 被解析为文本。如果找到很少的文本,第一页将被光栅化为图像并传递给模型。
+- PDF 被解析以获取文本。如果找到的文本很少,前几页被光栅化为图像并传递给模型。
 
-PDF 解析使用 Node 友好的 `pdfjs-dist` 旧版构建(无 Worker)。现代 PDF.js 构建期望浏览器 Worker/DOM 全局变量,因此不在 Gateway 中使用。
+PDF 解析使用 Node 友好的 `pdfjs-dist` 传统构建(无 worker)。现代 PDF.js 构建需要浏览器 worker/DOM 全局变量,因此不在 Gateway 中使用。
 
 URL 获取默认值:
 
-- `files.allowUrl`: `true`
-- `images.allowUrl`: `true`
-- `maxUrlParts`: `8`(每个请求的总 URL 基础 `input_file` + `input_image` 部分)
+- `files.allowUrl`:`true`
+- `images.allowUrl`:`true`
+- `maxUrlParts`:`8`(每个请求基于 URL 的 `input_file` + `input_image` 部分总计)
 - 请求受到保护(DNS 解析、私有 IP 阻止、重定向上限、超时)。
-- 支持每个输入类型的可选主机名允许列表(`files.urlAllowlist`、`images.urlAllowlist`)。
+- 每个输入类型支持可选的主机名允许列表(`files.urlAllowlist`、`images.urlAllowlist`)。
   - 精确主机:`"cdn.example.com"`
-  - 通配符子域:`"*.assets.example.com"`(不匹配顶点)
+  - 通配符子域:`"*.assets.example.com"`(不匹配顶级域)
 
 ## 文件 + 图像限制(配置)
 
-默认值可以在 `gateway.http.endpoints.responses` 下调整:
+可以在 `gateway.http.endpoints.responses` 下调整默认值:
 
 ```json5
 {
@@ -270,17 +209,18 @@ URL 获取默认值:
 - `images.maxBytes`:10MB
 - `images.maxRedirects`:3
 - `images.timeoutMs`:10s
-- HEIC/HEIF `input_image` 源被接受并在投递给 Provider 前规范化为 JPEG。
+- HEIC/HEIF `input_image` 来源被接受并在提供商交付前规范化为 JPEG。
 
 安全注意事项:
 
-- URL 允许列表在获取之前和重定向跳跃时强制执行。
-- 允许列出主机名不会绕过私有/内部 IP 阻止。
-- 对于面向互联网的 Gateway,除了应用程序级保护外,还应用网络出口控制。参见[安全](/gateway/security)。
+- URL 允许列表在获取前和重定向跳转时强制执行。
+- 将主机名列入白名单不会绕过私有/内部 IP 阻止。
+- 对于互联网暴露的 Gateway,除了应用级别的防护之外,还要应用网络出口控制。
+  参见[安全](/gateway/security)。
 
 ## 流式传输(SSE)
 
-设置 `stream: true` 以接收 Server-Sent Events (SSE):
+设置 `stream: true` 以接收服务器发送的事件(SSE):
 
 - `Content-Type: text/event-stream`
 - 每个事件行是 `event: <type>` 和 `data: <json>`
@@ -299,9 +239,9 @@ URL 获取默认值:
 - `response.completed`
 - `response.failed`(出错时)
 
-## Usage
+## 使用量
 
-当底层 Provider 报告令牌计数时,`usage` 被填充。
+当底层提供商报告 token 计数时,`usage` 被填充。
 
 ## 错误
 
@@ -313,13 +253,13 @@ URL 获取默认值:
 
 常见情况:
 
-- `401` 缺失/无效认证
+- `401` 认证缺失/无效
 - `400` 无效请求正文
-- `405` 错误方法
+- `405` 方法错误
 
 ## 示例
 
-非流式传输:
+非流式:
 
 ```bash
 curl -sS http://127.0.0.1:18789/v1/responses \
@@ -332,7 +272,7 @@ curl -sS http://127.0.0.1:18789/v1/responses \
   }'
 ```
 
-流式传输:
+流式:
 
 ```bash
 curl -N http://127.0.0.1:18789/v1/responses \

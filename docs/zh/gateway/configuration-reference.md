@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1b297f6ff3b6c688874572ef2857852d"
+mmh3_hash: "c6d6e2fabe1fa6d403e6a74b509ba85d"
 title: "配置参考"
 description: "~/.openclaw/openclaw.json 的完整字段级参考文档"
 summary: "每个 OpenClaw 配置键、默认值及 Channel 设置的完整参考"

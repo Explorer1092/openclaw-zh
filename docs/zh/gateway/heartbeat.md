@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2323f42e9447e37d5c89d93e14f5c898"
+mmh3_hash: "b55660b7fcef37ba640d402f578e7249"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -9,22 +9,23 @@ title: "Heartbeat"
 
 # Heartbeat (Gateway)
 
-> **Heartbeat vs Cron?** 有关何时使用每个的指导,请参见 [Cron vs Heartbeat](/automation/cron-vs-heartbeat)。
+> **Heartbeat vs Cron?** 参见 [Cron vs Heartbeat](/automation/cron-vs-heartbeat) 了解何时使用各自的指导。
 
-Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以显示需要注意的任何内容,而不会向您发送垃圾信息。
+Heartbeat 在主 Session 中运行**定期 Agent 轮次**,以便模型能够无需打扰您地呈现任何需要关注的内容。
 
 故障排除:[/automation/troubleshooting](/automation/troubleshooting)
 
 ## 快速入门(初学者)
 
-1. 保持 Heartbeat 启用(默认为 `30m`,或对于 Anthropic OAuth/setup-token 为 `1h`)或设置您自己的节奏。
-2. 在 Agent 工作空间中创建一个微小的 `HEARTBEAT.md` 清单(可选但推荐)。
-3. 决定 Heartbeat 消息应该去哪里(`target: "none"` 是默认值;设置 `target: "last"` 以路由到最后的联系人)。
-4. 可选:启用 Heartbeat Reasoning 传递以提高透明度。
-5. 可选:如果 Heartbeat 运行只需要 `HEARTBEAT.md`,使用轻量级 bootstrap 上下文。
-6. 可选:将 Heartbeat 限制在活动时间(本地时间)。
+1. 保持 Heartbeat 启用(默认是 `30m`,或 Anthropic OAuth/setup-token 时为 `1h`)或设置您自己的节奏。
+2. 在 Agent workspace 中创建一个小的 `HEARTBEAT.md` 清单(可选但推荐)。
+3. 决定 Heartbeat 消息应该发送到哪里(`target: "none"` 是默认值;设置 `target: "last"` 路由到最后一个联系人)。
+4. 可选:启用 Heartbeat 推理交付以提高透明度。
+5. 可选:如果 Heartbeat 运行只需要 `HEARTBEAT.md`,使用轻量引导上下文。
+6. 可选:启用隔离 Session 以避免每次 Heartbeat 发送完整对话历史。
+7. 可选:将 Heartbeat 限制在活跃时间(本地时间)。
 
-示例配置:
+配置示例:
 
 ```json5
 {
@@ -32,9 +33,10 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last", // 显式传递到最后的联系人(默认为 "none")
-        directPolicy: "allow", // 默认:允许直接/DM 目标;设置 "block" 以抑制
-        lightContext: true, // 可选:仅从 bootstrap 文件中注入 HEARTBEAT.md
+        target: "last", // 明确交付到最后一个联系人(默认是 "none")
+        directPolicy: "allow", // 默认:允许直接/DM 目标;设置 "block" 以禁止
+        lightContext: true, // 可选:仅从引导文件注入 HEARTBEAT.md
+        isolatedSession: true, // 可选:每次运行新 Session(无对话历史)
         // activeHours: { start: "08:00", end: "24:00" },
         // includeReasoning: true, // 可选:也发送单独的 `Reasoning:` 消息
       },
@@ -48,26 +50,26 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 - 间隔:`30m`(或当检测到 Anthropic OAuth/setup-token 认证模式时为 `1h`)。设置 `agents.defaults.heartbeat.every` 或每个 Agent 的 `agents.list[].heartbeat.every`;使用 `0m` 禁用。
 - 提示正文(可通过 `agents.defaults.heartbeat.prompt` 配置):
   `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
-- Heartbeat 提示**逐字**作为用户消息发送。系统提示包括"Heartbeat"部分,并且运行在内部被标记。
-- 活动时间(`heartbeat.activeHours`)在配置的时区中检查。在窗口之外,Heartbeat 被跳过,直到窗口内的下一个滴答。
+- Heartbeat 提示以**逐字**方式作为用户消息发送。系统提示包含"Heartbeat"部分,运行在内部被标记。
+- 活跃时间(`heartbeat.activeHours`)在配置的时区中检查。在窗口外,Heartbeat 被跳过,直到窗口内的下一个滴答。
 
 ## Heartbeat 提示的用途
 
-默认提示有意广泛:
+默认提示故意宽泛:
 
-- **后台任务**:"Consider outstanding tasks"促使 Agent 审查后续事项(收件箱、日历、提醒、排队工作)并显示任何紧急内容。
-- **人工检查**:"Checkup sometimes on your human during day time"促使偶尔的轻量级"anything you need?"消息,但通过使用您配置的本地时区避免夜间垃圾信息(参见 [/concepts/timezone](/concepts/timezone))。
+- **后台任务**:"Consider outstanding tasks" 提示 Agent 审查待处理事项(收件箱、日历、提醒、排队工作)并呈现任何紧急内容。
+- **人工检查**:"Checkup sometimes on your human during day time" 偶尔触发轻量的"您有什么需要吗?"消息,但使用您配置的本地时区避免夜间骚扰(参见 [/concepts/timezone](/concepts/timezone))。
 
-如果您希望 Heartbeat 执行非常具体的操作(例如"check Gmail PubSub stats"或"verify gateway health"),请将 `agents.defaults.heartbeat.prompt`(或 `agents.list[].heartbeat.prompt`)设置为自定义正文(逐字发送)。
+如果您想要 Heartbeat 做一些非常具体的事情(例如"检查 Gmail PubSub 统计"或"验证 Gateway 健康"),请将 `agents.defaults.heartbeat.prompt`(或 `agents.list[].heartbeat.prompt`)设置为自定义正文(逐字发送)。
 
-## 响应契约
+## 响应约定
 
-- 如果不需要注意,请回复 **`HEARTBEAT_OK`**。
-- 在 Heartbeat 运行期间,当它出现在回复的**开头或结尾**时,OpenClaw 将 `HEARTBEAT_OK` 视为确认。令牌被剥离,如果剩余内容 **≤ `ackMaxChars`**(默认:300),则回复被丢弃。
-- 如果 `HEARTBEAT_OK` 出现在回复的**中间**,则不会特别对待。
-- 对于警报,**不要**包含 `HEARTBEAT_OK`;仅返回警报文本。
+- 如果没有需要关注的内容,请回复 **`HEARTBEAT_OK`**。
+- 在 Heartbeat 运行期间,当 `HEARTBEAT_OK` 出现在回复的**开头或结尾**时,OpenClaw 将其视为确认。令牌被去除,如果剩余内容 **≤ `ackMaxChars`**(默认:300),则回复被丢弃。
+- 如果 `HEARTBEAT_OK` 出现在回复的**中间**,则不会特殊处理。
+- 对于警报,**不要**包含 `HEARTBEAT_OK`;只返回警报文本。
 
-在 Heartbeat 之外,消息开头/结尾的游离 `HEARTBEAT_OK` 被剥离并记录;仅包含 `HEARTBEAT_OK` 的消息被丢弃。
+在 Heartbeat 外,消息开头/结尾的零散 `HEARTBEAT_OK` 被去除并记录;只有 `HEARTBEAT_OK` 的消息被丢弃。
 
 ## 配置
 
@@ -76,13 +78,14 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
   agents: {
     defaults: {
       heartbeat: {
-        every: "30m", // 默认:30m(0m 禁用)
+        every: "30m", // 默认: 30m (0m 禁用)
         model: "anthropic/claude-opus-4-6",
-        includeReasoning: false, // 默认:false(可用时传递单独的 Reasoning: 消息)
-        lightContext: false, // 默认:false;true 仅从 workspace bootstrap 文件中保留 HEARTBEAT.md
-        target: "last", // 默认:none | 选项:last | none | <channel id>(核心或 Plugin,例如"bluebubbles")
-        to: "+15551234567", // 可选的特定 Channel 覆盖
-        accountId: "ops-bot", // 可选的多账户 Channel ID
+        includeReasoning: false, // 默认: false (当可用时交付单独的 Reasoning: 消息)
+        lightContext: false, // 默认: false; true 仅从 workspace 引导文件保留 HEARTBEAT.md
+        isolatedSession: false, // 默认: false; true 在新 Session 中运行每次 Heartbeat(无对话历史)
+        target: "last", // 默认: none | 选项: last | none | <channel id>(核心或插件,例如 "bluebubbles")
+        to: "+15551234567", // 可选的特定于 Channel 的覆盖
+        accountId: "ops-bot", // 可选的多账户 Channel id
         prompt: "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
         ackMaxChars: 300, // HEARTBEAT_OK 后允许的最大字符数
       },
@@ -91,17 +94,17 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 }
 ```
 
-### 作用域和优先级
+### 范围和优先级
 
 - `agents.defaults.heartbeat` 设置全局 Heartbeat 行为。
-- `agents.list[].heartbeat` 在顶部合并;如果任何 Agent 有 `heartbeat` 块,**仅那些 Agent** 运行 Heartbeat。
+- `agents.list[].heartbeat` 在顶部合并;如果任何 Agent 有 `heartbeat` 块,**只有那些 Agent** 运行 Heartbeat。
 - `channels.defaults.heartbeat` 为所有 Channel 设置可见性默认值。
 - `channels.<channel>.heartbeat` 覆盖 Channel 默认值。
-- `channels.<channel>.accounts.<id>.heartbeat`(多账户 Channel)覆盖每个 Channel 的设置。
+- `channels.<channel>.accounts.<id>.heartbeat`(多账户 Channel)覆盖每个 Channel 设置。
 
 ### 每个 Agent 的 Heartbeat
 
-如果任何 `agents.list[]` 条目包含 `heartbeat` 块,**仅那些 Agent** 运行 Heartbeat。每个 Agent 的块在 `agents.defaults.heartbeat` 之上合并(因此您可以设置一次共享默认值并按 Agent 覆盖)。
+如果任何 `agents.list[]` 条目包含 `heartbeat` 块,**只有那些 Agent** 运行 Heartbeat。每个 Agent 块在 `agents.defaults.heartbeat` 顶部合并(因此您可以设置一次共享默认值并按 Agent 覆盖)。
 
 示例:两个 Agent,只有第二个 Agent 运行 Heartbeat。
 
@@ -111,7 +114,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last", // 显式传递到最后的联系人(默认为 "none")
+        target: "last", // 明确交付到最后一个联系人(默认是 "none")
       },
     },
     list: [
@@ -130,9 +133,9 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 }
 ```
 
-### 活动时间示例
+### 活跃时间示例
 
-将 Heartbeat 限制在特定时区的工作时间:
+将 Heartbeat 限制在特定时区的工作时间内:
 
 ```json5
 {
@@ -140,11 +143,11 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
     defaults: {
       heartbeat: {
         every: "30m",
-        target: "last", // 显式传递到最后的联系人(默认为 "none")
+        target: "last", // 明确交付到最后一个联系人(默认是 "none")
         activeHours: {
           start: "09:00",
           end: "22:00",
-          timezone: "America/New_York", // 可选;如果设置则使用您的 userTimezone,否则使用主机时区
+          timezone: "America/New_York", // 可选;如果已设置则使用您的 userTimezone,否则使用主机时区
         },
       },
     },
@@ -152,20 +155,20 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 }
 ```
 
-在此窗口之外(东部时间早上 9 点之前或晚上 10 点之后),Heartbeat 被跳过。窗口内的下一个计划滴答将正常运行。
+在此窗口之外(东部时间上午 9 点之前或晚上 10 点之后),Heartbeat 被跳过。窗口内的下一个计划滴答将正常运行。
 
 ### 全天候设置
 
-如果您希望 Heartbeat 全天运行,请使用以下模式之一:
+如果您想让 Heartbeat 全天运行,请使用以下模式之一:
 
 - 完全省略 `activeHours`(无时间窗口限制;这是默认行为)。
 - 设置全天窗口:`activeHours: { start: "00:00", end: "24:00" }`。
 
-不要将 `start` 和 `end` 设置为相同的时间(例如 `08:00` 到 `08:00`)。这被视为零宽度窗口,因此 Heartbeat 始终被跳过。
+不要将相同的 `start` 和 `end` 时间(例如 `08:00` 到 `08:00`)。这被视为零宽度窗口,因此 Heartbeat 总是被跳过。
 
 ### 多账户示例
 
-使用 `accountId` 在多账户 Channel(如 Telegram)上定位特定账户:
+使用 `accountId` 在 Telegram 等多账户 Channel 上定向特定账户:
 
 ```json5
 {
@@ -176,7 +179,7 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
         heartbeat: {
           every: "1h",
           target: "telegram",
-          to: "12345678:topic:42", // 可选:路由到特定话题/线程
+          to: "12345678:topic:42", // 可选:路由到特定主题/线程
           accountId: "ops-bot",
         },
       },
@@ -192,48 +195,49 @@ Heartbeat 在主 Session 中运行**周期性 Agent 轮次**,以便模型可以�
 }
 ```
 
-### 字段注释
+### 字段说明
 
 - `every`:Heartbeat 间隔(持续时间字符串;默认单位 = 分钟)。
 - `model`:Heartbeat 运行的可选模型覆盖(`provider/model`)。
-- `includeReasoning`:启用时,在可用时也传递单独的 `Reasoning:` 消息(与 `/reasoning on` 相同的形状)。
-- `lightContext`:为 true 时,Heartbeat 运行使用轻量级 bootstrap 上下文,仅从 workspace bootstrap 文件中保留 `HEARTBEAT.md`。
+- `includeReasoning`:启用时,当可用时也交付单独的 `Reasoning:` 消息(与 `/reasoning on` 相同形状)。
+- `lightContext`:为 true 时,Heartbeat 运行使用轻量引导上下文,并仅从 workspace 引导文件保留 `HEARTBEAT.md`。
+- `isolatedSession`:为 true 时,每次 Heartbeat 在新 Session 中运行,无先前对话历史。使用与 cron `sessionTarget: "isolated"` 相同的隔离模式。显著降低每次 Heartbeat 的 token 成本。与 `lightContext: true` 结合以最大节省。交付路由仍使用主 Session 上下文。
 - `session`:Heartbeat 运行的可选 Session 键。
   - `main`(默认):Agent 主 Session。
-  - 显式 Session 键(从 `openclaw sessions --json` 或 [Sessions CLI](/cli/sessions) 复制)。
-  - Session 键格式:参见 [Session](/concepts/session) 和 [群组](/channels/groups)。
+  - 明确的 Session 键(从 `openclaw sessions --json` 或 [Sessions CLI](/cli/sessions) 复制)。
+  - Session 键格式:参见 [Sessions](/concepts/session) 和 [Groups](/channels/groups)。
 - `target`:
-  - `last`:传递到最后使用的外部 Channel。
-  - 显式 Channel:`whatsapp` / `telegram` / `discord` / `googlechat` / `slack` / `msteams` / `signal` / `imessage`。
-  - `none`(默认):运行 Heartbeat 但**不要**外部传递。
-- `directPolicy`:控制直接/DM 传递行为:
-  - `allow`(默认):允许直接/DM Heartbeat 传递。
-  - `block`:抑制直接/DM 传递(`reason=dm-blocked`)。
-- `to`:可选的接收者覆盖(特定 Channel 的 ID,例如 WhatsApp 的 E.164 或 Telegram 聊天 ID)。对于 Telegram 话题/线程,使用 `<chatId>:topic:<messageThreadId>`。
-- `accountId`:多账户 Channel 的可选账户 ID。当 `target: "last"` 时,账户 ID 适用于已解析的最后一个 Channel(如果支持账户);否则被忽略。如果账户 ID 与已解析 Channel 的已配置账户不匹配,则跳过传递。
+  - `last`:交付到最后使用的外部 Channel。
+  - 明确 Channel:`whatsapp` / `telegram` / `discord` / `googlechat` / `slack` / `msteams` / `signal` / `imessage`。
+  - `none`(默认):运行 Heartbeat 但**不外部交付**。
+- `directPolicy`:控制直接/DM 交付行为:
+  - `allow`(默认):允许直接/DM Heartbeat 交付。
+  - `block`:禁止直接/DM 交付(`reason=dm-blocked`)。
+- `to`:可选的接收者覆盖(特定于 Channel 的 ID,例如 WhatsApp 的 E.164 或 Telegram 聊天 ID)。对于 Telegram 主题/线程,使用 `<chatId>:topic:<messageThreadId>`。
+- `accountId`:多账户 Channel 的可选账户 ID。当 `target: "last"` 时,账户 ID 适用于已解析的最后一个 Channel(如果它支持账户);否则被忽略。如果账户 ID 与已解析 Channel 的配置账户不匹配,则跳过交付。
 - `prompt`:覆盖默认提示正文(不合并)。
-- `ackMaxChars`:传递前 `HEARTBEAT_OK` 后允许的最大字符数。
-- `suppressToolErrorWarnings`:为 true 时,在 Heartbeat 运行期间抑制工具错误警告有效负载。
-- `activeHours`:将 Heartbeat 运行限制在时间窗口内。具有 `start`(HH:MM,包含;使用 `00:00` 表示一天开始)、`end`(HH:MM 排他;允许 `24:00` 表示一天结束)和可选 `timezone` 的对象。
-  - 省略或 `"user"`:如果设置则使用您的 `agents.defaults.userTimezone`,否则回退到主机系统时区。
+- `ackMaxChars`:交付前 `HEARTBEAT_OK` 后允许的最大字符数。
+- `suppressToolErrorWarnings`:为 true 时,在 Heartbeat 运行期间抑制工具错误警告负载。
+- `activeHours`:将 Heartbeat 运行限制在时间窗口内。包含 `start`(HH:MM,含;使用 `00:00` 表示一天开始)、`end`(HH:MM 不含;`24:00` 允许表示一天结束)和可选 `timezone` 的对象。
+  - 省略或 `"user"`:使用您的 `agents.defaults.userTimezone`(如果已设置),否则回退到主机系统时区。
   - `"local"`:始终使用主机系统时区。
-  - 任何 IANA 标识符(例如 `America/New_York`):直接使用;如果无效,则回退到上面的 `"user"` 行为。
-  - `start` 和 `end` 不能相等以形成活动窗口;相等的值被视为零宽度(始终在窗口外)。
-  - 在活动窗口之外,Heartbeat 被跳过,直到窗口内的下一个滴答。
+  - 任何 IANA 标识符(例如 `America/New_York`):直接使用;如果无效,回退到上述 `"user"` 行为。
+  - `start` 和 `end` 对于活跃窗口不能相等;相等值被视为零宽度(始终在窗口外)。
+  - 在活跃窗口外,Heartbeat 被跳过,直到窗口内的下一个滴答。
 
-## 传递行为
+## 交付行为
 
-- Heartbeat 默认在 Agent 的主 Session 中运行(`agent:<id>:<mainKey>`),或当 `session.scope = "global"` 时为 `global`。设置 `session` 以覆盖到特定的 Channel Session(Discord/WhatsApp/等)。
-- `session` 仅影响运行上下文;传递由 `target` 和 `to` 控制。
-- 要传递到特定的 Channel/接收者,设置 `target` + `to`。使用 `target: "last"`,传递使用该 Session 的最后一个外部 Channel。
-- Heartbeat 传递默认允许直接/DM 目标。设置 `directPolicy: "block"` 以在仍然运行 Heartbeat 轮次的同时抑制直接目标发送。
-- 如果主队列繁忙,Heartbeat 被跳过并稍后重试。
-- 如果 `target` 解析为无外部目标,运行仍然发生,但不发送出站消息。
-- 仅 Heartbeat 的回复**不会**保持 Session 活动;最后的 `updatedAt` 被恢复,因此空闲过期正常运行。
+- Heartbeat 默认在 Agent 的主 Session 中运行(`agent:<id>:<mainKey>`),或当 `session.scope = "global"` 时为 `global`。设置 `session` 覆盖到特定 Channel Session(Discord/WhatsApp 等)。
+- `session` 只影响运行上下文;交付由 `target` 和 `to` 控制。
+- 要交付到特定 Channel/接收者,设置 `target` + `to`。使用 `target: "last"`,交付使用该 Session 的最后一个外部 Channel。
+- Heartbeat 交付默认允许直接/DM 目标。设置 `directPolicy: "block"` 以在仍运行 Heartbeat 轮次的同时禁止直接目标发送。
+- 如果主队列忙,Heartbeat 被跳过并稍后重试。
+- 如果 `target` 解析为没有外部目的地,运行仍然发生但不发送出站消息。
+- 仅 Heartbeat 的回复**不会**保持 Session 活跃;`updatedAt` 被恢复,以便空闲过期正常行为。
 
 ## 可见性控制
 
-默认情况下,`HEARTBEAT_OK` 确认被抑制,而警报内容被传递。您可以按 Channel 或按账户调整此设置:
+默认情况下,`HEARTBEAT_OK` 确认被抑制,而警报内容被交付。您可以按 Channel 或按账户调整:
 
 ```yaml
 channels:
@@ -249,10 +253,10 @@ channels:
     accounts:
       work:
         heartbeat:
-          showAlerts: false # 抑制此账户的警报传递
+          showAlerts: false # 为此账户抑制警报交付
 ```
 
-优先级:每个账户 → 每个 Channel → Channel 默认值 → 内置默认值。
+优先级:每账户 → 每 Channel → Channel 默认值 → 内置默认值。
 
 ### 每个标志的作用
 
@@ -260,9 +264,9 @@ channels:
 - `showAlerts`:当模型返回非 OK 回复时发送警报内容。
 - `useIndicator`:为 UI 状态表面发出指示器事件。
 
-如果**全部三个**都为 false,OpenClaw 完全跳过 Heartbeat 运行(无模型调用)。
+如果**三者**都为 false,OpenClaw 完全跳过 Heartbeat 运行(无模型调用)。
 
-### 每个 Channel vs 每个账户示例
+### 每 Channel 与每账户示例
 
 ```yaml
 channels:
@@ -277,7 +281,7 @@ channels:
     accounts:
       ops:
         heartbeat:
-          showAlerts: false # 仅抑制 ops 账户的警报
+          showAlerts: false # 仅为 ops 账户抑制警报
   telegram:
     heartbeat:
       showOk: true
@@ -287,20 +291,20 @@ channels:
 
 | 目标                                     | 配置                                                                                   |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------- |
-| 默认行为(静默 OK,警报开启) | _(不需要配置)_                                                                     |
+| 默认行为(静默 OK,警报开启)      | _(无需配置)_                                                                             |
 | 完全静默(无消息,无指示器) | `channels.defaults.heartbeat: { showOk: false, showAlerts: false, useIndicator: false }` |
 | 仅指示器(无消息)             | `channels.defaults.heartbeat: { showOk: false, showAlerts: false, useIndicator: true }`  |
-| 仅在一个 Channel 中 OK                  | `channels.telegram.heartbeat: { showOk: true }`                                          |
+| 仅在一个 Channel 显示 OK                  | `channels.telegram.heartbeat: { showOk: true }`                                          |
 
 ## HEARTBEAT.md(可选)
 
-如果工作空间中存在 `HEARTBEAT.md` 文件,默认提示告诉 Agent 读取它。将其视为您的"Heartbeat 清单":小、稳定且每 30 分钟包含一次是安全的。
+如果 workspace 中存在 `HEARTBEAT.md` 文件,默认提示告诉 Agent 读取它。把它想象成您的"Heartbeat 清单":小巧、稳定,每 30 分钟包含一次是安全的。
 
-如果 `HEARTBEAT.md` 存在但实际上为空(仅空白行和 markdown 标题,如 `# Heading`),OpenClaw 跳过 Heartbeat 运行以节省 API 调用。如果文件缺失,Heartbeat 仍然运行,模型决定做什么。
+如果 `HEARTBEAT.md` 存在但实际上是空的(只有空行和像 `# Heading` 这样的 markdown 标题),OpenClaw 跳过 Heartbeat 运行以节省 API 调用。如果文件缺失,Heartbeat 仍然运行,模型决定做什么。
 
-保持它很小(简短的清单或提醒)以避免提示膨胀。
+保持简短(简短清单或提醒)以避免提示膨胀。
 
-示例 `HEARTBEAT.md`:
+`HEARTBEAT.md` 示例:
 
 ```md
 # Heartbeat checklist
@@ -312,39 +316,45 @@ channels:
 
 ### Agent 可以更新 HEARTBEAT.md 吗?
 
-是的 — 如果您要求它。
+可以 — 如果您要求它。
 
-`HEARTBEAT.md` 只是 Agent 工作空间中的一个普通文件,因此您可以在正常聊天中告诉 Agent 类似:
+`HEARTBEAT.md` 只是 Agent workspace 中的一个普通文件,所以您可以在普通聊天中告诉 Agent:
 
-- "Update `HEARTBEAT.md` to add a daily calendar check."
-- "Rewrite `HEARTBEAT.md` so it's shorter and focused on inbox follow-ups."
+- "更新 `HEARTBEAT.md` 以添加每日日历检查。"
+- "重写 `HEARTBEAT.md` 使其更简短并专注于收件箱跟进。"
 
-如果您希望这主动发生,您还可以在 Heartbeat 提示中包含一个显式行,例如:"If the checklist becomes stale, update HEARTBEAT.md with a better one."
+如果您想让这主动发生,您也可以在 Heartbeat 提示中包含一行明确的指令:"如果清单变得过时,请用更好的更新 HEARTBEAT.md。"
 
-安全注意事项:不要将秘密(API 密钥、电话号码、私有令牌)放入 `HEARTBEAT.md` — 它成为提示上下文的一部分。
+安全注意事项:不要将密钥(API 密钥、电话号码、私人令牌)放入 `HEARTBEAT.md` — 它成为提示上下文的一部分。
 
 ## 手动唤醒(按需)
 
-您可以将系统事件加入队列并使用以下命令触发立即 Heartbeat:
+您可以排队一个系统事件并立即触发 Heartbeat:
 
 ```bash
 openclaw system event --text "Check for urgent follow-ups" --mode now
 ```
 
-如果多个 Agent 配置了 `heartbeat`,手动唤醒会立即运行每个这些 Agent Heartbeat。
+如果多个 Agent 配置了 `heartbeat`,手动唤醒立即运行每个 Agent 的 Heartbeat。
 
-使用 `--mode next-heartbeat` 等待下一个计划的滴答。
+使用 `--mode next-heartbeat` 等待下一个计划滴答。
 
-## Reasoning 传递(可选)
+## 推理交付(可选)
 
-默认情况下,Heartbeat 仅传递最终的"answer"有效负载。
+默认情况下,Heartbeat 只交付最终"答案"负载。
 
 如果您想要透明度,启用:
 
 - `agents.defaults.heartbeat.includeReasoning: true`
 
-启用时,Heartbeat 还将传递一个单独的消息,前缀为 `Reasoning:`(与 `/reasoning on` 相同的形状)。当 Agent 管理多个 Session/Codex 并且您想看到它为什么决定 ping 您时,这可能很有用 — 但它也可能泄漏比您想要的更多的内部细节。在群聊中最好保持关闭。
+启用时,Heartbeat 还会交付一个以 `Reasoning:` 为前缀的单独消息(与 `/reasoning on` 相同形状)。当 Agent 管理多个 Session/代码库时,这很有用,您想了解它决定 ping 您的原因 — 但它也可能泄露比您想要更多的内部细节。建议在群聊中保持关闭。
 
 ## 成本意识
 
-Heartbeat 运行完整的 Agent 轮次。较短的间隔消耗更多令牌。保持 `HEARTBEAT.md` 小,并考虑更便宜的 `model` 或 `target: "none"`,如果您只想要内部状态更新。
+Heartbeat 运行完整的 Agent 轮次。较短的间隔消耗更多 token。要降低成本:
+
+- 使用 `isolatedSession: true` 以避免发送完整对话历史(每次运行从约 100K token 降低到约 2-5K)。
+- 使用 `lightContext: true` 将引导文件限制为仅 `HEARTBEAT.md`。
+- 设置更便宜的 `model`(例如 `ollama/llama3.2:1b`)。
+- 保持 `HEARTBEAT.md` 简短。
+- 如果只想要内部状态更新,使用 `target: "none"`。

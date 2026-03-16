@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6c9272eb771877d722b5614f049feb95"
+mmh3_hash: "b4e38b150f03835fa3aae0a747e14ad4"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
@@ -55,7 +55,7 @@ OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSO
     Control UI 从配置架构渲染表单,并提供 **Raw JSON** 编辑器作为备选方案。
   </Tab>
   <Tab title="直接编辑">
-    直接编辑 `~/.openclaw/openclaw.json`。Gateway 会监视文件并自动应用更改(参见[热重载](#配置热重载))。
+    直接编辑 `~/.openclaw/openclaw.json`。Gateway 会监视文件并自动应用更改(参见[热重载](#config-hot-reload))。
   </Tab>
 </Tabs>
 
@@ -176,6 +176,36 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
 
   </Accordion>
 
+  <Accordion title="调整 Gateway Channel 健康监控">
+    控制 Gateway 重启看起来陈旧的 Channel 的积极程度:
+
+    ```json5
+    {
+      gateway: {
+        channelHealthCheckMinutes: 5,
+        channelStaleEventThresholdMinutes: 30,
+        channelMaxRestartsPerHour: 10,
+      },
+      channels: {
+        telegram: {
+          healthMonitor: { enabled: false },
+          accounts: {
+            alerts: {
+              healthMonitor: { enabled: true },
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    - 设置 `gateway.channelHealthCheckMinutes: 0` 以全局禁用健康监控重启。
+    - `channelStaleEventThresholdMinutes` 应大于或等于检查间隔。
+    - 使用 `channels.<provider>.healthMonitor.enabled` 或 `channels.<provider>.accounts.<id>.healthMonitor.enabled` 禁用一个 Channel 或账户的自动重启,而不禁用全局监控。
+    - 参见[健康检查](/gateway/health)进行操作调试,参见[完整参考文档](/gateway/configuration-reference#gateway)了解所有字段。
+
+  </Accordion>
+
   <Accordion title="配置 Session 和重置">
     Session 控制对话连续性和隔离:
 
@@ -223,6 +253,63 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     首先构建镜像:`scripts/sandbox-setup.sh`
 
     参见[沙盒](/gateway/sandboxing)完整指南和[完整参考文档](/gateway/configuration-reference#sandbox)了解所有选项。
+
+  </Accordion>
+
+  <Accordion title="为官方 iOS 构建启用中继支持的推送">
+    中继支持的推送在 `openclaw.json` 中配置。
+
+    在 Gateway 配置中设置:
+
+    ```json5
+    {
+      gateway: {
+        push: {
+          apns: {
+            relay: {
+              baseUrl: "https://relay.example.com",
+              // 可选。默认: 10000
+              timeoutMs: 10000,
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    CLI 等效命令:
+
+    ```bash
+    openclaw config set gateway.push.apns.relay.baseUrl https://relay.example.com
+    ```
+
+    功能说明:
+
+    - 让 Gateway 通过外部中继发送 `push.test`、唤醒通知和重连唤醒。
+    - 使用由配对 iOS 应用转发的注册范围发送授权。Gateway 不需要全部署的中继令牌。
+    - 将每个中继支持的注册绑定到 iOS 应用配对的 Gateway 身份,因此其他 Gateway 无法重用存储的注册。
+    - 保持本地/手动 iOS 构建使用直接 APNs。中继支持的发送仅适用于通过中继注册的官方分发构建。
+    - 必须与官方/TestFlight iOS 构建中内置的中继基础 URL 匹配,以便注册和发送流量到达同一中继部署。
+
+    端到端流程:
+
+    1. 安装使用相同中继基础 URL 编译的官方/TestFlight iOS 构建。
+    2. 在 Gateway 上配置 `gateway.push.apns.relay.baseUrl`。
+    3. 将 iOS 应用与 Gateway 配对,让节点和操作员 Session 都连接。
+    4. iOS 应用获取 Gateway 身份,使用 App Attest 加应用收据向中继注册,然后将中继支持的 `push.apns.register` 负载发布到配对的 Gateway。
+    5. Gateway 存储中继句柄和发送授权,然后将它们用于 `push.test`、唤醒通知和重连唤醒。
+
+    操作注意事项:
+
+    - 如果您将 iOS 应用切换到不同的 Gateway,请重新连接应用,以便它可以发布绑定到该 Gateway 的新中继注册。
+    - 如果您发布指向不同中继部署的新 iOS 构建,应用会刷新其缓存的中继注册,而不是重用旧的中继来源。
+
+    兼容性说明:
+
+    - `OPENCLAW_APNS_RELAY_BASE_URL` 和 `OPENCLAW_APNS_RELAY_TIMEOUT_MS` 仍然作为临时环境变量覆盖有效。
+    - `OPENCLAW_APNS_RELAY_ALLOW_HTTP=true` 仍然是仅限回环的开发应急方案;请勿在配置中持久化 HTTP 中继 URL。
+
+    参见 [iOS 应用](/platforms/ios#relay-backed-push-for-official-builds)了解端到端流程,参见[认证和信任流程](/platforms/ios#authentication-and-trust-flow)了解中继安全模型。
 
   </Accordion>
 
@@ -347,7 +434,7 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
   </Accordion>
 </AccordionGroup>
 
-## 配置热重载
+## 配置热重载 {#config-hot-reload}
 
 Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数设置无需手动重启。
 
@@ -416,7 +503,7 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
     openclaw gateway call config.apply --params '{
       "raw": "{ agents: { defaults: { workspace: \"~/.openclaw/workspace\" } } }",
       "baseHash": "<hash>",
-      "sessionKey": "agent:main:whatsapp:dm:+15555550123"
+      "sessionKey": "agent:main:whatsapp:direct:+15555550123"
     }'
     ```
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "65498db5854e5197cce90bf0cb05481a"
+mmh3_hash: "46670353df281ec2beaff835d1e737ec"
 summary: "模型认证:OAuth、API 密钥和 setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
@@ -49,7 +49,7 @@ openclaw doctor
 
 ## Anthropic: setup-token(订阅认证)
 
-对于 Anthropic,推荐的方式是使用 **API 密钥**。如果您使用 Claude 订阅,也支持 setup-token 流程。在 **Gateway 主机**上运行:
+如果您使用 Claude 订阅,支持 setup-token 流程。在 **Gateway 主机**上运行:
 
 ```bash
 claude setup-token

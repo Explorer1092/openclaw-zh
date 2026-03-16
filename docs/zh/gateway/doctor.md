@@ -1,11 +1,13 @@
 ---
-title: "诊断"
-sidebarTitle: "诊断"
-mmh3_hash: "e9d8a2b4a8bf8a408a593b79ff62c28e"
+mmh3_hash: "b27117822bc2d66957822612d3385dbb"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
-read_when: ["添加或修改 doctor 迁移","引入破坏性配置更改"]
+read_when:
+  - 添加或修改 doctor 迁移
+  - 引入破坏性配置更改
+title: "Doctor"
 ---
-# 诊断
+
+# Doctor
 
 `openclaw doctor` 是 OpenClaw 的修复 + 迁移工具。它修复过时的配置/状态,检查健康状况,并提供可操作的修复步骤。
 
@@ -45,7 +47,7 @@ openclaw doctor --non-interactive
 openclaw doctor --deep
 ```
 
-扫描系统服务以查找额外的 gateway 安装(launchd/systemd/schtasks)。
+扫描系统服务以查找额外的 Gateway 安装(launchd/systemd/schtasks)。
 
 如果您想在写入之前查看更改,请先打开配置文件:
 
@@ -54,21 +56,24 @@ cat ~/.openclaw/openclaw.json
 ```
 
 ## 它做什么(摘要)
+
 - git 安装的可选预检更新(仅交互式)。
 - UI 协议新鲜度检查(当协议 schema 较新时重建 Control UI)。
 - 健康检查 + 重启提示。
 - Skills 状态摘要(符合条件/缺失/被阻止)。
 - 旧版值的配置规范化。
-- OpenCode Zen provider 覆盖警告(`models.providers.opencode`)。
+- 旧版 Chrome 扩展配置和 Chrome MCP 就绪状态的 Browser 迁移检查。
+- OpenCode provider 覆盖警告(`models.providers.opencode` / `models.providers.opencode-go`)。
 - 旧版磁盘状态迁移(sessions/agent dir/WhatsApp 认证)。
+- 旧版 cron 存储迁移(`jobId`、`schedule.cron`、顶级 delivery/payload 字段、payload `provider`、简单 `notify: true` webhook 回退作业)。
 - 状态完整性和权限检查(sessions、transcripts、state dir)。
 - 本地运行时的配置文件权限检查(chmod 600)。
 - 模型认证健康:检查 OAuth 过期,可以刷新即将过期的令牌,并报告 auth-profile 冷却/禁用状态。
 - 额外的 workspace 目录检测(`~/openclaw`)。
 - 启用沙箱时的沙箱镜像修复。
-- 旧版服务迁移和额外 gateway 检测。
+- 旧版服务迁移和额外 Gateway 检测。
 - Gateway 运行时检查(已安装服务但未运行;缓存的 launchd 标签)。
-- Channel 状态警告(从正在运行的 gateway 探测)。
+- Channel 状态警告(从正在运行的 Gateway 探测)。
 - Supervisor 配置审计(launchd/systemd/schtasks)带有可选修复。
 - Gateway 运行时最佳实践检查(Node vs Bun,version-manager 路径)。
 - Gateway 端口冲突诊断(默认 `18789`)。
@@ -81,15 +86,19 @@ cat ~/.openclaw/openclaw.json
 ## 详细行为和理由
 
 ### 0) 可选更新(git 安装)
+
 如果这是 git checkout 并且 doctor 以交互方式运行,它会在运行 doctor 之前提供更新(fetch/rebase/build)。
 
 ### 1) 配置规范化
-如果配置包含旧版值形状(例如 `messages.ackReaction` 没有特定 channel 的覆盖),doctor 将它们规范化为当前 schema。
+
+如果配置包含旧版值形状(例如 `messages.ackReaction` 没有特定 Channel 的覆盖),doctor 将它们规范化为当前 schema。
 
 ### 2) 旧版配置键迁移
+
 当配置包含已弃用的键时,其他命令拒绝运行并要求您运行 `openclaw doctor`。
 
 Doctor 将:
+
 - 解释找到了哪些旧版键。
 - 显示它应用的迁移。
 - 用更新的 schema 重写 `~/.openclaw/openclaw.json`。
@@ -97,6 +106,7 @@ Doctor 将:
 Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁移,因此无需手动干预即可修复过时的配置。
 
 当前迁移:
+
 - `routing.allowFrom` → `channels.whatsapp.allowFrom`
 - `routing.groupChat.requireMention` → `channels.whatsapp/telegram/imessage.groups."*".requireMention`
 - `routing.groupChat.historyLimit` → `messages.groupChat.historyLimit`
@@ -107,17 +117,50 @@ Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁�
 - `routing.agentToAgent` → `tools.agentToAgent`
 - `routing.transcribeAudio` → `tools.media.audio.models`
 - `bindings[].match.accountID` → `bindings[].match.accountId`
+- 对于具有命名 `accounts` 但缺少 `accounts.default` 的 Channel,当存在时将账户范围的顶级单账户 Channel 值移动到 `channels.<channel>.accounts.default`
 - `identity` → `agents.list[].identity`
 - `agent.*` → `agents.defaults` + `tools.*`(tools/elevated/exec/sandbox/subagents)
 - `agent.model`/`allowedModels`/`modelAliases`/`modelFallbacks`/`imageModelFallbacks`
   → `agents.defaults.models` + `agents.defaults.model.primary/fallbacks` + `agents.defaults.imageModel.primary/fallbacks`
 - `browser.ssrfPolicy.allowPrivateNetwork` → `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork`
+- `browser.profiles.*.driver: "extension"` → `"existing-session"`
+- 移除 `browser.relayBindHost`(旧版扩展中继设置)
 
-### 2b) OpenCode Zen provider 覆盖
-如果您手动添加了 `models.providers.opencode`(或 `opencode-zen`),它会覆盖来自 `@mariozechner/pi-ai` 的内置 OpenCode Zen 目录。这可能会强制每个模型使用单个 API 或将成本清零。Doctor 会发出警告,以便您可以删除覆盖并恢复每个模型的 API 路由 + 成本。
+Doctor 警告还包括多账户 Channel 的账户默认指导:
+
+- 如果配置了两个或更多 `channels.<channel>.accounts` 条目而没有 `channels.<channel>.defaultAccount` 或 `accounts.default`,doctor 会警告回退路由可能选择意外账户。
+- 如果 `channels.<channel>.defaultAccount` 设置为未知账户 ID,doctor 会警告并列出已配置的账户 ID。
+
+### 2b) OpenCode provider 覆盖
+
+如果您手动添加了 `models.providers.opencode`、`opencode-zen` 或 `opencode-go`,它会覆盖来自 `@mariozechner/pi-ai` 的内置 OpenCode 目录。这可能会强制模型使用错误的 API 或将成本清零。Doctor 会发出警告,以便您可以删除覆盖并恢复每个模型的 API 路由 + 成本。
+
+### 2c) Browser 迁移和 Chrome MCP 就绪状态
+
+如果您的 Browser 配置仍然指向已移除的 Chrome 扩展路径,doctor 会将其规范化为当前的主机本地 Chrome MCP 附加模型:
+
+- `browser.profiles.*.driver: "extension"` 变为 `"existing-session"`
+- `browser.relayBindHost` 被移除
+
+当您使用 `defaultProfile: "user"` 或配置的 `existing-session` 配置文件时,Doctor 还会审计主机本地 Chrome MCP 路径:
+
+- 检查同一主机上是否安装了 Google Chrome
+- 检查检测到的 Chrome 版本,并在低于 Chrome 144 时发出警告
+- 提醒您在 Chrome 的 `chrome://inspect/#remote-debugging` 中启用远程调试
+
+Doctor 无法为您启用 Chrome 端设置。主机本地 Chrome MCP 仍然需要:
+
+- 同一 Gateway/节点主机上的 Google Chrome 144+
+- Chrome 在本地运行
+- 在 Chrome 中启用远程调试
+- 在 Chrome 中批准首次附加同意提示
+
+此检查**不适用于** Docker、沙箱、远程浏览器或其他无头流程。这些继续使用原始 CDP。
 
 ### 3) 旧版状态迁移(磁盘布局)
+
 Doctor 可以将较旧的磁盘布局迁移到当前结构:
+
 - Sessions 存储 + transcripts:
   - 从 `~/.openclaw/sessions/` 到 `~/.openclaw/agents/<agentId>/sessions/`
 - Agent 目录:
@@ -126,47 +169,72 @@ Doctor 可以将较旧的磁盘布局迁移到当前结构:
   - 从旧版 `~/.openclaw/credentials/*.json`(除了 `oauth.json`)
   - 到 `~/.openclaw/credentials/whatsapp/<accountId>/...`(默认 account id:`default`)
 
-这些迁移是尽力而为且幂等的;当它将任何旧版文件夹作为备份留下时,doctor 将发出警告。Gateway/CLI 也会在启动时自动迁移旧版 sessions + agent dir,因此历史/认证/模型会进入每个 agent 的路径,而无需手动运行 doctor。WhatsApp 认证仅通过 `openclaw doctor` 迁移。
+这些迁移是尽力而为且幂等的;当它将任何旧版文件夹作为备份留下时,doctor 将发出警告。Gateway/CLI 也会在启动时自动迁移旧版 sessions + agent dir,因此历史/认证/模型会进入每个 Agent 的路径,而无需手动运行 doctor。WhatsApp 认证仅通过 `openclaw doctor` 迁移。
 
-### 4) 状态完整性检查(session 持久化、路由和安全)
-状态目录是操作脑干。如果它消失,您将丢失 sessions、凭证、日志和配置(除非您在其他地方有备份)。
+### 3b) 旧版 cron 存储迁移
+
+Doctor 还检查 cron 作业存储(`~/.openclaw/cron/jobs.json`,或 `cron.store` 覆盖时)中调度器为兼容性仍接受的旧版作业形状。
+
+当前 cron 清理包括:
+
+- `jobId` → `id`
+- `schedule.cron` → `schedule.expr`
+- 顶级 payload 字段(`message`、`model`、`thinking`...)`→ `payload`
+- 顶级 delivery 字段(`deliver`、`channel`、`to`、`provider`...)`→ `delivery`
+- payload `provider` delivery 别名 → 明确的 `delivery.channel`
+- 简单旧版 `notify: true` webhook 回退作业 → 明确的 `delivery.mode="webhook"` 和 `delivery.to=cron.webhook`
+
+Doctor 仅在不改变行为的情况下自动迁移 `notify: true` 作业。如果作业将旧版 notify 回退与现有非 webhook delivery 模式结合,doctor 会警告并将该作业留给手动审查。
+
+### 4) 状态完整性检查(Session 持久化、路由和安全)
+
+状态目录是操作核心。如果它消失,您将丢失 Session、凭证、日志和配置(除非您在其他地方有备份)。
 
 Doctor 检查:
+
 - **状态目录缺失**:警告灾难性状态丢失,提示重新创建目录,并提醒您它无法恢复丢失的数据。
 - **状态目录权限**:验证可写性;提供修复权限(并在检测到所有者/组不匹配时发出 `chown` 提示)。
 - **macOS 云同步状态目录**:当状态解析到 iCloud Drive(`~/Library/Mobile Documents/com~apple~CloudDocs/...`)或 `~/Library/CloudStorage/...` 下时发出警告,因为同步备份路径可能导致较慢的 I/O 和锁/同步竞争。
 - **Linux SD 或 eMMC 状态目录**:当状态解析到 `mmcblk*` 挂载源时发出警告,因为 SD 或 eMMC 支持的随机 I/O 在 Session 和凭证写入下可能更慢且磨损更快。
-- **Session 目录缺失**:`sessions/` 和 session 存储目录是持久化历史和避免 `ENOENT` 崩溃所必需的。
-- **Transcript 不匹配**:当最近的 session 条目缺少 transcript 文件时发出警告。
-- **主 session"1 行 JSONL"**:当主 transcript 只有一行时标记(历史未累积)。
+- **Session 目录缺失**:`sessions/` 和 Session 存储目录是持久化历史和避免 `ENOENT` 崩溃所必需的。
+- **Transcript 不匹配**:当最近的 Session 条目缺少 transcript 文件时发出警告。
+- **主 Session"1 行 JSONL"**:当主 transcript 只有一行时标记(历史未累积)。
 - **多个状态目录**:当多个 `~/.openclaw` 文件夹存在于主目录或 `OPENCLAW_STATE_DIR` 指向其他地方时发出警告(历史可能在安装之间分裂)。
 - **远程模式提醒**:如果 `gateway.mode=remote`,doctor 提醒您在远程主机上运行它(状态在那里)。
 - **配置文件权限**:如果 `~/.openclaw/openclaw.json` 是组/其他可读的,则发出警告并提供收紧到 `600`。
 
 ### 5) 模型认证健康(OAuth 过期)
+
 Doctor 检查认证存储中的 OAuth 配置文件,在令牌即将过期/已过期时发出警告,并在安全时刷新它们。如果 Anthropic Claude Code 配置文件过时,它建议运行 `claude setup-token`(或粘贴 setup-token)。刷新提示仅在以交互方式运行(TTY)时出现;`--non-interactive` 跳过刷新尝试。
 
 Doctor 还报告由于以下原因暂时不可用的认证配置文件:
+
 - 短冷却(速率限制/超时/认证失败)
 - 更长的禁用(计费/信用失败)
 
 ### 6) Hooks 模型验证
+
 如果设置了 `hooks.gmail.model`,doctor 会根据目录和 allowlist 验证模型引用,并在无法解析或被禁止时发出警告。
 
 ### 7) 沙箱镜像修复
+
 启用沙箱时,doctor 检查 Docker 镜像,并在当前镜像缺失时提供构建或切换到旧版名称。
 
 ### 8) Gateway 服务迁移和清理提示
-Doctor 检测旧版 gateway 服务(launchd/systemd/schtasks)并提供删除它们并使用当前 gateway 端口安装 OpenClaw 服务。它还可以扫描额外的类似 gateway 的服务并打印清理提示。配置文件命名的 OpenClaw gateway 服务被视为一流的,不会被标记为"额外"。
+
+Doctor 检测旧版 Gateway 服务(launchd/systemd/schtasks)并提供删除它们并使用当前 Gateway 端口安装 OpenClaw 服务。它还可以扫描额外的类似 Gateway 的服务并打印清理提示。配置文件命名的 OpenClaw Gateway 服务被视为一流的,不会被标记为"额外"。
 
 ### 9) 安全警告
+
 当 provider 对没有 allowlist 的 DM 开放,或者策略以危险方式配置时,Doctor 会发出警告。
 
 ### 10) systemd linger(Linux)
-如果作为 systemd 用户服务运行,doctor 确保启用 lingering,以便 gateway 在注销后保持活动。
+
+如果作为 systemd 用户服务运行,doctor 确保启用 lingering,以便 Gateway 在注销后保持活动。
 
 ### 11) Skills 状态
-Doctor 为当前 workspace 打印符合条件/缺失/被阻止的 skills 的快速摘要。
+
+Doctor 为当前 workspace 打印符合条件/缺失/被阻止的 Skills 的快速摘要。
 
 ### 12) Gateway 认证检查(本地令牌)
 
@@ -185,15 +253,19 @@ Doctor 检查本地 Gateway 令牌认证就绪情况。
 - 如果 Telegram bot token 通过 SecretRef 配置但在当前命令路径中不可用,Doctor 会报告凭证已配置但不可用,并跳过自动解析而不是崩溃或错误报告令牌缺失。
 
 ### 13) Gateway 健康检查 + 重启
-Doctor 运行健康检查,并在看起来不健康时提供重启 gateway。
+
+Doctor 运行健康检查,并在看起来不健康时提供重启 Gateway。
 
 ### 14) Channel 状态警告
-如果 gateway 健康,doctor 运行 channel 状态探测并报告带有建议修复的警告。
+
+如果 Gateway 健康,doctor 运行 Channel 状态探测并报告带有建议修复的警告。
 
 ### 15) Supervisor 配置审计 + 修复
+
 Doctor 检查已安装的 supervisor 配置(launchd/systemd/schtasks)是否缺少或过时的默认值(例如,systemd network-online 依赖项和重启延迟)。当它发现不匹配时,它建议更新并可以将服务文件/任务重写为当前默认值。
 
 注意:
+
 - `openclaw doctor` 在重写 supervisor 配置之前提示。
 - `openclaw doctor --yes` 接受默认修复提示。
 - `openclaw doctor --repair` 应用推荐的修复而不提示。
@@ -205,15 +277,19 @@ Doctor 检查已安装的 supervisor 配置(launchd/systemd/schtasks)是否缺�
 - 您始终可以通过 `openclaw gateway install --force` 强制完全重写。
 
 ### 16) Gateway 运行时 + 端口诊断
-Doctor 检查服务运行时(PID,最后退出状态)并在服务已安装但实际上未运行时发出警告。它还检查 gateway 端口(默认 `18789`)上的端口冲突,并报告可能的原因(gateway 已运行,SSH 隧道)。
+
+Doctor 检查服务运行时(PID,最后退出状态)并在服务已安装但实际上未运行时发出警告。它还检查 Gateway 端口(默认 `18789`)上的端口冲突,并报告可能的原因(Gateway 已运行,SSH 隧道)。
 
 ### 17) Gateway 运行时最佳实践
-当 gateway 服务在 Bun 或版本管理的 Node 路径(`nvm`、`fnm`、`volta`、`asdf` 等)上运行时,Doctor 会发出警告。WhatsApp + Telegram channels 需要 Node,并且版本管理器路径可能在升级后中断,因为服务不加载您的 shell init。当系统 Node 安装可用(Homebrew/apt/choco)时,Doctor 提供迁移到它。
+
+当 Gateway 服务在 Bun 或版本管理的 Node 路径(`nvm`、`fnm`、`volta`、`asdf` 等)上运行时,Doctor 会发出警告。WhatsApp + Telegram Channel 需要 Node,并且版本管理器路径可能在升级后中断,因为服务不加载您的 Shell init。当系统 Node 安装可用(Homebrew/apt/choco)时,Doctor 提供迁移到它。
 
 ### 18) 配置写入 + 向导元数据
+
 Doctor 持久化任何配置更改并标记向导元数据以记录 doctor 运行。
 
 ### 19) Workspace 提示(备份 + 内存系统)
+
 当缺失时,Doctor 建议 workspace 内存系统,并在 workspace 尚未在 git 下时打印备份提示。
 
 有关 workspace 结构和 git 备份的完整指南(推荐私有 GitHub 或 GitLab),请参见 [/concepts/agent-workspace](/concepts/agent-workspace)。
