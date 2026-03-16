@@ -1,9 +1,9 @@
 ---
-mmh3_hash: "a56d68697334cf1f407bc588ee671d72"
+mmh3_hash: "8f032d678dc74b458acd56183f33ed22"
 summary: "OpenClaw CLI 的脚本化引导和 Agent 设置"
 read_when:
   - 您在脚本或 CI 中自动化引导
-  - 您需要特定 Providers 的非交互式示例
+  - 您需要特定 Provider 的非交互式示例
 title: "CLI 自动化"
 sidebarTitle: "CLI 自动化"
 ---
@@ -33,10 +33,10 @@ openclaw onboard --non-interactive \
 
 添加 `--json` 以获得机器可读的摘要。
 
-使用 `--secret-input-mode ref` 在身份验证配置文件中存储环境支持的引用，而不是明文值。
-向导流程中提供了环境引用和配置的提供商引用（`file` 或 `exec`）之间的交互式选择。
+使用 `--secret-input-mode ref` 在认证配置文件中存储环境支持的引用，而不是明文值。
+向导流程中提供了环境引用和配置的 Provider 引用（`file` 或 `exec`）之间的交互式选择。
 
-在非交互式 `ref` 模式中，提供商环境变量必须在进程环境中设置。
+在非交互式 `ref` 模式中，Provider 环境变量必须在进程环境中设置。
 不带匹配环境变量传递内联密钥标志现在会快速失败。
 
 示例：
@@ -124,12 +124,24 @@ openclaw onboard --non-interactive \
       --gateway-bind loopback
     ```
   </Accordion>
-  <Accordion title="OpenCode Zen 示例">
+  <Accordion title="OpenCode 示例">
     ```bash
     openclaw onboard --non-interactive \
       --mode local \
       --auth-choice opencode-zen \
       --opencode-zen-api-key "$OPENCODE_API_KEY" \
+      --gateway-port 18789 \
+      --gateway-bind loopback
+    ```
+    切换为 `--auth-choice opencode-go --opencode-go-api-key "$OPENCODE_API_KEY"` 以使用 Go 目录。
+  </Accordion>
+  <Accordion title="Ollama 示例">
+    ```bash
+    openclaw onboard --non-interactive \
+      --mode local \
+      --auth-choice ollama \
+      --custom-model-id "qwen3.5:27b" \
+      --accept-risk \
       --gateway-port 18789 \
       --gateway-bind loopback
     ```
@@ -173,7 +185,7 @@ openclaw onboard --non-interactive \
 
 ## 添加另一个 Agent
 
-使用 `openclaw agents add <name>` 创建一个单独的 Agent，具有自己的工作空间、会话和身份验证配置文件。不使用 `--workspace` 运行会启动向导。
+使用 `openclaw agents add <name>` 创建一个单独的 Agent，具有自己的工作区、Session 和认证配置文件。不使用 `--workspace` 运行会启动向导。
 
 ```bash
 openclaw agents add work \
@@ -192,7 +204,7 @@ openclaw agents add work \
 
 注意事项：
 
-- 默认工作空间遵循 `~/.openclaw/workspace-<agentId>`。
+- 默认工作区遵循 `~/.openclaw/workspace-<agentId>`。
 - 添加 `bindings` 以路由入站消息（向导可以执行此操作）。
 - 非交互式标志：`--model`、`--agent-dir`、`--bind`、`--non-interactive`。
 

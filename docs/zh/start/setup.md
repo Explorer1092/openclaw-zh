@@ -1,7 +1,7 @@
 ---
 title: "设置"
 sidebarTitle: "设置"
-mmh3_hash: "a30d241b1944964140306e41046390db"
+mmh3_hash: "86e290f3b0a8625c1c30e804160ea7d2"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器
@@ -98,7 +98,7 @@ pnpm install
 pnpm gateway:watch
 ```
 
-`gateway:watch` 在监视模式下运行 Gateway，并在 TypeScript 更改时重新加载。
+`gateway:watch` 在监视模式下运行 Gateway，并在相关源码、配置和捆绑插件元数据变更时重新加载。
 
 ### 2) 将 macOS 应用程序指向正在运行的 Gateway
 
@@ -129,8 +129,8 @@ openclaw health
 调试认证或决定备份什么时使用此地图：
 
 - **WhatsApp**: `~/.openclaw/credentials/whatsapp/<accountId>/creds.json`
-- **Telegram 机器人令牌**: 配置/环境变量 或 `channels.telegram.tokenFile`
-- **Discord 机器人令牌**: 配置/环境变量或 SecretRef（env/file/exec Providers）
+- **Telegram 机器人令牌**: 配置/环境变量 或 `channels.telegram.tokenFile`（仅普通文件；符号链接被拒绝）
+- **Discord 机器人令牌**: 配置/环境变量或 SecretRef（env/file/exec Provider）
 - **Slack 令牌**: 配置/环境变量（`channels.slack.*`）
 - **配对白名单**:
   - `~/.openclaw/credentials/<channel>-allowFrom.json`（默认账户）

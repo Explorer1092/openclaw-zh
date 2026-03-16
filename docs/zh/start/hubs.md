@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3b6082eaf36d937019d0dda5f0b31d03"
+mmh3_hash: "bfa5fb21d1ec3e237dbc6c1ab363573f"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图
@@ -158,7 +158,6 @@ title: "文档中心"
 - [macOS 权限](/platforms/mac/permissions)
 - [macOS 远程](/platforms/mac/remote)
 - [macOS 签名](/platforms/mac/signing)
-- [macOS 发布](/platforms/mac/release)
 - [macOS Gateway (launchd)](/platforms/mac/bundled-gateway)
 - [macOS XPC](/platforms/mac/xpc)
 - [macOS Skill](/platforms/mac/skills)
