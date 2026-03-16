@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "55de97188ece78bc99ed7f6166f859ab"
+mmh3_hash: "993515a0b4c736f74b8aba8a3a041c4d"
 title: "Node.js"
 summary: "安装和配置 Node.js 以供 OpenClaw 使用 — 版本要求、安装选项和 PATH 故障排除"
 read_when:
@@ -10,7 +10,7 @@ read_when:
 
 # Node.js
 
-OpenClaw 需要 **Node 22 或更高版本**。[安装程序脚本](/install#install-methods) 将自动检测和安装 Node — 本页适用于您想自行设置 Node 并确保一切正确连接 (版本、PATH、全局安装) 的情况。
+OpenClaw 需要 **Node 22.16 或更高版本**。**Node 24 是安装、CI 和发布工作流的默认和推荐运行时。** Node 22 通过活跃的 LTS 线仍受支持。[安装程序脚本](/install#install-methods)将自动检测和安装 Node — 本页适用于您想自行设置 Node 并确保一切正确连接（版本、PATH、全局安装）的情况。
 
 ## 检查您的版本
 
@@ -18,13 +18,13 @@ OpenClaw 需要 **Node 22 或更高版本**。[安装程序脚本](/install#inst
 node -v
 ```
 
-如果打印 `v22.x.x` 或更高版本, 您就可以了。如果未安装 Node 或版本太旧, 请选择下面的安装方法。
+如果打印 `v24.x.x` 或更高版本，您使用的是推荐的默认值。如果打印 `v22.16.x` 或更高版本，您使用的是受支持的 Node 22 LTS 路径，但我们仍建议在方便时升级到 Node 24。如果未安装 Node 或版本太旧，请选择下面的安装方法。
 
 ## 安装 Node
 
 <Tabs>
   <Tab title="macOS">
-    **Homebrew** (推荐):
+    **Homebrew**（推荐）：
 
     ```bash
     brew install node
@@ -34,30 +34,30 @@ node -v
 
   </Tab>
   <Tab title="Linux">
-    **Ubuntu / Debian:**
+    **Ubuntu / Debian：**
 
     ```bash
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+    curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
     sudo apt-get install -y nodejs
     ```
 
-    **Fedora / RHEL:**
+    **Fedora / RHEL：**
 
     ```bash
     sudo dnf install nodejs
     ```
 
-    或使用版本管理器 (见下文)。
+    或使用版本管理器（见下文）。
 
   </Tab>
   <Tab title="Windows">
-    **winget** (推荐):
+    **winget**（推荐）：
 
     ```powershell
     winget install OpenJS.NodeJS.LTS
     ```
 
-    **Chocolatey:**
+    **Chocolatey：**
 
     ```powershell
     choco install nodejs-lts
@@ -69,21 +69,21 @@ node -v
 </Tabs>
 
 <Accordion title="使用版本管理器 (nvm, fnm, mise, asdf)">
-  版本管理器让您可以轻松切换 Node 版本。流行选项:
+  版本管理器让您可以轻松切换 Node 版本。流行选项：
 
 - [**fnm**](https://github.com/Schniz/fnm) — 快速、跨平台
 - [**nvm**](https://github.com/nvm-sh/nvm) — 在 macOS/Linux 上广泛使用
-- [**mise**](https://mise.jdx.dev/) — 多语言 (Node, Python, Ruby 等)
+- [**mise**](https://mise.jdx.dev/) — 多语言（Node, Python, Ruby 等）
 
-使用 fnm 的示例:
+使用 fnm 的示例：
 
 ```bash
-fnm install 22
-fnm use 22
+fnm install 24
+fnm use 24
 ```
 
   <Warning>
-  确保您的版本管理器在您的 shell 启动文件 (`~/.zshrc` 或 `~/.bashrc`) 中初始化。如果没有, `openclaw` 可能在新终端会话中找不到, 因为 PATH 不会包含 Node 的 bin 目录。
+  确保您的版本管理器在您的 shell 启动文件（`~/.zshrc` 或 `~/.bashrc`）中初始化。如果没有，`openclaw` 可能在新终端会话中找不到，因为 PATH 不会包含 Node 的 bin 目录。
   </Warning>
 </Accordion>
 
@@ -104,19 +104,19 @@ fnm use 22
     echo "$PATH"
     ```
 
-    在输出中查找 `<npm-prefix>/bin` (macOS/Linux) 或 `<npm-prefix>` (Windows)。
+    在输出中查找 `<npm-prefix>/bin`（macOS/Linux）或 `<npm-prefix>`（Windows）。
 
   </Step>
   <Step title="将其添加到您的 shell 启动文件">
     <Tabs>
       <Tab title="macOS / Linux">
-        添加到 `~/.zshrc` 或 `~/.bashrc`:
+        添加到 `~/.zshrc` 或 `~/.bashrc`：
 
         ```bash
         export PATH="$(npm prefix -g)/bin:$PATH"
         ```
 
-        然后打开一个新终端 (或在 zsh 中运行 `rehash` / 在 bash 中运行 `hash -r`)。
+        然后打开一个新终端（或在 zsh 中运行 `rehash` / 在 bash 中运行 `hash -r`）。
       </Tab>
       <Tab title="Windows">
         通过设置 → 系统 → 环境变量将 `npm prefix -g` 的输出添加到您的系统 PATH。
@@ -126,9 +126,9 @@ fnm use 22
   </Step>
 </Steps>
 
-### `npm install -g` 上的权限错误 (Linux)
+### `npm install -g` 上的权限错误（Linux）
 
-如果您看到 `EACCES` 错误, 请将 npm 的全局前缀切换到用户可写目录:
+如果您看到 `EACCES` 错误，请将 npm 的全局前缀切换到用户可写目录：
 
 ```bash
 mkdir -p "$HOME/.npm-global"

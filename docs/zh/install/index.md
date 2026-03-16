@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4cf285a7c8dfcf24c3d7ca5c9a764731"
+mmh3_hash: "3d07716ca01b2eecec856641075f82d1"
 summary: "安装 OpenClaw — 安装程序脚本、npm/pnpm、从源码、Docker 等"
 read_when:
   - 您需要入门快速入门之外的安装方法
@@ -10,16 +10,16 @@ title: "安装"
 
 # 安装
 
-已经按照[入门](/start/getting-started)操作了吗?您已经完成了 — 本页面用于替代安装方法、特定平台说明和维护。
+已经按照[入门](/start/getting-started)操作了吗？您已经完成了 — 本页面用于替代安装方法、特定平台说明和维护。
 
 ## 系统要求
 
-- **[Node 22+](/install/node)**(如果缺失,[安装程序脚本](#安装方法)将安装它)
+- **[Node 24（推荐）](/install/node)**（Node 22 LTS，目前为 `22.16+`，仍受支持以兼容；如果缺失，[安装程序脚本](#安装方法)将安装 Node 24）
 - macOS、Linux 或 Windows
 - 仅在从源码构建时需要 `pnpm`
 
 <Note>
-在 Windows 上,我们强烈建议在 [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) 下运行 OpenClaw。
+在 Windows 上，我们强烈建议在 [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) 下运行 OpenClaw。
 </Note>
 
 ## 安装方法
@@ -34,7 +34,7 @@ title: "安装"
 
 <AccordionGroup>
   <Accordion title="安装程序脚本" icon="rocket" defaultOpen>
-    下载 CLI,通过 npm 全局安装,并启动引导向导。
+    下载 CLI，通过 npm 全局安装，并启动引导向导。
 
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
@@ -51,7 +51,7 @@ title: "安装"
 
     就是这样 — 脚本处理 Node 检测、安装和引导。
 
-    要跳过引导并仅安装二进制文件:
+    要跳过引导并仅安装二进制文件：
 
     <Tabs>
       <Tab title="macOS / Linux / WSL2">
@@ -66,12 +66,12 @@ title: "安装"
       </Tab>
     </Tabs>
 
-    有关所有标志、环境变量和 CI/自动化选项,请参阅[安装程序内部](/install/installer)。
+    有关所有标志、环境变量和 CI/自动化选项，请参阅[安装程序内部](/install/installer)。
 
   </Accordion>
 
   <Accordion title="npm / pnpm" icon="package">
-    如果您已经拥有 Node 22+ 并更喜欢自己管理安装:
+    如果您已经管理自己的 Node，我们推荐 Node 24。OpenClaw 仍支持 Node 22 LTS，目前为 `22.16+`，以兼容：
 
     <Tabs>
       <Tab title="npm">
@@ -81,13 +81,13 @@ title: "安装"
         ```
 
         <Accordion title="sharp 构建错误?">
-          如果您全局安装了 libvips(macOS 上通过 Homebrew 很常见)并且 `sharp` 失败,强制预构建二进制文件:
+          如果您全局安装了 libvips（macOS 上通过 Homebrew 很常见）并且 `sharp` 失败，强制预构建二进制文件：
 
           ```bash
           SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install -g openclaw@latest
           ```
 
-          如果您看到 `sharp: Please add node-gyp to your dependencies`,要么安装构建工具(macOS: Xcode CLT + `npm install -g node-gyp`),要么使用上面的环境变量。
+          如果您看到 `sharp: Please add node-gyp to your dependencies`，要么安装构建工具（macOS: Xcode CLT + `npm install -g node-gyp`），要么使用上面的环境变量。
         </Accordion>
       </Tab>
       <Tab title="pnpm">
@@ -98,10 +98,20 @@ title: "安装"
         ```
 
         <Note>
-        pnpm 需要对具有构建脚本的包进行显式批准。在第一次安装显示"忽略构建脚本"警告后,运行 `pnpm approve-builds -g` 并选择列出的包。
+        pnpm 需要对具有构建脚本的包进行显式批准。在第一次安装显示"忽略构建脚本"警告后，运行 `pnpm approve-builds -g` 并选择列出的包。
         </Note>
       </Tab>
     </Tabs>
+
+    想要通过包管理器安装当前 GitHub `main` 分支？
+
+    ```bash
+    npm install -g github:openclaw/openclaw#main
+    ```
+
+    ```bash
+    pnpm add -g github:openclaw/openclaw#main
+    ```
 
   </Accordion>
 
@@ -110,7 +120,7 @@ title: "安装"
 
     <Steps>
       <Step title="克隆并构建">
-        克隆 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 并构建:
+        克隆 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 并构建：
 
         ```bash
         git clone https://github.com/openclaw/openclaw.git
@@ -121,13 +131,13 @@ title: "安装"
         ```
       </Step>
       <Step title="链接 CLI">
-        使 `openclaw` 命令全局可用:
+        使 `openclaw` 命令全局可用：
 
         ```bash
         pnpm link --global
         ```
 
-        或者,跳过链接并在仓库内通过 `pnpm openclaw ...` 运行命令。
+        或者，跳过链接并在仓库内通过 `pnpm openclaw ...` 运行命令。
       </Step>
       <Step title="运行引导">
         ```bash
@@ -136,7 +146,7 @@ title: "安装"
       </Step>
     </Steps>
 
-    有关更深入的开发工作流程,请参阅[设置](/start/setup)。
+    有关更深入的开发工作流程，请参阅[设置](/start/setup)。
 
   </Accordion>
 </AccordionGroup>
@@ -148,7 +158,7 @@ title: "安装"
     容器化或无头部署。
   </Card>
   <Card title="Podman" href="/install/podman" icon="container">
-    无根容器: 运行一次 `setup-podman.sh`,然后启动脚本。
+    无根容器：运行一次 `setup-podman.sh`，然后启动脚本。
   </Card>
   <Card title="Nix" href="/install/nix" icon="snowflake">
     通过 Nix 声明式安装。
@@ -163,7 +173,7 @@ title: "安装"
 
 ## 安装后
 
-验证一切正常工作:
+验证一切正常工作：
 
 ```bash
 openclaw doctor         # 检查配置问题
@@ -171,18 +181,18 @@ openclaw status         # Gateway 状态
 openclaw dashboard      # 打开浏览器 UI
 ```
 
-如果需要自定义运行时路径,使用:
+如果需要自定义运行时路径，使用：
 
 - `OPENCLAW_HOME` 用于基于主目录的内部路径
 - `OPENCLAW_STATE_DIR` 用于可变状态位置
 - `OPENCLAW_CONFIG_PATH` 用于配置文件位置
 
-有关优先级和完整详细信息,请参阅[环境变量](/help/environment)。
+有关优先级和完整详细信息，请参阅[环境变量](/help/environment)。
 
-## 故障排除: 找不到 `openclaw`
+## 故障排除：找不到 `openclaw`
 
 <Accordion title="PATH 诊断和修复">
-  快速诊断:
+  快速诊断：
 
 ```bash
 node -v
@@ -191,17 +201,17 @@ npm prefix -g
 echo "$PATH"
 ```
 
-如果 `$(npm prefix -g)/bin` (macOS/Linux) 或 `$(npm prefix -g)` (Windows) **不在**您的 `$PATH` 中,您的 shell 无法找到全局 npm 二进制文件(包括 `openclaw`)。
+如果 `$(npm prefix -g)/bin` (macOS/Linux) 或 `$(npm prefix -g)` (Windows) **不在**您的 `$PATH` 中，您的 shell 无法找到全局 npm 二进制文件（包括 `openclaw`）。
 
-修复 — 将其添加到您的 shell 启动文件(`~/.zshrc` 或 `~/.bashrc`):
+修复 — 将其添加到您的 shell 启动文件（`~/.zshrc` 或 `~/.bashrc`）：
 
 ```bash
 export PATH="$(npm prefix -g)/bin:$PATH"
 ```
 
-在 Windows 上,将 `npm prefix -g` 的输出添加到您的 PATH。
+在 Windows 上，将 `npm prefix -g` 的输出添加到您的 PATH。
 
-然后打开一个新终端(或在 zsh 中 `rehash` / 在 bash 中 `hash -r`)。
+然后打开一个新终端（或在 zsh 中 `rehash` / 在 bash 中 `hash -r`）。
 </Accordion>
 
 ## 更新 / 卸载

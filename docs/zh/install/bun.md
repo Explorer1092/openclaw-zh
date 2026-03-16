@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8a5fef4f24b6e76be7baea97f7b6ecbf"
+mmh3_hash: "a3c62384665ded6fc0d499de3de4f54a"
 title: "Bun (实验性)"
 sidebarTitle: "Bun"
 summary: "Bun 工作流（实验性）：安装以及与 pnpm 相比的注意事项"
@@ -44,7 +44,7 @@ bun run vitest run
 Bun 可能会阻止依赖生命周期脚本，除非明确信任 (`bun pm untrusted` / `bun pm trust`)。
 对于此仓库，通常阻止的脚本不是必需的：
 
-- `@whiskeysockets/baileys` `preinstall`: 检查 Node major >= 20 (我们运行 Node 22+)。
+- `@whiskeysockets/baileys` `preinstall`: 检查 Node major >= 20（OpenClaw 默认使用 Node 24，仍支持 Node 22 LTS，目前为 `22.16+`）。
 - `protobufjs` `postinstall`: 发出关于不兼容版本方案的警告（无构建工件）。
 
 如果你遇到需要这些脚本的真实运行时问题，请明确信任它们：
