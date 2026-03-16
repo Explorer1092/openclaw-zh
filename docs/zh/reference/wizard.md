@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "30788e86b375812e0a603d082599ab23"
+mmh3_hash: "e766a12142605f76092276159af5576d"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志
@@ -27,7 +27,7 @@ sidebarTitle: "向导参考"
       - 完全重置（还删除工作空间）
   </Step>
   <Step title="模型/身份验证">
-    - **Anthropic API 密钥（推荐）**：如果存在则使用 `ANTHROPIC_API_KEY`，或提示输入密钥，然后保存以供守护程序使用。
+    - **Anthropic API 密钥**：如果存在则使用 `ANTHROPIC_API_KEY`，或提示输入密钥，然后保存以供守护程序使用。
     - **Anthropic OAuth（Claude Code CLI）**：在 macOS 上，向导检查 Keychain 项"Claude Code-credentials"（选择"始终允许"，以便 launchd 启动不会阻塞）；在 Linux/Windows 上，如果存在则重用 `~/.claude/.credentials.json`。
     - **Anthropic 令牌（粘贴 setup-token）**：在任何机器上运行 `claude setup-token`，然后粘贴令牌（您可以命名它；空白 = 默认）。
     - **OpenAI Code（Codex）订阅（Codex CLI）**：如果 `~/.codex/auth.json` 存在，向导可以重用它。
@@ -35,7 +35,7 @@ sidebarTitle: "向导参考"
       - 当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.2`。
     - **OpenAI API 密钥**：如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将其存储在身份验证配置文件中。
     - **xAI（Grok）API 密钥**：提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。
-    - **OpenCode Zen（多模型代理）**：提示输入 `OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`，在 https://opencode.ai/auth 获取）。
+    - **OpenCode**：提示输入 `OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`，在 https://opencode.ai/auth 获取），并让您选择 Zen 或 Go 目录。
     - **API 密钥**：为您存储密钥。
     - **Vercel AI Gateway（多模型代理）**：提示输入 `AI_GATEWAY_API_KEY`。
     - 更多详情：[Vercel AI Gateway](/providers/vercel-ai-gateway)
@@ -49,7 +49,7 @@ sidebarTitle: "向导参考"
     - **Kimi Coding**：配置自动写入。
     - 更多详情：[Moonshot AI（Kimi + Kimi Coding）](/providers/moonshot)
     - **Skip**：尚未配置身份验证。
-    - 从检测到的选项中选择默认模型（或手动输入 Provider/模型）。
+    - 从检测到的选项中选择默认模型（或手动输入 Provider/模型）。为了获得最佳质量和降低提示注入风险，请选择您 Provider 堆栈中可用的最强最新一代模型。
     - 向导运行模型检查，如果配置的模型未知或缺少身份验证，则发出警告。
     - API 密钥存储模式默认为明文身份验证配置文件值。使用 `--secret-input-mode ref` 改为存储环境支持的引用（例如 `keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`）。
     - OAuth 凭据位于 `~/.openclaw/credentials/oauth.json`；身份验证配置文件位于 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`（API 密钥 + OAuth）。
@@ -153,80 +153,8 @@ openclaw onboard --non-interactive \
 `--json` **不**意味着非交互式模式。对于脚本，使用 `--non-interactive`（和 `--workspace`）。
 </Note>
 
-<AccordionGroup>
-  <Accordion title="Gemini 示例">
-    ```bash
-    openclaw onboard --non-interactive \
-      --mode local \
-      --auth-choice gemini-api-key \
-      --gemini-api-key "$GEMINI_API_KEY" \
-      --gateway-port 18789 \
-      --gateway-bind loopback
-    ```
-  </Accordion>
-  <Accordion title="Z.AI 示例">
-    ```bash
-    openclaw onboard --non-interactive \
-      --mode local \
-      --auth-choice zai-api-key \
-      --zai-api-key "$ZAI_API_KEY" \
-      --gateway-port 18789 \
-      --gateway-bind loopback
-    ```
-  </Accordion>
-  <Accordion title="Vercel AI Gateway 示例">
-    ```bash
-    openclaw onboard --non-interactive \
-      --mode local \
-      --auth-choice ai-gateway-api-key \
-      --ai-gateway-api-key "$AI_GATEWAY_API_KEY" \
-      --gateway-port 18789 \
-      --gateway-bind loopback
-    ```
-  </Accordion>
-  <Accordion title="Cloudflare AI Gateway 示例">
-    ```bash
-    openclaw onboard --non-interactive \
-      --mode local \
-      --auth-choice cloudflare-ai-gateway-api-key \
-      --cloudflare-ai-gateway-account-id "your-account-id" \
-      --cloudflare-ai-gateway-gateway-id "your-gateway-id" \
-      --cloudflare-ai-gateway-api-key "$CLOUDFLARE_AI_GATEWAY_API_KEY" \
-      --gateway-port 18789 \
-      --gateway-bind loopback
-    ```
-  </Accordion>
-  <Accordion title="Moonshot 示例">
-    ```bash
-    openclaw onboard --non-interactive \
-      --mode local \
-      --auth-choice moonshot-api-key \
-      --moonshot-api-key "$MOONSHOT_API_KEY" \
-      --gateway-port 18789 \
-      --gateway-bind loopback
-    ```
-  </Accordion>
-  <Accordion title="Synthetic 示例">
-    ```bash
-    openclaw onboard --non-interactive \
-      --mode local \
-      --auth-choice synthetic-api-key \
-      --synthetic-api-key "$SYNTHETIC_API_KEY" \
-      --gateway-port 18789 \
-      --gateway-bind loopback
-    ```
-  </Accordion>
-  <Accordion title="OpenCode Zen 示例">
-    ```bash
-    openclaw onboard --non-interactive \
-      --mode local \
-      --auth-choice opencode-zen \
-      --opencode-zen-api-key "$OPENCODE_API_KEY" \
-      --gateway-port 18789 \
-      --gateway-bind loopback
-    ```
-  </Accordion>
-</AccordionGroup>
+Provider 特定的命令示例位于 [CLI 自动化](/start/wizard-cli-automation#provider-specific-examples)。
+使用此参考页面了解标志语义和步骤顺序。
 
 ### 添加 Agent（非交互式）
 

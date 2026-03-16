@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c93184234bc642766747d578eefad951"
+mmh3_hash: "31263f97f09941a0d04d092ca74e3b3e"
 summary: "审计哪些内容可以花钱、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API
@@ -77,10 +77,10 @@ OpenClaw 可以从以下位置获取凭证:
 `web_search` 使用 API 密钥并可能根据您的 Provider 产生使用费用：
 
 - **Brave Search API**：`BRAVE_API_KEY` 或 `tools.web.search.apiKey`
-- **Gemini（Google Search）**：`GEMINI_API_KEY`
-- **Grok（xAI）**：`XAI_API_KEY`
-- **Kimi（Moonshot）**：`KIMI_API_KEY` 或 `MOONSHOT_API_KEY`
-- **Perplexity Search API**：`PERPLEXITY_API_KEY`
+- **Gemini（Google Search）**：`GEMINI_API_KEY` 或 `tools.web.search.gemini.apiKey`
+- **Grok（xAI）**：`XAI_API_KEY` 或 `tools.web.search.grok.apiKey`
+- **Kimi（Moonshot）**：`KIMI_API_KEY`、`MOONSHOT_API_KEY` 或 `tools.web.search.kimi.apiKey`
+- **Perplexity Search API**：`PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `tools.web.search.perplexity.apiKey`
 
 **Brave Search 免费积分：** 每个 Brave 计划每月包含 $5 的循环免费积分。Search 计划每 1,000 个请求收费 $5，因此积分涵盖每月 1,000 个请求，无需额外费用。在 Brave 仪表板中设置使用限额以避免意外收费。
 

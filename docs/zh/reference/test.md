@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c02d76087017fcbda713b2909348baab"
+mmh3_hash: "b7e86072b83615a83f4e2553d1a3d8f4"
 summary: "如何在本地运行测试（vitest）以及何时使用 force/coverage 模式"
 read_when:
   - 运行或修复测试
@@ -12,7 +12,7 @@ title: "测试"
 
 - `pnpm test:force`：杀死任何占用默认控制端口的遗留 Gateway 进程，然后使用隔离的 Gateway 端口运行完整的 Vitest 套件，以便服务器测试不会与运行的实例冲突。当先前的 Gateway 运行占用端口 18789 时使用此选项。
 - `pnpm test:coverage`：使用 V8 覆盖率运行单元套件（通过 `vitest.unit.config.ts`）。全局阈值为 70% 行/分支/函数/语句。覆盖率排除集成繁重的入口点（CLI 布线、Gateway/Telegram 桥、webchat 静态服务器），以保持目标专注于可单元测试的逻辑。
-- Node 24+ 上的 `pnpm test`：OpenClaw 自动禁用 Vitest `vmForks` 并使用 `forks`，以避免 `ERR_VM_MODULE_LINK_FAILURE` / `module is already linked`。您可以使用 `OPENCLAW_TEST_VM_FORKS=0|1` 强制设置行为。
+- Node 22、23 和 24 上的 `pnpm test` 默认使用 Vitest `vmForks` 以加快启动速度。Node 25+ 在重新验证之前回退到 `forks`。您可以使用 `OPENCLAW_TEST_VM_FORKS=0|1` 强制设置行为。
 - `pnpm test`：默认运行快速核心单元通道，以便快速获得本地反馈。
 - `pnpm test:channels`：运行频道密集型套件。
 - `pnpm test:extensions`：运行扩展/插件套件。
@@ -82,7 +82,7 @@ scripts/e2e/onboard-docker.sh
 
 ## QR 导入冒烟（Docker）
 
-确保 `qrcode-terminal` 在 Docker 的 Node 22+ 下加载：
+确保 `qrcode-terminal` 在受支持的 Docker Node 运行时（Node 24 默认，Node 22 兼容）下加载：
 
 ```bash
 pnpm test:docker:qr

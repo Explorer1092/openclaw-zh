@@ -1,5 +1,6 @@
 ---
-mmh3_hash: "9f41069fd922da4503c8e0851905da2a"
+title: "Default AGENTS.md"
+mmh3_hash: "6b9ea1ab7afde5c476cafabc6e3a9a85"
 summary: "个人助手设置的默认 OpenClaw 代理指令和技能名单"
 read_when:
   - 启动新的 OpenClaw 代理会话
@@ -47,7 +48,8 @@ cp docs/reference/AGENTS.default.md ~/.openclaw/workspace/AGENTS.md
 
 ## 会话开始(必需)
 
-- 读取 `SOUL.md`、`USER.md`、`memory.md`,以及 `memory/` 中的今天和昨天。
+- 读取 `SOUL.md`、`USER.md`，以及 `memory/` 中的今天和昨天。
+- 如果 `MEMORY.md` 存在则读取；仅当 `MEMORY.md` 不存在时才回退到小写 `memory.md`。
 - 在响应之前执行此操作。
 
 ## Soul(必需)
@@ -64,8 +66,9 @@ cp docs/reference/AGENTS.default.md ~/.openclaw/workspace/AGENTS.md
 ## 内存系统(推荐)
 
 - 每日日志:`memory/YYYY-MM-DD.md`(如果需要,创建 `memory/`)。
-- 长期内存:`memory.md` 用于持久事实、偏好和决定。
-- 在会话开始时,读取今天 + 昨天 + `memory.md`(如果存在)。
+- 长期内存:`MEMORY.md` 用于持久事实、偏好和决定。
+- 小写 `memory.md` 仅为旧版回退；不要故意同时保留两个根文件。
+- 在会话开始时，如果 `MEMORY.md` 存在则读取今天 + 昨天 + `MEMORY.md`，否则读取 `memory.md`。
 - 捕获:决定、偏好、约束、开放循环。
 - 除非明确要求,否则避免机密。
 
@@ -109,7 +112,6 @@ git commit -m "Add Clawd workspace"
 - **OpenHue CLI** — Philips Hue 照明控制,用于场景和自动化。
 - **OpenAI Whisper** — 用于快速听写和语音邮件转录的本地语音转文本。
 - **Gemini CLI** — 从终端获取 Google Gemini 模型以进行快速问答。
-- **bird** — X/Twitter CLI,用于在没有浏览器的情况下发推、回复、阅读线程和搜索。
 - **agent-tools** — 用于自动化和辅助脚本的实用工具包。
 
 ## 使用说明

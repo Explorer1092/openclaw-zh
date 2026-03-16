@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "88d93709f5448b7bd2fd4982e2a3ffcc"
+mmh3_hash: "c2aaf92e2b0efa13a08ca486456ba985"
 summary: "SecretRef 凭据界面的规范支持与不支持范围"
 read_when:
   - 验证 SecretRef 凭据覆盖范围
@@ -32,6 +32,7 @@ title: "SecretRef 凭据界面"
 - `talk.providers.*.apiKey`
 - `messages.tts.elevenlabs.apiKey`
 - `messages.tts.openai.apiKey`
+- `tools.web.fetch.firecrawl.apiKey`
 - `tools.web.search.apiKey`
 - `tools.web.search.gemini.apiKey`
 - `tools.web.search.grok.apiKey`
@@ -69,8 +70,10 @@ title: "SecretRef 凭据界面"
 - `channels.bluebubbles.password`
 - `channels.bluebubbles.accounts.*.password`
 - `channels.feishu.appSecret`
+- `channels.feishu.encryptKey`
 - `channels.feishu.verificationToken`
 - `channels.feishu.accounts.*.appSecret`
+- `channels.feishu.accounts.*.encryptKey`
 - `channels.feishu.accounts.*.verificationToken`
 - `channels.msteams.appPassword`
 - `channels.mattermost.botToken`
@@ -101,9 +104,11 @@ title: "SecretRef 凭据界面"
 - 计划条目以 `profiles.*.key` / `profiles.*.token` 为目标，并写入同级引用（`keyRef` / `tokenRef`）。
 - Auth Profile 引用包含在运行时解析和审计覆盖中。
 - 对于 SecretRef 管理的模型 Provider，生成的 `agents/*/agent/models.json` 条目为 `apiKey`/header 界面持久化非 secret 标记（不是已解析的 secret 值）。
+- 标记持久化是以来源为权威的：OpenClaw 从活跃来源配置快照（解析前）写入标记，而不是从已解析的运行时 secret 值。
 - 对于 Web 搜索：
   - 在显式 Provider 模式（已设置 `tools.web.search.provider`）下，仅激活所选 Provider 的键。
-  - 在自动模式（未设置 `tools.web.search.provider`）下，`tools.web.search.apiKey` 和 Provider 特定键均处于活跃状态。
+  - 在自动模式（未设置 `tools.web.search.provider`）下，仅按优先级解析的第一个 Provider 键处于活跃状态。
+  - 在自动模式下，未选择的 Provider 引用在被选中之前视为非活跃状态。
 
 ## 不支持的凭据
 

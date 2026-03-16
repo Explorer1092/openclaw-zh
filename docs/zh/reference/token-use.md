@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0b1b25237ca0f1d17b77d38442c16fd5"
+mmh3_hash: "12ab6554e5b0d6917f1346a6e7adf80a"
 summary: "OpenClaw 如何构建提示词上下文并报告令牌使用情况 + 成本"
 read_when:
   - 解释令牌使用情况、成本或上下文窗口
@@ -18,7 +18,7 @@ OpenClaw 在每次运行时组装自己的系统提示词。它包括：
 - Tool 列表 + 简短描述
 - Skills 列表（仅元数据；指令按需使用 `read` 加载）
 - 自我更新指令
-- 工作空间 + 引导文件（新建时为 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`，存在时为 `MEMORY.md` 和/或 `memory.md`）。大型文件被 `agents.defaults.bootstrapMaxChars`（默认：20000）截断，总引导注入由 `agents.defaults.bootstrapTotalMaxChars`（默认：150000）限制。`memory/*.md` 文件通过内存 Tools 按需提供，不会自动注入。
+- 工作空间 + 引导文件（新建时为 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`，存在时为 `MEMORY.md`，当 `MEMORY.md` 不存在时回退到小写 `memory.md`）。大型文件被 `agents.defaults.bootstrapMaxChars`（默认：20000）截断，总引导注入由 `agents.defaults.bootstrapTotalMaxChars`（默认：150000）限制。`memory/*.md` 文件通过内存 Tools 按需提供，不会自动注入。
 - 时间（UTC + 用户时区）
 - 回复标签 + 心跳行为
 - 运行时元数据（主机/OS/模型/思考）
