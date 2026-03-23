@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "803a61e42feea090f3146120297db7b1"
+mmh3_hash: "a3d29195e481d13a92b1ab86fb5c5abc"
 title: "模型提供商"
 sidebarTitle: "模型提供商示例"
 summary: "OpenClaw 支持的模型提供商 (LLMs)"
@@ -40,5 +40,6 @@ OpenClaw 可以使用多个 LLM 提供商。选择一个，进行身份验证，
 - [Venice (Venice AI)](/providers/venice)
 - [Amazon Bedrock](/providers/bedrock)
 - [Qianfan](/providers/qianfan)
+- [xAI](/providers/xai)
 
 有关完整的提供商目录（xAI、Groq、Mistral 等）和高级配置，请参见[模型提供商](/concepts/model-providers)。

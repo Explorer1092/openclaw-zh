@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a4a529de7314e782ab6db1df82e68185"
+mmh3_hash: "70c5927a8bffe910b395274e3fb02256"
 title: "Anthropic (Claude)"
 sidebarTitle: "Anthropic"
 summary: "在 OpenClaw 中通过 API 密钥或 setup-token 使用 Anthropic Claude"
@@ -59,7 +59,7 @@ OpenClaw 的共享 `/fast` 切换也支持直接 Anthropic API 密钥流量。
   agents: {
     defaults: {
       models: {
-        "anthropic/claude-sonnet-4-5": {
+        "anthropic/claude-sonnet-4-6": {
           params: { fastMode: true },
         },
       },

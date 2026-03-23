@@ -1,7 +1,7 @@
 ---
 title: "OpenRouter"
 sidebarTitle: "OpenRouter"
-mmh3_hash: "356a654729d5e22c1360e833dc70c439"
+mmh3_hash: "23a00699a7bd6b4833fbb795380f8fac"
 summary: "使用 OpenRouter 的统一 API 在 OpenClaw 中访问多个模型"
 read_when: ["您想为多个 LLM 使用单个 API 密钥","您想通过 OpenRouter 在 OpenClaw 中运行模型"]
 ---
@@ -22,7 +22,7 @@ openclaw onboard --auth-choice apiKey --token-provider openrouter --token "$OPEN
   env: { OPENROUTER_API_KEY: "sk-or-..." },
   agents: {
     defaults: {
-      model: { primary: "openrouter/anthropic/claude-sonnet-4-5" }
+      model: { primary: "openrouter/anthropic/claude-sonnet-4-6" },
     }
   }
 }
