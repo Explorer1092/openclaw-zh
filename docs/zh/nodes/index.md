@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "73ea25e2b7b2481e0be63248274da0ff"
+mmh3_hash: "5b7fe09e5fbf403b1ff18b2587d661fc"
 summary: "Node 的配对、功能、权限和 canvas/camera/screen/device/notifications/system 的 CLI 辅助工具"
 read_when:
   - 将 iOS/Android Node 配对到 Gateway
@@ -36,6 +36,8 @@ openclaw nodes status
 openclaw nodes describe --node <idOrNameOrIp>
 ```
 
+如果 node 使用更改的认证详情（角色/作用域/公钥）重试，先前的待处理请求将被取代，并创建新的 `requestId`。在批准之前重新运行 `openclaw devices list`。
+
 注意:
 
 - 当 node 的设备配对角色包含 `node` 时, `nodes status` 将其标记为**已配对 (paired)**。
@@ -50,6 +52,12 @@ openclaw nodes describe --node <idOrNameOrIp>
 - **Gateway host**: 接收消息, 运行模型, 路由工具调用。
 - **Node host**: 在 node 机器上执行 `system.run`/`system.which`。
 - **Approvals**: 通过 `~/.openclaw/exec-approvals.json` 在 node host 上强制执行。
+
+Approval 注意事项:
+
+- 批准支持的 node 运行绑定精确的请求上下文。
+- 对于直接 shell/运行时文件执行，OpenClaw 还会尽力绑定一个具体的本地文件操作数，如果该文件在执行前被修改，则拒绝运行。
+- 如果 OpenClaw 无法为解释器/运行时命令精确识别一个具体的本地文件，批准支持的执行将被拒绝，而不是假装具有完整的运行时覆盖。请使用沙盒、独立主机或显式可信允许列表/完整工作流以获得更广泛的解释器语义。
 
 ### 启动 node host (前台)
 
@@ -78,8 +86,11 @@ openclaw node run --host 127.0.0.1 --port 18790 --display-name "Build Node"
 
 - `openclaw node run` 支持 token 或 password 认证。
 - 首选环境变量：`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`。
-- 配置回退为 `gateway.auth.token` / `gateway.auth.password`；在远程模式下，`gateway.remote.token` / `gateway.remote.password` 也可用。
-- 旧版 `CLAWDBOT_GATEWAY_*` 环境变量被 node host 认证解析有意忽略。
+- 配置回退为 `gateway.auth.token` / `gateway.auth.password`。
+- 在本地模式下，node host 有意忽略 `gateway.remote.token` / `gateway.remote.password`。
+- 在远程模式下，`gateway.remote.token` / `gateway.remote.password` 按远程优先级规则适用。
+- 如果活跃的本地 `gateway.auth.*` SecretRef 已配置但未解析，node host 认证将快速失败。
+- Node host 认证解析仅接受 `OPENCLAW_GATEWAY_*` 环境变量。
 
 ### 启动 node host (服务)
 
@@ -97,6 +108,9 @@ openclaw devices list
 openclaw devices approve <requestId>
 openclaw nodes status
 ```
+
+如果 node 使用更改的认证详情（角色/作用域/公钥）重试，请在批准前重新运行 `openclaw devices list`
+并批准当前的 `requestId`。
 
 命名选项:
 
@@ -267,6 +281,8 @@ openclaw nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"
 - `photos.latest`
 - `contacts.search`、`contacts.add`
 - `calendar.events`、`calendar.add`
+- `callLog.search`
+- `sms.search`
 - `motion.activity`、`motion.pedometer`
 
 调用示例：

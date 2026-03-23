@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9fb140dfe43bd6dba818558eba158739"
+mmh3_hash: "ffde88d81952af9c7efa6f112ed0098a"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
   - 在本地或 CI 中运行测试
@@ -53,10 +53,37 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - 在 CI 中运行
   - 不需要真实密钥
   - 应该快速且稳定
+- 调度器注意事项：
+  - `pnpm test` 现在保存一个小型签入行为清单，用于真实的 pool/隔离覆盖，以及最慢单元文件的独立时序快照。
+  - 共享单元覆盖现在默认为 `threads`，而清单保持已测量的仅 fork 异常和重型单例通道明确。
+  - 共享扩展通道仍默认为 `threads`；当文件无法安全共享非隔离 worker 时，wrapper 在 `test/fixtures/test-parallel.behavior.json` 中保持明确的仅 fork 异常。
+  - channel 套件（`vitest.channels.config.ts`）现在也默认为 `threads`；2026 年 3 月 22 日的直接完整套件控制运行通过，没有 channel 特定的 fork 异常。
+  - wrapper 将最重的已测量文件分离到专用通道中，而不是依赖不断增长的手动维护排除列表。
+  - 在主要套件形状更改后，使用 `pnpm test:perf:update-timings` 刷新时序快照。
+- 嵌入式运行器注意事项：
+  - 当你更改 message-tool 发现输入或 compaction 运行时上下文时，保持两层覆盖。
+  - 为纯路由/规范化边界添加专注的辅助回归测试。
+  - 同时保持嵌入式运行器集成套件健康：`src/agents/pi-embedded-runner/compact.hooks.test.ts`、`src/agents/pi-embedded-runner/run.overflow-compaction.test.ts` 和 `src/agents/pi-embedded-runner/run.overflow-compaction.loop.test.ts`。
+  - 这些套件验证作用域 id 和 compaction 行为是否仍通过真实的 `run.ts` / `compact.ts` 路径流动；仅辅助测试不能替代这些集成路径。
 - Pool 注意事项：
-  - OpenClaw 在 Node 22、23 和 24 上使用 Vitest `vmForks` 以获得更快的单元分片。
-  - 在 Node 25+ 上，OpenClaw 自动回退到常规 `forks`，直到 repo 在那里重新验证。
-  - 使用 `OPENCLAW_TEST_VM_FORKS=0`（强制 `forks`）或 `OPENCLAW_TEST_VM_FORKS=1`（强制 `vmForks`）手动覆盖。
+  - 基础 Vitest 配置仍默认为 `forks`。
+  - 单元 wrapper 通道默认为 `threads`，带有明确的清单仅 fork 异常。
+  - 扩展范围配置默认为 `threads`。
+  - channel 范围配置默认为 `threads`。
+  - 单元、channel 和扩展配置默认为 `isolate: false` 以加快文件启动。
+  - `pnpm test` 还在 wrapper 级别传递 `--isolate=false`。
+  - 使用 `OPENCLAW_TEST_ISOLATE=1 pnpm test` 选择回到 Vitest 文件隔离。
+  - `OPENCLAW_TEST_NO_ISOLATE=0` 或 `OPENCLAW_TEST_NO_ISOLATE=false` 也强制隔离运行。
+- 快速本地迭代注意事项：
+  - `pnpm test:changed` 使用 `--changed origin/main` 运行 wrapper。
+  - 基础 Vitest 配置将 wrapper 清单/配置文件标记为 `forceRerunTriggers`，以便在调度器输入更改时 changed 模式重运行保持正确。
+  - Vitest 的文件系统模块缓存现在默认为 Node 端测试重运行启用。
+  - 如果怀疑有陈旧的转换缓存行为，使用 `OPENCLAW_VITEST_FS_MODULE_CACHE=0` 或 `OPENCLAW_VITEST_FS_MODULE_CACHE=false` 选择退出。
+- 性能调试注意事项：
+  - `pnpm test:perf:imports` 启用 Vitest 导入时长报告加上导入分解输出。
+  - `pnpm test:perf:imports:changed` 将相同的分析视图范围限制为自 `origin/main` 以来更改的文件。
+  - `pnpm test:perf:profile:main` 为 Vitest/Vite 启动和转换开销写入主线程 CPU profile。
+  - `pnpm test:perf:profile:runner` 为禁用文件并行的单元套件写入运行器 CPU+堆 profile。
 
 ### E2E（gateway 冒烟测试）
 
@@ -64,8 +91,8 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 - 配置：`vitest.e2e.config.ts`
 - 文件：`src/**/*.e2e.test.ts`、`test/**/*.e2e.test.ts`
 - 运行时默认值：
-  - 使用 Vitest `vmForks` 以获得更快的文件启动。
-  - 使用自适应 workers（CI：2-4，本地：4-8）。
+  - 使用 Vitest `forks` 以确保确定性的跨文件隔离。
+  - 使用自适应 workers（CI：最多 2 个，本地：默认 1 个）。
   - 默认以静默模式运行以减少控制台 I/O 开销。
 - 有用的覆盖：
   - `OPENCLAW_E2E_WORKERS=<n>` 强制 worker 数量（上限 16）。
@@ -110,6 +137,11 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - 优先运行缩小的子集而不是"所有内容"
   - 实时运行将获取 `~/.profile` 以获取缺失的 API keys
 - API key 轮换（provider 特定）：用逗号/分号格式设置 `*_API_KEYS` 或 `*_API_KEY_1`、`*_API_KEY_2`（例如 `OPENAI_API_KEYS`、`ANTHROPIC_API_KEYS`、`GEMINI_API_KEYS`）或通过 `OPENCLAW_LIVE_*_KEY` 按实时覆盖；测试在速率限制响应时重试。
+- 进度/心跳输出：
+  - 实时套件现在将进度行发送到 stderr，以便即使在 Vitest 控制台捕获安静时，长时间的 provider 调用也可见活跃状态。
+  - `vitest.live.config.ts` 禁用 Vitest 控制台拦截，以便 provider/gateway 进度行在实时运行期间立即流式传输。
+  - 使用 `OPENCLAW_LIVE_HEARTBEAT_MS` 调整直接模型心跳。
+  - 使用 `OPENCLAW_LIVE_GATEWAY_HEARTBEAT_MS` 调整 gateway/探测心跳。
 
 ## 我应该运行哪个套件？
 
@@ -154,7 +186,7 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - `pnpm test:live`（或直接调用 Vitest 时设置 `OPENCLAW_LIVE_TEST=1`）
 - 设置 `OPENCLAW_LIVE_MODELS=modern`（或 `all`，是 modern 的别名）以实际运行此套件；否则它会跳过以使 `pnpm test:live` 专注于 gateway 冒烟
 - 如何选择 models：
-  - `OPENCLAW_LIVE_MODELS=modern` 运行现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.5、Grok 4）
+  - `OPENCLAW_LIVE_MODELS=modern` 运行现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.7、Grok 4）
   - `OPENCLAW_LIVE_MODELS=all` 是现代允许列表的别名
   - 或 `OPENCLAW_LIVE_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,..."` （逗号允许列表）
 - 如何选择 providers：
@@ -185,7 +217,7 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 - 如何启用：
   - `pnpm test:live`（或直接调用 Vitest 时设置 `OPENCLAW_LIVE_TEST=1`）
 - 如何选择 models：
-  - 默认：现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.5、Grok 4）
+  - 默认：现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.7、Grok 4）
   - `OPENCLAW_LIVE_GATEWAY_MODELS=all` 是现代允许列表的别名
   - 或设置 `OPENCLAW_LIVE_GATEWAY_MODELS="provider/model"`（或逗号列表）来缩小
 - 如何选择 providers（避免"OpenRouter 所有"）：
@@ -269,7 +301,7 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
   - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 - 跨多个 providers 的工具调用：
-  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,google/gemini-3-flash-preview,zai/glm-4.7,minimax/minimax-m2.5" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,google/gemini-3-flash-preview,zai/glm-4.7,minimax/MiniMax-M2.7" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 - Google 重点（Gemini API key + Antigravity）：
   - Gemini（API key）：`OPENCLAW_LIVE_GATEWAY_MODELS="google/gemini-3-flash-preview" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
@@ -294,24 +326,24 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 
 - OpenAI（非 Codex）：`openai/gpt-5.2`（可选：`openai/gpt-5.1`）
 - OpenAI Codex：`openai-codex/gpt-5.4`
-- Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-5`）
+- Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-6`）
 - Google（Gemini API）：`google/gemini-3.1-pro-preview` 和 `google/gemini-3-flash-preview`（避免旧的 Gemini 2.x models）
 - Google（Antigravity）：`google-antigravity/claude-opus-4-6-thinking` 和 `google-antigravity/gemini-3-flash`
 - Z.AI（GLM）：`zai/glm-4.7`
-- MiniMax：`minimax/minimax-m2.5`
+- MiniMax：`minimax/MiniMax-M2.7`
 
 用工具 + 图像运行 gateway 冒烟：
-`OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,openai-codex/gpt-5.4,anthropic/claude-opus-4-6,google/gemini-3.1-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/minimax-m2.5" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+`OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,openai-codex/gpt-5.4,anthropic/claude-opus-4-6,google/gemini-3.1-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/MiniMax-M2.7" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 ### 基准：工具调用（Read + 可选 Exec）
 
 每个 provider 系列至少选一个：
 
 - OpenAI：`openai/gpt-5.2`（或 `openai/gpt-5-mini`）
-- Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-5`）
+- Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-6`）
 - Google：`google/gemini-3-flash-preview`（或 `google/gemini-3.1-pro-preview`）
 - Z.AI（GLM）：`zai/glm-4.7`
-- MiniMax：`minimax/minimax-m2.5`
+- MiniMax：`minimax/MiniMax-M2.7`
 
 可选额外覆盖（最好有）：
 
@@ -361,17 +393,41 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - 启用：`BYTEPLUS_API_KEY=... BYTEPLUS_LIVE_TEST=1 pnpm test:live src/agents/byteplus.live.test.ts`
 - 可选 model 覆盖：`BYTEPLUS_CODING_MODEL=ark-code-latest`
 
+## 图像生成实时测试
+
+- 测试：`src/image-generation/runtime.live.test.ts`
+- 命令：`pnpm test:live src/image-generation/runtime.live.test.ts`
+- 范围：
+  - 枚举每个已注册的图像生成 provider 插件
+  - 在探测前从登录 Shell（`~/.profile`）加载缺失的 provider env vars
+  - 默认使用实时/env API keys 优于存储的 auth profiles，以便 `auth-profiles.json` 中的陈旧测试 keys 不会遮蔽真实的 Shell 凭据
+  - 跳过没有可用 auth/profile/model 的 providers
+  - 通过共享运行时功能运行标准图像生成变体：
+    - `google:flash-generate`
+    - `google:pro-generate`
+    - `google:pro-edit`
+    - `openai:default-generate`
+- 当前包含的 providers：
+  - `openai`
+  - `google`
+- 可选缩窄：
+  - `OPENCLAW_LIVE_IMAGE_GENERATION_PROVIDERS="openai,google"`
+  - `OPENCLAW_LIVE_IMAGE_GENERATION_MODELS="openai/gpt-image-1,google/gemini-3.1-flash-image-preview"`
+  - `OPENCLAW_LIVE_IMAGE_GENERATION_CASES="google:flash-generate,google:pro-edit"`
+- 可选 auth 行为：
+  - `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 强制 profile 存储 auth 并忽略仅 env 覆盖
+
 ## Docker 运行器（可选的"在 Linux 上有效"检查）
 
-这些在 repo Docker 镜像内运行 `pnpm test:live`，挂载你的本地配置目录和 workspace（以及在挂载时获取 `~/.profile`）。当存在时，它们还绑定挂载 CLI auth 目录如 `~/.codex`、`~/.claude`、`~/.qwen` 和 `~/.minimax`，以便外部 CLI OAuth 在容器中保持可用：
+这些在 repo Docker 镜像内运行 `pnpm test:live`，挂载你的本地配置目录和 workspace（以及在挂载时获取 `~/.profile`）。它们还将需要的 CLI auth 主目录（或运行未缩窄时所有支持的目录）绑定挂载，然后在运行前将其复制到容器 home 中，以便外部 CLI OAuth 可以刷新 token 而不会修改主机 auth 存储：
 
 - 直接 models：`pnpm test:docker:live-models`（脚本：`scripts/test-live-models-docker.sh`）
 - Gateway + dev agent：`pnpm test:docker:live-gateway`（脚本：`scripts/test-live-gateway-models-docker.sh`）
 - 引导向导（TTY，完整脚手架）：`pnpm test:docker:onboard`（脚本：`scripts/e2e/onboard-docker.sh`）
 - Gateway 网络（两个容器，WS auth + 健康检查）：`pnpm test:docker:gateway-network`（脚本：`scripts/e2e/gateway-network-docker.sh`）
-- Plugins（自定义扩展加载 + 注册表冒烟）：`pnpm test:docker:plugins`（脚本：`scripts/e2e/plugins-docker.sh`）
+- Plugins（安装冒烟 + `/plugin` 别名 + Claude-bundle 重启语义）：`pnpm test:docker:plugins`（脚本：`scripts/e2e/plugins-docker.sh`）
 
-实时 model Docker 运行器还将当前 checkout 只读绑定挂载并将其暂存到容器内的临时工作目录中。这保持运行时镜像精简，同时仍然针对你的确切本地源/配置运行 Vitest。
+实时 model Docker 运行器还将当前 checkout 只读绑定挂载并将其暂存到容器内的临时工作目录中。这保持运行时镜像精简，同时仍然针对你的确切本地源/配置运行 Vitest。它们还设置 `OPENCLAW_SKIP_CHANNELS=1`，以便 gateway 实时探测不会在容器内启动真实的 Telegram/Discord 等 channel workers。`test:docker:live-models` 仍然运行 `pnpm test:live`，因此当你需要缩窄或排除该 Docker 通道的 gateway 实时覆盖时，也需要传递 `OPENCLAW_LIVE_GATEWAY_*`。
 
 手动 ACP 自然语言线程冒烟（不是 CI）：
 
@@ -383,8 +439,12 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - `OPENCLAW_CONFIG_DIR=...`（默认：`~/.openclaw`）挂载到 `/home/node/.openclaw`
 - `OPENCLAW_WORKSPACE_DIR=...`（默认：`~/.openclaw/workspace`）挂载到 `/home/node/.openclaw/workspace`
 - `OPENCLAW_PROFILE_FILE=...`（默认：`~/.profile`）挂载到 `/home/node/.profile` 并在运行测试前获取
-- `$HOME` 下的外部 CLI auth 目录（`.codex`、`.claude`、`.qwen`、`.minimax`）在存在时只读挂载到匹配的 `/home/node/...` 路径
+- `$HOME` 下的外部 CLI auth 目录只读挂载到 `/host-auth/...`，然后在测试开始前复制到 `/home/node/...`
+  - 默认：挂载所有支持的目录（`.codex`、`.claude`、`.qwen`、`.minimax`）
+  - 缩窄的 provider 运行仅挂载从 `OPENCLAW_LIVE_PROVIDERS` / `OPENCLAW_LIVE_GATEWAY_PROVIDERS` 推断需要的目录
+  - 使用 `OPENCLAW_DOCKER_AUTH_DIRS=all`、`OPENCLAW_DOCKER_AUTH_DIRS=none` 或逗号列表如 `OPENCLAW_DOCKER_AUTH_DIRS=.claude,.codex` 手动覆盖
 - `OPENCLAW_LIVE_GATEWAY_MODELS=...` / `OPENCLAW_LIVE_MODELS=...` 缩小运行范围
+- `OPENCLAW_LIVE_GATEWAY_PROVIDERS=...` / `OPENCLAW_LIVE_PROVIDERS=...` 在容器内过滤 providers
 - `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 确保凭据来自 profile 存储（不是 env）
 
 ## 文档健全性检查
@@ -429,3 +489,50 @@ Skills 仍然缺少什么（参见 [Skills](/tools/skills)）：
 - SecretRef 遍历护栏：
   - `src/secrets/exec-secret-ref-id-parity.test.ts` 从注册表元数据（`listSecretTargetRegistryEntries()`）为每个 SecretRef 类派生一个采样目标，然后断言遍历段 exec ids 被拒绝。
   - 如果你在 `src/secrets/target-registry-data.ts` 中添加新的 `includeInPlan` SecretRef 目标系列，更新该测试中的 `classifyTargetClass`。测试在未分类目标 ids 上故意失败，这样新类就不能被静默跳过。
+
+## 契约测试（plugin 和 channel 形态）
+
+契约测试验证每个已注册的 plugin 和 channel 是否符合其接口契约。它们遍历所有发现的 plugin 并运行一套形态和行为断言。
+
+### 命令
+
+- 所有契约：`pnpm test:contracts`
+- 仅 channel 契约：`pnpm test:contracts:channels`
+- 仅 provider 契约：`pnpm test:contracts:plugins`
+
+### Channel 契约
+
+位于 `src/channels/plugins/contracts/*.contract.test.ts`：
+
+- **plugin** - 基本 plugin 形态（id、name、capabilities）
+- **setup** - 设置向导契约
+- **session-binding** - Session 绑定行为
+- **outbound-payload** - 消息载荷结构
+- **inbound** - 入站消息处理
+- **actions** - Channel 动作处理器
+- **threading** - 线程 ID 处理
+- **directory** - 目录/名册 API
+- **group-policy** - 群组策略执行
+- **status** - Channel 状态探测
+- **registry** - Plugin 注册表形态
+
+### Provider 契约
+
+位于 `src/plugins/contracts/*.contract.test.ts`：
+
+- **auth** - Auth 流契约
+- **auth-choice** - Auth 选择/选项
+- **catalog** - 模型目录 API
+- **discovery** - Plugin 发现
+- **loader** - Plugin 加载
+- **runtime** - Provider 运行时
+- **shape** - Plugin 形态/接口
+- **wizard** - 设置向导
+
+### 何时运行
+
+- 更改 plugin-sdk 导出或子路径后
+- 添加或修改 channel 或 provider plugin 后
+- 重构 plugin 注册或发现后
+
+契约测试在 CI 中运行，不需要真实的 API key。

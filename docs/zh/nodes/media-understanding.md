@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "60d5682ee9072677e3fdc4c9cd3e74d4"
+mmh3_hash: "ad111073fdee56a7d95a28de23fb736e"
 summary: "入站图像/音频/视频理解 (可选), 带有 provider + CLI 回退"
 read_when:
   - 设计或重构媒体理解
@@ -7,9 +7,11 @@ read_when:
 title: "媒体理解"
 ---
 
-# 媒体理解 (入站) — 2026-01-17
+# 媒体理解 - 入站 (2026-01-17)
 
 OpenClaw 可以在回复管道运行之前**总结入站媒体** (图像/音频/视频)。它会自动检测本地工具或 provider 密钥何时可用, 并且可以禁用或自定义。如果理解功能关闭, 模型仍会照常接收原始文件/URL。
+
+各供应商特定的媒体行为由供应商插件注册，而 OpenClaw 核心拥有共享的 `tools.media` 配置、回退顺序和回复管道集成。
 
 ## 目标
 
@@ -41,6 +43,7 @@ OpenClaw 可以在回复管道运行之前**总结入站媒体** (图像/音频/
   - 默认值 (`prompt`, `maxChars`, `maxBytes`, `timeoutSeconds`, `language`)
   - provider 覆盖 (`baseUrl`, `headers`, `providerOptions`)
   - 通过 `tools.media.audio.providerOptions.deepgram` 的 Deepgram 音频选项
+  - 音频转录回显控制 (`echoTranscript`，默认 `false`；`echoFormat`)
   - 可选的**每功能 `models` 列表** (优先于共享模型)
   - `attachments` 策略 (`mode`, `maxAttachments`, `prefer`)
   - `scope` (可选的按 channel/chatType/session key 门控)
@@ -180,7 +183,10 @@ CLI 模板还可以使用:
 列表，OpenClaw 可以推断默认值:
 
 - `openai`, `anthropic`, `minimax`: **image**
+- `moonshot`: **image + video**
 - `google` (Gemini API): **image + audio + video**
+- `mistral`: **audio**
+- `zai`: **image**
 - `groq`: **audio**
 - `deepgram`: **audio**
 
@@ -189,11 +195,11 @@ CLI 模板还可以使用:
 
 ## 提供商支持矩阵 (OpenClaw 集成)
 
-| 功能           | 提供商集成                                    | 说明                                  |
-| -------------- | --------------------------------------------- | ------------------------------------- |
-| Image (图像)   | OpenAI / Anthropic / Google / 其他通过 `pi-ai` | 注册表中任何支持图像的模型都有效。    |
-| Audio (音频)   | OpenAI, Groq, Deepgram, Google, Mistral        | 提供商转录 (Whisper/Deepgram/Gemini/Voxtral)。 |
-| Video (视频)   | Google (Gemini API)                           | 提供商视频理解。                      |
+| 功能           | 提供商集成                                         | 说明                                                     |
+| -------------- | -------------------------------------------------- | -------------------------------------------------------- |
+| Image (图像)   | OpenAI, Anthropic, Google, MiniMax, Moonshot, Z.AI | 供应商插件将图像支持注册到核心媒体理解中。               |
+| Audio (音频)   | OpenAI, Groq, Deepgram, Google, Mistral            | 提供商转录 (Whisper/Deepgram/Gemini/Voxtral)。           |
+| Video (视频)   | Google, Moonshot                                   | 通过供应商插件提供提供商视频理解。                       |
 
 ## 模型选择指南
 

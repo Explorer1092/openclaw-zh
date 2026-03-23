@@ -1,11 +1,11 @@
 ---
 title: "图像与媒体支持"
 sidebarTitle: "图像与媒体"
-mmh3_hash: "62af5eac7e33e5f642e37679ff04a34c"
+mmh3_hash: "6dd574d2da22dc4ce69cbb4e131686ed"
 summary: "发送、Gateway 和 Agent 回复的图像和媒体处理规则"
 read_when: ["修改媒体管道或附件时"]
 ---
-# 图像与媒体支持 — 2025-12-05
+# 图像与媒体支持 (2025-12-05)
 
 WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、Gateway 和 Agent 回复的媒体处理规则。
 
@@ -22,7 +22,7 @@ WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、
 ## WhatsApp Web 频道行为
 - 输入：本地文件路径 **或** HTTP(S) URL。
 - 流程：加载到 Buffer，检测媒体种类，并构建正确的载荷：
-  - **图像：** 调整大小并重新压缩为 JPEG（最大边长 2048px），目标为 `agents.defaults.mediaMaxMb`（默认 5 MB），上限为 6 MB。
+  - **图像：** 调整大小并重新压缩为 JPEG（最大边长 2048px），目标为 `channels.whatsapp.mediaMaxMb`（默认：50 MB）。
   - **音频/语音/视频：** 透传高达 16 MB；音频作为语音笔记发送 (`ptt: true`)。
   - **文档：** 其他任何内容，高达 100 MB，可用时保留文件名。
 - WhatsApp GIF 风格播放：发送带有 `gifPlayback: true` (CLI: `--gif-playback`) 的 MP4，以便移动客户端内联循环播放。
@@ -47,7 +47,7 @@ WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、
 
 ## 限制 & 错误
 **出站发送上限 (WhatsApp web send)**
-- 图像：重新压缩后约 6 MB 上限。
+- 图像：重新压缩后最高 `channels.whatsapp.mediaMaxMb`（默认：50 MB）。
 - 音频/语音/视频：16 MB 上限；文档：100 MB 上限。
 - 超大或不可读媒体 → 日志中清除错误并跳过回复。
 

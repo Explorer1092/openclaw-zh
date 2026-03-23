@@ -1,10 +1,10 @@
 ---
-mmh3_hash: "038829cc09ead533bdd8d8a21b10fd4d"
+mmh3_hash: "de42ee34794b24cad7af56277bd4cd95"
 summary: "OpenClaw 的症状优先故障排除中心"
 read_when:
   - OpenClaw 无法正常工作且你需要最快的修复路径
   - 你想在深入运行手册之前进行分类排查
-title: "故障排除"
+title: "通用故障排除"
 ---
 
 # 故障排除
@@ -49,7 +49,7 @@ openclaw logs --follow
 
 1. 将 `openclaw.extensions` 添加到 `package.json`。
 2. 将条目指向构建的运行时文件（通常是 `./dist/index.js`）。
-3. 重新发布 plugin 并再次运行 `openclaw plugins install <npm-spec>`。
+3. 重新发布 plugin 并再次运行 `openclaw plugins install <package>`。
 
 示例：
 
@@ -63,7 +63,7 @@ openclaw logs --follow
 }
 ```
 
-参考：[/tools/plugin#distribution-npm](/tools/plugin#distribution-npm)
+参考：[Plugin 架构](/plugins/architecture)
 
 ## 决策树
 

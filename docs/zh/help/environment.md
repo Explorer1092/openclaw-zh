@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b37b353a7bf9cdd9ca6e695ba4edc2c8"
+mmh3_hash: "8b513d72daa02f6929f66852f9f6af7e"
 summary: "OpenClaw 加载环境变量的位置和优先级顺序"
 read_when:
   - 您需要知道加载哪些环境变量,以及按什么顺序
@@ -90,7 +90,7 @@ OpenClaw 还会向衍生的子进程注入上下文标记：
 }
 ```
 
-有关完整详细信息,请参见 [配置：环境变量替换](/gateway/configuration#env-var-substitution-in-config)。
+有关完整详细信息,请参见 [配置：环境变量替换](/gateway/configuration-reference#env-var-substitution)。
 
 ## Secret refs 与 `${ENV}` 字符串
 
@@ -132,6 +132,26 @@ OpenClaw 支持两种环境驱动的模式：
 ```
 
 `OPENCLAW_HOME` 也可以设置为波浪号路径（例如 `~/svc`）,在使用前使用 `$HOME` 展开。
+
+## nvm 用户：web_fetch TLS 失败
+
+如果 Node.js 是通过 **nvm** 安装的（而非系统包管理器），内置的 `fetch()` 使用 nvm 捆绑的 CA 存储，可能缺少现代根 CA（Let's Encrypt 的 ISRG Root X1/X2、DigiCert Global Root G2 等）。这会导致 `web_fetch` 在大多数 HTTPS 站点上失败，报错 `"fetch failed"`。
+
+在 Linux 上，OpenClaw 会自动检测 nvm 并在实际启动环境中应用修复：
+
+- `openclaw gateway install` 将 `NODE_EXTRA_CA_CERTS` 写入 systemd 服务环境
+- `openclaw` CLI 入口点在 Node 启动之前使用 `NODE_EXTRA_CA_CERTS` 重新执行自身
+
+**手动修复（适用于旧版本或直接 `node ...` 启动）：**
+
+在启动 OpenClaw 之前导出该变量：
+
+```bash
+export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
+openclaw gateway run
+```
+
+不要依赖于仅将此变量写入 `~/.openclaw/.env`；Node 在进程启动时读取 `NODE_EXTRA_CA_CERTS`。
 
 ## 相关
 
