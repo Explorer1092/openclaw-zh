@@ -1,92 +1,87 @@
 ---
-mmh3_hash: "26d5e1c585dbbb20237a16ff8340a5c7"
+mmh3_hash: "04ce2cebb6cd587f2bfe30c5f05391d4"
 summary: "使用 Nix 声明式安装 OpenClaw"
 read_when:
-  - 您想要可重现、可回滚的安装
-  - 您已经在使用 Nix/NixOS/Home Manager
-  - 您想要一切都被固定并声明式管理
+  - 你想要可重现、可回滚的安装
+  - 你已经在使用 Nix/NixOS/Home Manager
+  - 你想要一切都被固定并声明式管理
 title: "Nix"
 ---
 
 # Nix 安装
 
-使用 Nix 运行 OpenClaw 的推荐方法是通过 **[nix-openclaw](https://github.com/openclaw/nix-openclaw)** — 一个电池包含的 Home Manager 模块。
+使用 **[nix-openclaw](https://github.com/openclaw/nix-openclaw)** 声明式安装 OpenClaw — 一个电池齐全的 Home Manager 模块。
+
+<Info>
+[nix-openclaw](https://github.com/openclaw/nix-openclaw) 仓库是 Nix 安装的事实来源。本页只是一个快速概览。
+</Info>
+
+## 你将获得什么
+
+- Gateway + macOS 应用 + 工具（whisper、spotify、cameras）— 全部固定版本
+- 重启后存活的 Launchd 服务
+- 带有声明式配置的插件系统
+- 即时回滚：`home-manager switch --rollback`
 
 ## 快速开始
 
-将此粘贴给您的 AI agent (Claude, Cursor 等):
+<Steps>
+  <Step title="安装 Determinate Nix">
+    如果尚未安装 Nix，按照 [Determinate Nix 安装程序](https://github.com/DeterminateSystems/nix-installer) 说明操作。
+  </Step>
+  <Step title="创建本地 flake">
+    使用 nix-openclaw 仓库中的 agent-first 模板：
+    ```bash
+    mkdir -p ~/code/openclaw-local
+    # 从 nix-openclaw 仓库复制 templates/agent-first/flake.nix
+    ```
+  </Step>
+  <Step title="配置机密">
+    设置你的消息 bot 令牌和模型提供商 API 密钥。`~/.secrets/` 下的普通文件即可。
+  </Step>
+  <Step title="填写模板占位符并切换">
+    ```bash
+    home-manager switch
+    ```
+  </Step>
+  <Step title="验证">
+    确认 launchd 服务正在运行，且你的 bot 响应消息。
+  </Step>
+</Steps>
 
-```text
-I want to set up nix-openclaw on my Mac.
-Repository: github:openclaw/nix-openclaw
-
-What I need you to do:
-1. Check if Determinate Nix is installed (if not, install it)
-2. Create a local flake at ~/code/openclaw-local using templates/agent-first/flake.nix
-3. Help me create a Telegram bot (@BotFather) and get my chat ID (@userinfobot)
-4. Set up secrets (bot token, model provider API key) - plain files at ~/.secrets/ is fine
-5. Fill in the template placeholders and run home-manager switch
-6. Verify: launchd running, bot responds to messages
-
-Reference the nix-openclaw README for module options.
-```
-
-> **📦 完整指南: [github.com/openclaw/nix-openclaw](https://github.com/openclaw/nix-openclaw)**
->
-> nix-openclaw 仓库是 Nix 安装的事实来源。本页只是一个快速概览。
-
-## 您会得到什么
-
-- Gateway + macOS 应用 + 工具 (whisper, spotify, cameras) — 全部固定
-- 重启后存活的 Launchd 服务
-- 带有声明式配置的插件系统
-- 即时回滚: `home-manager switch --rollback`
-
----
+完整的模块选项和示例请参阅 [nix-openclaw README](https://github.com/openclaw/nix-openclaw)。
 
 ## Nix 模式运行时行为
 
-当设置了 `OPENCLAW_NIX_MODE=1` (nix-openclaw 自动设置) 时：
+当设置了 `OPENCLAW_NIX_MODE=1`（nix-openclaw 自动设置）时，OpenClaw 进入确定性模式，禁用自动安装流程。
 
-OpenClaw 支持 **Nix 模式**，该模式使配置具有确定性并禁用自动安装流程。
-通过导出启用它：
+你也可以手动设置它：
 
 ```bash
-OPENCLAW_NIX_MODE=1
+export OPENCLAW_NIX_MODE=1
 ```
 
-在 macOS 上，GUI 应用程序不会自动继承 shell 环境变量。你也可以通过 defaults 启用 Nix 模式：
+在 macOS 上，GUI 应用不会自动继承 shell 环境变量。通过 defaults 启用 Nix 模式：
 
 ```bash
 defaults write ai.openclaw.mac openclaw.nixMode -bool true
 ```
 
-### 配置 + 状态路径
+### Nix 模式下的变化
 
-OpenClaw 从 `OPENCLAW_CONFIG_PATH` 读取 JSON5 配置，并将可变数据存储在 `OPENCLAW_STATE_DIR` 中。
-如果需要，还可以设置 `OPENCLAW_HOME` 来控制内部路径解析使用的基础主目录。
+- 禁用自动安装和自我变更流程
+- 缺少依赖项时会显示 Nix 专属的修复建议
+- 界面会显示只读的 Nix 模式横幅
 
-- `OPENCLAW_HOME`（默认优先级：`HOME` / `USERPROFILE` / `os.homedir()`）
-- `OPENCLAW_STATE_DIR`（默认：`~/.openclaw`）
-- `OPENCLAW_CONFIG_PATH`（默认：`$OPENCLAW_STATE_DIR/openclaw.json`）
+### 配置和状态路径
 
-在 Nix 下运行时，将这些显式设置为 Nix 管理的位置，以便运行时状态和配置远离不可变存储。
+OpenClaw 从 `OPENCLAW_CONFIG_PATH` 读取 JSON5 配置，并将可变数据存储在 `OPENCLAW_STATE_DIR` 中。在 Nix 下运行时，将这些显式设置为 Nix 管理的位置，以便运行时状态和配置远离不可变存储。
 
-### Nix 模式下的运行时行为
-
-- 禁用自动安装和自我变异流程
-- 丢失的依赖项会浮现 Nix 特定的补救消息
-- UI 出现时会显示只读的 Nix 模式横幅
-
-## 打包说明 (macOS)
-
-macOS 打包流程期望在以下位置有一个稳定的 Info.plist 模板：
-
-```
-apps/macos/Sources/OpenClaw/Resources/Info.plist
-```
-
-[`scripts/package-mac-app.sh`](https://github.com/openclaw/openclaw/blob/main/scripts/package-mac-app.sh) 将此模板复制到应用程序包中并修补动态字段（包 ID、版本/构建、Git SHA、Sparkle 密钥）。这使得 plist 对于 SwiftPM 打包和 Nix 构建（不依赖完整的 Xcode 工具链）具有确定性。
+| 变量                   | 默认值                                  |
+| ---------------------- | --------------------------------------- |
+| `OPENCLAW_HOME`        | `HOME` / `USERPROFILE` / `os.homedir()` |
+| `OPENCLAW_STATE_DIR`   | `~/.openclaw`                           |
+| `OPENCLAW_CONFIG_PATH` | `$OPENCLAW_STATE_DIR/openclaw.json`     |
 
 ## 相关
 

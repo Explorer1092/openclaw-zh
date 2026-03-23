@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e03e2a90c36f695cd798094d51049a47"
+mmh3_hash: "8394813a993af4a0ec1a882e2763beb0"
 summary: "适用于长期运行 OpenClaw Gateway 主机的共享 Docker VM 运行时步骤"
 read_when:
   - 您正在使用 Docker 在云 VM 上部署 OpenClaw

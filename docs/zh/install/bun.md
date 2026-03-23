@@ -1,58 +1,57 @@
 ---
-mmh3_hash: "a3c62384665ded6fc0d499de3de4f54a"
-title: "Bun (实验性)"
+mmh3_hash: "30bb09b67f515ec01344ba545e5fcdd8"
+title: "Bun（实验性）"
 sidebarTitle: "Bun"
 summary: "Bun 工作流（实验性）：安装以及与 pnpm 相比的注意事项"
-read_when: ["你想要最快的本地开发循环 (bun + watch)","你遇到了 Bun install/patch/生命周期脚本问题"]
+read_when:
+  - 你想要最快的本地开发循环 (bun + watch)
+  - 你遇到了 Bun install/patch/生命周期脚本问题
 ---
 
-# Bun (实验性)
+# Bun（实验性）
 
-目标：使用 **Bun** 运行此仓库（可选，不推荐用于 WhatsApp/Telegram），而不偏离 pnpm 工作流。
+<Warning>
+Bun **不推荐用于 Gateway 运行时**（WhatsApp 和 Telegram 存在已知问题）。生产环境请使用 Node。
+</Warning>
 
-⚠️ **不推荐用于网关运行时** (WhatsApp/Telegram bug)。生产环境请使用 Node。
-
-## 状态
-
-- Bun 是一个可选的本地运行时，用于直接运行 TypeScript (`bun run …`, `bun --watch …`)。
-- `pnpm` 是构建的默认值，并保持完全支持（并被一些文档工具使用）。
-- Bun 不能使用 `pnpm-lock.yaml` 并将忽略它。
+Bun 是一个可选的本地运行时，用于直接运行 TypeScript（`bun run ...`、`bun --watch ...`）。默认包管理器仍为 `pnpm`，完全支持且被文档工具使用。Bun 无法使用 `pnpm-lock.yaml`，会忽略它。
 
 ## 安装
 
-默认：
+<Steps>
+  <Step title="安装依赖">
+    ```sh
+    bun install
+    ```
 
-```sh
-bun install
-```
+    `bun.lock` / `bun.lockb` 已被 gitignore，因此不会产生仓库变动。要完全跳过锁文件写入：
 
-注意：`bun.lock`/`bun.lockb` 已被 gitignore，所以无论哪种方式都没有仓库变动。如果你想要 *无锁文件写入*：
+    ```sh
+    bun install --no-save
+    ```
 
-```sh
-bun install --no-save
-```
+  </Step>
+  <Step title="构建和测试">
+    ```sh
+    bun run build
+    bun run vitest run
+    ```
+  </Step>
+</Steps>
 
-## 构建 / 测试 (Bun)
+## 生命周期脚本
 
-```sh
-bun run build
-bun run vitest run
-```
+Bun 会阻止依赖的生命周期脚本，除非明确信任。对于此仓库，通常被阻止的脚本不是必需的：
 
-## Bun 生命周期脚本 (默认阻止)
+- `@whiskeysockets/baileys` `preinstall` -- 检查 Node major >= 20（OpenClaw 默认使用 Node 24，仍支持 Node 22 LTS，目前为 `22.16+`）
+- `protobufjs` `postinstall` -- 发出关于不兼容版本方案的警告（无构建工件）
 
-Bun 可能会阻止依赖生命周期脚本，除非明确信任 (`bun pm untrusted` / `bun pm trust`)。
-对于此仓库，通常阻止的脚本不是必需的：
-
-- `@whiskeysockets/baileys` `preinstall`: 检查 Node major >= 20（OpenClaw 默认使用 Node 24，仍支持 Node 22 LTS，目前为 `22.16+`）。
-- `protobufjs` `postinstall`: 发出关于不兼容版本方案的警告（无构建工件）。
-
-如果你遇到需要这些脚本的真实运行时问题，请明确信任它们：
+如果你遇到需要这些脚本的运行时问题，明确信任它们：
 
 ```sh
 bun pm trust @whiskeysockets/baileys protobufjs
 ```
 
-## 警告
+## 注意事项
 
-- 一些脚本仍然硬编码了 pnpm (例如 `docs:build`, `ui:*`, `protocol:check`)。暂时通过 pnpm 运行这些。
+一些脚本仍然硬编码了 pnpm（例如 `docs:build`、`ui:*`、`protocol:check`）。暂时通过 pnpm 运行这些脚本。

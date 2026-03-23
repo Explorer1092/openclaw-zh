@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "993515a0b4c736f74b8aba8a3a041c4d"
+mmh3_hash: "da55b1fa20b50ea6c2aa504fb51eb5bf"
 title: "Node.js"
 summary: "安装和配置 Node.js 以供 OpenClaw 使用 — 版本要求、安装选项和 PATH 故障排除"
 read_when:

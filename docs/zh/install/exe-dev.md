@@ -1,9 +1,9 @@
 ---
-mmh3_hash: "7854cb4916062de95a5b27175eda5ec6"
+mmh3_hash: "9f892d53fde2d323782e5a5c25d0b802"
 summary: "在 exe.dev（VM + HTTPS 代理）上运行 OpenClaw Gateway 以实现远程访问"
 read_when:
-  - 您想要便宜的永久在线 Linux 主机来运行 Gateway
-  - 您想要远程 Control UI 访问而无需运行自己的 VPS
+  - 你想要便宜的永久在线 Linux 主机来运行 Gateway
+  - 你想要远程 Control UI 访问而无需运行自己的 VPS
 title: "exe.dev"
 ---
 
@@ -11,19 +11,19 @@ title: "exe.dev"
 
 目标：OpenClaw Gateway 在 exe.dev VM 上运行，可通过 `https://<vm-name>.exe.xyz` 从笔记本电脑访问
 
-本页假设 exe.dev 的默认 **exeuntu** 镜像。如果您选择了不同的发行版，请相应地映射软件包。
+本页假设 exe.dev 的默认 **exeuntu** 镜像。如果你选择了不同的发行版，请相应地映射软件包。
 
 ## 初学者快速路径
 
 1. [https://exe.new/openclaw](https://exe.new/openclaw)
-2. 根据需要填写您的身份验证密钥/令牌
-3. 点击 VM 旁边的"Agent"，然后等待...
-4. ???
-5. 成功
+2. 根据需要填写你的身份验证密钥/令牌
+3. 点击 VM 旁边的"Agent"，等待 Shelley 完成配置
+4. 打开 `https://<vm-name>.exe.xyz/` 并粘贴你的 Gateway 令牌进行身份验证
+5. 使用 `openclaw devices approve <requestId>` 批准所有待处理的设备配对请求
 
-## 您需要什么
+## 你需要准备
 
-- exe.dev 帐户
+- exe.dev 账号
 - 可选：`ssh exe.dev` 访问 [exe.dev](https://exe.dev) 虚拟机
 
 ## 使用 Shelley 自动安装
@@ -38,7 +38,7 @@ Set up OpenClaw (https://docs.openclaw.ai/install) on this VM. Use the non-inter
 
 ## 1) 创建 VM
 
-从您的设备：
+从你的设备：
 
 ```bash
 ssh exe.dev new
@@ -88,7 +88,7 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
 
-        # 标准代理标头
+        # 标准代理头
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

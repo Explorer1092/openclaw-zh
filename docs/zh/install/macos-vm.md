@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "79caf223246820c80b5697bf6533d4b3"
+mmh3_hash: "71d0905d690f2c19403a5904ce65c78d"
 summary: "在沙箱化的 macOS VM（本地或托管）中运行 OpenClaw，当您需要隔离或 iMessage 时"
 read_when:
   - 您希望 OpenClaw 与主 macOS 环境隔离
