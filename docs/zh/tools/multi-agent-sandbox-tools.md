@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "43a37bc1a9d37c5c87dd72edb2806474"
+mmh3_hash: "8dd7d1aa8b21c2b89f223244617ed5a6"
 summary: "每个 Agent 的沙箱 + 工具限制、优先级和示例"
 title: 多 Agent 沙箱和工具
 read_when: "您想在多 Agent Gateway 中实现每个 Agent 的沙箱或每个 Agent 的工具允许/拒绝策略。"
@@ -8,30 +8,14 @@ status: active
 
 # 多 Agent 沙箱和工具配置
 
-## 概述
+多 Agent 设置中的每个 Agent 都可以覆盖全局沙箱和工具策略。本页涵盖每个 Agent 的配置、优先级规则和示例。
 
-多 Agent 设置中的每个 Agent 现在都可以拥有自己的：
+- **沙箱后端和模式**：参见 [沙箱化](/gateway/sandboxing)。
+- **调试被阻止的工具**：参见 [沙箱 vs 工具策略 vs 提升模式](/gateway/sandbox-vs-tool-policy-vs-elevated) 和 `openclaw sandbox explain`。
+- **提升 exec**：参见 [提升模式](/tools/elevated)。
 
-- **沙箱配置**（`agents.list[].sandbox` 覆盖 `agents.defaults.sandbox`）
-- **工具限制**（`tools.allow` / `tools.deny`，加上 `agents.list[].tools`）
-
-这允许您使用不同的安全配置文件运行多个 Agent：
-
-- 具有完全访问权限的个人助手
-- 具有受限工具的家庭/工作 Agent
-- 沙箱中的面向公众的 Agent
-
-`setupCommand` 属于 `sandbox.docker`（全局或每个 Agent）下，并在创建容器时运行一次。
-
-身份验证是每个 Agent 的：每个 Agent 从其自己的 `agentDir` 身份验证存储读取：
-
-```
-~/.openclaw/agents/<agentId>/agent/auth-profiles.json
-```
-
-凭据**不**在 Agent 之间共享。永远不要在 Agent 之间重用 `agentDir`。如果您想共享凭据，请将 `auth-profiles.json` 复制到其他 Agent 的 `agentDir`。
-
-有关沙箱在运行时的行为，请参阅 [Sandboxing](/gateway/sandboxing)。对于调试"为什么被阻止？"，请参阅 [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) 和 `openclaw sandbox explain`。
+身份验证是每个 Agent 的：每个 Agent 从其自己的 `agentDir` 身份验证存储读取，路径为 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`。
+凭据**不**在 Agent 之间共享。永远不要在 Agent 之间重用 `agentDir`。如果你想共享凭据，请将 `auth-profiles.json` 复制到其他 Agent 的 `agentDir`。
 
 ---
 
@@ -217,30 +201,9 @@ agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
 
 每个级别都可以进一步限制工具，但不能授予早期级别拒绝的工具。如果设置了 `agents.list[].tools.sandbox.tools`，它将替换该 Agent 的 `tools.sandbox.tools`。如果设置了 `agents.list[].tools.profile`，它将覆盖该 Agent 的 `tools.profile`。Provider 工具键接受 `provider`（例如 `google-antigravity`）或 `provider/model`（例如 `openai/gpt-5.2`）。
 
-### 工具组（简写）
+工具策略支持 `group:*` 简写，可展开为多个工具。参见 [工具组简写](/gateway/sandbox-vs-tool-policy-vs-elevated#tool-groups-shorthands) 查看完整列表。
 
-工具策略（全局、Agent、沙箱）支持 `group:*` 条目，这些条目扩展为多个具体工具：
-
-- `group:runtime`：`exec`、`bash`、`process`
-- `group:fs`：`read`、`write`、`edit`、`apply_patch`
-- `group:sessions`：`sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`session_status`
-- `group:memory`：`memory_search`、`memory_get`
-- `group:ui`：`browser`、`canvas`
-- `group:automation`：`cron`、`gateway`
-- `group:messaging`：`message`
-- `group:nodes`：`nodes`
-- `group:openclaw`：所有内置 OpenClaw 工具（不包括 Provider Plugins）
-
-### Elevated 模式
-
-`tools.elevated` 是全局基线（基于发送者的白名单）。`agents.list[].tools.elevated` 可以进一步限制特定 Agent 的提升（两者都必须允许）。
-
-缓解模式：
-
-- 对不受信任的 Agent 拒绝 `exec`（`agents.list[].tools.deny: ["exec"]`）
-- 避免将路由到受限 Agent 的发送者列入白名单
-- 如果您只想要沙箱执行，请全局禁用提升（`tools.elevated.enabled: false`）
-- 对敏感配置文件禁用每个 Agent 的提升（`agents.list[].tools.elevated.enabled: false`）
+每个 Agent 的提升模式覆盖（`agents.list[].tools.elevated`）可以进一步限制特定 Agent 的提升 exec。参见 [提升模式](/tools/elevated) 了解详情。
 
 ---
 
@@ -384,6 +347,9 @@ agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
 
 ## 另见
 
+- [沙箱化](/gateway/sandboxing) -- 完整沙箱参考（模式、范围、后端、镜像）
+- [沙箱 vs 工具策略 vs 提升模式](/gateway/sandbox-vs-tool-policy-vs-elevated) -- 调试"为什么被阻止？"
+- [提升模式](/tools/elevated)
 - [多 Agent 路由](/concepts/multi-agent)
-- [沙箱配置](/gateway/configuration#agentsdefaults-sandbox)
+- [沙箱配置](/gateway/configuration-reference#agentsdefaultssandbox)
 - [Session 管理](/concepts/session)

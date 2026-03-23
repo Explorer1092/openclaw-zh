@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3ea89233fe3fcf5aef4f08bd8911a6c1"
+mmh3_hash: "dff41bb0a2dda8fd4484efa02702a14e"
 title: "Lobster"
 sidebarTitle: "Lobster 工作流"
 summary: "OpenClaw 的类型化工作流运行时，具有可恢复的批准门控。"
@@ -328,7 +328,7 @@ OpenProse 与 Lobster 配合得很好：使用 `/prose` 编排多 Agent 准备�
 ## 了解更多
 
 - [插件](/tools/plugin)
-- [插件工具创作](/plugins/agent-tools)
+- [插件工具创作](/plugins/building-plugins#registering-agent-tools)
 
 ## 案例研究：社区工作流
 

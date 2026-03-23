@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6219ff32980a4e8ac5946ee492937ffb"
+mmh3_hash: "220ace720d40c10df44e871b1051e39d"
 title: "工具循环检测"
 description: "配置可选的防护机制，防止重复性或停滞的工具调用循环"
 summary: "如何启用和调整检测重复工具调用循环的防护机制"
