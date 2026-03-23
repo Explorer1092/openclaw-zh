@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f242f377434131797378013811fe2fb"
+mmh3_hash: "196259a61095d1703aa384e0417c0d12"
 title: "iOS 应用 (节点)"
 summary: "iOS 节点应用：连接到 Gateway、配对、canvas 和故障排除"
 read_when:

@@ -1,7 +1,7 @@
 ---
 title: "Linux 应用"
 sidebarTitle: "Linux"
-mmh3_hash: "94de149caa7b944c73cdf1a501a18a13"
+mmh3_hash: "1fc31d33374367e164ea27292c58f4ea"
 summary: "Linux 支持 + 伴侣应用状态"
 read_when:
   - 查找 Linux 伴侣应用状态
@@ -23,7 +23,7 @@ Gateway 在 Linux 上完全受支持。**Node 是推荐的运行时**。
 4. 从你的笔记本：`ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
 5. 打开 `http://127.0.0.1:18789/` 并粘贴你的 token
 
-逐步 VPS 指南：[exe.dev](/install/exe-dev)
+完整 Linux 服务器指南：[Linux Server](/vps)。逐步 VPS 示例：[exe.dev](/install/exe-dev)
 
 ## 安装
 

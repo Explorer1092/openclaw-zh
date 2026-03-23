@@ -1,6 +1,6 @@
 ---
 title: "在 Oracle Cloud(OCI)上运行 OpenClaw"
-mmh3_hash: "129c421af92815f9a99138aea033cabf"
+mmh3_hash: "c150da109e452cc704519ad128c6117e"
 summary: "在 Oracle Cloud 上运行 OpenClaw(始终免费 ARM)"
 read_when: ["在 Oracle Cloud 上设置 OpenClaw","寻找 OpenClaw 的低成本 VPS 托管","想要在小型服务器上全天候运行 OpenClaw"]
 ---

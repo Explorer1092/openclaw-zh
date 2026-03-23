@@ -1,7 +1,7 @@
 ---
 title: "语音唤醒和按下说话"
 sidebarTitle: "语音唤醒"
-mmh3_hash: "8fdeda633fd118a89dd713fd2794e59b"
+mmh3_hash: "31784e922dfe33a045450bf41305733c"
 summary: "mac 应用中的语音唤醒和按下说话模式以及路由详细信息"
 read_when: ["处理语音唤醒或 PTT 路径"]
 ---

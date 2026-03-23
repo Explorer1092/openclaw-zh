@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "49a45165bdab8aa136056bc7c2b4305e"
+mmh3_hash: "f9c5e2715d835c64d5c16cd1c59cf214"
 title: "macOS 开发设置"
 summary: "在 OpenClaw macOS 应用上工作的开发者设置指南"
 read_when:

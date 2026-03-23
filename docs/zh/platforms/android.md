@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "42aa7b4421af209a5dd630a88a58b275"
+mmh3_hash: "752548a4792338aff3c0df21bea4c3d4"
 title: "Android 应用 (节点)"
 summary: "Android 应用（节点）：连接手册 + Connect/Chat/Voice/Canvas 命令接口"
 read_when:
@@ -10,7 +10,7 @@ read_when:
 
 # Android 应用（节点）
 
-> **注意：** Android 应用尚未公开发布。源代码在 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 的 `apps/android` 下可用。你可以使用 Java 17 和 Android SDK 自行构建（`./gradlew :app:assembleDebug`）。构建说明见 [apps/android/README.md](https://github.com/openclaw/openclaw/blob/main/apps/android/README.md)。
+> **注意：** Android 应用尚未公开发布。源代码在 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 的 `apps/android` 下可用。你可以使用 Java 17 和 Android SDK 自行构建（`./gradlew :app:assemblePlayDebug`）。构建说明见 [apps/android/README.md](https://github.com/openclaw/openclaw/blob/main/apps/android/README.md)。
 
 ## 支持快照
 
@@ -165,4 +165,5 @@ Canvas 命令（仅前台）：
   - `contacts.search`、`contacts.add`
   - `calendar.events`、`calendar.add`
   - `callLog.search`
+  - `sms.search`
   - `motion.activity`、`motion.pedometer`

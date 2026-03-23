@@ -1,7 +1,7 @@
 ---
 title: "macOS 上的健康检查"
 sidebarTitle: "健康检查"
-mmh3_hash: "61c4f564d0fa00d9b9b09babf175d180"
+mmh3_hash: "d9094db9a6dae40cb72eb4e308e60c70"
 summary: "macOS 应用如何报告网关/Baileys 健康状态"
 read_when: ["调试 mac 应用健康指示器"]
 ---

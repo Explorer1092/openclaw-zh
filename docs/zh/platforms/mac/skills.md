@@ -1,7 +1,7 @@
 ---
 title: "技能 (macOS)"
 sidebarTitle: "技能"
-mmh3_hash: "047e136fafc3743515225d8de5d0671e"
+mmh3_hash: "3e31a9532e3f84bf4298621640f7ac3e"
 summary: "macOS Skills 设置 UI 和网关支持的状态"
 read_when: ["更新 macOS Skills 设置 UI","更改技能门控或安装行为"]
 ---

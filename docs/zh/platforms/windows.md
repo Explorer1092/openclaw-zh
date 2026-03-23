@@ -1,21 +1,21 @@
 ---
-title: "Windows (WSL2)"
+title: "Windows"
 sidebarTitle: "Windows"
-mmh3_hash: "d8ea3e0a50e18f90ada6987a2f400811"
-summary: "Windows（WSL2）支持 + 伴侣应用状态"
+mmh3_hash: "ed91c0a5b5e3bcdf22aaaeb7c1fb29d3"
+summary: "Windows 支持：原生和 WSL2 安装路径、守护进程及当前注意事项"
 read_when:
   - 在 Windows 上安装 OpenClaw
+  - 选择原生 Windows 和 WSL2
   - 查找 Windows 伴侣应用状态
 ---
 
-# Windows (WSL2)
+# Windows
 
-Windows 上的 OpenClaw 推荐**通过 WSL2**（推荐 Ubuntu）。
-CLI + Gateway 在 Linux 内部运行，这使运行时保持一致，并使工具更兼容（Node/Bun/pnpm、Linux 二进制文件、skills）。原生 Windows 可能更麻烦。WSL2 提供完整的 Linux 体验 — 一条命令安装：`wsl --install`。
+OpenClaw 同时支持**原生 Windows** 和 **WSL2**。WSL2 是更稳定的路径，推荐用于完整体验 — CLI、Gateway 和工具链在 Linux 内部运行，具有完整的兼容性。原生 Windows 适用于核心 CLI 和 Gateway 使用，但有以下注意事项。
 
 原生 Windows 伴侣应用正在计划中。
 
-## 安装（WSL2）
+## WSL2（推荐）
 
 - [入门](/start/getting-started)（在 WSL 内使用）
 - [安装和更新](/install/updating)

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2cd6204b72751d529c087d3b746dba18"
+mmh3_hash: "1d19cb726f9f052e082d38b290354ed9"
 title: "在 Raspberry Pi 上运行 OpenClaw"
 summary: "OpenClaw on Raspberry Pi（低价自托管设置）"
 read_when:

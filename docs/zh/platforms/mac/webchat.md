@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "446f63d21960c7c1df21c5c033d231ef"
+mmh3_hash: "43a0b87a2143ff08c0ef7f590551738d"
 summary: "mac 应用如何嵌入 Gateway WebChat 以及如何调试它"
 read_when:
   - 调试 mac WebChat 视图或 loopback 端口
