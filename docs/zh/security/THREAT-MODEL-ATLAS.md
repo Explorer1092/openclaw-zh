@@ -1,7 +1,10 @@
 ---
-mmh3_hash: "c32c09faadce932cb8d109e030c065be"
-title: "OpenClaw 威胁模型"
-summary: "基于 MITRE ATLAS 框架的 OpenClaw 生态系统威胁模型"
+mmh3_hash: "19011cb9009cb0ea5ac099243b428c57"
+title: "威胁模型（MITRE ATLAS）"
+summary: "映射到 MITRE ATLAS 框架的 OpenClaw 威胁模型"
+read_when:
+  - 审查安全态势或威胁场景
+  - 处理安全功能或审计响应
 ---
 
 # OpenClaw 威胁模型 v1.0
@@ -27,7 +30,7 @@ summary: "基于 MITRE ATLAS 框架的 OpenClaw 生态系统威胁模型"
 
 ### 为此威胁模型做贡献
 
-这是由 OpenClaw 社区维护的活文档。有关贡献指南，请参阅 [CONTRIBUTING-THREAT-MODEL.md](./CONTRIBUTING-THREAT-MODEL.md)：
+这是由 OpenClaw 社区维护的活文档。有关贡献指南，请参阅 [CONTRIBUTING-THREAT-MODEL.md](/security/CONTRIBUTING-THREAT-MODEL)：
 
 - 报告新威胁
 - 更新现有威胁
