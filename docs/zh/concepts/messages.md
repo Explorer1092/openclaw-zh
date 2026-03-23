@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c660b0067607f0b860dde2997fd24d95"
+mmh3_hash: "ecf2acbafdf9158d3ab1b9667b85e9ba"
 summary: "Message 流程、sessions、queueing 和 reasoning 可见性"
 read_when:
   - 解释入站消息如何变成回复
@@ -124,4 +124,4 @@ OpenClaw 可以公开或隐藏 model reasoning:
 - `messages.responsePrefix`、`channels.<channel>.responsePrefix` 和 `channels.<channel>.accounts.<id>.responsePrefix`(出站前缀级联),加上 `channels.whatsapp.messagePrefix`(WhatsApp 入站前缀)
 - 通过 `replyToMode` 和每个 channel 默认值进行回复 threading
 
-详细信息:[Configuration](/gateway/configuration#messages) 和 channel 文档。
+详细信息:[Configuration](/gateway/configuration-reference#messages) 和 channel 文档。

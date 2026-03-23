@@ -1,7 +1,7 @@
 ---
 title: "OAuth 认证"
 sidebarTitle: "OAuth 认证"
-mmh3_hash: "b6ea441a0621cc9a817c89b6629eb6c3"
+mmh3_hash: "b4ef6c0842fd6fe4ff545188e9da3eb0"
 summary: "OpenClaw 中的 OAuth: token 交换、存储和多账户模式"
 read_when:
   - 你想端到端了解 OpenClaw OAuth

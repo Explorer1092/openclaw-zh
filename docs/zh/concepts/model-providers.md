@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "73bcf2c8e46d4bf32ab051d925d0333c"
+mmh3_hash: "32419c69d5e6123046391680918873f0"
 summary: "Model provider 概述,包含示例配置 + CLI 流程"
 read_when:
   - 你需要按 provider 的 model 设置参考
@@ -204,7 +204,7 @@ OpenClaw 附带 pi-ai catalog。这些 providers **不需要** `models.providers
 ### 其他捆绑 provider plugins
 
 - OpenRouter: `openrouter`(`OPENROUTER_API_KEY`)
-- 示例 model: `openrouter/anthropic/claude-sonnet-4-5`
+- 示例 model: `openrouter/anthropic/claude-sonnet-4-6`
 - Kilo Gateway: `kilocode`(`KILOCODE_API_KEY`)
 - 示例 model: `kilocode/anthropic/claude-opus-4.6`
 - MiniMax: `minimax`(`MINIMAX_API_KEY`)

@@ -1,7 +1,7 @@
 ---
 title: "会话工具"
 sidebarTitle: "会话工具"
-mmh3_hash: "413832d72b9b704e50bb614fa72da76b"
+mmh3_hash: "5cc2ee8a60fb6dc95e9a6211d63b2e3d"
 summary: "Agent session tools 用于列出 sessions、获取历史记录和发送跨 session 消息"
 read_when:
   - 添加或修改 session tools
@@ -76,6 +76,25 @@ read_when:
 - `includeTools=false` 过滤 `role: "toolResult"` 消息。
 - 以原始 transcript 格式返回消息数组。
 - 当给定 `sessionId` 时,OpenClaw 将其解析为相应的 session key(缺失 ids 错误)。
+
+## Gateway session history 和实时 transcript API
+
+Control UI 和 gateway 客户端可以直接使用低级 history 和实时 transcript 接口。
+
+HTTP:
+
+- `GET /sessions/{sessionKey}/history`
+- 查询参数:`limit`、`cursor`、`includeTools=1`、`follow=1`
+- 未知 session 返回 HTTP `404`,`error.type = "not_found"`
+- `follow=1` 将响应升级为该 session 的 transcript 更新 SSE 流
+
+WebSocket:
+
+- `sessions.subscribe` 订阅对客户端可见的所有 session 生命周期和 transcript 事件
+- `sessions.messages.subscribe { key }` 仅订阅一个 session 的 `session.message` 事件
+- `sessions.messages.unsubscribe { key }` 移除该目标 transcript 订阅
+- `session.message` 携带追加的 transcript 消息以及可用时的实时 usage 元数据
+- `sessions.changed` 针对 transcript 追加发出 `phase: "message"`,以便 session 列表可以刷新计数器和预览
 
 ## sessions_send
 

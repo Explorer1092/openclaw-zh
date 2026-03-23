@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "07783d3e33ed56502474f408043e10bf"
+mmh3_hash: "f8c876fd8e9dcd0489c9d1a49e8e33c6"
 summary: "Context: model 看到什么、如何构建以及如何检查"
 read_when:
   - 你想了解 OpenClaw 中"context"的含义
@@ -148,7 +148,7 @@ Slash commands 由 Gateway 处理。有几种不同的行为:
 
 文档:[Session](/concepts/session)、[Compaction](/concepts/compaction)、[Session pruning](/concepts/session-pruning)。
 
-默认情况下,OpenClaw 使用内置的 `legacy` context 引擎进行组装和 compaction。如果你安装了提供 `kind: "context-engine"` 的 plugin 并通过 `plugins.slots.contextEngine` 选择它,OpenClaw 会将 context 组装、`/compact` 和相关的 subagent context 生命周期 hooks 委托给该引擎。
+默认情况下,OpenClaw 使用内置的 `legacy` context engine 进行组装和 compaction。如果你安装了提供 `kind: "context-engine"` 的 plugin 并通过 `plugins.slots.contextEngine` 选择它,OpenClaw 会将 context 组装、`/compact` 和相关的子 agent context 生命周期 hooks 委托给该 engine。`ownsCompaction: false` 不会自动回退到 legacy engine;活动 engine 仍必须正确实现 `compact()`。参见 [Context Engine](/concepts/context-engine) 了解完整的可插拔接口、生命周期 hooks 和配置。
 
 ## `/context` 实际报告什么
 

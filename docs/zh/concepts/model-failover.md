@@ -1,7 +1,7 @@
 ---
 title: "模型故障转移"
 sidebarTitle: "模型故障转移"
-mmh3_hash: "8ceebc5b37b9cd495f51db1db9f7ffce"
+mmh3_hash: "6be529140229316d6ea250eb9bf54d2f"
 summary: "OpenClaw 如何轮换 auth profiles 并跨 models 后备"
 read_when: ["诊断 auth profile 轮换、cooldowns 或 model 后备行为","更新 auth profiles 或 models 的 failover 规则"]
 ---
@@ -119,11 +119,11 @@ Cooldowns 使用指数退避:
 
 ## 相关配置
 
-参见 [Gateway configuration](/zh/gateway/configuration) 了解:
+参见 [Gateway configuration](/gateway/configuration) 了解:
 - `auth.profiles` / `auth.order`
 - `auth.cooldowns.billingBackoffHours` / `auth.cooldowns.billingBackoffHoursByProvider`
 - `auth.cooldowns.billingMaxHours` / `auth.cooldowns.failureWindowHours`
 - `agents.defaults.model.primary` / `agents.defaults.model.fallbacks`
 - `agents.defaults.imageModel` 路由
 
-参见 [Models](/zh/concepts/models) 了解更广泛的 model 选择和 fallback 概述。
+参见 [Models](/concepts/models) 了解更广泛的 model 选择和 fallback 概述。

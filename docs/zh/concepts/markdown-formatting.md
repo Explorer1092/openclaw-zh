@@ -1,7 +1,7 @@
 ---
 title: "Markdown 格式"
 sidebarTitle: "Markdown 格式"
-mmh3_hash: "5854e0796bb762b69b0264605c2a1284"
+mmh3_hash: "69b17d883823ad6d99a695cbb87c0e4d"
 summary: "出站 channels 的 Markdown 格式化管道"
 read_when: ["你正在为出站 channels 更改 markdown 格式化或分块","你正在添加新的 channel formatter 或样式映射","你正在调试跨 channels 的格式化回归"]
 ---
@@ -84,7 +84,7 @@ channels:
 - 列表前缀和 blockquote 前缀是 IR 文本的一部分,因此分块不会在前缀中间拆分。
 - 内联样式(bold/italic/strike/inline-code/spoiler)永远不会跨块拆分;渲染器在每个块内重新打开样式。
 
-如果你需要更多关于跨 channels 的分块行为,请参见 [Streaming + chunking](/zh/concepts/streaming)。
+如果你需要更多关于跨 channels 的分块行为,请参见 [Streaming + chunking](/concepts/streaming)。
 
 ## 链接策略
 

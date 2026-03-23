@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "47320c34cd9b10a64d73b4b95bc94ce0"
+mmh3_hash: "a3adc52602d0442c55e9d08517102e0f"
 summary: "Context window + compaction: OpenClaw 如何将 sessions 保持在 model 限制内"
 read_when:
   - 你想了解自动 compaction 和 /compact
@@ -32,7 +32,7 @@ Compaction 摘要默认保留不透明标识符(`identifierPolicy: "strict"`)。
   "agents": {
     "defaults": {
       "compaction": {
-        "model": "openrouter/anthropic/claude-sonnet-4-5"
+        "model": "openrouter/anthropic/claude-sonnet-4-6"
       }
     }
   }
@@ -93,6 +93,16 @@ OpenClaw 还支持 OpenAI Responses 服务端 compaction 提示,适用于兼容�
 - 服务端 compaction: 当启用 `store` + `context_management` 时,OpenAI 在 provider 侧压缩 context。
 
 参见 [OpenAI provider](/providers/openai) 了解 model 参数和覆盖设置。
+
+## 自定义 context engines
+
+Compaction 行为由活动的 [context engine](/concepts/context-engine) 拥有。Legacy engine 使用上面描述的内置摘要。Plugin engine(通过 `plugins.slots.contextEngine` 选择)可以实现任何 compaction 策略——DAG 摘要、向量检索、增量压缩等。
+
+当 plugin engine 设置 `ownsCompaction: true` 时,OpenClaw 将所有 compaction 决策委托给该 engine,不运行内置自动 compaction。
+
+当 `ownsCompaction` 为 `false` 或未设置时,OpenClaw 仍可能使用 Pi 的内置运行中自动 compaction,但活动 engine 的 `compact()` 方法仍处理 `/compact` 和溢出恢复。没有自动回退到 legacy engine 的 compaction 路径。
+
+如果你正在构建非 owning context engine,通过从 `openclaw/plugin-sdk/core` 调用 `delegateCompactionToRuntime(...)` 来实现 `compact()`。
 
 ## 提示
 

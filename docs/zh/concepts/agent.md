@@ -1,14 +1,14 @@
 ---
-mmh3_hash: "7ca6ee0a5e21de49f432a4274e347a38"
-summary: "Agent runtime (embedded pi-mono)、workspace 契约和 session bootstrap"
+mmh3_hash: "212fe714522ab2a25b2affc7c59171c1"
+summary: "Agent runtime、workspace 契约和 session bootstrap"
 read_when:
   - 更改 agent runtime、workspace bootstrap 或 session 行为
 title: "Agent Runtime"
 ---
 
-# Agent Runtime 🤖
+# Agent Runtime
 
-OpenClaw 运行一个派生自 **pi-mono** 的单个嵌入式 agent runtime。
+OpenClaw 运行一个单个嵌入式 agent runtime。
 
 ## Workspace (必需)
 
@@ -18,8 +18,7 @@ OpenClaw 使用单个 agent workspace 目录 (`agents.defaults.workspace`) 作�
 
 完整的 workspace 布局 + 备份指南:[Agent workspace](/concepts/agent-workspace)
 
-如果启用了 `agents.defaults.sandbox`,非主 sessions 可以在 `agents.defaults.sandbox.workspaceRoot` 下使用每个 session 的 workspaces 覆盖此设置(参见
-[Gateway configuration](/gateway/configuration))。
+如果启用了 `agents.defaults.sandbox`,非主 sessions 可以在 `agents.defaults.sandbox.workspaceRoot` 下使用每个 session 的 workspaces 覆盖此设置(参见 [Gateway configuration](/gateway/configuration))。
 
 ## Bootstrap 文件(注入)
 
@@ -60,12 +59,9 @@ OpenClaw 从三个位置加载 skills(workspace 在名称冲突时获胜):
 
 Skills 可以通过配置/env 进行控制(参见 [Gateway configuration](/gateway/configuration) 中的 `skills`)。
 
-## pi-mono 集成
+## Runtime 边界
 
-OpenClaw 重用 pi-mono 代码库的部分内容(models/tools),但**session 管理、发现和 tool 连接由 OpenClaw 拥有**。
-
-- 没有 pi-coding agent runtime。
-- 不会查询 `~/.pi/agent` 或 `<workspace>/.pi` 设置。
+嵌入式 agent runtime 建立在 Pi agent core(models、工具和 prompt 管道)上。Session 管理、发现、工具连接和 channel 传递是 OpenClaw 在该 core 之上的层。
 
 ## Sessions
 
@@ -73,11 +69,11 @@ Session transcripts 存储为 JSONL,位于:
 
 - `~/.openclaw/agents/<agentId>/sessions/<SessionId>.jsonl`
 
-session ID 是稳定的,由 OpenClaw 选择。传统的 Pi/Tau session 文件夹**不**被读取。
+session ID 是稳定的,由 OpenClaw 选择。其他工具的旧版 session 文件夹不被读取。
 
 ## 流式传输时的引导
 
-当队列模式为 `steer` 时,入站消息被注入到当前运行中。在**每次工具调用后**检查队列;如果存在排队消息,则跳过当前 assistant 消息中的其余工具调用(错误工具结果为"由于排队的用户消息而跳过。"),然后在下一个 assistant 响应之前注入排队的用户消息。
+当队列模式为 `steer` 时,入站消息被注入到当前运行中。排队的引导在**当前 assistant 回合完成其工具调用之后**、下一次 LLM 调用之前传递。引导不再跳过当前 assistant 消息中的剩余工具调用;它在下一个 model 边界注入排队的消息。
 
 当队列模式为 `followup` 或 `collect` 时,入站消息将保持到当前回合结束,然后使用排队的 payloads 开始新的 agent 回合。参见 [Queue](/concepts/queue) 了解模式 + debounce/cap 行为。
 

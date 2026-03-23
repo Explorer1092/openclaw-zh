@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f3348837b86218cb11537d76ab542453"
+mmh3_hash: "b74336880b67f87bc444f6fdc1413497"
 summary: "WebSocket gateway 架构、组件和客户端流程"
 read_when:
   - 在 gateway protocol、clients 或 transports 上工作
@@ -7,8 +7,6 @@ title: "Gateway Architecture"
 ---
 
 # Gateway architecture
-
-最后更新: 2026-01-22
 
 ## 概述
 

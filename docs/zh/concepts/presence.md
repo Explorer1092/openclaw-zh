@@ -1,7 +1,7 @@
 ---
 title: "在线状态"
 sidebarTitle: "在线状态"
-mmh3_hash: "7fe2b3fc31f00b9cb3fa8ece00fe7df3"
+mmh3_hash: "2acc388449dba6dd8abe68588a6ff553"
 summary: "OpenClaw presence 条目如何生成、合并和显示"
 read_when: ["调试 Instances 选项卡","调查重复或陈旧的实例行","更改 gateway WS connect 或 system-event beacons"]
 ---

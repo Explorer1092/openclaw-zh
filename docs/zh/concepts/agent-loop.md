@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "556eafe8f4994542e0c86300ea994a20"
+mmh3_hash: "5401d8b202822ee28ce707f468df1582"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:
   - 你需要了解 agent loop 或生命周期事件的详细流程
@@ -90,7 +90,7 @@ OpenClaw 有两个 hook 系统:
 - **`session_start` / `session_end`**: session 生命周期边界。
 - **`gateway_start` / `gateway_stop`**: gateway 生命周期事件。
 
-参见 [Plugins](/tools/plugin#plugin-hooks) 了解 hook API 和注册详细信息。
+参见 [Plugin hooks](/plugins/architecture#provider-runtime-hooks) 了解 hook API 和注册详细信息。
 
 ## 流式传输 + 部分回复
 

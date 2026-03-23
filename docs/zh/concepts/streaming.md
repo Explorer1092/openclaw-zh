@@ -1,7 +1,7 @@
 ---
 title: "流式与分片"
 sidebarTitle: "流式与分片"
-mmh3_hash: "c44dbb858ae7b9b68634e43ce17465cc"
+mmh3_hash: "8e2360d2cf1814e6e480a50d9f94d26f"
 summary: "Streaming + chunking 行为(block 回复、channel 预览 streaming、模式映射)"
 read_when:
   - 解释 streaming 或 chunking 在 channels 上如何工作

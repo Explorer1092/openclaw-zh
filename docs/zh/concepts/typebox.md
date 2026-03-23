@@ -1,15 +1,13 @@
 ---
 title: "TypeBox 作为协议真相来源"
 sidebarTitle: "TypeBox 协议真相来源"
-mmh3_hash: "dc39a3c4115d66f1971894580f1f4240"
+mmh3_hash: "c530808e6acb0876bbe9de929f125ddb"
 summary: "TypeBox schemas 作为 gateway protocol 的单一真相来源"
 read_when:
   - 更新 protocol schemas 或 codegen
 ---
 
 # TypeBox 作为协议真相来源
-
-最后更新: 2026-01-10
 
 TypeBox 是 TypeScript 优先的 schema 库。我们使用它定义 **Gateway WebSocket protocol**(握手、request/response、server events)。这些 schemas 驱动 **runtime 验证**、**JSON Schema 导出** 和 macOS app 的 **Swift codegen**。一个真相来源;其他一切都是生成的。
 
