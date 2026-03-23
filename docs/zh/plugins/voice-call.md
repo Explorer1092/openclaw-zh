@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d6ed3503861a0f80d9c115acc7ef7633"
+mmh3_hash: "5487ecdcad59cab1b825d7c8c3a18be2"
 title: "语音通话 Plugin"
 summary: "语音通话 Plugin: 通过 Twilio/Telnyx/Plivo 的出站 + 入站通话(Plugin 安装 + 配置 + CLI)"
 read_when:
@@ -213,8 +213,9 @@ Twilio 对话轮次在 `<Gather>` 回调中包含每轮令牌,因此陈旧/重�
 
 注意事项:
 
-- **语音通话忽略 Edge TTS**(电话音频需要 PCM;Edge 输出不可靠)。
-- 启用 Twilio 媒体流时使用核心 TTS;否则通话回退到 provider 本机语音。
+- **语音通话忽略 Microsoft 语音**（电话音频需要 PCM；当前 Microsoft 传输不暴露电话 PCM 输出）。
+- 启用 Twilio 媒体流时使用核心 TTS；否则通话回退到 Provider 本机语音。
+- 如果 Twilio 媒体流已经激活，语音通话不会回退到 TwiML `<Say>`。如果在该状态下电话 TTS 不可用，播放请求将失败，而不是混合两个播放路径。
 
 ### 更多示例
 
@@ -293,17 +294,50 @@ Twilio 对话轮次在 `<Gather>` 回调中包含每轮令牌,因此陈旧/重�
 - `responseSystemPrompt`
 - `responseTimeoutMs`
 
+### 语音输出契约
+
+对于自动响应，语音通话向系统 Prompt 附加严格的语音输出契约：
+
+- `{"spoken":"..."}`
+
+然后语音通话防御性地提取语音文本：
+
+- 忽略标记为推理/错误内容的有效载荷。
+- 解析直接 JSON、围栏 JSON 或内联 `"spoken"` 键。
+- 回退到纯文本并删除可能的规划/元引导段落。
+
+这使语音播放专注于面向来电者的文本，避免将规划文本泄漏到音频中。
+
+### 对话启动行为
+
+对于出站 `conversation` 通话，首次消息处理与实时播放状态绑定：
+
+- 仅在初始问候语正在主动播放时才抑制插话队列清除和自动响应。
+- 如果初始播放失败，通话返回到 `listening` 状态，初始消息保持排队等待重试。
+- Twilio 流式传输的初始播放在流连接时开始，无额外延迟。
+
+### Twilio 流断开宽限期
+
+当 Twilio 媒体流断开时，语音通话在自动结束通话之前等待 `2000ms`：
+
+- 如果在该窗口期间流重新连接，自动结束将被取消。
+- 如果宽限期后没有重新注册流，通话将结束以防止卡住的活跃通话。
+
 ## CLI
 
 ```bash
 openclaw voicecall call --to "+15555550123" --message "Hello from OpenClaw"
+openclaw voicecall start --to "+15555550123"   # call 的别名
 openclaw voicecall continue --call-id <id> --message "Any questions?"
 openclaw voicecall speak --call-id <id> --message "One moment"
 openclaw voicecall end --call-id <id>
 openclaw voicecall status --call-id <id>
 openclaw voicecall tail
+openclaw voicecall latency                     # 从日志中汇总轮次延迟
 openclaw voicecall expose --mode funnel
 ```
+
+`latency` 从默认语音通话存储路径读取 `calls.jsonl`。使用 `--file <path>` 指向不同的日志，使用 `--last <n>` 将分析限制为最后 N 条记录（默认 200）。输出包括轮次延迟和等待侦听时间的 p50/p90/p99。
 
 ## Agent Tool
 
