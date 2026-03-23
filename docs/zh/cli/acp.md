@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ad6ac38e0d3862116f4703c583896b6e"
+mmh3_hash: "60e012f3aa6c282f05785290ee015491"
 title: "acp"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d496728c8d5c47bfcf19a90789914904"
+mmh3_hash: "4afc0f39036c23ae425b543b663436fb"
 title: "`openclaw node`"
 summary: "`openclaw node` 的 CLI 参考(无头 Node 主机)"
 read_when:
@@ -27,6 +27,8 @@ read_when:
 ## 浏览器代理(零配置)
 
 如果 Node 上未禁用 `browser.enabled`,Node 主机会自动公布浏览器代理。这允许 Agent 在该 Node 上使用浏览器自动化,而无需额外配置。
+
+默认情况下,代理暴露 Node 的正常浏览器配置文件界面。如果您设置了 `nodeHost.browserProxy.allowProfiles`,代理将变为限制性的:非允许列表的配置文件定向请求将被拒绝,通过代理的持久配置文件创建/删除路由也会被阻止。
 
 如果需要,在 Node 上禁用它:
 
@@ -64,7 +66,7 @@ openclaw node run --host <gateway-host> --port 18789
 - 在本地模式下,Node 主机有意不继承 `gateway.remote.token` / `gateway.remote.password`。
 - 如果 `gateway.auth.token` / `gateway.auth.password` 通过 SecretRef 显式配置且未解析,Node 身份验证解析失败关闭(无远程回退掩盖)。
 - 在 `gateway.mode=remote` 模式下,远程客户端字段(`gateway.remote.token` / `gateway.remote.password`)也按远程优先规则可用。
-- 遗留的 `CLAWDBOT_GATEWAY_*` 环境变量对 Node 主机身份验证解析被忽略。
+- Node 主机身份验证解析仅支持 `OPENCLAW_GATEWAY_*` 环境变量。
 
 ## 服务(后台)
 

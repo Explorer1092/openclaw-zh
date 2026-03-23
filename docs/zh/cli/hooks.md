@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "12160b959712d5fbd6545cb2edc361de"
+mmh3_hash: "052a6d1306137ec11ec8dd80ef46d16f"
 title: "`openclaw hooks`"
 sidebarTitle: "openclaw hooks"
 summary: "`openclaw hooks` 的 CLI 参考(Agent Hook)"
 read_when:
   - 您想管理 Agent Hook
-  - 您想安装或更新 Hook
+  - 您想检查 Hook 可用性或启用工作区 Hook
 ---
 
 # `openclaw hooks`
@@ -15,7 +15,7 @@ read_when:
 相关:
 
 - Hook:[Hook](/automation/hooks)
-- Plugin Hook:[Plugin](/tools/plugin#plugin-hooks)
+- Plugin Hook:[Plugin 架构](/plugins/architecture#provider-runtime-hooks)
 
 ## 列出所有 Hook
 
@@ -23,7 +23,7 @@ read_when:
 openclaw hooks list
 ```
 
-列出从工作区、管理和捆绑目录发现的所有 Hook。
+列出从工作区、管理、扩展和捆绑目录发现的所有 Hook。
 
 **选项:**
 
@@ -40,7 +40,7 @@ Ready:
   🚀 boot-md ✓ - Run BOOT.md on gateway startup
   📎 bootstrap-extra-files ✓ - Inject extra workspace bootstrap files during agent bootstrap
   📝 command-logger ✓ - Log all command events to a centralized audit file
-  💾 session-memory ✓ - Save session context to memory when /new command is issued
+  💾 session-memory ✓ - Save session context to memory when /new or /reset command is issued
 ```
 
 **示例(详细):**
@@ -86,14 +86,14 @@ openclaw hooks info session-memory
 ```
 💾 session-memory ✓ Ready
 
-Save session context to memory when /new command is issued
+Save session context to memory when /new or /reset command is issued
 
 Details:
   Source: openclaw-bundled
   Path: /path/to/openclaw/hooks/bundled/session-memory/HOOK.md
   Handler: /path/to/openclaw/hooks/bundled/session-memory/handler.ts
   Homepage: https://docs.openclaw.ai/automation/hooks#session-memory
-  Events: command:new
+  Events: command:new, command:reset
 
 Requirements:
   Config: ✓ workspace.dir
@@ -129,7 +129,7 @@ openclaw hooks enable <name>
 
 通过将特定 Hook 添加到您的配置(`~/.openclaw/config.json`)来启用它。
 
-**注意:** 由 Plugin 管理的 Hook 在 `openclaw hooks list` 中显示 `plugin:<id>`,不能在此处启用/禁用。请改为启用/禁用 Plugin。
+**注意:** 工作区 Hook 默认禁用,需要在此处启用或在配置中启用。由 Plugin 管理的 Hook 在 `openclaw hooks list` 中显示 `plugin:<id>`,不能在此处启用/禁用。请改为启用/禁用 Plugin。
 
 **参数:**
 
@@ -152,6 +152,8 @@ openclaw hooks enable session-memory
 - 检查 Hook 是否存在且符合条件
 - 在配置中更新 `hooks.internal.entries.<name>.enabled = true`
 - 将配置保存到磁盘
+
+如果 Hook 来自 `<workspace>/hooks/`,则需要此选择加入步骤,Gateway 才会加载它。
 
 **启用后:**
 
@@ -185,14 +187,17 @@ openclaw hooks disable command-logger
 
 - 重新启动 Gateway 以重新加载 Hook
 
-## 安装 Hook
+## 安装 Hook 包
 
 ```bash
-openclaw hooks install <path-or-spec>
-openclaw hooks install <npm-spec> --pin
+openclaw plugins install <package>        # ClawHub 优先,然后 npm
+openclaw plugins install <package> --pin  # 固定版本
+openclaw plugins install <path>           # 本地路径
 ```
 
-从本地文件夹/存档或 npm 安装 Hook 包。
+通过统一的插件安装程序安装 Hook 包。
+
+`openclaw hooks install` 仍可作为兼容性别名使用,但会打印弃用警告并转发到 `openclaw plugins install`。
 
 Npm 规范**仅限注册表**(包名称 + 可选**精确版本**或**发行标签**)。Git/URL/文件规范和语义版本范围被拒绝。依赖项安装使用 `--ignore-scripts` 运行以确保安全。
 
@@ -215,26 +220,30 @@ Npm 规范**仅限注册表**(包名称 + 可选**精确版本**或**发行标�
 
 ```bash
 # 本地目录
-openclaw hooks install ./my-hook-pack
+openclaw plugins install ./my-hook-pack
 
 # 本地存档
-openclaw hooks install ./my-hook-pack.zip
+openclaw plugins install ./my-hook-pack.zip
 
 # NPM 包
-openclaw hooks install @openclaw/my-hook-pack
+openclaw plugins install @openclaw/my-hook-pack
 
 # 链接本地目录而不复制
-openclaw hooks install -l ./my-hook-pack
+openclaw plugins install -l ./my-hook-pack
 ```
 
-## 更新 Hook
+链接的 Hook 包被视为操作员配置目录中的托管 Hook,而非工作区 Hook。
+
+## 更新 Hook 包
 
 ```bash
-openclaw hooks update <id>
-openclaw hooks update --all
+openclaw plugins update <id>
+openclaw plugins update --all
 ```
 
-更新已安装的 Hook 包(仅限 npm 安装)。
+通过统一的插件更新程序更新已跟踪的基于 npm 的 Hook 包。
+
+`openclaw hooks update` 仍可作为兼容性别名使用,但会打印弃用警告并转发到 `openclaw plugins update`。
 
 **选项:**
 
@@ -247,7 +256,7 @@ openclaw hooks update --all
 
 ### session-memory
 
-在您发出 `/new` 时将 Session 上下文保存到内存。
+在您发出 `/new` 或 `/reset` 时将 Session 上下文保存到内存。
 
 **启用:**
 

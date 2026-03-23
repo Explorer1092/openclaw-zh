@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "37cb19dd979df55bbcf215d6686c1624"
+mmh3_hash: "24f61a292f35d44b28bb2d260454e8f0"
 title: "CLI 参考"
 sidebarTitle: "CLI 参考"
 summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
@@ -276,16 +276,16 @@ openclaw [--dev] [--profile <name>] <command>
 ## Secrets
 
 - `openclaw secrets reload` — 重新解析引用并原子交换运行时快照。
-- `openclaw secrets audit` — 扫描明文残留、未解析引用和优先级漂移。
-- `openclaw secrets configure` — 用于提供商设置 + SecretRef 映射 + 预检/应用的交互式助手。
-- `openclaw secrets apply --from <plan.json>` — 应用之前生成的计划(支持 `--dry-run`)。
+- `openclaw secrets audit` — 扫描明文残留、未解析引用和优先级漂移(使用 `--allow-exec` 可在审计时执行 Exec Provider)。
+- `openclaw secrets configure` — 用于 Provider 设置 + SecretRef 映射 + 预检/应用的交互式助手(使用 `--allow-exec` 可在预检和含 Exec 的应用流程中执行 Exec Provider)。
+- `openclaw secrets apply --from <plan.json>` — 应用之前生成的计划(支持 `--dry-run`;在试运行和含 Exec 的写入计划中使用 `--allow-exec` 以允许 Exec Provider)。
 
 ## 插件
 
 管理扩展及其配置:
 
 - `openclaw plugins list` — 发现插件(使用 `--json` 进行机器输出)。
-- `openclaw plugins info <id>` — 显示插件的详细信息。
+- `openclaw plugins inspect <id>` — 显示插件的详细信息(`info` 是别名)。
 - `openclaw plugins install <path|.tgz|npm-spec|plugin@marketplace>` — 安装插件(或将插件路径添加到 `plugins.load.paths`)。
 - `openclaw plugins marketplace list <marketplace>` — 在安装前列出市场条目。
 - `openclaw plugins enable <id>` / `disable <id>` — 切换 `plugins.entries.<id>.enabled`。
@@ -394,7 +394,15 @@ openclaw [--dev] [--profile <name>] <command>
 子命令:
 
 - `config get <path>`:打印配置值(点/括号路径)。
-- `config set <path> <value>`:设置值(JSON5 或原始字符串)。
+- `config set`:支持四种赋值模式:
+  - 值模式:`config set <path> <value>`(JSON5 或字符串解析)
+  - SecretRef 构建器模式:`config set <path> --ref-provider <provider> --ref-source <source> --ref-id <id>`
+  - Provider 构建器模式:`config set secrets.providers.<alias> --provider-source <env|file|exec> ...`
+  - 批量模式:`config set --batch-json '<json>'` 或 `config set --batch-file <path>`
+- `config set --dry-run`:不写入 `openclaw.json` 即验证赋值(默认跳过 Exec SecretRef 检查)。
+- `config set --allow-exec --dry-run`:启用 Exec SecretRef 试运行检查(可能执行 Provider 命令)。
+- `config set --dry-run --json`:输出机器可读试运行结果(检查 + 完整性信号、操作数、已检查/跳过的 ref 数、错误)。
+- `config set --strict-json`:对路径/值输入要求 JSON5 解析。`--json` 作为旧版别名仍受支持。
 - `config unset <path>`:删除值。
 - `config file`:打印活动配置文件路径。
 - `config validate`:在不启动 Gateway 的情况下根据 Schema 验证当前配置。
@@ -476,6 +484,9 @@ openclaw status --deep
 
 子命令:
 
+- `skills search [query...]`:搜索 ClawHub Skill。
+- `skills install <slug>`:从 ClawHub 安装 Skill 到活动工作区。
+- `skills update <slug|--all>`:更新已跟踪的 ClawHub Skill。
 - `skills list`:列出 Skill(无子命令时默认)。
 - `skills info <name>`:显示一个 Skill 的详细信息。
 - `skills check`:准备就绪与缺少要求的摘要。
@@ -486,7 +497,7 @@ openclaw status --deep
 - `--json`:输出 JSON(无样式)。
 - `-v`、`--verbose`:包括缺少的要求详细信息。
 
-提示:使用 `npx clawhub` 搜索、安装和同步 Skill。
+提示:使用 `openclaw skills search`、`openclaw skills install` 和 `openclaw skills update` 操作 ClawHub Skill。
 
 ### `pairing`
 

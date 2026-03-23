@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fe62321d4ccb2eb6bb0cc4e786733c92"
+mmh3_hash: "484c34292a793b1ff49b64b85dce38de"
 title: "Gateway CLI"
 sidebarTitle: "Gateway CLI"
 summary: "OpenClaw Gateway CLI(`openclaw gateway`) — 运行、查询和发现 Gateway"
@@ -194,7 +194,7 @@ openclaw gateway uninstall
 - 当令牌身份验证需要令牌且 `gateway.auth.token` 由 SecretRef 管理时,`gateway install` 会验证 SecretRef 是否可解析,但不会将已解析的令牌持久化到服务环境元数据中。
 - 如果令牌身份验证需要令牌且配置的令牌 SecretRef 未解析,安装将失败关闭而不是持久化回退的明文。
 - 对于 `gateway run` 的密码身份验证,优先使用 `OPENCLAW_GATEWAY_PASSWORD`、`--password-file` 或 SecretRef 支持的 `gateway.auth.password`,而非内联 `--password`。
-- 在推断身份验证模式下,仅 shell 的 `OPENCLAW_GATEWAY_PASSWORD`/`CLAWDBOT_GATEWAY_PASSWORD` 不会放宽安装令牌要求;安装托管服务时请使用持久配置(`gateway.auth.password` 或配置 `env`)。
+- 在推断身份验证模式下,仅 shell 的 `OPENCLAW_GATEWAY_PASSWORD` 不会放宽安装令牌要求;安装托管服务时请使用持久配置(`gateway.auth.password` 或配置 `env`)。
 - 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置,安装将被阻止直到明确设置模式。
 - 生命周期命令接受 `--json` 用于脚本编写。
 

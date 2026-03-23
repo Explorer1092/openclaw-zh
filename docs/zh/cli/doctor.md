@@ -1,7 +1,7 @@
 ---
 title: "`openclaw doctor`"
 sidebarTitle: "openclaw doctor"
-mmh3_hash: "c66a03bee82c22be5a2448860bed6a79"
+mmh3_hash: "7487b107f6388d98c8ddb35720a0b933"
 summary: "`openclaw doctor` 的 CLI 参考(健康检查 + 指导性修复)"
 read_when:
   - 您有连接/认证问题并想要指导性修复
@@ -34,6 +34,8 @@ openclaw doctor --deep
 - Doctor 包括内存搜索就绪检查,当缺少嵌入凭据时可以推荐 `openclaw configure --section model`。
 - 如果启用了沙箱模式但 Docker 不可用,doctor 会报告一个高优先级警告并提供修复方法(`安装 Docker` 或 `openclaw config set agents.defaults.sandbox.mode off`)。
 - 如果 `gateway.auth.token`/`gateway.auth.password` 由 SecretRef 管理且在当前命令路径中不可用,doctor 报告只读警告而不写入明文回退凭据。
+- 如果 Channel SecretRef 检查在修复路径中失败,doctor 继续并报告警告而不是提前退出。
+- Telegram `allowFrom` 用户名自动解析(`doctor --fix`)需要当前命令路径中可解析的 Telegram 令牌。如果令牌检查不可用,doctor 报告警告并跳过该次传递的自动解析。
 
 ## macOS:`launchctl` 环境覆盖
 

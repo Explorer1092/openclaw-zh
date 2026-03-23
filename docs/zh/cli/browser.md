@@ -1,7 +1,7 @@
 ---
 title: "`openclaw browser`"
 sidebarTitle: "openclaw browser"
-mmh3_hash: "2a93bc2b74d987ef41f92abc45f1e7a0"
+mmh3_hash: "cfef22c911ac8b2381d1767fdde856a2"
 summary: "`openclaw browser` 的 CLI 参考(配置文件、标签、操作、Chrome MCP 和 CDP)"
 read_when:
   - 您使用 `openclaw browser` 并想要常见任务的示例
@@ -93,6 +93,7 @@ openclaw browser type <ref> "hello"
 ```bash
 openclaw browser --browser-profile user tabs
 openclaw browser create-profile --name chrome-live --driver existing-session
+openclaw browser create-profile --name brave-live --driver existing-session --user-data-dir "~/Library/Application Support/BraveSoftware/Brave-Browser"
 openclaw browser --browser-profile chrome-live tabs
 ```
 

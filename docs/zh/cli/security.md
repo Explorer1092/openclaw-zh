@@ -1,7 +1,7 @@
 ---
 title: "`openclaw security`"
 sidebarTitle: "openclaw security"
-mmh3_hash: "19e932fbe918bbc738d06d84a9a227a8"
+mmh3_hash: "a70f223b62deca956a1977f5922857c8"
 summary: "`openclaw security` 的 CLI 参考(审计和修复常见的安全陷阱)"
 read_when:
   - 您想对配置/状态运行快速安全审计
@@ -30,14 +30,14 @@ openclaw security audit --json
 当多个 DM 发件人共享主 Session 时,审计会发出警告,并建议**安全 DM 模式**:对共享收件箱使用 `session.dmScope="per-channel-peer"`(或对多账户 Channel 使用 `per-account-channel-peer`)。这适用于协作/共享收件箱加固。单个由相互不信任/对抗性运营者共享的 Gateway 不是推荐的设置;请使用单独的 Gateway(或单独的 OS 用户/主机)分割信任边界。
 当配置表明可能存在共享用户入口时(例如开放的 DM/群组策略、已配置的群组目标或通配符发件人规则),它还会发出 `security.trust_model.multi_user_heuristic`,并提醒您 OpenClaw 默认是个人助手信任模型。对于有意的共享用户设置,审计建议对所有 Session 进行沙盒化,保持文件系统访问在工作区范围内,并将个人/私人身份或凭据保存在该运行时之外。
 当使用小型模型(`<=300B`)而没有沙盒并启用 web/浏览器工具时,它也会发出警告。
-对于 webhook 入口,当 `hooks.defaultSessionKey` 未设置、当启用请求 `sessionKey` 覆盖以及当在没有 `hooks.allowedSessionKeyPrefixes` 的情况下启用覆盖时,它会发出警告。
+对于 webhook 入口,当 `hooks.token` 重用 Gateway 令牌、`hooks.defaultSessionKey` 未设置、`hooks.allowedAgentIds` 不受限制、启用请求 `sessionKey` 覆盖以及在没有 `hooks.allowedSessionKeyPrefixes` 的情况下启用覆盖时,它会发出警告。
 当沙盒模式关闭时配置了沙盒 Docker 设置、当 `gateway.nodes.denyCommands` 使用无效的模式类/未知条目(仅精确 Node 命令名称匹配,不进行 shell 文本过滤)、当 `gateway.nodes.allowCommands` 显式启用危险的 Node 命令、当全局 `tools.profile="minimal"` 被 Agent 工具配置文件覆盖、当开放组在没有沙盒/工作区保护的情况下暴露运行时/文件系统工具,以及当安装的扩展插件工具可能在宽松的工具策略下可达时,它也会发出警告。
 它还标记 `gateway.allowRealIpFallback=true`(如果代理配置错误,存在 header 欺骗风险)和 `discovery.mdns.mode="full"`(通过 mDNS TXT 记录泄露元数据)。
 当沙盒浏览器使用 Docker `bridge` 网络而没有 `sandbox.browser.cdpSourceRange` 时,它也会发出警告。
 它还标记危险的沙盒 Docker 网络模式(包括 `host` 和 `container:*` 命名空间联接)。
 当现有沙盒浏览器 Docker 容器缺少/过期的哈希标签(例如缺少 `openclaw.browserConfigEpoch` 的迁移前容器)时,它也会发出警告,并建议 `openclaw sandbox recreate --browser --all`。
 当基于 npm 的插件/Hook 安装记录未固定、缺少完整性元数据或与当前安装的包版本存在差异时,它会发出警告。
-当 Channel 允许列表依赖可变的名称/邮件/标签而不是稳定 ID 时,它会发出警告(适用 Discord、Slack、Google Chat、MS Teams、Mattermost、IRC 等范围)。
+当 Channel 允许列表依赖可变的名称/邮件/标签而不是稳定 ID 时,它会发出警告(适用 Discord、Slack、Google Chat、Microsoft Teams、Mattermost、IRC 等范围)。
 当 `gateway.auth.mode="none"` 使 Gateway HTTP API 在没有共享密钥的情况下可达(`/tools/invoke` 以及任何启用的 `/v1/*` 端点)时,它会发出警告。
 以 `dangerous`/`dangerously` 为前缀的设置是明确的紧急操作员覆盖;启用一个本身不是安全漏洞报告。有关完整的危险参数列表,请参见[安全](/gateway/security)中的"不安全或危险标志摘要"部分。
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7620043213161351426e99f9fc30070a"
+mmh3_hash: "9808eacfcec9d1f0089bf9956071b30f"
 title: "`openclaw devices`"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
@@ -21,6 +21,8 @@ read_when:
 openclaw devices list
 openclaw devices list --json
 ```
+
+待处理请求的输出包含请求的角色和范围,以便在批准前审查。
 
 ### `openclaw devices remove <deviceId>`
 
@@ -44,6 +46,8 @@ openclaw devices clear --yes --pending --json
 ### `openclaw devices approve [requestId] [--latest]`
 
 批准待处理的设备配对请求。如果省略 `requestId`,OpenClaw 将自动批准最近的待处理请求。
+
+注意:如果设备以更改的身份验证详情(角色/范围/公钥)重试配对,OpenClaw 会覆盖之前的待处理条目并发出新的 `requestId`。批准前请运行 `openclaw devices list` 以使用当前 ID。
 
 ```
 openclaw devices approve

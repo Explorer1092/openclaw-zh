@@ -1,7 +1,7 @@
 ---
 title: "`openclaw sessions`"
 sidebarTitle: "openclaw sessions"
-mmh3_hash: "948fd89550f6353e7f0b6dc32a34a66c"
+mmh3_hash: "8796051292c9cc65cf79a5d305a6bd31"
 summary: "`openclaw sessions` 的 CLI 参考(列出存储的 Session + 使用情况)"
 read_when:
   - 您想列出存储的 Session 并查看最近的活动
@@ -44,7 +44,7 @@ JSON 示例:
   "activeMinutes": null,
   "sessions": [
     { "agentId": "main", "key": "agent:main:main", "model": "gpt-5" },
-    { "agentId": "work", "key": "agent:work:main", "model": "claude-opus-4-5" }
+    { "agentId": "work", "key": "agent:work:main", "model": "claude-opus-4-6" }
   ]
 }
 ```

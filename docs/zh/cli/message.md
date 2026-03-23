@@ -1,7 +1,7 @@
 ---
 title: "`openclaw message`"
 sidebarTitle: "openclaw message"
-mmh3_hash: "0fd309643c3123d394786b2c1a7707d8"
+mmh3_hash: "8d0f1640a4da13656daf858d8ce61e0a"
 summary: "`openclaw message` 的 CLI 参考(发送 + Channel 操作)"
 read_when:
   - 添加或修改消息 CLI 操作
@@ -51,6 +51,16 @@ Channel 选择:
 - `--json`
 - `--dry-run`
 - `--verbose`
+
+## SecretRef 行为
+
+- `openclaw message` 在运行所选操作之前解析支持的 Channel SecretRef。
+- 解析范围在可能的情况下限定为活动操作目标:
+  - 设置了 `--channel` 时(或从 `discord:...` 等带前缀的目标推断)按 Channel 范围
+  - 设置了 `--account` 时按账户范围(Channel 全局 + 所选账户界面)
+  - 省略 `--account` 时,OpenClaw 不强制使用 `default` 账户 SecretRef 范围
+- 无关 Channel 上的未解析 SecretRef 不会阻止有针对性的消息操作。
+- 如果所选 Channel/账户的 SecretRef 未解析,该操作的命令会失败关闭。
 
 ## 操作
 
