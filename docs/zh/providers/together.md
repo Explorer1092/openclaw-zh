@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ee2fbfeada2e05afc50d80fb86b19009"
+mmh3_hash: "8f9b1d97240bac2c5eeb14ff6bd291f3"
 summary: "Together AI 设置（身份验证 + 模型选择）"
 read_when:
   - 您想要在 OpenClaw 中使用 Together AI

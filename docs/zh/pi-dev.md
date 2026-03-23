@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f33cb3039fd46ce006306a0aa444563e"
+mmh3_hash: "66eef577e10f25bb46ed56aa84030555"
 title: "Pi 开发工作流"
 summary: "Pi 集成的开发工作流：构建、测试和实时验证"
 read_when:
@@ -38,7 +38,7 @@ pnpm test -- \
 OPENCLAW_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live.test.ts
 ```
 
-该脚本通过以下 glob 模式覆盖主要 Pi 单元套件：
+该脚本覆盖主要 Pi 单元套件：
 
 - `src/agents/pi-*.test.ts`
 - `src/agents/pi-embedded-*.test.ts`
@@ -77,5 +77,5 @@ OPENCLAW_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live
 
 ## 参考资料
 
-- [https://docs.openclaw.ai/testing](https://docs.openclaw.ai/testing)
-- [https://docs.openclaw.ai/start/getting-started](https://docs.openclaw.ai/start/getting-started)
+- [测试](/help/testing)
+- [快速开始](/start/getting-started)

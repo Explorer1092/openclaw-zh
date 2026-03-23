@@ -1,5 +1,10 @@
 ---
-mmh3_hash: "5b145300a1234a5bc3ee1efbce757937"
+mmh3_hash: "164af954b5ff8f6454d1e4715c7e172b"
+title: "Auth 凭据语义"
+summary: "auth profile 的标准凭据资格与解析语义"
+read_when:
+  - 在处理 auth profile 解析或凭据路由时
+  - 调试模型身份验证失败或 profile 顺序问题时
 ---
 # Auth 凭据语义
 

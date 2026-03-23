@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2ec622b343ff7fd8fe1f1d25e222e569"
+mmh3_hash: "6b49ca929c971adc7b988121d9856f36"
 summary: "在 OpenClaw 中使用 Kilo Gateway 的统一 API 访问多种模型"
 read_when:
   - 您希望用一个 API 密钥访问多种 LLM

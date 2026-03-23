@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e7d595761aade425bfabe546d8c00137"
+mmh3_hash: "d5aa036f93b151dc20a24664affa7629"
 title: "CI 流水线"
 summary: "CI 任务图、范围控制门以及本地等效命令"
 read_when:
@@ -9,24 +9,25 @@ read_when:
 
 # CI 流水线
 
-CI 在每次推送到 `main` 分支以及每个拉取请求时运行。它使用智能范围控制，当仅有文档或原生代码发生变更时跳过开销较大的任务。
+CI 在每次推送到 `main` 分支以及每个拉取请求时运行。它使用智能范围控制，当仅有不相关区域发生变更时跳过开销较大的任务。
 
 ## 任务概览
 
-| 任务                | 用途                                            | 运行时机                  |
-| ------------------- | ----------------------------------------------- | ------------------------- |
-| `docs-scope`        | 检测是否仅有文档变更                            | 始终                      |
-| `changed-scope`     | 检测哪些区域发生变更（node/macos/android/windows） | 非文档 PR              |
-| `check`             | TypeScript 类型检查、lint、格式化               | 非文档、node 相关变更     |
-| `check-docs`        | Markdown lint + 断链检查                        | 文档变更时                |
-| `secrets`           | 检测泄露的密钥                                  | 始终                      |
-| `build-artifacts`   | 一次性构建 dist 并与 `release-check` 共享       | 推送到 `main`、node 变更  |
-| `release-check`     | 验证 npm pack 内容                              | 推送到 `main`，构建后     |
-| `checks`            | Node 测试 + PR 协议检查；push 时 Bun 兼容测试  | 非文档、node 变更         |
-| `compat-node22`     | 最低支持 Node 运行时兼容性                      | 推送到 `main`、node 变更  |
-| `checks-windows`    | Windows 专项测试                                | 非文档、windows 相关变更  |
-| `macos`             | Swift lint/构建/测试 + TS 测试                  | 有 macOS 变更的 PR        |
-| `android`           | Gradle 构建 + 测试                              | 非文档、android 变更      |
+| 任务                | 用途                                                                        | 运行时机                                     |
+| ------------------- | --------------------------------------------------------------------------- | -------------------------------------------- |
+| `preflight`         | 文档范围、变更范围、密钥扫描、工作流审计、生产依赖审计                      | 始终；非文档变更时仅运行 node 审计           |
+| `docs-scope`        | 检测是否仅有文档变更                                                        | 始终                                         |
+| `changed-scope`     | 检测哪些区域发生变更（node/macos/android/windows）                          | 非文档变更                                   |
+| `check`             | TypeScript 类型检查、lint、格式化                                           | 非文档、node 相关变更                        |
+| `check-docs`        | Markdown lint + 断链检查                                                    | 文档变更时                                   |
+| `secrets`           | 检测泄露的密钥                                                              | 始终                                         |
+| `build-artifacts`   | 一次性构建 dist 并与 `release-check` 共享                                  | 推送到 `main`、node 变更                     |
+| `release-check`     | 验证 npm pack 内容                                                          | 推送到 `main`，构建后                        |
+| `checks`            | Node 测试 + PR 协议检查；push 时 Bun 兼容测试                              | 非文档、node 变更                            |
+| `compat-node22`     | 最低支持 Node 运行时兼容性                                                  | 推送到 `main`、node 变更                     |
+| `checks-windows`    | Windows 专项测试                                                            | 非文档、windows 相关变更                     |
+| `macos`             | Swift lint/构建/测试 + TS 测试                                              | 有 macOS 变更的 PR                           |
+| `android`           | Gradle 构建 + 测试                                                          | 非文档、android 变更                         |
 
 ## 快速失败顺序
 
@@ -37,6 +38,7 @@ CI 在每次推送到 `main` 分支以及每个拉取请求时运行。它使用
 3. 推送到 `main`：`build-artifacts` + `release-check` + Bun 兼容性 + `compat-node22`
 
 范围逻辑位于 `scripts/ci-changed-scope.mjs`，并由 `src/scripts/ci-changed-scope.test.ts` 中的单元测试覆盖。
+同一共享范围模块还通过更窄的 `changed-smoke` 门控驱动独立的 `install-smoke` 工作流，因此 Docker/安装冒烟测试仅在安装、打包和容器相关变更时运行。
 
 ## 运行器
 

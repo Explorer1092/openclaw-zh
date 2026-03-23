@@ -1,6 +1,6 @@
 ---
 title: "Ollama"
-mmh3_hash: "1a63c3e4b6b67f6e2e1634fbd6a18030"
+mmh3_hash: "2bfd5458669ebf2b9342a940108aeb1a"
 summary: "使用 Ollama 运行 OpenClaw（云端 + 本地模型）"
 read_when:
   - 您想通过 Ollama 使用云端或本地模型运行 OpenClaw

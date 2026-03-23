@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0ba3a7ee6849d9d006ad30e48de18c81"
+mmh3_hash: "d36f6ac09fa1c9d53287fc4c1638b09f"
 summary: "通过 LiteLLM Proxy 运行 OpenClaw 以实现统一的模型访问和成本跟踪"
 read_when:
   - 您想要通过 LiteLLM 代理路由 OpenClaw

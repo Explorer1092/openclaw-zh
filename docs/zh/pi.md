@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b4f1a9a5847e9fb0eb950a0ad9b98e0f"
+mmh3_hash: "86c84c68c6ecf33a5b2694b016afe4dc"
 title: "Pi 集成架构"
 summary: "OpenClaw 嵌入式 Pi Agent 集成的架构和会话生命周期"
 read_when:
@@ -26,10 +26,10 @@ OpenClaw 使用 pi SDK 将 AI 编程智能体嵌入到其消息 Gateway 架构�
 
 ```json
 {
-  "@mariozechner/pi-agent-core": "0.49.3",
-  "@mariozechner/pi-ai": "0.49.3",
-  "@mariozechner/pi-coding-agent": "0.49.3",
-  "@mariozechner/pi-tui": "0.49.3"
+  "@mariozechner/pi-agent-core": "0.61.1",
+  "@mariozechner/pi-ai": "0.61.1",
+  "@mariozechner/pi-coding-agent": "0.61.1",
+  "@mariozechner/pi-tui": "0.61.1"
 }
 ```
 
@@ -120,18 +120,22 @@ src/agents/
 │   ├── browser-tool.ts
 │   ├── canvas-tool.ts
 │   ├── cron-tool.ts
-│   ├── discord-actions*.ts
 │   ├── gateway-tool.ts
 │   ├── image-tool.ts
 │   ├── message-tool.ts
 │   ├── nodes-tool.ts
 │   ├── session*.ts
-│   ├── slack-actions.ts
-│   ├── telegram-actions.ts
 │   ├── web-*.ts
-│   └── whatsapp-actions.ts
+│   └── ...
 └── ...
 ```
+
+渠道特定消息操作运行时现在位于插件拥有的扩展目录中，而不是 `src/agents/tools` 下，例如：
+
+- `extensions/discord/src/actions/runtime*.ts`
+- `extensions/slack/src/action-runtime.ts`
+- `extensions/telegram/src/action-runtime.ts`
+- `extensions/whatsapp/src/action-runtime.ts`
 
 ## 核心集成流程
 
@@ -232,6 +236,8 @@ await session.prompt(effectivePrompt, { images: imageResult.images });
 ```
 
 SDK 处理完整的智能体循环：发送到 LLM、执行工具调用、流式传输响应。
+
+图像注入是提示局部的：OpenClaw 从当前提示加载图像引用，并通过 `images` 仅为该轮次传递。它不会重新扫描旧的历史轮次来重新注入图像载荷。
 
 ## 工具架构
 
@@ -382,7 +388,7 @@ OpenClaw 加载自定义 pi 扩展以实现专门的行为：
 
 ### 压缩保护
 
-`pi-extensions/compaction-safeguard.ts` 为压缩添加护栏，包括自适应令牌预算以及工具失败和文件操作摘要：
+`src/agents/pi-extensions/compaction-safeguard.ts` 为压缩添加护栏，包括自适应令牌预算以及工具失败和文件操作摘要：
 
 ```typescript
 if (resolveCompactionMode(params.cfg) === "safeguard") {
@@ -393,7 +399,7 @@ if (resolveCompactionMode(params.cfg) === "safeguard") {
 
 ### 上下文修剪
 
-`pi-extensions/context-pruning.ts` 实现基于缓存 TTL 的上下文修剪：
+`src/agents/pi-extensions/context-pruning.ts` 实现基于缓存 TTL 的上下文修剪：
 
 ```typescript
 if (cfg?.agents?.defaults?.contextPruning?.mode === "cache-ttl") {
@@ -555,3 +561,5 @@ Pi 集成覆盖涵盖以下套件：
 实时/选择加入：
 
 - `src/agents/pi-embedded-runner-extraparams.live.test.ts`（启用 `OPENCLAW_LIVE_TEST=1`）
+
+有关当前运行命令，请参阅 [Pi 开发工作流](/pi-dev)。

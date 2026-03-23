@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "38be0bc8ccc556312a6a7775d2cd308c"
+mmh3_hash: "f9694eb81c4e539efdc37ab4ba50fcaa"
 summary: "OpenClaw 是一个可在任何操作系统上运行的 AI agent 多通道 gateway。"
 read_when:
   - 向新人介绍 OpenClaw
@@ -44,18 +44,18 @@ title: "OpenClaw"
 
 ## 什么是 OpenClaw?
 
-OpenClaw 是一个**自托管 gateway**，它将您最喜欢的聊天应用 — WhatsApp、Telegram、Discord、iMessage 等 — 连接到 AI 编码 agent，如 Pi。您在自己的机器(或服务器)上运行单个 Gateway 进程，它就成为您的消息应用和始终可用的 AI 助手之间的桥梁。
+OpenClaw 是一个**自托管 gateway**，它将您最喜欢的聊天应用 — WhatsApp、Telegram、Discord、iMessage 等 — 连接到 AI 编码 agent，如 Pi。您在自己的机器（或服务器）上运行单个 Gateway 进程，它就成为您的消息应用和始终可用的 AI 助手之间的桥梁。
 
-**适合谁?** 希望拥有可以随时随地发送消息的个人 AI 助手的开发人员和高级用户 — 无需放弃对数据的控制或依赖托管服务。
+**适合谁？** 希望拥有可以随时随地发送消息的个人 AI 助手的开发人员和高级用户 — 无需放弃对数据的控制或依赖托管服务。
 
-**它有何不同?**
+**它有何不同？**
 
-- **自托管**: 在您的硬件上运行，按您的规则
-- **多通道**: 一个 Gateway 同时服务 WhatsApp、Telegram、Discord 等
-- **原生 Agent**: 专为具有工具使用、会话、内存和多 agent 路由的编码 agent 而构建
-- **开源**: MIT 许可证，社区驱动
+- **自托管**：在您的硬件上运行，按您的规则
+- **多通道**：一个 Gateway 同时服务 WhatsApp、Telegram、Discord 等
+- **原生 Agent**：专为具有工具使用、会话、内存和多 agent 路由的编码 agent 而构建
+- **开源**：MIT 许可证，社区驱动
 
-**需要什么?** Node 24（推荐），或 Node 22 LTS（`22.16+`）以保持兼容性，来自您选择的 Provider 的 API 密钥，以及 5 分钟时间。为了最佳质量和安全性，请使用可用的最强最新一代模型。
+**需要什么？** Node 24（推荐），或 Node 22 LTS（`22.16+`）以保持兼容性，来自您选择的 Provider 的 API 密钥，以及 5 分钟时间。为了最佳质量和安全性，请使用可用的最强最新一代模型。
 
 ## 工作原理
 
@@ -107,35 +107,39 @@ Gateway 是会话、路由和通道连接的单一真实来源。
     openclaw onboard --install-daemon
     ```
   </Step>
-  <Step title="配对 WhatsApp 并启动 Gateway">
+  <Step title="聊天">
+    在浏览器中打开控制 UI 并发送消息：
+
     ```bash
-    openclaw channels login
-    openclaw gateway --port 18789
+    openclaw dashboard
     ```
+
+    或连接一个通道（[Telegram](/channels/telegram) 最快）并通过手机聊天。
+
   </Step>
 </Steps>
 
-需要完整的安装和开发设置? 请参阅[快速开始](/start/quickstart)。
+需要完整的安装和开发设置？请参阅[快速开始](/start/getting-started)。
 
 ## 仪表板
 
 Gateway 启动后打开浏览器控制 UI。
 
-- 本地默认地址: [http://127.0.0.1:18789/](http://127.0.0.1:18789/)
-- 远程访问: [Web surfaces](/web) 和 [Tailscale](/gateway/tailscale)
+- 本地默认地址：[http://127.0.0.1:18789/](http://127.0.0.1:18789/)
+- 远程访问：[Web surfaces](/web) 和 [Tailscale](/gateway/tailscale)
 
 <p align="center">
-  <img src="whatsapp-openclaw.jpg" alt="OpenClaw" width="420" />
+  <img src="/whatsapp-openclaw.jpg" alt="OpenClaw" width="420" />
 </p>
 
-## 配置(可选)
+## 配置（可选）
 
 配置位于 `~/.openclaw/openclaw.json`。
 
 - 如果您**什么都不做**，OpenClaw 使用捆绑的 Pi 二进制文件，以 RPC 模式和每个发送者的会话运行。
-- 如果您想锁定它，从 `channels.whatsapp.allowFrom` 开始，(对于群组)提及规则。
+- 如果您想锁定它，从 `channels.whatsapp.allowFrom` 开始，（对于群组）提及规则。
 
-示例:
+示例：
 
 ```json5
 {
