@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dfb90f1c4fc8af7f30e58d16d9d9d730"
+mmh3_hash: "ae4f4982d0e7af0b0ec3e574b0a372ae"
 summary: "Hooks：用于命令和生命周期事件的事件驱动自动化"
 read_when:
   - 您需要为 /new、/reset、/stop 和 Agent 生命周期事件设置事件驱动自动化
@@ -9,7 +9,7 @@ title: "Hooks"
 
 # Hooks
 
-Hooks 提供了一个可扩展的事件驱动系统，用于响应 Agent 命令和事件自动执行操作。Hooks 会从目录中自动发现，并可以通过 CLI 命令管理，类似于 OpenClaw 中 Skills 的工作方式。
+Hooks 提供了一个可扩展的事件驱动系统，用于响应 Agent 命令和事件自动执行操作。Hooks 会从目录中自动发现，并可以通过 `openclaw hooks` 命令检查，而 Hook Pack 的安装和更新现在通过 `openclaw plugins` 进行。
 
 ## 入门指南
 
@@ -18,7 +18,7 @@ Hooks 是在某些事件发生时运行的小脚本。有两种类型：
 - **Hooks**（本页）：在 Agent 事件（如 `/new`、`/reset`、`/stop` 或生命周期事件）触发时，在 Gateway 内运行。
 - **Webhooks**：外部 HTTP Webhooks，允许其他系统在 OpenClaw 中触发工作。参见 [Webhook Hooks](/automation/webhook) 或使用 `openclaw webhooks` 获取 Gmail 辅助命令。
 
-Hooks 也可以打包在 Plugins 中；参见 [Plugins](/tools/plugin#plugin-hooks)。
+Hooks 也可以打包在 Plugins 中；参见 [Plugin hooks](/plugins/architecture#provider-runtime-hooks)。`openclaw hooks list` 会显示独立 Hooks 和 Plugin 托管的 Hooks。
 
 常见用途：
 
@@ -27,7 +27,7 @@ Hooks 也可以打包在 Plugins 中；参见 [Plugins](/tools/plugin#plugin-hoo
 - 会话开始或结束时触发后续自动化
 - 事件触发时向 Agent 工作空间写入文件或调用外部 API
 
-如果您能编写一个小的 TypeScript 函数，就能编写一个 Hook。Hooks 会自动被发现，您可以通过 CLI 启用或禁用它们。
+如果您能编写一个小的 TypeScript 函数，就能编写一个 Hook。托管 Hooks 和内置 Hooks 是受信任的本地代码。工作空间 Hooks 会自动被发现，但 OpenClaw 在您通过 CLI 或配置明确启用之前会保持禁用状态。
 
 ## 概述
 
@@ -77,13 +77,20 @@ openclaw hooks info session-memory
 
 在引导期间（`openclaw onboard`），系统会提示您启用推荐的 Hooks。向导会自动发现符合条件的 Hooks 并提供选择。
 
+### 信任边界
+
+Hooks 在 Gateway 进程内运行。将内置 Hooks、托管 Hooks 和 `hooks.internal.load.extraDirs` 视为受信任的本地代码。工作空间 `<workspace>/hooks/` 下的工作空间 Hooks 是仓库本地代码，因此 OpenClaw 在加载之前需要明确的启用步骤。
+
 ## Hook 发现
 
-Hooks 会从三个目录自动发现（按优先级顺序）：
+Hooks 会从以下目录自动发现，按覆盖优先级从低到高排列：
 
-1. **工作空间 Hooks**：`<workspace>/hooks/`（每个 Agent，最高优先级）
-2. **托管 Hooks**：`~/.openclaw/hooks/`（用户安装，跨工作空间共享）
-3. **内置 Hooks**：`<openclaw>/dist/hooks/bundled/`（随 OpenClaw 一起提供）
+1. **内置 Hooks**：随 OpenClaw 一起提供；npm 安装位于 `<openclaw>/dist/hooks/bundled/`（或编译二进制文件的同级 `hooks/bundled/` 目录）
+2. **Plugin Hooks**：打包在已安装 Plugins 中的 Hooks（参见 [Plugin hooks](/plugins/architecture#provider-runtime-hooks)）
+3. **托管 Hooks**：`~/.openclaw/hooks/`（用户安装，跨工作空间共享；可覆盖内置和 Plugin Hooks）。通过 `hooks.internal.load.extraDirs` 配置的**额外 Hook 目录**也被视为托管 Hooks，共享相同的覆盖优先级。
+4. **工作空间 Hooks**：`<workspace>/hooks/`（每个 Agent，默认禁用直到明确启用；不能覆盖其他来源的 Hooks）
+
+工作空间 Hooks 可以为仓库添加新的 Hook 名称，但不能覆盖具有相同名称的内置、托管或 Plugin 提供的 Hooks。
 
 托管 Hook 目录可以是**单个 Hook** 或 **Hook Pack**（包目录）。
 
@@ -100,7 +107,7 @@ my-hook/
 Hook Packs 是标准的 npm 包，通过 `package.json` 中的 `openclaw.hooks` 导出一个或多个 Hooks。使用以下命令安装：
 
 ```bash
-openclaw hooks install <path-or-spec>
+openclaw plugins install <path-or-spec>
 ```
 
 Npm 规范仅限注册表（包名 + 可选精确版本或 dist-tag）。Git/URL/文件规范和语义化版本范围会被拒绝。
@@ -122,7 +129,7 @@ Npm 规范仅限注册表（包名 + 可选精确版本或 dist-tag）。Git/URL
 每个条目指向一个包含 `HOOK.md` 和 `handler.ts`（或 `index.ts`）的 Hook 目录。Hook Packs 可以附带依赖项；它们将被安装在 `~/.openclaw/hooks/<id>` 下。
 每个 `openclaw.hooks` 条目在符号链接解析后必须保持在包目录内；逃逸的条目会被拒绝。
 
-安全说明：`openclaw hooks install` 使用 `npm install --ignore-scripts` 安装依赖项（不运行生命周期脚本）。保持 Hook Pack 依赖树为"纯 JS/TS"，避免依赖于 `postinstall` 构建的包。
+安全说明：`openclaw plugins install` 使用 `npm install --ignore-scripts` 安装 Hook Pack 依赖项（不运行生命周期脚本）。保持 Hook Pack 依赖树为"纯 JS/TS"，避免依赖于 `postinstall` 构建的包。
 
 ## Hook 结构
 
@@ -211,15 +218,17 @@ export default myHandler;
   timestamp: Date,             // 事件发生时间
   messages: string[],          // 在此推送消息以发送给用户
   context: {
-    // 命令事件：
-    sessionEntry?: SessionEntry,
-    sessionId?: string,
-    sessionFile?: string,
-    commandSource?: string,    // 例如 'whatsapp'、'telegram'
+    // 命令事件（command:new、command:reset）：
+    sessionEntry?: SessionEntry,       // 当前会话条目
+    previousSessionEntry?: SessionEntry, // 重置前的条目（session-memory 优先使用）
+    commandSource?: string,            // 例如 'whatsapp'、'telegram'
     senderId?: string,
     workspaceDir?: string,
-    bootstrapFiles?: WorkspaceBootstrapFile[],
     cfg?: OpenClawConfig,
+    // 命令事件（仅 command:stop）：
+    sessionId?: string,
+    // Agent 引导事件（agent:bootstrap）：
+    bootstrapFiles?: WorkspaceBootstrapFile[],
     // 消息事件（完整详情见消息事件章节）：
     from?: string,             // message:received
     to?: string,               // message:sent
@@ -287,11 +296,13 @@ Gateway 启动时触发：
     to?: string,
     provider?: string,
     surface?: string,
-    threadId?: string,
+    threadId?: string | number,
     senderId?: string,
     senderName?: string,
     senderUsername?: string,
     senderE164?: string,
+    guildId?: string,     // Discord guild / server ID
+    channelName?: string, // Channel 名称（例如 Discord Channel 名称）
   }
 }
 
@@ -311,22 +322,42 @@ Gateway 启动时触发：
 
 // message:transcribed 上下文
 {
+  from?: string,          // 发送者标识符
+  to?: string,            // 接收者标识符
   body?: string,          // 丰富前的原始入站消息体
   bodyForAgent?: string,  // Agent 可见的丰富消息体
   transcript: string,     // 音频转录文本
+  timestamp?: number,     // 接收时的 Unix 时间戳
   channelId: string,      // Channel（例如 "telegram"、"whatsapp"）
   conversationId?: string,
   messageId?: string,
+  senderId?: string,      // 发送者用户 ID
+  senderName?: string,    // 发送者显示名称
+  senderUsername?: string,
+  provider?: string,      // Provider 名称
+  surface?: string,       // Surface 名称
+  mediaPath?: string,     // 转录的媒体文件路径
+  mediaType?: string,     // 媒体的 MIME 类型
 }
 
 // message:preprocessed 上下文
 {
+  from?: string,          // 发送者标识符
+  to?: string,            // 接收者标识符
   body?: string,          // 原始入站消息体
   bodyForAgent?: string,  // 媒体/链接理解后的最终丰富消息体
   transcript?: string,    // 有音频时的转录
+  timestamp?: number,     // 接收时的 Unix 时间戳
   channelId: string,      // Channel（例如 "telegram"、"whatsapp"）
   conversationId?: string,
   messageId?: string,
+  senderId?: string,      // 发送者用户 ID
+  senderName?: string,    // 发送者显示名称
+  senderUsername?: string,
+  provider?: string,      // Provider 名称
+  surface?: string,       // Surface 名称
+  mediaPath?: string,     // 媒体文件路径
+  mediaType?: string,     // 媒体的 MIME 类型
   isGroup?: boolean,
   groupId?: string,
 }
@@ -376,8 +407,8 @@ export default handler;
 
 ### 1. 选择位置
 
-- **工作空间 Hooks**（`<workspace>/hooks/`）：每个 Agent，最高优先级
-- **托管 Hooks**（`~/.openclaw/hooks/`）：跨工作空间共享
+- **工作空间 Hooks**（`<workspace>/hooks/`）：每个 Agent；可添加新 Hook 名称，但不能覆盖内置、托管或 Plugin Hooks
+- **托管 Hooks**（`~/.openclaw/hooks/`）：跨工作空间共享；可覆盖内置和 Plugin Hooks
 
 ### 2. 创建目录结构
 
@@ -472,7 +503,7 @@ Hooks 可以有自定义配置：
 
 ### 额外目录
 
-从额外目录加载 Hooks：
+从额外目录加载 Hooks（视为托管 Hooks，共享相同的覆盖优先级）：
 
 ```json
 {
@@ -564,9 +595,9 @@ openclaw hooks disable command-logger
 
 ### session-memory
 
-在您发出 `/new` 时将会话上下文保存到内存。
+在您发出 `/new` 或 `/reset` 时将会话上下文保存到内存。
 
-**事件**：`command:new`
+**事件**：`command:new`、`command:reset`
 
 **要求**：必须配置 `workspace.dir`
 
@@ -575,7 +606,7 @@ openclaw hooks disable command-logger
 **功能**：
 
 1. 使用重置前的会话条目定位正确的记录
-2. 提取对话的最后 15 行
+2. 从对话中提取最后 15 条用户/助手消息（可配置）
 3. 使用 LLM 生成描述性文件名 slug
 4. 将会话元数据保存到日期内存文件
 
@@ -587,6 +618,11 @@ openclaw hooks disable command-logger
 - **Session Key**: agent:main:main
 - **Session ID**: abc123def456
 - **Source**: telegram
+
+## Conversation Summary
+
+user: Can you help me design the API?
+assistant: Sure! Let's start with the endpoints...
 ```
 
 **文件名示例**：
@@ -629,12 +665,18 @@ openclaw hooks enable session-memory
 }
 ```
 
+**配置选项**：
+
+- `paths`（string[]）：从工作空间解析的 glob/路径模式。
+- `patterns`（string[]）：`paths` 的别名。
+- `files`（string[]）：`paths` 的别名。
+
 **注意**：
 
 - 路径相对于工作空间解析。
 - 文件必须保持在工作空间内（realpath 检查）。
-- 仅加载已识别的引导基本名称。
-- Subagent 白名单被保留（仅 `AGENTS.md` 和 `TOOLS.md`）。
+- 仅加载已识别的引导基本名称（`AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`、`MEMORY.md`、`memory.md`）。
+- 对于 Subagent/Cron Sessions，适用更窄的允许列表（`AGENTS.md`、`TOOLS.md`、`SOUL.md`、`IDENTITY.md`、`USER.md`）。
 
 **启用**：
 
@@ -866,9 +908,11 @@ test("my handler works", async () => {
 ```
 Gateway 启动
     ↓
-扫描目录（workspace → managed → bundled）
+扫描目录（bundled → plugin → managed + extra dirs → workspace）
     ↓
 解析 HOOK.md 文件
+    ↓
+按覆盖优先级排序（bundled < plugin < managed < workspace）
     ↓
 检查资格（bins、env、config、os）
     ↓
@@ -1038,4 +1082,4 @@ node -e "import('./path/to/handler.ts').then(console.log)"
 - [CLI 参考：hooks](/cli/hooks)
 - [内置 Hooks README](https://github.com/openclaw/openclaw/tree/main/src/hooks/bundled)
 - [Webhook Hooks](/automation/webhook)
-- [配置](/gateway/configuration#hooks)
+- [配置](/gateway/configuration-reference#hooks)

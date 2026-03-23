@@ -1,7 +1,7 @@
 ---
 title: "Webhook"
 sidebarTitle: "Webhook"
-mmh3_hash: "332e7f67138b5e75cfea1fff8b1bef72"
+mmh3_hash: "8baa25f7c4ce8d1aa958b37473b0db6a"
 summary: "用于唤醒和隔离 Agent 运行的 Webhook 入口"
 read_when: ["添加或更改 webhook 端点时","将外部系统连接到 OpenClaw 时"]
 ---
@@ -38,6 +38,7 @@ Gateway 可以为外部触发器暴露一个小型 HTTP webhook 端点。
 - `Authorization: Bearer <token>` (推荐)
 - `x-openclaw-token: <token>`
 - 查询字符串令牌被拒绝 (`?token=...` 返回 `400`)。
+- 将 `hooks.token` 持有者视为该 Gateway 上 hook 入口的完全信任调用者。Hook 载荷内容仍不受信任，但这不是单独的非所有者认证边界。
 
 ## 端点
 
@@ -83,8 +84,8 @@ Gateway 可以为外部触发器暴露一个小型 HTTP webhook 端点。
 - `sessionKey` 可选 (字符串): 用于标识 Agent session 的键。默认情况下,除非 `hooks.allowRequestSessionKey=true`,否则拒绝此字段。
 - `wakeMode` 可选 (`now` | `next-heartbeat`): 是否触发立即心跳(默认 `now`) 或等待下一次定期检查。
 - `deliver` 可选 (布尔值): 如果为 `true`,Agent 的响应将发送到消息 Channel。默认为 `true`。仅包含心跳确认的响应会自动跳过。
-- `channel` 可选 (字符串): 用于传递的消息 Channel。之一: `last`, `whatsapp`, `telegram`, `discord`, `slack`, `mattermost` (插件), `signal`, `imessage`, `msteams`。默认为 `last`。
-- `to` 可选 (字符串): Channel 的接收者标识符(例如 WhatsApp/Signal 的电话号码,Telegram 的聊天 ID,Discord/Slack/Mattermost (插件) 的 Channel ID,MS Teams 的对话 ID)。默认为 main session 中的最后一个接收者。
+- `channel` 可选 (字符串): 用于传递的消息 Channel。核心 channels: `last`, `whatsapp`, `telegram`, `discord`, `slack`, `signal`, `imessage`, `irc`, `googlechat`, `line`。扩展 channels（插件）: `msteams`, `mattermost` 等。默认为 `last`。
+- `to` 可选 (字符串): Channel 的接收者标识符（例如 WhatsApp/Signal 的电话号码，Telegram 的聊天 ID，Discord/Slack/Mattermost（插件）的 Channel ID，Microsoft Teams 的对话 ID）。默认为 main session 中的最后一个接收者。
 - `model` 可选 (字符串): 模型覆盖(例如 `anthropic/claude-3-5-sonnet` 或别名)。如果受限,必须在允许的模型列表中。
 - `thinking` 可选 (字符串): 思考级别覆盖(例如 `low`, `medium`, `high`)。
 - `timeoutSeconds` 可选 (数字): Agent 运行的最大持续时间(秒)。
@@ -202,8 +203,9 @@ curl -X POST http://127.0.0.1:18789/hooks/gmail \
 ## 安全
 
 - 将 hook 端点保持在回环、tailnet 或受信任的反向代理后面。
-- 使用专用的 hook 令牌;不要重用 Gateway 认证令牌。
-- 重复的认证失败会按客户端地址进行速率限制,以减缓暴力破解尝试。
+- 使用专用的 hook 令牌；不要重用 Gateway 认证令牌。
+- 优先使用具有严格 `tools.profile` 和沙箱的专用 hook Agent，使 hook 入口具有更窄的影响范围。
+- 重复的认证失败会按客户端地址进行速率限制，以减缓暴力破解尝试。
 - 如果你使用多 Agent 路由,设置 `hooks.allowedAgentIds` 以限制显式 `agentId` 选择。
 - 保持 `hooks.allowRequestSessionKey=false` 除非你需要调用者选择的 session。
 - 如果你启用请求 `sessionKey`,限制 `hooks.allowedSessionKeyPrefixes` (例如 `["hook:"]`)。

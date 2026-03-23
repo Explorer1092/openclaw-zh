@@ -1,7 +1,7 @@
 ---
 title: "Cron 作业"
 sidebarTitle: "Cron 作业"
-mmh3_hash: "59d193887b5c8a5f41b61bc3ee477900"
+mmh3_hash: "8cd58910c54a982b92a0d53f1e584728"
 summary: "Gateway 调度器的 Cron 作业 + 唤醒"
 read_when:
   - 调度后台作业或唤醒时
@@ -259,7 +259,7 @@ Isolated 作业（`agentTurn`）可以设置 `lightContext: true` 以使用轻�
 Isolated 作业可以通过顶层 `delivery` 配置将输出传递到 channel：
 
 - `delivery.mode`：`announce`（channel 传递）、`webhook`（HTTP POST）或 `none`。
-- `delivery.channel`：`whatsapp` / `telegram` / `discord` / `slack` / `mattermost`（插件）/ `signal` / `imessage` / `last`。
+- `delivery.channel`：`whatsapp` / `telegram` / `discord` / `slack` / `signal` / `imessage` / `irc` / `googlechat` / `line` / `last`，以及扩展 channels，如 `msteams` / `mattermost`（插件）。
 - `delivery.to`：channel 特定的接收者目标。
 
 `announce` 传递仅对 isolated 作业（`sessionTarget: "isolated"`）有效。
