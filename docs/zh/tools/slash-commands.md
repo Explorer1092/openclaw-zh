@@ -1,7 +1,7 @@
 ---
 title: "斜杠命令"
 sidebarTitle: "斜杠命令"
-mmh3_hash: "a67da9ef27c0045808ad84785d3af780"
+mmh3_hash: "0d0f2c6240b4051db7fe0be22b676ab0"
 summary: "斜杠命令：文本 vs 原生、配置和支持的命令"
 read_when:
   - 使用或配置聊天命令
@@ -34,6 +34,8 @@ read_when:
     bash: false,
     bashForegroundMs: 2000,
     config: false,
+    mcp: false,
+    plugins: false,
     debug: false,
     restart: false,
     allowFrom: {
@@ -57,6 +59,8 @@ read_when:
 - `commands.bash`（默认 `false`）启用 `! <cmd>` 运行主机 Shell 命令（`/bash <cmd>` 是别名；需要 `tools.elevated` 允许列表）。
 - `commands.bashForegroundMs`（默认 `2000`）控制 bash 在切换到后台模式之前等待多长时间（`0` 立即后台运行）。
 - `commands.config`（默认 `false`）启用 `/config`（读取/写入 `openclaw.json`）。
+- `commands.mcp`（默认 `false`）启用 `/mcp`（读取/写入 `mcp.servers` 下 OpenClaw 管理的 MCP 配置）。
+- `commands.plugins`（默认 `false`）启用 `/plugins`（Plugin 发现/状态以及安装 + 启用/禁用控制）。
 - `commands.debug`（默认 `false`）启用 `/debug`（仅运行时覆盖）。
 - `commands.allowFrom`（可选）设置命令授权的每 Provider 允许列表。配置时，它是命令和指令的唯一授权来源（Channel 允许列表/配对和 `commands.useAccessGroups` 被忽略）。使用 `"*"` 作为全局默认值；Provider 特定的键覆盖它。
 - `commands.useAccessGroups`（默认 `true`）在未设置 `commands.allowFrom` 时对命令强制执行允许列表/策略。
@@ -86,9 +90,14 @@ read_when:
 - `/steer <id|#> <message>`（立即引导运行中的子 Agent：运行中时就地，否则中止当前工作并在引导消息上重启）
 - `/tell <id|#> <message>`（`/steer` 的别名）
 - `/config show|get|set|unset`（将配置持久化到磁盘，仅所有者；需要 `commands.config: true`）
+- `/mcp show|get|set|unset`（管理 OpenClaw MCP 服务器配置，仅所有者；需要 `commands.mcp: true`）
+- `/plugins list|show|get|install|enable|disable`（检查已发现的 Plugin，安装新 Plugin，切换启用状态；写入操作仅所有者；需要 `commands.plugins: true`）
+  - `/plugin` 是 `/plugins` 的别名。
+  - `/plugin install <spec>` 接受与 `openclaw plugins install` 相同的 Plugin 规格：本地路径/存档、npm 包或 `clawhub:<pkg>`。
+  - 启用/禁用写入仍会回复重启提示。在带监视的前台 Gateway 上，OpenClaw 可能在写入后自动执行重启。
 - `/debug show|set|unset|reset`（运行时覆盖，仅所有者；需要 `commands.debug: true`）
 - `/usage off|tokens|full|cost`（每响应使用页脚或本地成本摘要）
-- `/tts off|always|inbound|tagged|status|provider|limit|summary|audio`（控制 TTS；参见 [/tts](/tts)）
+- `/tts off|always|inbound|tagged|status|provider|limit|summary|audio`（控制 TTS；参见 [/tts](/tools/tts)）
   - Discord：原生命令是 `/voice`（Discord 保留 `/tts`）；文本 `/tts` 仍然有效。
 - `/stop`
 - `/restart`
@@ -209,6 +218,44 @@ read_when:
 
 - 配置在写入前验证；无效的更改被拒绝。
 - `/config` 更新在重启后持久化。
+
+## MCP 更新
+
+`/mcp` 在 `mcp.servers` 下写入 OpenClaw 管理的 MCP 服务器定义。仅所有者。默认禁用；使用 `commands.mcp: true` 启用。
+
+示例：
+
+```text
+/mcp show
+/mcp show context7
+/mcp set context7={"command":"uvx","args":["context7-mcp"]}
+/mcp unset context7
+```
+
+注意：
+
+- `/mcp` 将配置存储在 OpenClaw 配置中，而不是 Pi 拥有的项目设置中。
+- 运行时适配器决定实际可执行的传输方式。
+
+## Plugin 更新
+
+`/plugins` 允许操作员检查已发现的 Plugin 并在配置中切换启用状态。只读流程可以使用 `/plugin` 作为别名。默认禁用；使用 `commands.plugins: true` 启用。
+
+示例：
+
+```text
+/plugins
+/plugins list
+/plugin show context7
+/plugins enable context7
+/plugins disable context7
+```
+
+注意：
+
+- `/plugins list` 和 `/plugins show` 使用针对当前工作区和磁盘配置的真实 Plugin 发现。
+- `/plugins enable|disable` 仅更新 Plugin 配置；不安装或卸载 Plugin。
+- 启用/禁用更改后，重启 Gateway 以应用它们。
 
 ## 表面注意事项
 

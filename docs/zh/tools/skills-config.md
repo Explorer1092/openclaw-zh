@@ -1,7 +1,7 @@
 ---
 title: "Skill 配置"
 sidebarTitle: "Skill 配置"
-mmh3_hash: "2a5f5585a81f1dbc7cf763c767c69961"
+mmh3_hash: "3e641f0e27efeac18db20ebcb613164a"
 summary: "Skill 配置架构和示例"
 read_when:
   - 添加或修改 Skill 配置
@@ -26,7 +26,7 @@ read_when:
       nodeManager: "npm", // npm | pnpm | yarn | bun (Gateway 运行时仍然是 Node;不推荐 bun)
     },
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
         apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // 或纯文本字符串
         env: {
@@ -39,6 +39,15 @@ read_when:
   },
 }
 ```
+
+对于内置图像生成/编辑，优先使用 `agents.defaults.imageGenerationModel` 加上核心 `image_generate` 工具。`skills.entries.*` 仅适用于自定义或第三方 Skill 工作流。
+
+如果你选择特定的图像 Provider/模型，还需要配置该 Provider 的认证/API 密钥。典型示例：`google/*` 使用 `GEMINI_API_KEY` 或 `GOOGLE_API_KEY`，`openai/*` 使用 `OPENAI_API_KEY`，`fal/*` 使用 `FAL_KEY`。
+
+示例：
+
+- 原生 Nano Banana 风格设置：`agents.defaults.imageGenerationModel.primary: "google/gemini-3-pro-image-preview"`
+- 原生 fal 设置：`agents.defaults.imageGenerationModel.primary: "fal/fal-ai/flux/dev"`
 
 ## 字段
 

@@ -1,7 +1,7 @@
 ---
 title: "思考级别（/think 指令）"
 sidebarTitle: "思考级别"
-mmh3_hash: "d93ded3bbb432daba52f23a97361b426"
+mmh3_hash: "117290e5e30b48e2fdf41884000c9832"
 summary: "/think、/fast、/verbose 和推理可见性的指令语法"
 read_when:
   - 调整 thinking、fast 模式或 verbose 指令解析或默认值
@@ -30,8 +30,9 @@ read_when:
 
 1. 消息上的内联指令（仅适用于该消息）。
 2. Session 覆盖（通过发送仅指令消息设置）。
-3. 全局默认值（配置中的 `agents.defaults.thinkingDefault`）。
-4. 回退：Anthropic Claude 4.6 模型为 `adaptive`，其他推理能力模型为 `low`，否则为 `off`。
+3. 每 Agent 默认值（配置中的 `agents.list[].thinkingDefault`）。
+4. 全局默认值（配置中的 `agents.defaults.thinkingDefault`）。
+5. 回退：Anthropic Claude 4.6 模型为 `adaptive`，其他推理能力模型为 `low`，否则为 `off`。
 
 ## 设置 Session 默认值
 
@@ -52,8 +53,9 @@ read_when:
 - OpenClaw 按以下顺序解析快速模式：
   1. 内联/仅指令 `/fast on|off`
   2. Session 覆盖
-  3. 每模型配置：`agents.defaults.models["<provider>/<model>"].params.fastMode`
-  4. 回退：`off`
+  3. 每 Agent 默认值（`agents.list[].fastModeDefault`）
+  4. 每模型配置：`agents.defaults.models["<provider>/<model>"].params.fastMode`
+  5. 回退：`off`
 - 对于 `openai/*`，快速模式应用 OpenAI 快速配置文件：在支持时 `service_tier=priority`，加上低推理效率和低文本冗长度。
 - 对于 `openai-codex/*`，快速模式在 Codex Responses 上应用相同的低延迟配置文件。OpenClaw 在两种身份验证路径之间保持一个共享的 `/fast` 切换。
 - 对于直接 `anthropic/*` API 密钥请求，快速模式映射到 Anthropic 服务层：`/fast on` 设置 `service_tier=auto`，`/fast off` 设置 `service_tier=standard_only`。
@@ -78,6 +80,7 @@ read_when:
 - `stream`（仅限 Telegram）：在生成回复时将推理流式传输到 Telegram 草稿气泡中，然后发送没有推理的最终答案。
 - 别名：`/reason`。
 - 发送 `/reasoning`（或 `/reasoning:`）不带参数以查看当前推理级别。
+- 解析顺序：内联指令，然后 Session 覆盖，然后每 Agent 默认值（`agents.list[].reasoningDefault`），然后回退（`off`）。
 
 ## 相关
 

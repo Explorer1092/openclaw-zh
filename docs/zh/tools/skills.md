@@ -1,7 +1,7 @@
 ---
 title: "Skill (OpenClaw)"
 sidebarTitle: "Skill"
-mmh3_hash: "c79e1752e880542d53d65b48f20edd2a"
+mmh3_hash: "b09c8937f69c5c61076da3552ec04417"
 summary: "Skill: 管理 vs 工作区、门控规则和配置/环境接线"
 read_when:
   - 添加或修改 Skill
@@ -42,18 +42,19 @@ Plugin 可以通过在 `openclaw.plugin.json` 中列出 `skills` 目录(相对�
 
 ## ClawHub（安装 + 同步）
 
-ClawHub 是 OpenClaw 的公共 Skill 注册表。在 [https://clawhub.com](https://clawhub.com) 浏览。使用它来发现、安装、更新和备份 Skill。完整指南: [ClawHub](/tools/clawhub)。
+ClawHub 是 OpenClaw 的公共 Skill 注册表。在 [https://clawhub.com](https://clawhub.com) 浏览。使用原生 `openclaw skills` 命令发现/安装/更新 Skill，或在需要发布/同步工作流时使用单独的 `clawhub` CLI。
+完整指南: [ClawHub](/tools/clawhub)。
 
 常见流程:
 
 - 将 Skill 安装到您的工作区:
-  - `clawhub install <skill-slug>`
+  - `openclaw skills install <skill-slug>`
 - 更新所有已安装的 Skill:
-  - `clawhub update --all`
+  - `openclaw skills update --all`
 - 同步(扫描 + 发布更新):
   - `clawhub sync --all`
 
-默认情况下,`clawhub` 安装到当前工作目录下的 `./skills` 中(或回退到配置的 OpenClaw 工作区)。OpenClaw 在下一个 Session 中将其作为 `<workspace>/skills` 获取。
+原生 `openclaw skills install` 安装到活动工作区的 `skills/` 目录。单独的 `clawhub` CLI 也安装到当前工作目录下的 `./skills`（或回退到配置的 OpenClaw 工作区）。OpenClaw 在下一个 Session 中将其作为 `<workspace>/skills` 获取。
 
 ## 安全注意事项
 
@@ -69,8 +70,8 @@ ClawHub 是 OpenClaw 的公共 Skill 注册表。在 [https://clawhub.com](https
 
 ```markdown
 ---
-name: nano-banana-pro
-description: Generate or edit images via Gemini 3 Pro Image
+name: image-lab
+description: Generate or edit images via a provider-backed image workflow
 ---
 ```
 
@@ -97,8 +98,8 @@ OpenClaw 使用 `metadata`(单行 JSON)**在加载时过滤 Skill**:
 
 ```markdown
 ---
-name: nano-banana-pro
-description: Generate or edit images via Gemini 3 Pro Image
+name: image-lab
+description: Generate or edit images via a provider-backed image workflow
 metadata:
   {
     "openclaw":
@@ -174,7 +175,7 @@ metadata:
 {
   skills: {
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
         apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // 或纯文本字符串
         env: {
@@ -193,6 +194,10 @@ metadata:
 ```
 
 注意: 如果 Skill 名称包含连字符,引用键(JSON5 允许引用键)。
+
+如果您希望 OpenClaw 本身提供图像生成/编辑功能，请使用核心 `image_generate` 工具配合 `agents.defaults.imageGenerationModel`，而不是捆绑 Skill。这里的 Skill 示例适用于自定义或第三方工作流。
+
+对于原生图像分析，使用 `image` 工具配合 `agents.defaults.imageModel`。对于原生图像生成/编辑，使用 `image_generate` 配合 `agents.defaults.imageGenerationModel`。如果您选择 `openai/*`、`google/*`、`fal/*` 或其他 Provider 特定的图像模型，也需要添加该 Provider 的认证/API 密钥。
 
 配置键默认匹配 **Skill 名称**。如果 Skill 定义了 `metadata.openclaw.skillKey`,在 `skills.entries` 下使用该键。
 
