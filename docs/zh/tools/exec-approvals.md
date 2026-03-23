@@ -1,6 +1,6 @@
 ---
 title: "Exec 批准"
-mmh3_hash: "937bf8998a48bb5326d922f794c38c70"
+mmh3_hash: "96d4e27b8e4f7603a05625c3f50b8359"
 summary: "Exec 批准、允许列表和沙盒逃逸提示"
 read_when:
   - 配置 exec 批准或允许列表
@@ -100,6 +100,25 @@ macOS 分工：
 - **allowlist**：仅在允许列表匹配时允许。
 - **full**：允许。
 
+### 内联解释器 eval 加固（`tools.exec.strictInlineEval`）
+
+当 `tools.exec.strictInlineEval=true` 时，OpenClaw 将内联代码 eval 形式视为需要批准的操作，即使解释器二进制文件本身已在允许列表中。
+
+示例：
+
+- `python -c`
+- `node -e`、`node --eval`、`node -p`
+- `ruby -e`
+- `perl -e`、`perl -E`
+- `php -r`
+- `lua -e`
+- `osascript -e`
+
+这是针对不能干净映射到一个稳定文件操作数的解释器加载器的纵深防御。在严格模式下：
+
+- 这些命令仍需要显式批准；
+- `allow-always` 不会自动为它们持久化新的允许列表条目。
+
 ## 允许列表（每 Agent）
 
 允许列表是**每个 Agent** 独立的。如果存在多个 Agent，在 macOS 应用中切换你正在编辑的 Agent。模式是**不区分大小写的 glob 匹配**。
@@ -166,7 +185,11 @@ Shell 链式（`&&`、`||`、`;`）在每个顶层段都满足允许列表（包
 对于 Shell 包装器（`bash|sh|zsh ... -c/-lc`），请求范围的环境覆盖被简化为一个小的显式允许列表（`TERM`、`LANG`、`LC_*`、`COLORTERM`、`NO_COLOR`、`FORCE_COLOR`）。
 对于允许列表模式中的始终允许决策，已知的分发包装器（`env`、`nice`、`nohup`、`stdbuf`、`timeout`）会持久化内部可执行文件路径而非包装器路径。Shell 多路复用器（`busybox`、`toybox`）也会为 Shell 小程序（`sh`、`ash` 等）解包，以便内部可执行文件路径被持久化而非多路复用器二进制文件。如果包装器或多路复用器无法安全解包，则不会自动持久化允许列表条目。
 
-默认安全 bin：`jq`、`cut`、`uniq`、`head`、`tail`、`tr`、`wc`。
+[//]: # "SAFE_BIN_DEFAULTS:START"
+
+`cut`、`uniq`、`head`、`tail`、`tr`、`wc`
+
+[//]: # "SAFE_BIN_DEFAULTS:END"
 
 `grep` 和 `sort` 不在默认列表中。如果你选择加入，请为其非标准输入工作流保留显式允许列表条目。
 对于安全 bin 模式下的 `grep`，使用 `-e`/`--regexp` 提供模式；位置模式形式被拒绝，以防文件操作数被伪装成模糊位置参数。
@@ -178,7 +201,7 @@ Shell 链式（`&&`、`||`、`;`）在每个顶层段都满足允许列表（包
 | 目标             | 自动允许窄范围标准输入过滤器                        | 显式信任特定可执行文件                        |
 | 匹配类型       | 可执行文件名 + 安全 bin argv 策略                 | 解析后的可执行文件路径 glob 模式                        |
 | 参数范围   | 受安全 bin 配置文件和字面令牌规则限制 | 仅路径匹配；参数由你负责 |
-| 典型示例 | `jq`、`head`、`tail`、`wc`                             | `python3`、`node`、`ffmpeg`、自定义 CLI                     |
+| 典型示例 | `head`、`tail`、`tr`、`wc`                             | `jq`、`python3`、`node`、`ffmpeg`、自定义 CLI               |
 | 最佳用途         | 流水线中的低风险文本转换                  | 任何行为更广泛或有副作用的工具               |
 
 配置位置：
@@ -209,6 +232,8 @@ Shell 链式（`&&`、`||`、`;`）在每个顶层段都满足允许列表（包
   },
 }
 ```
+
+如果你显式将 `jq` 加入 `safeBins`，OpenClaw 仍然会在安全 bin 模式下拒绝 `env` 内置，因此 `jq -n env` 无法在没有显式允许列表路径或批准提示的情况下转储主机进程环境。
 
 ## Control UI 编辑
 

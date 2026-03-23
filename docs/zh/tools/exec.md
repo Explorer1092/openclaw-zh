@@ -1,7 +1,7 @@
 ---
 title: "Exec 工具"
 sidebarTitle: "Exec 工具"
-mmh3_hash: "e1549ffdffd05fc2fd0ed5f78f8bbc78"
+mmh3_hash: "bfcede7d5c8202099879cb7d8be0d993"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
 read_when:
   - 使用或修改 exec 工具
@@ -48,6 +48,7 @@ read_when:
 - `tools.exec.security`（对于沙盒默认为 `deny`，对于 Gateway + 节点在未设置时默认为 `allowlist`）
 - `tools.exec.ask`（默认：`on-miss`）
 - `tools.exec.node`（默认：未设置）
+- `tools.exec.strictInlineEval`（默认：false）：为 true 时，内联解释器 eval 形式（如 `python -c`、`node -e`、`ruby -e`、`perl -e`、`php -r`、`lua -e` 和 `osascript -e`）始终需要显式批准，且 `allow-always` 永远不会持久化它们。
 - `tools.exec.pathPrepend`：要为 exec 运行前置到 `PATH` 的目录列表（仅 Gateway + 沙盒）。
 - `tools.exec.safeBins`：可以在没有显式允许列表条目的情况下运行的仅 stdin 安全二进制文件。有关行为详细信息，请参见 [安全 bin](/tools/exec-approvals#safe-bins-stdin-only)。
 - `tools.exec.safeBinTrustedDirs`：用于 `safeBins` 路径检查的额外显式受信任目录。`PATH` 条目永远不会自动受信任。内置默认值为 `/bin` 和 `/usr/bin`。
@@ -106,6 +107,8 @@ openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 
 允许列表强制执行**仅**匹配解析的二进制路径（无基名匹配）。当 `security=allowlist` 时，仅当每个管道段都在允许列表中或是安全 bin 时，才自动允许 shell 命令。在允许列表模式下，链接（`;`、`&&`、`||`）和重定向仅在每个顶级段满足允许列表时被允许（包括安全 bin）。重定向仍不受支持。
 
+`autoAllowSkills` 是 exec 批准中的一个独立便捷路径。它与手动路径允许列表条目不同。对于严格的显式信任，保持 `autoAllowSkills` 禁用。
+
 对不同任务使用两个控制：
 
 - `tools.exec.safeBins`：小型、仅 stdin 的流过滤器。
@@ -113,8 +116,10 @@ openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 - `tools.exec.safeBinProfiles`：自定义安全 bin 的显式 argv 策略。
 - 允许列表：可执行文件路径的显式信任。
 
-不要将 `safeBins` 视为通用允许列表，也不要添加解释器/运行时二进制文件（例如 `python3`、`node`、`ruby`、`bash`）。如果您需要这些，请使用显式允许列表条目并保持启用批准提示。
+不要将 `safeBins` 视为通用允许列表，也不要添加解释器/运行时二进制文件（例如 `python3`、`node`、`ruby`、`bash`）。如果你需要这些，请使用显式允许列表条目并保持启用批准提示。
 `openclaw security audit` 在解释器/运行时 `safeBins` 条目缺少显式配置文件时发出警告，`openclaw doctor --fix` 可以为缺失的自定义 `safeBinProfiles` 条目搭建脚手架。
+`openclaw security audit` 和 `openclaw doctor` 还会在你将 `jq` 等宽行为 bin 显式加回 `safeBins` 时发出警告。
+如果你显式将解释器加入允许列表，请启用 `tools.exec.strictInlineEval`，使内联代码 eval 形式仍需新的批准。
 
 有关完整的策略详细信息和示例，请参见 [Exec 批准](/tools/exec-approvals#safe-bins-stdin-only) 和 [安全 bin 与允许列表](/tools/exec-approvals#safe-bins-versus-allowlist)。
 

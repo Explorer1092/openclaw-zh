@@ -1,6 +1,6 @@
 ---
 title: "Firecrawl"
-mmh3_hash: "c3864d26cc21ce606f578b428ba4656a"
+mmh3_hash: "d8eab7d5acc5637ad53c14edd834db8f"
 summary: "Firecrawl 搜索、抓取和 web_fetch 回退"
 read_when:
   - 需要 Firecrawl 支持的网页提取
@@ -28,20 +28,22 @@ OpenClaw 可以通过三种方式使用 **Firecrawl**：
 
 ```json5
 {
-  plugins: {
-    entries: {
-      firecrawl: {
-        enabled: true,
-      },
-    },
-  },
   tools: {
     web: {
       search: {
         provider: "firecrawl",
-        firecrawl: {
-          apiKey: "FIRECRAWL_API_KEY_HERE",
-          baseUrl: "https://api.firecrawl.dev",
+      },
+    },
+  },
+  plugins: {
+    entries: {
+      firecrawl: {
+        enabled: true,
+        config: {
+          webSearch: {
+            apiKey: "FIRECRAWL_API_KEY_HERE",
+            baseUrl: "https://api.firecrawl.dev",
+          },
         },
       },
     },
@@ -134,4 +136,8 @@ OpenClaw 始终对 Firecrawl 请求使用 `proxy: "auto"` 加 `storeInCache: tru
 2. Firecrawl（若已配置）
 3. 基本 HTML 清理（最后回退）
 
-完整的 Web 工具设置参阅 [Web tools](/tools/web)。
+## 相关
+
+- [Web Search 概览](/tools/web) -- 所有提供商和自动检测
+- [Web Fetch](/tools/web-fetch) -- 带 Firecrawl 回退的 web_fetch 工具
+- [Tavily](/tools/tavily) -- 搜索 + 提取工具

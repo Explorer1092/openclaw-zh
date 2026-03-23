@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "77b0de05e83cbb3cd6be2880937bd719"
+mmh3_hash: "a41bb4b94e89158516f8ec0c1b5b8e90"
 title: "Diffs"
 summary: "供 Agent 使用的只读 diff 查看器与文件渲染器（可选插件工具）"
 description: "使用可选的 Diffs 插件，将前后文本或统一格式的 patch 渲染为 Gateway 托管的 diff 查看页面、文件（PNG 或 PDF），或两者兼得。"
@@ -151,9 +151,12 @@ Patch：
 - `inputKind`
 - `fileCount`
 - `mode`
+- `context`（当可用时：`agentId`、`sessionId`、`messageChannel`、`agentAccountId`）
 
 渲染 PNG 或 PDF 时的文件字段：
 
+- `artifactId`
+- `expiresAt`
 - `filePath`
 - `path`（与 `filePath` 值相同，用于兼容 message 工具）
 - `fileBytes`
