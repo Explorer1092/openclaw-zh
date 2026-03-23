@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4cca67221d3e79b2fae80971f7fc20b6"
+mmh3_hash: "3441993d5c16d2631ea06cea39c66dbb"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -93,12 +93,14 @@ title: "Discord"
 
   </Step>
 
-  <Step title="步骤 0：安全设置你的 bot token（不要在聊天中发送）">
+  <Step title="安全设置你的 bot token（不要在聊天中发送）">
     你的 Discord bot token 是一个密钥（类似密码）。在向你的 agent 发送消息之前，先在运行 OpenClaw 的机器上设置它。
 
 ```bash
-openclaw config set channels.discord.token '"YOUR_BOT_TOKEN"' --json
-openclaw config set channels.discord.enabled true --json
+export DISCORD_BOT_TOKEN="YOUR_BOT_TOKEN"
+openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN --dry-run
+openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN
+openclaw config set channels.discord.enabled true --strict-json
 openclaw gateway
 ```
 
@@ -122,7 +124,11 @@ openclaw gateway
   channels: {
     discord: {
       enabled: true,
-      token: "YOUR_BOT_TOKEN",
+      token: {
+        source: "env",
+        provider: "default",
+        id: "DISCORD_BOT_TOKEN",
+      },
     },
   },
 }
@@ -134,7 +140,7 @@ openclaw gateway
 DISCORD_BOT_TOKEN=...
 ```
 
-        `channels.discord.token` 也支持 SecretRef 值（env/file/exec 提供者）。参见 [Secrets Management](/gateway/secrets)。
+        支持明文 `token` 值。`channels.discord.token` 也支持 SecretRef 值（env/file/exec 提供者）。参见 [Secrets Management](/gateway/secrets)。
 
       </Tab>
     </Tabs>
@@ -169,7 +175,7 @@ openclaw pairing approve discord <CODE>
 
 <Note>
 Token 解析是账户感知的。配置 token 值优先于环境变量回退。`DISCORD_BOT_TOKEN` 仅用于默认账户。
-对于高级出站调用（消息工具/频道操作），该调用使用显式的每次调用 `token`。账户策略/重试设置仍来自活动运行时快照中的所选账户。
+对于高级出站调用（消息工具/频道操作），该调用使用显式的每次调用 `token`。这适用于发送和读取/探测类操作（例如读取/搜索/获取/线程/置顶/权限）。账户策略/重试设置仍来自活动运行时快照中的所选账户。
 </Note>
 
 ## 推荐：设置公会工作区

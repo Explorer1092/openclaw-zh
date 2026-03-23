@@ -1,7 +1,7 @@
 ---
 title: "Telegram (Bot API)"
 sidebarTitle: "Telegram"
-mmh3_hash: "a1f5a80b8a484935e1f5bd8c417b2160"
+mmh3_hash: "1c6cff04264e120fd8a6eac6b52988fe"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook
@@ -157,6 +157,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
     `groupAllowFrom` 用于群组发送者过滤。如果未设置，Telegram 回退到 `allowFrom`。
     `groupAllowFrom` 条目应使用数字 Telegram 用户 ID（`telegram:` / `tg:` 前缀被规范化）。
+    不要将 Telegram 群组或超级群组的聊天 ID 放在 `groupAllowFrom` 中。负数聊天 ID 应放在 `channels.telegram.groups` 下。
     非数字条目在发送者授权时被忽略。
     安全边界（`2026.2.25+`）：群组发送者授权**不**继承 DM 配对存储批准。配对仅用于 DM。对于群组，请设置 `groupAllowFrom` 或每群组/每主题 `allowFrom`。
     运行时注意：如果 `channels.telegram` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组策略评估（即使 `channels.defaults.groupPolicy` 已设置）。
@@ -259,7 +260,10 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
 <AccordionGroup>
   <Accordion title="实时流式预览（消息编辑）">
-    OpenClaw 可以通过发送临时 Telegram 消息并在文本到达时编辑来流式传输部分回复。
+    OpenClaw 可以实时流式传输部分回复：
+
+    - 私聊：预览消息 + `editMessageText`
+    - 群组/主题：预览消息 + `editMessageText`
 
     要求：
 
@@ -341,7 +345,13 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
     1. `/pair` 生成设置码
     2. 在 iOS 应用中粘贴代码
-    3. `/pair approve` 批准最新的待处理请求
+    3. `/pair pending` 列出待处理请求（包括角色/权限范围）
+    4. 批准请求：
+       - `/pair approve <requestId>` 明确批准
+       - `/pair approve` 当只有一个待处理请求时
+       - `/pair approve latest` 批准最新的
+
+    如果设备以更改后的认证详情重试（例如角色/权限范围/公钥），之前的待处理请求会被取代，新请求使用不同的 `requestId`。批准前重新运行 `/pair pending`。
 
     更多详情：[配对](/channels/pairing#pair-via-telegram-recommended-for-ios)。
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ea3e98c000f55b5651bd8c110f11d81c"
+mmh3_hash: "0fdffe4516a58de97994e77a0923c311"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置路径和号码模型"
 read_when:
   - 设置 Signal 支持
@@ -100,7 +100,7 @@ title: "Signal"
 }
 ```
 
-多账户支持：使用 `channels.signal.accounts` 配置每个账户，可选 `name`。参见 [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) 了解共享模式。
+多账户支持：使用 `channels.signal.accounts` 配置每个账户，可选 `name`。参见 [配置参考](/gateway/configuration-reference#multi-account-all-channels) 了解共享模式。
 
 ## 设置路径 B：注册专用 bot 号码（SMS，Linux）
 

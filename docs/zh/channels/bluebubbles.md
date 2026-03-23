@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9978abce7eac894b5dc90a69f1c039ae"
+mmh3_hash: "38538af6f2d4f59b3fe670eb62088b6d"
 summary: "通过 BlueBubbles macOS 服务器使用 iMessage（REST 发送/接收、输入中、反应、配对、高级操作）。"
 read_when:
   - 设置 BlueBubbles channel
@@ -17,7 +17,7 @@ title: "BlueBubbles"
 - OpenClaw 通过其 REST API 与之通信（`GET /api/v1/ping`、`POST /message/text`、`POST /chat/:id/*`）。
 - 传入消息通过 webhook 到达；传出回复、输入中指示器、已读回执和点赞反应是 REST 调用。
 - 附件和贴纸作为入站媒体获取（并在可能时呈现给 agent）。
-- 配对/allowlist 的工作方式与其他 channel 相同（`/start/pairing` 等），使用 `channels.bluebubbles.allowFrom` + 配对代码。
+- 配对/allowlist 的工作方式与其他 channel 相同（`/channels/pairing` 等），使用 `channels.bluebubbles.allowFrom` + 配对代码。
 - 反应作为系统事件呈现，就像 Slack/Telegram 一样，因此 agent 可以在回复前"提及"它们。
 - 高级功能：编辑、撤回、回复线程、消息效果、群组管理。
 
@@ -273,7 +273,7 @@ OpenClaw 可能呈现_短_消息 ID（例如 `1`、`2`）以节省 token。
 ## 媒体 + 限制
 
 - 入站附件被下载并存储在媒体缓存中。
-- 通过 `channels.bluebubbles.mediaMaxMb` 限制媒体（默认：8 MB）。
+- 通过 `channels.bluebubbles.mediaMaxMb` 限制入站和出站媒体（默认：8 MB）。
 - 出站文本分块为 `channels.bluebubbles.textChunkLimit`（默认：4000 个字符）。
 
 ## 配置参考
@@ -295,7 +295,7 @@ Provider 选项：
 - `channels.bluebubbles.blockStreaming`：启用块流式传输（默认：`false`；流式回复需要）。
 - `channels.bluebubbles.textChunkLimit`：出站块大小（字符）（默认：4000）。
 - `channels.bluebubbles.chunkMode`：`length`（默认）仅在超过 `textChunkLimit` 时拆分；`newline` 在长度分块前在空行（段落边界）拆分。
-- `channels.bluebubbles.mediaMaxMb`：入站媒体上限（MB）（默认：8）。
+- `channels.bluebubbles.mediaMaxMb`：入站/出站媒体上限（MB）（默认：8）。
 - `channels.bluebubbles.mediaLocalRoots`：出站本地媒体路径允许的绝对本地目录的显式 allowlist。除非配置此项，否则默认拒绝本地路径发送。每个账户覆盖：`channels.bluebubbles.accounts.<accountId>.mediaLocalRoots`。
 - `channels.bluebubbles.historyLimit`：上下文的最大群组消息数（0 禁用）。
 - `channels.bluebubbles.dmHistoryLimit`：DM 历史记录限制。

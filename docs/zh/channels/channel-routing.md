@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "116f7e6ba59e7ffb6c9a5d85b958b0ee"
+mmh3_hash: "6d584a8f4fb39befbd4558add8be41d6"
 summary: "每个 Channel（WhatsApp、Telegram、Discord、Slack）的路由规则和共享上下文"
 read_when:
   - 更改 Channel 路由或收件箱行为
@@ -12,7 +12,7 @@ OpenClaw 将回复**路由回消息来源的 Channel**。模型不选择 Channel
 
 ## 关键术语
 
-- **Channel**：`whatsapp`、`telegram`、`discord`、`slack`、`signal`、`imessage`、`webchat`。
+- **Channel**：`telegram`、`whatsapp`、`discord`、`irc`、`googlechat`、`slack`、`signal`、`imessage`、`line`，以及扩展 channels。`webchat` 是内部 WebChat UI channel，不是可配置的出站 channel。
 - **AccountId**：每个 Channel 的帐户实例（如果支持）。
 - 可选的 Channel 默认账户：`channels.<channel>.defaultAccount` 选择在出站路径未指定 `accountId` 时使用哪个账户。
   - 在多账户设置中，当配置了两个或更多账户时，请设置显式默认账户（`defaultAccount` 或 `accounts.default`）。没有它，回退路由可能会选择第一个规范化的账户 ID。

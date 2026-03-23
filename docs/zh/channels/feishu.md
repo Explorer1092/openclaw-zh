@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2b5fba941440959406db87f32ea059b5"
+mmh3_hash: "5993c9a8c6d25b56d00891192a3185a5"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人

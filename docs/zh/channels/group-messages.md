@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b9d5efd661602abe20d6ed5827ae334a"
+mmh3_hash: "195fdcbfbb42c549d8f725e87d5ed751"
 summary: "WhatsApp 群组消息处理的行为和配置（mentionPatterns 在各界面间共享）"
 read_when:
   - 更改群组消息规则或提及

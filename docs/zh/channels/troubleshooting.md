@@ -1,7 +1,7 @@
 ---
 title: "频道故障排除"
 sidebarTitle: "频道故障排除"
-mmh3_hash: "03752adfe341f4702e2456181ab74238"
+mmh3_hash: "d6d6e75ec4d7b7970af7ea42de14e196"
 summary: "快速频道级故障排除，含各频道故障特征和修复方法"
 read_when:
   - 频道传输显示已连接但回复失败
@@ -40,7 +40,7 @@ openclaw channels status --probe
 | 群组消息被忽略 | 检查配置中的 `requireMention` 和提及模式 | 提及 bot 或放宽该群组的提及策略。 |
 | 随机断开/重新登录循环 | `openclaw channels status --probe` + 日志 | 重新登录并验证凭据目录是否正常。 |
 
-完整故障排除：[/channels/whatsapp#troubleshooting-quick](/channels/whatsapp#troubleshooting-quick)
+完整故障排除：[/channels/whatsapp#troubleshooting](/channels/whatsapp#troubleshooting)
 
 ## Telegram
 
@@ -92,7 +92,7 @@ openclaw channels status --probe
 
 完整故障排除：
 
-- [/channels/imessage#troubleshooting-macos-privacy-and-security-tcc](/channels/imessage#troubleshooting-macos-privacy-and-security-tcc)
+- [/channels/imessage#troubleshooting](/channels/imessage#troubleshooting)
 - [/channels/bluebubbles#troubleshooting](/channels/bluebubbles#troubleshooting)
 
 ## Signal
@@ -117,4 +117,4 @@ openclaw channels status --probe
 | 私信未处理 | `openclaw pairing list matrix` | 批准发送者或调整私信策略。 |
 | 加密房间失败 | 验证加密模块和加密设置 | 启用加密支持并重新加入/同步房间。 |
 
-完整故障排除：[/channels/matrix#troubleshooting](/channels/matrix#troubleshooting)
+完整设置和配置：[Matrix](/channels/matrix)

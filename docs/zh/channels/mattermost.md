@@ -1,7 +1,7 @@
 ---
 title: "Mattermost (插件)"
 sidebarTitle: "Mattermost"
-mmh3_hash: "98b7c2449b81e0ecc3909dbe912bb9a2"
+mmh3_hash: "d5cc086f28c37aa59b98631b74247701"
 summary: "Mattermost bot 设置和 OpenClaw 配置"
 read_when:
   - 设置 Mattermost
@@ -186,6 +186,33 @@ OpenClaw 按**用户优先**解析：
 - 否则该 ID 被视为 **Channel ID**。
 
 如果您需要确定性行为，请始终使用明确的前缀（`user:<id>` / `channel:<id>`）。
+
+## 私信 Channel 重试
+
+当 OpenClaw 向 Mattermost 私信目标发送消息且需要先解析直接 Channel 时，默认情况下会重试临时的直接 Channel 创建失败。
+
+使用 `channels.mattermost.dmChannelRetry` 为 Mattermost 插件全局调整该行为，或使用 `channels.mattermost.accounts.<id>.dmChannelRetry` 针对单个账户调整。
+
+```json5
+{
+  channels: {
+    mattermost: {
+      dmChannelRetry: {
+        maxRetries: 3,
+        initialDelayMs: 1000,
+        maxDelayMs: 10000,
+        timeoutMs: 30000,
+      },
+    },
+  },
+}
+```
+
+注意：
+
+- 这仅适用于私信 Channel 创建（`/api/v4/channels/direct`），而非每个 Mattermost API 调用。
+- 重试适用于临时故障，如速率限制、5xx 响应以及网络或超时错误。
+- 除 `429` 以外的 4xx 客户端错误被视为永久错误，不会重试。
 
 ## Reactions（message 工具）
 

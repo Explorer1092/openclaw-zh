@@ -1,6 +1,6 @@
 ---
 title: "Nostr"
-mmh3_hash: "f59cba7781792275fe5a434eef549522"
+mmh3_hash: "493ab28046b6b4c513e501b1860420ea"
 summary: "通过 NIP-04 加密消息实现的 Nostr DM Channel"
 read_when:
   - 您希望 OpenClaw 通过 Nostr 接收私信
@@ -61,13 +61,13 @@ openclaw channels add --channel nostr --private-key "$NOSTR_PRIVATE_KEY" --relay
 
 2. 添加到配置：
 
-```json
+```json5
 {
-  "channels": {
-    "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}"
-    }
-  }
+  channels: {
+    nostr: {
+      privateKey: "${NOSTR_PRIVATE_KEY}",
+    },
+  },
 }
 ```
 
@@ -97,23 +97,23 @@ export NOSTR_PRIVATE_KEY="nsec1..."
 
 示例：
 
-```json
+```json5
 {
-  "channels": {
-    "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}",
-      "profile": {
-        "name": "openclaw",
-        "displayName": "OpenClaw",
-        "about": "Personal assistant DM bot",
-        "picture": "https://example.com/avatar.png",
-        "banner": "https://example.com/banner.png",
-        "website": "https://example.com",
-        "nip05": "openclaw@example.com",
-        "lud16": "openclaw@example.com"
-      }
-    }
-  }
+  channels: {
+    nostr: {
+      privateKey: "${NOSTR_PRIVATE_KEY}",
+      profile: {
+        name: "openclaw",
+        displayName: "OpenClaw",
+        about: "Personal assistant DM bot",
+        picture: "https://example.com/avatar.png",
+        banner: "https://example.com/banner.png",
+        website: "https://example.com",
+        nip05: "openclaw@example.com",
+        lud16: "openclaw@example.com",
+      },
+    },
+  },
 }
 ```
 
@@ -131,17 +131,23 @@ export NOSTR_PRIVATE_KEY="nsec1..."
 - **open**：公开接收 DM（需要 `allowFrom: ["*"]`）。
 - **disabled**：忽略入站 DM。
 
+执行注意事项：
+
+- 发送者策略在签名验证和 NIP-04 解密之前检查。
+- 配对回复在不处理原始 DM 内容的情况下发送。
+- 入站 DM 有速率限制，解密前会丢弃超大载荷。
+
 ### Allowlist 示例
 
-```json
+```json5
 {
-  "channels": {
-    "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}",
-      "dmPolicy": "allowlist",
-      "allowFrom": ["npub1abc...", "npub1xyz..."]
-    }
-  }
+  channels: {
+    nostr: {
+      privateKey: "${NOSTR_PRIVATE_KEY}",
+      dmPolicy: "allowlist",
+      allowFrom: ["npub1abc...", "npub1xyz..."],
+    },
+  },
 }
 ```
 
@@ -156,14 +162,14 @@ export NOSTR_PRIVATE_KEY="nsec1..."
 
 默认值：`relay.damus.io` 和 `nos.lol`。
 
-```json
+```json5
 {
-  "channels": {
-    "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}",
-      "relays": ["wss://relay.damus.io", "wss://relay.primal.net", "wss://nostr.wine"]
-    }
-  }
+  channels: {
+    nostr: {
+      privateKey: "${NOSTR_PRIVATE_KEY}",
+      relays: ["wss://relay.damus.io", "wss://relay.primal.net", "wss://nostr.wine"],
+    },
+  },
 }
 ```
 
@@ -192,14 +198,14 @@ export NOSTR_PRIVATE_KEY="nsec1..."
 docker run -p 7777:7777 ghcr.io/hoytech/strfry
 ```
 
-```json
+```json5
 {
-  "channels": {
-    "nostr": {
-      "privateKey": "${NOSTR_PRIVATE_KEY}",
-      "relays": ["ws://localhost:7777"]
-    }
-  }
+  channels: {
+    nostr: {
+      privateKey: "${NOSTR_PRIVATE_KEY}",
+      relays: ["ws://localhost:7777"],
+    },
+  },
 }
 ```
 
@@ -235,6 +241,7 @@ docker run -p 7777:7777 ghcr.io/hoytech/strfry
 - 永远不要提交私钥。
 - 使用环境变量存储密钥。
 - 生产环境的 bot 考虑使用 `allowlist`。
+- 配对和 allowlist 策略在解密前执行，因此未知发送者无法强制进行完整的加密工作。
 
 ## 限制（MVP）
 

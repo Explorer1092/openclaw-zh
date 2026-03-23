@@ -1,9 +1,10 @@
 ---
 title: "Twitch (插件)"
 sidebarTitle: "Twitch (插件)"
-mmh3_hash: "87e0aed82d4faa2fcad8051eb872bb87"
+mmh3_hash: "34bbfba948e744ec197c795aaa90bde9"
 summary: "Twitch 聊天机器人配置和设置"
-read_when: ["Setting up Twitch chat integration for OpenClaw"]
+read_when:
+  - 为 OpenClaw 配置 Twitch 聊天集成
 ---
 # Twitch (plugin)
 
@@ -25,7 +26,7 @@ openclaw plugins install @openclaw/twitch
 openclaw plugins install ./extensions/twitch
 ```
 
-详细信息：[Plugins](/plugin)
+详细信息：[Plugins](/tools/plugin)
 
 ## 快速设置（新手）
 
@@ -108,18 +109,19 @@ OPENCLAW_TWITCH_ACCESS_TOKEN=oauth:abc123...
 {
   channels: {
     twitch: {
-      allowFrom: ["123456789"],       // （推荐）仅你的 Twitch 用户 ID
-      allowedRoles: ["moderator"]     // 或限制为角色
-    }
-  }
+      allowFrom: ["123456789"], // （推荐）仅你的 Twitch 用户 ID
+    },
+  },
 }
 ```
+
+优先使用 `allowFrom` 作为硬性白名单。如需基于角色的访问，改用 `allowedRoles`。
 
 **可用角色：** `"moderator"`、`"owner"`、`"vip"`、`"subscriber"`、`"all"`。
 
 **为什么使用用户 ID？** 用户名可以更改，允许冒充。用户 ID 是永久的。
 
-查找你的 Twitch 用户 ID：https://www.streamweasels.com/tools/convert-twitch-username-%20to-user-id/（将你的 Twitch 用户名转换为 ID）
+查找你的 Twitch 用户 ID：[https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)（将你的 Twitch 用户名转换为 ID）
 
 ## Token 刷新（可选）
 
@@ -205,9 +207,10 @@ OPENCLAW_TWITCH_ACCESS_TOKEN=oauth:abc123...
 }
 ```
 
-### 组合白名单 + 角色
+### 基于角色的访问（替代方案）
 
-`allowFrom` 中的用户绕过角色检查：
+`allowFrom` 是一个硬性白名单。设置后，只允许其中的用户 ID。
+如果需要基于角色的访问，请不要设置 `allowFrom`，改为配置 `allowedRoles`：
 
 ```json5
 {
@@ -215,12 +218,11 @@ OPENCLAW_TWITCH_ACCESS_TOKEN=oauth:abc123...
     twitch: {
       accounts: {
         default: {
-          allowFrom: ["123456789"],
-          allowedRoles: ["moderator"]
-        }
-      }
-    }
-  }
+          allowedRoles: ["moderator"],
+        },
+      },
+    },
+  },
 }
 ```
 
@@ -253,7 +255,7 @@ openclaw channels status --probe
 
 ### 机器人不响应消息
 
-**检查访问控制：** 暂时设置 `allowedRoles: ["all"]` 进行测试。
+**检查访问控制：** 确保你的用户 ID 在 `allowFrom` 中，或暂时移除 `allowFrom` 并设置 `allowedRoles: ["all"]` 进行测试。
 
 **检查机器人是否在频道中：** 机器人必须加入 `channel` 中指定的频道。
 

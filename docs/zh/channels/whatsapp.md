@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp（Web 频道）"
 sidebarTitle: "WhatsApp"
-mmh3_hash: "0a919d65e9d7d91b3811bce2a81f6edf"
+mmh3_hash: "0348abd65303dcdcb9608abf432f40df"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
@@ -10,6 +10,19 @@ read_when:
 # WhatsApp（Web 频道）
 
 状态：通过 WhatsApp Web（Baileys）生产可用。Gateway 拥有关联的会话。
+
+## 按需安装
+
+- 新手引导（`openclaw onboard`）和 `openclaw channels add --channel whatsapp` 在首次选择 WhatsApp 插件时会提示安装。
+- `openclaw channels login --channel whatsapp` 在插件尚未存在时也会提供安装流程。
+- 开发版 Channel + git 检出：默认使用本地插件路径。
+- 稳定版/测试版：默认使用 npm 包 `@openclaw/whatsapp`。
+
+手动安装仍然可用：
+
+```bash
+openclaw plugins install @openclaw/whatsapp
+```
 
 <CardGroup cols={3}>
   <Card title="配对" icon="link" href="/channels/pairing">

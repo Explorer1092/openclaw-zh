@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1b3d168df285520a1308598bd38af8dd"
+mmh3_hash: "e9ca7d4e2dea4db1100c430df51a327a"
 summary: "跨界面（WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams/Zalo）的群聊行为"
 read_when:
   - 更改群聊行为或提及门控
@@ -117,7 +117,7 @@ requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
 
 相关：
 
-- 配置键和默认值：[Gateway 配置](/gateway/configuration#agentsdefaultssandbox)
+- 配置键和默认值：[Gateway 配置](/gateway/configuration-reference#agentsdefaultssandbox)
 - 调试工具为何被阻止：[Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)
 - 绑定挂载详情：[Sandboxing](/gateway/sandboxing#custom-bind-mounts)
 
@@ -291,7 +291,7 @@ requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
 注意：
 
 - 群组/频道工具限制在全局/agent 工具策略之外应用（deny 仍然优先）。
-- 某些 Channel 对房间/频道使用不同的嵌套（例如 Discord `guilds.*.channels.*`、Slack `channels.*`、MS Teams `teams.*.channels.*`）。
+- 某些 Channel 对房间/频道使用不同的嵌套（例如 Discord `guilds.*.channels.*`、Slack `channels.*`、Microsoft Teams `teams.*.channels.*`）。
 
 ## 群组 allowlist
 

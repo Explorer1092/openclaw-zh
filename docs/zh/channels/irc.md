@@ -1,12 +1,13 @@
 ---
-mmh3_hash: "50e682ea8d385c1ce8e421bf8084b1d3"
+mmh3_hash: "526cccda37e57c83de760960303040f4"
 title: IRC
-description: 将 OpenClaw 连接到 IRC Channels 和直接消息。
 summary: "IRC 插件设置、访问控制和故障排除"
 read_when:
   - 连接 OpenClaw 到 IRC 频道或私信
   - 配置 IRC allowlist、群组策略或提及门控
 ---
+
+# IRC
 
 当您想要 OpenClaw 在经典 Channels（`#room`）和直接消息中时，请使用 IRC。IRC 作为扩展 Plugin 提供，但在主配置中的 `channels.irc` 下配置。
 
@@ -15,18 +16,18 @@ read_when:
 1. 在 `~/.openclaw/openclaw.json` 中启用 IRC 配置。
 2. 至少设置：
 
-```json
+```json5
 {
-  "channels": {
-    "irc": {
-      "enabled": true,
-      "host": "irc.libera.chat",
-      "port": 6697,
-      "tls": true,
-      "nick": "openclaw-bot",
-      "channels": ["#openclaw"]
-    }
-  }
+  channels: {
+    irc: {
+      enabled: true,
+      host: "irc.libera.chat",
+      port: 6697,
+      tls: true,
+      nick: "openclaw-bot",
+      channels: ["#openclaw"],
+    },
+  },
 }
 ```
 
@@ -186,32 +187,32 @@ IRC Channels 有两个单独的"门"：
 
 要在连接后使用 NickServ 进行身份验证：
 
-```json
+```json5
 {
-  "channels": {
-    "irc": {
-      "nickserv": {
-        "enabled": true,
-        "service": "NickServ",
-        "password": "your-nickserv-password"
-      }
-    }
-  }
+  channels: {
+    irc: {
+      nickserv: {
+        enabled: true,
+        service: "NickServ",
+        password: "your-nickserv-password",
+      },
+    },
+  },
 }
 ```
 
 连接时可选的一次性注册：
 
-```json
+```json5
 {
-  "channels": {
-    "irc": {
-      "nickserv": {
-        "register": true,
-        "registerEmail": "bot@example.com"
-      }
-    }
-  }
+  channels: {
+    irc: {
+      nickserv: {
+        register: true,
+        registerEmail: "bot@example.com",
+      },
+    },
+  },
 }
 ```
 

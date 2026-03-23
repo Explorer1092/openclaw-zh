@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a39a77f3aaf722fc041c9ee3e533b277"
+mmh3_hash: "621ceb7126a347142dc8ab8d6203d8f2"
 summary: "配对概述：批准谁可以私信您 + 哪些节点可以加入"
 read_when:
   - 设置 DM 访问控制
@@ -36,7 +36,7 @@ openclaw pairing list telegram
 openclaw pairing approve telegram <CODE>
 ```
 
-支持的 Channel：`telegram`、`whatsapp`、`signal`、`imessage`、`discord`、`slack`、`feishu`。
+支持的 Channel：`bluebubbles`、`discord`、`feishu`、`googlechat`、`imessage`、`irc`、`line`、`matrix`、`mattermost`、`msteams`、`nextcloud-talk`、`nostr`、`signal`、`slack`、`synology-chat`、`telegram`、`twitch`、`whatsapp`、`zalo`、`zalouser`。
 
 ### 状态存储位置
 
@@ -66,7 +66,7 @@ openclaw pairing approve telegram <CODE>
 2. 机器人用两条消息回复：一条指令消息和一条单独的**设置代码**消息（在 Telegram 中易于复制/粘贴）。
 3. 在您的手机上，打开 OpenClaw iOS 应用 → 设置 → Gateway。
 4. 粘贴设置代码并连接。
-5. 返回 Telegram：`/pair approve`
+5. 返回 Telegram：`/pair pending`（查看请求 ID、角色和权限范围），然后批准。
 
 设置代码是 base64 编码的 JSON 负载，包含：
 
@@ -82,6 +82,8 @@ openclaw devices list
 openclaw devices approve <requestId>
 openclaw devices reject <requestId>
 ```
+
+如果同一设备以不同的认证详情重试（例如不同的角色/权限范围/公钥），之前的待处理请求会被取代，并创建新的 `requestId`。
 
 ### 节点配对状态存储
 

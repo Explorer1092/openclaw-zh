@@ -1,10 +1,10 @@
 ---
 title: "Microsoft Teams (插件)"
 sidebarTitle: "Microsoft Teams"
-mmh3_hash: "6f438d4b32e68ac80a5d04341490eeaa"
+mmh3_hash: "9857c2d2f5ddda33256c111f4931f2a7"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when:
-  - 开发 MS Teams Channel 功能
+  - 开发 Microsoft Teams Channel 功能
 ---
 
 # Microsoft Teams (插件)
@@ -19,7 +19,7 @@ read_when:
 
 Microsoft Teams 作为插件发布，不包含在核心安装中。
 
-**重大变更 (2026.1.15)：** MS Teams 已从核心移出。如果您使用它，必须安装插件。
+**重大变更 (2026.1.15)：** Microsoft Teams 已从核心移出。如果您使用它，必须安装插件。
 
 说明：保持核心安装更轻量，并允许 MS Teams 依赖项独立更新。
 

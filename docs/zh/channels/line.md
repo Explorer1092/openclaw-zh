@@ -1,7 +1,7 @@
 ---
 title: "LINE (插件)"
 sidebarTitle: "LINE"
-mmh3_hash: "3c3c5b6f381fd51bcd76263b96ecf8ea"
+mmh3_hash: "b9f2aadda7544eaf1b4d2cc74ae33ba9"
 summary: "LINE Messaging API 插件设置、配置和使用"
 read_when:
   - 连接 OpenClaw 到 LINE
@@ -49,6 +49,7 @@ Gateway 会响应 LINE 的 Webhook 验证（GET）和入站事件（POST）。
 安全注意：
 
 - LINE 签名验证依赖于请求体（对原始请求体进行 HMAC 计算），因此 OpenClaw 在验证之前会应用严格的预认证请求体限制和超时。
+- OpenClaw 从经过验证的原始请求字节中处理 Webhook 事件。上游中间件转换后的 `req.body` 值会被忽略，以确保签名完整性。
 
 ## 配置
 
