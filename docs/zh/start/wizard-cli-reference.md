@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4a96b6d696276c0b8a5c1cf92f2e254a"
+mmh3_hash: "f8b1b095f9581dbd1113eb6557f75882"
 summary: "CLI 引导流程、认证/模型设置、输出和内部的完整参考"
 read_when:
   - 您需要 openclaw onboard 的详细行为
@@ -145,7 +145,7 @@ sidebarTitle: "CLI 参考"
   <Accordion title="OpenAI API 密钥">
     如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将凭据存储在认证配置文件中。
 
-    当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.1-codex`。
+    当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.4`。
 
   </Accordion>
   <Accordion title="xAI（Grok）API 密钥">
@@ -164,8 +164,9 @@ sidebarTitle: "CLI 参考"
   <Accordion title="Cloudflare AI Gateway">
     提示输入账号 ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。更多详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)。
   </Accordion>
-  <Accordion title="MiniMax M2.5">
-    配置自动写入。更多详情：[MiniMax](/providers/minimax)。
+  <Accordion title="MiniMax">
+    配置自动写入。托管默认为 `MiniMax-M2.7`；`MiniMax-M2.5` 仍然可用。
+    更多详情：[MiniMax](/providers/minimax)。
   </Accordion>
   <Accordion title="Synthetic（Anthropic 兼容）">
     提示输入 `SYNTHETIC_API_KEY`。更多详情：[Synthetic](/providers/synthetic)。

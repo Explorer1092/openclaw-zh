@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8f032d678dc74b458acd56183f33ed22"
+mmh3_hash: "30b6f99ca7942fdb026c9b65904e6c07"
 summary: "OpenClaw CLI 的脚本化引导和 Agent 设置"
 read_when:
   - 您在脚本或 CI 中自动化引导

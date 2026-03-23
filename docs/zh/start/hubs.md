@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bfa5fb21d1ec3e237dbc6c1ab363573f"
+mmh3_hash: "dcc8fb231018260b822ec3a5389a0a3c"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图
@@ -18,9 +18,8 @@ title: "文档中心"
 
 - [首页](/)
 - [入门指南](/start/getting-started)
-- [快速开始](/start/quickstart)
-- [初次引导](/start/onboarding)
-- [设置向导](/start/wizard)
+- [引导向导](/start/onboarding)
+- [引导向导（CLI）](/start/wizard)
 - [设置](/start/setup)
 - [Dashboard (本地 Gateway)](http://127.0.0.1:18789/)
 - [帮助](/help)
@@ -163,6 +162,18 @@ title: "文档中心"
 - [macOS Skill](/platforms/mac/skills)
 - [macOS Peekaboo](/platforms/mac/peekaboo)
 
+## 扩展和插件
+
+- [插件概述](/tools/plugin)
+- [构建插件](/plugins/building-plugins)
+- [插件清单](/plugins/manifest)
+- [Agent 工具](/plugins/building-plugins#registering-agent-tools)
+- [插件包](/plugins/bundles)
+- [社区插件](/plugins/community)
+- [能力手册](/tools/capability-cookbook)
+- [语音通话插件](/plugins/voice-call)
+- [Zalo 用户插件](/plugins/zalouser)
+
 ## 工作区和模板
 
 - [Skill](/tools/skills)
@@ -176,12 +187,6 @@ title: "文档中心"
 - [模板: SOUL](/reference/templates/SOUL)
 - [模板: TOOLS](/reference/templates/TOOLS)
 - [模板: USER](/reference/templates/USER)
-
-## 实验 (探索性)
-
-- [Onboarding 配置协议](/experiments/onboarding-config-protocol)
-- [研究: 记忆](/experiments/research/memory)
-- [模型配置探索](/experiments/proposals/model-config)
 
 ## 项目
 

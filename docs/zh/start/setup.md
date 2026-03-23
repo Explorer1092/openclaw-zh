@@ -1,7 +1,7 @@
 ---
 title: "设置"
 sidebarTitle: "设置"
-mmh3_hash: "86e290f3b0a8625c1c30e804160ea7d2"
+mmh3_hash: "7c120a35c3fa4ac22a86b567e75460f7"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器
@@ -12,10 +12,8 @@ read_when:
 
 <Note>
 如果您是首次设置，请从[入门指南](/start/getting-started)开始。
-有关向导详情，请参阅[引导向导](/start/wizard)。
+有关向导详情，请参阅[引导向导（CLI）](/start/wizard)。
 </Note>
-
-最后更新：2026-01-01
 
 ## 摘要 (TL;DR)
 
@@ -25,7 +23,7 @@ read_when:
 
 ## 前提条件 (从源码)
 
-- Node `>=22`
+- 推荐 Node 24（Node 22 LTS，当前为 `22.16+`，仍受支持）
 - `pnpm`
 - Docker (可选；仅用于容器化设置/端到端测试 — 参见 [Docker](/install/docker))
 

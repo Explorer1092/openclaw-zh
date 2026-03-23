@@ -1,19 +1,19 @@
 ---
 title: "使用 OpenClaw 构建个人助手"
 sidebarTitle: "OpenClaw 助手设置"
-mmh3_hash: "840429b820e5f4ec6a255b9af60e0100"
+mmh3_hash: "ad92f70a8c7d5f7134c3574fb0bb3614"
 summary: "将 OpenClaw 作为带有安全警告的个人助手运行的端到端指南"
 read_when: ["引导新的助手实例","审查安全/权限影响"]
 ---
 # 使用 OpenClaw 构建个人助手
 
-OpenClaw 是一个用于 **Pi** Agent 的 WhatsApp + Telegram + Discord + iMessage Gateway。插件增加了 Mattermost 支持。本指南是"个人助手"设置：一个专用的 WhatsApp 号码，表现得像你永远在线的 Agent。
+OpenClaw 是一个自托管的 Gateway，可将 WhatsApp、Telegram、Discord、iMessage 等连接到 AI Agent。本指南介绍"个人助手"设置：一个专用的 WhatsApp 号码，表现得像你永远在线的 AI 助手。
 
 ## ⚠️ 安全第一
 
 你正在让一个 Agent 处于以下位置：
 
-- 在你的机器上运行命令（取决于你的 Pi 工具设置）
+- 在你的机器上运行命令（取决于你的工具策略）
 - 读取/写入工作区中的文件
 - 通过 WhatsApp/Telegram/Discord/Mattermost (插件) 发送消息
 
@@ -35,7 +35,7 @@ OpenClaw 是一个用于 **Pi** Agent 的 WhatsApp + Telegram + Discord + iMessa
 ```mermaid
 flowchart TB
     A["<b>你的手机 (个人)<br></b><br>你的 WhatsApp<br>+1-555-YOU"] -- 消息 --> B["<b>第二部手机 (助手)<br></b><br>助手 WA<br>+1-555-ASSIST"]
-    B -- 通过二维码关联 --> C["<b>你的 Mac (openclaw)<br></b><br>Pi Agent"]
+    B -- 通过二维码关联 --> C["<b>你的 Mac (openclaw)<br></b><br>AI Agent"]
 ```
 
 如果你将你的个人 WhatsApp 链接到 OpenClaw，发给你的每条消息都会变成"Agent 输入"。这通常不是你想要的。
@@ -190,6 +190,8 @@ MEDIA:https://example.com/screenshot.png
 ```
 
 OpenClaw 提取这些并作为媒体与文本一起发送。
+
+对于本地路径，默认允许列表有意保持较窄：OpenClaw 临时根目录、媒体缓存、Agent 工作区路径和沙箱生成的文件。如果你需要更广泛的本地文件附件根目录，请配置明确的 Channel/插件允许列表，而不是依赖任意主机路径。
 
 ## 运维清单
 

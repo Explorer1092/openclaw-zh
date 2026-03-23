@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8dd685498c048d7ed71fd74bb78c7b42"
+mmh3_hash: "46a90e1fa55797d1cfc779b00dd80d58"
 summary: "快速开始已移至入门。"
 read_when:
   - 您正在寻找最快的设置步骤
@@ -17,7 +17,7 @@ title: "快速开始"
   <Card title="入门" href="/start/getting-started">
     安装 OpenClaw 并在几分钟内运行您的第一次聊天。
   </Card>
-  <Card title="引导向导" href="/start/wizard">
+  <Card title="引导向导（CLI）" href="/start/wizard">
     完整的 CLI 向导参考和高级选项。
   </Card>
 </Columns>

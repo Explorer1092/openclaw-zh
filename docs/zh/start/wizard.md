@@ -1,16 +1,16 @@
 ---
-mmh3_hash: "92c2cb855ba09cc291585ecd7b2c2397"
-summary: "CLI 入门向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
+mmh3_hash: "b5ad401664b5c71f1c396dd973c5b88a"
+summary: "CLI 引导向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
 read_when:
-  - 运行或配置入门向导
+  - 运行或配置 CLI 引导向导
   - 设置新机器
-title: "入门向导"
-sidebarTitle: "引导向导（CLI）"
+title: "引导向导（CLI）"
+sidebarTitle: "引导向导：CLI"
 ---
 
-# 入门向导（CLI）
+# 引导向导（CLI）
 
-入门向导是在 macOS、Linux 或 Windows（通过 WSL2；强烈推荐）上设置 OpenClaw 的**推荐**方式。
+CLI 引导向导是在 macOS、Linux 或 Windows（通过 WSL2；强烈推荐）上设置 OpenClaw 的**推荐**方式。
 它在一个引导式流程中配置本地 Gateway 或远程 Gateway 连接，以及 Channel、Skill 和工作区默认值。
 
 ```bash
@@ -34,7 +34,7 @@ openclaw agents add <name>
 </Note>
 
 <Tip>
-入门向导包含网络搜索步骤，您可以在其中选择 Provider（Perplexity、Brave、Gemini、Grok 或 Kimi）并粘贴您的 API 密钥，以便 Agent 可以使用 `web_search`。您也可以稍后通过 `openclaw configure --section web` 进行配置。文档：[Web 工具](/tools/web)。
+CLI 引导向导包含网络搜索步骤，您可以在其中选择 Provider（Perplexity、Brave、Gemini、Grok 或 Kimi）并粘贴您的 API 密钥，以便 Agent 可以使用 `web_search`。您也可以稍后通过 `openclaw configure --section web` 进行配置。文档：[Web 工具](/tools/web)。
 </Tip>
 
 ## QuickStart vs Advanced
@@ -57,7 +57,7 @@ openclaw agents add <name>
   </Tab>
 </Tabs>
 
-## 向导做什么
+## 向导配置的内容
 
 **Local 模式（默认）**引导您完成以下步骤：
 

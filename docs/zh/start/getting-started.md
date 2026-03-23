@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ac70ef518578c0383a90cf5dd03ab977"
+mmh3_hash: "f5fb61484f478e11d18b073df374b20c"
 summary: "从零开始安装 OpenClaw，在几分钟内完成第一次聊天。"
 read_when:
   - 首次从零开始设置
@@ -9,29 +9,25 @@ title: "快速开始"
 
 # 快速开始
 
-目标：以最少的设置从零开始完成第一次可用聊天。
+安装 OpenClaw，运行引导向导，与 AI 助手聊天——整个过程约需 5 分钟。完成后你将拥有一个运行中的 Gateway、已配置的认证和可用的聊天会话。
 
-<Info>
-最快聊天方式：打开 Control UI（无需设置 Channel）。运行 `openclaw dashboard`
-并在浏览器中聊天，或者在
-<Tooltip headline="Gateway 主机" tip="运行 OpenClaw gateway 服务的机器。">Gateway 主机</Tooltip>上打开 `http://127.0.0.1:18789/`。
-文档：[Dashboard](/web/dashboard) 和 [Control UI](/web/control-ui)。
-</Info>
+## 所需条件
 
-## 前提条件
-
-- 推荐 Node 24（Node 22 LTS，当前为 `22.16+`，仍受支持以兼容）
+- **Node.js** — 推荐 Node 24（也支持 Node 22.16+）
+- 来自模型提供商（Anthropic、OpenAI、Google 等）的 **API 密钥** — 引导向导会提示您输入
 
 <Tip>
-如果不确定，可以用 `node --version` 查看 Node 版本。
+使用 `node --version` 查看 Node 版本。
+**Windows 用户：** 原生 Windows 和 WSL2 均受支持。WSL2 更稳定，建议用于完整体验。参见 [Windows](/platforms/windows)。
+需要安装 Node？参见 [Node 设置](/install/node)。
 </Tip>
 
-## 快速设置（CLI）
+## 快速设置
 
 <Steps>
-  <Step title="安装 OpenClaw（推荐）">
+  <Step title="安装 OpenClaw">
     <Tabs>
-      <Tab title="macOS/Linux">
+      <Tab title="macOS / Linux">
         ```bash
         curl -fsSL https://openclaw.ai/install.sh | bash
         ```
@@ -49,88 +45,68 @@ title: "快速开始"
     </Tabs>
 
     <Note>
-    其他安装方式和要求：[安装](/install)。
+    其他安装方式（Docker、Nix、npm）：[安装](/install)。
     </Note>
 
   </Step>
-  <Step title="运行设置向导">
+  <Step title="运行引导向导">
     ```bash
     openclaw onboard --install-daemon
     ```
 
-    向导会配置认证、Gateway 设置和可选 Channel。
-    详情参见 [设置向导](/start/wizard)。
+    向导会引导你选择模型提供商、设置 API 密钥并配置 Gateway，大约需要 2 分钟。
+
+    完整参考参见 [引导向导（CLI）](/start/wizard)。
 
   </Step>
-  <Step title="检查 Gateway">
-    如果已安装服务，Gateway 应该已经在运行：
-
+  <Step title="验证 Gateway 是否运行">
     ```bash
     openclaw gateway status
     ```
 
+    你应该能看到 Gateway 在端口 18789 上监听。
+
   </Step>
-  <Step title="打开 Control UI">
+  <Step title="打开 Dashboard">
     ```bash
     openclaw dashboard
     ```
+
+    这会在浏览器中打开 Control UI。如果加载成功，说明一切正常。
+
+  </Step>
+  <Step title="发送第一条消息">
+    在 Control UI 聊天框中输入一条消息，你应该会收到 AI 回复。
+
+    想要从手机聊天？最快设置的 Channel 是
+    [Telegram](/channels/telegram)（只需一个机器人令牌）。所有选项参见 [Channels](/channels)。
+
   </Step>
 </Steps>
 
-<Check>
-如果 Control UI 成功加载，你的 Gateway 已就绪。
-</Check>
-
-## 可选检查和扩展
-
-<AccordionGroup>
-  <Accordion title="在前台运行 Gateway">
-    适合快速测试或故障排查。
-
-    ```bash
-    openclaw gateway --port 18789
-    ```
-
-  </Accordion>
-  <Accordion title="发送测试消息">
-    需要已配置 Channel。
-
-    ```bash
-    openclaw message send --target +15555550123 --message "Hello from OpenClaw"
-    ```
-
-  </Accordion>
-</AccordionGroup>
-
-## 常用环境变量
-
-如果你以服务账号方式运行 OpenClaw，或需要自定义配置/状态位置：
-
-- `OPENCLAW_HOME` 设置用于内部路径解析的主目录。
-- `OPENCLAW_STATE_DIR` 覆盖状态目录。
-- `OPENCLAW_CONFIG_PATH` 覆盖配置文件路径。
-
-完整环境变量参考：[环境变量](/help/environment)。
-
-## 深入了解
+## 下一步
 
 <Columns>
-  <Card title="设置向导（详细）" href="/start/wizard">
-    完整的 CLI 向导参考和高级选项。
+  <Card title="连接 Channel" href="/channels" icon="message-square">
+    WhatsApp、Telegram、Discord、iMessage 等。
   </Card>
-  <Card title="macOS 应用初次引导" href="/start/onboarding">
-    macOS 应用的首次运行流程。
+  <Card title="配对和安全" href="/channels/pairing" icon="shield">
+    控制谁可以向你的 Agent 发消息。
+  </Card>
+  <Card title="配置 Gateway" href="/gateway/configuration" icon="settings">
+    模型、工具、沙箱和高级设置。
+  </Card>
+  <Card title="浏览工具" href="/tools" icon="wrench">
+    浏览器、执行、网络搜索、技能和插件。
   </Card>
 </Columns>
 
-## 完成后你将拥有
+<Accordion title="高级：环境变量">
+  如果你以服务账号方式运行 OpenClaw 或需要自定义路径：
 
-- 一个运行中的 Gateway
-- 已配置的认证
-- Control UI 访问权限或已连接的 Channel
+- `OPENCLAW_HOME` — 用于内部路径解析的主目录
+- `OPENCLAW_STATE_DIR` — 覆盖状态目录
+- `OPENCLAW_CONFIG_PATH` — 覆盖配置文件路径
 
-## 下一步
-
-- 私信安全与审批：[配对](/channels/pairing)
-- 连接更多 Channel：[Channels](/channels)
-- 高级工作流和从源码运行：[设置](/start/setup)
+完整参考：[环境变量](/help/environment)。
+</Accordion>
