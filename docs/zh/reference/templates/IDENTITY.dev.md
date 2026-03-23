@@ -1,6 +1,6 @@
 ---
 title: "IDENTITY.md - 代理身份"
-mmh3_hash: "96a8d55c05108c9d84d4ae03a3ccb18b"
+mmh3_hash: "8eb2e818f7cd87f656691412310964c0"
 summary: "开发代理身份(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---

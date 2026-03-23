@@ -1,6 +1,6 @@
 ---
 title: "USER.md - 用户个人资料"
-mmh3_hash: "4f98fd8e97db1a06afc8ff34553df079"
+mmh3_hash: "2fca68bb5ad4e360bc59eee6b0cd2542"
 summary: "开发代理用户个人资料(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---

@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "31263f97f09941a0d04d092ca74e3b3e"
+mmh3_hash: "3e3f3b6f7cc0a083fcf6961c53f470e6"
 summary: "审计哪些内容可以花钱、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API
   - 您需要审计密钥、成本和使用情况可见性
   - 您正在解释 /status 或 /usage 成本报告
-title: "API 使用和成本"
+title: "API 使用与成本"
 ---
 
 # API 使用和成本
@@ -76,11 +76,13 @@ OpenClaw 可以从以下位置获取凭证:
 
 `web_search` 使用 API 密钥并可能根据您的 Provider 产生使用费用：
 
-- **Brave Search API**：`BRAVE_API_KEY` 或 `tools.web.search.apiKey`
-- **Gemini（Google Search）**：`GEMINI_API_KEY` 或 `tools.web.search.gemini.apiKey`
-- **Grok（xAI）**：`XAI_API_KEY` 或 `tools.web.search.grok.apiKey`
-- **Kimi（Moonshot）**：`KIMI_API_KEY`、`MOONSHOT_API_KEY` 或 `tools.web.search.kimi.apiKey`
-- **Perplexity Search API**：`PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `tools.web.search.perplexity.apiKey`
+- **Brave Search API**：`BRAVE_API_KEY` 或 `plugins.entries.brave.config.webSearch.apiKey`
+- **Gemini（Google Search）**：`GEMINI_API_KEY` 或 `plugins.entries.google.config.webSearch.apiKey`
+- **Grok（xAI）**：`XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`
+- **Kimi（Moonshot）**：`KIMI_API_KEY`、`MOONSHOT_API_KEY` 或 `plugins.entries.moonshot.config.webSearch.apiKey`
+- **Perplexity Search API**：`PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `plugins.entries.perplexity.config.webSearch.apiKey`
+
+旧版 `tools.web.search.*` Provider 路径在临时兼容 shim 期间仍可加载，但不再是推荐的配置接口。
 
 **Brave Search 免费积分：** 每个 Brave 计划每月包含 $5 的循环免费积分。Search 计划每 1,000 个请求收费 $5，因此积分涵盖每月 1,000 个请求，无需额外费用。在 Brave 仪表板中设置使用限额以避免意外收费。
 

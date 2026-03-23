@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "acf5cf658faa97e81a1d7cd173e91aea"
+mmh3_hash: "7d5e5abce127adddd8caa2003df4fbab"
 summary: "深入研究：会话存储 + 转录、生命周期和（自动）压缩内部"
 read_when:
   - 您需要调试会话 id、转录 JSONL 或 sessions.json 字段

@@ -1,6 +1,6 @@
 ---
 title: "SOUL.md - C-3PO 的灵魂"
-mmh3_hash: "7ba5a7b55d378d93b8a78fa1cc4a0b4c"
+mmh3_hash: "e4c8b1a1c1400458901376019ce2ec9e"
 summary: "开发代理灵魂(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---

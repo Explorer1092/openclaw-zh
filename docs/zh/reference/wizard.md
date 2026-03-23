@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e766a12142605f76092276159af5576d"
+mmh3_hash: "8841d57ebaf332bef868e52f167d70ff"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志
@@ -41,7 +41,9 @@ sidebarTitle: "向导参考"
     - 更多详情：[Vercel AI Gateway](/providers/vercel-ai-gateway)
     - **Cloudflare AI Gateway**：提示输入帐户 ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。
     - 更多详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-    - **MiniMax M2.5**：配置自动写入。
+    - **Ollama**：提示输入 Ollama base URL，提供 **Cloud + Local** 或 **Local** 模式，发现可用模型，并在需要时自动拉取所选本地模型。
+    - 更多详情：[Ollama](/providers/ollama)
+    - **MiniMax**：配置自动写入；托管默认为 `MiniMax-M2.7`，`MiniMax-M2.5` 仍可用。
     - 更多详情：[MiniMax](/providers/minimax)
     - **Synthetic（Anthropic 兼容）**：提示输入 `SYNTHETIC_API_KEY`。
     - 更多详情：[Synthetic](/providers/synthetic)
@@ -88,6 +90,12 @@ sidebarTitle: "向导参考"
     - [BlueBubbles](/channels/bluebubbles)：**推荐用于 iMessage**；服务器 URL + 密码 + Webhook。
     - [iMessage](/channels/imessage)：旧版 `imsg` CLI 路径 + DB 访问。
     - DM 安全性：默认为配对。第一个 DM 发送代码；通过 `openclaw pairing approve <channel> <code>` 批准或使用白名单。
+  </Step>
+  <Step title="Web 搜索">
+    - 选择 Provider：Perplexity、Brave、Gemini、Grok 或 Kimi（或跳过）。
+    - 粘贴您的 API 密钥（QuickStart 从环境变量或现有配置中自动检测密钥）。
+    - 使用 `--skip-search` 跳过。
+    - 稍后配置：`openclaw configure --section web`。
   </Step>
   <Step title="守护程序安装">
     - macOS：LaunchAgent

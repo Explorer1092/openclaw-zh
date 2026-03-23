@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c2aaf92e2b0efa13a08ca486456ba985"
+mmh3_hash: "7a93f30db2ab3689646ff69c68a0f6be"
 summary: "SecretRef 凭据界面的规范支持与不支持范围"
 read_when:
   - 验证 SecretRef 凭据覆盖范围
@@ -33,6 +33,13 @@ title: "SecretRef 凭据界面"
 - `messages.tts.elevenlabs.apiKey`
 - `messages.tts.openai.apiKey`
 - `tools.web.fetch.firecrawl.apiKey`
+- `plugins.entries.brave.config.webSearch.apiKey`
+- `plugins.entries.google.config.webSearch.apiKey`
+- `plugins.entries.xai.config.webSearch.apiKey`
+- `plugins.entries.moonshot.config.webSearch.apiKey`
+- `plugins.entries.perplexity.config.webSearch.apiKey`
+- `plugins.entries.firecrawl.config.webSearch.apiKey`
+- `plugins.entries.tavily.config.webSearch.apiKey`
 - `tools.web.search.apiKey`
 - `tools.web.search.gemini.apiKey`
 - `tools.web.search.grok.apiKey`
@@ -109,6 +116,7 @@ title: "SecretRef 凭据界面"
   - 在显式 Provider 模式（已设置 `tools.web.search.provider`）下，仅激活所选 Provider 的键。
   - 在自动模式（未设置 `tools.web.search.provider`）下，仅按优先级解析的第一个 Provider 键处于活跃状态。
   - 在自动模式下，未选择的 Provider 引用在被选中之前视为非活跃状态。
+  - 旧版 `tools.web.search.*` Provider 路径在兼容窗口期间仍可解析，但规范 SecretRef 界面为 `plugins.entries.<plugin>.config.webSearch.*`。
 
 ## 不支持的凭据
 

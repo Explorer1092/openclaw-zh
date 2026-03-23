@@ -1,10 +1,12 @@
 ---
-mmh3_hash: "84cb8f6c9d93f086fc575436394b7adf"
+mmh3_hash: "d6c88002f00e8a98d0786ceba0598848"
 summary: "项目起源、贡献者和许可证。"
 read_when:
   - 您想要了解项目背景故事或贡献者致谢
 title: "致谢"
 ---
+
+# 致谢与鸣谢
 
 ## 名字的由来
 
@@ -20,6 +22,7 @@ OpenClaw = CLAW + TARDIS，因为每只太空龙虾都需要一台时空机器�
 
 - **Maxim Vovshin** (@Hyaxia, [36747317+Hyaxia@users.noreply.github.com](mailto:36747317+Hyaxia@users.noreply.github.com)) - Blogwatcher Skill
 - **Nacho Iacovino** (@nachoiacovino, [nacho.iacovino@gmail.com](mailto:nacho.iacovino@gmail.com)) - 位置解析（Telegram 和 WhatsApp）
+- **Vincent Koc** ([@vincentkoc](https://github.com/vincentkoc), [@vincent_koc](https://x.com/vincent_koc)) - Agents、Telemetry、Hooks、Security
 
 ## 许可证
 
