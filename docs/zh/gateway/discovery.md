@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1a0501918a9cc6623085005d146d9bdd"
+mmh3_hash: "47c6c0a580326cdd675e9ee24460e5e0"
 summary: "节点发现和传输(Bonjour、Tailscale、SSH)用于查找 Gateway"
 read_when:
   - 实现或更改 Bonjour 发现/广播

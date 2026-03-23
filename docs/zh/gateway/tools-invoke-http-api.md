@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "802ac7722a8600ecf9d1942d6a73a3f2"
+mmh3_hash: "6ac0a81ee1db86023d8239090c01c78a"
 summary: "通过 Gateway HTTP 端点直接调用单个工具"
 read_when:
   - 在不运行完整 Agent 轮次的情况下调用工具

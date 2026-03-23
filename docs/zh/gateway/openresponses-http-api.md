@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "13da0765c1c78ca4e18dd0b98dcdd509"
+mmh3_hash: "e889860ac22b566b907c0743012649b0"
 summary: "从 Gateway 公开兼容 OpenResponses 的 /v1/responses HTTP 端点"
 read_when:
   - 集成使用 OpenResponses API 的客户端

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6427954063cd417b61d6088853c4190e"
+mmh3_hash: "5eba63bf49f66e3b4fd45bcedaef3ba2"
 summary: "CLI backend:通过本地 AI CLI 的纯文本回退"
 read_when:
   - 您希望在 API 提供商失败时有一个可靠的回退
@@ -110,8 +110,8 @@ agents.defaults.cliBackends
           modelArg: "--model",
           modelAliases: {
             "claude-opus-4-6": "opus",
-            "claude-opus-4-5": "opus",
-            "claude-sonnet-4-5": "sonnet",
+            "claude-opus-4-6": "opus",
+            "claude-sonnet-4-6": "sonnet",
           },
           sessionArg: "--session",
           sessionMode: "existing",

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d37f101bb501a27140e964280ec3bc6f"
+mmh3_hash: "3aa871e8833c85733a7b15f989514a2b"
 summary: "日志表面、文件日志、WS 日志样式和控制台格式化"
 read_when:
   - 更改日志输出或格式

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "46670353df281ec2beaff835d1e737ec"
+mmh3_hash: "7293a7304f3d4f3c3ed88befe0482f8e"
 summary: "模型认证:OAuth、API 密钥和 setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题

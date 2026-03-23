@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "608b4453d037ab79337809dd4968cba7"
+mmh3_hash: "9bb6d36bac49b740af8d425b7e94eb12"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:
   - 学习如何配置 OpenClaw
@@ -36,7 +36,7 @@ title: "配置示例"
   },
   agent: {
     workspace: "~/.openclaw/workspace",
-    model: { primary: "anthropic/claude-sonnet-4-5" },
+    model: { primary: "anthropic/claude-sonnet-4-6" },
   },
   channels: {
     whatsapp: {
@@ -239,15 +239,15 @@ title: "配置示例"
       workspace: "~/.openclaw/workspace",
       userTimezone: "America/Chicago",
       model: {
-        primary: "anthropic/claude-sonnet-4-5",
+        primary: "anthropic/claude-sonnet-4-6",
         fallbacks: ["anthropic/claude-opus-4-6", "openai/gpt-5.2"],
       },
       imageModel: {
-        primary: "openrouter/anthropic/claude-sonnet-4-5",
+        primary: "openrouter/anthropic/claude-sonnet-4-6",
       },
       models: {
         "anthropic/claude-opus-4-6": { alias: "opus" },
-        "anthropic/claude-sonnet-4-5": { alias: "sonnet" },
+        "anthropic/claude-sonnet-4-6": { alias: "sonnet" },
         "openai/gpt-5.2": { alias: "gpt" },
       },
       thinkingDefault: "low",
@@ -272,7 +272,7 @@ title: "配置示例"
       maxConcurrent: 3,
       heartbeat: {
         every: "30m",
-        model: "anthropic/claude-sonnet-4-5",
+        model: "anthropic/claude-sonnet-4-6",
         target: "last",
         directPolicy: "allow", // allow (默认) | block
         to: "+15555550123",
@@ -304,6 +304,20 @@ title: "配置示例"
         },
       },
     },
+    list: [
+      {
+        id: "main",
+        default: true,
+        thinkingDefault: "high", // 每个 agent 的 thinking 覆盖
+        reasoningDefault: "on", // 每个 agent 的 reasoning 可见性
+        fastModeDefault: false, // 每个 agent 的 fast mode
+      },
+      {
+        id: "quick",
+        fastModeDefault: true, // 此 agent 始终以 fast 模式运行
+        thinkingDefault: "off",
+      },
+    ],
   },
 
   tools: {
@@ -435,7 +449,7 @@ title: "配置示例"
       nodeManager: "npm",
     },
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
         apiKey: "GEMINI_KEY_HERE",
         env: { GEMINI_API_KEY: "GEMINI_KEY_HERE" },
@@ -521,7 +535,7 @@ title: "配置示例"
   agent: {
     workspace: "~/.openclaw/workspace",
     model: {
-      primary: "anthropic/claude-sonnet-4-5",
+      primary: "anthropic/claude-sonnet-4-6",
       fallbacks: ["anthropic/claude-opus-4-6"],
     },
   },

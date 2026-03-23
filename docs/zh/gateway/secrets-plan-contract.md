@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c115239ce49f2658523f3d127bf173a6"
+mmh3_hash: "64cccb96e643c110852e333efffa1fab"
 summary: "`secrets apply` 计划的约定：目标验证、路径匹配，以及 `auth-profiles.json` 目标作用域"
 read_when:
   - 生成或审查 `openclaw secrets apply` 计划

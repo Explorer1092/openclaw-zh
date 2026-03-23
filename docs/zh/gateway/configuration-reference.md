@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c6d6e2fabe1fa6d403e6a74b509ba85d"
+mmh3_hash: "cddf44b54ec60fbcfa251aa7b316452b"
 title: "配置参考"
 description: "~/.openclaw/openclaw.json 的完整字段级参考文档"
 summary: "每个 OpenClaw 配置键、默认值及 Channel 设置的完整参考"
@@ -184,7 +184,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
       streaming: "partial", // off | partial | block | progress（默认：off）
       actions: { reactions: true, sendMessage: true },
       reactionNotifications: "own", // off | own | all
-      mediaMaxMb: 5,
+      mediaMaxMb: 100,
       retry: {
         attempts: 3,
         minDelayMs: 400,
@@ -204,9 +204,11 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
 }
 ```
 
-- Bot token：`channels.telegram.botToken` 或 `channels.telegram.tokenFile`，默认账户环境变量回退为 `TELEGRAM_BOT_TOKEN`。
+- Bot token：`channels.telegram.botToken` 或 `channels.telegram.tokenFile`（仅普通文件；拒绝符号链接），默认账户环境变量回退为 `TELEGRAM_BOT_TOKEN`。
 - 可选的 `channels.telegram.defaultAccount` 在与已配置账户 ID 匹配时，覆盖默认账户选择。
+- 在多账户设置中（2 个以上账户 ID），设置明确的默认值（`channels.telegram.defaultAccount` 或 `channels.telegram.accounts.default`）以避免回退路由；`openclaw doctor` 会在缺失或无效时发出警告。
 - `configWrites: false` 阻止 Telegram 发起的配置写入（超级群组 ID 迁移、`/config set|unset`）。
+- 带有 `type: "acp"` 的顶级 `bindings[]` 条目为论坛话题配置持久 ACP 绑定（在 `match.peer.id` 中使用规范的 `chatId:topic:topicId`）。字段语义见 [ACP Agents](/tools/acp-agents#channel-specific-settings)。
 - Telegram 流式预览使用 `sendMessage` + `editMessageText`（在私聊和群聊中均可使用）。
 - 重试策略：参见 [重试策略](/concepts/retry)。
 
@@ -245,6 +247,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
         "123456789012345678": {
           slug: "friends-of-openclaw",
           requireMention: false,
+          ignoreOtherMentions: true,
           reactionNotifications: "own",
           users: ["987654321098765432"],
           channels: {
@@ -305,18 +308,21 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
 - 可选的 `channels.discord.defaultAccount` 在与已配置账户 ID 匹配时，覆盖默认账户选择。
 - 投递目标使用 `user:<id>`（私聊）或 `channel:<id>`（服务器频道）；裸数字 ID 会被拒绝。
 - 服务器 slug 为小写，空格替换为 `-`；频道键使用 slug 化名称（不含 `#`）。建议优先使用服务器 ID。
-- Bot 发出的消息默认被忽略。`allowBots: true` 可启用（自身消息仍会被过滤）。
+- Bot 发出的消息默认被忽略。`allowBots: true` 可启用；使用 `allowBots: "mentions"` 仅接受提及 Bot 的 Bot 消息（自身消息仍会被过滤）。
+- `channels.discord.guilds.<id>.ignoreOtherMentions`（及频道覆盖）会丢弃提及其他用户或身份组但未提及 Bot 的消息（排除 @everyone/@here）。
 - `maxLinesPerMessage`（默认 17）会在消息未超过 2000 字符时拆分高行数消息。
 - `channels.discord.threadBindings` 控制 Discord 线程绑定路由：
   - `enabled`：Discord 线程绑定 Session 功能的开关（`/focus`、`/unfocus`、`/agents`、`/session idle`、`/session max-age` 及绑定投递/路由）
   - `idleHours`：Discord 覆盖的空闲自动取消焦点小时数（`0` 禁用）
   - `maxAgeHours`：Discord 覆盖的硬性最大存活小时数（`0` 禁用）
   - `spawnSubagentSessions`：`sessions_spawn({ thread: true })` 自动创建/绑定线程的可选开关
+- 带有 `type: "acp"` 的顶级 `bindings[]` 条目为频道和线程配置持久 ACP 绑定（在 `match.peer.id` 中使用频道/线程 ID）。字段语义见 [ACP Agents](/tools/acp-agents#channel-specific-settings)。
 - `channels.discord.ui.components.accentColor` 设置 Discord components v2 容器的强调色。
 - `channels.discord.voice` 启用 Discord 语音频道对话及可选的自动加入和 TTS 覆盖。
 - `channels.discord.voice.daveEncryption` 和 `channels.discord.voice.decryptionFailureTolerance` 传递给 `@discordjs/voice` DAVE 选项（默认分别为 `true` 和 `24`）。
 - OpenClaw 在多次解密失败后会通过离开/重新加入语音 Session 来尝试恢复接收。
 - `channels.discord.streaming` 是规范的流式模式键。旧版 `streamMode` 和布尔 `streaming` 值会自动迁移。
+- `channels.discord.autoPresence` 将运行时可用性映射到 Bot presence（healthy => online，degraded => idle，exhausted => dnd），并允许可选的状态文本覆盖。
 - `channels.discord.dangerouslyAllowNameMatching` 重新启用可变名称/标签匹配（紧急兼容模式）。
 
 **反应通知模式：** `off`（无），`own`（Bot 消息，默认），`all`（所有消息），`allowlist`（来自所有消息中 `guilds.<id>.users` 的用户）。
@@ -401,6 +407,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
         sessionPrefix: "slack:slash",
         ephemeral: true,
       },
+      typingReaction: "hourglass_flowing_sand",
       textChunkLimit: 4000,
       chunkMode: "length",
       streaming: "partial", // off | partial | block | progress（预览模式）
@@ -991,6 +998,7 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
     defaults: {
       compaction: {
         mode: "safeguard", // default | safeguard
+        timeoutSeconds: 900,
         reserveTokensFloor: 24000,
         identifierPolicy: "strict", // strict | off | custom
         identifierInstructions: "Preserve deployment IDs, ticket IDs, and host:port pairs exactly.", // 当 identifierPolicy=custom 时使用
@@ -1105,6 +1113,7 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
     defaults: {
       sandbox: {
         mode: "non-main", // off | non-main | all
+        backend: "docker", // docker | ssh | openshell
         scope: "agent", // session | agent | shared
         workspaceAccess: "none", // none | ro | rw
         workspaceRoot: "~/.openclaw/sandboxes",
@@ -1571,6 +1580,7 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
       },
       openai: {
         apiKey: "openai_api_key",
+        baseUrl: "https://api.openai.com/v1",
         model: "gpt-4o-mini-tts",
         voice: "alloy",
       },
@@ -1601,6 +1611,7 @@ Talk 模式的默认值（macOS/iOS/Android）。
     modelId: "eleven_v3",
     outputFormat: "mp3_44100_128",
     apiKey: "elevenlabs_api_key",
+    silenceTimeoutMs: 1500,
     interruptOnSpeech: true,
   },
 }
@@ -2286,7 +2297,6 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
     // headless: false,
     // noSandbox: false,
     // extraArgs: [],
-    // relayBindHost: "0.0.0.0", // 仅当 extension relay 需跨命名空间可达时（例如 WSL2）
     // executablePath: "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
     // attachOnly: false,
   },

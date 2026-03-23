@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0437f4aef53b6ef93762213ab39f9236"
+mmh3_hash: "985ed4a4510d9eb66183aa9df1c1ac26"
 summary: "Secrets 管理:SecretRef 合约、运行时快照行为和安全单向清除"
 read_when:
   - 为 Provider 凭证和 `auth-profiles.json` refs 配置 SecretRefs
@@ -442,7 +442,9 @@ openclaw secrets audit --check
 
 ```bash
 openclaw secrets apply --from /tmp/openclaw-secrets-plan.json
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --allow-exec
 openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run --allow-exec
 ```
 
 有关严格的目标/路径契约详情和精确的拒绝规则,参见:

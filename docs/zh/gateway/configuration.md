@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b4e38b150f03835fa3aae0a747e14ad4"
+mmh3_hash: "941632d3bbcfe4b5bb8e9bfb2c8034b5"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw

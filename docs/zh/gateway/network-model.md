@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9623a5dd74ca4eee511423b100ed3636"
+mmh3_hash: "ad5c9d458e8444dde8d100dde5b30e9b"
 summary: "Gateway、节点和 Canvas Host 如何连接。"
 read_when:
   - 您想要 Gateway 网络模型的简明概述

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0f999a542e8f7332f566f9ecc050cea3"
+mmh3_hash: "ae50857f44d1273643b27daa7a994424"
 summary: "将 Gateway 身份验证委托给受信任的反向代理（Pomerium、Caddy、nginx + OAuth）"
 read_when:
   - 在身份感知代理后面运行 OpenClaw

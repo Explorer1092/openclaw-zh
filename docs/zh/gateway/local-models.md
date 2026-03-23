@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "989a807dbf9b4c88ae8340c8647e368e"
+mmh3_hash: "fa07246028fe928ae1f4f5d6de7befa5"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
 read_when:
   - 您想从自己的 GPU 机器提供模型
