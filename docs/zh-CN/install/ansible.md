@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-02-03T07:49:29Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 896807f344d923f09039f377c13b4bf4a824aa94eec35159fc169596a3493b29
+  source_hash: 27433c3b4afa09406052e428be7b1990476067e47ab8abf7145ff9547b37909a
   source_path: install/ansible.md
   workflow: 15
 ---
@@ -53,7 +53,7 @@ Ansible playbook 安装并配置：
 1. **Tailscale**（用于安全远程访问的 mesh VPN）
 2. **UFW 防火墙**（仅允许 SSH + Tailscale 端口）
 3. **Docker CE + Compose V2**（用于智能体沙箱）
-4. **Node.js 22.x + pnpm**（运行时依赖）
+4. **Node.js 24 + pnpm**（运行时依赖，Node 22 LTS 当前 `22.14+` 仍然受支持）
 5. **OpenClaw**（基于主机，非容器化）
 6. **Systemd 服务**（带安全加固的自动启动）
 

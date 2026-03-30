@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-02-03T10:07:21Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 2b01219b7e705044ce39838a0da7c7fa65c719809ab2f8a51e14529064af81bf
+  source_hash: 3551792e4cbd18733c7b1029dc7699df2763ffac0de2ca0bbe624e68d9fad160
   source_path: install/development-channels.md
   workflow: 15
 ---
@@ -57,16 +57,64 @@ openclaw update --channel dev
 
 提示：如果你想同时使用 stable + dev，保留两个克隆并将 Gateway 网关指向 stable 那个。
 
+## 单次版本或标签目标
+
+使用 `--tag` 针对特定 dist-tag、版本或包规格进行单次更新，**不改变**你持久化的渠道：
+
+```bash
+# 安装特定版本
+openclaw update --tag 2026.3.30-beta.1
+
+# 从 beta dist-tag 安装（单次，不持久化）
+openclaw update --tag beta
+
+# 从 GitHub main 分支安装（npm tarball）
+openclaw update --tag main
+
+# 安装特定 npm 包规格
+openclaw update --tag openclaw@2026.3.30-beta.1
+```
+
+注意事项：
+
+- `--tag` **仅适用于包（npm）安装**。Git 安装会忽略它。
+- 标签不会持久化。下次 `openclaw update` 仍使用你配置的渠道。
+- 降级保护：如果目标版本比当前版本旧，OpenClaw 会提示确认（用 `--yes` 跳过）。
+
+## 试运行
+
+预览 `openclaw update` 的操作而不实际执行：
+
+```bash
+openclaw update --dry-run
+openclaw update --channel beta --dry-run
+openclaw update --tag 2026.3.30-beta.1 --dry-run
+openclaw update --dry-run --json
+```
+
+试运行会显示有效渠道、目标版本、计划操作，以及是否需要降级确认。
+
 ## 插件和渠道
 
 当你使用 `openclaw update` 切换渠道时，OpenClaw 还会同步插件来源：
 
 - `dev` 优先使用 git checkout 中的内置插件。
 - `stable` 和 `beta` 恢复 npm 安装的插件包。
+- npm 安装的插件在核心更新完成后更新。
+
+## 检查当前状态
+
+```bash
+openclaw update status
+```
+
+显示活跃渠道、安装类型（git 或包）、当前版本，以及来源（配置、git 标签、git 分支或默认值）。
 
 ## 标签最佳实践
 
-- 为你希望 git checkout 落在的发布版本打标签（`vYYYY.M.D` 或 `vYYYY.M.D-<patch>`）。
+- 为发布版本打标签（stable 用 `vYYYY.M.D`，beta 用 `vYYYY.M.D-beta.N`）。
+- `vYYYY.M.D.beta.N` 也可识别（兼容），但推荐使用 `-beta.N`。
+- 遗留的 `vYYYY.M.D-<patch>` 标签仍被识别为 stable（非 beta）。
 - 保持标签不可变：永远不要移动或重用标签。
 - npm dist-tag 仍然是 npm 安装的数据源：
   - `latest` → stable

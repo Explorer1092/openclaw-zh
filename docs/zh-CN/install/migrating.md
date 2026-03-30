@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-02-03T07:49:55Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 604d862c4bf86e7924d09028db8cc2514ca6f1d64ebe8bb7d1e2dde57ef70caa
+  source_hash: faf6102898457e035834ac58030432c69a456a95ac3ae52874528b15d063bfdb
   source_path: install/migrating.md
   workflow: 15
 ---
@@ -196,4 +196,4 @@ openclaw doctor
 
 - [Doctor](/gateway/doctor)
 - [Gateway 网关故障排除](/gateway/troubleshooting)
-- [OpenClaw 在哪里存储数据？](/help/faq#where-does-openclaw-store-its-data)
+- [OpenClaw 在哪里存储数据？](/help/faq#where-things-live-on-disk)

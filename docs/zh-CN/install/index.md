@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-03-16T06:23:36Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 14b80b6176b2a4ff5c60aad2db88460d8d980bd416faaa3103b38d90521496af
+  source_hash: fc1a6c92b1f257d8c1ff49d1a621dce107b113165279941ba147b289e85f81b4
   source_path: install/index.md
   workflow: 15
 ---
@@ -20,7 +20,7 @@ x-i18n:
 
 ## 系统要求
 
-- **[Node 24（推荐）](/install/node)**（出于兼容性考虑，仍支持 Node 22 LTS，目前为 `22.16+`；如果缺失，[安装脚本](#install-methods) 会安装 Node 24）
+- **[Node 24（推荐）](/install/node)**（出于兼容性考虑，仍支持 Node 22 LTS，目前为 `22.14+`；如果缺失，[安装脚本](#install-methods) 会安装 Node 24）
 - macOS、Linux 或 Windows
 - 仅当你从源码构建时需要 `pnpm`
 
@@ -77,7 +77,7 @@ x-i18n:
   </Accordion>
 
   <Accordion title="npm / pnpm" icon="package">
-    如果你已经自行管理 Node，我们推荐使用 Node 24。出于兼容性考虑，OpenClaw 仍支持 Node 22 LTS，目前为 `22.16+`：
+    如果你已经自行管理 Node，我们推荐使用 Node 24。出于兼容性考虑，OpenClaw 仍支持 Node 22 LTS，目前为 `22.14+`：
 
     <Tabs>
       <Tab title="npm">

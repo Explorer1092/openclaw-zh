@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-02-03T07:49:24Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: eb3f4c222b6bae49938d8bf53a0818fe5f5e0c0c3c1adb3e0a832ce8f785e1e3
+  source_hash: b0845567834124bb9206db64df013dc29f3b61a04da4f7e7f0c2823a9ecd67a6
   source_path: install/bun.md
   workflow: 15
 ---
@@ -51,7 +51,7 @@ bun run vitest run
 除非明确信任（`bun pm untrusted` / `bun pm trust`），Bun 可能会阻止依赖的生命周期脚本。
 对于此仓库，通常被阻止的脚本不是必需的：
 
-- `@whiskeysockets/baileys` `preinstall`：检查 Node 主版本 >= 20（我们运行 Node 22+）。
+- `@whiskeysockets/baileys` `preinstall`：检查 Node 主版本 >= 20（OpenClaw 默认使用 Node 24，仍然支持 Node 22 LTS 当前 `22.14+`）。
 - `protobufjs` `postinstall`：发出关于不兼容版本方案的警告（无构建产物）。
 
 如果你遇到真正需要这些脚本的运行时问题，请明确信任它们：

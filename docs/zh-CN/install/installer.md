@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-03-16T06:24:11Z"
   model: gpt-5.4
   provider: openai
-  source_hash: e389fa04140ecc98b7e83330d0d467165b23bd22e31807bbd36963c87394ddc4
+  source_hash: 908e800b58e7d5d7731ccc979714d49841f142ed0d909752846c9320a0927642
   source_path: install/installer.md
   workflow: 15
 ---
@@ -65,6 +65,8 @@ OpenClaw 提供三个安装脚本，由 `openclaw.ai` 提供。
 
 ---
 
+<a id="installsh"></a>
+
 ## install.sh
 
 <Tip>
@@ -78,7 +80,7 @@ OpenClaw 提供三个安装脚本，由 `openclaw.ai` 提供。
     支持 macOS 和 Linux（包括 WSL）。如果检测到 macOS，则会在缺少 Homebrew 时安装它。
   </Step>
   <Step title="默认确保使用 Node.js 24">
-    检查 Node 版本，并在需要时安装 Node 24（macOS 上使用 Homebrew，Linux apt/dnf/yum 上使用 NodeSource 设置脚本）。为了兼容性，OpenClaw 仍支持 Node 22 LTS，目前为 `22.16+`。
+    检查 Node 版本，并在需要时安装 Node 24（macOS 上使用 Homebrew，Linux apt/dnf/yum 上使用 NodeSource 设置脚本）。为了兼容性，OpenClaw 仍支持 Node 22 LTS，目前为 `22.14+`。
   </Step>
   <Step title="确保安装 Git">
     如果缺少 Git，则安装它。
@@ -177,6 +179,8 @@ OpenClaw 提供三个安装脚本，由 `openclaw.ai` 提供。
 
 ---
 
+<a id="install-clish"></a>
+
 ## install-cli.sh
 
 <Info>
@@ -255,6 +259,8 @@ OpenClaw 提供三个安装脚本，由 `openclaw.ai` 提供。
 
 ---
 
+<a id="installps1"></a>
+
 ## install.ps1
 
 ### 流程（install.ps1）
@@ -264,7 +270,7 @@ OpenClaw 提供三个安装脚本，由 `openclaw.ai` 提供。
     需要 PowerShell 5+。
   </Step>
   <Step title="默认确保使用 Node.js 24">
-    如果缺少，则依次尝试通过 winget、Chocolatey、Scoop 安装。为了兼容性，Node 22 LTS（当前为 `22.16+`）仍然受支持。
+    如果缺少，则依次尝试通过 winget、Chocolatey、Scoop 安装。为了兼容性，Node 22 LTS（当前为 `22.14+`）仍然受支持。
   </Step>
   <Step title="安装 OpenClaw">
     - `npm` 方法（默认）：使用所选 `-Tag` 进行全局 npm 安装
