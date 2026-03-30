@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "f663e106fdd84b1a3469b36ee3e1cc09"
 read_when:
   - 手动引导初始化工作区
 summary: AGENTS.md 的工作区模板
@@ -7,7 +8,7 @@ x-i18n:
   model: claude-opus-4-5
   provider: pi
   source_hash: 137c1346c44158b0688968b3b33cbc5cedcc978822e7737d21b54f67ccd7933a
-  source_path: reference/templates/AGENTS.md
+  source_path: reference/templates/CLAUDE.md
   workflow: 15
 ---
 

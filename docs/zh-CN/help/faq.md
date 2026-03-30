@@ -5,7 +5,7 @@ x-i18n:
   generated_at: "2026-03-16T06:52:18Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 94f7c6ea1024d5606379ce80d65a006b3acc12a963d57ca2333fcee3e5a31872
+  source_hash: 1c4205a2323e8765d30dec76b4cc87769d0e0f2a2b17f10757b393e3c8ad5e0d
   source_path: help/faq.md
   workflow: 15
 ---
@@ -98,7 +98,7 @@ x-i18n:
   - [推荐的备份策略是什么？](#whats-the-recommended-backup-strategy)
   - [如何完全卸载 OpenClaw？](#how-do-i-completely-uninstall-openclaw)
   - [智能体可以在工作区外工作吗？](#can-agents-work-outside-the-workspace)
-  - [我处于远程模式——会话存储在哪里？](#im-in-remote-mode-where-is-the-session-store)
+  - [远程模式：会话存储在哪里？](#remote-mode-where-is-the-session-store)
 - [配置基础](#config-basics)
   - [配置文件是什么格式？在哪里？](#what-format-is-the-config-where-is-it)
   - [我设置了 `gateway.bind: "lan"`（或 `"tailnet"`），现在什么都监听不了 / UI 显示未授权](#i-set-gatewaybind-lan-or-tailnet-and-now-nothing-listens-the-ui-says-unauthorized)
@@ -148,9 +148,9 @@ x-i18n:
   - [可以使用自托管模型（llama.cpp、vLLM、Ollama）吗？](#can-i-use-selfhosted-models-llamacpp-vllm-ollama)
   - [OpenClaw、Flawd 和 Krill 使用什么模型？](#what-do-openclaw-flawd-and-krill-use-for-models)
   - [如何在运行中切换模型（无需重启）？](#how-do-i-switch-models-on-the-fly-without-restarting)
-  - [能否日常任务用 GPT 5.2，编程用 Codex 5.2？](#can-i-use-gpt-52-for-daily-tasks-and-codex-52-for-coding)
+  - [能否日常任务用 GPT 5.4，编程用 Codex 5.4？](#can-i-use-gpt-52-for-daily-tasks-and-codex-52-for-coding)
   - [为什么我看到"Model … is not allowed"然后没有回复？](#why-do-i-see-model-is-not-allowed-and-then-no-reply)
-  - [为什么我看到"Unknown model: minimax/MiniMax-M2.1"？](#why-do-i-see-unknown-model-minimaxminimaxm21)
+  - [为什么我看到"Unknown model: minimax/MiniMax-M2.7"？](#why-do-i-see-unknown-model-minimaxminimaxm21)
   - [能否将 MiniMax 设为默认，复杂任务用 OpenAI？](#can-i-use-minimax-as-my-default-and-openai-for-complex-tasks)
   - [opus / sonnet / gpt 是内置快捷方式吗？](#are-opus-sonnet-gpt-builtin-shortcuts)
   - [如何定义/覆盖模型快捷方式（别名）？](#how-do-i-defineoverride-model-shortcuts-aliases)
@@ -445,6 +445,8 @@ https://github.com/openclaw/openclaw/tree/main/docs
 查看变更：
 https://github.com/openclaw/openclaw/blob/main/CHANGELOG.md
 
+安装一行命令以及 beta 和 dev 的区别，请参阅下方的折叠框。
+
 ### 如何安装 beta 版本，beta 和 dev 有什么区别
 
 **Beta** 是 npm dist-tag `beta`（可能与 `latest` 相同）。
@@ -636,7 +638,7 @@ openclaw gateway restart
 
 ### 能否使用 Claude Max 订阅而不需要 API 密钥
 
-可以。你可以使用 **setup-token** 代替 API 密钥进行认证。这是订阅路径。
+可以。你可以使用 **setup-token**，也可以复用 Gateway 网关主机上现有的 **Claude CLI** 登录。
 
 Claude Pro/Max 订阅**不包含 API 密钥**，因此这是订阅账户的正确方式。重要提示：你必须向 Anthropic 确认此用法是否符合其订阅政策和条款。如果你想要最明确、受支持的方式，请使用 Anthropic API 密钥。
 
@@ -656,7 +658,12 @@ claude setup-token
 
 ### 是否支持 Claude 订阅认证（Claude Pro/Max）
 
-是的——通过 **setup-token**。OpenClaw 不再复用 Claude Code CLI OAuth 令牌；请使用 setup-token 或 Anthropic API 密钥。在任何地方生成令牌并在 Gateway 网关主机上粘贴。参阅 [Anthropic](/providers/anthropic) 和 [OAuth](/concepts/oauth)。
+是的。你可以：
+
+- 使用 **setup-token**
+- 通过 `openclaw models auth login --provider anthropic --method cli --set-default` 复用 Gateway 网关主机上的本地 **Claude CLI** 登录
+
+setup-token 仍然受支持。如果 Gateway 网关主机已运行 Claude Code，迁移到 Claude CLI 方式更为简便。参阅 [Anthropic](/providers/anthropic) 和 [OAuth](/concepts/oauth)。
 
 注意：Claude 订阅访问受 Anthropic 条款约束。对于生产或多用户工作负载，API 密钥通常是更安全的选择。
 
@@ -673,7 +680,7 @@ claude setup-token
 
 ### Codex 认证如何工作
 
-OpenClaw 通过 OAuth（ChatGPT 登录）支持 **OpenAI Code (Codex)**。新手引导可以运行 OAuth 流程，并在适当时将默认模型设置为 `openai-codex/gpt-5.2`。参阅[模型提供商](/concepts/model-providers)和[CLI 新手引导](/start/wizard)。
+OpenClaw 通过 OAuth（ChatGPT 登录）支持 **OpenAI Code (Codex)**。新手引导可以运行 OAuth 流程，并在适当时将默认模型设置为 `openai-codex/gpt-5.4`。参阅[模型提供商](/concepts/model-providers)和[CLI 新手引导](/start/wizard)。
 
 ### 是否支持 OpenAI 订阅认证（Codex OAuth）
 
@@ -694,7 +701,7 @@ Gemini CLI 使用**插件认证流程**，而不是 `openclaw.json` 中的 clien
 
 ### 本地模型适合日常聊天吗
 
-通常不适合。OpenClaw 需要大上下文 + 强安全性；小显卡会截断且泄漏。如果必须使用，请在本地运行你能运行的**最大** MiniMax M2.1 版本（LM Studio），参阅 [/gateway/local-models](/gateway/local-models)。较小/量化的模型会增加提示注入风险——参阅[安全](/gateway/security)。
+通常不适合。OpenClaw 需要大上下文 + 强安全性；小显卡会截断且泄漏。如果必须使用，请在本地运行你能运行的**最大**模型版本（LM Studio），参阅 [/gateway/local-models](/gateway/local-models)。较小/量化的模型会增加提示注入风险——参阅[安全](/gateway/security)。
 
 ### 如何将托管模型流量限制在特定区域
 
@@ -959,7 +966,7 @@ OpenClaw 是一个**个人助手**和协调层，不是 IDE 替代品。使用 C
 
 令牌提示：长任务和子智能体都消耗令牌。如果关注成本，通过 `agents.defaults.subagents.model` 为子智能体设置更便宜的模型。
 
-文档：[子智能体](/tools/subagents)。
+文档：[子智能体](/tools/subagents)、[后台任务](/automation/tasks)。
 
 ### 定时任务或提醒没有触发，应该检查什么
 
@@ -1214,7 +1221,7 @@ OpenClaw 还会运行**静默的预压缩记忆刷新**，以提醒模型在自�
 }
 ```
 
-### 我处于远程模式——会话存储在哪里
+### 远程模式：会话存储在哪里
 
 会话状态归 **Gateway 网关主机**所有。如果你处于远程模式，你关心的会话存储在远程机器上，而不是你的本地笔记本上。参阅[会话管理](/concepts/session)。
 
@@ -1592,7 +1599,7 @@ Copilot 令牌从 `COPILOT_GITHUB_TOKEN` 读取（也支持 `GH_TOKEN` / `GITHUB
 
 ### 如果我从不发送 /new，会话会自动重置吗
 
-会。会话在 `session.idleMinutes`（默认 **60**）后过期。**下一条**消息会为该聊天键开始一个新的会话 ID。这不会删除记录——只是开始一个新会话。
+会话可以在 `session.idleMinutes` 后过期，但此功能**默认禁用**（默认值为 **0**）。将其设置为正数以启用空闲过期。启用后，空闲期结束后的**下一条**消息会为该聊天键开始一个新的会话 ID。这不会删除记录——只是开始一个新会话。
 
 ```json5
 {
@@ -1681,7 +1688,7 @@ openclaw onboard --install-daemon
 
 ### 为什么每 30 分钟收到一次心跳消息
 
-心跳默认每 **30 分钟**运行一次。调整或禁用：
+心跳默认每 **30 分钟**运行一次（使用 OAuth 认证时为 **1 小时**）。调整或禁用：
 
 ```json5
 {
@@ -1795,7 +1802,7 @@ agents.defaults.model.primary
 
 **推荐默认：** `anthropic/claude-opus-4-5`。
 **好的替代：** `anthropic/claude-sonnet-4-5`。
-**可靠（个性较少）：** `openai/gpt-5.2`——几乎和 Opus 一样好，只是个性较少。
+**可靠（个性较少）：** `openai/gpt-5.4`——几乎和 Opus 一样好，只是个性较少。
 **经济：** `zai/glm-4.7`。
 
 MiniMax M2.1 有自己的文档：[MiniMax](/providers/minimax) 和
@@ -1834,8 +1841,9 @@ MiniMax M2.1 有自己的文档：[MiniMax](/providers/minimax) 和
 
 ### OpenClaw、Flawd 和 Krill 使用什么模型
 
-- **OpenClaw + Flawd：** Anthropic Opus（`anthropic/claude-opus-4-5`）——参阅 [Anthropic](/providers/anthropic)。
-- **Krill：** MiniMax M2.1（`minimax/MiniMax-M2.1`）——参阅 [MiniMax](/providers/minimax)。
+- 这些部署的模型配置可能不同，且会随时间变化；没有固定的提供商推荐。
+- 通过 `openclaw models status` 检查每个 Gateway 网关上的当前运行时设置。
+- 对于涉及安全或工具使用的智能体，使用当前最强的最新一代模型。
 
 ### 如何在运行中切换模型（无需重启）
 
@@ -1843,13 +1851,15 @@ MiniMax M2.1 有自己的文档：[MiniMax](/providers/minimax) 和
 
 ```
 /model sonnet
-/model haiku
 /model opus
 /model gpt
 /model gpt-mini
 /model gemini
 /model gemini-flash
+/model gemini-flash-lite
 ```
+
+这些是内置别名。自定义别名可以通过 `agents.defaults.models` 添加。
 
 你可以使用 `/model`、`/model list` 或 `/model status` 列出可用模型。
 
@@ -1880,12 +1890,12 @@ MiniMax M2.1 有自己的文档：[MiniMax](/providers/minimax) 和
 如果你想返回默认值，从 `/model` 中选择（或发送 `/model <default provider/model>`）。
 使用 `/model status` 确认哪个认证配置文件是活跃的。
 
-### 能否日常任务用 GPT 5.2，编程用 Codex 5.2
+### 能否日常任务用 GPT 5.4，编程用 Codex 5.4
 
 可以。设置一个为默认并按需切换：
 
-- **快速切换（按会话）：** 日常任务用 `/model gpt-5.2`，编程用 `/model gpt-5.2-codex`。
-- **默认 + 切换：** 将 `agents.defaults.model.primary` 设置为 `openai-codex/gpt-5.2`，然后编程时切换到 `openai-codex/gpt-5.2-codex`（或反过来）。
+- **快速切换（按会话）：** 日常任务用 `/model gpt-5.4`，编程用 `/model openai-codex/gpt-5.4`（Codex OAuth）。
+- **默认 + 切换：** 将 `agents.defaults.model.primary` 设置为 `openai/gpt-5.4`，然后编程时切换到 `openai-codex/gpt-5.4`（或反过来）。
 - **子智能体：** 将编程任务路由到具有不同默认模型的子智能体。
 
 参阅[模型](/concepts/models)和[斜杠命令](/tools/slash-commands)。
@@ -1900,15 +1910,15 @@ Model "provider/model" is not allowed. Use /model to list available models.
 
 该错误**代替**正常回复返回。修复：将模型添加到 `agents.defaults.models`，移除允许列表，或从 `/model list` 中选择一个模型。
 
-### 为什么我看到"Unknown model: minimax/MiniMax-M2.1"
+### 为什么我看到"Unknown model: minimax/MiniMax-M2.7"
 
-这意味着**提供商未配置**（未找到 MiniMax 提供商配置或认证配置文件），因此模型无法解析。此检测的修复在 **2026.1.12**（撰写本文时尚未发布）中。
+这意味着**提供商未配置**（未找到 MiniMax 提供商配置或认证配置文件），因此模型无法解析。
 
 修复清单：
 
-1. 升级到 **2026.1.12**（或从源码 `main` 运行），然后重启 Gateway 网关。
+1. 升级到当前 OpenClaw 版本（或从源码 `main` 运行），然后重启 Gateway 网关。
 2. 确保 MiniMax 已配置（向导或 JSON），或者 MiniMax API 密钥存在于环境/认证配置文件中以便提供商可以被注入。
-3. 使用精确的模型 ID（区分大小写）：`minimax/MiniMax-M2.1` 或 `minimax/MiniMax-M2.1-lightning`。
+3. 使用精确的模型 ID（区分大小写）：`minimax/MiniMax-M2.7` 或 `minimax/MiniMax-M2.7-highspeed`。
 4. 运行：
    ```bash
    openclaw models list
@@ -1928,10 +1938,10 @@ Model "provider/model" is not allowed. Use /model to list available models.
   env: { MINIMAX_API_KEY: "sk-...", OPENAI_API_KEY: "sk-..." },
   agents: {
     defaults: {
-      model: { primary: "minimax/MiniMax-M2.1" },
+      model: { primary: "minimax/MiniMax-M2.7" },
       models: {
-        "minimax/MiniMax-M2.1": { alias: "minimax" },
-        "openai/gpt-5.2": { alias: "gpt" },
+        "minimax/MiniMax-M2.7": { alias: "minimax" },
+        "openai/gpt-5.4": { alias: "gpt" },
       },
     },
   },
@@ -1958,7 +1968,7 @@ Model "provider/model" is not allowed. Use /model to list available models.
 
 - `opus` → `anthropic/claude-opus-4-5`
 - `sonnet` → `anthropic/claude-sonnet-4-5`
-- `gpt` → `openai/gpt-5.2`
+- `gpt` → `openai/gpt-5.4`
 - `gpt-mini` → `openai/gpt-5-mini`
 - `gemini` → `google/gemini-3-pro-preview`
 - `gemini-flash` → `google/gemini-3-flash-preview`
@@ -2600,22 +2610,18 @@ OpenClaw 默认阻止**跨提供商**消息。如果工具调用绑定到 Telegr
 
 ```json5
 {
-  agents: {
-    defaults: {
-      tools: {
-        message: {
-          crossContext: {
-            allowAcrossProviders: true,
-            marker: { enabled: true, prefix: "[from {channel}] " },
-          },
-        },
+  tools: {
+    message: {
+      crossContext: {
+        allowAcrossProviders: true,
+        marker: { enabled: true, prefix: "[from {channel}] " },
       },
     },
   },
 }
 ```
 
-编辑配置后重启 Gateway 网关。如果你只想为单个智能体设置，将其放在 `agents.list[].tools.message` 下。
+编辑配置后重启 Gateway 网关。
 
 ### 为什么感觉机器人“忽略”了快速连发的消息
 

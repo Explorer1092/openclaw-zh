@@ -30,6 +30,7 @@ OpenClaw 包含三个 Vitest 测试套件（单元/集成、端到端、实时�
 日常使用：
 
 - 完整检查（推送前的预期流程）：`pnpm build && pnpm check && pnpm test`
+- 在大内存机器上更快地运行完整套件：`pnpm test:max`
 
 当你修改测试或需要额外的信心时：
 
@@ -39,6 +40,7 @@ OpenClaw 包含三个 Vitest 测试套件（单元/集成、端到端、实时�
 调试真实提供商/模型时（需要真实凭证）：
 
 - 实时套件（模型 + Gateway 网关工具/图像探测）：`pnpm test:live`
+- 静默运行单个实时文件：`pnpm test:live -- src/agents/models.profiles.live.test.ts`
 
 提示：当你只需要一个失败用例时，建议使用下文描述的允许列表环境变量来缩小实时测试范围。
 
@@ -49,8 +51,8 @@ OpenClaw 包含三个 Vitest 测试套件（单元/集成、端到端、实时�
 ### 单元/集成测试（默认）
 
 - 命令：`pnpm test`
-- 配置：`vitest.config.ts`
-- 文件：`src/**/*.test.ts`
+- 配置：`scripts/test-parallel.mjs`（运行 `vitest.unit.config.ts`、`vitest.extensions.config.ts`、`vitest.gateway.config.ts`）
+- 文件：`src/**/*.test.ts`，捆绑插件的 `**/*.test.ts`
 - 范围：
   - 纯单元测试
   - 进程内集成测试（Gateway 网关认证、路由、工具、解析、配置）

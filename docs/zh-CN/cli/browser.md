@@ -2,14 +2,14 @@
 read_when:
   - 你使用 `openclaw browser` 并想要常见任务的示例
   - 你想通过 node host 控制在另一台机器上运行的浏览器
-  - 你想使用 Chrome 扩展中继（通过工具栏按钮附加/分离）
-summary: "`openclaw browser` 的 CLI 参考（配置文件、标签页、操作、扩展中继）"
+  - 你想通过 Chrome MCP 附加到本地已登录的 Chrome
+summary: "`openclaw browser` 的 CLI 参考（配置文件、标签页、操作、Chrome MCP 和 CDP）"
 title: browser
 x-i18n:
   generated_at: "2026-02-03T07:44:49Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: af35adfd68726fd519c704d046451effd330458c2b8305e713137fb07b2571fd
+  source_hash: 40ed9d9b52d392919f8f85ee240a55a7a51291d7e2a697dce6f79704fccc85ee
   source_path: cli/browser.md
   workflow: 15
 ---
@@ -21,7 +21,6 @@ x-i18n:
 相关：
 
 - 浏览器工具 + API：[浏览器工具](/tools/browser)
-- Chrome 扩展中继：[Chrome 扩展](/tools/chrome-extension)
 
 ## 通用标志
 
@@ -34,22 +33,42 @@ x-i18n:
 ## 快速开始（本地）
 
 ```bash
-openclaw browser --browser-profile chrome tabs
+openclaw browser profiles
 openclaw browser --browser-profile openclaw start
 openclaw browser --browser-profile openclaw open https://example.com
 openclaw browser --browser-profile openclaw snapshot
 ```
 
+## 如果命令不存在
+
+如果 `openclaw browser` 是未知命令，请检查 `~/.openclaw/openclaw.json` 中的 `plugins.allow`。
+
+当 `plugins.allow` 存在时，必须明确列出内置浏览器插件：
+
+```json5
+{
+  plugins: {
+    allow: ["telegram", "browser"],
+  },
+}
+```
+
+`browser.enabled=true` 不会在插件允许列表排除 `browser` 时恢复 CLI 子命令。
+
+相关：[浏览器工具](/tools/browser#missing-browser-command-or-tool)
+
 ## 配置文件
 
 配置文件是命名的浏览器路由配置。实际上：
 
-- `openclaw`：启动/附加到专用的 OpenClaw 管理的 Chrome 实例（隔离的用户数据目录）。
-- `chrome`：通过 Chrome 扩展中继控制你现有的 Chrome 标签页。
+- `openclaw`：启动或附加到专用的 OpenClaw 管理的 Chrome 实例（隔离的用户数据目录）。
+- `user`：通过 Chrome DevTools MCP 控制你现有的已登录 Chrome 会话。
+- 自定义 CDP 配置文件：指向本地或远程 CDP 端点。
 
 ```bash
 openclaw browser profiles
 openclaw browser create-profile --name work --color "#FF5A36"
+openclaw browser create-profile --name chrome-live --driver existing-session
 openclaw browser delete-profile --name work
 ```
 
@@ -90,20 +109,18 @@ openclaw browser click <ref>
 openclaw browser type <ref> "hello"
 ```
 
-## Chrome 扩展中继（通过工具栏按钮附加）
+## 通过 MCP 使用现有 Chrome
 
-此模式让智能体控制你手动附加的现有 Chrome 标签页（不会自动附加）。
-
-将未打包的扩展安装到稳定路径：
+使用内置 `user` 配置文件，或创建自己的 `existing-session` 配置文件：
 
 ```bash
-openclaw browser extension install
-openclaw browser extension path
+openclaw browser --browser-profile user tabs
+openclaw browser create-profile --name chrome-live --driver existing-session
+openclaw browser create-profile --name brave-live --driver existing-session --user-data-dir "~/Library/Application Support/BraveSoftware/Brave-Browser"
+openclaw browser --browser-profile chrome-live tabs
 ```
 
-然后 Chrome → `chrome://extensions` → 启用"开发者模式" → "加载已解压的扩展程序" → 选择打印的文件夹。
-
-完整指南：[Chrome 扩展](/tools/chrome-extension)
+此路径仅适用于主机。对于 Docker、无头服务器、Browserless 或其他远程设置，请改用 CDP 配置文件。
 
 ## 远程浏览器控制（node host 代理）
 

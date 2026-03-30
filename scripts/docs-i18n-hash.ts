@@ -270,16 +270,20 @@ function cmdUpdate(zhFile: string) {
     console.error(`File not found: ${zhFile}`);
     process.exit(1);
   }
-  // Accept both docs/zh/foo.md and legacy foo.zh.md
+  // Accept docs/zh/foo.md, docs/zh-CN/foo.md, or legacy foo.zh.md
   const zhDir = join(DOCS, "zh") + "/";
+  const zhCNDir = join(DOCS, "zh-CN") + "/";
   let enPath: string;
-  if (resolved.startsWith(zhDir)) {
+  if (resolved.startsWith(zhCNDir)) {
+    // docs/zh-CN/start/foo.md → docs/start/foo.md
+    enPath = join(DOCS, resolved.slice(zhCNDir.length));
+  } else if (resolved.startsWith(zhDir)) {
     // docs/zh/start/foo.md → docs/start/foo.md
     enPath = join(DOCS, resolved.slice(zhDir.length));
   } else if (resolved.endsWith(".zh.md")) {
     enPath = resolved.replace(/\.zh\.md$/, ".md");
   } else {
-    console.error(`Expected a file under docs/zh/ or a .zh.md file, got: ${zhFile}`);
+    console.error(`Expected a file under docs/zh/, docs/zh-CN/, or a .zh.md file, got: ${zhFile}`);
     process.exit(1);
   }
   if (!existsSync(enPath)) {

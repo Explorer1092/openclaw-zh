@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-03-16T06:22:35Z"
   model: gpt-5.4
   provider: openai
-  source_hash: a2bca34fca64558a8d91fc640ad3880e79677e81d0f605083edc6cbe86bfba53
+  source_hash: 0d3533836da92b83daaddec7921da4b4888c2d6d60d7e45b00c85a2128f9fb59
   source_path: cli/index.md
   workflow: 15
 ---
@@ -34,6 +34,7 @@ x-i18n:
 - [`agent`](/cli/agent)
 - [`agents`](/cli/agents)
 - [`acp`](/cli/acp)
+- [`mcp`](/cli/mcp)
 - [`status`](/cli/status)
 - [`health`](/cli/health)
 - [`sessions`](/cli/sessions)
@@ -70,6 +71,7 @@ x-i18n:
 
 - `--dev`：将状态隔离到 `~/.openclaw-dev` 下，并变更默认端口。
 - `--profile <name>`：将状态隔离到 `~/.openclaw-<name>` 下。
+- `--container <name>`：以命名容器为目标执行。
 - `--no-color`：禁用 ANSI 颜色。
 - `--update`：`openclaw update` 的简写（仅适用于源码安装）。
 - `-V`, `--version`, `-v`：打印版本并退出。
