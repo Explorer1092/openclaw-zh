@@ -7,7 +7,7 @@ x-i18n:
   generated_at: "2026-02-03T10:09:52Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: be7b751fb81c8c94b1293624bdca6582e60a26084960d1df9558061969502e6f
+  source_hash: e98276f974a776246609228583f64ad4988c70adc41391c3422a4eea39f09675
   source_path: reference/test.md
   workflow: 15
 ---
@@ -20,6 +20,8 @@ x-i18n:
 - `pnpm test:coverage`：使用 V8 覆盖率运行 Vitest。全局阈值为 70% 的行/分支/函数/语句覆盖率。覆盖率排除了集成密集型入口点（CLI 连接、gateway/telegram 桥接、webchat 静态服务器），以保持目标集中在可单元测试的逻辑上。
 - `pnpm test:e2e`：运行 Gateway 网关端到端冒烟测试（多实例 WS/HTTP/节点配对）。
 - `pnpm test:live`：运行提供商实时测试（minimax/zai）。需要 API 密钥和 `LIVE=1`（或提供商特定的 `*_LIVE_TEST=1`）才能取消跳过。
+- `pnpm test:docker:openwebui`：启动容器化的 OpenClaw + Open WebUI，通过 Open WebUI 登录，检查 `/api/models`，然后通过 `/api/chat/completions` 运行真实的代理聊天。需要可用的实时模型密钥（例如 `~/.profile` 中的 OpenAI），会拉取外部 Open WebUI 镜像，不像普通的单元/e2e 套件那样预期在 CI 中稳定。
+- `pnpm test:docker:mcp-channels`：启动一个预置的 Gateway 网关容器和一个生成 `openclaw mcp serve` 的第二个客户端容器，然后验证路由对话发现、转录读取、附件元数据、实时事件队列行为、出站发送路由，以及通过真实 stdio 桥接的 Claude 风格渠道和权限通知。Claude 通知断言直接读取原始 stdio MCP 帧，以确保冒烟测试反映桥接实际发出的内容。
 
 ## 模型延迟基准测试（本地密钥）
 

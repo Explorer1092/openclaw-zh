@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-02-03T07:54:38Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: bf3715770ba634363933f6038117b6a91af11c62f5191aaaf97e6bce099bc120
+  source_hash: a0883b76b85c61d8d3524e57b98ad96bac181d16865a80cc6e13ab390df4de54
   source_path: reference/session-management-compaction.md
   workflow: 15
 ---
@@ -30,6 +30,8 @@ x-i18n:
 
 - [/concepts/session](/concepts/session)
 - [/concepts/compaction](/concepts/compaction)
+- [/concepts/memory](/concepts/memory)
+- [/concepts/memory-search](/concepts/memory-search)
 - [/concepts/session-pruning](/concepts/session-pruning)
 - [/reference/transcript-hygiene](/reference/transcript-hygiene)
 

@@ -10,7 +10,7 @@ x-i18n:
   generated_at: "2026-03-16T06:28:28Z"
   model: gpt-5.4
   provider: openai
-  source_hash: f6560ef9921e58e4fe7f9b23872c0f8bbf3a0a3c4449d686752fc5b5b50bb216
+  source_hash: 589537463678b12e28b3fd31be2cac8f72bcd65a9cf69a95ace37094806e2bac
   source_path: reference/wizard.md
   workflow: 15
 ---
@@ -38,7 +38,7 @@ x-i18n:
   </Step>
   <Step title="模型/认证">
     - **Anthropic API key**：如果存在则使用 `ANTHROPIC_API_KEY`，否则提示输入 key，然后保存以供守护进程使用。
-    - **Anthropic OAuth（Claude Code CLI）**：在 macOS 上，向导会检查钥匙串项目 “Claude Code-credentials”（请选择 “Always Allow”，这样 launchd 启动时就不会被阻塞）；在 Linux/Windows 上，如果存在，则会重用 `~/.claude/.credentials.json`。
+    - **Anthropic Claude CLI**：在 macOS 上，向导会检查钥匙串项目 “Claude Code-credentials”（请选择 “Always Allow”，这样 launchd 启动时就不会被阻塞）；在 Linux/Windows 上，如果存在，则会重用 `~/.claude/.credentials.json`，并将模型选择切换到 `claude-cli/...`。
     - **Anthropic token（粘贴 setup-token）**：在任意机器上运行 `claude setup-token`，然后粘贴该 token（你可以为其命名；留空 = default）。
     - **OpenAI Code (Codex) 订阅（Codex CLI）**：如果 `~/.codex/auth.json` 存在，向导可以重用它。
     - **OpenAI Code (Codex) 订阅（OAuth）**：浏览器流程；粘贴 `code#state`。
@@ -53,7 +53,7 @@ x-i18n:
     - 更多细节： [Vercel AI Gateway](/providers/vercel-ai-gateway)
     - **Cloudflare AI Gateway**：提示输入 Account ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。
     - 更多细节： [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-    - **MiniMax M2.5**：自动写入配置。
+    - **MiniMax**：自动写入配置；默认托管模型为 `MiniMax-M2.7`。
     - 更多细节： [MiniMax](/providers/minimax)
     - **Synthetic（Anthropic 兼容）**：提示输入 `SYNTHETIC_API_KEY`。
     - 更多细节： [Synthetic](/providers/synthetic)
@@ -216,7 +216,7 @@ Gateway 网关通过 RPC 暴露向导流程（`wizard.start`、`wizard.next`、`
 - `tools.profile`（本地新手引导在未设置时默认为 `"coding"`；已有的显式值会被保留）
 - `gateway.*`（mode、bind、auth、tailscale）
 - `session.dmScope`（行为细节： [CLI 设置参考](/start/wizard-cli-reference#outputs-and-internals)）
-- `channels.telegram.botToken`、`channels.discord.token`、`channels.signal.*`、`channels.imessage.*`
+- `channels.telegram.botToken`、`channels.discord.token`、`channels.matrix.*`、`channels.signal.*`、`channels.imessage.*`
 - 当你在提示中选择启用时，渠道允许列表（Slack/Discord/Matrix/Microsoft Teams）（名称会在可能时解析为 ID）。
 - `skills.install.nodeManager`
 - `wizard.lastRunAt`

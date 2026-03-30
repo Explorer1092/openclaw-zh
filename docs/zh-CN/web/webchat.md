@@ -7,7 +7,7 @@ x-i18n:
   generated_at: "2026-02-03T10:13:28Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: b5ee2b462c8c979ac27f80dea0cf12cf62b3c799cf8fd0a7721901e26efeb1a0
+  source_hash: 97ab1e59af6feae51ed3380e21cc3bb0df4ccbcdcb4bcae630a21664caccc567
   source_path: web/webchat.md
   workflow: 15
 ---
@@ -34,6 +34,14 @@ x-i18n:
 - `chat.inject` 直接将助手注释追加到转录并广播到 UI（无智能体运行）。
 - 历史记录始终从 Gateway 网关获取（无本地文件监听）。
 - 如果 Gateway 网关不可达，WebChat 为只读模式。
+
+## 控制 UI 智能体工具面板
+
+- 控制 UI 的 `/agents` 工具面板有两个独立视图：
+  - **当前可用** 使用 `tools.effective(sessionKey=...)`，显示当前会话在运行时实际可以使用的工具，包括核心工具、插件工具和渠道自有工具。
+  - **工具配置** 使用 `tools.catalog`，专注于配置文件、覆盖设置和目录语义。
+- 运行时可用性是会话范围的。在同一智能体上切换会话可能会改变**当前可用**列表。
+- 配置编辑器不代表运行时可用性；实际访问仍遵循策略优先级（`allow`/`deny`、每智能体及提供商/渠道覆盖）。
 
 ## 远程使用
 

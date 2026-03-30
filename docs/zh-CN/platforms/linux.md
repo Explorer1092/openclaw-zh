@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-03-16T06:24:30Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 12f2a28ec8fc17769210bda97af11fda332355956d41bba69ac51cc523be6178
+  source_hash: 178609b7e81e06339e3349bccbb950d7bd39b5938382d75eef668f723fa7fed8
   source_path: platforms/linux.md
   workflow: 15
 ---
@@ -22,7 +22,7 @@ Gateway 网关在 Linux 上得到完全支持。**Node 是推荐的运行时**�
 
 ## 面向初学者的快速路径（VPS）
 
-1. 安装 Node 24（推荐；Node 22 LTS，目前 `22.16+`，为了兼容性仍然可用）
+1. 安装 Node 24（推荐；Node 22 LTS，目前 `22.14+`，为了兼容性仍然可用）
 2. `npm i -g openclaw@latest`
 3. `openclaw onboard --install-daemon`
 4. 在你的笔记本电脑上运行：`ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
