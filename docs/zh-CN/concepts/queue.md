@@ -7,7 +7,7 @@ x-i18n:
   generated_at: "2026-02-03T10:05:28Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 2104c24d200fb4f9620e52a19255cd614ababe19d78f3ee42936dc6d0499b73b
+  source_hash: 36e1d004e9a2c21ad1470517a249285216114dd4cf876681cc860e992c73914f
   source_path: concepts/queue.md
   workflow: 15
 ---
@@ -84,7 +84,7 @@ summarize 保留被丢弃消息的简短要点列表，并将其作为合成的�
 
 - 适用于所有使用 Gateway 网关回复管道的入站渠道的自动回复智能体运行（WhatsApp 网页版、Telegram、Slack、Discord、Signal、iMessage、网页聊天等）。
 - 默认通道（`main`）对入站 + 主心跳是进程范围的；设置 `agents.defaults.maxConcurrent` 以允许多个会话并行。
-- 可能存在额外的通道（例如 `cron`、`subagent`），以便后台任务可以并行运行而不阻塞入站回复。
+- 可能存在额外的通道（例如 `cron`、`subagent`），以便后台任务可以并行运行而不阻塞入站回复。这些分离的运行作为[后台任务](/automation/tasks)进行跟踪。
 - 按会话通道保证一次只有一个智能体运行触及给定会话。
 - 无外部依赖或后台工作线程；纯 TypeScript + promises。
 

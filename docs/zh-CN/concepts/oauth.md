@@ -10,7 +10,7 @@ x-i18n:
   generated_at: "2026-03-16T06:22:05Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 976668c3e02ee50500fcaaa585a89af718398dc41988318ec3a583c2d5449df3
+  source_hash: 8ca77d923da030b0b9e1c62d5fbe82175d39d5e37fcc3882f4a9feaa989e4b65
   source_path: concepts/oauth.md
   workflow: 15
 ---
@@ -56,7 +56,7 @@ OAuth 提供商通常会在登录/刷新流程中签发一个**新的刷新令�
 
 - `~/.openclaw/credentials/oauth.json`（首次使用时会导入到 `auth-profiles.json`）
 
-以上所有位置也都遵循 `$OPENCLAW_STATE_DIR`（状态目录覆盖）。完整参考：[/gateway/configuration](/gateway/configuration#auth-storage-oauth--api-keys)
+以上所有位置也都遵循 `$OPENCLAW_STATE_DIR`（状态目录覆盖）。完整参考：[/gateway/configuration](/gateway/configuration-reference#auth-storage)
 
 有关静态密钥引用和运行时快照激活行为，请参见 [Secrets Management](/gateway/secrets)。
 
@@ -86,19 +86,46 @@ openclaw models auth paste-token --provider anthropic
 openclaw models status
 ```
 
+## Anthropic Claude CLI 迁移
+
+如果 Claude CLI 已安装并在 Gateway 网关主机上登录，你可以将 Anthropic 模型选择切换到本地 CLI 后端：
+
+```bash
+openclaw models auth login --provider anthropic --method cli --set-default
+```
+
+新手引导快捷方式：
+
+```bash
+openclaw onboard --auth-choice anthropic-cli
+```
+
+这会保留现有的 Anthropic 认证配置文件以供回退，同时将主要默认模型路径从 `anthropic/...` 改写为 `claude-cli/...`。
+
 ## OAuth 交换（登录如何工作）
 
 OpenClaw 的交互式登录流程在 `@mariozechner/pi-ai` 中实现，并接入到各类向导/命令中。
 
-### Anthropic setup-token
+### Anthropic setup-token / Claude CLI
 
 流程形态：
+
+setup-token 路径：
 
 1. 运行 `claude setup-token`
 2. 将令牌粘贴到 OpenClaw
 3. 存储为令牌认证配置文件（不刷新）
 
-向导路径为 `openclaw onboard` → 认证选择 `setup-token`（Anthropic）。
+Claude CLI 路径：
+
+1. 在 Gateway 网关主机上使用 `claude auth login` 登录
+2. 运行 `openclaw models auth login --provider anthropic --method cli --set-default`
+3. 不存储新的认证配置文件；将模型选择切换到 `claude-cli/...`
+
+向导路径：
+
+- `openclaw onboard` → 认证选择 `anthropic-cli`
+- `openclaw onboard` → 认证选择 `setup-token`（Anthropic）
 
 ### OpenAI Codex（ChatGPT OAuth）
 

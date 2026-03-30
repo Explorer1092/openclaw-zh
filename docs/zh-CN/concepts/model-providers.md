@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-03-16T06:22:52Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 1b84eea0103a59e77571f82c800c9c0ad9fc554e8c9b2c1fd15c2cc121e7f6b4
+  source_hash: 968cdb9ce576982d80183167806b00c4ec9f24018a71caeb56dce8d02dd9358c
   source_path: concepts/model-providers.md
   workflow: 15
 ---
@@ -49,8 +49,8 @@ x-i18n:
 
 - `auth[].run` / `auth[].runNonInteractive`：提供商接管 `openclaw onboard`、`openclaw models auth` 和无头设置的
   新手引导/登录流程
-- `wizard.onboarding` / `wizard.modelPicker`：提供商接管新手引导/模型选择器中的身份验证选项标签、
-  提示和设置条目
+- `wizard.setup` / `wizard.modelPicker`：提供商接管新手引导/模型选择器中的身份验证选项标签、
+  旧版别名、新手引导 allowlist 提示和设置条目
 - `catalog`：提供商出现在 `models.providers` 中
 - `resolveDynamicModel`：提供商接受尚未出现在本地静态
   目录中的模型 ID
@@ -147,7 +147,8 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 - 通过 `agents.defaults.models["openai/<model>"].params.transport` 按模型覆盖（`"sse"`、`"websocket"` 或 `"auto"`）
 - OpenAI Responses WebSocket 预热默认通过 `params.openaiWsWarmup` 启用（`true`/`false`）
 - 可通过 `agents.defaults.models["openai/<model>"].params.serviceTier` 启用 OpenAI 优先处理
-- 可通过 `agents.defaults.models["<provider>/<model>"].params.fastMode` 为每个模型启用 OpenAI 快速模式
+- `/fast` 和 `params.fastMode` 将直接的 `openai/*` Responses 请求映射到 `api.openai.com` 上的 `service_tier=priority`
+- 当你希望明确指定服务层级而不是使用共享的 `/fast` 开关时，请使用 `params.serviceTier`
 - `openai/gpt-5.3-codex-spark` 在 OpenClaw 中被有意抑制，因为 live OpenAI API 会拒绝它；Spark 被视为仅限 Codex
 
 ```json5
@@ -163,7 +164,7 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 - 可选轮换：`ANTHROPIC_API_KEYS`、`ANTHROPIC_API_KEY_1`、`ANTHROPIC_API_KEY_2`，以及 `OPENCLAW_LIVE_ANTHROPIC_KEY`（单个覆盖）
 - 示例模型：`anthropic/claude-opus-4-6`
 - CLI：`openclaw onboard --auth-choice token`（粘贴 setup-token）或 `openclaw models auth paste-token --provider anthropic`
-- 直接 API 密钥模型支持共享的 `/fast` 开关和 `params.fastMode`；OpenClaw 会将其映射到 Anthropic `service_tier`（`auto` 与 `standard_only`）
+- 发送至 `api.anthropic.com` 的直接公开 Anthropic 请求支持共享的 `/fast` 开关和 `params.fastMode`，包括 API 密钥和 OAuth 认证的流量；OpenClaw 会将其映射到 Anthropic `service_tier`（`auto` 与 `standard_only`）
 - 策略说明：setup-token 支持属于技术兼容性；Anthropic 过去曾阻止某些在 Claude Code 之外的订阅用法。请核实当前 Anthropic 条款，并根据你的风险承受能力做出决定。
 - 建议：相比订阅 setup-token 身份验证，Anthropic API 密钥身份验证是更安全、也更推荐的路径。
 
@@ -181,7 +182,8 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 - CLI：`openclaw onboard --auth-choice openai-codex` 或 `openclaw models auth login --provider openai-codex`
 - 默认传输为 `auto`（优先 WebSocket，SSE 回退）
 - 通过 `agents.defaults.models["openai-codex/<model>"].params.transport` 按模型覆盖（`"sse"`、`"websocket"` 或 `"auto"`）
-- 与直接 `openai/*` 共享相同的 `/fast` 开关和 `params.fastMode` 配置
+- `params.serviceTier` 也会在原生 Codex Responses 请求（`chatgpt.com/backend-api`）中转发
+- 与直接 `openai/*` 共享相同的 `/fast` 开关和 `params.fastMode` 配置；OpenClaw 将其映射到 `service_tier=priority`
 - 当 Codex OAuth 目录暴露它时，`openai-codex/gpt-5.3-codex-spark` 仍然可用；取决于 entitlement
 - 策略说明：OpenAI Codex OAuth 明确支持 OpenClaw 这样的外部工具/工作流。
 
@@ -254,7 +256,7 @@ OpenClaw 附带 pi‑ai 目录。这些提供商**不需要**
 ### 其他内置提供商插件
 
 - OpenRouter：`openrouter`（`OPENROUTER_API_KEY`）
-- 示例模型：`openrouter/anthropic/claude-sonnet-4-5`
+- 示例模型：`openrouter/anthropic/claude-sonnet-4-6`
 - Kilo Gateway：`kilocode`（`KILOCODE_API_KEY`）
 - 示例模型：`kilocode/anthropic/claude-opus-4.6`
 - MiniMax：`minimax`（`MINIMAX_API_KEY`）
@@ -537,8 +539,8 @@ export SGLANG_API_KEY="sglang-local"
 {
   agents: {
     defaults: {
-      model: { primary: "lmstudio/minimax-m2.5-gs32" },
-      models: { "lmstudio/minimax-m2.5-gs32": { alias: "Minimax" } },
+      model: { primary: "lmstudio/my-local-model" },
+      models: { "lmstudio/my-local-model": { alias: "Local" } },
     },
   },
   models: {
@@ -549,8 +551,8 @@ export SGLANG_API_KEY="sglang-local"
         api: "openai-completions",
         models: [
           {
-            id: "minimax-m2.5-gs32",
-            name: "MiniMax M2.5",
+            id: "my-local-model",
+            name: "Local Model",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },

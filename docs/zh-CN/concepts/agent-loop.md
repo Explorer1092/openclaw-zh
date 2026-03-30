@@ -7,7 +7,7 @@ x-i18n:
   generated_at: "2026-02-03T10:05:11Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 0775b96eb3451e137297661a1095eaefb2bafeebb5f78123174a46290e18b014
+  source_hash: 7c0b3607b6b6468bae7f086c8483591f03d35c34da73f871b03bd66212b40aa8
   source_path: concepts/agent-loop.md
   workflow: 15
 ---
@@ -82,16 +82,28 @@ OpenClaw 有两个钩子系统：
 
 这些在智能体循环或 Gateway 网关管道内运行：
 
-- **`before_agent_start`**：在运行开始前注入上下文或覆盖系统提示。
+- **`before_model_resolve`**：在预会话阶段运行（无 `messages`），在模型解析之前确定性地覆盖 provider/model。
+- **`before_prompt_build`**：在会话加载后运行（含 `messages`），在提交提示之前注入 `prependContext`、`systemPrompt`、`prependSystemContext` 或 `appendSystemContext`。对于每轮动态文本使用 `prependContext`，对于应位于系统提示空间的稳定指导使用系统上下文字段。
+- **`before_agent_start`**：兼容旧版的钩子，可能在任一阶段运行；建议使用上述明确的钩子代替。
 - **`agent_end`**：在完成后检查最终消息列表和运行元数据。
 - **`before_compaction` / `after_compaction`**：观察或注释压缩周期。
 - **`before_tool_call` / `after_tool_call`**：拦截工具参数/结果。
+- **`before_install`**：检查内置扫描结果，并可选择阻止 Skill 或 Plugin 安装。
 - **`tool_result_persist`**：在工具结果写入会话记录之前同步转换它们。
 - **`message_received` / `message_sending` / `message_sent`**：入站 + 出站消息钩子。
 - **`session_start` / `session_end`**：会话生命周期边界。
 - **`gateway_start` / `gateway_stop`**：Gateway 网关生命周期事件。
 
-参见[插件](/tools/plugin#plugin-hooks)了解钩子 API 和注册详情。
+出站/工具守卫的钩子决策规则：
+
+- `before_tool_call`：`{ block: true }` 是终止性的，会停止优先级较低的处理程序。
+- `before_tool_call`：`{ block: false }` 是无操作的，不会清除之前的阻止。
+- `before_install`：`{ block: true }` 是终止性的，会停止优先级较低的处理程序。
+- `before_install`：`{ block: false }` 是无操作的，不会清除之前的阻止。
+- `message_sending`：`{ cancel: true }` 是终止性的，会停止优先级较低的处理程序。
+- `message_sending`：`{ cancel: false }` 是无操作的，不会清除之前的取消。
+
+参见[插件钩子](/plugins/architecture#provider-runtime-hooks)了解钩子 API 和注册详情。
 
 ## 流式传输 + 部分回复
 
@@ -136,7 +148,7 @@ OpenClaw 有两个钩子系统：
 ## 超时
 
 - `agent.wait` 默认：30 秒（仅等待）。`timeoutMs` 参数可覆盖。
-- 智能体运行时：`agents.defaults.timeoutSeconds` 默认 172800 秒（48 小时）；在 `runEmbeddedPiAgent` 中止计时器中强制执行。使用 `0` 可完全禁用超时。
+- 智能体运行时：`agents.defaults.timeoutSeconds` 默认 172800 秒（48 小时）；在 `runEmbeddedPiAgent` 中止计时器中强制执行。
 
 ## 可能提前结束的情况
 
