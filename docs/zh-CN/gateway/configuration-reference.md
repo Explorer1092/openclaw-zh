@@ -6,10 +6,10 @@ read_when:
 summary: 每个 OpenClaw 配置键、默认值和渠道设置的完整参考
 title: 配置参考
 x-i18n:
-  generated_at: "2026-03-16T06:27:43Z"
-  model: gpt-5.4
-  provider: openai
-  source_hash: c2926153fa94bbb3141ac7cd9ebfa381394c9c9ad7a1cf1d21fb91c879905d51
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: anthropic
+  source_hash: c80e60c9ae43f4ace75c7181dcb230b43f67633dbbecfc87042e1dd4b3d91872
   source_path: gateway/configuration-reference.md
   workflow: 15
 ---
@@ -576,6 +576,45 @@ exec ssh -T gateway-host imsg "$@"
 ```
 
 </Accordion>
+
+### Matrix
+
+Matrix 由扩展支持，并配置在 `channels.matrix` 下。
+
+```json5
+{
+  channels: {
+    matrix: {
+      enabled: true,
+      homeserver: "https://matrix.example.org",
+      accessToken: "syt_bot_xxx",
+      proxy: "http://127.0.0.1:7890",
+      encryption: true,
+      initialSyncLimit: 20,
+      defaultAccount: "ops",
+      accounts: {
+        ops: {
+          name: "Ops",
+          userId: "@ops:example.org",
+          accessToken: "syt_ops_xxx",
+        },
+        alerts: {
+          userId: "@alerts:example.org",
+          password: "secret",
+          proxy: "http://127.0.0.1:7891",
+        },
+      },
+    },
+  },
+}
+```
+
+- Token 认证使用 `accessToken`；密码认证使用 `userId` + `password`。
+- `channels.matrix.proxy` 将 Matrix HTTP 流量通过显式 HTTP(S) 代理路由。命名账户可通过 `channels.matrix.accounts.<id>.proxy` 覆盖。
+- `channels.matrix.allowPrivateNetwork` 允许私有/内部 homeserver。`proxy` 和 `allowPrivateNetwork` 是独立的控制项。
+- `channels.matrix.defaultAccount` 在多账户设置中选择首选账户。
+- Matrix 状态探测和实时目录查找使用与运行时流量相同的代理策略。
+- 完整的 Matrix 配置、目标规则和设置示例请参阅 [Matrix](/channels/matrix)。
 
 ### Microsoft Teams
 
@@ -2622,6 +2661,50 @@ openclaw gateway --port 19001
 
 见 [Multiple Gateways](/gateway/multiple-gateways)。
 
+### `gateway.tls`
+
+```json5
+{
+  gateway: {
+    tls: {
+      enabled: false,
+      autoGenerate: false,
+      certPath: "/etc/openclaw/tls/server.crt",
+      keyPath: "/etc/openclaw/tls/server.key",
+      caPath: "/etc/openclaw/tls/ca-bundle.crt",
+    },
+  },
+}
+```
+
+- `enabled`：在 Gateway 网关监听器上启用 TLS 终止（HTTPS/WSS）（默认：`false`）。
+- `autoGenerate`：当未配置显式文件时，自动生成本地自签名证书/密钥对；仅限本地/开发环境使用。
+- `certPath`：TLS 证书文件的文件系统路径。
+- `keyPath`：TLS 私钥文件的文件系统路径；请限制其访问权限。
+- `caPath`：用于客户端验证或自定义信任链的可选 CA bundle 路径。
+
+### `gateway.reload`
+
+```json5
+{
+  gateway: {
+    reload: {
+      mode: "hybrid", // off | restart | hot | hybrid
+      debounceMs: 500,
+      deferralTimeoutMs: 300000,
+    },
+  },
+}
+```
+
+- `mode`：控制配置编辑在运行时的应用方式。
+  - `"off"`：忽略实时编辑；变更需要显式重启。
+  - `"restart"`：配置变更时始终重启 Gateway 网关进程。
+  - `"hot"`：在进程内应用变更，无需重启。
+  - `"hybrid"`（默认）：先尝试热重载；如有必要则回退到重启。
+- `debounceMs`：配置变更应用前的防抖窗口（毫秒，非负整数）。
+- `deferralTimeoutMs`：强制重启前等待进行中操作的最大时间（毫秒，默认：`300000` = 5 分钟）。
+
 ---
 
 ## Hooks
@@ -2904,6 +2987,26 @@ Secret refs 是增量能力：明文值仍然可用。
 - 见 [OAuth](/concepts/oauth)。
 - Secrets 运行时行为以及 `audit/configure/apply` 工具：见 [Secrets Management](/gateway/secrets)。
 
+### `auth.cooldowns`
+
+```json5
+{
+  auth: {
+    cooldowns: {
+      billingBackoffHours: 5,
+      billingBackoffHoursByProvider: { anthropic: 3, openai: 8 },
+      billingMaxHours: 24,
+      failureWindowHours: 24,
+    },
+  },
+}
+```
+
+- `billingBackoffHours`：Profile 因计费/余额不足失败时的基础退避小时数（默认：`5`）。
+- `billingBackoffHoursByProvider`：可选的每提供商计费退避小时数覆盖。
+- `billingMaxHours`：计费退避指数增长的上限小时数（默认：`24`）。
+- `failureWindowHours`：退避计数器使用的滚动窗口小时数（默认：`24`）。
+
 ---
 
 ## 日志
@@ -2924,6 +3027,128 @@ Secret refs 是增量能力：明文值仍然可用。
 - 默认日志文件：`/tmp/openclaw/openclaw-YYYY-MM-DD.log`。
 - 设置 `logging.file` 以获得稳定路径。
 - 使用 `--verbose` 时，`consoleLevel` 会提升为 `debug`。
+- `maxFileBytes`：写入被抑制前的最大日志文件大小（字节，正整数；默认：`524288000` = 500 MB）。生产环境请使用外部日志轮换。
+
+---
+
+## 诊断
+
+```json5
+{
+  diagnostics: {
+    enabled: true,
+    flags: ["telegram.*"],
+    stuckSessionWarnMs: 30000,
+
+    otel: {
+      enabled: false,
+      endpoint: "https://otel-collector.example.com:4318",
+      protocol: "http/protobuf", // http/protobuf | grpc
+      headers: { "x-tenant-id": "my-org" },
+      serviceName: "openclaw-gateway",
+      traces: true,
+      metrics: true,
+      logs: false,
+      sampleRate: 1.0,
+      flushIntervalMs: 5000,
+    },
+
+    cacheTrace: {
+      enabled: false,
+      includeMessages: true,
+      includePrompt: true,
+      includeSystem: true,
+    },
+  },
+}
+```
+
+- `enabled`：仪器输出的主控开关（默认：`true`）。
+- `flags`：启用定向日志输出的标志字符串数组（支持通配符，如 `"telegram.*"` 或 `"*"`）。
+- `stuckSessionWarnMs`：会话保持处理状态时发出卡住会话警告的年龄阈值（毫秒）。
+- `otel.enabled`：启用 OpenTelemetry 导出管道（默认：`false`）。
+- `otel.endpoint`：OTel 导出的采集器 URL。
+- `otel.protocol`：`"http/protobuf"`（默认）或 `"grpc"`。
+- `otel.headers`：随 OTel 导出请求发送的额外 HTTP/gRPC 元数据 header。
+- `otel.serviceName`：资源属性的服务名称。
+- `otel.traces` / `otel.metrics` / `otel.logs`：启用追踪、指标或日志导出。
+- `otel.sampleRate`：追踪采样率 `0`–`1`。
+- `otel.flushIntervalMs`：周期性遥测刷新间隔（毫秒）。
+- `cacheTrace.enabled`：记录嵌入运行的缓存追踪快照（默认：`false`）。
+- `cacheTrace.includeMessages` / `includePrompt` / `includeSystem`：控制缓存追踪输出中包含的内容（全部默认：`true`）。
+
+---
+
+## 更新
+
+```json5
+{
+  update: {
+    channel: "stable", // stable | beta | dev
+    checkOnStart: true,
+
+    auto: {
+      enabled: false,
+      stableDelayHours: 6,
+      stableJitterHours: 12,
+      betaCheckIntervalHours: 1,
+    },
+  },
+}
+```
+
+- `channel`：npm/git 安装的发布渠道——`"stable"`、`"beta"` 或 `"dev"`。
+- `checkOnStart`：Gateway 网关启动时检查 npm 更新（默认：`true`）。
+- `auto.enabled`：为软件包安装启用后台自动更新（默认：`false`）。
+- `auto.stableDelayHours`：stable 渠道自动应用前的最小延迟小时数（默认：`6`；最大：`168`）。
+- `auto.stableJitterHours`：stable 渠道发布扩散窗口的额外小时数（默认：`12`；最大：`168`）。
+- `auto.betaCheckIntervalHours`：beta 渠道检查运行的频率（小时，默认：`1`；最大：`24`）。
+
+---
+
+## ACP
+
+```json5
+{
+  acp: {
+    enabled: false,
+    dispatch: { enabled: true },
+    backend: "acpx",
+    defaultAgent: "main",
+    allowedAgents: ["main", "ops"],
+    maxConcurrentSessions: 10,
+
+    stream: {
+      coalesceIdleMs: 50,
+      maxChunkChars: 1000,
+      repeatSuppression: true,
+      deliveryMode: "live", // live | final_only
+      hiddenBoundarySeparator: "paragraph", // none | space | newline | paragraph
+      maxOutputChars: 50000,
+      maxSessionUpdateChars: 500,
+    },
+
+    runtime: {
+      ttlMinutes: 30,
+    },
+  },
+}
+```
+
+- `enabled`：ACP 功能全局开关（默认：`false`）。
+- `dispatch.enabled`：ACP 会话轮次分发的独立开关（默认：`true`）。设为 `false` 可在保持 ACP 命令可用的同时阻止执行。
+- `backend`：默认 ACP 运行时后端 ID（必须与已注册的 ACP 运行时插件匹配）。
+- `defaultAgent`：当 spawn 未指定显式目标时的 ACP 目标智能体 ID 回退值。
+- `allowedAgents`：允许用于 ACP 运行时会话的智能体 ID 允许列表；空列表表示无额外限制。
+- `maxConcurrentSessions`：最大并发活跃 ACP 会话数。
+- `stream.coalesceIdleMs`：流式文本的空闲刷新窗口（毫秒）。
+- `stream.maxChunkChars`：分割流式块投影前的最大块大小。
+- `stream.repeatSuppression`：抑制每轮重复的状态/工具行（默认：`true`）。
+- `stream.deliveryMode`：`"live"` 增量流式传输；`"final_only"` 缓冲直到轮次终止事件。
+- `stream.hiddenBoundarySeparator`：隐藏工具事件后可见文本前的分隔符（默认：`"paragraph"`）。
+- `stream.maxOutputChars`：每个 ACP 轮次投影的最大助手输出字符数。
+- `stream.maxSessionUpdateChars`：投影 ACP 状态/更新行的最大字符数。
+- `runtime.ttlMinutes`：ACP 会话工作器在符合清理条件前的空闲 TTL（分钟）。
 
 ---
 
@@ -3042,6 +3267,50 @@ Secret refs 是增量能力：明文值仍然可用。
 - `webhook`：已弃用的旧版回退 webhook URL（http/https），仅用于仍然具有 `notify: true` 的已存储作业。
 
 见 [Cron Jobs](/automation/cron-jobs)。
+
+### `cron.retry`
+
+```json5
+{
+  cron: {
+    retry: {
+      maxAttempts: 3,
+      backoffMs: [30000, 60000, 300000],
+      retryOn: ["rate_limit", "overloaded", "network", "timeout", "server_error"],
+    },
+  },
+}
+```
+
+- `maxAttempts`：一次性 job 在瞬态错误时的最大重试次数（默认：`3`；范围：`0`–`10`）。
+- `backoffMs`：每次重试的退避延迟数组（毫秒，默认：`[30000, 60000, 300000]`；1–10 个条目）。
+- `retryOn`：触发重试的错误类型——`"rate_limit"`、`"overloaded"`、`"network"`、`"timeout"`、`"server_error"`。省略则对所有瞬态类型重试。
+
+仅适用于一次性 Cron job。循环 job 使用单独的失败处理。
+
+### `cron.failureAlert`
+
+```json5
+{
+  cron: {
+    failureAlert: {
+      enabled: false,
+      after: 3,
+      cooldownMs: 3600000,
+      mode: "announce",
+      accountId: "main",
+    },
+  },
+}
+```
+
+- `enabled`：为 Cron job 启用失败告警（默认：`false`）。
+- `after`：触发告警前的连续失败次数（正整数，最小：`1`）。
+- `cooldownMs`：同一 job 重复告警之间的最小毫秒数（非负整数）。
+- `mode`：投递模式——`"announce"` 通过渠道消息发送；`"webhook"` 发布到已配置的 webhook。
+- `accountId`：可选的账户或渠道 ID，用于限定告警投递范围。
+
+见 [Cron Jobs](/automation/cron-jobs)。孤立的 Cron 执行作为[后台任务](/automation/tasks)被追踪。
 
 ---
 

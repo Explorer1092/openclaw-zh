@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-03-16T06:22:54Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 43ad6b91216e12be4d0c9395c981e0b5d8bd16ba4952efd02b7261052304a4ce
+  source_hash: 0d2dd5d0587327f98237c78c2f2b4e066eb6a470babfd0c3ea42e6d31871d320
   source_path: gateway/local-models.md
   workflow: 15
 ---
@@ -20,34 +20,34 @@ x-i18n:
 
 如果你想要摩擦最小的本地设置，请从 [Ollama](/providers/ollama) 和 `openclaw onboard` 开始。本页是面向更高端本地栈和自定义兼容 OpenAI 的本地服务器的偏好型指南。
 
-## 推荐：LM Studio + MiniMax M2.5（Responses API，完整尺寸）
+## 推荐：LM Studio + 大型本地模型（Responses API）
 
-当前最佳的本地栈。先在 LM Studio 中加载 MiniMax M2.5，启用本地服务器（默认 `http://127.0.0.1:1234`），然后使用 Responses API 将推理与最终文本分离。
+当前最佳的本地栈。在 LM Studio 中加载一个大型模型（例如完整尺寸的 Qwen、DeepSeek 或 Llama 构建版本），启用本地服务器（默认 `http://127.0.0.1:1234`），然后使用 Responses API 将推理与最终文本分离。
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "lmstudio/minimax-m2.5-gs32" },
+      model: { primary: “lmstudio/my-local-model” },
       models: {
-        "anthropic/claude-opus-4-6": { alias: "Opus" },
-        "lmstudio/minimax-m2.5-gs32": { alias: "Minimax" },
+        “anthropic/claude-opus-4-6”: { alias: “Opus” },
+        “lmstudio/my-local-model”: { alias: “Local” },
       },
     },
   },
   models: {
-    mode: "merge",
+    mode: “merge”,
     providers: {
       lmstudio: {
-        baseUrl: "http://127.0.0.1:1234/v1",
-        apiKey: "lmstudio",
-        api: "openai-responses",
+        baseUrl: “http://127.0.0.1:1234/v1”,
+        apiKey: “lmstudio”,
+        api: “openai-responses”,
         models: [
           {
-            id: "minimax-m2.5-gs32",
-            name: "MiniMax M2.5 GS32",
+            id: “my-local-model”,
+            name: “Local Model”,
             reasoning: false,
-            input: ["text"],
+            input: [“text”],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 196608,
             maxTokens: 8192,
@@ -62,12 +62,13 @@ x-i18n:
 **设置清单**
 
 - 安装 LM Studio：[https://lmstudio.ai](https://lmstudio.ai)
-- 在 LM Studio 中，下载**可用的最大 MiniMax M2.5 构建版本**（避免 “small” / 重度量化变体），启动服务器，并确认 `http://127.0.0.1:1234/v1/models` 中列出了它。
+- 在 LM Studio 中，下载**可用的最大模型构建版本**（避免 “small” / 重度量化变体），启动服务器，并确认 `http://127.0.0.1:1234/v1/models` 中列出了它。
+- 将 `my-local-model` 替换为 LM Studio 中显示的实际模型 ID。
 - 保持模型处于已加载状态；冷加载会增加启动延迟。
 - 如果你的 LM Studio 构建不同，请调整 `contextWindow` / `maxTokens`。
 - 对于 WhatsApp，请坚持使用 Responses API，这样只会发送最终文本。
 
-即使在本地运行时，也要保留托管模型配置；使用 `models.mode: "merge"`，以便回退模型始终可用。
+即使在本地运行时，也要保留托管模型配置；使用 `models.mode: “merge”`，以便回退模型始终可用。
 
 ### 混合配置：托管主模型，本地回退
 
@@ -76,29 +77,29 @@ x-i18n:
   agents: {
     defaults: {
       model: {
-        primary: "anthropic/claude-sonnet-4-5",
-        fallbacks: ["lmstudio/minimax-m2.5-gs32", "anthropic/claude-opus-4-6"],
+        primary: “anthropic/claude-sonnet-4-6”,
+        fallbacks: [“lmstudio/my-local-model”, “anthropic/claude-opus-4-6”],
       },
       models: {
-        "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
-        "lmstudio/minimax-m2.5-gs32": { alias: "MiniMax Local" },
-        "anthropic/claude-opus-4-6": { alias: "Opus" },
+        “anthropic/claude-sonnet-4-6”: { alias: “Sonnet” },
+        “lmstudio/my-local-model”: { alias: “Local” },
+        “anthropic/claude-opus-4-6”: { alias: “Opus” },
       },
     },
   },
   models: {
-    mode: "merge",
+    mode: “merge”,
     providers: {
       lmstudio: {
-        baseUrl: "http://127.0.0.1:1234/v1",
-        apiKey: "lmstudio",
-        api: "openai-responses",
+        baseUrl: “http://127.0.0.1:1234/v1”,
+        apiKey: “lmstudio”,
+        api: “openai-responses”,
         models: [
           {
-            id: "minimax-m2.5-gs32",
-            name: "MiniMax M2.5 GS32",
+            id: “my-local-model”,
+            name: “Local Model”,
             reasoning: false,
-            input: ["text"],
+            input: [“text”],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
             contextWindow: 196608,
             maxTokens: 8192,

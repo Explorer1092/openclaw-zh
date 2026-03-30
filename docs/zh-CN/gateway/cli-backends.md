@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-02-03T07:47:52Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 56a96e83b16a4f6443cbf4a9da7a660c41a5b178af5e13f35352c9d72e1b08dd
+  source_hash: cdc59a88bffd66d1ff5a05f8db2a22c21e48ecfbc527a55671b386b2d79066a9
   source_path: gateway/cli-backends.md
   workflow: 15
 ---
@@ -27,16 +27,16 @@ x-i18n:
 
 ## 新手友好快速开始
 
-你可以**无需任何配置**使用 Claude Code CLI（OpenClaw 自带内置默认值）：
+你可以**无需任何配置**使用 Claude Code CLI（内置 Anthropic 插件会注册默认后端）：
 
 ```bash
-openclaw agent --message "hi" --model claude-cli/opus-4.5
+openclaw agent --message "hi" --model claude-cli/opus-4.6
 ```
 
-Codex CLI 也可以开箱即用：
+Codex CLI 也可以开箱即用（通过内置 OpenAI 插件）：
 
 ```bash
-openclaw agent --message "hi" --model codex-cli/gpt-5.2-codex
+openclaw agent --message "hi" --model codex-cli/gpt-5.4
 ```
 
 如果你的 Gateway 网关在 launchd/systemd 下运行且 PATH 很精简，只需添加命令路径：
@@ -57,6 +57,8 @@ openclaw agent --message "hi" --model codex-cli/gpt-5.2-codex
 
 就这样。除了 CLI 本身外，不需要密钥，不需要额外的认证配置。
 
+如果你将内置 CLI 后端作为 Gateway 网关主机上的**主要消息提供商**使用，当你的配置在模型引用或 `agents.defaults.cliBackends` 下明确引用该后端时，OpenClaw 现在会自动加载其所属的内置插件。
+
 ## 作为回退使用
 
 将 CLI 后端添加到你的回退列表中，这样它只在主要模型失败时运行：
@@ -66,11 +68,12 @@ openclaw agent --message "hi" --model codex-cli/gpt-5.2-codex
   agents: {
     defaults: {
       model: {
-        primary: "anthropic/claude-opus-4-5",
-        fallbacks: ["claude-cli/opus-4.5"],
+        primary: "anthropic/claude-opus-4-6",
+        fallbacks: ["claude-cli/opus-4.6", "claude-cli/opus-4.5"],
       },
       models: {
-        "anthropic/claude-opus-4-5": { alias: "Opus" },
+        "anthropic/claude-opus-4-6": { alias: "Opus" },
+        "claude-cli/opus-4.6": {},
         "claude-cli/opus-4.5": {},
       },
     },
@@ -114,8 +117,9 @@ agents.defaults.cliBackends
           input: "arg",
           modelArg: "--model",
           modelAliases: {
-            "claude-opus-4-5": "opus",
-            "claude-sonnet-4-5": "sonnet",
+            "claude-opus-4-6": "opus",
+            "claude-opus-4-6": "opus",
+            "claude-sonnet-4-6": "sonnet",
           },
           sessionArg: "--session",
           sessionMode: "existing",
@@ -172,29 +176,45 @@ OpenClaw 会将 base64 图像写入临时文件。如果设置了 `imageArg`，�
 - `input: "stdin"` 通过 stdin 发送提示。
 - 如果提示很长且设置了 `maxPromptArgChars`，则使用 stdin。
 
-## 默认值（内置）
+## 默认值（插件所有）
 
-OpenClaw 自带 `claude-cli` 的默认值：
+CLI 后端默认值现在是插件接口的一部分：
+
+- 插件通过 `api.registerCliBackend(...)` 注册它们。
+- 后端 `id` 成为模型引用中的提供商前缀。
+- 用户在 `agents.defaults.cliBackends.<id>` 中的配置仍会覆盖插件默认值。
+- 特定后端的配置清理通过可选的 `normalizeConfig` 钩子由插件负责。
+
+内置 Anthropic 插件为 `claude-cli` 注册默认值：
 
 - `command: "claude"`
-- `args: ["-p", "--output-format", "json", "--dangerously-skip-permissions"]`
-- `resumeArgs: ["-p", "--output-format", "json", "--dangerously-skip-permissions", "--resume", "{sessionId}"]`
+- `args: ["-p", "--output-format", "json", "--permission-mode", "bypassPermissions"]`
+- `resumeArgs: ["-p", "--output-format", "json", "--permission-mode", "bypassPermissions", "--resume", "{sessionId}"]`
 - `modelArg: "--model"`
 - `systemPromptArg: "--append-system-prompt"`
 - `sessionArg: "--session-id"`
 - `systemPromptWhen: "first"`
 - `sessionMode: "always"`
 
-OpenClaw 也自带 `codex-cli` 的默认值：
+内置 OpenAI 插件也为 `codex-cli` 注册默认值：
 
 - `command: "codex"`
-- `args: ["exec","--json","--color","never","--sandbox","read-only","--skip-git-repo-check"]`
-- `resumeArgs: ["exec","resume","{sessionId}","--color","never","--sandbox","read-only","--skip-git-repo-check"]`
+- `args: ["exec","--json","--color","never","--sandbox","workspace-write","--skip-git-repo-check"]`
+- `resumeArgs: ["exec","resume","{sessionId}","--color","never","--sandbox","workspace-write","--skip-git-repo-check"]`
 - `output: "jsonl"`
 - `resumeOutput: "text"`
 - `modelArg: "--model"`
 - `imageArg: "--image"`
 - `sessionMode: "existing"`
+
+内置 Google 插件也为 `google-gemini-cli` 注册默认值：
+
+- `command: "gemini"`
+- `args: ["--prompt", "--output-format", "json"]`
+- `resumeArgs: ["--resume", "{sessionId}", "--prompt", "--output-format", "json"]`
+- `modelArg: "--model"`
+- `sessionMode: "existing"`
+- `sessionIdFields: ["session_id", "sessionId"]`
 
 仅在需要时覆盖（常见：绝对 `command` 路径）。
 

@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-03-16T06:22:17Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 219ac1acd7d192a5a12779e204cca65dae77a852fdc668271c45c01e0c69b7c9
+  source_hash: d0117e65c6aca9083838d55f773a4a547cfce3c31806ef4d4fb04e4f2a94f686
   source_path: gateway/authentication.md
   workflow: 15
 ---
@@ -118,6 +118,22 @@ openclaw models status --check
 [/automation/auth-monitoring](/automation/auth-monitoring)
 
 > `claude setup-token` 需要交互式 TTY。
+
+## Anthropic：Claude CLI 迁移
+
+如果 Claude CLI 已安装并在 Gateway 网关主机上登录，你可以将现有的 Anthropic 设置切换到 CLI 后端，而无需粘贴 setup-token：
+
+```bash
+openclaw models auth login --provider anthropic --method cli --set-default
+```
+
+这会保留你现有的 Anthropic 认证配置文件以供回退，但将默认模型选择更改为 `claude-cli/...`，并在 `agents.defaults.models` 下添加匹配的 Claude CLI 允许列表条目。
+
+新手引导快捷方式：
+
+```bash
+openclaw onboard --auth-choice anthropic-cli
+```
 
 ## 检查模型认证状态
 

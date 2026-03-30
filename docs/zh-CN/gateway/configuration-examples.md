@@ -6,10 +6,10 @@ read_when:
 summary: 符合模式的常见 OpenClaw 设置配置示例
 title: 配置示例
 x-i18n:
-  generated_at: "2026-02-03T07:48:39Z"
-  model: claude-opus-4-5
-  provider: pi
-  source_hash: 00e9286722653f2748137d5bc641d528b160de16a58015ca7674a3a302f4b2c3
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: anthropic
+  source_hash: f6ff87e1650a7b2d7fd12d0b880e8aa38cbde97306b6ba6c5a89607f3a0d2e4e
   source_path: gateway/configuration-examples.md
   workflow: 15
 ---
@@ -42,7 +42,7 @@ x-i18n:
   },
   agent: {
     workspace: "~/.openclaw/workspace",
-    model: { primary: "anthropic/claude-sonnet-4-5" },
+    model: { primary: "anthropic/claude-sonnet-4-6" },
   },
   channels: {
     whatsapp: {
@@ -59,7 +59,7 @@ x-i18n:
 
 ```json5
 {
-  // 环境 + shell
+  // 环境变量 + Shell
   env: {
     OPENROUTER_API_KEY: "sk-or-...",
     vars: {
@@ -71,10 +71,14 @@ x-i18n:
     },
   },
 
-  // 认证配置文件元数据（密钥存储在 auth-profiles.json 中）
+  // 认证 Profile 元数据（密钥存储在 auth-profiles.json 中）
   auth: {
     profiles: {
-      "anthropic:me@example.com": { provider: "anthropic", mode: "oauth", email: "me@example.com" },
+      "anthropic:me@example.com": {
+        provider: "anthropic",
+        mode: "oauth",
+        email: "me@example.com",
+      },
       "anthropic:work": { provider: "anthropic", mode: "api_key" },
       "openai:default": { provider: "openai", mode: "api_key" },
       "openai-codex:default": { provider: "openai-codex", mode: "oauth" },
@@ -86,7 +90,7 @@ x-i18n:
     },
   },
 
-  // 身份
+  // 身份标识
   identity: {
     name: "Samantha",
     theme: "helpful sloth",
@@ -141,7 +145,7 @@ x-i18n:
         maxBytes: 20971520,
         models: [
           { provider: "openai", model: "gpt-4o-mini-transcribe" },
-          // 可选的 CLI 回退（Whisper 二进制）：
+          // 可选 CLI 回退（Whisper 二进制）：
           // { type: "cli", command: "whisper", args: ["--model", "base", "{{MediaPath}}"] }
         ],
         timeoutSeconds: 120,
@@ -167,6 +171,15 @@ x-i18n:
     },
     resetTriggers: ["/new", "/reset"],
     store: "~/.openclaw/agents/default/sessions/sessions.json",
+    maintenance: {
+      mode: "warn",
+      pruneAfter: "30d",
+      maxEntries: 500,
+      rotateBytes: "10mb",
+      resetArchiveRetention: "30d", // duration 或 false
+      maxDiskBytes: "500mb", // 可选
+      highWaterBytes: "400mb", // 可选（默认为 maxDiskBytes 的 80%）
+    },
     typingIntervalSeconds: 5,
     sendPolicy: {
       default: "allow",
@@ -196,7 +209,7 @@ x-i18n:
     discord: {
       enabled: true,
       token: "YOUR_DISCORD_BOT_TOKEN",
-      dm: { enabled: true, allowFrom: ["steipete"] },
+      dm: { enabled: true, allowFrom: ["123456789012345678"] },
       guilds: {
         "123456789012345678": {
           slug: "friends-of-openclaw",
@@ -232,15 +245,15 @@ x-i18n:
       workspace: "~/.openclaw/workspace",
       userTimezone: "America/Chicago",
       model: {
-        primary: "anthropic/claude-sonnet-4-5",
-        fallbacks: ["anthropic/claude-opus-4-5", "openai/gpt-5.2"],
+        primary: "anthropic/claude-sonnet-4-6",
+        fallbacks: ["anthropic/claude-opus-4-6", "openai/gpt-5.2"],
       },
       imageModel: {
-        primary: "openrouter/anthropic/claude-sonnet-4-5",
+        primary: "openrouter/anthropic/claude-sonnet-4-6",
       },
       models: {
-        "anthropic/claude-opus-4-5": { alias: "opus" },
-        "anthropic/claude-sonnet-4-5": { alias: "sonnet" },
+        "anthropic/claude-opus-4-6": { alias: "opus" },
+        "anthropic/claude-sonnet-4-6": { alias: "sonnet" },
         "openai/gpt-5.2": { alias: "gpt" },
       },
       thinkingDefault: "low",
@@ -265,8 +278,9 @@ x-i18n:
       maxConcurrent: 3,
       heartbeat: {
         every: "30m",
-        model: "anthropic/claude-sonnet-4-5",
+        model: "anthropic/claude-sonnet-4-6",
         target: "last",
+        directPolicy: "allow", // allow（默认）| block
         to: "+15555550123",
         prompt: "HEARTBEAT",
         ackMaxChars: 300,
@@ -296,6 +310,20 @@ x-i18n:
         },
       },
     },
+    list: [
+      {
+        id: "main",
+        default: true,
+        thinkingDefault: "high", // 每智能体 thinking 覆盖
+        reasoningDefault: "on", // 每智能体推理可见性
+        fastModeDefault: false, // 每智能体快速模式
+      },
+      {
+        id: "quick",
+        fastModeDefault: true, // 此智能体始终以快速模式运行
+        thinkingDefault: "off",
+      },
+    ],
   },
 
   tools: {
@@ -311,7 +339,7 @@ x-i18n:
       allowFrom: {
         whatsapp: ["+15555550123"],
         telegram: ["123456789"],
-        discord: ["steipete"],
+        discord: ["123456789012345678"],
         slack: ["U123"],
         signal: ["+15555550123"],
         imessage: ["user@example.com"],
@@ -346,20 +374,25 @@ x-i18n:
     },
   },
 
-  // Cron 作业
+  // Cron 任务
   cron: {
     enabled: true,
     store: "~/.openclaw/cron/cron.json",
     maxConcurrentRuns: 2,
+    sessionRetention: "24h",
+    runLog: {
+      maxBytes: "2mb",
+      keepLines: 2000,
+    },
   },
 
-  // Webhooks
+  // Webhook
   hooks: {
     enabled: true,
     path: "/hooks",
     token: "shared-secret",
     presets: ["gmail"],
-    transformsDir: "~/.openclaw/hooks",
+    transformsDir: "~/.openclaw/hooks/transforms",
     mappings: [
       {
         id: "gmail-hook",
@@ -375,7 +408,10 @@ x-i18n:
         to: "+15555550123",
         thinking: "low",
         timeoutSeconds: 300,
-        transform: { module: "./transforms/gmail.js", export: "transformGmail" },
+        transform: {
+          module: "gmail.js",
+          export: "transformGmail",
+        },
       },
     ],
     gmail: {
@@ -419,7 +455,7 @@ x-i18n:
       nodeManager: "npm",
     },
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
         apiKey: "GEMINI_KEY_HERE",
         env: { GEMINI_API_KEY: "GEMINI_KEY_HERE" },
@@ -447,13 +483,42 @@ x-i18n:
     discord: {
       enabled: true,
       token: "YOUR_TOKEN",
-      dm: { allowFrom: ["yourname"] },
+      dm: { allowFrom: ["123456789012345678"] },
     },
   },
 }
 ```
 
-### OAuth 带 API 密钥回退
+### 安全 DM 模式（共享收件箱 / 多用户 DM）
+
+如果超过一个人可以私信你的机器人（`allowFrom` 中有多个条目、多人的配对审批，或 `dmPolicy: "open"`），请启用**安全 DM 模式**，这样不同发送者的 DM 默认不会共享同一个上下文：
+
+```json5
+{
+  // 安全 DM 模式（推荐用于多用户或敏感 DM 智能体）
+  session: { dmScope: "per-channel-peer" },
+
+  channels: {
+    // 示例：WhatsApp 多用户收件箱
+    whatsapp: {
+      dmPolicy: "allowlist",
+      allowFrom: ["+15555550123", "+15555550124"],
+    },
+
+    // 示例：Discord 多用户收件箱
+    discord: {
+      enabled: true,
+      token: "YOUR_DISCORD_BOT_TOKEN",
+      dm: { enabled: true, allowFrom: ["123456789012345678", "987654321098765432"] },
+    },
+  },
+}
+```
+
+对于 Discord/Slack/Google Chat/Microsoft Teams/Mattermost/IRC，发送者授权默认以 ID 优先。
+只有在明确接受相关风险的情况下，才使用每个渠道的 `dangerouslyAllowNameMatching: true` 启用直接可变名称/邮件/昵称匹配。
+
+### OAuth 与 API 密钥故障转移
 
 ```json5
 {
@@ -476,14 +541,18 @@ x-i18n:
   agent: {
     workspace: "~/.openclaw/workspace",
     model: {
-      primary: "anthropic/claude-sonnet-4-5",
-      fallbacks: ["anthropic/claude-opus-4-5"],
+      primary: "anthropic/claude-sonnet-4-6",
+      fallbacks: ["anthropic/claude-opus-4-6"],
     },
   },
 }
 ```
 
-### Anthropic 订阅 + API 密钥，MiniMax 回退
+### Anthropic setup-token + API 密钥，MiniMax 回退
+
+<Warning>
+过去部分用户在 Claude Code 之外使用 Anthropic setup-token 受到了限制。请将此视为用户自行承担风险的选择，并在依赖订阅认证之前核实当前的 Anthropic 条款。
+</Warning>
 
 ```json5
 {
@@ -515,14 +584,14 @@ x-i18n:
   agent: {
     workspace: "~/.openclaw/workspace",
     model: {
-      primary: "anthropic/claude-opus-4-5",
-      fallbacks: ["minimax/MiniMax-M2.1"],
+      primary: "anthropic/claude-opus-4-6",
+      fallbacks: ["minimax/MiniMax-M2.7"],
     },
   },
 }
 ```
 
-### 工作机器人（受限访问）
+### 工作机器人（限制访问）
 
 ```json5
 {
@@ -553,7 +622,7 @@ x-i18n:
 {
   agent: {
     workspace: "~/.openclaw/workspace",
-    model: { primary: "lmstudio/minimax-m2.1-gs32" },
+    model: { primary: "lmstudio/my-local-model" },
   },
   models: {
     mode: "merge",
@@ -564,8 +633,8 @@ x-i18n:
         api: "openai-responses",
         models: [
           {
-            id: "minimax-m2.1-gs32",
-            name: "MiniMax M2.1 GS32",
+            id: "my-local-model",
+            name: "Local Model",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -581,7 +650,7 @@ x-i18n:
 
 ## 提示
 
-- 如果你设置 `dmPolicy: "open"`，匹配的 `allowFrom` 列表必须包含 `"*"`。
-- 提供商 ID 各不相同（电话号码、用户 ID、频道 ID）。使用提供商文档确认格式。
-- 稍后添加的可选部分：`web`、`browser`、`ui`、`discovery`、`canvasHost`、`talk`、`signal`、`imessage`。
-- 参阅[提供商](/channels/whatsapp)和[故障排除](/gateway/troubleshooting)了解更深入的设置说明。
+- 如果设置 `dmPolicy: "open"`，对应的 `allowFrom` 列表必须包含 `"*"`。
+- 提供商 ID 格式各异（电话号码、用户 ID、渠道 ID）。请参阅提供商文档确认格式。
+- 可稍后添加的可选部分：`web`、`browser`、`ui`、`discovery`、`canvasHost`、`talk`、`signal`、`imessage`。
+- 更深入的设置说明请参阅[提供商](/providers)和[故障排查](/gateway/troubleshooting)。

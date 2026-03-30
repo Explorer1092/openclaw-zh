@@ -5,10 +5,10 @@ read_when:
 summary: 从 Gateway 网关暴露兼容 OpenResponses 的 /v1/responses HTTP 端点
 title: OpenResponses API
 x-i18n:
-  generated_at: "2026-02-03T07:48:43Z"
-  model: claude-opus-4-5
-  provider: pi
-  source_hash: 0597714837f8b210c38eeef53561894220c1473e54c56a5c69984847685d518c
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: anthropic
+  source_hash: d8c2c04093c2b340613849c4e9c56cdc13c60f55f42cbadd2df4284756ce31c2
   source_path: gateway/openresponses-http-api.md
   workflow: 15
 ---
@@ -24,63 +24,27 @@ OpenClaw 的 Gateway 网关可以提供兼容 OpenResponses 的 `POST /v1/respon
 
 底层实现中，请求作为正常的 Gateway 网关智能体运行执行（与 `openclaw agent` 相同的代码路径），因此路由/权限/配置与你的 Gateway 网关一致。
 
-## 认证
+## 认证、安全与路由
 
-使用 Gateway 网关认证配置。发送 bearer 令牌：
+操作行为与 [OpenAI Chat Completions](/gateway/openai-http-api) 相同：
 
-- `Authorization: Bearer <token>`
+- 使用 `Authorization: Bearer <token>` 配合正常的 Gateway 网关认证配置
+- 将端点视为该 Gateway 网关实例的完整操作员访问接口
+- 使用 `model: "openclaw"`、`model: "openclaw/default"`、`model: "openclaw/<agentId>"` 或 `x-openclaw-agent-id` 选择智能体
+- 当需要覆盖选定智能体的后端模型时使用 `x-openclaw-model`
+- 使用 `x-openclaw-session-key` 进行显式会话路由
+- 当需要非默认的合成入站渠道上下文时使用 `x-openclaw-message-channel`
 
-说明：
+使用 `gateway.http.endpoints.responses.enabled` 启用或禁用此端点。
 
-- 当 `gateway.auth.mode="token"` 时，使用 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）。
-- 当 `gateway.auth.mode="password"` 时，使用 `gateway.auth.password`（或 `OPENCLAW_GATEWAY_PASSWORD`）。
+同一兼容接口还包括：
 
-## 选择智能体
+- `GET /v1/models`
+- `GET /v1/models/{id}`
+- `POST /v1/embeddings`
+- `POST /v1/chat/completions`
 
-无需自定义头：在 OpenResponses `model` 字段中编码智能体 id：
-
-- `model: "openclaw:<agentId>"`（示例：`"openclaw:main"`、`"openclaw:beta"`）
-- `model: "agent:<agentId>"`（别名）
-
-或通过头指定特定的 OpenClaw 智能体：
-
-- `x-openclaw-agent-id: <agentId>`（默认：`main`）
-
-高级：
-
-- `x-openclaw-session-key: <sessionKey>` 完全控制会话路由。
-
-## 启用端点
-
-将 `gateway.http.endpoints.responses.enabled` 设置为 `true`：
-
-```json5
-{
-  gateway: {
-    http: {
-      endpoints: {
-        responses: { enabled: true },
-      },
-    },
-  },
-}
-```
-
-## 禁用端点
-
-将 `gateway.http.endpoints.responses.enabled` 设置为 `false`：
-
-```json5
-{
-  gateway: {
-    http: {
-      endpoints: {
-        responses: { enabled: false },
-      },
-    },
-  },
-}
-```
+关于智能体目标模型、`openclaw/default`、Embedding 透传和后端模型覆盖如何配合使用的权威说明，请参阅 [OpenAI Chat Completions](/gateway/openai-http-api#agent-first-model-contract) 和 [模型列表与智能体路由](/gateway/openai-http-api#model-list-and-agent-routing)。
 
 ## 会话行为
 
@@ -106,8 +70,11 @@ OpenClaw 的 Gateway 网关可以提供兼容 OpenResponses 的 `POST /v1/respon
 - `reasoning`
 - `metadata`
 - `store`
-- `previous_response_id`
 - `truncation`
+
+支持：
+
+- `previous_response_id`：当请求保持在相同的智能体/用户/请求会话范围内时，OpenClaw 会复用之前的响应会话。
 
 ## Item（输入）
 
@@ -152,7 +119,7 @@ OpenClaw 的 Gateway 网关可以提供兼容 OpenResponses 的 `POST /v1/respon
 }
 ```
 
-允许的 MIME 类型（当前）：`image/jpeg`、`image/png`、`image/gif`、`image/webp`。
+允许的 MIME 类型（当前）：`image/jpeg`、`image/png`、`image/gif`、`image/webp`、`image/heic`、`image/heif`。
 最大大小（当前）：10MB。
 
 ## 文件（`input_file`）
@@ -186,7 +153,13 @@ URL 获取默认值：
 
 - `files.allowUrl`：`true`
 - `images.allowUrl`：`true`
+- `maxUrlParts`：`8`（每个请求中基于 URL 的 `input_file` + `input_image` 部件总数）
 - 请求受到保护（DNS 解析、私有 IP 阻止、重定向限制、超时）。
+- 每种输入类型支持可选的主机名允许列表（`files.urlAllowlist`、`images.urlAllowlist`）。
+  - 精确主机：`"cdn.example.com"`
+  - 通配符子域名：`"*.assets.example.com"`（不匹配顶级域名）
+  - 空或省略的允许列表意味着不限制主机名。
+- 要完全禁用基于 URL 的获取，将 `files.allowUrl: false` 和/或 `images.allowUrl: false` 设置为 false。
 
 ## 文件 + 图像限制（配置）
 
@@ -200,8 +173,10 @@ URL 获取默认值：
         responses: {
           enabled: true,
           maxBodyBytes: 20000000,
+          maxUrlParts: 8,
           files: {
             allowUrl: true,
+            urlAllowlist: ["cdn.example.com", "*.assets.example.com"],
             allowedMimes: [
               "text/plain",
               "text/markdown",
@@ -222,7 +197,15 @@ URL 获取默认值：
           },
           images: {
             allowUrl: true,
-            allowedMimes: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+            urlAllowlist: ["images.example.com"],
+            allowedMimes: [
+              "image/jpeg",
+              "image/png",
+              "image/gif",
+              "image/webp",
+              "image/heic",
+              "image/heif",
+            ],
             maxBytes: 10485760,
             maxRedirects: 3,
             timeoutMs: 10000,
@@ -237,6 +220,7 @@ URL 获取默认值：
 省略时的默认值：
 
 - `maxBodyBytes`：20MB
+- `maxUrlParts`：8
 - `files.maxBytes`：5MB
 - `files.maxChars`：200k
 - `files.maxRedirects`：3
@@ -247,6 +231,14 @@ URL 获取默认值：
 - `images.maxBytes`：10MB
 - `images.maxRedirects`：3
 - `images.timeoutMs`：10s
+- HEIC/HEIF 类型的 `input_image` 来源会被接受并在传递给提供商前标准化为 JPEG。
+
+安全说明：
+
+- URL 允许列表在获取前和重定向跳转时均会强制执行。
+- 将主机名加入允许列表不会绕过私有/内部 IP 阻止。
+- 对于暴露在互联网上的 Gateway 网关，除了应用层防护外，还要应用网络出口控制。
+  参见 [安全](/gateway/security)。
 
 ## 流式传输（SSE）
 
