@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "6c5fbafef193198b58e5141bf1d725b3"
 read_when:
   - 添加或修改插件/扩展时
   - 记录插件安装或加载规则时
@@ -885,20 +886,21 @@ OpenClaw 会在运行时根据已发现的插件增强 `uiHints`：
 ## CLI
 
 ```bash
-openclaw plugins list
-openclaw plugins info <id>
-openclaw plugins install <path>                 # 将本地文件/目录复制到 ~/.openclaw/extensions/<id>
-openclaw plugins install ./extensions/voice-call # 支持相对路径
-openclaw plugins install ./plugin.tgz           # 从本地 tarball 安装
-openclaw plugins install ./plugin.zip           # 从本地 zip 安装
-openclaw plugins install -l ./extensions/voice-call # link（不复制），用于开发
-openclaw plugins install @openclaw/voice-call # 从 npm 安装
-openclaw plugins install @openclaw/voice-call --pin # 存储精确解析后的 name@version
-openclaw plugins update <id>
-openclaw plugins update --all
+openclaw plugins list                    # 紧凑清单
+openclaw plugins inspect <id>            # 详细信息
+openclaw plugins inspect <id> --json     # 机器可读输出
+openclaw plugins status                  # 运行状态摘要
+openclaw plugins doctor                  # 诊断
+
+openclaw plugins install <package>        # 安装（优先 ClawHub，然后 npm）
+openclaw plugins install clawhub:<pkg>   # 仅从 ClawHub 安装
+openclaw plugins install <path>          # 从本地路径安装
+openclaw plugins install -l <path>       # link（不复制），用于开发
+openclaw plugins update <id>             # 更新单个插件
+openclaw plugins update --all            # 更新所有插件
+
 openclaw plugins enable <id>
 openclaw plugins disable <id>
-openclaw plugins doctor
 ```
 
 `openclaw plugins list` 会将顶层格式显示为 `openclaw` 或 `bundle`。
@@ -911,23 +913,53 @@ openclaw plugins doctor
 
 ## Plugin API（概览）
 
-插件导出形式可以是：
+插件导出函数或带有 `register(api)` 的对象：
 
-- 一个函数：`(api) => { ... }`
-- 一个对象：`{ id, name, configSchema, register(api) { ... } }`
+```typescript
+export default definePluginEntry({
+  id: "my-plugin",
+  name: "My Plugin",
+  register(api) {
+    api.registerProvider({
+      /* ... */
+    });
+    api.registerTool({
+      /* ... */
+    });
+    api.registerChannel({
+      /* ... */
+    });
+  },
+});
+```
 
-`register(api)` 是插件挂接行为的地方。常见注册包括：
+常见注册方法：
 
-- `registerTool`
-- `registerHook`
-- `on(...)` 用于类型化生命周期 hooks
-- `registerChannel`
-- `registerProvider`
-- `registerHttpRoute`
-- `registerCommand`
-- `registerCli`
-- `registerContextEngine`
-- `registerService`
+| 方法 | 注册内容 |
+| ---- | -------- |
+| `registerProvider` | 模型提供商（LLM） |
+| `registerChannel` | 聊天渠道 |
+| `registerTool` | 智能体工具 |
+| `registerHook` / `on(...)` | 生命周期 hooks |
+| `registerSpeechProvider` | 文本转语音 / STT |
+| `registerMediaUnderstandingProvider` | 图像/音频分析 |
+| `registerImageGenerationProvider` | 图像生成 |
+| `registerWebSearchProvider` | 网络搜索 |
+| `registerHttpRoute` | HTTP 端点 |
+| `registerCommand` / `registerCli` | CLI 命令 |
+| `registerContextEngine` | 上下文引擎 |
+| `registerService` | 后台服务 |
+
+类型化生命周期 hooks 的守卫行为：
+
+- `before_tool_call`：`{ block: true }` 是终止性的；低优先级处理程序会被跳过。
+- `before_tool_call`：`{ block: false }` 是无操作的，不会清除之前的阻止。
+- `before_install`：`{ block: true }` 是终止性的；低优先级处理程序会被跳过。
+- `before_install`：`{ block: false }` 是无操作的，不会清除之前的阻止。
+- `message_sending`：`{ cancel: true }` 是终止性的；低优先级处理程序会被跳过。
+- `message_sending`：`{ cancel: false }` 是无操作的，不会清除之前的取消。
+
+有关完整的类型化 hook 行为，请参阅 [SDK 概览](/plugins/sdk-overview#hook-decision-semantics)。
 
 上下文引擎插件还可以注册一个由运行时拥有的上下文管理器：
 
@@ -1608,3 +1640,13 @@ export default function (api) {
 
 - 仓库内插件可以将 Vitest 测试放在 `src/**` 下（例如：`src/plugins/voice-call.plugin.test.ts`）。
 - 单独发布的插件应运行自己的 CI（lint/build/test），并验证 `openclaw.extensions` 指向构建后的入口点（`dist/index.js`）。
+
+
+## 相关资源
+
+- [构建插件](/plugins/building-plugins) — 创建你自己的插件
+- [Plugin Bundles](/plugins/bundles) — Codex/Claude/Cursor bundle 兼容性
+- [Plugin Manifest](/plugins/manifest) — manifest schema
+- [注册工具](/plugins/building-plugins#registering-agent-tools) — 在插件中添加智能体工具
+- [插件内部架构](/plugins/architecture) — 能力模型与加载流水线
+- [社区插件](/plugins/community) — 第三方列表

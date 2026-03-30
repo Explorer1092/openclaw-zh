@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "2823617f111eebd96e557eabbab404dc"
 read_when:
   - 添加或修改 Skills
   - 更改 Skills 门控或加载规则
@@ -19,51 +20,55 @@ OpenClaw 使用**兼容 [AgentSkills](https://agentskills.io)** 的 Skills 文�
 
 ## 位置和优先级
 
-Skills 从**三个**位置加载：
+OpenClaw 从以下来源加载 Skills：
 
-1. **内置 Skills**：随安装包一起发布（npm 包或 OpenClaw.app）
-2. **托管/本地 Skills**：`~/.openclaw/skills`
-3. **工作区 Skills**：`<workspace>/skills`
+1. **额外 Skills 文件夹**：通过 `skills.load.extraDirs` 配置
+2. **内置 Skills**：随安装包一起发布（npm 包或 OpenClaw.app）
+3. **托管/本地 Skills**：`~/.openclaw/skills`
+4. **个人智能体 Skills**：`~/.agents/skills`
+5. **项目智能体 Skills**：`<workspace>/.agents/skills`
+6. **工作区 Skills**：`<workspace>/skills`
 
 如果 Skills 名称冲突，优先级为：
 
-`<workspace>/skills`（最高）→ `~/.openclaw/skills` → 内置 Skills（最低）
-
-此外，你可以通过 `~/.openclaw/openclaw.json` 中的 `skills.load.extraDirs` 配置额外的 Skills 文件夹（最低优先级）。
+`<workspace>/skills`（最高）→ `<workspace>/.agents/skills` → `~/.agents/skills` → `~/.openclaw/skills` → 内置 Skills → `skills.load.extraDirs`（最低）
 
 ## 单智能体 vs 共享 Skills
 
 在**多智能体**设置中，每个智能体有自己的工作区。这意味着：
 
 - **单智能体 Skills** 位于 `<workspace>/skills` 中，仅供该智能体使用。
+- **项目智能体 Skills** 位于 `<workspace>/.agents/skills`，在正常工作区 `skills/` 文件夹之前应用于该工作区。
+- **个人智能体 Skills** 位于 `~/.agents/skills`，跨该机器上的所有工作区应用。
 - **共享 Skills** 位于 `~/.openclaw/skills`（托管/本地），对同一机器上的**所有智能体**可见。
 - 如果你想要多个智能体使用一个通用的 Skills 包，也可以通过 `skills.load.extraDirs`（最低优先级）添加**共享文件夹**。
 
-如果同一个 Skills 名称存在于多个位置，将应用通常的优先级规则：工作区优先，然后是托管/本地，最后是内置。
+如果同一个 Skills 名称存在于多个位置，将应用通常的优先级规则：工作区优先，然后是项目智能体 Skills，然后是个人智能体 Skills，然后是托管/本地，然后是内置，最后是额外目录。
 
 ## 插件 + Skills
 
-插件可以通过在 `openclaw.plugin.json` 中列出 `skills` 目录（相对于插件根目录的路径）来发布自己的 Skills。插件 Skills 在插件启用时加载，并参与正常的 Skills 优先级规则。你可以通过插件配置条目上的 `metadata.openclaw.requires.config` 对它们进行门控。参见[插件](/tools/plugin)了解发现/配置，以及[工具](/tools)了解这些 Skills 所教授的工具接口。
+插件可以通过在 `openclaw.plugin.json` 中列出 `skills` 目录（相对于插件根目录的路径）来发布自己的 Skills。插件 Skills 在插件启用时加载。目前这些目录会被合并到与 `skills.load.extraDirs` 相同的低优先级路径中，因此同名的内置、托管、智能体或工作区 Skills 会覆盖它们。你可以通过插件配置条目上的 `metadata.openclaw.requires.config` 对它们进行门控。参见[插件](/tools/plugin)了解发现/配置，以及[工具](/tools)了解这些 Skills 所教授的工具接口。
 
 ## ClawHub（安装 + 同步）
 
-ClawHub 是 OpenClaw 的公共 Skills 注册表。浏览 https://clawhub.com。使用它来发现、安装、更新和备份 Skills。完整指南：[ClawHub](/tools/clawhub)。
+ClawHub 是 OpenClaw 的公共 Skills 注册表。浏览 [https://clawhub.com](https://clawhub.com)。使用原生 `openclaw skills` 命令发现/安装/更新 Skills，或在需要发布/同步工作流时使用单独的 `clawhub` CLI。完整指南：[ClawHub](/tools/clawhub)。
 
 常见流程：
 
 - 将 Skills 安装到你的工作区：
-  - `clawhub install <skill-slug>`
+  - `openclaw skills install <skill-slug>`
 - 更新所有已安装的 Skills：
-  - `clawhub update --all`
+  - `openclaw skills update --all`
 - 同步（扫描 + 发布更新）：
   - `clawhub sync --all`
 
-默认情况下，`clawhub` 安装到当前工作目录下的 `./skills`（或回退到配置的 OpenClaw 工作区）。OpenClaw 在下一个会话中将其识别为 `<workspace>/skills`。
+原生 `openclaw skills install` 安装到活跃工作区的 `skills/` 目录。单独的 `clawhub` CLI 也会安装到当前工作目录下的 `./skills`（或回退到配置的 OpenClaw 工作区）。OpenClaw 在下一个会话中将其识别为 `<workspace>/skills`。
 
 ## 安全注意事项
 
 - 将第三方 Skills 视为**不受信任的代码**。启用前请阅读它们。
 - 对于不受信任的输入和高风险工具，优先使用沙箱隔离运行。参见[沙箱隔离](/gateway/sandboxing)。
+- 工作区和额外目录的 Skills 发现仅接受解析后的真实路径在配置根目录内的 Skills 根目录和 `SKILL.md` 文件。
 - `skills.entries.*.env` 和 `skills.entries.*.apiKey` 为该智能体轮次将秘密注入到**宿主机**进程中（而非沙箱）。将秘密保持在提示词和日志之外。
 - 有关更广泛的威胁模型和检查清单，参见[安全性](/gateway/security)。
 
@@ -73,8 +78,8 @@ ClawHub 是 OpenClaw 的公共 Skills 注册表。浏览 https://clawhub.com。�
 
 ```markdown
 ---
-name: nano-banana-pro
-description: Generate or edit images via Gemini 3 Pro Image
+name: image-lab
+description: Generate or edit images via a provider-backed image workflow
 ---
 ```
 
@@ -101,8 +106,8 @@ OpenClaw 使用 `metadata`（单行 JSON）**在加载时过滤 Skills**：
 
 ```markdown
 ---
-name: nano-banana-pro
-description: Generate or edit images via Gemini 3 Pro Image
+name: image-lab
+description: Generate or edit images via a provider-backed image workflow
 metadata:
   {
     "openclaw":
@@ -178,9 +183,9 @@ metadata:
 {
   skills: {
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         enabled: true,
-        apiKey: "GEMINI_KEY_HERE",
+        apiKey: { source: "env", provider: "default", id: "GEMINI_API_KEY" }, // 或明文字符串
         env: {
           GEMINI_API_KEY: "GEMINI_KEY_HERE",
         },
@@ -198,13 +203,17 @@ metadata:
 
 注意：如果 Skills 名称包含连字符，请用引号括起键名（JSON5 允许带引号的键名）。
 
+如果你想在 OpenClaw 内部进行原生图像生成/编辑，请使用带 `agents.defaults.imageGenerationModel` 的核心 `image_generate` 工具，而不是内置 Skills。这里的 Skills 示例适用于自定义或第三方工作流。
+
+对于原生图像分析，使用带 `agents.defaults.imageModel` 的 `image` 工具。对于原生图像生成/编辑，使用带 `agents.defaults.imageGenerationModel` 的 `image_generate`。如果选择 `openai/*`、`google/*`、`fal/*` 或其他特定提供商的图像模型，还需添加该提供商的认证/API 密钥。
+
 配置键默认匹配 **Skills 名称**。如果 Skills 定义了 `metadata.openclaw.skillKey`，请在 `skills.entries` 下使用该键。
 
 规则：
 
 - `enabled: false` 禁用该 Skills，即使它是内置/已安装的。
 - `env`：**仅在**变量在进程中尚未设置时注入。
-- `apiKey`：为声明 `metadata.openclaw.primaryEnv` 的 Skills 提供的便捷字段。
+- `apiKey`：为声明 `metadata.openclaw.primaryEnv` 的 Skills 提供的便捷字段。支持明文字符串或 SecretRef 对象（`{ source, provider, id }`）。
 - `config`：用于自定义单 Skills 字段的可选容器；自定义键必须放在这里。
 - `allowBundled`：可选的仅用于**内置** Skills 的白名单。如果设置，只有列表中的内置 Skills 才有资格（托管/工作区 Skills 不受影响）。
 
