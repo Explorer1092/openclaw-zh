@@ -7,10 +7,10 @@ read_when:
 summary: ClawHub 指南：公共注册中心、原生 OpenClaw 安装流程及 ClawHub CLI 工作流
 title: ClawHub
 x-i18n:
-  generated_at: "2026-02-01T21:42:32Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 8b7f8fab80a34e409f37fa130a49ff5b487966755a7b0d214dfebf5207c7124c
+  source_hash: ""
   source_path: tools/clawhub.md
   workflow: 15
 ---

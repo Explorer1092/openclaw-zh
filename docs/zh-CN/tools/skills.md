@@ -6,10 +6,10 @@ read_when:
 summary: Skills：托管与工作区、门控规则以及配置/环境变量连接
 title: Skills
 x-i18n:
-  generated_at: "2026-02-03T10:12:27Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 54685da5885600b367ccdad6342497199fcb168ce33f8cdc00391d993f3bab7e
+  source_hash: ""
   source_path: tools/skills.md
   workflow: 15
 ---
