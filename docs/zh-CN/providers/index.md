@@ -1,14 +1,15 @@
 ---
+mmh3_hash: "b08dd96c3e6a4c993159c70430dba0ec"
 read_when:
   - 你想选择一个模型提供商
   - 你需要支持的 LLM 后端的快速概览
 summary: OpenClaw 支持的模型提供商（LLM）
-title: 模型提供商
+title: 模型提供商目录
 x-i18n:
-  generated_at: "2026-03-16T06:25:28Z"
-  model: gpt-5.4
-  provider: openai
-  source_hash: 1d7ba79fd152a978e6eb3b8f8d5dfc44cebba77d2c74dc3892aae917d32ad2ee
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: pi
+  source_hash: ""
   source_path: providers/index.md
   workflow: 15
 ---
@@ -18,7 +19,7 @@ x-i18n:
 OpenClaw 可以使用许多 LLM 提供商。选择一个提供商，完成身份验证，然后将
 默认模型设置为 `provider/model`。
 
-在找聊天渠道文档（WhatsApp/Telegram/Discord/Slack/Mattermost（插件）/等）？请参见 [Channels](/channels)。
+在找聊天 Channel 文档（WhatsApp/Telegram/Discord/Slack/Mattermost（插件）/等）？请参见 [Channels](/channels)。
 
 ## 快速开始
 
@@ -36,24 +37,34 @@ OpenClaw 可以使用许多 LLM 提供商。选择一个提供商，完成身份
 - [Amazon Bedrock](/providers/bedrock)
 - [Anthropic（API + Claude Code CLI）](/providers/anthropic)
 - [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
+- [DeepSeek](/providers/deepseek)
+- [GitHub Copilot](/providers/github-copilot)
 - [GLM 模型](/providers/glm)
+- [Google（Gemini）](/providers/google)
+- [Groq（LPU 推理）](/providers/groq)
 - [Hugging Face（Inference）](/providers/huggingface)
 - [Kilocode](/providers/kilocode)
-- [LiteLLM（统一网关）](/providers/litellm)
+- [LiteLLM（统一 Gateway）](/providers/litellm)
 - [MiniMax](/providers/minimax)
 - [Mistral](/providers/mistral)
 - [Moonshot AI（Kimi + Kimi Coding）](/providers/moonshot)
 - [NVIDIA](/providers/nvidia)
 - [Ollama（云端 + 本地模型）](/providers/ollama)
 - [OpenAI（API + Codex）](/providers/openai)
-- [OpenCode（Zen + Go）](/providers/opencode)
+- [OpenCode](/providers/opencode)
+- [OpenCode Go](/providers/opencode-go)
 - [OpenRouter](/providers/openrouter)
+- [Perplexity（网络搜索）](/providers/perplexity-provider)
 - [Qianfan](/providers/qianfan)
-- [Qwen（OAuth）](/providers/qwen)
+- [Qwen / Model Studio（阿里云）](/providers/qwen_modelstudio)
+- [SGLang（本地模型）](/providers/sglang)
+- [Synthetic](/providers/synthetic)
 - [Together AI](/providers/together)
-- [Vercel AI Gateway](/providers/vercel-ai-gateway)
 - [Venice（Venice AI，注重隐私）](/providers/venice)
+- [Vercel AI Gateway](/providers/vercel-ai-gateway)
 - [vLLM（本地模型）](/providers/vllm)
+- [Volcengine（豆包）](/providers/volcengine)
+- [xAI](/providers/xai)
 - [Xiaomi](/providers/xiaomi)
 - [Z.AI](/providers/zai)
 

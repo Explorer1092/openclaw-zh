@@ -1,14 +1,15 @@
 ---
+mmh3_hash: "60d71a76f3521861ed4baa026bd96ee7"
 read_when:
   - 你想在 OpenClaw 中使用 OpenAI 模型
   - 你想使用 Codex 订阅身份验证而不是 API 密钥
 summary: 在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI
 title: OpenAI
 x-i18n:
-  generated_at: "2026-03-16T06:26:45Z"
-  model: gpt-5.4
-  provider: openai
-  source_hash: a348d8fca7b809f84c6b90bf6a799e0a070a6e7b98a78b2cd2d747bb3d2b2212
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: pi
+  source_hash: ""
   source_path: providers/openai.md
   workflow: 15
 ---
@@ -165,11 +166,11 @@ OpenAI 文档将预热描述为可选。OpenClaw 对
 }
 ```
 
-### OpenAI 优先处理
+### OpenAI 和 Codex 优先处理
 
 OpenAI 的 API 通过 `service_tier=priority` 暴露优先处理。在
-OpenClaw 中，设置 `agents.defaults.models["openai/<model>"].params.serviceTier`，即可
-在直接 `openai/*` Responses 请求中透传该字段。
+OpenClaw 中，将 `agents.defaults.models["<provider>/<model>"].params.serviceTier`
+设置为在原生 OpenAI/Codex Responses 端点上透传该字段。
 
 ```json5
 {
@@ -177,6 +178,11 @@ OpenClaw 中，设置 `agents.defaults.models["openai/<model>"].params.serviceTi
     defaults: {
       models: {
         "openai/gpt-5.4": {
+          params: {
+            serviceTier: "priority",
+          },
+        },
+        "openai-codex/gpt-5.4": {
           params: {
             serviceTier: "priority",
           },
@@ -189,6 +195,14 @@ OpenClaw 中，设置 `agents.defaults.models["openai/<model>"].params.serviceTi
 
 支持的值为 `auto`、`default`、`flex` 和 `priority`。
 
+OpenClaw 会在以下两种情况中将 `params.serviceTier` 透传：直接 `openai/*` Responses 请求和 `openai-codex/*` Codex Responses 请求（当这些模型指向原生 OpenAI/Codex 端点时）。
+
+重要行为：
+
+- 直接 `openai/*` 必须指向 `api.openai.com`
+- `openai-codex/*` 必须指向 `chatgpt.com/backend-api`
+- 如果你将任一提供商路由到另一个 base URL 或代理，OpenClaw 不会修改 `service_tier`
+
 ### OpenAI 快速模式
 
 OpenClaw 为 `openai/*` 和
@@ -197,11 +211,12 @@ OpenClaw 为 `openai/*` 和
 - 聊天/UI：`/fast status|on|off`
 - 配置：`agents.defaults.models["<provider>/<model>"].params.fastMode`
 
-启用快速模式后，OpenClaw 会应用低延迟 OpenAI 配置：
+启用快速模式后，OpenClaw 会将其映射为 OpenAI 优先处理：
 
-- 当负载未明确指定 reasoning 时，设置 `reasoning.effort = "low"`
-- 当负载未明确指定 verbosity 时，设置 `text.verbosity = "low"`
-- 对直接发往 `api.openai.com` 的 `openai/*` Responses 调用设置 `service_tier = "priority"`
+- 发往 `api.openai.com` 的直接 `openai/*` Responses 调用发送 `service_tier = "priority"`
+- 发往 `chatgpt.com/backend-api` 的 `openai-codex/*` Responses 调用也发送 `service_tier = "priority"`
+- 已有的负载 `service_tier` 值会被保留
+- 快速模式不会重写 `reasoning` 或 `text.verbosity`
 
 示例：
 
