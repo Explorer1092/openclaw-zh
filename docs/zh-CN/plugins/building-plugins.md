@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "67dfa1c1aa25adc483cf1a19e997bdb6"
 title: 构建插件
 sidebarTitle: 入门
 summary: 快速创建你的第一个 OpenClaw 插件

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "dddc1ca61e91071df9dfc3ef95125a1e"
 title: Plugin Bundles
 summary: 安装并使用 Codex、Claude 和 Cursor Bundle 作为 OpenClaw 插件
 read_when:
