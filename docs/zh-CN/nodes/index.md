@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "d564db12a3b820f6843036177dc69089"
 read_when:
   - 将 iOS/Android 节点配对到 Gateway 网关时
   - 使用节点 canvas/camera 为智能体提供上下文时
@@ -9,7 +10,7 @@ x-i18n:
   generated_at: "2026-02-03T07:51:55Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 74e9420f61c653e4ceeb00f5a27e4266bd1c7715c1000edd969c3ee185e74de9
+  source_hash: 9bc6494e7551b603f9dc1157b223d4694d656c5dd3e04f6f6bb5e5300e0e63c7
   source_path: nodes/index.md
   workflow: 15
 ---
@@ -26,6 +27,7 @@ macOS 也可以在**节点模式**下运行：菜单栏应用连接到 Gateway �
 
 - 节点是**外围设备**，不是 Gateway 网关。它们不运行 Gateway 网关服务。
 - Telegram/WhatsApp 等消息落在 **Gateway 网关**上，而不是节点上。
+- 故障排除运行手册：[/nodes/troubleshooting](/nodes/troubleshooting)
 
 ## 配对 + 状态
 
@@ -60,6 +62,12 @@ openclaw nodes describe --node <idOrNameOrIp>
 - **节点主机**：在节点机器上执行 `system.run`/`system.which`。
 - **批准**：通过 `~/.openclaw/exec-approvals.json` 在节点主机上执行。
 
+批准说明：
+
+- 基于批准的节点运行绑定精确的请求上下文。
+- 对于直接 shell/运行时文件执行，OpenClaw 还会尽力绑定一个具体的本地文件操作数，如果该文件在执行前发生变化，则拒绝运行。
+- 如果 OpenClaw 无法为解释器/运行时命令准确识别一个具体的本地文件，则基于批准的执行会被拒绝，而不是假装具有完整的运行时覆盖。如需更广泛的解释器语义，请使用沙箱隔离、独立主机或显式可信允许列表/完整工作流。
+
 ### 启动节点主机（前台）
 
 在节点机器上：
@@ -87,8 +95,13 @@ openclaw node run --host 127.0.0.1 --port 18790 --display-name "Build Node"
 
 注意事项：
 
-- 令牌是 Gateway 网关配置中的 `gateway.auth.token`（Gateway 网关主机上的 `~/.openclaw/openclaw.json`）。
-- `openclaw node run` 读取 `OPENCLAW_GATEWAY_TOKEN` 进行认证。
+- `openclaw node run` 支持令牌或密码认证。
+- 优先使用环境变量：`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`。
+- 配置回退：`gateway.auth.token` / `gateway.auth.password`。
+- 在本地模式下，节点主机会有意忽略 `gateway.remote.token` / `gateway.remote.password`。
+- 在远程模式下，`gateway.remote.token` / `gateway.remote.password` 遵循远程优先级规则。
+- 如果活跃的本地 `gateway.auth.*` SecretRef 已配置但未解析，节点主机认证会安全失败。
+- 节点主机认证解析仅遵守 `OPENCLAW_GATEWAY_*` 环境变量。
 
 ### 启动节点主机（服务）
 
@@ -102,10 +115,12 @@ openclaw node restart
 在 Gateway 网关主机上：
 
 ```bash
-openclaw nodes pending
-openclaw nodes approve <requestId>
-openclaw nodes list
+openclaw devices list
+openclaw devices approve <requestId>
+openclaw nodes status
 ```
+
+如果节点以更改后的认证信息重连，请重新运行 `openclaw devices list` 并批准当前的 `requestId`。
 
 命名选项：
 
@@ -229,10 +244,9 @@ openclaw nodes screen record --node <idOrNameOrIp> --duration 10s --fps 10 --no-
 
 注意事项：
 
-- `screen.record` 需要节点应用处于前台。
-- Android 会在录制前显示系统屏幕捕获提示。
+- `screen.record` 可用性取决于节点平台。
 - 屏幕录制被限制为 `<= 60s`。
-- `--no-audio` 禁用麦克风捕获（iOS/Android 支持；macOS 使用系统捕获音频）。
+- `--no-audio` 禁用支持平台上的麦克风捕获。
 - 当有多个屏幕可用时，使用 `--screen <index>` 选择显示器。
 
 ## 位置（节点）
@@ -267,6 +281,33 @@ openclaw nodes invoke --node <idOrNameOrIp> --command sms.send --params '{"to":"
 - 在能力被广播之前，必须在 Android 设备上接受权限提示。
 - 没有电话功能的纯 Wi-Fi 设备不会广播 `sms.send`。
 
+## Android 设备与个人数据命令
+
+当相应能力启用后，Android 节点可以广播额外的命令家族。
+
+可用家族：
+
+- `device.status`、`device.info`、`device.permissions`、`device.health`
+- `notifications.list`、`notifications.actions`
+- `photos.latest`
+- `contacts.search`、`contacts.add`
+- `calendar.events`、`calendar.add`
+- `callLog.search`
+- `sms.search`
+- `motion.activity`、`motion.pedometer`
+
+调用示例：
+
+```bash
+openclaw nodes invoke --node <idOrNameOrIp> --command device.status --params '{}'
+openclaw nodes invoke --node <idOrNameOrIp> --command notifications.list --params '{}'
+openclaw nodes invoke --node <idOrNameOrIp> --command photos.latest --params '{"limit":1}'
+```
+
+注意事项：
+
+- motion 命令受可用传感器的能力限制。
+
 ## 系统命令（节点主机 / mac 节点）
 
 macOS 节点暴露 `system.run`、`system.notify` 和 `system.execApprovals.get/set`。
@@ -285,9 +326,13 @@ openclaw nodes invoke --node <idOrNameOrIp> --command system.which --params '{"n
 - Shell 执行现在统一走带 `host=node` 的 `exec` 工具；`nodes` 保持为显式节点命令的直接 RPC 表面。
 - `nodes invoke` 不暴露 `system.run` 或 `system.run.prepare`；这些仅保留在 `exec` 路径上。
 - `system.notify` 遵守 macOS 应用上的通知权限状态。
+- 未识别的节点 `platform` / `deviceFamily` 元数据使用保守的默认允许列表，该列表排除 `system.run` 和 `system.which`。如果你确实需要这些命令用于未知平台，请通过 `gateway.nodes.allowCommands` 显式添加。
 - `system.run` 支持 `--cwd`、`--env KEY=VAL`、`--command-timeout` 和 `--needs-screen-recording`。
+- 对于 shell 包装器（`bash|sh|zsh ... -c/-lc`），请求范围内的 `--env` 值会缩减为显式允许列表（`TERM`、`LANG`、`LC_*`、`COLORTERM`、`NO_COLOR`、`FORCE_COLOR`）。
+- 对于允许列表模式下的 allow-always 决策，已知的调度包装器（`env`、`nice`、`nohup`、`stdbuf`、`timeout`）会持久化内部可执行路径而非包装器路径。如果拆包不安全，则不会自动持久化允许列表条目。
+- 在 Windows 节点主机允许列表模式下，通过 `cmd.exe /c` 的 shell 包装器运行需要批准（仅有允许列表条目不会自动允许包装器形式）。
 - `system.notify` 支持 `--priority <passive|active|timeSensitive>` 和 `--delivery <system|overlay|auto>`。
-- macOS 节点会丢弃 `PATH` 覆盖；无头节点主机仅在 `PATH` 前置到节点主机 PATH 时才接受它。
+- 节点主机会忽略 `PATH` 覆盖，并剥离危险的启动/shell 密钥（`DYLD_*`、`LD_*`、`NODE_OPTIONS`、`PYTHON*`、`PERL*`、`RUBYOPT`、`SHELLOPTS`、`PS4`）。如果需要额外的 PATH 条目，请配置节点主机服务环境（或将工具安装在标准位置），而不是通过 `--env` 传递 `PATH`。
 - 在 macOS 节点模式下，`system.run` 受 macOS 应用中的 exec 批准限制（设置 → Exec 批准）。
   Ask/allowlist/full 的行为与无头节点主机相同；被拒绝的提示返回 `SYSTEM_RUN_DENIED`。
 - 在无头节点主机上，`system.run` 受 exec 批准限制（`~/.openclaw/exec-approvals.json`）。
@@ -339,9 +384,9 @@ openclaw node run --host <gateway-host> --port 18789
 - 节点主机将其节点 id、令牌、显示名称和 Gateway 网关连接信息存储在 `~/.openclaw/node.json` 中。
 - Exec 批准通过 `~/.openclaw/exec-approvals.json` 在本地执行
   （参见 [Exec 批准](/tools/exec-approvals)）。
-- 在 macOS 上，当配套应用 exec 主机可达时，无头节点主机优先使用它，
-  如果应用不可用则回退到本地执行。设置 `OPENCLAW_NODE_EXEC_HOST=app` 要求
-  使用应用，或设置 `OPENCLAW_NODE_EXEC_FALLBACK=0` 禁用回退。
+- 在 macOS 上，无头节点主机默认在本地执行 `system.run`。设置
+  `OPENCLAW_NODE_EXEC_HOST=app` 可通过配套应用 exec 主机路由 `system.run`；同时添加
+  `OPENCLAW_NODE_EXEC_FALLBACK=0` 可要求使用应用主机，若应用不可用则安全失败。
 - 当 Gateway 网关 WS 使用 TLS 时，添加 `--tls` / `--tls-fingerprint`。
 
 ## Mac 节点模式

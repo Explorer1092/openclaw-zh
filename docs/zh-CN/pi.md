@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "79de164aead371045919a515a8bcaf29"
 read_when:
   - 理解 OpenClaw 中 Pi SDK 集成设计时
   - 修改 Pi 的智能体会话生命周期、工具或提供商接线时
@@ -8,7 +9,7 @@ x-i18n:
   generated_at: "2026-03-29T04:10:02Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 43a5d646ed66fab1492b6f18fb1623d895922ecf539e52e069d99e7e83c0be11
+  source_hash: 469a4e8760834dc7befafd5af782508c5711b36c3b3f46365d910bdc6742d405
   source_path: pi.md
   workflow: 15
 ---
@@ -138,10 +139,10 @@ src/agents/
 
 渠道特定的消息操作运行时现在位于插件自有的扩展目录中，而不是放在 `src/agents/tools` 下，例如：
 
-- `extensions/discord/src/actions/runtime*.ts`
-- `extensions/slack/src/action-runtime.ts`
-- `extensions/telegram/src/action-runtime.ts`
-- `extensions/whatsapp/src/action-runtime.ts`
+- Discord 插件操作运行时文件
+- Slack 插件操作运行时文件
+- Telegram 插件操作运行时文件
+- WhatsApp 插件操作运行时文件
 
 ## 核心集成流程
 

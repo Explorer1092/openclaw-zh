@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-02-03T07:53:38Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: cf7301e927b9a46347b498e264aeaa10dd76e85ff2de04775be57435718339f5
+  source_hash: 95f86ed3029c5599b6a6bed1f75b2e10c8808cf7ffa5e33dbfb1801a7f65f405
   source_path: prose.md
   workflow: 15
 ---
@@ -36,7 +36,7 @@ openclaw plugins enable open-prose
 
 启用插件后重启 Gateway 网关。
 
-开发/本地检出：`openclaw plugins install ./extensions/open-prose`
+开发/本地检出：`openclaw plugins install ./path/to/local/open-prose-plugin`
 
 相关文档：[插件](/tools/plugin)、[插件清单](/plugins/manifest)、[Skills](/tools/skills)。
 
