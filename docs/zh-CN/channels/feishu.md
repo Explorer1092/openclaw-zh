@@ -687,7 +687,8 @@ openclaw pairing list feishu
 | `channels.feishu.allowFrom`                       | 私信 allowlist（`open_id` 列表） | -                |
 | `channels.feishu.groupPolicy`                     | 群组策略                         | `open`           |
 | `channels.feishu.groupAllowFrom`                  | 群组 allowlist                   | -                |
-| `channels.feishu.groups.<chat_id>.requireMention` | 要求 @ 提及                      | `true`           |
+| `channels.feishu.requireMention`                  | 默认要求 @ 提及                  | conditional      |
+| `channels.feishu.groups.<chat_id>.requireMention` | 每群组要求 @ 提及覆盖            | inherited        |
 | `channels.feishu.groups.<chat_id>.enabled`        | 启用群组                         | `true`           |
 | `channels.feishu.textChunkLimit`                  | 消息分块大小                     | `2000`           |
 | `channels.feishu.mediaMaxMb`                      | 媒体大小限制                     | `30`             |
@@ -725,4 +726,28 @@ openclaw pairing list feishu
 - ✅ 图片
 - ✅ 文件
 - ✅ 音频
-- ⚠️ 富文本（部分支持）
+- ✅ 视频/媒体
+- ✅ 互动卡片
+- ⚠️ 富文本（post 样式格式和卡片，不支持任意飞书编写功能）
+
+### 线程和回复
+
+- ✅ 内联回复
+- ✅ 话题线程回复（飞书开放 `reply_in_thread` 的地方）
+- ✅ 回复线程/话题消息时，媒体回复保持线程感知
+
+## 运行时操作界面
+
+飞书目前开放以下运行时操作：
+
+- `send`
+- `read`
+- `edit`
+- `thread-reply`
+- `pin`
+- `list-pins`
+- `unpin`
+- `member-info`
+- `channel-info`
+- `channel-list`
+- `react` 和 `reactions`（在配置中启用 reactions 时）

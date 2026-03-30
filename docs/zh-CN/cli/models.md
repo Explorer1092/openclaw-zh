@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-02-01T20:21:16Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: 923b6ffc7de382ba25bc6e699f0515607e74877b39f2136ccdba2d99e1b1e9c3
+  source_hash: fa1b39c1f4b9b4508723f7ab1a686cfd5d2ddc50a5e43fc015a31233f1d2ee9c
   source_path: cli/models.md
   workflow: 14
 ---
@@ -44,6 +44,7 @@ openclaw models scan
 - `models set <model-or-alias>` 接受 `provider/model` 或别名。
 - 模型引用通过在**第一个** `/` 处拆分来解析。如果模型 ID 包含 `/`（OpenRouter 风格），需包含提供商前缀（示例：`openrouter/moonshotai/kimi-k2`）。
 - 如果省略提供商，OpenClaw 会将输入视为别名或**默认提供商**的模型（仅在模型 ID 不包含 `/` 时有效）。
+- `models status` 可能在认证输出中为非密钥占位符显示 `marker(<value>)`（例如 `OPENAI_API_KEY`、`secretref-managed`、`minimax-oauth`、`oauth:chutes`、`ollama-local`），而不是将其作为密钥掩码。
 
 ### `models status`
 
@@ -79,7 +80,16 @@ openclaw models auth paste-token
 `models auth login` 运行提供商插件的认证流程（OAuth/API 密钥）。使用
 `openclaw plugins list` 查看已安装的提供商。
 
+示例：
+
+```bash
+openclaw models auth login --provider anthropic --method cli --set-default
+openclaw models auth login --provider openai-codex --set-default
+```
+
 注意事项：
 
+- `login --provider anthropic --method cli --set-default` 重用本地 Claude CLI 登录，并将主要 Anthropic 默认模型路径重写为 `claude-cli/...`。
 - `setup-token` 会提示输入 setup-token 值（在任意机器上使用 `claude setup-token` 生成）。
 - `paste-token` 接受在其他地方或通过自动化生成的令牌字符串。
+- Anthropic 策略说明：setup-token 支持是技术兼容性。Anthropic 过去曾阻止某些 Claude Code 之外的订阅使用；在广泛使用前请确认当前条款。

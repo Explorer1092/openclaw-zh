@@ -23,7 +23,7 @@ x-i18n:
 
 ## 推荐方案：Model Studio（阿里云 Coding Plan）
 
-使用 [Model Studio](/providers/modelstudio) 获取官方支持的 Qwen 模型访问（Qwen 3.5 Plus、GLM-4.7、Kimi K2.5、MiniMax M2.5 等）。
+使用 [Model Studio](/providers/qwen_modelstudio) 获取官方支持的 Qwen 模型访问（Qwen 3.5 Plus、GLM-5、Kimi K2.5 等）。
 
 ```bash
 # 全球端点
@@ -33,4 +33,4 @@ openclaw onboard --auth-choice modelstudio-api-key
 openclaw onboard --auth-choice modelstudio-api-key-cn
 ```
 
-完整设置详情请参见 [Model Studio](/providers/modelstudio)。
+完整设置详情请参见 [Model Studio](/providers/qwen_modelstudio)。

@@ -7,7 +7,7 @@ x-i18n:
   generated_at: "2026-03-16T06:21:32Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 04d7747342c582abcfcafff28847b4297f65ada665157d9cfbe3dbb258ee31d9
+  source_hash: f43fcc868709afb466229218e74aa5dc9b19bd7e5342582620e94121d8c71a30
   source_path: cli/onboard.md
   workflow: 15
 ---

@@ -110,6 +110,8 @@ openclaw [--dev] [--profile <name>] <command>
     get
     set
     unset
+    file
+    validate
   completion
   doctor
   dashboard
@@ -120,7 +122,9 @@ openclaw [--dev] [--profile <name>] <command>
     audit
   secrets
     reload
-    migrate
+    audit
+    configure
+    apply
   reset
   uninstall
   update
@@ -139,11 +143,14 @@ openclaw [--dev] [--profile <name>] <command>
     check
   plugins
     list
-    info
+    inspect
     install
+    uninstall
+    update
     enable
     disable
     doctor
+    marketplace list
   memory
     status
     index
@@ -154,10 +161,22 @@ openclaw [--dev] [--profile <name>] <command>
     list
     add
     delete
+    bindings
+    bind
+    unbind
+    set-identity
   acp
+  mcp
   status
   health
   sessions
+    cleanup
+  tasks
+    list
+    show
+    notify
+    cancel
+    audit
   gateway
     call
     health
@@ -191,7 +210,7 @@ openclaw [--dev] [--profile <name>] <command>
     fallbacks list|add|remove|clear
     image-fallbacks list|add|remove|clear
     scan
-    auth add|setup-token|paste-token
+    auth add|login|login-github-copilot|setup-token|paste-token
     auth order get|set|clear
   sandbox
     list
@@ -283,17 +302,18 @@ openclaw [--dev] [--profile <name>] <command>
 ## 密钥
 
 - `openclaw secrets reload` — 重新解析引用，并以原子方式替换运行时快照。
-- `openclaw secrets audit` — 扫描明文残留、未解析引用和优先级漂移。
-- `openclaw secrets configure` — 用于提供商设置 + SecretRef 映射 + 预检 / 应用的交互式助手。
-- `openclaw secrets apply --from <plan.json>` — 应用先前生成的计划（支持 `--dry-run`）。
+- `openclaw secrets audit` — 扫描明文残留、未解析引用和优先级漂移（`--allow-exec` 可在审计中执行 exec 提供商）。
+- `openclaw secrets configure` — 用于提供商设置 + SecretRef 映射 + 预检 / 应用的交互式助手（`--allow-exec` 可在预检和包含 exec 的应用流中执行 exec 提供商）。
+- `openclaw secrets apply --from <plan.json>` — 应用先前生成的计划（支持 `--dry-run`；使用 `--allow-exec` 允许 exec 提供商在 dry-run 和包含 exec 的写计划中运行）。
 
 ## 插件
 
 管理扩展及其配置：
 
 - `openclaw plugins list` — 发现插件（机器输出请使用 `--json`）。
-- `openclaw plugins info <id>` — 显示插件详情。
-- `openclaw plugins install <path|.tgz|npm-spec>` — 安装插件（或将插件路径添加到 `plugins.load.paths`）。
+- `openclaw plugins inspect <id>` — 显示插件详情（`info` 是别名）。
+- `openclaw plugins install <path|.tgz|npm-spec|plugin@marketplace>` — 安装插件（或将插件路径添加到 `plugins.load.paths`）。
+- `openclaw plugins marketplace list <marketplace>` — 安装前列出市场条目。
 - `openclaw plugins enable <id>` / `disable <id>` — 切换 `plugins.entries.<id>.enabled`。
 - `openclaw plugins doctor` — 报告插件加载错误。
 
@@ -346,7 +366,18 @@ openclaw [--dev] [--profile <name>] <command>
 - `--non-interactive`
 - `--mode <local|remote>`
 - `--flow <quickstart|advanced|manual>`（`manual` 是 `advanced` 的别名）
-- `--auth-choice <setup-token|token|chutes|openai-codex|openai-api-key|openrouter-api-key|ollama|ai-gateway-api-key|moonshot-api-key|moonshot-api-key-cn|kimi-code-api-key|synthetic-api-key|venice-api-key|gemini-api-key|zai-api-key|mistral-api-key|apiKey|minimax-api|minimax-api-lightning|opencode-zen|opencode-go|custom-api-key|skip>`
+- `--auth-choice <choice>`，其中 `<choice>` 为以下之一：
+  `setup-token`、`token`、`chutes`、`deepseek-api-key`、`openai-codex`、`openai-api-key`、
+  `openrouter-api-key`、`kilocode-api-key`、`litellm-api-key`、`ai-gateway-api-key`、
+  `cloudflare-ai-gateway-api-key`、`moonshot-api-key`、`moonshot-api-key-cn`、
+  `kimi-code-api-key`、`synthetic-api-key`、`venice-api-key`、`together-api-key`、
+  `huggingface-api-key`、`apiKey`、`gemini-api-key`、`google-gemini-cli`、`zai-api-key`、
+  `zai-coding-global`、`zai-coding-cn`、`zai-global`、`zai-cn`、`xiaomi-api-key`、
+  `minimax-global-oauth`、`minimax-global-api`、`minimax-cn-oauth`、`minimax-cn-api`、
+  `opencode-zen`、`opencode-go`、`github-copilot`、`copilot-proxy`、`xai-api-key`、
+  `mistral-api-key`、`volcengine-api-key`、`byteplus-api-key`、`qianfan-api-key`、
+  `modelstudio-standard-api-key-cn`、`modelstudio-standard-api-key`、
+  `modelstudio-api-key-cn`、`modelstudio-api-key`、`custom-api-key`、`skip`
 - `--token-provider <id>`（非交互式；与 `--auth-choice token` 一起使用）
 - `--token <token>`（非交互式；与 `--auth-choice token` 一起使用）
 - `--token-profile-id <id>`（非交互式；默认：`<provider>:manual`）
@@ -384,6 +415,7 @@ openclaw [--dev] [--profile <name>] <command>
 - `--daemon-runtime <node|bun>`
 - `--skip-channels`
 - `--skip-skills`
+- `--skip-search`
 - `--skip-health`
 - `--skip-ui`
 - `--node-manager <npm|pnpm|bun>`（推荐 pnpm；不推荐将 bun 用作 Gateway 网关运行时）
@@ -395,15 +427,24 @@ openclaw [--dev] [--profile <name>] <command>
 
 ### `config`
 
-非交互式配置助手（get/set/unset/file/validate）。直接运行 `openclaw config` 而不带
+非交互式配置助手（get/set/unset/file/schema/validate）。直接运行 `openclaw config` 而不带
 子命令会启动向导。
 
 子命令：
 
 - `config get <path>`：打印一个配置值（点 / 方括号路径）。
-- `config set <path> <value>`：设置一个值（JSON5 或原始字符串）。
+- `config set`：支持四种赋值模式：
+  - 值模式：`config set <path> <value>`（JSON5 或字符串解析）
+  - SecretRef 构建模式：`config set <path> --ref-provider <provider> --ref-source <source> --ref-id <id>`
+  - 提供商构建模式：`config set secrets.providers.<alias> --provider-source <env|file|exec> ...`
+  - 批量模式：`config set --batch-json '<json>'` 或 `config set --batch-file <path>`
+- `config set --dry-run`：验证赋值而不写入 `openclaw.json`（exec SecretRef 检查默认跳过）。
+- `config set --allow-exec --dry-run`：启用 exec SecretRef 试运行检查（可能执行提供商命令）。
+- `config set --dry-run --json`：输出机器可读的试运行结果（检查 + 完整性信号、操作数、已检查/跳过的 ref 数、错误）。
+- `config set --strict-json`：要求对路径/值输入使用 JSON5 解析。`--json` 仍作为试运行输出模式以外的严格解析旧版别名。
 - `config unset <path>`：移除一个值。
 - `config file`：打印当前活动配置文件路径。
+- `config schema`：打印 `openclaw.json` 的生成 JSON schema。
 - `config validate`：根据 schema 验证当前配置，而不启动 gateway。
 - `config validate --json`：输出机器可读的 JSON。
 
@@ -417,6 +458,9 @@ openclaw [--dev] [--profile <name>] <command>
 - `--yes`：接受默认值而不提示（无头）。
 - `--non-interactive`：跳过提示；仅应用安全迁移。
 - `--deep`：扫描系统服务以查找额外的 gateway 安装。
+- `--repair`（别名：`--fix`）：尝试自动修复已检测到的问题。
+- `--force`：即使严格来说不必要也强制修复。
+- `--generate-gateway-token`：生成新的 gateway 认证 token。
 
 ## 渠道助手
 
@@ -483,6 +527,9 @@ openclaw status --deep
 
 子命令：
 
+- `skills search [query...]`：搜索 ClawHub Skills。
+- `skills install <slug>`：从 ClawHub 安装 Skill 到活动工作区。
+- `skills update <slug|--all>`：更新已跟踪的 ClawHub Skills。
 - `skills list`：列出 Skills（未指定子命令时的默认行为）。
 - `skills info <name>`：显示单个 Skill 的详情。
 - `skills check`：汇总已就绪与缺失的要求。
@@ -493,7 +540,7 @@ openclaw status --deep
 - `--json`：输出 JSON（无样式）。
 - `-v`, `--verbose`：包含缺失要求的详细信息。
 
-提示：使用 `npx clawhub` 搜索、安装和同步 Skills。
+提示：使用 `openclaw skills search`、`openclaw skills install` 和 `openclaw skills update` 处理 ClawHub 支持的 Skills。
 
 ### `pairing`
 
@@ -567,15 +614,19 @@ Gmail Pub/Sub hook 设置 + 运行器。参见 [/automation/gmail-pubsub](/autom
 
 必需项：
 
-- `--message <text>`
+- `-m, --message <text>`
 
 选项：
 
-- `--to <dest>`（用于会话键以及可选投递）
+- `-t, --to <dest>`（用于会话键以及可选投递）
 - `--session-id <id>`
-- `--thinking <off|minimal|low|medium|high|xhigh>`（仅适用于 GPT-5.2 + Codex 模型）
-- `--verbose <on|full|off>`
-- `--channel <whatsapp|telegram|discord|slack|mattermost|signal|imessage|msteams>`
+- `--agent <id>`（智能体 id；覆盖路由绑定）
+- `--thinking <off|minimal|low|medium|high|xhigh>`（提供商支持程度各异；CLI 层面不按模型限制）
+- `--verbose <on|off>`
+- `--channel <channel>`（投递渠道；省略则使用主会话渠道）
+- `--reply-to <target>`（投递目标覆盖，独立于会话路由）
+- `--reply-channel <channel>`（投递渠道覆盖）
+- `--reply-account <id>`（投递账户 id 覆盖）
 - `--local`
 - `--deliver`
 - `--json`
@@ -709,6 +760,12 @@ Gmail Pub/Sub hook 设置 + 运行器。参见 [/automation/gmail-pubsub](/autom
 - `--verbose`
 - `--store <path>`
 - `--active <minutes>`
+- `--agent <id>`（按智能体筛选会话）
+- `--all-agents`（显示所有智能体的会话）
+
+子命令：
+
+- `sessions cleanup` — 删除过期或孤立的会话
 
 ## 重置 / 卸载
 
@@ -726,6 +783,16 @@ Gmail Pub/Sub hook 设置 + 运行器。参见 [/automation/gmail-pubsub](/autom
 说明：
 
 - `--non-interactive` 要求同时提供 `--scope` 和 `--yes`。
+
+### `tasks`
+
+列出并管理跨智能体的[后台任务](/automation/tasks)运行。
+
+- `tasks list` — 显示活跃和最近的任务运行
+- `tasks show <id>` — 显示特定任务运行的详情
+- `tasks notify <id>` — 更改任务运行的通知策略
+- `tasks cancel <id>` — 取消正在运行的任务
+- `tasks audit` — 显示操作问题（停滞、丢失、投递失败）
 
 ### `uninstall`
 
@@ -767,7 +834,8 @@ Gmail Pub/Sub hook 设置 + 运行器。参见 [/automation/gmail-pubsub](/autom
 - `--reset`（重置 dev 配置 + 凭据 + 会话 + 工作区）
 - `--force`（杀掉端口上的现有监听器）
 - `--verbose`
-- `--claude-cli-logs`
+- `--cli-backend-logs`
+- `--claude-cli-logs`（弃用别名）
 - `--ws-log <auto|full|compact>`
 - `--compact`（`--ws-log compact` 的别名）
 - `--raw-stream`

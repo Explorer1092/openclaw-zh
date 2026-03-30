@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "7c39f39dc290dc8aa9cfd6fda340f253"
 read_when:
   - 构建或调试原生 OpenClaw 插件
   - 理解插件能力模型或所有权边界
