@@ -7,7 +7,7 @@ x-i18n:
   generated_at: "2026-02-04T17:53:40Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: fc8babf7885ef91d526795051376d928599c4cf8aff75400138a0d7d9fa3b75f
+  source_hash: 02879bfee2e8cf145b3477476493d5da6fa798460e47340ea2de745f1871f3b0
   source_path: index.md
   workflow: 15
 ---

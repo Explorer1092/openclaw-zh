@@ -1,9 +1,10 @@
 ---
+mmh3_hash: "a12c75df38c3fb39e2c0af84e7caefc5"
 read_when:
   - 向新用户介绍 ClawHub
   - 安装、搜索或发布 Skills 或插件
   - 说明 ClawHub CLI 标志和同步行为
-summary: ClawHub 指南：公共 Skills / 插件注册中心与 CLI 工作流
+summary: ClawHub 指南：公共注册中心、原生 OpenClaw 安装流程及 ClawHub CLI 工作流
 title: ClawHub
 x-i18n:
   generated_at: "2026-02-01T21:42:32Z"
@@ -16,9 +17,58 @@ x-i18n:
 
 # ClawHub
 
-ClawHub 是 **OpenClaw 的公共 Skills 与插件注册中心**。你可以在网页应用中浏览资源，也可以使用 CLI 来搜索、安装、更新和发布 Skills / 插件。
+ClawHub 是 **OpenClaw 的公共 Skills 与插件注册中心**。
+
+- 使用原生 `openclaw` 命令搜索/安装/更新 Skills，以及从 ClawHub 安装插件。
+- 当你需要注册中心认证、发布、删除、恢复删除或同步工作流时，使用单独的 `clawhub` CLI。
 
 网站：[clawhub.ai](https://clawhub.ai)
+
+## 原生 OpenClaw 流程
+
+Skills：
+
+```bash
+openclaw skills search "calendar"
+openclaw skills install <skill-slug>
+openclaw skills update --all
+```
+
+插件：
+
+```bash
+openclaw plugins install clawhub:<package>
+openclaw plugins update --all
+```
+
+裸 npm 安全的插件规格也会先尝试 ClawHub，再尝试 npm：
+
+```bash
+openclaw plugins install openclaw-codex-app-server
+```
+
+原生 `openclaw` 命令会安装到活跃工作区，并持久化源元数据，以便之后的 `update` 调用保持使用 ClawHub。
+
+## ClawHub 是什么
+
+- OpenClaw Skills 与插件的公共注册中心。
+- 技能包和元数据的版本化存储。
+- 支持搜索、标签和使用信号的发现平台。
+
+## 工作原理
+
+1. 用户发布 Skills 包（文件 + 元数据）。
+2. ClawHub 存储包、解析元数据并分配版本号。
+3. 注册中心为搜索和发现建立 Skills 索引。
+4. 用户在 OpenClaw 中浏览、下载和安装 Skills。
+
+## 功能概述
+
+- 发布新 Skills 及现有 Skills 的新版本。
+- 按名称、标签或搜索发现 Skills。
+- 下载 Skills 包并检查其文件。
+- 举报滥用或不安全的 Skills。
+- 如果你是管理员，可以隐藏、取消隐藏、删除或封禁。
 
 ## 适用人群（新手友好）
 
@@ -31,16 +81,16 @@ ClawHub 是 **OpenClaw 的公共 Skills 与插件注册中心**。你可以在�
 
 ## 快速入门（非技术人员）
 
-1. 安装 CLI（参见下一节）。
-2. 搜索你需要的内容：
-   - `clawhub search "calendar"`
-3. 安装一个 Skills：
-   - `clawhub install <skill-slug>`
-4. 启动一个新的 OpenClaw 会话，以加载新 Skills。
+1. 搜索你需要的内容：
+   - `openclaw skills search "calendar"`
+2. 安装一个 Skills：
+   - `openclaw skills install <skill-slug>`
+3. 启动一个新的 OpenClaw 会话，以加载新 Skills。
+4. 如果你需要发布或管理注册中心认证，也可以安装单独的 `clawhub` CLI。
 
-## 安装 CLI
+## 安装 ClawHub CLI
 
-任选其一：
+只有在需要发布/同步等注册中心认证工作流时才需要：
 
 ```bash
 npm i -g clawhub
@@ -52,20 +102,50 @@ pnpm add -g clawhub
 
 ## 在 OpenClaw 中的定位
 
-默认情况下，CLI 会将 Skills 安装到当前工作目录下的 `./skills`。如果已配置 OpenClaw 工作区，`clawhub` 会回退到该工作区，除非你通过 `--workdir`（或 `CLAWHUB_WORKDIR`）进行覆盖。OpenClaw 从 `<workspace>/skills` 加载工作区 Skills，并会在**下一个**会话中生效。如果你已经在使用 `~/.openclaw/skills` 或内置 Skills，工作区 Skills 优先级更高。
+原生 `openclaw skills install` 会安装到活跃工作区的 `skills/` 目录。`openclaw plugins install clawhub:...` 会记录一个普通的托管插件安装，以及用于后续更新的 ClawHub 源元数据。
+
+单独的 `clawhub` CLI 也会将 Skills 安装到当前工作目录下的 `./skills`。如果已配置 OpenClaw 工作区，`clawhub` 会回退到该工作区，除非你通过 `--workdir`（或 `CLAWHUB_WORKDIR`）进行覆盖。OpenClaw 从 `<workspace>/skills` 加载工作区 Skills，并会在**下一个**会话中生效。如果你已经在使用 `~/.openclaw/skills` 或内置 Skills，工作区 Skills 优先级更高。
 
 有关 Skills 加载、共享和权限控制的更多详情，请参阅
 [Skills](/tools/skills)。
 
+## Skills 系统概览
+
+Skills 是一个版本化的文件包，用于教 OpenClaw 如何执行特定任务。每次发布都会创建一个新版本，注册中心保留版本历史，以便用户审计变更。
+
+典型的 Skills 包含：
+
+- 包含主要说明和使用方法的 `SKILL.md` 文件。
+- 可选的配置、脚本或 Skills 使用的辅助文件。
+- 标签、摘要和安装要求等元数据。
+
+ClawHub 使用元数据驱动发现，并安全地暴露 Skills 能力。
+注册中心还会跟踪使用信号（如星标和下载量），以提升排名和可见性。
+
 ## 服务功能
 
-- **公开浏览**Skills 及其 `SKILL.md` 内容。
+- **公开浏览** Skills 及其 `SKILL.md` 内容。
 - 基于嵌入向量（向量搜索）的**搜索**，而不仅仅是关键词匹配。
 - 支持语义化版本号、变更日志和标签（包括 `latest`）的**版本管理**。
 - 每个版本以 zip 格式**下载**。
 - **星标和评论**，支持社区反馈。
 - **审核**钩子，用于审批和审计。
 - **CLI 友好的 API**，支持自动化和脚本编写。
+
+## 安全性和内容审核
+
+ClawHub 默认对外开放。任何人都可以上传 Skills，但 GitHub 账号必须至少注册满一周才能发布。这有助于减缓滥用，同时不阻止合法贡献者。
+
+举报和审核机制：
+
+- 任何已登录用户都可以举报 Skills。
+- 举报原因为必填项并会被记录。
+- 每位用户最多可以同时提交 20 个活跃举报。
+- 收到超过 3 个独立举报的 Skills 默认会被自动隐藏。
+- 管理员可以查看被隐藏的 Skills，并进行取消隐藏、删除或封禁用户的操作。
+- 滥用举报功能可能导致账号被封禁。
+
+有意成为管理员？在 OpenClaw Discord 中提问并联系管理员或维护者。
 
 ## CLI 命令和参数
 
@@ -127,6 +207,7 @@ pnpm add -g clawhub
 - `<source>` 可以是本地文件夹、`owner/repo`、`owner/repo@ref` 或 GitHub URL。
 - `--dry-run`：只生成发布计划，不实际上传。
 - `--json`：为 CI 输出结构化 JSON。
+- `--source-repo`、`--source-commit`、`--source-ref`：当自动检测不足时的可选覆盖。
 
 删除/恢复（仅所有者/管理员）：
 
@@ -185,6 +266,27 @@ clawhub package publish your-org/your-plugin --dry-run
 clawhub package publish your-org/your-plugin
 clawhub package publish your-org/your-plugin@v1.0.0
 clawhub package publish https://github.com/your-org/your-plugin
+```
+
+代码插件必须在 `package.json` 中包含所需的 OpenClaw 元数据：
+
+```json
+{
+  "name": "@myorg/openclaw-my-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "openclaw": {
+    "extensions": ["./index.ts"],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
+    }
+  }
+}
 ```
 
 ## 高级详情（技术性）

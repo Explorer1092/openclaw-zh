@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "8faedc9dc8a6a5a7f2803cb8ad009edb"
 summary: 关于 OpenClaw 安装、配置和使用的常见问题
 title: 常见问题
 x-i18n:
@@ -2583,6 +2584,19 @@ openclaw pairing list whatsapp
 
 ```
 stop
+stop action
+stop current action
+stop run
+stop current run
+stop agent
+stop the agent
+stop openclaw
+openclaw stop
+stop don't do anything
+stop do not do anything
+stop doing anything
+please stop
+stop please
 abort
 esc
 wait
@@ -2639,7 +2653,7 @@ OpenClaw 默认阻止**跨提供商**消息。如果工具调用绑定到 Telegr
 
 **问：“使用 API 密钥时 Anthropic 的默认模型是什么？”**
 
-**答：** 在 OpenClaw 中，凭据和模型选择是分开的。设置 `ANTHROPIC_API_KEY`（或在认证配置文件中存储 Anthropic API 密钥）启用认证，但实际的默认模型是你在 `agents.defaults.model.primary` 中配置的（例如 `anthropic/claude-sonnet-4-5` 或 `anthropic/claude-opus-4-5`）。如果你看到 `No credentials found for profile "anthropic:default"`，意味着 Gateway 网关在正在运行的智能体的预期 `auth-profiles.json` 中找不到 Anthropic 凭据。
+**答：** 在 OpenClaw 中，凭据和模型选择是分开的。设置 `ANTHROPIC_API_KEY`（或在认证配置文件中存储 Anthropic API 密钥）启用认证，但实际的默认模型是你在 `agents.defaults.model.primary` 中配置的（例如 `anthropic/claude-sonnet-4-6` 或 `anthropic/claude-opus-4-6`）。如果你看到 `No credentials found for profile "anthropic:default"`，意味着 Gateway 网关在正在运行的智能体的预期 `auth-profiles.json` 中找不到 Anthropic 凭据。
 
 ---
 

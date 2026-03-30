@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "8a60a0146ffb09475f5c6b73aa7c67a5"
 read_when:
   - 添加或修改 CLI 命令或选项时
   - 为新的命令界面编写文档时
@@ -418,6 +419,8 @@ openclaw [--dev] [--profile <name>] <command>
 - `--skip-search`
 - `--skip-health`
 - `--skip-ui`
+- `--cloudflare-ai-gateway-account-id <id>`
+- `--cloudflare-ai-gateway-gateway-id <id>`
 - `--node-manager <npm|pnpm|bun>`（推荐 pnpm；不推荐将 bun 用作 Gateway 网关运行时）
 - `--json`
 
@@ -1013,11 +1016,13 @@ Claude Code 之外的订阅使用；在生产环境依赖 setup-token 之前，�
 - `--set-image`
 - `--json`
 
-### `models auth add|setup-token|paste-token`
+### `models auth add|login|login-github-copilot|setup-token|paste-token`
 
 选项：
 
 - `add`：交互式认证助手
+- `login`：`--provider <name>`、`--method <method>`、`--set-default`
+- `login-github-copilot`：GitHub Copilot OAuth 登录流程
 - `setup-token`：`--provider <name>`（默认 `anthropic`）、`--yes`
 - `paste-token`：`--provider <name>`、`--profile-id <id>`、`--expires-in <duration>`
 

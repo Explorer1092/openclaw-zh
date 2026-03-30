@@ -9,7 +9,7 @@ x-i18n:
   generated_at: "2026-03-16T06:28:34Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 6b9460013b6a0fbd59f639ade6b255c8d7f7412238495e78b942859ade695e86
+  source_hash: 737f9b56c2f51910550784c483b9aaa918c4afb7741f6f0aadda8a0442472ba9
   source_path: start/wizard-cli-reference.md
   workflow: 15
 ---
@@ -133,7 +133,9 @@ x-i18n:
   <Accordion title="Anthropic API 密钥">
     如果存在 `ANTHROPIC_API_KEY` 则使用它，否则提示输入密钥，然后保存以供守护进程使用。
   </Accordion>
-  <Accordion title="Anthropic OAuth（Claude Code CLI）">
+  <Accordion title=”Anthropic Claude CLI”>
+    复用 Gateway 网关主机上的本地 Claude CLI 登录，并将模型选择切换到 `claude-cli/...`。
+
     - macOS：检查 Keychain 条目 “Claude Code-credentials”
     - Linux 和 Windows：如果存在，则复用 `~/.claude/.credentials.json`
 
@@ -177,8 +179,8 @@ x-i18n:
     提示输入账户 ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。
     更多详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)。
   </Accordion>
-  <Accordion title="MiniMax M2.5">
-    配置会自动写入。
+  <Accordion title="MiniMax">
+    配置会自动写入。默认托管模型为 `MiniMax-M2.7`。
     更多详情：[MiniMax](/providers/minimax)。
   </Accordion>
   <Accordion title="Synthetic（兼容 Anthropic）">
@@ -262,7 +264,7 @@ x-i18n:
 - `tools.profile`（本地新手引导在未设置时默认设为 `"coding"`；现有显式值会保留）
 - `gateway.*`（模式、绑定、身份验证、tailscale）
 - `session.dmScope`（本地新手引导在未设置时默认设为 `per-channel-peer`；现有显式值会保留）
-- `channels.telegram.botToken`、`channels.discord.token`、`channels.signal.*`、`channels.imessage.*`
+- `channels.telegram.botToken`、`channels.discord.token`、`channels.matrix.*`、`channels.signal.*`、`channels.imessage.*`
 - 当你在提示中选择加入时的渠道 allowlist（Slack、Discord、Matrix、Microsoft Teams）（如果可能，名称会解析为 ID）
 - `skills.install.nodeManager`
 - `wizard.lastRunAt`

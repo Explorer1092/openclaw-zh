@@ -1,5 +1,9 @@
 ---
+mmh3_hash: "f130a2347d87e8429beb7dc39fa5e6a4"
 permalink: /security/formal-verification/
+read_when:
+  - 审查形式化安全模型的保证或限制时
+  - 复现或更新 TLA+/TLC 安全模型检查时
 summary: 针对 OpenClaw 最高风险路径的机器检查安全模型。
 title: 形式化验证（安全模型）
 x-i18n:

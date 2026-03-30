@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "a89b2c25f388a881ece4d7181eee9dad"
 read_when:
   - 在 OpenClaw 中处理 Pi 集成代码或测试时
   - 运行 Pi 专用的代码规范检查、类型检查和实时测试流程时

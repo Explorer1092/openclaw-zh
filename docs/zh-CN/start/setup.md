@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-02-03T07:54:27Z"
   model: claude-opus-4-5
   provider: pi
-  source_hash: b7f4bd657d0df4feb5035c9f5ee727f9c67b991e9cedfc7768f99d010553fa01
+  source_hash: 6c489f3f611334b3e25c10d44da6bf58946c1a585608d1463a2c89ecd00f1dfd
   source_path: start/setup.md
   workflow: 15
 ---

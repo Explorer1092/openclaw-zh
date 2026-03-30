@@ -8,7 +8,7 @@ x-i18n:
   generated_at: "2026-03-16T06:27:55Z"
   model: gpt-5.4
   provider: openai
-  source_hash: 47583047c1a603c1254d2540846452ad321d12bc7fc3f24e5def9282ee96f415
+  source_hash: 58ac8cdcdbaba45fa353ea46d6ac05d1b560cb9abd8a0bebe0e296d864e5c4f9
   source_path: start/getting-started.md
   workflow: 15
 ---
@@ -27,7 +27,7 @@ x-i18n:
 
 ## 前置条件
 
-- 推荐使用 Node 24（Node 22 LTS，目前为 `22.16+`，仍因兼容性而受支持）
+- 推荐使用 Node 24（Node 22 LTS，目前为 `22.14+`，仍因兼容性而受支持）
 
 <Tip>
 如果你不确定，请使用 `node --version` 检查你的 Node 版本。

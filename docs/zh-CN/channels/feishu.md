@@ -5,10 +5,10 @@ read_when:
 summary: 飞书机器人概览、功能和配置
 title: 飞书
 x-i18n:
-  generated_at: "2026-03-16T06:21:11Z"
-  model: gpt-5.4
-  provider: openai
-  source_hash: 951e78c5c7264471382f863fa896a15ddeaf0717ef782da20d0f1b3eb23396ba
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: pi
+  source_hash: 51f1d69b33f1cec63e2476f1cc231599b4d6177deec46f04553863a7a96329b1
   source_path: channels/feishu.md
   workflow: 15
 ---
@@ -321,41 +321,43 @@ openclaw pairing approve feishu <CODE>
 
 **1. 群组策略**（`channels.feishu.groupPolicy`）：
 
-- `"open"` = 允许群组中的所有人（默认）
-- `"allowlist"` = 仅允许 `groupAllowFrom`
+- `"open"` = 允许群组中的所有人
+- `"allowlist"` = 仅允许 `groupAllowFrom`（默认）
 - `"disabled"` = 禁用群消息
 
-**2. 提及要求**（`channels.feishu.groups.<chat_id>.requireMention`）：
+默认：`allowlist`
 
-- `true` = 需要 @ 提及（默认）
-- `false` = 无需提及也会回复
+**2. 提及要求**（`channels.feishu.requireMention`，可通过 `channels.feishu.groups.<chat_id>.requireMention` 覆盖）：
+
+- 显式 `true` = 需要 @ 提及
+- 显式 `false` = 无需提及也会回复
+- 未设置且 `groupPolicy: "open"` = 默认为 `false`
+- 未设置且 `groupPolicy` 不为 `"open"` = 默认为 `true`
 
 ---
 
 ## 群组配置示例
 
-### 允许所有群组，要求 @ 提及（默认）
+### 允许所有群组，无需 @ 提及（open 模式默认）
 
 ```json5
 {
   channels: {
     feishu: {
       groupPolicy: "open",
-      // Default requireMention: true
     },
   },
 }
 ```
 
-### 允许所有群组，无需 @ 提及
+### 允许所有群组，但仍需 @ 提及
 
 ```json5
 {
   channels: {
     feishu: {
-      groups: {
-        oc_xxx: { requireMention: false },
-      },
+      groupPolicy: "open",
+      requireMention: true,
     },
   },
 }
@@ -685,7 +687,7 @@ openclaw pairing list feishu
 | `channels.feishu.accounts.<id>.domain`            | 按账户覆盖 API 域名              | `feishu`         |
 | `channels.feishu.dmPolicy`                        | 私信策略                         | `pairing`        |
 | `channels.feishu.allowFrom`                       | 私信 allowlist（`open_id` 列表） | -                |
-| `channels.feishu.groupPolicy`                     | 群组策略                         | `open`           |
+| `channels.feishu.groupPolicy`                     | 群组策略                         | `allowlist`      |
 | `channels.feishu.groupAllowFrom`                  | 群组 allowlist                   | -                |
 | `channels.feishu.requireMention`                  | 默认要求 @ 提及                  | conditional      |
 | `channels.feishu.groups.<chat_id>.requireMention` | 每群组要求 @ 提及覆盖            | inherited        |
