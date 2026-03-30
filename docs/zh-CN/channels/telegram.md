@@ -4,10 +4,10 @@ read_when:
 summary: Telegram 机器人支持状态、功能和配置
 title: Telegram
 x-i18n:
-  generated_at: "2026-02-03T10:07:32Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 65da427e5f2383edb674054f8133a5777b2aae8a7c4bd78defa065124090a19c
+  source_hash: 9095ebee67af933ee07daa28642c7b54d19b947fae2e69e8555ff9d672d7d05e
   source_path: channels/telegram.md
   workflow: 15
 ---
@@ -394,6 +394,11 @@ Telegram 功能可以在两个级别配置（上面显示的对象形式；旧�
 - `"allowlist"` = 只有 `channels.telegram.groupAllowFrom` 中的发送者可以发消息
 - `"disabled"` = 不接受任何群组消息
   默认是 `groupPolicy: "allowlist"`（除非添加 `groupAllowFrom` 否则被阻止）。
+
+`groupAllowFrom` 条目应为数字 Telegram 用户 ID（`telegram:` / `tg:` 前缀会被规范化）。
+不要将 Telegram 群组或超级群组聊天 ID 放入 `groupAllowFrom`。负数聊天 ID 应放在 `channels.telegram.groups` 下。
+安全边界（2026.2.25+）：群组发送者授权**不**继承私信配对存储的批准。配对仅适用于私信。对于群组，请设置 `groupAllowFrom` 或每群组/每话题的 `allowFrom`。
+运行时说明：如果 `channels.telegram` 完全缺失，运行时默认回退到失败关闭的 `groupPolicy="allowlist"`，除非 `channels.defaults.groupPolicy` 已显式设置。
 
 大多数用户需要：`groupPolicy: "allowlist"` + `groupAllowFrom` + 在 `channels.telegram.groups` 中列出特定群组
 

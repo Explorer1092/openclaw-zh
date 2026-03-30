@@ -4,10 +4,10 @@ read_when:
 summary: Microsoft Teams 机器人支持状态、功能和配置
 title: Microsoft Teams
 x-i18n:
-  generated_at: "2026-02-03T07:46:52Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 2046cb8fa3dd349f4b25a40c013a87188af8f75c1886a782698bff2bb9f70971
+  source_hash: 7458df023279c51d16b1de046b812c252c871392218533ed90d751be8c25b7ed
   source_path: channels/msteams.md
   workflow: 15
 ---
@@ -18,7 +18,7 @@ x-i18n:
 
 更新时间：2026-01-21
 
-状态：支持文本 + 私信附件；频道/群组文件发送需要 `sharePointSiteId` + Graph 权限（参见[在群聊中发送文件](#sending-files-in-group-chats)）。投票通过 Adaptive Cards 发送。
+状态：支持文本 + 私信附件；频道/群组文件发送需要 `sharePointSiteId` + Graph 权限（参见[在群聊中发送文件](#sending-files-in-group-chats)）。投票通过 Adaptive Cards 发送。消息操作提供明确的 `upload-file` 用于文件优先发送。
 
 ## 需要插件
 
@@ -37,7 +37,7 @@ openclaw plugins install @openclaw/msteams
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/msteams
+openclaw plugins install ./path/to/local/msteams-plugin
 ```
 
 如果你在配置/新手引导过程中选择 Teams 并检测到 git 检出，
@@ -247,7 +247,7 @@ tailscale funnel 3978
 
 1. **安装 Microsoft Teams 插件**
    - 从 npm：`openclaw plugins install @openclaw/msteams`
-   - 从本地检出：`openclaw plugins install ./extensions/msteams`
+   - 从本地检出：`openclaw plugins install ./path/to/local/msteams-plugin`
 
 2. **机器人注册**
    - 创建一个 Azure Bot（见上文）并记录：

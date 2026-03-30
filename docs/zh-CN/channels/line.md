@@ -6,10 +6,10 @@ read_when:
 summary: LINE Messaging API 插件的配置、设置和使用方法
 title: LINE
 x-i18n:
-  generated_at: "2026-02-03T07:43:38Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 8fbac126786f95b9454f3cc61906c2798393a8d7914e787d3755c020c7ab2da6
+  source_hash: e03fb6ff6be8e17b08cae66606d70a2ac393db47e6e8696d0eb2281e0bd1fdda
   source_path: channels/line.md
   workflow: 15
 ---
@@ -31,7 +31,7 @@ openclaw plugins install @openclaw/line
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/line
+openclaw plugins install ./path/to/local/line-plugin
 ```
 
 ## 配置步骤
@@ -48,6 +48,11 @@ https://gateway-host/line/webhook
 ```
 
 Gateway 网关会响应 LINE 的 webhook 验证（GET）和入站事件（POST）。如果你需要自定义路径，请设置 `channels.line.webhookPath` 或 `channels.line.accounts.<id>.webhookPath` 并相应更新 URL。
+
+安全说明：
+
+- LINE 签名验证依赖于请求体（对原始请求体进行 HMAC 计算），因此 OpenClaw 在验证前会应用严格的预授权请求体限制和超时。
+- OpenClaw 从已验证的原始请求字节处理 webhook 事件。上游中间件转换后的 `req.body` 值会被忽略，以保障签名完整性。
 
 ## 配置
 
@@ -84,6 +89,8 @@ Token/secret 文件：
 }
 ```
 
+`tokenFile` 和 `secretFile` 必须指向普通文件，不支持符号链接。
+
 多账户配置：
 
 ```json5
@@ -118,6 +125,7 @@ openclaw pairing approve line <CODE>
 - `channels.line.groupPolicy`：`allowlist | open | disabled`
 - `channels.line.groupAllowFrom`：群组的允许列表 LINE 用户 ID
 - 单群组覆盖：`channels.line.groups.<groupId>.allowFrom`
+- 运行时说明：如果 `channels.line` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组检查（即使 `channels.defaults.groupPolicy` 已设置）。
 
 LINE ID 区分大小写。有效 ID 格式如下：
 
@@ -172,6 +180,25 @@ LINE 插件还提供 `/card` 命令用于 Flex 消息预设：
 ```
 /card info "Welcome" "Thanks for joining!"
 ```
+
+## ACP 支持
+
+LINE 支持 ACP（智能体通信协议）会话绑定：
+
+- `/acp spawn <agent> --bind here` 将当前 LINE 聊天绑定到 ACP 会话，无需创建子话题。
+- 已配置的 ACP 绑定和活跃的会话绑定 ACP 会话在 LINE 上的工作方式与其他会话渠道相同。
+
+详情请参见 [ACP 智能体](/tools/acp-agents)。
+
+## 出站媒体
+
+LINE 插件支持通过智能体消息工具发送图片、视频和音频文件。媒体通过 LINE 专用投递路径发送，并进行适当的预览和追踪处理：
+
+- **图片**：作为 LINE 图片消息发送，并自动生成预览。
+- **视频**：使用明确的预览和内容类型处理发送。
+- **音频**：作为 LINE 音频消息发送。
+
+通用媒体发送在 LINE 专用路径不可用时，会回退到仅支持图片的路由。
 
 ## 故障排除
 

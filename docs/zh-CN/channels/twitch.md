@@ -4,10 +4,10 @@ read_when:
 summary: Twitch 聊天机器人配置和设置
 title: Twitch
 x-i18n:
-  generated_at: "2026-02-03T07:44:41Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 0dd1c05bef570470d8b82c1f6dee5337e8b76b57269c5cad6aee2e711483f8ba
+  source_hash: ab7c01303f505e8a81ee0eae3cad24a90e2c7264bbd894e1c64c7fb17bafae52
   source_path: channels/twitch.md
   workflow: 15
 ---
@@ -29,7 +29,7 @@ openclaw plugins install @openclaw/twitch
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/twitch
+openclaw plugins install ./path/to/local/twitch-plugin
 ```
 
 详情：[插件](/tools/plugin)

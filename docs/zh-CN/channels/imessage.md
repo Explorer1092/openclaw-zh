@@ -2,170 +2,236 @@
 read_when:
   - 设置 iMessage 支持
   - 调试 iMessage 发送/接收
-summary: 通过 imsg（基于 stdio 的 JSON-RPC）实现 iMessage 支持、设置及 chat_id 路由
+summary: 通过 imsg（基于 stdio 的 JSON-RPC）实现旧版 iMessage 支持。新部署应使用 BlueBubbles。
 title: iMessage
 x-i18n:
-  generated_at: "2026-02-03T07:44:18Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: bc19756a42ead80a0845f18c4830c3f1f40948f69b2b016a4026598cfb8fef0d
+  source_hash: 6ab656a7a044ce9b95627d24e6a5e159a853b341ab7e5a070f901d10fd5d5fce
   source_path: channels/imessage.md
   workflow: 15
 ---
 
-# iMessage (imsg)
+# iMessage（旧版：imsg）
 
-状态：外部 CLI 集成。Gateway 网关生成 `imsg rpc`（基于 stdio 的 JSON-RPC）。
+> **警告**：对于新的 iMessage 部署，请使用 [BlueBubbles](/channels/bluebubbles)。
+>
+> `imsg` 集成为旧版，可能在未来版本中移除。
 
-## 快速设置（新手）
+状态：旧版外部 CLI 集成。Gateway 网关生成 `imsg rpc`，通过 stdio 上的 JSON-RPC 通信（无独立守护进程/端口）。
 
-1. 确保在此 Mac 上已登录"信息"。
-2. 安装 `imsg`：
-   - `brew install steipete/tap/imsg`
-3. 配置 OpenClaw 的 `channels.imessage.cliPath` 和 `channels.imessage.dbPath`。
-4. 启动 Gateway 网关并批准所有 macOS 提示（自动化 + 完全磁盘访问权限）。
+## 快速设置
 
-最小配置：
+### 本地 Mac（快速路径）
 
-```json5
-{
-  channels: {
-    imessage: {
-      enabled: true,
-      cliPath: "/usr/local/bin/imsg",
-      dbPath: "/Users/<you>/Library/Messages/chat.db",
-    },
-  },
-}
-```
+1. 安装并验证 imsg：
 
-## 简介
+   ```bash
+   brew install steipete/tap/imsg
+   imsg rpc --help
+   ```
 
-- 基于 macOS 上 `imsg` 的 iMessage 渠道。
-- 确定性路由：回复始终返回到 iMessage。
-- 私信共享智能体的主会话；群组是隔离的（`agent:<agentId>:imessage:group:<chat_id>`）。
-- 如果多参与者会话以 `is_group=false` 到达，你仍可使用 `channels.imessage.groups` 按 `chat_id` 隔离（参见下方"类群组会话"）。
+2. 配置 OpenClaw：
 
-## 配置写入
+   ```json5
+   {
+     channels: {
+       imessage: {
+         enabled: true,
+         cliPath: "/usr/local/bin/imsg",
+         dbPath: "/Users/<you>/Library/Messages/chat.db",
+       },
+     },
+   }
+   ```
 
-默认情况下，iMessage 允许写入由 `/config set|unset` 触发的配置更新（需要 `commands.config: true`）。
+3. 启动 Gateway 网关：
 
-禁用方式：
+   ```bash
+   openclaw gateway
+   ```
 
-```json5
-{
-  channels: { imessage: { configWrites: false } },
-}
-```
+4. 批准首次私信配对（默认 dmPolicy）：
 
-## 要求
+   ```bash
+   openclaw pairing list imessage
+   openclaw pairing approve imessage <CODE>
+   ```
 
-- 已登录"信息"的 macOS。
-- OpenClaw + `imsg` 的完全磁盘访问权限（访问"信息"数据库）。
-- 发送时需要自动化权限。
-- `channels.imessage.cliPath` 可以指向任何代理 stdin/stdout 的命令（例如，通过 SSH 连接到另一台 Mac 并运行 `imsg rpc` 的包装脚本）。
+   配对请求 1 小时后过期。
 
-## 设置（快速路径）
+### 通过 SSH 连接远程 Mac
 
-1. 确保在此 Mac 上已登录"信息"。
-2. 配置 iMessage 并启动 Gateway 网关。
-
-### 专用机器人 macOS 用户（用于隔离身份）
-
-如果你希望机器人从**独立的 iMessage 身份**发送（并保持你的个人"信息"整洁），请使用专用 Apple ID + 专用 macOS 用户。
-
-1. 创建专用 Apple ID（例如：`my-cool-bot@icloud.com`）。
-   - Apple 可能需要电话号码进行验证 / 2FA。
-2. 创建 macOS 用户（例如：`openclawhome`）并登录。
-3. 在该 macOS 用户中打开"信息"并使用机器人 Apple ID 登录 iMessage。
-4. 启用远程登录（系统设置 → 通用 → 共享 → 远程登录）。
-5. 安装 `imsg`：
-   - `brew install steipete/tap/imsg`
-6. 设置 SSH 使 `ssh <bot-macos-user>@localhost true` 无需密码即可工作。
-7. 将 `channels.imessage.accounts.bot.cliPath` 指向以机器人用户身份运行 `imsg` 的 SSH 包装脚本。
-
-首次运行注意事项：发送/接收可能需要在*机器人 macOS 用户*中进行 GUI 批准（自动化 + 完全磁盘访问权限）。如果 `imsg rpc` 看起来卡住或退出，请登录该用户（屏幕共享很有帮助），运行一次 `imsg chats --limit 1` / `imsg send ...`，批准提示，然后重试。
-
-示例包装脚本（`chmod +x`）。将 `<bot-macos-user>` 替换为你的实际 macOS 用户名：
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Run an interactive SSH once first to accept host keys:
-#   ssh <bot-macos-user>@localhost true
-exec /usr/bin/ssh -o BatchMode=yes -o ConnectTimeout=5 -T <bot-macos-user>@localhost \
-  "/usr/local/bin/imsg" "$@"
-```
-
-示例配置：
-
-```json5
-{
-  channels: {
-    imessage: {
-      enabled: true,
-      accounts: {
-        bot: {
-          name: "Bot",
-          enabled: true,
-          cliPath: "/path/to/imsg-bot",
-          dbPath: "/Users/<bot-macos-user>/Library/Messages/chat.db",
-        },
-      },
-    },
-  },
-}
-```
-
-对于单账户设置，使用扁平选项（`channels.imessage.cliPath`、`channels.imessage.dbPath`）而不是 `accounts` 映射。
-
-### 远程/SSH 变体（可选）
-
-如果你想在另一台 Mac 上使用 iMessage，请将 `channels.imessage.cliPath` 设置为通过 SSH 在远程 macOS 主机上运行 `imsg` 的包装脚本。OpenClaw 只需要 stdio。
-
-示例包装脚本：
+OpenClaw 只需要一个 stdio 兼容的 `cliPath`，所以你可以将 `cliPath` 指向一个通过 SSH 连接到远程 Mac 并运行 `imsg` 的包装脚本：
 
 ```bash
 #!/usr/bin/env bash
 exec ssh -T gateway-host imsg "$@"
 ```
 
-**远程附件：** 当 `cliPath` 通过 SSH 指向远程主机时，"信息"数据库中的附件路径引用的是远程机器上的文件。OpenClaw 可以通过设置 `channels.imessage.remoteHost` 自动通过 SCP 获取这些文件：
+启用附件时的推荐配置：
 
 ```json5
 {
   channels: {
     imessage: {
-      cliPath: "~/imsg-ssh", // SSH wrapper to remote Mac
-      remoteHost: "user@gateway-host", // for SCP file transfer
+      enabled: true,
+      cliPath: "~/.openclaw/scripts/imsg-ssh",
+      remoteHost: "user@gateway-host", // 用于 SCP 附件获取
       includeAttachments: true,
+      attachmentRoots: ["/Users/*/Library/Messages/Attachments"],
+      remoteAttachmentRoots: ["/Users/*/Library/Messages/Attachments"],
     },
   },
 }
 ```
 
-如果未设置 `remoteHost`，OpenClaw 会尝试通过解析包装脚本中的 SSH 命令自动检测。建议显式配置以提高可靠性。
+如果未设置 `remoteHost`，OpenClaw 会尝试通过解析 SSH 包装脚本自动检测。
+`remoteHost` 必须为 `host` 或 `user@host`（不含空格或 SSH 选项）。
+OpenClaw 对 SCP 使用严格的主机密钥检查，因此中继主机密钥必须已存在于 `~/.ssh/known_hosts` 中。
+附件路径根据允许的根目录（`attachmentRoots`/`remoteAttachmentRoots`）进行验证。
 
-#### 通过 Tailscale 连接远程 Mac（示例）
+## 要求和权限（macOS）
 
-如果 Gateway 网关运行在 Linux 主机/虚拟机上但 iMessage 必须运行在 Mac 上，Tailscale 是最简单的桥接方式：Gateway 网关通过 tailnet 与 Mac 通信，通过 SSH 运行 `imsg`，并通过 SCP 获取附件。
+- 运行 `imsg` 的 Mac 上必须已登录"信息"。
+- 运行 OpenClaw/`imsg` 的进程上下文需要完全磁盘访问权限（访问"信息"数据库）。
+- 发送消息时需要自动化权限。
 
-架构：
+> **提示**：权限按进程上下文授予。如果 Gateway 网关以无头模式运行（LaunchAgent/SSH），请在同一上下文中运行一次交互式命令以触发权限提示：
+>
+> ```bash
+> imsg chats --limit 1
+> # 或
+> imsg send <handle> "test"
+> ```
 
+## 访问控制和路由
+
+### 私信策略
+
+`channels.imessage.dmPolicy` 控制私信：
+
+- `pairing`（默认）
+- `allowlist`
+- `open`（需要 `allowFrom` 包含 `"*"`）
+- `disabled`
+
+Allowlist 字段：`channels.imessage.allowFrom`。
+
+Allowlist 条目可以是 handle 或聊天目标（`chat_id:*`、`chat_guid:*`、`chat_identifier:*`）。
+
+### 群组策略和提及
+
+`channels.imessage.groupPolicy` 控制群组处理：
+
+- `allowlist`（配置后的默认值）
+- `open`
+- `disabled`
+
+群组发送者 allowlist：`channels.imessage.groupAllowFrom`。
+
+运行时回退：如果 `groupAllowFrom` 未设置，iMessage 群组发送者检查会回退到 `allowFrom`（如果可用）。
+运行时注意：如果 `channels.imessage` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 并记录警告（即使 `channels.defaults.groupPolicy` 已设置）。
+
+群组提及门控：
+
+- iMessage 没有原生提及元数据
+- 提及检测使用正则表达式模式（`agents.list[].groupChat.mentionPatterns`，回退 `messages.groupChat.mentionPatterns`）
+- 未配置模式时，提及门控无法强制执行
+
+来自授权发送者的控制命令可以绕过群组中的提及门控。
+
+### 会话和确定性回复
+
+- 私信使用直接路由；群组使用群组路由。
+- 使用默认 `session.dmScope=main` 时，iMessage 私信合并到智能体主会话。
+- 群组会话是隔离的（`agent:<agentId>:imessage:group:<chat_id>`）。
+- 回复通过发起渠道/目标元数据路由回 iMessage。
+
+类群组线程行为：
+
+某些多参与者 iMessage 线程可能以 `is_group=false` 到达。
+如果该 `chat_id` 在 `channels.imessage.groups` 下显式配置，OpenClaw 将其视为群组流量（群组门控 + 群组会话隔离）。
+
+## ACP 会话绑定
+
+旧版 iMessage 聊天也可以绑定到 ACP 会话。
+
+快速操作流程：
+
+- 在私信或已授权的群聊中运行 `/acp spawn codex --bind here`。
+- 该 iMessage 对话中的后续消息将路由到已生成的 ACP 会话。
+- `/new` 和 `/reset` 会就地重置同一个绑定的 ACP 会话。
+- `/acp close` 关闭 ACP 会话并移除绑定。
+
+通过顶层 `bindings[]` 条目配置持久绑定也受支持，其中 `type: "acp"` 且 `match.channel: "imessage"`。
+
+`match.peer.id` 可以使用：
+
+- 标准化的私信 handle，例如 `+15555550123` 或 `user@example.com`
+- `chat_id:<id>`（推荐用于稳定的群组绑定）
+- `chat_guid:<guid>`
+- `chat_identifier:<identifier>`
+
+示例：
+
+```json5
+{
+  agents: {
+    list: [
+      {
+        id: "codex",
+        runtime: {
+          type: "acp",
+          acp: { agent: "codex", backend: "acpx", mode: "persistent" },
+        },
+      },
+    ],
+  },
+  bindings: [
+    {
+      type: "acp",
+      agentId: "codex",
+      match: {
+        channel: "imessage",
+        accountId: "default",
+        peer: { kind: "group", id: "chat_id:123" },
+      },
+      acp: { label: "codex-group" },
+    },
+  ],
+}
 ```
-┌──────────────────────────────┐          SSH (imsg rpc)          ┌──────────────────────────┐
-│ Gateway host (Linux/VM)      │──────────────────────────────────▶│ Mac with Messages + imsg │
-│ - openclaw gateway           │          SCP (attachments)        │ - Messages signed in     │
-│ - channels.imessage.cliPath  │◀──────────────────────────────────│ - Remote Login enabled   │
-└──────────────────────────────┘                                   └──────────────────────────┘
-              ▲
-              │ Tailscale tailnet (hostname or 100.x.y.z)
-              ▼
-        user@gateway-host
-```
 
-具体配置示例（Tailscale 主机名）：
+共享 ACP 绑定行为请参见 [ACP 智能体](/tools/acp-agents)。
+
+## 部署模式
+
+### 专用机器人 macOS 用户（独立 iMessage 身份）
+
+使用专用 Apple ID 和 macOS 用户，使机器人流量与你的个人"信息"档案隔离。
+
+典型流程：
+
+1. 创建/登录专用 macOS 用户。
+2. 在该用户中使用机器人 Apple ID 登录"信息"。
+3. 在该用户中安装 `imsg`。
+4. 创建 SSH 包装脚本，使 OpenClaw 可以在该用户上下文中运行 `imsg`。
+5. 将 `channels.imessage.accounts.<id>.cliPath` 和 `.dbPath` 指向该用户档案。
+
+首次运行可能需要在机器人用户会话中进行 GUI 审批（自动化 + 完全磁盘访问权限）。
+
+### 通过 Tailscale 连接远程 Mac（示例）
+
+常见拓扑：
+
+- Gateway 网关运行在 Linux/虚拟机
+- iMessage + `imsg` 运行在你的 tailnet 中的 Mac 上
+- `cliPath` 包装脚本使用 SSH 运行 `imsg`
+- `remoteHost` 启用 SCP 附件获取
+
+示例：
 
 ```json5
 {
@@ -181,122 +247,125 @@ exec ssh -T gateway-host imsg "$@"
 }
 ```
 
-示例包装脚本（`~/.openclaw/scripts/imsg-ssh`）：
-
 ```bash
 #!/usr/bin/env bash
 exec ssh -T bot@mac-mini.tailnet-1234.ts.net imsg "$@"
 ```
 
-注意事项：
+使用 SSH 密钥使 SSH 和 SCP 均为非交互式。首先确保信任主机密钥（例如 `ssh bot@mac-mini.tailnet-1234.ts.net`），以便填充 `known_hosts`。
 
-- 确保 Mac 已登录"信息"，并已启用远程登录。
-- 使用 SSH 密钥使 `ssh bot@mac-mini.tailnet-1234.ts.net` 无需提示即可工作。
-- `remoteHost` 应与 SSH 目标匹配，以便 SCP 可以获取附件。
+### 多账户模式
 
-多账户支持：使用 `channels.imessage.accounts` 配置每个账户及可选的 `name`。参见 [`gateway/configuration`](/gateway/configuration#telegramaccounts--discordaccounts--slackaccounts--signalaccounts--imessageaccounts) 了解共享模式。不要提交 `~/.openclaw/openclaw.json`（它通常包含令牌）。
+iMessage 支持 `channels.imessage.accounts` 下的每账户配置。
 
-## 访问控制（私信 + 群组）
+每个账户可以覆盖 `cliPath`、`dbPath`、`allowFrom`、`groupPolicy`、`mediaMaxMb`、历史设置和附件根目录 allowlist 等字段。
 
-私信：
+## 媒体、分块和投递目标
 
-- 默认：`channels.imessage.dmPolicy = "pairing"`。
-- 未知发送者会收到配对码；消息在批准前会被忽略（配对码在 1 小时后过期）。
-- 批准方式：
-  - `openclaw pairing list imessage`
-  - `openclaw pairing approve imessage <CODE>`
-- 配对是 iMessage 私信的默认令牌交换方式。详情：[配对](/channels/pairing)
+### 附件和媒体
 
-群组：
+- 入站附件摄取为可选：`channels.imessage.includeAttachments`
+- 设置 `remoteHost` 后，远程附件路径可以通过 SCP 获取
+- 附件路径必须匹配允许的根目录：
+  - `channels.imessage.attachmentRoots`（本地）
+  - `channels.imessage.remoteAttachmentRoots`（远程 SCP 模式）
+  - 默认根目录模式：`/Users/*/Library/Messages/Attachments`
+- SCP 使用严格的主机密钥检查（`StrictHostKeyChecking=yes`）
+- 出站媒体大小使用 `channels.imessage.mediaMaxMb`（默认 16 MB）
 
-- `channels.imessage.groupPolicy = open | allowlist | disabled`。
-- 设置 `allowlist` 时，`channels.imessage.groupAllowFrom` 控制谁可以在群组中触发。
-- 提及检测使用 `agents.list[].groupChat.mentionPatterns`（或 `messages.groupChat.mentionPatterns`），因为 iMessage 没有原生提及元数据。
-- 多智能体覆盖：在 `agents.list[].groupChat.mentionPatterns` 上设置每个智能体的模式。
+### 出站分块
 
-## 工作原理（行为）
+- 文本分块限制：`channels.imessage.textChunkLimit`（默认 4000）
+- 分块模式：`channels.imessage.chunkMode`
+  - `length`（默认）
+  - `newline`（段落优先分割）
 
-- `imsg` 流式传输消息事件；Gateway 网关将它们规范化为共享渠道信封。
-- 回复始终路由回相同的 chat id 或 handle。
+### 寻址格式
 
-## 类群组会话（`is_group=false`）
+优先使用显式目标：
 
-某些 iMessage 会话可能有多个参与者，但根据"信息"存储聊天标识符的方式，仍以 `is_group=false` 到达。
+- `chat_id:123`（推荐用于稳定路由）
+- `chat_guid:...`
+- `chat_identifier:...`
 
-如果你在 `channels.imessage.groups` 下显式配置了 `chat_id`，OpenClaw 会将该会话视为"群组"用于：
+也支持 handle 目标：
 
-- 会话隔离（独立的 `agent:<agentId>:imessage:group:<chat_id>` 会话键）
-- 群组允许列表 / 提及检测行为
+- `imessage:+1555...`
+- `sms:+1555...`
+- `user@example.com`
 
-示例：
+```bash
+imsg chats --limit 20
+```
+
+## 配置写入
+
+默认情况下，iMessage 允许写入由 `/config set|unset` 触发的配置更新（需要 `commands.config: true`）。
+
+禁用方式：
 
 ```json5
 {
   channels: {
     imessage: {
-      groupPolicy: "allowlist",
-      groupAllowFrom: ["+15555550123"],
-      groups: {
-        "42": { requireMention: false },
-      },
+      configWrites: false,
     },
   },
 }
 ```
 
-当你想为特定会话使用隔离的个性/模型时这很有用（参见[多智能体路由](/concepts/multi-agent)）。关于文件系统隔离，参见[沙箱隔离](/gateway/sandboxing)。
+## 故障排除
 
-## 媒体 + 限制
+**imsg 未找到或不支持 RPC**：
 
-- 通过 `channels.imessage.includeAttachments` 可选附件摄取。
-- 通过 `channels.imessage.mediaMaxMb` 设置媒体上限。
-
-## 限制
-
-- 出站文本按 `channels.imessage.textChunkLimit` 分块（默认 4000）。
-- 可选换行分块：设置 `channels.imessage.chunkMode="newline"` 在长度分块前按空行（段落边界）分割。
-- 媒体上传受 `channels.imessage.mediaMaxMb` 限制（默认 16）。
-
-## 寻址 / 投递目标
-
-优先使用 `chat_id` 进行稳定路由：
-
-- `chat_id:123`（推荐）
-- `chat_guid:...`
-- `chat_identifier:...`
-- 直接 handle：`imessage:+1555` / `sms:+1555` / `user@example.com`
-
-列出聊天：
-
-```
-imsg chats --limit 20
+```bash
+imsg rpc --help
+openclaw channels status --probe
 ```
 
-## 配置参考（iMessage）
+如果探测报告不支持 RPC，请更新 `imsg`。
 
-完整配置：[配置](/gateway/configuration)
+**私信被忽略**：
 
-提供商选项：
+检查：
 
-- `channels.imessage.enabled`：启用/禁用渠道启动。
-- `channels.imessage.cliPath`：`imsg` 路径。
-- `channels.imessage.dbPath`："信息"数据库路径。
-- `channels.imessage.remoteHost`：当 `cliPath` 指向远程 Mac 时用于 SCP 附件传输的 SSH 主机（例如 `user@gateway-host`）。如未设置则从 SSH 包装脚本自动检测。
-- `channels.imessage.service`：`imessage | sms | auto`。
-- `channels.imessage.region`：短信区域。
-- `channels.imessage.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
-- `channels.imessage.allowFrom`：私信允许列表（handle、邮箱、E.164 号码或 `chat_id:*`）。`open` 需要 `"*"`。iMessage 没有用户名；使用 handle 或聊天目标。
-- `channels.imessage.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。
-- `channels.imessage.groupAllowFrom`：群组发送者允许列表。
-- `channels.imessage.historyLimit` / `channels.imessage.accounts.*.historyLimit`：作为上下文包含的最大群组消息数（0 禁用）。
-- `channels.imessage.dmHistoryLimit`：私信历史限制（用户轮次）。每用户覆盖：`channels.imessage.dms["<handle>"].historyLimit`。
-- `channels.imessage.groups`：每群组默认值 + 允许列表（使用 `"*"` 作为全局默认值）。
-- `channels.imessage.includeAttachments`：将附件摄取到上下文。
-- `channels.imessage.mediaMaxMb`：入站/出站媒体上限（MB）。
-- `channels.imessage.textChunkLimit`：出站分块大小（字符）。
-- `channels.imessage.chunkMode`：`length`（默认）或 `newline` 在长度分块前按空行（段落边界）分割。
+- `channels.imessage.dmPolicy`
+- `channels.imessage.allowFrom`
+- 配对审批（`openclaw pairing list imessage`）
 
-相关全局选项：
+**群组消息被忽略**：
 
-- `agents.list[].groupChat.mentionPatterns`（或 `messages.groupChat.mentionPatterns`）。
-- `messages.responsePrefix`。
+检查：
+
+- `channels.imessage.groupPolicy`
+- `channels.imessage.groupAllowFrom`
+- `channels.imessage.groups` allowlist 行为
+- 提及模式配置（`agents.list[].groupChat.mentionPatterns`）
+
+**远程附件失败**：
+
+检查：
+
+- `channels.imessage.remoteHost`
+- `channels.imessage.remoteAttachmentRoots`
+- 从 Gateway 网关主机到远程 Mac 的 SSH/SCP 密钥认证
+- Gateway 网关主机 `~/.ssh/known_hosts` 中存在主机密钥
+- 运行"信息"的 Mac 上远程路径的可读性
+
+**macOS 权限提示被错过**：
+
+在同一用户/会话上下文的交互式 GUI 终端中重新运行并批准提示：
+
+```bash
+imsg chats --limit 1
+imsg send <handle> "test"
+```
+
+确认运行 OpenClaw/`imsg` 的进程上下文已授予完全磁盘访问权限 + 自动化权限。
+
+## 配置参考
+
+- [配置参考 - iMessage](/gateway/configuration-reference#imessage)
+- [Gateway 网关配置](/gateway/configuration)
+- [配对](/channels/pairing)
+- [BlueBubbles](/channels/bluebubbles)

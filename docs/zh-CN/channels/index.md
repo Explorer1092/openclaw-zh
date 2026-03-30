@@ -5,10 +5,10 @@ read_when:
 summary: OpenClaw 可连接的消息平台
 title: 聊天渠道
 x-i18n:
-  generated_at: "2026-02-03T07:43:27Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 2632863def6dee97e0fa8b931762f0969174fd4fb22303a00dcd46527fe4a141
+  source_hash: 89ca1a4fec9647baaa793cfffcd5136a2f54503339ccdd3be87ba0948353dcc0
   source_path: channels/index.md
   workflow: 15
 ---
@@ -22,9 +22,10 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你交流。每个�
 
 - [BlueBubbles](/channels/bluebubbles) — **推荐用于 iMessage**；使用 BlueBubbles macOS 服务器 REST API，功能完整（编辑、撤回、特效、回应、群组管理——编辑功能在 macOS 26 Tahoe 上目前不可用）。
 - [Discord](/channels/discord) — Discord Bot API + Gateway；支持服务器、频道和私信。
-- [飞书](/channels/feishu) — 飞书（Lark）机器人（插件，需单独安装）。
+- [飞书](/channels/feishu) — 飞书（Lark）机器人，通过 WebSocket（插件，需单独安装）。
 - [Google Chat](/channels/googlechat) — 通过 HTTP webhook 的 Google Chat API 应用。
 - [iMessage（旧版）](/channels/imessage) — 通过 imsg CLI 的旧版 macOS 集成（已弃用，新设置请使用 BlueBubbles）。
+- [IRC](/channels/irc) — 经典 IRC 服务器；频道和私信，配对/allowlist 控制。
 - [LINE](/channels/line) — LINE Messaging API 机器人（插件，需单独安装）。
 - [Matrix](/channels/matrix) — Matrix 协议（插件，需单独安装）。
 - [Mattermost](/channels/mattermost) — Bot API + WebSocket；频道、群组、私信（插件，需单独安装）。
@@ -33,10 +34,13 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你交流。每个�
 - [Nostr](/channels/nostr) — 通过 NIP-04 的去中心化私信（插件，需单独安装）。
 - [Signal](/channels/signal) — signal-cli；注重隐私。
 - [Slack](/channels/slack) — Bolt SDK；工作区应用。
+- [Synology Chat](/channels/synology-chat) — 通过出站+入站 webhook 连接 Synology NAS Chat（插件，需单独安装）。
 - [Telegram](/channels/telegram) — 通过 grammY 使用 Bot API；支持群组。
 - [Tlon](/channels/tlon) — 基于 Urbit 的消息应用（插件，需单独安装）。
 - [Twitch](/channels/twitch) — 通过 IRC 连接的 Twitch 聊天（插件，需单独安装）。
+- [Voice Call](/plugins/voice-call) — 通过 Plivo 或 Twilio 实现电话通话（插件，需单独安装）。
 - [WebChat](/web/webchat) — 基于 WebSocket 的 Gateway 网关 WebChat 界面。
+- [WeChat](https://www.npmjs.com/package/@tencent-weixin/openclaw-weixin) — 腾讯 iLink 机器人插件，通过二维码登录；仅支持私聊。
 - [WhatsApp](/channels/whatsapp) — 最受欢迎；使用 Baileys，需要二维码配对。
 - [Zalo](/channels/zalo) — Zalo Bot API；越南流行的消息应用（插件，需单独安装）。
 - [Zalo Personal](/channels/zalouser) — 通过二维码登录的 Zalo 个人账号（插件，需单独安装）。
@@ -47,7 +51,6 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你交流。每个�
 - 最快的设置方式通常是 **Telegram**（简单的机器人令牌）。WhatsApp 需要二维码配对，
   并在磁盘上存储更多状态。
 - 群组行为因渠道而异；参见[群组](/channels/groups)。
-- 为安全起见，私信配对和允许列表会被强制执行；参见[安全](/gateway/security)。
-- Telegram 内部机制：[grammY 说明](/channels/grammy)。
+- 为安全起见，私信配对和 allowlist 会被强制执行；参见[安全](/gateway/security)。
 - 故障排除：[渠道故障排除](/channels/troubleshooting)。
 - 模型提供商单独记录；参见[模型提供商](/providers/models)。

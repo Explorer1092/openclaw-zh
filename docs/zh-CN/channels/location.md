@@ -2,15 +2,15 @@
 read_when:
   - 添加或修改渠道位置解析
   - 在智能体提示或工具中使用位置上下文字段
-summary: 入站渠道位置解析（Telegram + WhatsApp）及上下文字段
+summary: 入站渠道位置解析（Telegram/WhatsApp/Matrix）及上下文字段
 title: 渠道位置解析
 x-i18n:
-  generated_at: "2026-02-01T19:21:46Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 5602ef105c3da7e47497bfed8fc343dd8d7f3c019ff7e423a08b25092c5a1837
+  source_hash: 10061f0c109240a9e0bcab649b17f03b674e8bdf410debf3669b7b6da8189d96
   source_path: channels/location.md
-  workflow: 14
+  workflow: 15
 ---
 
 # 渠道位置解析

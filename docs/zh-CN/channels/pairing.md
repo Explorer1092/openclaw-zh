@@ -6,10 +6,10 @@ read_when:
 summary: 配对概述：批准谁可以向你发送私信 + 哪些节点可以加入
 title: 配对
 x-i18n:
-  generated_at: "2026-02-03T07:54:19Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: c46a5c39f289c8fd0783baacd927f550c3d3ae8889a7bc7de133b795f16fa08a
+  source_hash: 92a1dd972eaa344d67034bdc62ffe01fd297a97fa1a763a2dc9107e441bf0835
   source_path: channels/pairing.md
   workflow: 15
 ---
@@ -42,20 +42,44 @@ openclaw pairing list telegram
 openclaw pairing approve telegram <CODE>
 ```
 
-支持的渠道：`telegram`、`whatsapp`、`signal`、`imessage`、`discord`、`slack`。
+支持的渠道：`bluebubbles`、`discord`、`feishu`、`googlechat`、`imessage`、`irc`、`line`、`matrix`、`mattermost`、`msteams`、`nextcloud-talk`、`nostr`、`openclaw-weixin`、`signal`、`slack`、`synology-chat`、`telegram`、`twitch`、`whatsapp`、`zalo`、`zalouser`。
 
 ### 状态存储位置
 
 存储在 `~/.openclaw/credentials/` 下：
 
 - 待处理请求：`<channel>-pairing.json`
-- 已批准允许列表存储：`<channel>-allowFrom.json`
+- 已批准允许列表存储：
+  - 默认账户：`<channel>-allowFrom.json`
+  - 非默认账户：`<channel>-<accountId>-allowFrom.json`
+
+账户作用域行为：
+
+- 非默认账户只读写其专属的带账户 ID 的允许列表文件。
+- 默认账户使用渠道范围的无作用域允许列表文件。
 
 将这些视为敏感信息（它们控制对你助手的访问）。
 
 ## 2）节点设备配对（iOS/Android/macOS/无头节点）
 
 节点作为 `role: node` 的**设备**连接到 Gateway 网关。Gateway 网关创建一个必须被批准的设备配对请求。
+
+### 通过 Telegram 配对（iOS 推荐方式）
+
+如果你使用 `device-pair` 插件，可以完全从 Telegram 完成首次设备配对：
+
+1. 在 Telegram 中向你的机器人发送：`/pair`
+2. 机器人回复两条消息：一条说明消息和一条单独的**设置码**消息（在 Telegram 中便于复制/粘贴）。
+3. 在手机上打开 OpenClaw iOS 应用 → 设置 → Gateway 网关。
+4. 粘贴设置码并连接。
+5. 返回 Telegram：`/pair pending`（查看请求 ID、角色和作用域），然后批准。
+
+设置码是一个 base64 编码的 JSON 负载，包含：
+
+- `url`：Gateway 网关 WebSocket URL（`ws://...` 或 `wss://...`）
+- `bootstrapToken`：用于初始配对握手的短期单设备引导令牌
+
+在有效期内请将设置码视为密码。
 
 ### 批准节点设备
 
@@ -84,6 +108,7 @@ openclaw devices reject <requestId>
   - Telegram：[Telegram](/channels/telegram)
   - WhatsApp：[WhatsApp](/channels/whatsapp)
   - Signal：[Signal](/channels/signal)
-  - iMessage：[iMessage](/channels/imessage)
+  - BlueBubbles（iMessage）：[BlueBubbles](/channels/bluebubbles)
+  - iMessage（旧版）：[iMessage](/channels/imessage)
   - Discord：[Discord](/channels/discord)
   - Slack：[Slack](/channels/slack)

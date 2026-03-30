@@ -1,20 +1,20 @@
 ---
 read_when:
   - 更改群聊行为或提及限制
-summary: 跨平台的群聊行为（WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams）
+summary: 跨平台的群聊行为（Discord/iMessage/Matrix/Microsoft Teams/Signal/Slack/Telegram/WhatsApp/Zalo）
 title: 群组
 x-i18n:
-  generated_at: "2026-02-03T07:47:08Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: b727a053edf51f6e7b5c0c324c2fc9c9789a9796c37f622418bd555e8b5a0ec4
+  source_hash: b225e68354f194703369df7a61ad96e694b1ce1df2490356d6aeafbcadfe27a9
   source_path: channels/groups.md
   workflow: 15
 ---
 
 # 群组
 
-OpenClaw 在各平台上统一处理群聊：WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams。
+OpenClaw 在各平台上统一处理群聊：Discord、iMessage、Matrix、Microsoft Teams、Signal、Slack、Telegram、WhatsApp、Zalo。
 
 ## 新手入门（2 分钟）
 
@@ -110,7 +110,7 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
         docker: {
           binds: [
             // hostPath:containerPath:mode
-            "~/FriendsShared:/data:ro",
+            "/home/user/FriendsShared:/data:ro",
           ],
         },
       },
@@ -121,7 +121,7 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
 
 相关：
 
-- 配置键和默认值：[Gateway 网关配置](/gateway/configuration#agentsdefaultssandbox)
+- 配置键和默认值：[Gateway 网关配置](/gateway/configuration-reference#agentsdefaultssandbox)
 - 调试为什么工具被阻止：[沙箱 vs 工具策略 vs 提权](/gateway/sandbox-vs-tool-policy-vs-elevated)
 - 绑定挂载详情：[沙箱隔离](/gateway/sandboxing#custom-bind-mounts)
 
@@ -143,7 +143,7 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
     },
     telegram: {
       groupPolicy: "disabled",
-      groupAllowFrom: ["123456789", "@username"],
+      groupAllowFrom: ["123456789"], // 数字 Telegram 用户 ID（向导可解析 @username）
     },
     signal: {
       groupPolicy: "disabled",
@@ -188,13 +188,15 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
 注意事项：
 
 - `groupPolicy` 与提及限制（需要 @ 提及）是分开的。
-- WhatsApp/Telegram/Signal/iMessage/Microsoft Teams：使用 `groupAllowFrom`（回退：显式 `allowFrom`）。
-- Discord：允许列表使用 `channels.discord.guilds.<id>.channels`。
-- Slack：允许列表使用 `channels.slack.channels`。
-- Matrix：允许列表使用 `channels.matrix.groups`（房间 ID、别名或名称）。使用 `channels.matrix.groupAllowFrom` 限制发送者；也支持每个房间的 `users` 允许列表。
+- WhatsApp/Telegram/Signal/iMessage/Microsoft Teams/Zalo：使用 `groupAllowFrom`（回退：显式 `allowFrom`）。
+- 私信配对审批（`*-allowFrom` 存储条目）仅适用于私信访问；群组发送者授权仍然对群组 allowlist 是显式的。
+- Discord：allowlist 使用 `channels.discord.guilds.<id>.channels`。
+- Slack：allowlist 使用 `channels.slack.channels`。
+- Matrix：allowlist 使用 `channels.matrix.groups`。优先使用房间 ID 或别名；已加入房间的名称查找是尽力而为的，未解析的名称在运行时被忽略。使用 `channels.matrix.groupAllowFrom` 限制发送者；也支持每房间 `users` allowlist。
 - 群组私信单独控制（`channels.discord.dm.*`、`channels.slack.dm.*`）。
-- Telegram 允许列表可以匹配用户 ID（`"123456789"`、`"telegram:123456789"`、`"tg:123456789"`）或用户名（`"@alice"` 或 `"alice"`）；前缀不区分大小写。
-- 默认为 `groupPolicy: "allowlist"`；如果你的群组允许列表为空，群组消息将被阻止。
+- Telegram allowlist 可以匹配用户 ID（`"123456789"`、`"telegram:123456789"`、`"tg:123456789"`）或用户名（`"@alice"` 或 `"alice"`）；前缀不区分大小写。
+- 默认为 `groupPolicy: "allowlist"`；如果你的群组 allowlist 为空，群组消息将被阻止。
+- 运行时安全性：当提供商块完全缺失（`channels.<provider>` 不存在）时，群组策略回退到失败关闭模式（通常为 `allowlist`），而不是继承 `channels.defaults.groupPolicy`。
 
 快速心智模型（群组消息的评估顺序）：
 
@@ -246,7 +248,7 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
 
 注意事项：
 
-- `mentionPatterns` 是不区分大小写的正则表达式。
+- `mentionPatterns` 是不区分大小写的安全正则表达式模式；无效模式和不安全的嵌套重复形式会被忽略。
 - 提供显式提及的平台仍然通过；模式是回退。
 - 每个智能体覆盖：`agents.list[].groupChat.mentionPatterns`（当多个智能体共享一个群组时有用）。
 - 提及限制仅在提及检测可行时强制执行（原生提及或 `mentionPatterns` 已配置）。
@@ -258,7 +260,10 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
 某些渠道配置支持限制**特定群组/房间/频道内**可用的工具。
 
 - `tools`：为整个群组允许/拒绝工具。
-- `toolsBySender`：群组内的按发送者覆盖（键是发送者 ID/用户名/邮箱/电话号码，取决于渠道）。使用 `"*"` 作为通配符。
+- `toolsBySender`：群组内的按发送者覆盖。
+  使用显式键前缀：
+  `id:<senderId>`、`e164:<phone>`、`username:<handle>`、`name:<displayName>` 以及 `"*"` 通配符。
+  旧版无前缀键仍然被接受，仅作为 `id:` 匹配。
 
 解析顺序（最具体的优先）：
 
@@ -278,7 +283,7 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
         "-1001234567890": {
           tools: { deny: ["exec", "read", "write"] },
           toolsBySender: {
-            "123456789": { alsoAllow: ["exec"] },
+            "id:123456789": { alsoAllow: ["exec"] },
           },
         },
       },
@@ -365,6 +370,10 @@ requireMention? 是 -> 被提及? 否 -> 仅存储为上下文
 - `GroupMembers`（如果已知）
 - `WasMentioned`（提及限制结果）
 - Telegram 论坛话题还包括 `MessageThreadId` 和 `IsForum`。
+
+渠道特定说明：
+
+- BlueBubbles 可以选择在正常群组门控通过后，从本地 Contacts 数据库丰富未命名的 macOS 群组参与者，然后再填充 `GroupMembers`。默认关闭。
 
 智能体系统提示在新群组会话的第一轮包含群组介绍。它提醒模型像人类一样回复，避免 Markdown 表格，避免输入字面量 `\n` 序列。
 

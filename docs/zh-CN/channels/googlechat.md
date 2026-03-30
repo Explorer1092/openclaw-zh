@@ -4,10 +4,10 @@ read_when:
 summary: Google Chat 应用支持状态、功能和配置
 title: Google Chat
 x-i18n:
-  generated_at: "2026-02-03T07:43:39Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 3b2bb116cdd12614c3d5afddd0879e9deb05c3606e3a2385cbc07f23552b357e
+  source_hash: ef87b220c1ae5f497cf508ee1eacdbc7baafe1474491540c590bbb4e81e97d99
   source_path: channels/googlechat.md
   workflow: 15
 ---
@@ -145,11 +145,13 @@ your-domain.com {
 ## 工作原理
 
 1. Google Chat 向 Gateway 网关发送 webhook POST 请求。每个请求都包含一个 `Authorization: Bearer <token>` 头。
+   - 当请求头中存在该头时，OpenClaw 在读取/解析完整 webhook 请求体之前先验证 Bearer 认证。
+   - 在请求体中携带 `authorizationEventObject.systemIdToken` 的 Google Workspace Add-on 请求通过更严格的预认证请求体预算受到支持。
 2. OpenClaw 根据配置的 `audienceType` + `audience` 验证令牌：
    - `audienceType: "app-url"` → audience 是你的 HTTPS webhook URL。
    - `audienceType: "project-number"` → audience 是 Cloud 项目编号。
 3. 消息按空间路由：
-   - 私信使用会话键 `agent:<agentId>:googlechat:dm:<spaceId>`。
+   - 私信使用会话键 `agent:<agentId>:googlechat:direct:<spaceId>`。
    - 空间使用会话键 `agent:<agentId>:googlechat:group:<spaceId>`。
 4. 私信访问默认为配对模式。未知发送者会收到配对码；使用以下命令批准：
    - `openclaw pairing approve googlechat <code>`
@@ -159,7 +161,9 @@ your-domain.com {
 
 使用这些标识符进行消息投递和允许列表：
 
-- 私信：`users/<userId>` 或 `users/<email>`（接受邮箱地址）。
+- 私信：`users/<userId>`（推荐）。
+- 原始邮箱 `name@example.com` 是可变的，仅在 `channels.googlechat.dangerouslyAllowNameMatching: true` 时用于直接 allowlist 匹配。
+- 已废弃：`users/<email>` 被视为用户 ID，不是邮箱 allowlist。
 - 空间：`spaces/<spaceId>`。
 
 ## 配置要点
@@ -176,7 +180,7 @@ your-domain.com {
       botUser: "users/1234567890", // 可选；帮助提及检测
       dm: {
         policy: "pairing",
-        allowFrom: ["users/1234567890", "name@example.com"],
+        allowFrom: ["users/1234567890"],
       },
       groupPolicy: "allowlist",
       groups: {
@@ -198,10 +202,15 @@ your-domain.com {
 注意事项：
 
 - 服务账号凭证也可以通过 `serviceAccount`（JSON 字符串）内联传递。
+- `serviceAccountRef` 也受支持（env/file SecretRef），包括 `channels.googlechat.accounts.<id>.serviceAccountRef` 下的每账户引用。
 - 如果未设置 `webhookPath`，默认 webhook 路径为 `/googlechat`。
+- `dangerouslyAllowNameMatching` 为 allowlist 重新启用可变邮箱主体匹配（应急兼容模式）。
 - 当 `actions.reactions` 启用时，可通过 `reactions` 工具和 `channels action` 使用表情回应。
+- 消息操作提供 `send`（文本）和 `upload-file`（显式附件发送）。`upload-file` 接受 `media`/`filePath`/`path` 加上可选的 `message`、`filename` 和线程目标。
 - `typingIndicator` 支持 `none`、`message`（默认）和 `reaction`（reaction 需要用户 OAuth）。
 - 附件通过 Chat API 下载并存储在媒体管道中（大小受 `mediaMaxMb` 限制）。
+
+密钥引用详情：[密钥管理](/gateway/secrets)。
 
 ## 故障排除
 

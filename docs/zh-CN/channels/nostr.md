@@ -5,10 +5,10 @@ read_when:
 summary: 通过 NIP-04 加密消息实现的 Nostr 私信渠道
 title: Nostr
 x-i18n:
-  generated_at: "2026-03-16T06:20:37Z"
-  model: gpt-5.4
-  provider: openai
-  source_hash: fcce57da49256971420c4bb099aebb7944f8c7e8619b17b163da685add225001
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: pi
+  source_hash: 462a4b704b71869a06dd0911d9e149e1ebb2acc8c24dfedf20151f516ba826b6
   source_path: channels/nostr.md
   workflow: 15
 ---
@@ -42,7 +42,7 @@ openclaw plugins install @openclaw/nostr
 使用本地检出（dev 工作流）：
 
 ```bash
-openclaw plugins install --link <path-to-openclaw>/extensions/nostr
+openclaw plugins install --link <path-to-local-nostr-plugin>
 ```
 
 安装或启用插件后，重启 Gateway 网关。

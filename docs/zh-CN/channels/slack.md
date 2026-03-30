@@ -1,12 +1,13 @@
 ---
-read_when: Setting up Slack or debugging Slack socket/HTTP mode
-summary: Slack 的 socket 或 HTTP webhook 模式设置
+read_when:
+  - 设置 Slack 或调试 Slack socket/HTTP 模式
+summary: Slack 设置和运行时行为（Socket 模式 + HTTP Events API）
 title: Slack
 x-i18n:
-  generated_at: "2026-02-03T07:45:49Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 703b4b4333bebfef26b64710ba452bdfc3e7d2115048d4e552e8659425b3609b
+  source_hash: 601ab5d127e1f40db523dce5cf9e31cac7632006685669110bcf168c91a53c3d
   source_path: channels/slack.md
   workflow: 15
 ---
@@ -478,7 +479,7 @@ Slack 仅使用 Socket Mode（无 HTTP webhook 服务器）。提供两个令牌
 
 - `channels.slack.groupPolicy` 控制频道处理（`open|disabled|allowlist`）。
 - `allowlist` 要求频道列在 `channels.slack.channels` 中。
-- 如果你只设置了 `SLACK_BOT_TOKEN`/`SLACK_APP_TOKEN` 而从未创建 `channels.slack` 部分，运行时默认将 `groupPolicy` 设为 `open`。添加 `channels.slack.groupPolicy`、`channels.defaults.groupPolicy` 或频道白名单来锁定它。
+- 运行时说明：如果 `channels.slack` 完全缺失（仅环境变量配置），运行时回退到 `groupPolicy="allowlist"` 并记录警告（即使 `channels.defaults.groupPolicy` 已设置）。
 - 配置向导接受 `#channel` 名称，并在可能时（公开 + 私有）将其解析为 ID；如果存在多个匹配，它优先选择活跃的频道。
 - 启动时，OpenClaw 将白名单中的频道/用户名解析为 ID（在令牌允许时）并记录映射；未解析的条目按原样保留。
 - 要**不允许任何频道**，设置 `channels.slack.groupPolicy: "disabled"`（或保留空白名单）。
@@ -488,7 +489,7 @@ Slack 仅使用 Socket Mode（无 HTTP webhook 服务器）。提供两个令牌
 - `allow`：当 `groupPolicy="allowlist"` 时允许/拒绝频道。
 - `requireMention`：频道的提及门控。
 - `tools`：可选的每频道工具策略覆盖（`allow`/`deny`/`alsoAllow`）。
-- `toolsBySender`：频道内可选的每发送者工具策略覆盖（键为发送者 id/@用户名/邮箱；支持 `"*"` 通配符）。
+- `toolsBySender`：频道内可选的每发送者工具策略覆盖。键格式：`id:<senderId>`、`e164:<phone>`、`username:<handle>`、`name:<displayName>` 以及 `"*"` 通配符。旧版无前缀键仍然被接受，仅作为 `id:` 匹配。
 - `allowBots`：允许此频道中机器人发送的消息（默认：false）。
 - `users`：可选的每频道用户白名单。
 - `skills`：Skills 过滤器（省略 = 所有 Skills，空 = 无）。
@@ -529,3 +530,61 @@ Slack 工具操作可以通过 `channels.slack.actions.*` 进行门控：
 - 警告：如果你允许回复其他机器人（`channels.slack.allowBots=true` 或 `channels.slack.channels.<id>.allowBots=true`），请使用 `requireMention`、`channels.slack.channels.<id>.users` 白名单和/或在 `AGENTS.md` 和 `SOUL.md` 中设置明确的防护措施来防止机器人之间的回复循环。
 - 对于 Slack 工具，表情回应移除语义见 [/tools/reactions](/tools/reactions)。
 - 附件在允许且在大小限制内时会下载到媒体存储。
+
+## 确认回应
+
+`ackReaction` 在 OpenClaw 处理入站消息时发送确认表情。
+
+解析顺序：
+
+- `channels.slack.accounts.<accountId>.ackReaction`
+- `channels.slack.ackReaction`
+- `messages.ackReaction`
+- 智能体身份表情回退（`agents.list[].identity.emoji`，否则为 "👀"）
+
+注意事项：
+
+- Slack 使用短代码（例如 `"eyes"`）。
+- 使用 `""` 禁用 Slack 账户或全局的回应。
+
+## 输入回应回退
+
+`typingReaction` 在 OpenClaw 处理回复时向入站 Slack 消息添加临时回应，回复完成后移除。当 Slack 原生助手输入提示不可用时（尤其是在私信中），这是有用的回退方案。
+
+解析顺序：
+
+- `channels.slack.accounts.<accountId>.typingReaction`
+- `channels.slack.typingReaction`
+
+注意事项：
+
+- Slack 使用短代码（例如 `"hourglass_flowing_sand"`）。
+- 回应为尽力而为，回复或失败路径完成后会自动尝试清理。
+
+## 文本流式传输
+
+OpenClaw 通过 Agents and AI Apps API 支持 Slack 原生文本流式传输。
+
+`channels.slack.streaming` 控制实时预览行为：
+
+- `off`：禁用实时预览流式传输。
+- `partial`（默认）：用最新的部分输出替换预览文本。
+- `block`：追加分块预览更新。
+- `progress`：生成时显示进度状态文本，然后发送最终文本。
+
+`channels.slack.nativeStreaming` 控制 Slack 原生流式传输 API（`chat.startStream` / `chat.appendStream` / `chat.stopStream`），当 `streaming` 为 `partial` 时（默认：`true`）。
+
+禁用原生 Slack 流式传输（保留草稿预览行为）：
+
+```yaml
+channels:
+  slack:
+    streaming: partial
+    nativeStreaming: false
+```
+
+**要求：**
+
+1. 在 Slack 应用设置中启用 **Agents and AI Apps**。
+2. 确保应用具有 `assistant:write` 权限范围。
+3. 该消息必须有可用的回复线程。线程选择仍遵循 `replyToMode`。

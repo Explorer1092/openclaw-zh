@@ -4,10 +4,10 @@ read_when:
 summary: Nextcloud Talk 支持状态、功能和配置
 title: Nextcloud Talk
 x-i18n:
-  generated_at: "2026-02-03T10:04:00Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 21b7b9756c4356a76dc0f14c10e44ed74a284cf3badf87e2df75eb88d8a90c31
+  source_hash: 55e99fb085d49c972f1006366b5005bdeba38dc7509b43009aadd33358dd107f
   source_path: channels/nextcloud-talk.md
   workflow: 15
 ---
@@ -29,7 +29,7 @@ openclaw plugins install @openclaw/nextcloud-talk
 本地检出安装（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/nextcloud-talk
+openclaw plugins install ./path/to/local/nextcloud-talk-plugin
 ```
 
 如果你在配置/新手引导过程中选择了 Nextcloud Talk，并且检测到 git 检出，
@@ -79,6 +79,7 @@ OpenClaw 将自动提供本地安装路径。
   - `openclaw pairing list nextcloud-talk`
   - `openclaw pairing approve nextcloud-talk <CODE>`
 - 公开私信：`channels.nextcloud-talk.dmPolicy="open"` 加上 `channels.nextcloud-talk.allowFrom=["*"]`。
+- `allowFrom` 仅匹配 Nextcloud 用户 ID；显示名称会被忽略。
 
 ## 房间（群组）
 
@@ -119,7 +120,7 @@ OpenClaw 将自动提供本地安装路径。
 - `channels.nextcloud-talk.enabled`：启用/禁用渠道启动。
 - `channels.nextcloud-talk.baseUrl`：Nextcloud 实例 URL。
 - `channels.nextcloud-talk.botSecret`：机器人共享密钥。
-- `channels.nextcloud-talk.botSecretFile`：密钥文件路径。
+- `channels.nextcloud-talk.botSecretFile`：密钥文件路径（普通文件，不支持符号链接）。
 - `channels.nextcloud-talk.apiUser`：用于房间查询的 API 用户（私信检测）。
 - `channels.nextcloud-talk.apiPassword`：用于房间查询的 API/应用密码。
 - `channels.nextcloud-talk.apiPasswordFile`：API 密码文件路径。

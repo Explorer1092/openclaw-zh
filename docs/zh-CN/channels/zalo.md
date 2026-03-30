@@ -4,17 +4,17 @@ read_when:
 summary: Zalo bot 支持状态、功能和配置
 title: Zalo
 x-i18n:
-  generated_at: "2026-02-03T07:44:44Z"
-  model: claude-opus-4-5
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
   provider: pi
-  source_hash: 0311d932349f96412b712970b5d37329b91929bf3020536edf3ca0ff464373c0
+  source_hash: bf1276dffc2dbb385f583394fea4a7691369e661629c45d9bf3405dac7e9ec47
   source_path: channels/zalo.md
   workflow: 15
 ---
 
 # Zalo (Bot API)
 
-状态：实验性。仅支持私信；根据 Zalo 文档，群组即将推出。
+状态：实验性。支持私信。[功能](#功能)部分反映当前 Marketplace 机器人的行为。
 
 ## 需要插件
 
@@ -27,12 +27,12 @@ Zalo 以插件形式提供，不包含在核心安装中。
 ## 快速设置（初学者）
 
 1. 安装 Zalo 插件：
-   - 从源代码检出：`openclaw plugins install ./extensions/zalo`
+   - 从源代码检出：`openclaw plugins install ./path/to/local/zalo-plugin`
    - 从 npm（如果已发布）：`openclaw plugins install @openclaw/zalo`
    - 或在新手引导中选择 **Zalo** 并确认安装提示
 2. 设置 token：
    - 环境变量：`ZALO_BOT_TOKEN=...`
-   - 或配置：`channels.zalo.botToken: "..."`。
+   - 或配置：`channels.zalo.accounts.default.botToken: "..."`。
 3. 重启 Gateway 网关（或完成新手引导）。
 4. 私信访问默认为配对模式；首次联系时批准配对码。
 
@@ -43,8 +43,12 @@ Zalo 以插件形式提供，不包含在核心安装中。
   channels: {
     zalo: {
       enabled: true,
-      botToken: "12345689:abc-xyz",
-      dmPolicy: "pairing",
+      accounts: {
+        default: {
+          botToken: "12345689:abc-xyz",
+          dmPolicy: "pairing",
+        },
+      },
     },
   },
 }
@@ -55,18 +59,21 @@ Zalo 以插件形式提供，不包含在核心安装中。
 Zalo 是一款专注于越南市场的即时通讯应用；其 Bot API 让 Gateway 网关可以运行一个用于一对一对话的 bot。
 它非常适合需要确定性路由回 Zalo 的支持或通知场景。
 
+此页面反映 **Zalo Bot Creator / Marketplace 机器人**的当前 OpenClaw 行为。
+**Zalo Official Account (OA) 机器人**是不同的 Zalo 产品形态，行为可能有所不同。
+
 - 由 Gateway 网关拥有的 Zalo Bot API 渠道。
 - 确定性路由：回复返回到 Zalo；模型不会选择渠道。
 - 私信共享智能体的主会话。
-- 群组尚不支持（Zalo 文档标注"即将推出"）。
+- 下方[功能](#功能)部分显示当前 Marketplace 机器人的支持情况。
 
 ## 设置（快速路径）
 
 ### 1）创建 bot token（Zalo Bot 平台）
 
-1. 前往 **https://bot.zaloplatforms.com** 并登录。
+1. 前往 [https://bot.zaloplatforms.com](https://bot.zaloplatforms.com) 并登录。
 2. 创建新 bot 并配置其设置。
-3. 复制 bot token（格式：`12345689:abc-xyz`）。
+3. 复制完整的 bot token（格式通常为 `数字id:密钥`）。对于 Marketplace 机器人，可用的运行时令牌可能在创建后的机器人欢迎消息中出现。
 
 ### 2）配置 token（环境变量或配置）
 
@@ -77,8 +84,12 @@ Zalo 是一款专注于越南市场的即时通讯应用；其 Bot API 让 Gatew
   channels: {
     zalo: {
       enabled: true,
-      botToken: "12345689:abc-xyz",
-      dmPolicy: "pairing",
+      accounts: {
+        default: {
+          botToken: "12345689:abc-xyz",
+          dmPolicy: "pairing",
+        },
+      },
     },
   },
 }
@@ -114,6 +125,19 @@ Zalo 是一款专注于越南市场的即时通讯应用；其 Bot API 让 Gatew
 - 配对是默认的令牌交换方式。详情：[配对](/channels/pairing)
 - `channels.zalo.allowFrom` 接受数字用户 ID（无用户名查找功能）。
 
+## 访问控制（群组）
+
+对于 **Zalo Bot Creator / Marketplace 机器人**，群组支持实际上不可用，因为机器人根本无法被添加到群组。
+
+这意味着下面的群组相关配置键存在于 schema 中，但对 Marketplace 机器人不可用：
+
+- `channels.zalo.groupPolicy` 控制群组入站处理：`open | allowlist | disabled`。
+- `channels.zalo.groupAllowFrom` 限制哪些发送者 ID 可以在群组中触发机器人。
+- 如果 `groupAllowFrom` 未设置，Zalo 会回退到 `allowFrom` 进行发送者检查。
+- 运行时说明：如果 `channels.zalo` 完全缺失，运行时仍会回退到 `groupPolicy="allowlist"` 以保障安全。
+
+如果你使用不同的 Zalo 机器人产品形态并已验证群组功能正常，请单独记录，而不要假设它与 Marketplace 机器人流程相同。
+
 ## 长轮询与 webhook
 
 - 默认：长轮询（不需要公共 URL）。
@@ -122,28 +146,32 @@ Zalo 是一款专注于越南市场的即时通讯应用；其 Bot API 让 Gatew
   - Webhook URL 必须使用 HTTPS。
   - Zalo 发送事件时带有 `X-Bot-Api-Secret-Token` 头用于验证。
   - Gateway 网关 HTTP 在 `channels.zalo.webhookPath` 处理 webhook 请求（默认为 webhook URL 路径）。
+  - 请求必须使用 `Content-Type: application/json`（或 `+json` 媒体类型）。
+  - 重复事件（`event_name + message_id`）在短暂的重放窗口内会被忽略。
+  - 突发流量按路径/来源进行速率限制，可能返回 HTTP 429。
 
 **注意：** 根据 Zalo API 文档，getUpdates（轮询）和 webhook 是互斥的。
 
-## 支持的消息类型
-
-- **文本消息**：完全支持，2000 字符分块。
-- **图片消息**：下载和处理入站图片；通过 `sendPhoto` 发送图片。
-- **贴纸**：已记录但未完全处理（无智能体响应）。
-- **不支持的类型**：已记录（例如来自受保护用户的消息）。
-
 ## 功能
 
-| 功能         | 状态                          |
-| ------------ | ----------------------------- |
-| 私信         | ✅ 支持                       |
-| 群组         | ❌ 即将推出（根据 Zalo 文档） |
-| 媒体（图片） | ✅ 支持                       |
-| 表情回应     | ❌ 不支持                     |
-| 主题         | ❌ 不支持                     |
-| 投票         | ❌ 不支持                     |
-| 原生命令     | ❌ 不支持                     |
-| 流式传输     | ⚠️ 已阻止（2000 字符限制）    |
+下表总结了 **Zalo Bot Creator / Marketplace 机器人**在 OpenClaw 中的当前行为。
+
+| 功能                   | 状态                                    |
+| ---------------------- | --------------------------------------- |
+| 私信                   | ✅ 支持                                 |
+| 群组                   | ❌ Marketplace 机器人不支持             |
+| 媒体（入站图片）       | ⚠️ 有限/请在你的环境中验证              |
+| 媒体（出站图片）       | ⚠️ Marketplace 机器人未重新测试         |
+| 文本中的纯 URL         | ✅ 支持                                 |
+| 链接预览               | ⚠️ Marketplace 机器人不稳定             |
+| 表情回应               | ❌ 不支持                               |
+| 贴纸                   | ⚠️ Marketplace 机器人无智能体回复       |
+| 语音/音频/视频         | ⚠️ Marketplace 机器人无智能体回复       |
+| 文件附件               | ⚠️ Marketplace 机器人无智能体回复       |
+| 话题                   | ❌ 不支持                               |
+| 投票                   | ❌ 不支持                               |
+| 原生命令               | ❌ 不支持                               |
+| 流式传输               | ⚠️ 已阻止（2000 字符限制）              |
 
 ## 投递目标（CLI/cron）
 
@@ -169,13 +197,17 @@ Zalo 是一款专注于越南市场的即时通讯应用；其 Bot API 让 Gatew
 
 完整配置：[配置](/gateway/configuration)
 
+顶层键（`channels.zalo.botToken`、`channels.zalo.dmPolicy` 等）是旧版单账户简写。新配置优先使用 `channels.zalo.accounts.<id>.*`。两种形式仍然被文档记录，因为它们都存在于 schema 中。
+
 提供商选项：
 
 - `channels.zalo.enabled`：启用/禁用渠道启动。
 - `channels.zalo.botToken`：来自 Zalo Bot 平台的 bot token。
-- `channels.zalo.tokenFile`：从文件路径读取 token。
+- `channels.zalo.tokenFile`：从普通文件路径读取 token。不支持符号链接。
 - `channels.zalo.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
 - `channels.zalo.allowFrom`：私信允许列表（用户 ID）。`open` 需要 `"*"`。向导会询问数字 ID。
+- `channels.zalo.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。存在于配置中；请参见[功能](#功能)和[访问控制（群组）](#访问控制群组)了解当前 Marketplace 机器人行为。
+- `channels.zalo.groupAllowFrom`：群组发送者允许列表（用户 ID）。未设置时回退到 `allowFrom`。
 - `channels.zalo.mediaMaxMb`：入站/出站媒体上限（MB，默认 5）。
 - `channels.zalo.webhookUrl`：启用 webhook 模式（需要 HTTPS）。
 - `channels.zalo.webhookSecret`：webhook secret（8-256 字符）。
@@ -185,11 +217,13 @@ Zalo 是一款专注于越南市场的即时通讯应用；其 Bot API 让 Gatew
 多账户选项：
 
 - `channels.zalo.accounts.<id>.botToken`：每账户 token。
-- `channels.zalo.accounts.<id>.tokenFile`：每账户 token 文件。
+- `channels.zalo.accounts.<id>.tokenFile`：每账户 token 普通文件路径。不支持符号链接。
 - `channels.zalo.accounts.<id>.name`：显示名称。
 - `channels.zalo.accounts.<id>.enabled`：启用/禁用账户。
 - `channels.zalo.accounts.<id>.dmPolicy`：每账户私信策略。
 - `channels.zalo.accounts.<id>.allowFrom`：每账户允许列表。
+- `channels.zalo.accounts.<id>.groupPolicy`：每账户群组策略。存在于配置中；请参见[功能](#功能)和[访问控制（群组）](#访问控制群组)了解当前 Marketplace 机器人行为。
+- `channels.zalo.accounts.<id>.groupAllowFrom`：每账户群组发送者允许列表。
 - `channels.zalo.accounts.<id>.webhookUrl`：每账户 webhook URL。
 - `channels.zalo.accounts.<id>.webhookSecret`：每账户 webhook secret。
 - `channels.zalo.accounts.<id>.webhookPath`：每账户 webhook 路径。

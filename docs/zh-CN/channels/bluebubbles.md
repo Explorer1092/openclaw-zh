@@ -6,10 +6,10 @@ read_when:
 summary: 通过 BlueBubbles macOS 服务器使用 iMessage（REST 发送/接收、输入状态、回应、配对、高级操作）。
 title: BlueBubbles
 x-i18n:
-  generated_at: "2026-03-16T06:21:08Z"
-  model: gpt-5.4
-  provider: openai
-  source_hash: 877592bf7b9b06abdddd7567d56e756eff229d6ffa5056ef33fa3356086aa580
+  generated_at: "2026-03-30T00:00:00Z"
+  model: claude-sonnet-4-6
+  provider: pi
+  source_hash: f33d0de425f59a5f16d90b739d04d2bf76d3b94e40b8eea4e2c16cf86fbdbef6
   source_path: channels/bluebubbles.md
   workflow: 15
 ---
@@ -169,6 +169,25 @@ openclaw channels add bluebubbles --http-url http://192.168.1.100:1234 --passwor
 - `channels.bluebubbles.groupPolicy = open | allowlist | disabled`（默认：`allowlist`）。
 - 当设置为 `allowlist` 时，`channels.bluebubbles.groupAllowFrom` 控制谁可以在群组中触发。
 
+### 联系人姓名丰富（macOS，可选）
+
+BlueBubbles 群组 webhook 通常只包含原始参与者地址。如果你希望 `GroupMembers` 上下文显示本地联系人姓名而非地址，可以在 macOS 上选择启用本地 Contacts 丰富功能：
+
+- `channels.bluebubbles.enrichGroupParticipantsFromContacts = true` 启用查找。默认：`false`。
+- 查找仅在群组访问、命令授权和提及门控允许消息通过后才会运行。
+- 仅对未命名的电话号码参与者进行丰富。
+- 当找不到本地匹配时，原始电话号码作为回退。
+
+```json5
+{
+  channels: {
+    bluebubbles: {
+      enrichGroupParticipantsFromContacts: true,
+    },
+  },
+}
+```
+
 ### 提及门控（群组）
 
 BlueBubbles 支持群聊中的提及门控，与 iMessage/WhatsApp 的行为一致：
@@ -199,6 +218,60 @@ BlueBubbles 支持群聊中的提及门控，与 iMessage/WhatsApp 的行为一�
 - 控制命令（例如 `/config`、`/model`）需要授权。
 - 使用 `allowFrom` 和 `groupAllowFrom` 来判断命令授权。
 - 授权发送者即使在群组中未提及，也可以运行控制命令。
+
+## ACP 会话绑定
+
+BlueBubbles 聊天可以转换为持久的 ACP 工作区，而无需更改传输层。
+
+快速操作流程：
+
+- 在私信或已授权的群聊中运行 `/acp spawn codex --bind here`。
+- 该 BlueBubbles 对话中的后续消息将路由到已生成的 ACP 会话。
+- `/new` 和 `/reset` 会就地重置同一个绑定的 ACP 会话。
+- `/acp close` 关闭 ACP 会话并移除绑定。
+
+也支持通过顶层 `bindings[]` 条目配置持久绑定，其中 `type: "acp"` 且 `match.channel: "bluebubbles"`。
+
+`match.peer.id` 可使用任何受支持的 BlueBubbles 目标格式：
+
+- 标准化的私信 handle，例如 `+15555550123` 或 `user@example.com`
+- `chat_id:<id>`
+- `chat_guid:<guid>`
+- `chat_identifier:<identifier>`
+
+对于稳定的群组绑定，优先使用 `chat_id:*` 或 `chat_identifier:*`。
+
+示例：
+
+```json5
+{
+  agents: {
+    list: [
+      {
+        id: "codex",
+        runtime: {
+          type: "acp",
+          acp: { agent: "codex", backend: "acpx", mode: "persistent" },
+        },
+      },
+    ],
+  },
+  bindings: [
+    {
+      type: "acp",
+      agentId: "codex",
+      match: {
+        channel: "bluebubbles",
+        accountId: "default",
+        peer: { kind: "dm", id: "+15555550123" },
+      },
+      acp: { label: "codex-imessage" },
+    },
+  ],
+}
+```
+
+共享 ACP 绑定行为请参见 [ACP 智能体](/tools/acp-agents)。
 
 ## 输入状态 + 已读回执
 
@@ -254,8 +327,9 @@ BlueBubbles 支持群聊中的提及门控，与 iMessage/WhatsApp 的行为一�
 - **addParticipant**：向群组添加某人（`chatGuid`、`address`）
 - **removeParticipant**：从群组移除某人（`chatGuid`、`address`）
 - **leaveGroup**：退出群聊（`chatGuid`）
-- **sendAttachment**：发送媒体/文件（`to`、`buffer`、`filename`、`asVoice`）
+- **upload-file**：发送媒体/文件（`to`、`buffer`、`filename`、`asVoice`）
   - 语音备忘录：将 `asVoice: true` 与 **MP3** 或 **CAF** 音频一起设置，即可作为 iMessage 语音消息发送。BlueBubbles 在发送语音备忘录时会将 MP3 转换为 CAF。
+- 旧版别名：`sendAttachment` 仍然有效，但 `upload-file` 是规范的操作名称。
 
 ### 消息 ID（短 ID 与完整 ID）
 
@@ -307,6 +381,7 @@ OpenClaw 可能会显示*短*消息 ID（例如 `1`、`2`）以节省 token。
 - `channels.bluebubbles.allowFrom`：私信 allowlist（handle、电子邮件、E.164 号码、`chat_id:*`、`chat_guid:*`）。
 - `channels.bluebubbles.groupPolicy`：`open | allowlist | disabled`（默认：`allowlist`）。
 - `channels.bluebubbles.groupAllowFrom`：群组发送者 allowlist。
+- `channels.bluebubbles.enrichGroupParticipantsFromContacts`：在 macOS 上，可选在门控通过后从本地 Contacts 丰富未命名群组参与者。默认：`false`。
 - `channels.bluebubbles.groups`：每群组配置（`requireMention` 等）。
 - `channels.bluebubbles.sendReadReceipts`：发送已读回执（默认：`true`）。
 - `channels.bluebubbles.blockStreaming`：启用分块流式传输（默认：`false`；流式回复所必需）。
