@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fa07246028fe928ae1f4f5d6de7befa5"
+mmh3_hash: "fc0390cf7fcf1e8037fd5360c908a37a"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
 read_when:
   - 您想从自己的 GPU 机器提供模型
@@ -14,18 +14,18 @@ title: "本地模型"
 
 如果您想要最简单的本地设置,从 [Ollama](/providers/ollama) 和 `openclaw onboard` 开始。本页是针对高端本地堆栈和自定义 OpenAI 兼容本地服务器的意见指南。
 
-## 推荐:LM Studio + MiniMax M2.5(Responses API,完整尺寸)
+## 推荐:LM Studio + 大型本地模型(Responses API)
 
-当前最佳本地堆栈。在 LM Studio 中加载 MiniMax M2.5,启用本地服务器(默认 `http://127.0.0.1:1234`),并使用 Responses API 将推理与最终文本分开。
+当前最佳本地堆栈。在 LM Studio 中加载大型模型(例如完整尺寸的 Qwen、DeepSeek 或 Llama 构建),启用本地服务器(默认 `http://127.0.0.1:1234`),并使用 Responses API 将推理与最终文本分开。
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "lmstudio/minimax-m2.5-gs32" },
+      model: { primary: "lmstudio/my-local-model" },
       models: {
         "anthropic/claude-opus-4-6": { alias: "Opus" },
-        "lmstudio/minimax-m2.5-gs32": { alias: "Minimax" },
+        "lmstudio/my-local-model": { alias: "Local" },
       },
     },
   },
@@ -38,8 +38,8 @@ title: "本地模型"
         api: "openai-responses",
         models: [
           {
-            id: "minimax-m2.5-gs32",
-            name: "MiniMax M2.5 GS32",
+            id: "my-local-model",
+            name: "Local Model",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -56,7 +56,8 @@ title: "本地模型"
 **设置清单**
 
 - 安装 LM Studio:[https://lmstudio.ai](https://lmstudio.ai)
-- 在 LM Studio 中,下载**最大可用的 MiniMax M2.5 构建**(避免"small"/重度量化变体),启动服务器,确认 `http://127.0.0.1:1234/v1/models` 列出它。
+- 在 LM Studio 中,下载**最大可用的模型构建**(避免"small"/重度量化变体),启动服务器,确认 `http://127.0.0.1:1234/v1/models` 列出它。
+- 将 `my-local-model` 替换为 LM Studio 中显示的实际模型 ID。
 - 保持模型加载;冷加载会增加启动延迟。
 - 如果您的 LM Studio 构建不同,请调整 `contextWindow`/`maxTokens`。
 - 对于 WhatsApp,坚持使用 Responses API,以便只发送最终文本。
@@ -70,12 +71,12 @@ title: "本地模型"
   agents: {
     defaults: {
       model: {
-        primary: "anthropic/claude-sonnet-4-5",
-        fallbacks: ["lmstudio/minimax-m2.5-gs32", "anthropic/claude-opus-4-6"],
+        primary: "anthropic/claude-sonnet-4-6",
+        fallbacks: ["lmstudio/my-local-model", "anthropic/claude-opus-4-6"],
       },
       models: {
-        "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
-        "lmstudio/minimax-m2.5-gs32": { alias: "MiniMax Local" },
+        "anthropic/claude-sonnet-4-6": { alias: "Sonnet" },
+        "lmstudio/my-local-model": { alias: "Local" },
         "anthropic/claude-opus-4-6": { alias: "Opus" },
       },
     },
@@ -89,8 +90,8 @@ title: "本地模型"
         api: "openai-responses",
         models: [
           {
-            id: "minimax-m2.5-gs32",
-            name: "MiniMax M2.5 GS32",
+            id: "my-local-model",
+            name: "Local Model",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -144,6 +145,12 @@ vLLM、LiteLLM、OAI-proxy 或自定义网关在它们公开 OpenAI 风格的 `/
 ```
 
 保持 `models.mode: "merge"` 以使托管模型作为备用保持可用。
+
+本地/代理 `/v1` 后端的行为说明:
+
+- OpenClaw 将这些视为代理风格的 OpenAI 兼容路由,而不是原生 OpenAI 端点
+- 原生 OpenAI 专用请求形状不适用于此:无 `service_tier`,无 Responses `store`,无 OpenAI 推理兼容负载形状,以及无提示缓存提示
+- 隐藏的 OpenClaw 归因头(`originator`、`version`、`User-Agent`)不注入到这些自定义代理 URL 上
 
 ## 故障排除
 

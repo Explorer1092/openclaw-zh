@@ -1,6 +1,6 @@
 ---
 title: "安全 🔒"
-mmh3_hash: "455e46ef6d8ac31047ec2544f6dda045"
+mmh3_hash: "5d47bd11ffa5dde415557bb43a1b14cf"
 summary: "运行具有 shell 访问权限的 AI 网关的安全注意事项和威胁模型"
 read_when:
   - 添加扩大访问权限或自动化的功能
@@ -114,7 +114,7 @@ OpenClaw 被设计为个人助手安全模型:一个受信任的操作员边界,
 
 | 边界或控制                                      | 含义                                              | 常见误读                                                                        |
 | ----------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `gateway.auth`(token/password/device auth)      | 对 Gateway API 的调用者进行认证                   | "需要每帧消息签名才能安全"                                                       |
+| `gateway.auth`（token/password/trusted-proxy/device auth）| 对 Gateway API 的调用者进行认证                   | "需要每帧消息签名才能安全"                                                       |
 | `sessionKey`                                    | 用于上下文/Session 选择的路由键                   | "Session 键是用户认证边界"                                                       |
 | 提示/内容护栏                                   | 减少模型滥用风险                                  | "仅提示注入就证明了认证绕过"                                                     |
 | `canvas.eval` / browser evaluate               | 启用时的有意操作员功能                            | "任何 JS eval 原语在此信任模型中自动是漏洞"                                     |
@@ -130,6 +130,7 @@ OpenClaw 被设计为个人助手安全模型:一个受信任的操作员边界,
 - 将正常操作员读路径访问(例如 `sessions.list`/`sessions.preview`/`chat.history`)在共享 Gateway 设置中分类为 IDOR 的声明。
 - 仅 localhost 部署发现(例如仅环回 Gateway 上的 HSTS)。
 - 此存储库中不存在的入站路径的 Discord 入站 webhook 签名发现。
+- 将节点配对元数据视为 `system.run` 隐藏的第二命令级别批准层的报告，而真实的执行边界仍然是 Gateway 的全局节点命令策略加上节点自己的 exec 批准。
 - 将 `sessionKey` 视为认证令牌的"缺少每用户授权"发现。
 
 ## 研究人员预检清单
@@ -138,6 +139,10 @@ OpenClaw 被设计为个人助手安全模型:一个受信任的操作员边界,
 
 1. 在最新的 `main` 或最新版本上仍可重现。
 2. 报告包含确切的代码路径(`file`、function、行范围)和测试的版本/commit。
+3. 影响跨越记录的信任边界（不仅仅是提示注入）。
+4. 声明未列在[范围外](https://github.com/openclaw/openclaw/blob/main/SECURITY.md#out-of-scope)。
+5. 现有建议已检查是否重复（适用时重用规范 GHSA）。
+6. 部署假设是明确的（回环/本地 vs 暴露，受信任 vs 不受信任的操作员）。
 
 ## 60 秒内的强化基线
 

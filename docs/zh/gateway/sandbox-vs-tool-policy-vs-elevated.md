@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6cd596b058826c7cb7df6a949554ae85"
+mmh3_hash: "83f292393cc6c82b1396bd143692a3a6"
 title: "沙盒 vs 工具策略 vs 提升模式"
 sidebarTitle: "沙盒与工具策略"
 summary: "工具被阻止的原因:sandbox runtime、工具允许/拒绝策略和提升 exec 门控"
@@ -13,7 +13,7 @@ OpenClaw 有三个相关(但不同)的控件:
 
 1. **Sandbox**(`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`)决定**工具在哪里运行**(Docker 与主机)。
 2. **工具策略**(`tools.*`、`tools.sandbox.tools.*`、`agents.list[].tools.*`)决定**哪些工具可用/允许**。
-3. **Elevated**(`tools.elevated.*`、`agents.list[].tools.elevated.*`)是一个**仅 exec 的逃生通道**,在沙盒化时在主机上运行。
+3. **Elevated**(`tools.elevated.*`、`agents.list[].tools.elevated.*`)是一个**仅 exec 的逃生通道**,在沙盒化时在沙盒外运行(`gateway` 默认,或当 exec 目标配置为 `node` 时为 `node`)。
 
 ## 快速调试
 
@@ -48,6 +48,8 @@ openclaw sandbox explain --json
 - `docker.binds` _穿透_ sandbox 文件系统:你挂载的任何内容都以你设置的模式(`:ro` 或 `:rw`)在容器内可见。
 - 如果省略模式,默认为读写;对于源代码/secrets,优先使用 `:ro`。
 - `scope: "shared"` 忽略每个 agent 的绑定(仅应用全局绑定)。
+- OpenClaw 对绑定源进行两次验证：首先在规范化的源路径上，然后在通过最深现有祖先解析后再次验证。符号链接父级转义不会绕过阻止路径或允许根检查。
+- 不存在的叶路径也会被安全检查。如果 `/workspace/alias-out/new-file` 通过符号链接父级解析到阻止路径或配置允许根之外，则绑定被拒绝。
 - 绑定 `/var/run/docker.sock` 实际上将主机控制权交给 sandbox;只有在有意时才这样做。
 - Workspace access(`workspaceAccess: "ro"`/`"rw"`)独立于绑定模式。
 
@@ -67,7 +69,7 @@ openclaw sandbox explain --json
 - 如果 `allow` 非空,其他所有内容都被视为阻止。
 - 工具策略是硬停止:`/exec` 无法覆盖被拒绝的 `exec` 工具。
 - `/exec` 仅更改授权发送者的 session 默认值;它不授予工具访问权限。
-  Provider 工具键接受 `provider`(例如 `google-antigravity`)或 `provider/model`(例如 `openai/gpt-5.2`)。
+  Provider 工具键接受 `provider`(例如 `google-antigravity`)或 `provider/model`(例如 `openai/gpt-5.4`)。
 
 ### 工具组(简写)
 
@@ -87,14 +89,17 @@ openclaw sandbox explain --json
 
 可用组:
 
-- `group:runtime`: `exec`、`bash`、`process`
+- `group:runtime`: `exec`、`process`、`code_execution`（`bash` 作为 `exec` 的别名被接受）
 - `group:fs`: `read`、`write`、`edit`、`apply_patch`
-- `group:sessions`: `sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`session_status`
+- `group:sessions`: `sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`sessions_yield`、`subagents`、`session_status`
 - `group:memory`: `memory_search`、`memory_get`
+- `group:web`: `web_search`、`x_search`、`web_fetch`
 - `group:ui`: `browser`、`canvas`
 - `group:automation`: `cron`、`gateway`
 - `group:messaging`: `message`
 - `group:nodes`: `nodes`
+- `group:agents`: `agents_list`
+- `group:media`: `image`、`image_generate`、`video_generate`、`tts`
 - `group:openclaw`: 所有内置 OpenClaw 工具(不包括 provider plugin)
 
 ## Elevated: 仅 exec 的"在主机上运行"
@@ -105,6 +110,7 @@ Elevated **不**授予额外工具;它只影响 `exec`。
 - 使用 `/elevated full` 跳过 session 的 exec 审批。
 - 如果你已经直接运行,elevated 实际上是无操作的(仍然受门控)。
 - Elevated **不**受 skill 范围限制,也**不**覆盖工具允许/拒绝。
+- Elevated 不从 `host=auto` 授予任意跨主机覆盖；它遵循正常的 exec 目标规则，只有当配置/session 目标已经是 `node` 时才保留 `node`。
 - `/exec` 与 elevated 是分开的。它只调整授权发送者的每 session exec 默认值。
 
 门控:

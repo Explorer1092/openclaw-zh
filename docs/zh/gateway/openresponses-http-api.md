@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e889860ac22b566b907c0743012649b0"
+mmh3_hash: "a9c8de5cf0f98190d992f1e37131b3a7"
 summary: "从 Gateway 公开兼容 OpenResponses 的 /v1/responses HTTP 端点"
 read_when:
   - 集成使用 OpenResponses API 的客户端
@@ -22,12 +22,42 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 
 操作行为与 [OpenAI Chat Completions](/gateway/openai-http-api) 相同:
 
-- 使用带有普通 Gateway 认证配置的 `Authorization: Bearer <token>`
+- 使用匹配的 Gateway HTTP 认证路径：
+  - 共享密钥认证（`gateway.auth.mode="token"` 或 `"password"`）：`Authorization: Bearer <token-or-password>`
+  - 受信任代理认证（`gateway.auth.mode="trusted-proxy"`）：来自已配置的非回环受信任代理源的身份感知代理头
+  - 私有入口开放认证（`gateway.auth.mode="none"`）：无认证头
 - 将端点视为 Gateway 实例的完整操作员访问
-- 使用 `model: "openclaw:<agentId>"`、`model: "agent:<agentId>"` 或 `x-openclaw-agent-id` 选择 Agent
+- 对于共享密钥认证模式（`token` 和 `password`），忽略更窄的 bearer 声明的 `x-openclaw-scopes` 值并恢复正常的完整操作员默认值
+- 对于受信任的身份承载 HTTP 模式（例如受信任代理认证或 `gateway.auth.mode="none"`），在存在时遵守 `x-openclaw-scopes`，否则回退到正常的操作员默认范围集
+- 使用 `model: "openclaw"`、`model: "openclaw/default"`、`model: "openclaw/<agentId>"` 或 `x-openclaw-agent-id` 选择 Agent
+- 当您想覆盖所选 Agent 的后端模型时使用 `x-openclaw-model`
 - 使用 `x-openclaw-session-key` 进行明确的 Session 路由
+- 当您想要非默认合成入口 Channel 上下文时使用 `x-openclaw-message-channel`
+
+认证矩阵：
+
+- `gateway.auth.mode="token"` 或 `"password"` + `Authorization: Bearer ...`
+  - 证明持有共享 Gateway 操作员密钥
+  - 忽略更窄的 `x-openclaw-scopes`
+  - 恢复完整的默认操作员范围集：
+    `operator.admin`、`operator.approvals`、`operator.pairing`、
+    `operator.read`、`operator.talk.secrets`、`operator.write`
+  - 将此端点上的聊天轮次视为所有者发送者轮次
+- 受信任的身份承载 HTTP 模式（例如受信任代理认证，或私有入口上的 `gateway.auth.mode="none"`）
+  - 在头存在时遵守 `x-openclaw-scopes`
+  - 在头缺失时回退到正常的操作员默认范围集
+  - 仅当调用者明确缩小范围并省略 `operator.admin` 时才失去所有者语义
 
 使用 `gateway.http.endpoints.responses.enabled` 启用或禁用此端点。
+
+相同的兼容性接口还包括：
+
+- `GET /v1/models`
+- `GET /v1/models/{id}`
+- `POST /v1/embeddings`
+- `POST /v1/chat/completions`
+
+关于 Agent 目标模型、`openclaw/default`、嵌入传递和后端模型覆盖如何配合的规范说明，参见 [OpenAI Chat Completions](/gateway/openai-http-api#agent-first-model-contract) 和 [模型列表和 Agent 路由](/gateway/openai-http-api#model-list-and-agent-routing)。
 
 ## Session 行为
 
@@ -53,8 +83,11 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 - `reasoning`
 - `metadata`
 - `store`
-- `previous_response_id`
 - `truncation`
+
+支持：
+
+- `previous_response_id`：OpenClaw 在请求保持在同一 Agent/user/请求-Session 范围内时重用较早的响应 Session。
 
 ## Items(输入)
 
@@ -125,7 +158,10 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 当前行为:
 
 - 文件内容被解码并添加到**系统提示**,而不是用户消息,因此它保持短暂(不在 Session 历史中持久化)。
-- PDF 被解析以获取文本。如果找到的文本很少,前几页被光栅化为图像并传递给模型。
+- 解码的文件文本在添加之前被包装为**不受信任的外部内容**,因此文件字节被视为数据,而不是受信任的指令。
+- 注入的块使用明确的边界标记，如 `<<<EXTERNAL_UNTRUSTED_CONTENT id="...">>>` / `<<<END_EXTERNAL_UNTRUSTED_CONTENT id="...">>>` 并包含 `Source: External` 元数据行。
+- 此文件输入路径有意省略长 `SECURITY NOTICE:` 横幅以保留提示预算；边界标记和元数据仍然保留。
+- PDF 被解析以获取文本。如果找到的文本很少，前几页被光栅化为图像并传递给模型，注入的文件块使用占位符 `[PDF content rendered to images]`。
 
 PDF 解析使用 Node 友好的 `pdfjs-dist` 传统构建(无 worker)。现代 PDF.js 构建需要浏览器 worker/DOM 全局变量,因此不在 Gateway 中使用。
 
@@ -138,6 +174,8 @@ URL 获取默认值:
 - 每个输入类型支持可选的主机名允许列表(`files.urlAllowlist`、`images.urlAllowlist`)。
   - 精确主机:`"cdn.example.com"`
   - 通配符子域:`"*.assets.example.com"`(不匹配顶级域)
+  - 空或省略的允许列表意味着无主机名允许列表限制。
+- 要完全禁用基于 URL 的获取,设置 `files.allowUrl: false` 和/或 `images.allowUrl: false`。
 
 ## 文件 + 图像限制(配置)
 
@@ -241,7 +279,7 @@ URL 获取默认值:
 
 ## 使用量
 
-当底层提供商报告 token 计数时,`usage` 被填充。
+当底层提供商报告 token 计数时,`usage` 被填充。OpenClaw 在这些计数器到达下游状态/Session 接口之前规范化常见的 OpenAI 风格别名,包括 `input_tokens` / `output_tokens` 和 `prompt_tokens` / `completion_tokens`。
 
 ## 错误
 

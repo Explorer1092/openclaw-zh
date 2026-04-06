@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cddf44b54ec60fbcfa251aa7b316452b"
+mmh3_hash: "838e8f04056edcaf2da8b52821e66766"
 title: "配置参考"
 description: "~/.openclaw/openclaw.json 的完整字段级参考文档"
 summary: "每个 OpenClaw 配置键、默认值及 Channel 设置的完整参考"
@@ -969,11 +969,11 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
     defaults: {
       models: {
         "anthropic/claude-opus-4-6": { alias: "opus" },
-        "minimax/MiniMax-M2.5": { alias: "minimax" },
+        "minimax/MiniMax-M2.7": { alias: "minimax" },
       },
       model: {
         primary: "anthropic/claude-opus-4-6",
-        fallbacks: ["minimax/MiniMax-M2.5"],
+        fallbacks: ["minimax/MiniMax-M2.7"],
       },
       imageModel: {
         primary: "openrouter/qwen/qwen-2.5-vl-72b-instruct:free",
@@ -1964,6 +1964,9 @@ Talk 模式的默认值（macOS/iOS/Android）。
   tools: {
     media: {
       concurrency: 2,
+      asyncCompletion: {
+        directSend: false, // 选项：将完成的异步音乐/视频直接发送到 Channel
+      },
       audio: {
         enabled: true,
         maxBytes: 20971520,
@@ -2006,6 +2009,10 @@ Talk 模式的默认值（macOS/iOS/Android）。
 - 失败时回退到下一个条目。
 
 Provider 认证遵循标准顺序：认证配置文件 → 环境变量 → `models.providers.*.apiKey`。
+
+**异步完成字段：**
+
+- `asyncCompletion.directSend`：为 `true` 时，已完成的异步 `music_generate` 和 `video_generate` 任务优先尝试直接向 Channel 投递。默认值：`false`（旧版请求方 Session 唤醒/模型投递路径）。
 
 </Accordion>
 
@@ -2083,8 +2090,9 @@ Provider 认证遵循标准顺序：认证配置文件 → 环境变量 → `mod
   agents: {
     defaults: {
       subagents: {
-        model: "minimax/MiniMax-M2.1",
-        maxConcurrent: 1,
+        allowAgents: ["research"],
+        model: "minimax/MiniMax-M2.7",
+        maxConcurrent: 8,
         runTimeoutSeconds: 900,
         archiveAfterMinutes: 60,
       },
@@ -2094,6 +2102,7 @@ Provider 认证遵循标准顺序：认证配置文件 → 环境变量 → `mod
 ```
 
 - `model`：派生子 Agent 的默认模型。如省略，子 Agent 继承调用者的模型。
+- `allowAgents`：当请求方 Agent 未设置自己的 `subagents.allowAgents` 时，`sessions_spawn` 的默认目标 Agent ID 允许列表（`["*"]` = 任意；默认：仅同一 Agent）。
 - `runTimeoutSeconds`：工具调用省略 `runTimeoutSeconds` 时 `sessions_spawn` 的默认超时（秒）。`0` 表示无超时。
 - 每子 Agent 工具策略：`tools.subagents.tools.allow` / `tools.subagents.tools.deny`。
 
@@ -2281,8 +2290,8 @@ Cerebras 使用 `cerebras/zai-glm-4.7`；Z.AI 直连使用 `zai/glm-4.7`。
   env: { KIMI_API_KEY: "sk-..." },
   agents: {
     defaults: {
-      model: { primary: "kimi-coding/k2p5" },
-      models: { "kimi-coding/k2p5": { alias: "Kimi K2.5" } },
+      model: { primary: "kimi/kimi-code" },
+      models: { "kimi/kimi-code": { alias: "Kimi Code" } },
     },
   },
 }
@@ -2331,15 +2340,15 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 
 </Accordion>
 
-<Accordion title="MiniMax M2.5（直连）">
+<Accordion title="MiniMax M2.7（直连）">
 
 ```json5
 {
   agents: {
     defaults: {
-      model: { primary: "minimax/MiniMax-M2.5" },
+      model: { primary: "minimax/MiniMax-M2.7" },
       models: {
-        "minimax/MiniMax-M2.5": { alias: "Minimax" },
+        "minimax/MiniMax-M2.7": { alias: "Minimax" },
       },
     },
   },
@@ -2352,12 +2361,12 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
         api: "anthropic-messages",
         models: [
           {
-            id: "MiniMax-M2.5",
-            name: "MiniMax M2.5",
-            reasoning: false,
-            input: ["text"],
-            cost: { input: 15, output: 60, cacheRead: 2, cacheWrite: 10 },
-            contextWindow: 200000,
+            id: "MiniMax-M2.7",
+            name: "MiniMax M2.7",
+            reasoning: true,
+            input: ["text", "image"],
+            cost: { input: 0.3, output: 1.2, cacheRead: 0.06, cacheWrite: 0.375 },
+            contextWindow: 204800,
             maxTokens: 8192,
           },
         ],
@@ -2367,13 +2376,13 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 }
 ```
 
-设置 `MINIMAX_API_KEY`。快捷方式：`openclaw onboard --auth-choice minimax-api`。
+设置 `MINIMAX_API_KEY`。快捷方式：`openclaw onboard --auth-choice minimax-global-api` 或 `openclaw onboard --auth-choice minimax-cn-api`。模型目录现在默认仅支持 M2.7。在 Anthropic 兼容流式传输路径上，OpenClaw 默认禁用 MiniMax 思考，除非你显式设置 `thinking`。`/fast on` 或 `params.fastMode: true` 将 `MiniMax-M2.7` 重写为 `MiniMax-M2.7-highspeed`。
 
 </Accordion>
 
 <Accordion title="本地模型（LM Studio）">
 
-参见 [本地模型](/gateway/local-models)。摘要：在高性能硬件上通过 LM Studio Responses API 运行 MiniMax M2.5；保留托管模型合并以作回退。
+参见 [本地模型](/gateway/local-models)。摘要：在高性能硬件上通过 LM Studio Responses API 运行 MiniMax M2.7；保留托管模型合并以作回退。
 
 </Accordion>
 
@@ -2468,6 +2477,13 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
     profiles: {
       openclaw: { cdpPort: 18800, color: "#FF4500" },
       work: { cdpPort: 18801, color: "#0066CC" },
+      user: { driver: "existing-session", attachOnly: true, color: "#00AA00" },
+      brave: {
+        driver: "existing-session",
+        attachOnly: true,
+        userDataDir: "~/Library/Application Support/BraveSoftware/Brave-Browser",
+        color: "#FB542B",
+      },
       remote: { cdpUrl: "http://10.0.0.42:9222", color: "#00AA00" },
     },
     color: "#FF4500",
@@ -2485,6 +2501,10 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 - 设置 `ssrfPolicy.dangerouslyAllowPrivateNetwork: false` 可实现严格的仅公网浏览器导航。
 - `ssrfPolicy.allowPrivateNetwork` 作为旧版别名继续受支持。
 - 严格模式下，使用 `ssrfPolicy.hostnameAllowlist` 和 `ssrfPolicy.allowedHostnames` 设置显式例外。
+- `profiles.*.cdpUrl` 接受 `http://`、`https://`、`ws://` 和 `wss://`。当你希望 OpenClaw 发现 `/json/version` 时使用 HTTP(S)；当 Provider 给你直接 DevTools WebSocket URL 时使用 WS(S)。
+- `existing-session` 配置文件为仅主机模式，使用 Chrome MCP 而非 CDP。
+- `existing-session` 配置文件可通过设置 `userDataDir` 指向特定的 Chromium 系浏览器配置文件（如 Brave 或 Edge）。
+- `existing-session` 配置文件保留当前 Chrome MCP 路由限制：基于快照/ref 的操作而非 CSS 选择器定向、单文件上传钩子、无对话框超时覆盖、无 `wait --load networkidle`，以及无 `responsebody`、PDF 导出、下载拦截或批量操作。
 - 远程配置文件为仅附加模式（禁用启动/停止/重置）。
 - 自动检测顺序：Chromium 系默认浏览器 → Chrome → Brave → Edge → Chromium → Chrome Canary。
 - 控制服务：仅本地回环（端口由 `gateway.port` 派生，默认 `18791`）。
@@ -2552,6 +2572,14 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
       token: "your-token",
       // password: "your-password",
     },
+    push: {
+      apns: {
+        relay: {
+          baseUrl: "https://relay.example.com",
+          timeoutMs: 10000,
+        },
+      },
+    },
     trustedProxies: ["10.0.0.1"],
     // 可选。默认 false。
     allowRealIpFallback: false,
@@ -2586,8 +2614,19 @@ Base URL 应省略 `/v1`（Anthropic 客户端会自动附加）。快捷方式�
 - `remote.transport`：`ssh`（默认）或 `direct`（ws/wss）。`direct` 时，`remote.url` 必须为 `ws://` 或 `wss://`。
 - `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`：客户端紧急覆盖，允许对受信任的私有网络 IP 使用明文 `ws://`；默认仍仅本地回环允许明文。
 - `gateway.remote.token` / `.password` 是远程客户端凭据字段。它们本身不配置 Gateway 认证。
+- `gateway.push.apns.relay.baseUrl`：官方/TestFlight iOS 构建在向 Gateway 发布 relay 支持的注册后所使用的外部 APNs relay 的 HTTPS 基础 URL。此 URL 必须与编译进 iOS 构建的 relay URL 匹配。
+- `gateway.push.apns.relay.timeoutMs`：Gateway 到 relay 的发送超时（毫秒）。默认为 `10000`。
+- Relay 支持的注册委托给特定的 Gateway 身份。配对的 iOS 应用获取 `gateway.identity.get`，在 relay 注册中包含该身份，并将注册范围的发送授权转发给 Gateway。其他 Gateway 无法重复使用该存储的注册。
+- `OPENCLAW_APNS_RELAY_BASE_URL` / `OPENCLAW_APNS_RELAY_TIMEOUT_MS`：上述 relay 配置的临时环境变量覆盖。
+- `OPENCLAW_APNS_RELAY_ALLOW_HTTP=true`：仅供开发使用的本地回环 HTTP relay URL 逃生舱。生产 relay URL 应保持 HTTPS。
+- `gateway.channelHealthCheckMinutes`：Channel 健康监视器检查间隔（分钟）。设为 `0` 全局禁用健康监视器重启。默认值：`5`。
+- `gateway.channelStaleEventThresholdMinutes`：陈旧 socket 阈值（分钟）。保持大于或等于 `gateway.channelHealthCheckMinutes`。默认值：`30`。
+- `gateway.channelMaxRestartsPerHour`：每个 Channel/账户在滚动一小时内的最大健康监视器重启次数。默认值：`10`。
+- `channels.<provider>.healthMonitor.enabled`：每 Channel 退出健康监视器重启，同时保持全局监视器启用。
+- `channels.<provider>.accounts.<accountId>.healthMonitor.enabled`：多账户 Channel 的每账户覆盖。设置时优先于 Channel 级别覆盖。
 - 当 `gateway.auth.*` 未设置时，本地 Gateway 调用路径可使用 `gateway.remote.*` 作为回退。
-- `trustedProxies`：终止 TLS 的反向代理 IP。只列出你控制的代理。
+- 如果 `gateway.auth.token` / `gateway.auth.password` 通过 SecretRef 显式配置但未解析，解析失败关闭（无远程回退掩盖）。
+- `trustedProxies`：终止 TLS 或注入转发客户端标头的反向代理 IP。只列出你控制的代理。本地回环条目在同主机代理/本地检测设置（例如 Tailscale Serve 或本地反向代理）中仍然有效，但它们**不会**使本地回环请求符合 `gateway.auth.mode: "trusted-proxy"` 的条件。
 - `allowRealIpFallback`：为 `true` 时，当 `X-Forwarded-For` 缺失时 Gateway 接受 `X-Real-IP`。默认 `false`（安全关闭行为）。
 - `gateway.tools.deny`：HTTP `POST /tools/invoke` 的额外阻止工具名称（扩展默认拒绝列表）。
 - `gateway.tools.allow`：从默认 HTTP 拒绝列表中移除工具名称。
@@ -2883,18 +2922,21 @@ openclaw gateway --port 19001
 {
   auth: {
     profiles: {
-      "anthropic:me@example.com": { provider: "anthropic", mode: "oauth", email: "me@example.com" },
+      "anthropic:default": { provider: "anthropic", mode: "api_key" },
       "anthropic:work": { provider: "anthropic", mode: "api_key" },
+      "openai-codex:personal": { provider: "openai-codex", mode: "oauth" },
     },
     order: {
-      anthropic: ["anthropic:me@example.com", "anthropic:work"],
+      anthropic: ["anthropic:default", "anthropic:work"],
+      "openai-codex": ["openai-codex:personal"],
     },
   },
 }
 ```
 
 - 每 Agent 认证配置文件存储在 `<agentDir>/auth-profiles.json`。
-- 认证配置文件支持值级引用（api_key 用 `keyRef`，token 用 `tokenRef`）。
+- `auth-profiles.json` 支持值级引用（api_key 用 `keyRef`，token 用 `tokenRef`）用于静态凭据模式。
+- OAuth 模式配置文件（`auth.profiles.<id>.mode = "oauth"`）不支持 SecretRef 支持的认证配置文件凭据。
 - 静态运行时凭据来自内存中的已解析快照；发现旧版静态 `auth.json` 条目时会清除。
 - 旧版 OAuth 从 `~/.openclaw/credentials/oauth.json` 导入。
 - 参见 [OAuth](/concepts/oauth)。
@@ -2920,6 +2962,49 @@ openclaw gateway --port 19001
 - 默认日志文件：`/tmp/openclaw/openclaw-YYYY-MM-DD.log`。
 - 设置 `logging.file` 以使用固定路径。
 - `--verbose` 时 `consoleLevel` 提升为 `debug`。
+- `maxFileBytes`：写入被抑制前的最大日志文件大小（字节；正整数；默认：`524288000` = 500 MB）。生产部署请使用外部日志轮换。
+
+---
+
+## 诊断
+
+```json5
+{
+  diagnostics: {
+    enabled: true,
+    sampleRate: 1.0,
+    redactPayloads: true,
+    cacheTrace: {
+      enabled: false,
+      filePath: "~/.openclaw/logs/cache-trace.jsonl",
+      includeMessages: true,
+      includePrompt: true,
+      includeSystem: true,
+    },
+  },
+}
+```
+
+- `diagnostics.enabled`：启用诊断数据收集。
+- `diagnostics.sampleRate`：采样率（0.0–1.0）。
+- `diagnostics.redactPayloads`：在诊断输出中编辑敏感载荷。
+- `diagnostics.cacheTrace`：将 KV 缓存使用情况追踪记录到 JSONL 文件（仅供 Anthropic + 内部 OpenClaw Provider 使用）。启用后会记录 cache_read_input_tokens 和 cache_creation_input_tokens，并注解 Anthropic 提示标记。
+- `cacheTrace.filePath`：缓存追踪 JSONL 的输出路径（默认：`$OPENCLAW_STATE_DIR/logs/cache-trace.jsonl`）。
+- `cacheTrace.includeMessages` / `includePrompt` / `includeSystem`：控制缓存追踪输出中包含的内容（默认全部为 `true`）。
+
+---
+
+## 更新
+
+```json5
+{
+  update: {
+    channel: "stable", // stable | beta | dev
+  },
+}
+```
+
+- `update.channel`：自动更新检查的发布渠道。`stable`（默认）、`beta` 或 `dev`。
 
 ---
 
@@ -2963,29 +3048,7 @@ CLI 向导（`onboard`、`configure`、`doctor`）写入的元数据：
 
 ## 身份
 
-```json5
-{
-  agents: {
-    list: [
-      {
-        id: "main",
-        identity: {
-          name: "Samantha",
-          theme: "helpful sloth",
-          emoji: "🦥",
-          avatar: "avatars/samantha.png",
-        },
-      },
-    ],
-  },
-}
-```
-
-由 macOS 引导助手写入。推导默认值：
-
-- `messages.ackReaction` 来自 `identity.emoji`（回退到 👀）
-- `mentionPatterns` 来自 `identity.name`/`identity.emoji`
-- `avatar` 接受：工作区相对路径、`http(s)` URL 或 `data:` URI
+参见 [Agent 默认值](#agent-defaults) 下 `agents.list` 的 identity 字段。
 
 ---
 

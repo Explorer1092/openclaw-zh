@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "941632d3bbcfe4b5bb8e9bfb2c8034b5"
+mmh3_hash: "c4d5339d4993c2aa58288467c51ac5b2"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
@@ -47,7 +47,7 @@ OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSO
     ```bash
     openclaw config get agents.defaults.workspace
     openclaw config set agents.defaults.heartbeat.every "2h"
-    openclaw config unset tools.web.search.apiKey
+    openclaw config unset plugins.entries.brave.config.webSearch.apiKey
     ```
   </Tab>
   <Tab title="Control UI">
@@ -65,12 +65,21 @@ OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSO
 OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类型或无效值会导致 Gateway **拒绝启动**。唯一的根级别例外是 `$schema`(字符串),以便编辑器可以附加 JSON Schema 元数据。
 </Warning>
 
-当验证失败时:
+Schema 工具说明：
+
+- `openclaw config schema` 输出 Control UI 和配置验证使用的相同 JSON Schema 系列。
+- 字段 `title` 和 `description` 值会被携带到 schema 输出中，供编辑器和表单工具使用。
+- 嵌套对象、通配符（`*`）和数组项（`[]`）条目在存在匹配字段文档时继承相同的文档元数据。
+- `anyOf` / `oneOf` / `allOf` 组合分支同样继承相同的文档元数据，因此联合/交叉变体保留相同的字段帮助信息。
+- `config.schema.lookup` 返回一个带有浅层 schema 节点（`title`、`description`、`type`、`enum`、`const`、常见边界及类似验证字段）、匹配 UI 提示元数据和即时子摘要的规范化配置路径，供下探工具使用。
+- 当 gateway 可以加载当前清单注册表时，运行时插件/channel schema 会被合并进来。
+
+当验证失败时：
 
 - Gateway 不会启动
-- 只有诊断命令可用(`openclaw doctor`、`openclaw logs`、`openclaw health`、`openclaw status`)
+- 只有诊断命令可用（`openclaw doctor`、`openclaw logs`、`openclaw health`、`openclaw status`）
 - 运行 `openclaw doctor` 查看具体问题
-- 运行 `openclaw doctor --fix`(或 `--yes`)应用修复
+- 运行 `openclaw doctor --fix`（或 `--yes`）应用修复
 
 ## 常见任务
 
@@ -113,12 +122,12 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
       agents: {
         defaults: {
           model: {
-            primary: "anthropic/claude-sonnet-4-5",
-            fallbacks: ["openai/gpt-5.2"],
+            primary: "anthropic/claude-sonnet-4-6",
+            fallbacks: ["openai/gpt-5.4"],
           },
           models: {
-            "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
-            "openai/gpt-5.2": { alias: "GPT" },
+            "anthropic/claude-sonnet-4-6": { alias: "Sonnet" },
+            "openai/gpt-5.4": { alias: "GPT" },
           },
         },
       },
@@ -173,6 +182,31 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     - **元数据提及**:原生 @-提及(WhatsApp 点击提及、Telegram @bot 等)
     - **文本模式**:`mentionPatterns` 中的正则表达式模式
     - 参见[完整参考文档](/gateway/configuration-reference#group-chat-mention-gating)了解每个 Channel 的覆盖和自聊模式。
+
+  </Accordion>
+
+  <Accordion title="按 Agent 限制技能">
+    使用 `agents.defaults.skills` 作为共享基准，然后用 `agents.list[].skills` 覆盖特定 Agent：
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          skills: ["github", "weather"],
+        },
+        list: [
+          { id: "writer" }, // 继承 github、weather
+          { id: "docs", skills: ["docs-search"] }, // 替换默认值
+          { id: "locked-down", skills: [] }, // 无技能
+        ],
+      },
+    }
+    ```
+
+    - 省略 `agents.defaults.skills` 则默认不限制技能。
+    - 省略 `agents.list[].skills` 则继承默认值。
+    - 设置 `agents.list[].skills: []` 则无技能。
+    - 参见 [Skills](/tools/skills)、[Skills 配置](/tools/skills-config) 和[配置参考文档](/gateway/configuration-reference#agentsdefaultsskills)。
 
   </Accordion>
 
@@ -327,9 +361,9 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     }
     ```
 
-    - `every`:持续时间字符串(`30m`、`2h`)。设置 `0m` 禁用。
-    - `target`: `last` | `whatsapp` | `telegram` | `discord` | `none`
-    - `directPolicy`: `allow`(默认)或 `block`,用于 DM 风格的 heartbeat 目标
+    - `every`：持续时间字符串（`30m`、`2h`）。设置 `0m` 禁用。
+    - `target`：`last` | `none` | `<channel-id>`（例如 `discord`、`matrix`、`telegram` 或 `whatsapp`）
+    - `directPolicy`：`allow`（默认）或 `block`，用于 DM 风格的 heartbeat 目标
     - 参见[Heartbeat](/gateway/heartbeat)完整指南。
 
   </Accordion>
@@ -379,10 +413,14 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
     }
     ```
 
-    安全注意事项:
+    安全注意事项：
     - 将所有 hook/webhook 负载内容视为不可信输入。
-    - 除非进行严格范围的调试,否则请禁用不安全内容绕过标志(`hooks.gmail.allowUnsafeExternalContent`、`hooks.mappings[].allowUnsafeExternalContent`)。
-    - 对于 hook 驱动的 Agent,建议使用强大的现代模型级别和严格的工具策略(例如,尽可能仅消息传递加沙盒)。
+    - 使用专用的 `hooks.token`；不要复用共享 Gateway token。
+    - Hook 认证仅限请求头（`Authorization: Bearer ...` 或 `x-openclaw-token`）；查询字符串 token 会被拒绝。
+    - `hooks.path` 不能为 `/`；webhook 入口应保留在专用子路径（如 `/hooks`）上。
+    - 除非进行严格范围的调试，否则请禁用不安全内容绕过标志（`hooks.gmail.allowUnsafeExternalContent`、`hooks.mappings[].allowUnsafeExternalContent`）。
+    - 如果启用了 `hooks.allowRequestSessionKey`，还需设置 `hooks.allowedSessionKeyPrefixes` 以限制调用者选择的 Session 键范围。
+    - 对于 hook 驱动的 Agent，建议使用强大的现代模型级别和严格的工具策略（例如，尽可能仅消息传递加沙盒）。
 
     参见[完整参考文档](/gateway/configuration-reference#hooks)了解所有映射选项和 Gmail 集成。
 
@@ -474,11 +512,21 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
 `gateway.reload` 和 `gateway.remote` 是例外 — 更改它们**不会**触发重启。
 </Note>
 
-## 配置 RPC(编程更新)
+## 配置 RPC（编程更新）
 
 <Note>
-控制平面写入 RPC(`config.apply`、`config.patch`、`update.run`)对每个 `deviceId+clientIp` 限速为 **每 60 秒 3 次请求**。当达到限制时,RPC 返回 `UNAVAILABLE` 并附带 `retryAfterMs`。
+控制平面写入 RPC（`config.apply`、`config.patch`、`update.run`）对每个 `deviceId+clientIp` 限速为**每 60 秒 3 次请求**。当达到限制时，RPC 返回 `UNAVAILABLE` 并附带 `retryAfterMs`。
 </Note>
+
+安全/默认流程：
+
+- `config.schema.lookup`：检查一个路径范围的配置子树，包含浅层 schema 节点、匹配的提示元数据和即时子摘要
+- `config.get`：获取当前快照 + 哈希
+- `config.patch`：首选的部分更新路径
+- `config.apply`：仅用于完整配置替换
+- `update.run`：显式自我更新 + 重启
+
+当不替换整个配置时，优先使用 `config.schema.lookup` 然后 `config.patch`。
 
 <AccordionGroup>
   <Accordion title="config.apply(完整替换)">

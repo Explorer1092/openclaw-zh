@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "229be5ff41c6aec7834200572565c61f"
+mmh3_hash: "91b2a0569f891ef8f9639e00f16de586"
 summary: "在一台主机上运行多个 OpenClaw Gateway(隔离、端口和配置文件)"
 read_when:
   - 在同一台机器上运行多个 Gateway
@@ -107,7 +107,15 @@ openclaw gateway --port 19001
 ## 快速检查
 
 ```bash
+openclaw --profile main gateway status --deep
+openclaw --profile rescue gateway status --deep
+openclaw --profile rescue gateway probe
 openclaw --profile main status
 openclaw --profile rescue status
 openclaw --profile rescue browser status
 ```
+
+解释:
+
+- `gateway status --deep` 有助于捕获旧版安装中过期的 launchd/systemd/schtasks 服务。
+- `gateway probe` 警告文本,例如 `multiple reachable gateways detected`,仅在您有意运行多个隔离 Gateway 时是预期的。

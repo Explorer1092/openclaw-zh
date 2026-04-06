@@ -1,8 +1,9 @@
 ---
-mmh3_hash: "8b527e6551a72c3df1d318e31370241b"
-summary: "Channel 连接性的健康检查步骤"
+mmh3_hash: "3e9a2b01774532d390aac1bf16bd2eaf"
+summary: "健康检查命令和 Gateway 健康监控"
 read_when:
-  - 诊断 WhatsApp channel 健康状况
+  - 诊断 Channel 连接性或 Gateway 健康
+  - 了解健康检查 CLI 命令和选项
 title: "Health Checks"
 ---
 
@@ -12,12 +13,14 @@ title: "Health Checks"
 
 ## 快速检查
 
-- `openclaw status` — 本地摘要:Gateway 可达性/模式,更新提示,链接的 Channel 认证年龄,Session + 最近活动。
-- `openclaw status --all` — 完整本地诊断(只读,彩色,安全粘贴以进行调试)。
-- `openclaw status --deep` — 还探测正在运行的 Gateway(支持时每个 Channel 探测)。
-- `openclaw health --json` — 向正在运行的 Gateway 请求完整的健康快照(仅 WS;无直接 Baileys socket)。
+- `openclaw status` — 本地摘要：Gateway 可达性/模式，更新提示，链接的 Channel 认证年龄，Session + 最近活动。
+- `openclaw status --all` — 完整本地诊断（只读，彩色，安全粘贴以进行调试）。
+- `openclaw status --deep` — 向正在运行的 Gateway 请求实时健康探测（带 `probe:true` 的 `health`），在支持时包括每账户 Channel 探测。
+- `openclaw health` — 向正在运行的 Gateway 请求其健康快照（仅 WS；CLI 无直接 Channel socket）。
+- `openclaw health --verbose` — 强制实时健康探测并打印 Gateway 连接详情。
+- `openclaw health --json` — 机器可读的健康快照输出。
 - 在 WhatsApp/WebChat 中作为独立消息发送 `/status` 以获取状态回复而不调用 Agent。
-- 日志:tail `/tmp/openclaw/openclaw-*.log` 并过滤 `web-heartbeat`、`web-reconnect`、`web-auto-reply`、`web-inbound`。
+- 日志：tail `/tmp/openclaw/openclaw-*.log` 并过滤 `web-heartbeat`、`web-reconnect`、`web-auto-reply`、`web-inbound`。
 
 ## 深度诊断
 
@@ -42,4 +45,13 @@ title: "Health Checks"
 
 ## 专用"health"命令
 
-`openclaw health --json` 向正在运行的 Gateway 请求其健康快照(CLI 无直接 Channel socket)。它在可用时报告链接的凭证/认证年龄,每个 Channel 探测摘要,Session-store 摘要和探测持续时间。如果 Gateway 无法访问或探测失败/超时,它以非零退出。使用 `--timeout <ms>` 覆盖 10 秒默认值。
+`openclaw health` 向正在运行的 Gateway 请求其健康快照（CLI 无直接 Channel socket）。默认情况下，它可以返回新鲜的缓存 Gateway 快照；然后 Gateway 在后台刷新该缓存。`openclaw health --verbose` 强制实时探测。该命令在可用时报告链接的凭证/认证年龄，每 Channel 探测摘要，Session-store 摘要和探测持续时间。如果 Gateway 无法访问或探测失败/超时，它以非零退出。
+
+选项：
+
+- `--json`：机器可读的 JSON 输出
+- `--timeout <ms>`：覆盖默认 10 秒探测超时
+- `--verbose`：强制实时探测并打印 Gateway 连接详情
+- `--debug`：`--verbose` 的别名
+
+健康快照包括：`ok`（布尔值）、`ts`（时间戳）、`durationMs`（探测时间）、每 Channel 状态、Agent 可用性和 Session-store 摘要。

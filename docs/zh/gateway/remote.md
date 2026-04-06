@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "96692800277db98709a39f59b59bee74"
+mmh3_hash: "d8025db12b3d4480a70b9b68539efc87"
 summary: "使用 SSH 隧道(Gateway WS)和 Tailnet 进行远程访问"
 read_when:
   - 运行或故障排除远程 Gateway 设置
@@ -78,7 +78,7 @@ ssh -N -L 18789:127.0.0.1:18789 user@host
 隧道启动后:
 
 - `openclaw health` 和 `openclaw status --deep` 现在通过 `ws://127.0.0.1:18789` 访问远程 Gateway。
-- `openclaw gateway {status,health,send,agent,call}` 在需要时也可以通过 `--url` 定向到转发的 URL。
+- `openclaw gateway status`、`openclaw gateway health`、`openclaw gateway probe` 和 `openclaw gateway call` 在需要时也可以通过 `--url` 定向到转发的 URL。
 
 注意:将 `18789` 替换为您配置的 `gateway.port`(或 `--port`/`OPENCLAW_GATEWAY_PORT`)。
 注意:当您传递 `--url` 时,CLI 不会回退到配置或环境凭证。
@@ -118,7 +118,7 @@ Gateway 凭证解析遵循跨 call/probe/status 路径和 Discord exec-approval 
   - password:`OPENCLAW_GATEWAY_PASSWORD` -> `gateway.remote.password` -> `gateway.auth.password`
 - 节点主机本地模式例外:`gateway.remote.token` / `gateway.remote.password` 被忽略。
 - 远程 probe/status token 检查默认严格:当定向远程模式时,它们只使用 `gateway.remote.token`(无本地 token 回退)。
-- 旧版 `CLAWDBOT_GATEWAY_*` 环境变量只被兼容性 call 路径使用;probe/status/auth 解析只使用 `OPENCLAW_GATEWAY_*`。
+- Gateway 环境覆盖只使用 `OPENCLAW_GATEWAY_*`。
 
 ## SSH 上的 Chat UI
 
@@ -139,12 +139,108 @@ macOS 菜单栏应用可以端到端驱动相同的设置(远程状态检查、W
 
 - **回环 + SSH/Tailscale Serve** 是最安全的默认设置(无公开暴露)。
 - 明文 `ws://` 默认仅限回环。对于受信任的私有网络,在客户端进程上设置 `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` 作为紧急方案。
-- **非回环绑定**(`lan`/`tailnet`/`custom`,或 `auto` 当回环不可用时)必须使用认证令牌/密码。
+- **非回环绑定**(`lan`/`tailnet`/`custom`,或 `auto` 当回环不可用时)必须使用 Gateway 认证：token、password 或带有 `gateway.auth.mode: "trusted-proxy"` 的身份感知反向代理。
 - `gateway.remote.token` / `.password` 是客户端凭证来源。它们**不**单独配置服务器认证。
 - 本地 call 路径只有在 `gateway.auth.*` 未设置时才能使用 `gateway.remote.*` 作为回退。
 - 如果 `gateway.auth.token` / `gateway.auth.password` 通过 SecretRef 明确配置且未解析,则解析会关闭失败(无远程回退掩盖)。
 - `gateway.remote.tlsFingerprint` 在使用 `wss://` 时固定远程 TLS 证书。
-- **Tailscale Serve** 可以在 `gateway.auth.allowTailscale: true` 时通过身份标头对 Control UI/WebSocket 流量进行认证;HTTP API 端点仍需要 token/password 认证。此无令牌流程假设 Gateway 主机受信任。如果您希望所有地方都使用令牌/密码,请将其设置为 `false`。
+- **Tailscale Serve** 可以在 `gateway.auth.allowTailscale: true` 时通过身份标头对 Control UI/WebSocket 流量进行认证；HTTP API 端点不使用该 Tailscale 标头认证，而是遵循 Gateway 正常的 HTTP 认证模式。此无令牌流程假设 Gateway 主机受信任。如果您希望所有地方都使用共享密钥认证，请将其设置为 `false`。
+- **受信任代理**认证仅适用于非回环身份感知代理设置。同一主机的回环反向代理不满足 `gateway.auth.mode: "trusted-proxy"`。
 - 将 Browser 控制视为操作员访问:仅 tailnet + 刻意的节点配对。
 
 深入讨论:[安全](/gateway/security)。
+
+### macOS：通过 LaunchAgent 的持久 SSH 隧道
+
+对于连接到远程 Gateway 的 macOS 客户端，最简单的持久设置是使用 SSH `LocalForward` 配置条目加上 LaunchAgent 以在重启和崩溃后保持隧道活跃。
+
+#### 步骤 1：添加 SSH 配置
+
+编辑 `~/.ssh/config`：
+
+```ssh
+Host remote-gateway
+    HostName <REMOTE_IP>
+    User <REMOTE_USER>
+    LocalForward 18789 127.0.0.1:18789
+    IdentityFile ~/.ssh/id_rsa
+```
+
+将 `<REMOTE_IP>` 和 `<REMOTE_USER>` 替换为您的值。
+
+#### 步骤 2：复制 SSH 密钥（一次性）
+
+```bash
+ssh-copy-id -i ~/.ssh/id_rsa <REMOTE_USER>@<REMOTE_IP>
+```
+
+#### 步骤 3：配置 Gateway token
+
+将 token 存储在配置中以在重启后持久保留：
+
+```bash
+openclaw config set gateway.remote.token "<your-token>"
+```
+
+#### 步骤 4：创建 LaunchAgent
+
+将此保存为 `~/Library/LaunchAgents/ai.openclaw.ssh-tunnel.plist`：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>ai.openclaw.ssh-tunnel</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/ssh</string>
+        <string>-N</string>
+        <string>remote-gateway</string>
+    </array>
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>
+```
+
+#### 步骤 5：加载 LaunchAgent
+
+```bash
+launchctl bootstrap gui/$UID ~/Library/LaunchAgents/ai.openclaw.ssh-tunnel.plist
+```
+
+隧道将在登录时自动启动，崩溃后重启，并保持转发端口活跃。
+
+注意：如果您有旧版设置中遗留的 `com.openclaw.ssh-tunnel` LaunchAgent，请卸载并删除它。
+
+#### 故障排除
+
+检查隧道是否正在运行：
+
+```bash
+ps aux | grep "ssh -N remote-gateway" | grep -v grep
+lsof -i :18789
+```
+
+重启隧道：
+
+```bash
+launchctl kickstart -k gui/$UID/ai.openclaw.ssh-tunnel
+```
+
+停止隧道：
+
+```bash
+launchctl bootout gui/$UID/ai.openclaw.ssh-tunnel
+```
+
+| 配置条目                             | 作用                                                         |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `LocalForward 18789 127.0.0.1:18789` | 将本地端口 18789 转发到远程端口 18789                        |
+| `ssh -N`                             | SSH 不执行远程命令（仅端口转发）                            |
+| `KeepAlive`                          | 如果隧道崩溃则自动重启                                      |
+| `RunAtLoad`                          | 在登录时 LaunchAgent 加载时启动隧道                         |

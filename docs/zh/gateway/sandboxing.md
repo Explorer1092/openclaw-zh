@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "36b763b925fe376b8b504c18a072ed47"
+mmh3_hash: "82ef2879dff97ca416e512667389134e"
 summary: "OpenClaw 沙盒的工作原理:模式、作用域、工作空间访问和镜像"
 title: 沙盒
 read_when: "您想要沙盒的专门解释或需要调整 agents.defaults.sandbox。"
@@ -60,6 +60,18 @@ OpenClaw 可以在**沙盒后端内运行工具**以减少爆炸半径。这是*
 
 SSH 特定配置位于 `agents.defaults.sandbox.ssh` 下。
 OpenShell 特定配置位于 `plugins.entries.openshell.config` 下。
+
+### 选择后端
+
+|                     | Docker                              | SSH                            | OpenShell                                             |
+| ------------------- | ----------------------------------- | ------------------------------ | ----------------------------------------------------- |
+| **运行位置**        | 本地容器                             | 任何 SSH 可访问的主机           | OpenShell 托管沙盒                                     |
+| **设置**            | `scripts/sandbox-setup.sh`          | SSH 密钥 + 目标主机             | OpenShell 插件已启用                                   |
+| **Workspace 模型**  | 绑定挂载或复制                       | 远程规范（播种一次）            | `mirror` 或 `remote`                                  |
+| **网络控制**        | `docker.network`（默认：无）         | 取决于远程主机                  | 取决于 OpenShell                                       |
+| **Browser 沙盒**    | 支持                                 | 不支持                          | 尚不支持                                              |
+| **绑定挂载**        | `docker.binds`                      | N/A                            | N/A                                                   |
+| **最适合**          | 本地开发，完全隔离                   | 卸载到远程机器                  | 带有可选双向同步的托管远程沙盒                         |
 
 ### SSH 后端
 

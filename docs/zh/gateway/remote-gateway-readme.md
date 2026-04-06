@@ -1,9 +1,11 @@
 ---
-mmh3_hash: "1fe7e7599c96ea2e5ef719bcf24a89bc"
+mmh3_hash: "55f3704cca2a80b17b251c91ccc08ed4"
 summary: "OpenClaw.app 连接到远程 Gateway 的 SSH 隧道设置"
 read_when: "通过 SSH 将 macOS 应用程序连接到远程 Gateway"
 title: "远程 Gateway 设置"
 ---
+
+> 本内容已合并到 [Remote Access](/gateway/remote#macos-persistent-ssh-tunnel-via-launchagent)。当前指南请参见该页面。
 
 # 使用远程 Gateway 运行 OpenClaw.app
 
@@ -56,11 +58,13 @@ Host remote-gateway
 ssh-copy-id -i ~/.ssh/id_rsa <REMOTE_USER>@<REMOTE_IP>
 ```
 
-### 步骤 3:设置 Gateway 令牌
+### 步骤 3:配置远程 Gateway 认证
 
 ```bash
-launchctl setenv OPENCLAW_GATEWAY_TOKEN "<your-token>"
+openclaw config set gateway.remote.token "<your-token>"
 ```
+
+如果您的远程 Gateway 使用密码认证，请改用 `gateway.remote.password`。`OPENCLAW_GATEWAY_TOKEN` 作为 shell 级别覆盖仍然有效，但持久的远程客户端设置是 `gateway.remote.token` / `gateway.remote.password`。
 
 ### 步骤 4:启动 SSH 隧道
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ae50857f44d1273643b27daa7a994424"
+mmh3_hash: "8d2f7c6257b20d552c61b6dd073bcddf"
 summary: "将 Gateway 身份验证委托给受信任的反向代理（Pomerium、Caddy、nginx + OAuth）"
 read_when:
   - 在身份感知代理后面运行 OpenClaw
@@ -51,8 +51,8 @@ read_when:
 ```json5
 {
   gateway: {
-    // 对于同主机代理设置使用回环；对于远程代理主机使用 lan/custom
-    bind: "loopback",
+    // Trusted-proxy 认证要求请求来自非回环受信任代理来源
+    bind: "lan",
 
     // 关键：仅在此处添加您的代理 IP
     trustedProxies: ["10.0.0.1", "172.17.0.1"],
@@ -74,7 +74,12 @@ read_when:
 }
 ```
 
-如果 `gateway.bind` 为 `loopback`，请在 `gateway.trustedProxies` 中包含回环代理地址（`127.0.0.1`、`::1` 或等效的回环 CIDR）。
+重要运行时规则：
+
+- Trusted-proxy 认证拒绝回环源请求（`127.0.0.1`、`::1`、回环 CIDR）。
+- 同一主机的回环反向代理**不**满足 trusted-proxy 认证。
+- 对于同一主机回环代理设置，请改用 token/password 认证，或通过 OpenClaw 可以验证的非回环受信任代理地址路由。
+- 非回环 Control UI 部署仍需要明确的 `gateway.controlUi.allowedOrigins`。
 
 ### 配置参考
 
@@ -175,7 +180,7 @@ Caddy 与 `caddy-security` 插件可以对用户进行身份验证并传递身�
 {
   gateway: {
     bind: "lan",
-    trustedProxies: ["127.0.0.1"], // Caddy 的 IP（如果在同一主机上）
+    trustedProxies: ["10.0.0.1"], // Caddy/sidecar 代理 IP
     auth: {
       mode: "trusted-proxy",
       trustedProxy: {
@@ -250,15 +255,51 @@ location / {
 }
 ```
 
+## 混合令牌配置
+
+OpenClaw 拒绝同时激活 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）和 `trusted-proxy` 模式的模糊配置。混合令牌配置可能导致回环请求在错误的认证路径上静默认证。
+
+如果在启动时看到 `mixed_trusted_proxy_token` 错误：
+
+- 使用 trusted-proxy 模式时删除共享令牌，或
+- 如果您打算使用基于令牌的认证，请将 `gateway.auth.mode` 切换为 `"token"`。
+
+回环 trusted-proxy 认证也会失败关闭：同一主机的调用者必须通过受信任代理提供配置的身份头，而不是被静默认证。
+
+## Operator 范围头
+
+Trusted-proxy 认证是**身份感知** HTTP 模式，因此调用者可以选择使用 `x-openclaw-scopes` 声明 Operator 范围。
+
+示例：
+
+- `x-openclaw-scopes: operator.read`
+- `x-openclaw-scopes: operator.read,operator.write`
+- `x-openclaw-scopes: operator.admin,operator.write`
+
+行为：
+
+- 当头存在时，OpenClaw 遵循声明的范围集。
+- 当头存在但为空时，请求声明**无** Operator 范围。
+- 当头不存在时，正常的身份感知 HTTP API 回退到标准 Operator 默认范围集。
+- Gateway 认证**插件 HTTP 路由**默认更窄：当 `x-openclaw-scopes` 不存在时，其运行时范围回退到 `operator.write`。
+- 浏览器源 HTTP 请求在 trusted-proxy 认证成功后仍必须通过 `gateway.controlUi.allowedOrigins`（或刻意的 Host 头回退模式）。
+
+实践规则：
+
+- 当您希望 trusted-proxy 请求比默认值更窄时，或当 Gateway 认证插件路由需要比写入范围更强的权限时，请明确发送 `x-openclaw-scopes`。
+
 ## 安全检查清单
 
 在启用受信任代理身份验证之前，请验证：
 
 - [ ] **代理是唯一路径**：Gateway 端口被防火墙阻止，除了您的代理之外的所有内容
 - [ ] **trustedProxies 是最小的**：仅您的实际代理 IP，而不是整个子网
+- [ ] **无回环代理来源**：对于回环源请求，trusted-proxy 认证会失败关闭
 - [ ] **代理剥离标头**：您的代理覆盖（而不是追加）来自客户端的 `x-forwarded-*` 标头
 - [ ] **TLS 终止**：您的代理处理 TLS；用户通过 HTTPS 连接
+- [ ] **allowedOrigins 是明确的**：非回环 Control UI 使用明确的 `gateway.controlUi.allowedOrigins`
 - [ ] **设置了 allowUsers**（推荐）：限制为已知用户，而不是允许任何经过身份验证的人
+- [ ] **无混合令牌配置**：不要同时设置 `gateway.auth.token` 和 `gateway.auth.mode: "trusted-proxy"`
 
 ## 安全审计
 
@@ -266,9 +307,11 @@ location / {
 
 审计检查：
 
+- 基础 `gateway.trusted_proxy_auth` 警告/严重提醒
 - 缺少 `trustedProxies` 配置
 - 缺少 `userHeader` 配置
 - 空 `allowUsers`（允许任何经过身份验证的用户）
+- 暴露的 Control UI 接口上的通配符或缺少浏览器源策略
 
 ## 故障排除
 
@@ -279,6 +322,20 @@ location / {
 - 代理 IP 是否正确？（Docker 容器 IP 可能会更改）
 - 代理前面是否有负载均衡器？
 - 使用 `docker inspect` 或 `kubectl get pods -o wide` 查找实际 IP
+
+### "trusted_proxy_loopback_source"
+
+OpenClaw 拒绝了回环源的 trusted-proxy 请求。
+
+检查：
+
+- 代理是否从 `127.0.0.1` / `::1` 连接？
+- 您是否尝试在同一主机的回环反向代理中使用 trusted-proxy 认证？
+
+修复：
+
+- 对同一主机回环代理设置使用 token/password 认证，或
+- 通过非回环受信任代理地址路由，并将该 IP 保留在 `gateway.trustedProxies` 中。
 
 ### "trusted_proxy_user_missing"
 
@@ -298,6 +355,16 @@ location / {
 ### "trusted_proxy_user_not_allowed"
 
 用户已通过身份验证但不在 `allowUsers` 中。添加它们或删除白名单。
+
+### "trusted_proxy_origin_not_allowed"
+
+Trusted-proxy 认证成功，但浏览器 `Origin` 头未通过 Control UI 源检查。
+
+检查：
+
+- `gateway.controlUi.allowedOrigins` 包含确切的浏览器源
+- 您不依赖通配符源，除非您有意想要允许所有行为
+- 如果您有意使用 Host 头回退模式，请明确设置 `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true`
 
 ### WebSocket 仍然失败
 

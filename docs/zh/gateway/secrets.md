@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "985ed4a4510d9eb66183aa9df1c1ac26"
+mmh3_hash: "818a6f11d008d0bb0723e3ebd089ce5d"
 summary: "Secrets 管理:SecretRef 合约、运行时快照行为和安全单向清除"
 read_when:
   - 为 Provider 凭证和 `auth-profiles.json` refs 配置 SecretRefs
@@ -21,7 +21,9 @@ Secrets 被解析到内存中的运行时快照。
 - 解析在激活期间是急切的,而不是在请求路径上懒加载的。
 - 当有效活跃的 SecretRef 无法解析时,启动会快速失败。
 - 重载使用原子交换:完全成功,或保留上一已知正常快照。
+- SecretRef 策略违规（例如 OAuth 模式认证配置文件与 SecretRef 输入组合）在运行时交换之前使激活失败。
 - 运行时请求只从活跃的内存快照读取。
+- 第一次成功的配置激活/加载后，运行时代码路径继续读取该活跃的内存快照，直到成功重载将其替换。
 - 出站交付路径也从该活跃快照读取(例如 Discord 回复/线程交付和 Telegram 操作发送);它们不会在每次发送时重新解析 SecretRefs。
 
 这使 secret 提供商中断不影响热请求路径。
@@ -50,7 +52,7 @@ SecretRefs 仅在有效活跃表面上验证。
   - 在没有这些远程表面的本地模式中:
     - 当 token 认证可以赢且没有配置 env/auth token 时,`gateway.remote.token` 是活跃的。
     - 仅当密码认证可以赢且没有配置 env/auth 密码时,`gateway.remote.password` 才是活跃的。
-- `gateway.auth.token` SecretRef 在 `OPENCLAW_GATEWAY_TOKEN`(或 `CLAWDBOT_GATEWAY_TOKEN`)已设置时对启动认证解析是非活跃的,因为环境 token 输入在该运行时赢了。
+- `gateway.auth.token` SecretRef 在 `OPENCLAW_GATEWAY_TOKEN` 已设置时对启动认证解析是非活跃的,因为环境 token 输入在该运行时赢了。
 
 ## Gateway 认证表面诊断
 

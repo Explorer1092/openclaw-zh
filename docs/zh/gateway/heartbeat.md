@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b55660b7fcef37ba640d402f578e7249"
+mmh3_hash: "be1886c484a95d16ddee135c7c659aed"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -9,16 +9,18 @@ title: "Heartbeat"
 
 # Heartbeat (Gateway)
 
-> **Heartbeat vs Cron?** 参见 [Cron vs Heartbeat](/automation/cron-vs-heartbeat) 了解何时使用各自的指导。
+> **Heartbeat vs Cron?** 参见 [Automation & Tasks](/automation) 了解何时使用各自的指导。
 
 Heartbeat 在主 Session 中运行**定期 Agent 轮次**,以便模型能够无需打扰您地呈现任何需要关注的内容。
 
-故障排除:[/automation/troubleshooting](/automation/troubleshooting)
+Heartbeat 是计划的主 Session 轮次 — 它**不会**创建[后台任务](/automation/tasks)记录。任务记录用于分离的工作（ACP 运行、子 Agent、隔离的 Cron 任务）。
+
+故障排除:[计划任务](/automation/cron-jobs#troubleshooting)
 
 ## 快速入门(初学者)
 
-1. 保持 Heartbeat 启用(默认是 `30m`,或 Anthropic OAuth/setup-token 时为 `1h`)或设置您自己的节奏。
-2. 在 Agent workspace 中创建一个小的 `HEARTBEAT.md` 清单(可选但推荐)。
+1. 保持 Heartbeat 启用(默认是 `30m`,或 Anthropic OAuth/token 认证时为 `1h`,包括 Claude CLI 复用)或设置您自己的节奏。
+2. 在 Agent workspace 中创建一个小的 `HEARTBEAT.md` 清单或 `tasks:` 块(可选但推荐)。
 3. 决定 Heartbeat 消息应该发送到哪里(`target: "none"` 是默认值;设置 `target: "last"` 路由到最后一个联系人)。
 4. 可选:启用 Heartbeat 推理交付以提高透明度。
 5. 可选:如果 Heartbeat 运行只需要 `HEARTBEAT.md`,使用轻量引导上下文。
@@ -47,7 +49,7 @@ Heartbeat 在主 Session 中运行**定期 Agent 轮次**,以便模型能够无�
 
 ## 默认值
 
-- 间隔:`30m`(或当检测到 Anthropic OAuth/setup-token 认证模式时为 `1h`)。设置 `agents.defaults.heartbeat.every` 或每个 Agent 的 `agents.list[].heartbeat.every`;使用 `0m` 禁用。
+- 间隔:`30m`(或当检测到 Anthropic OAuth/token 认证模式时为 `1h`,包括 Claude CLI 复用)。设置 `agents.defaults.heartbeat.every` 或每个 Agent 的 `agents.list[].heartbeat.every`;使用 `0m` 禁用。
 - 提示正文(可通过 `agents.defaults.heartbeat.prompt` 配置):
   `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
 - Heartbeat 提示以**逐字**方式作为用户消息发送。系统提示包含"Heartbeat"部分,运行在内部被标记。
@@ -59,6 +61,8 @@ Heartbeat 在主 Session 中运行**定期 Agent 轮次**,以便模型能够无�
 
 - **后台任务**:"Consider outstanding tasks" 提示 Agent 审查待处理事项(收件箱、日历、提醒、排队工作)并呈现任何紧急内容。
 - **人工检查**:"Checkup sometimes on your human during day time" 偶尔触发轻量的"您有什么需要吗?"消息,但使用您配置的本地时区避免夜间骚扰(参见 [/concepts/timezone](/concepts/timezone))。
+
+Heartbeat 可以响应已完成的[后台任务](/automation/tasks),但 Heartbeat 运行本身不会创建任务记录。
 
 如果您想要 Heartbeat 做一些非常具体的事情(例如"检查 Gmail PubSub 统计"或"验证 Gateway 健康"),请将 `agents.defaults.heartbeat.prompt`(或 `agents.list[].heartbeat.prompt`)设置为自定义正文(逐字发送)。
 
@@ -208,7 +212,7 @@ Heartbeat 在主 Session 中运行**定期 Agent 轮次**,以便模型能够无�
   - Session 键格式:参见 [Sessions](/concepts/session) 和 [Groups](/channels/groups)。
 - `target`:
   - `last`:交付到最后使用的外部 Channel。
-  - 明确 Channel:`whatsapp` / `telegram` / `discord` / `googlechat` / `slack` / `msteams` / `signal` / `imessage`。
+  - 明确 Channel:任何已配置的 Channel 或插件 id,例如 `discord`、`matrix`、`telegram` 或 `whatsapp`。
   - `none`(默认):运行 Heartbeat 但**不外部交付**。
 - `directPolicy`:控制直接/DM 交付行为:
   - `allow`(默认):允许直接/DM Heartbeat 交付。
@@ -233,7 +237,10 @@ Heartbeat 在主 Session 中运行**定期 Agent 轮次**,以便模型能够无�
 - Heartbeat 交付默认允许直接/DM 目标。设置 `directPolicy: "block"` 以在仍运行 Heartbeat 轮次的同时禁止直接目标发送。
 - 如果主队列忙,Heartbeat 被跳过并稍后重试。
 - 如果 `target` 解析为没有外部目的地,运行仍然发生但不发送出站消息。
+- 如果 `showOk`、`showAlerts` 和 `useIndicator` 全部禁用,运行会以 `reason=alerts-disabled` 提前跳过。
+- 如果仅禁用警报交付,OpenClaw 仍可以运行 Heartbeat、更新到期任务时间戳、恢复 Session 空闲时间戳,并抑制出站警报负载。
 - 仅 Heartbeat 的回复**不会**保持 Session 活跃;`updatedAt` 被恢复,以便空闲过期正常行为。
+- 分离的[后台任务](/automation/tasks)可以排队系统事件并唤醒 Heartbeat,以便主 Session 快速注意到某些内容。该唤醒不会使 Heartbeat 运行变成后台任务。
 
 ## 可见性控制
 
@@ -300,7 +307,7 @@ channels:
 
 如果 workspace 中存在 `HEARTBEAT.md` 文件,默认提示告诉 Agent 读取它。把它想象成您的"Heartbeat 清单":小巧、稳定,每 30 分钟包含一次是安全的。
 
-如果 `HEARTBEAT.md` 存在但实际上是空的(只有空行和像 `# Heading` 这样的 markdown 标题),OpenClaw 跳过 Heartbeat 运行以节省 API 调用。如果文件缺失,Heartbeat 仍然运行,模型决定做什么。
+如果 `HEARTBEAT.md` 存在但实际上是空的(只有空行和像 `# Heading` 这样的 markdown 标题),OpenClaw 跳过 Heartbeat 运行以节省 API 调用。跳过会以 `reason=empty-heartbeat-file` 报告。如果文件缺失,Heartbeat 仍然运行,模型决定做什么。
 
 保持简短(简短清单或提醒)以避免提示膨胀。
 
@@ -313,6 +320,39 @@ channels:
 - If it's daytime, do a lightweight check-in if nothing else is pending.
 - If a task is blocked, write down _what is missing_ and ask Peter next time.
 ```
+
+### `tasks:` 块
+
+`HEARTBEAT.md` 还支持小的结构化 `tasks:` 块,用于 Heartbeat 内部基于间隔的检查。
+
+示例:
+
+```md
+tasks:
+
+- name: inbox-triage
+  interval: 30m
+  prompt: "Check for urgent unread emails and flag anything time sensitive."
+- name: calendar-scan
+  interval: 2h
+  prompt: "Check for upcoming meetings that need prep or follow-up."
+
+# Additional instructions
+
+- Keep alerts short.
+- If nothing needs attention after all due tasks, reply HEARTBEAT_OK.
+```
+
+行为:
+
+- OpenClaw 解析 `tasks:` 块并检查每个任务的 `interval`。
+- 每次 Heartbeat 滴答只有**到期**的任务被包含在提示中。
+- 如果没有任务到期,Heartbeat 完全跳过(`reason=no-tasks-due`)以避免浪费的模型调用。
+- `HEARTBEAT.md` 中的非任务内容被保留并作为附加上下文附加在到期任务列表之后。
+- 任务最后运行时间戳存储在 Session 状态(`heartbeatTaskState`)中,因此间隔在正常重启后仍有效。
+- 任务时间戳只在 Heartbeat 运行完成正常回复路径后才推进。跳过的 `empty-heartbeat-file` / `no-tasks-due` 运行不会将任务标记为已完成。
+
+当您想让一个 Heartbeat 文件包含多个周期性检查而无需每次滴答都为所有任务付费时,任务模式非常有用。
 
 ### Agent 可以更新 HEARTBEAT.md 吗?
 
@@ -358,3 +398,10 @@ Heartbeat 运行完整的 Agent 轮次。较短的间隔消耗更多 token。要
 - 设置更便宜的 `model`(例如 `ollama/llama3.2:1b`)。
 - 保持 `HEARTBEAT.md` 简短。
 - 如果只想要内部状态更新,使用 `target: "none"`。
+
+## 相关
+
+- [Automation & Tasks](/automation) — 一目了然的所有自动化机制
+- [后台任务](/automation/tasks) — 分离工作如何被跟踪
+- [Timezone](/concepts/timezone) — 时区如何影响 Heartbeat 调度
+- [故障排除](/automation/cron-jobs#troubleshooting) — 调试自动化问题

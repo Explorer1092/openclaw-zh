@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "03376e1ebd2d44e2b1ffe2604db13e5d"
+mmh3_hash: "f9db4e8fa07eda74ab761e187a2c86d6"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
 read_when:
   - 添加或修改 doctor 迁移
@@ -60,27 +60,35 @@ cat ~/.openclaw/openclaw.json
 - git 安装的可选预检更新(仅交互式)。
 - UI 协议新鲜度检查(当协议 schema 较新时重建 Control UI)。
 - 健康检查 + 重启提示。
-- Skills 状态摘要(符合条件/缺失/被阻止)。
+- Skills 状态摘要（符合条件/缺失/被阻止）和插件状态。
 - 旧版值的配置规范化。
+- Talk 配置迁移：从旧版平铺 `talk.*` 字段迁移到 `talk.provider` + `talk.providers.<provider>`。
 - 旧版 Chrome 扩展配置和 Chrome MCP 就绪状态的 Browser 迁移检查。
-- OpenCode provider 覆盖警告(`models.providers.opencode` / `models.providers.opencode-go`)。
-- 旧版磁盘状态迁移(sessions/agent dir/WhatsApp 认证)。
-- 旧版 cron 存储迁移(`jobId`、`schedule.cron`、顶级 delivery/payload 字段、payload `provider`、简单 `notify: true` webhook 回退作业)。
-- 状态完整性和权限检查(sessions、transcripts、state dir)。
-- 本地运行时的配置文件权限检查(chmod 600)。
-- 模型认证健康:检查 OAuth 过期,可以刷新即将过期的令牌,并报告 auth-profile 冷却/禁用状态。
-- 额外的 workspace 目录检测(`~/openclaw`)。
+- OpenCode provider 覆盖警告（`models.providers.opencode` / `models.providers.opencode-go`）。
+- OpenAI Codex OAuth 配置文件的 OAuth TLS 先决条件检查。
+- 旧版磁盘状态迁移（sessions/agent dir/WhatsApp 认证）。
+- 旧版插件清单合同键迁移（`speechProviders`、`realtimeTranscriptionProviders`、`realtimeVoiceProviders`、`mediaUnderstandingProviders`、`imageGenerationProviders`、`videoGenerationProviders`、`webFetchProviders`、`webSearchProviders` → `contracts`）。
+- 旧版 cron 存储迁移（`jobId`、`schedule.cron`、顶级 delivery/payload 字段、payload `provider`、简单 `notify: true` webhook 回退作业）。
+- Session 锁文件检查和陈旧锁清理。
+- 状态完整性和权限检查（sessions、transcripts、state dir）。
+- 本地运行时的配置文件权限检查（chmod 600）。
+- 模型认证健康：检查 OAuth 过期，可以刷新即将过期的令牌，并报告 auth-profile 冷却/禁用状态。
+- 额外的 workspace 目录检测（`~/openclaw`）。
 - 启用沙箱时的沙箱镜像修复。
 - 旧版服务迁移和额外 Gateway 检测。
-- Gateway 运行时检查(已安装服务但未运行;缓存的 launchd 标签)。
-- Channel 状态警告(从正在运行的 Gateway 探测)。
-- Supervisor 配置审计(launchd/systemd/schtasks)带有可选修复。
-- Gateway 运行时最佳实践检查(Node vs Bun,version-manager 路径)。
-- Gateway 端口冲突诊断(默认 `18789`)。
+- Matrix Channel 旧版状态迁移（在 `--fix` / `--repair` 模式下）。
+- Gateway 运行时检查（已安装服务但未运行；缓存的 launchd 标签）。
+- Channel 状态警告（从正在运行的 Gateway 探测）。
+- Supervisor 配置审计（launchd/systemd/schtasks）带有可选修复。
+- Gateway 运行时最佳实践检查（Node vs Bun，version-manager 路径）。
+- Gateway 端口冲突诊断（默认 `18789`）。
 - 开放 DM 策略的安全警告。
-- 本地令牌模式的 Gateway 认证检查(当没有令牌来源存在时提供令牌生成;不覆盖令牌 SecretRef 配置)。
+- 本地令牌模式的 Gateway 认证检查（当没有令牌来源存在时提供令牌生成；不覆盖令牌 SecretRef 配置）。
 - Linux 上的 systemd linger 检查。
-- 源安装检查(pnpm workspace 不匹配,缺少 UI 资产,缺少 tsx 二进制文件)。
+- workspace bootstrap 文件大小检查（截断/接近限制的上下文文件警告）。
+- Shell 补全状态检查和自动安装/升级。
+- 内存搜索嵌入 Provider 就绪检查（本地模型、远程 API key 或 QMD 二进制文件）。
+- 源安装检查（pnpm workspace 不匹配，缺少 UI 资产，缺少 tsx 二进制文件）。
 - 写入更新的配置 + 向导元数据。
 
 ## 详细行为和理由
@@ -91,7 +99,9 @@ cat ~/.openclaw/openclaw.json
 
 ### 1) 配置规范化
 
-如果配置包含旧版值形状(例如 `messages.ackReaction` 没有特定 Channel 的覆盖),doctor 将它们规范化为当前 schema。
+如果配置包含旧版值形状（例如 `messages.ackReaction` 没有特定 Channel 的覆盖），doctor 将它们规范化为当前 schema。
+
+这包括旧版 Talk 平铺字段。当前公开的 Talk 配置为 `talk.provider` + `talk.providers.<provider>`。Doctor 将旧版 `talk.voiceId` / `talk.voiceAliases` / `talk.modelId` / `talk.outputFormat` / `talk.apiKey` 形状重写为 Provider 映射。
 
 ### 2) 旧版配置键迁移
 
@@ -114,10 +124,19 @@ Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁�
 - `routing.queue` → `messages.queue`
 - `routing.bindings` → 顶级 `bindings`
 - `routing.agents`/`routing.defaultAgentId` → `agents.list` + `agents.list[].default`
+- 旧版 `talk.voiceId`/`talk.voiceAliases`/`talk.modelId`/`talk.outputFormat`/`talk.apiKey` → `talk.provider` + `talk.providers.<provider>`
 - `routing.agentToAgent` → `tools.agentToAgent`
 - `routing.transcribeAudio` → `tools.media.audio.models`
+- `messages.tts.<provider>`（`openai`/`elevenlabs`/`microsoft`/`edge`）→ `messages.tts.providers.<provider>`
+- `channels.discord.voice.tts.<provider>`（`openai`/`elevenlabs`/`microsoft`/`edge`）→ `channels.discord.voice.tts.providers.<provider>`
+- `channels.discord.accounts.<id>.voice.tts.<provider>` → `channels.discord.accounts.<id>.voice.tts.providers.<provider>`
+- `plugins.entries.voice-call.config.tts.<provider>` → `plugins.entries.voice-call.config.tts.providers.<provider>`
+- `plugins.entries.voice-call.config.provider: "log"` → `"mock"`
+- `plugins.entries.voice-call.config.twilio.from` → `plugins.entries.voice-call.config.fromNumber`
+- `plugins.entries.voice-call.config.streaming.sttProvider` → `plugins.entries.voice-call.config.streaming.provider`
+- `plugins.entries.voice-call.config.streaming.openaiApiKey|sttModel|silenceDurationMs|vadThreshold` → `plugins.entries.voice-call.config.streaming.providers.openai.*`
 - `bindings[].match.accountID` → `bindings[].match.accountId`
-- 对于具有命名 `accounts` 但缺少 `accounts.default` 的 Channel,当存在时将账户范围的顶级单账户 Channel 值移动到 `channels.<channel>.accounts.default`
+- 对于具有命名 `accounts` 但存在遗留单账户顶级 Channel 值的 Channel，将这些账户范围的值移入该 Channel 选择的提升账户中（大多数 Channel 为 `accounts.default`；Matrix 可以保留现有的匹配命名/默认目标）
 - `identity` → `agents.list[].identity`
 - `agent.*` → `agents.defaults` + `tools.*`(tools/elevated/exec/sandbox/subagents)
 - `agent.model`/`allowedModels`/`modelAliases`/`modelFallbacks`/`imageModelFallbacks`
@@ -157,7 +176,11 @@ Doctor 无法为您启用 Chrome 端设置。主机本地 Chrome MCP 仍然需�
 
 此检查**不适用于** Docker、沙箱、远程浏览器或其他无头流程。这些继续使用原始 CDP。
 
-### 3) 旧版状态迁移(磁盘布局)
+### 2d) OAuth TLS 先决条件
+
+当配置了 OpenAI Codex OAuth 配置文件时，doctor 探测 OpenAI 授权端点以验证本地 Node/OpenSSL TLS 栈是否可以验证证书链。如果探测因证书错误失败（例如 `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`、过期证书或自签名证书），doctor 打印平台特定的修复指南。在 macOS 上使用 Homebrew Node 时，修复通常是 `brew postinstall ca-certificates`。使用 `--deep` 时，即使 Gateway 健康，探测也会运行。
+
+### 3) 旧版状态迁移（磁盘布局）
 
 Doctor 可以将较旧的磁盘布局迁移到当前结构:
 
@@ -170,6 +193,10 @@ Doctor 可以将较旧的磁盘布局迁移到当前结构:
   - 到 `~/.openclaw/credentials/whatsapp/<accountId>/...`(默认 account id:`default`)
 
 这些迁移是尽力而为且幂等的;当它将任何旧版文件夹作为备份留下时,doctor 将发出警告。Gateway/CLI 也会在启动时自动迁移旧版 sessions + agent dir,因此历史/认证/模型会进入每个 Agent 的路径,而无需手动运行 doctor。WhatsApp 认证仅通过 `openclaw doctor` 迁移。
+
+### 3a) 旧版插件清单迁移
+
+Doctor 扫描所有已安装的插件清单，查找已废弃的顶级能力键（`speechProviders`、`realtimeTranscriptionProviders`、`realtimeVoiceProviders`、`mediaUnderstandingProviders`、`imageGenerationProviders`、`videoGenerationProviders`、`webFetchProviders`、`webSearchProviders`）。发现时，提供将它们移入 `contracts` 对象并就地重写清单文件。此迁移是幂等的；如果 `contracts` 键已经有相同的值，则删除旧版键而不重复数据。
 
 ### 3b) 旧版 cron 存储迁移
 
@@ -185,6 +212,10 @@ Doctor 还检查 cron 作业存储(`~/.openclaw/cron/jobs.json`,或 `cron.store`
 - 简单旧版 `notify: true` webhook 回退作业 → 明确的 `delivery.mode="webhook"` 和 `delivery.to=cron.webhook`
 
 Doctor 仅在不改变行为的情况下自动迁移 `notify: true` 作业。如果作业将旧版 notify 回退与现有非 webhook delivery 模式结合,doctor 会警告并将该作业留给手动审查。
+
+### 3c) Session 锁清理
+
+Doctor 扫描每个 Agent Session 目录中的陈旧写锁文件——Session 异常退出时留下的文件。对于发现的每个锁文件，报告：路径、PID、PID 是否仍在运行、锁的存在时间，以及是否认为是陈旧的（死 PID 或超过 30 分钟）。在 `--fix` / `--repair` 模式下，自动删除陈旧的锁文件；否则打印提示并指示您使用 `--fix` 重新运行。
 
 ### 4) 状态完整性检查(Session 持久化、路由和安全)
 
@@ -203,11 +234,13 @@ Doctor 检查:
 - **远程模式提醒**:如果 `gateway.mode=remote`,doctor 提醒您在远程主机上运行它(状态在那里)。
 - **配置文件权限**:如果 `~/.openclaw/openclaw.json` 是组/其他可读的,则发出警告并提供收紧到 `600`。
 
-### 5) 模型认证健康(OAuth 过期)
+### 5) 模型认证健康（OAuth 过期）
 
-Doctor 检查认证存储中的 OAuth 配置文件,在令牌即将过期/已过期时发出警告,并在安全时刷新它们。如果 Anthropic Claude Code 配置文件过时,它建议运行 `claude setup-token`(或粘贴 setup-token)。刷新提示仅在以交互方式运行(TTY)时出现;`--non-interactive` 跳过刷新尝试。
+Doctor 检查认证存储中的 OAuth 配置文件，在令牌即将过期/已过期时发出警告，并在安全时刷新它们。如果 Anthropic OAuth/token 配置文件过时，它建议使用 Anthropic API key 或旧版 Anthropic setup-token 路径。刷新提示仅在以交互方式运行（TTY）时出现；`--non-interactive` 跳过刷新尝试。
 
-Doctor 还报告由于以下原因暂时不可用的认证配置文件:
+Doctor 还检测陈旧的已移除 Anthropic Claude CLI 状态。如果旧版 `anthropic:claude-cli` 凭证字节仍然存在于 `auth-profiles.json` 中，doctor 将其转换回 Anthropic token/OAuth 配置文件并重写陈旧的 `claude-cli/...` 模型引用。如果字节已消失，doctor 删除陈旧配置并打印恢复命令。
+
+Doctor 还报告由于以下原因暂时不可用的认证配置文件：
 
 - 短冷却(速率限制/超时/认证失败)
 - 更长的禁用(计费/信用失败)
@@ -220,9 +253,17 @@ Doctor 还报告由于以下原因暂时不可用的认证配置文件:
 
 启用沙箱时,doctor 检查 Docker 镜像,并在当前镜像缺失时提供构建或切换到旧版名称。
 
+### 7b) 捆绑插件运行时依赖
+
+Doctor 验证捆绑的插件运行时依赖（例如 Discord 插件运行时包）是否存在于 OpenClaw 安装根目录中。如果缺少任何依赖，doctor 报告相关包，并在 `openclaw doctor --fix` / `openclaw doctor --repair` 模式下安装它们。
+
 ### 8) Gateway 服务迁移和清理提示
 
-Doctor 检测旧版 Gateway 服务(launchd/systemd/schtasks)并提供删除它们并使用当前 Gateway 端口安装 OpenClaw 服务。它还可以扫描额外的类似 Gateway 的服务并打印清理提示。配置文件命名的 OpenClaw Gateway 服务被视为一流的,不会被标记为"额外"。
+Doctor 检测旧版 Gateway 服务（launchd/systemd/schtasks）并提供删除它们并使用当前 Gateway 端口安装 OpenClaw 服务。它还可以扫描额外的类似 Gateway 的服务并打印清理提示。配置文件命名的 OpenClaw Gateway 服务被视为一流的，不会被标记为"额外"。
+
+### 8b) 启动 Matrix 迁移
+
+当 Matrix Channel 账户有待处理或可操作的旧版状态迁移时，doctor（在 `--fix` / `--repair` 模式下）创建预迁移快照，然后运行尽力而为的迁移步骤：旧版 Matrix 状态迁移和旧版加密状态准备。两个步骤都是非致命的；错误会被记录，启动继续。在只读模式（不带 `--fix` 的 `openclaw doctor`）下，此检查完全跳过。
 
 ### 9) 安全警告
 
@@ -232,11 +273,31 @@ Doctor 检测旧版 Gateway 服务(launchd/systemd/schtasks)并提供删除它�
 
 如果作为 systemd 用户服务运行,doctor 确保启用 lingering,以便 Gateway 在注销后保持活动。
 
-### 11) Skills 状态
+### 11) workspace 状态（Skills、插件和旧版目录）
 
-Doctor 为当前 workspace 打印符合条件/缺失/被阻止的 Skills 的快速摘要。
+Doctor 打印默认 Agent 的 workspace 状态摘要：
 
-### 12) Gateway 认证检查(本地令牌)
+- **Skills 状态**：计算符合条件、缺失需求和 allowlist 阻止的 Skills。
+- **旧版 workspace 目录**：当 `~/openclaw` 或其他旧版 workspace 目录与当前 workspace 并存时发出警告。
+- **插件状态**：计算已加载/禁用/错误的插件；列出任何错误的插件 ID；报告捆绑插件功能。
+- **插件兼容性警告**：标记与当前运行时有兼容性问题的插件。
+- **插件诊断**：展示插件注册表发出的任何加载时警告或错误。
+
+### 11b) Bootstrap 文件大小
+
+Doctor 检查 workspace bootstrap 文件（例如 `AGENTS.md`、`CLAUDE.md` 或其他注入的上下文文件）是否接近或超过配置的字符预算。它报告每个文件的原始 vs. 注入字符数、截断百分比、截断原因（`max/file` 或 `max/total`），以及总注入字符占总预算的比例。当文件被截断或接近限制时，doctor 打印调整 `agents.defaults.bootstrapMaxChars` 和 `agents.defaults.bootstrapTotalMaxChars` 的提示。
+
+### 11c) Shell 补全
+
+Doctor 检查当前 shell（zsh、bash、fish 或 PowerShell）是否安装了 Tab 补全：
+
+- 如果 shell 配置文件使用了慢速动态补全模式（`source <(openclaw completion ...)`），doctor 将其升级为更快的缓存文件变体。
+- 如果配置文件中配置了补全但缓存文件缺失，doctor 自动重新生成缓存。
+- 如果根本没有配置补全，doctor 提示安装（仅交互模式；使用 `--non-interactive` 时跳过）。
+
+运行 `openclaw completion --write-state` 手动重新生成缓存。
+
+### 12) Gateway 认证检查（本地令牌）
 
 Doctor 检查本地 Gateway 令牌认证就绪情况。
 
@@ -254,7 +315,20 @@ Doctor 检查本地 Gateway 令牌认证就绪情况。
 
 ### 13) Gateway 健康检查 + 重启
 
-Doctor 运行健康检查,并在看起来不健康时提供重启 Gateway。
+Doctor 运行健康检查，并在看起来不健康时提供重启 Gateway。
+
+### 13b) 内存搜索就绪性
+
+Doctor 检查为默认 Agent 配置的内存搜索嵌入 Provider 是否就绪。行为取决于配置的后端和 Provider：
+
+- **QMD 后端**：探测 `qmd` 二进制文件是否可用且可启动。如果不可用，打印修复指南，包括 npm 包和手动二进制路径选项。
+- **显式本地 Provider**：检查本地模型文件或已识别的远程/可下载模型 URL。如果缺失，建议切换到远程 Provider。
+- **显式远程 Provider**（`openai`、`voyage` 等）：验证环境或认证存储中是否存在 API key。如果缺失，打印可操作的修复提示。
+- **自动 Provider**：先检查本地模型可用性，然后按自动选择顺序尝试每个远程 Provider。
+
+当 Gateway 探测结果可用时（检查时 Gateway 健康），doctor 将其结果与 CLI 可见配置进行对照，并注明任何差异。
+
+使用 `openclaw memory status --deep` 在运行时验证嵌入就绪性。
 
 ### 14) Channel 状态警告
 
