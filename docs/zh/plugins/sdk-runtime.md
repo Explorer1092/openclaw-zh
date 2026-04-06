@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6741bdd4a2b02daee023355ebf5ffadf"
+mmh3_hash: "142245812223f44c027ad1e2e82e81e3"
 title: "Plugin 运行时辅助工具"
 sidebarTitle: "运行时辅助工具"
 summary: "api.runtime -- 注入到 Plugin 的运行时辅助工具"
@@ -76,6 +76,37 @@ const filePath = api.runtime.agent.session.resolveSessionFilePath(cfg, sessionId
 const model = api.runtime.agent.defaults.model; // 例如 "anthropic/claude-sonnet-4-6"
 const provider = api.runtime.agent.defaults.provider; // 例如 "anthropic"
 ```
+
+### `api.runtime.taskFlow`
+
+将 Task Flow 运行时绑定到现有 OpenClaw Session 键或受信任的 Tool 上下文，然后创建和管理 Task Flow 而无需在每次调用时传递所有者。
+
+```typescript
+const taskFlow = api.runtime.taskFlow.fromToolContext(ctx);
+
+const created = taskFlow.createManaged({
+  controllerId: "my-plugin/review-batch",
+  goal: "Review new pull requests",
+});
+
+const child = taskFlow.runTask({
+  flowId: created.flowId,
+  runtime: "acp",
+  childSessionKey: "agent:main:subagent:reviewer",
+  task: "Review PR #123",
+  status: "running",
+  startedAt: Date.now(),
+});
+
+const waiting = taskFlow.setWaiting({
+  flowId: created.flowId,
+  expectedRevision: created.revision,
+  currentStep: "await-human-reply",
+  waitJson: { kind: "reply", channel: "telegram" },
+});
+```
+
+当您已经从自己的绑定层获得了受信任的 OpenClaw Session 键时，使用 `bindSession({ sessionKey, requesterOrigin })`。不要从原始用户输入进行绑定。
 
 ### `api.runtime.subagent`
 
@@ -285,6 +316,10 @@ const searchTool = api.runtime.tools.createMemorySearchTool(/* ... */);
 api.runtime.tools.registerMemoryCli(/* ... */);
 ```
 
+### `api.runtime.channel`
+
+Channel 特定的运行时辅助工具（在加载 Channel Plugin 时可用）。
+
 ## 存储运行时引用
 
 使用 `createPluginRuntimeStore` 存储运行时引用，以便在 `register` 回调外部使用：
@@ -322,10 +357,10 @@ export function tryGetRuntime() {
 | ------------------------ | ------------------------- | ------------------------------------------------------------- |
 | `api.id`                 | `string`                  | Plugin id                                                     |
 | `api.name`               | `string`                  | Plugin 显示名称                                               |
-| `api.config`             | `OpenClawConfig`          | 当前配置快照                                                  |
+| `api.config`             | `OpenClawConfig`          | 当前配置快照（可用时为活跃的内存运行时快照）                  |
 | `api.pluginConfig`       | `Record<string, unknown>` | 来自 `plugins.entries.<id>.config` 的 Plugin 特定配置         |
 | `api.logger`             | `PluginLogger`            | 作用域日志记录器（`debug`、`info`、`warn`、`error`）          |
-| `api.registrationMode`   | `PluginRegistrationMode`  | `"full"`、`"setup-only"` 或 `"setup-runtime"`                 |
+| `api.registrationMode`   | `PluginRegistrationMode`  | 当前加载模式；`"setup-runtime"` 是完整入口启动/设置窗口前的轻量级预启动阶段 |
 | `api.resolvePath(input)` | `(string) => string`      | 相对于 Plugin 根目录解析路径                                  |
 
 ## 相关

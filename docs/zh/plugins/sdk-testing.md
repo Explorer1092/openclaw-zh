@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "93fcbf6726160ae1e1ea3cceb05f8cf7"
+mmh3_hash: "ab35b8817a1d55e21e303755b4cfdc2c"
 title: "Plugin 测试"
 sidebarTitle: "测试"
 summary: "OpenClaw Plugin 的测试工具和模式"
@@ -205,7 +205,7 @@ pnpm test -- src/plugins/contracts/
 对于特定 Plugin：
 
 ```bash
-pnpm test -- extensions/my-channel/
+pnpm test -- <bundled-plugin-root>/my-channel/
 ```
 
 仅运行契约测试：
@@ -235,10 +235,10 @@ OpenClaw 使用 Vitest 和 V8 覆盖率阈值。对于 Plugin 测试：
 pnpm test
 
 # 运行特定 Plugin 测试
-pnpm test -- extensions/my-channel/src/channel.test.ts
+pnpm test -- <bundled-plugin-root>/my-channel/src/channel.test.ts
 
 # 使用特定测试名称过滤器运行
-pnpm test -- extensions/my-channel/ -t "resolves account"
+pnpm test -- <bundled-plugin-root>/my-channel/ -t "resolves account"
 
 # 带覆盖率运行
 pnpm test:coverage
@@ -247,7 +247,7 @@ pnpm test:coverage
 如果本地运行导致内存压力：
 
 ```bash
-OPENCLAW_TEST_PROFILE=low OPENCLAW_TEST_SERIAL_GATEWAY=1 pnpm test
+OPENCLAW_VITEST_MAX_WORKERS=1 pnpm test
 ```
 
 ## 相关

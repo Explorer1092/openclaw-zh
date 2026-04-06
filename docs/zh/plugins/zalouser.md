@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2b67da9291dc43d271eda96405f4ca7a"
+mmh3_hash: "4c4a1783f8876b3adb3162ad5f5272f1"
 summary: "Zalo Personal Plugin: 通过原生 zca-js 的 QR 登录 + 消息(Plugin 安装 + channel 配置 + Tool)"
 read_when:
   - 您想要 OpenClaw 中的 Zalo Personal(非官方)支持
@@ -38,8 +38,9 @@ openclaw plugins install @openclaw/zalouser
 ### 选项 B: 从本地文件夹安装(开发)
 
 ```bash
-openclaw plugins install ./extensions/zalouser
-cd ./extensions/zalouser && pnpm install
+PLUGIN_SRC=./path/to/local/zalouser-plugin
+openclaw plugins install "$PLUGIN_SRC"
+cd "$PLUGIN_SRC" && pnpm install
 ```
 
 之后重启 Gateway。
