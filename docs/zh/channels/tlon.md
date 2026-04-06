@@ -1,18 +1,22 @@
 ---
-title: "Tlon (插件)"
-mmh3_hash: "3dd0791deadbb5230710ed6e5c3ba36d"
+title: "Tlon"
+mmh3_hash: "f36b0e039a631377ab681afe3e99663f"
 summary: "Tlon/Urbit 支持状态、功能和配置"
-read_when: ["Working on Tlon/Urbit channel features"]
+read_when:
+  - Working on Tlon/Urbit channel features
 ---
-# Tlon (插件)
+
+# Tlon
 
 Tlon 是一个基于 Urbit 构建的去中心化通讯工具。OpenClaw 可以连接到您的 Urbit ship 并响应私信和群组聊天消息。群组回复默认需要 @ 提及，并且可以通过允许列表进一步限制。
 
-状态：通过插件支持。支持私信、群组提及、帖子回复、富文本格式化和图片上传。通过[捆绑技能](#捆绑技能)支持反应。不支持投票。
+状态：内置插件。支持私信、群组提及、帖子回复、富文本格式化和图片上传。通过[捆绑技能](#捆绑技能)支持反应。尚不支持投票。
 
-## 需要插件
+## 内置插件
 
-Tlon 作为插件提供，不包含在核心安装中。
+Tlon 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打包构建无需单独安装。
+
+如果您使用的是较旧的构建版本或不包含 Tlon 的自定义安装，请手动安装：
 
 通过 CLI 安装（npm registry）：
 
@@ -23,14 +27,16 @@ openclaw plugins install @openclaw/tlon
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/tlon
+openclaw plugins install ./path/to/local/tlon-plugin
 ```
 
 详情：[插件](/tools/plugin)
 
 ## 设置
 
-1. 安装 Tlon 插件。
+1. 确保 Tlon 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 较旧/自定义安装可使用上述命令手动添加。
 2. 获取您的 ship URL 和登录代码。
 3. 配置 `channels.tlon`。
 4. 重启 gateway。
@@ -266,3 +272,11 @@ Provider 选项：
 - 帖子回复：如果接收到的消息在帖子中，OpenClaw 将在帖子内回复。
 - 富文本：Markdown 格式（粗体、斜体、代码、标题、列表）被转换为 Tlon 的原生格式。
 - 图片：URL 被上传到 Tlon 存储并作为图片块嵌入。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

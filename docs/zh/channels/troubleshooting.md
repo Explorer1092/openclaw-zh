@@ -1,7 +1,7 @@
 ---
 title: "频道故障排除"
 sidebarTitle: "频道故障排除"
-mmh3_hash: "d6d6e75ec4d7b7970af7ea42de14e196"
+mmh3_hash: "aef1510f79567d267a7101e2eb5d57f2"
 summary: "快速频道级故障排除，含各频道故障特征和修复方法"
 read_when:
   - 频道传输显示已连接但回复失败
@@ -28,7 +28,7 @@ openclaw channels status --probe
 
 - `Runtime: running`
 - `RPC probe: ok`
-- 频道探测显示已连接/就绪
+- 频道探测显示传输已连接，并在支持的情况下显示 `works` 或 `audit ok`
 
 ## WhatsApp
 
@@ -107,14 +107,29 @@ openclaw channels status --probe
 
 完整故障排除：[/channels/signal#troubleshooting](/channels/signal#troubleshooting)
 
+## QQ Bot
+
+### QQ Bot 故障特征
+
+| 症状 | 最快检查方法 | 修复方法 |
+| --- | --- | --- |
+| Bot 回复"gone to Mars" | 验证配置中的 `appId` 和 `clientSecret` | 设置凭据或重启 gateway。 |
+| 无入站消息 | `openclaw channels status --probe` | 在 QQ 开放平台验证凭据。 |
+| 语音未转录 | 检查 STT provider 配置 | 配置 `channels.qqbot.stt` 或 `tools.media.audio`。 |
+| 主动消息未到达 | 检查 QQ 平台交互要求 | QQ 可能会阻止没有近期交互的 bot 发起消息。 |
+
+完整故障排除：[/channels/qqbot#troubleshooting](/channels/qqbot#troubleshooting)
+
 ## Matrix
 
 ### Matrix 故障特征
 
 | 症状 | 最快检查方法 | 修复方法 |
 | --- | --- | --- |
-| 已登录但忽略房间消息 | `openclaw channels status --probe` | 检查 `groupPolicy` 和房间 allowlist。 |
+| 已登录但忽略房间消息 | `openclaw channels status --probe` | 检查 `groupPolicy`、房间 allowlist 和提及门控。 |
 | 私信未处理 | `openclaw pairing list matrix` | 批准发送者或调整私信策略。 |
-| 加密房间失败 | 验证加密模块和加密设置 | 启用加密支持并重新加入/同步房间。 |
+| 加密房间失败 | `openclaw matrix verify status` | 重新验证设备，然后检查 `openclaw matrix verify backup status`。 |
+| 备份恢复挂起/损坏 | `openclaw matrix verify backup status` | 运行 `openclaw matrix verify backup restore` 或使用恢复密钥重新运行。 |
+| 交叉签名/引导看起来不正确 | `openclaw matrix verify bootstrap` | 一次性修复密钥存储、交叉签名和备份状态。 |
 
 完整设置和配置：[Matrix](/channels/matrix)

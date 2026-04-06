@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "38d01c5ec672640f1994c0e49f596172"
+mmh3_hash: "cffbfcfa77de6223229ab1514ce8379c"
 summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
 read_when:
   - 设置 Slack 或调试 Slack socket/HTTP 模式
@@ -526,6 +526,8 @@ openclaw pairing list slack
     - Slack Request URL（Events + Interactivity + Slash Commands）
     - 每个 HTTP 账户唯一的 `webhookPath`
 
+    如果账户快照中出现 `signingSecretStatus: "configured_unavailable"`，说明 HTTP 账户已配置但当前运行时无法解析 SecretRef 支持的 signing secret。
+
   </Accordion>
 
   <Accordion title="原生/slash 命令未触发">
@@ -597,7 +599,9 @@ channels:
 
 ## 相关
 
-- [配对](/channels/pairing)
+- [Pairing](/channels/pairing)
+- [Groups](/channels/groups)
+- [Security](/gateway/security)
 - [Channel 路由](/channels/channel-routing)
 - [故障排除](/channels/troubleshooting)
 - [配置](/gateway/configuration)

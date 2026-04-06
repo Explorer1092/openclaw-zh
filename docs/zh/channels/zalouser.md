@@ -1,7 +1,7 @@
 ---
 title: "Zalo 个人号 (非官方)"
 sidebarTitle: "Zalo 个人号"
-mmh3_hash: "b0acaac0558605c4da49c09b0e903959"
+mmh3_hash: "b1970bbeca3b8519ee153f17f8f74c3a"
 summary: "Zalo personal account support via native zca-js (QR login), capabilities, and configuration"
 read_when: ["Setting up Zalo Personal for OpenClaw","Debugging Zalo Personal login or message flow"]
 ---
@@ -164,3 +164,11 @@ openclaw directory groups list --channel zalouser --query "work"
 **从旧的基于 CLI 的设置升级：**
 - 移除所有旧的外部 `zca` 进程假设。
 - 该通道现在完全在 OpenClaw 内运行，无需外部 CLI 二进制文件。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

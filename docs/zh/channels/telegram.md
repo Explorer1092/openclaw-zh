@@ -1,7 +1,7 @@
 ---
 title: "Telegram (Bot API)"
 sidebarTitle: "Telegram"
-mmh3_hash: "1c6cff04264e120fd8a6eac6b52988fe"
+mmh3_hash: "449a6809b12f98b0cdee5a04b99dbd7b"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook
@@ -958,6 +958,8 @@ dig +short api.telegram.org AAAA
 - `channels.telegram.actions.sticker`：门控 Telegram 贴纸操作——发送和搜索（默认：false）。
 - `channels.telegram.reactionNotifications`：`off | own | all`——控制哪些 reaction 触发系统事件（未设置时默认：`own`）。
 - `channels.telegram.reactionLevel`：`off | ack | minimal | extensive`——控制 agent 的 reaction 能力（未设置时默认：`minimal`）。
+- `channels.telegram.errorPolicy`：`reply | silent`——控制错误回复行为（默认：`reply`）。支持每账户/群组/话题覆盖。
+- `channels.telegram.errorCooldownMs`：向同一聊天发送错误回复之间的最小毫秒数（默认：`60000`）。防止中断时的错误轰炸。
 
 - [配置参考 - Telegram](/gateway/configuration-reference#telegram)
 
@@ -970,15 +972,18 @@ Telegram 特定高优先级字段：
 - 线程/回复：`replyToMode`
 - 流式传输：`streaming`（预览）、`blockStreaming`
 - 格式化/传递：`textChunkLimit`、`chunkMode`、`linkPreview`、`responsePrefix`
-- 媒体/网络：`mediaMaxMb`、`timeoutSeconds`、`retry`、`network.autoSelectFamily`、`proxy`
+- 媒体/网络：`mediaMaxMb`、`timeoutSeconds`、`retry`、`network.autoSelectFamily`、`network.dangerouslyAllowPrivateNetwork`、`proxy`
 - webhook：`webhookUrl`、`webhookSecret`、`webhookPath`、`webhookHost`
 - 操作/功能：`capabilities.inlineButtons`、`actions.sendMessage|editMessage|deleteMessage|reactions|sticker`
 - reaction：`reactionNotifications`、`reactionLevel`
+- 错误：`errorPolicy`、`errorCooldownMs`
 - 写入/历史：`configWrites`、`historyLimit`、`dmHistoryLimit`、`dms.*.historyLimit`
 
 ## 相关
 
-- [配对](/channels/pairing)
-- [频道路由](/channels/channel-routing)
+- [Pairing](/channels/pairing)
+- [Groups](/channels/groups)
+- [Security](/gateway/security)
+- [Channel 路由](/channels/channel-routing)
 - [多 Agent 路由](/concepts/multi-agent)
 - [故障排除](/channels/troubleshooting)

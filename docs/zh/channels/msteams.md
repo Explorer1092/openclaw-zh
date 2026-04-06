@@ -1,7 +1,7 @@
 ---
 title: "Microsoft Teams (插件)"
 sidebarTitle: "Microsoft Teams"
-mmh3_hash: "9857c2d2f5ddda33256c111f4931f2a7"
+mmh3_hash: "9070b560e3cc0e84d61ae537b988abae"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when:
   - 开发 Microsoft Teams Channel 功能
@@ -774,3 +774,11 @@ Bot 在私有 Channel 中的支持有限：
 - [RSC 权限参考](https://learn.microsoft.com/en-us/microsoftteams/platform/graph-api/rsc/resource-specific-consent)
 - [Teams bot 文件处理](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/bots-filesv4)（Channel/群组需要 Graph）
 - [主动消息](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages)
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

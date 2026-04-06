@@ -1,7 +1,7 @@
 ---
 title: "Mattermost (插件)"
 sidebarTitle: "Mattermost"
-mmh3_hash: "d5cc086f28c37aa59b98631b74247701"
+mmh3_hash: "1e75a1187774424e756320d243e59ab4"
 summary: "Mattermost bot 设置和 OpenClaw 配置"
 read_when:
   - 设置 Mattermost
@@ -392,6 +392,13 @@ Mattermost 支持在 `channels.mattermost.accounts` 下配置多个账户：
 - Channel 中无回复：确保 bot 在 Channel 中并提及它（oncall），使用触发前缀（onchar），或设置 `chatmode: "onmessage"`。
 - 认证错误：检查 bot token、base URL 以及账户是否已启用。
 - 多账户问题：环境变量仅适用于 `default` 账户。
+- 原生斜杠命令返回 `Unauthorized: invalid command token.`：OpenClaw 未接受回调 token。常见原因：
+  - 斜杠命令注册失败或启动时仅部分完成
+  - 回调命中了错误的 gateway/账户
+  - Mattermost 仍有指向旧回调目标的旧命令
+  - gateway 重启后未重新激活斜杠命令
+- 如果原生斜杠命令停止工作，检查日志中是否有 `mattermost: failed to register slash commands` 或 `mattermost: native slash commands enabled but no commands could be registered`。
+- 如果省略了 `callbackUrl` 且日志警告回调解析为 `http://127.0.0.1:18789/...`，该 URL 可能只在 Mattermost 与 OpenClaw 在同一主机/网络命名空间运行时才可访问。请改为设置显式的外部可访问 `commands.callbackUrl`。
 - 按钮显示为白色方块：Agent 可能发送了格式错误的按钮数据。检查每个按钮是否同时具有 `text` 和 `callback_data` 字段。
 - 按钮渲染但点击无效：验证 Mattermost 服务器配置中 `AllowedUntrustedInternalConnections` 包含 `127.0.0.1 localhost`，以及 `ServiceSettings` 中的 `EnablePostActionIntegration` 为 `true`。
 - 按钮点击返回 404：按钮 `id` 可能包含连字符或下划线。Mattermost 的操作路由器在非字母数字 ID 上会中断。仅使用 `[a-zA-Z0-9]`。
@@ -399,3 +406,11 @@ Mattermost 支持在 `channels.mattermost.accounts` 下配置多个账户：
 - Gateway 日志显示 `missing _token in context`：`_token` 字段不在按钮的 context 中。构建集成载荷时确保包含它。
 - 确认显示原始 ID 而非按钮名称：`context.action_id` 与按钮的 `id` 不匹配。将两者设置为相同的清理后值。
 - Agent 不知道按钮：在 Mattermost Channel 配置中添加 `capabilities: ["inlineButtons"]`。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

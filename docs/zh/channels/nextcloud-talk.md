@@ -1,19 +1,21 @@
 ---
-title: "Nextcloud Talk (插件)"
+title: "Nextcloud Talk"
 sidebarTitle: "Nextcloud Talk"
-mmh3_hash: "5ff04ebc45d2f1d5030672b6517d9492"
+mmh3_hash: "155a99ebe94ce84ce8125260da250f42"
 summary: "Nextcloud Talk 支持状态、功能和配置"
 read_when:
   - 开发 Nextcloud Talk Channel 功能
 ---
 
-# Nextcloud Talk (插件)
+# Nextcloud Talk
 
-状态：通过插件支持（Webhook bot）。支持私信、聊天室、反应和 markdown 消息。
+状态：内置插件（Webhook bot）。支持私信、聊天室、反应和 markdown 消息。
 
-## 需要插件
+## 内置插件
 
-Nextcloud Talk 作为插件提供，不包含在核心安装中。
+Nextcloud Talk 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打包构建无需单独安装。
+
+如果您使用的是较旧的构建版本或不包含 Nextcloud Talk 的自定义安装，请手动安装：
 
 通过 CLI 安装（npm registry）：
 
@@ -24,17 +26,16 @@ openclaw plugins install @openclaw/nextcloud-talk
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/nextcloud-talk
+openclaw plugins install ./path/to/local/nextcloud-talk-plugin
 ```
-
-如果您在配置/初始化过程中选择 Nextcloud Talk 且检测到 git 检出，
-OpenClaw 将自动提供本地安装路径。
 
 详情：[插件](/tools/plugin)
 
 ## 快速设置（入门）
 
-1. 安装 Nextcloud Talk 插件。
+1. 确保 Nextcloud Talk 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 较旧/自定义安装可使用上述命令手动添加。
 2. 在您的 Nextcloud 服务器上创建一个 bot：
 
    ```bash
@@ -138,3 +139,11 @@ Provider 选项：
 - `channels.nextcloud-talk.blockStreaming`：为此 Channel 禁用块流式传输。
 - `channels.nextcloud-talk.blockStreamingCoalesce`：块流式传输合并调优。
 - `channels.nextcloud-talk.mediaMaxMb`：入站媒体上限（MB）。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

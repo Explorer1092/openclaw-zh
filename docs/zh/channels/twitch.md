@@ -1,20 +1,23 @@
 ---
-title: "Twitch (插件)"
-sidebarTitle: "Twitch (插件)"
-mmh3_hash: "34bbfba948e744ec197c795aaa90bde9"
+title: "Twitch"
+sidebarTitle: "Twitch"
+mmh3_hash: "852c27bd672349d60fca01d457d6e54e"
 summary: "Twitch 聊天机器人配置和设置"
 read_when:
   - 为 OpenClaw 配置 Twitch 聊天集成
 ---
-# Twitch (plugin)
+
+# Twitch
 
 通过 IRC 连接支持 Twitch 聊天。OpenClaw 以 Twitch 用户（机器人账户）身份连接，在频道中接收和发送消息。
 
-## 需要插件
+## 内置插件
 
-Twitch 作为插件提供，不与核心安装捆绑。
+Twitch 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打包构建无需单独安装。
 
-通过 CLI 安装（npm 仓库）：
+如果您使用的是较旧的构建版本或不包含 Twitch 的自定义安装，请手动安装：
+
+通过 CLI 安装（npm registry）：
 
 ```bash
 openclaw plugins install @openclaw/twitch
@@ -23,24 +26,27 @@ openclaw plugins install @openclaw/twitch
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/twitch
+openclaw plugins install ./path/to/local/twitch-plugin
 ```
 
-详细信息：[Plugins](/tools/plugin)
+详情：[插件](/tools/plugin)
 
 ## 快速设置（新手）
 
-1) 为机器人创建一个专用的 Twitch 账户（或使用现有账户）。
-2) 生成凭据：[Twitch Token Generator](https://twitchtokengenerator.com/)
+1. 确保 Twitch 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 较旧/自定义安装可使用上述命令手动添加。
+2. 为机器人创建一个专用的 Twitch 账户（或使用现有账户）。
+3. 生成凭据：[Twitch Token Generator](https://twitchtokengenerator.com/)
    - 选择 **Bot Token**
    - 验证已选择 `chat:read` 和 `chat:write` 范围
    - 复制 **Client ID** 和 **Access Token**
-3) 查找你的 Twitch 用户 ID：https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/
-4) 配置 token：
+4. 查找您的 Twitch 用户 ID：[https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/](https://www.streamweasels.com/tools/convert-twitch-username-to-user-id/)
+5. 配置 token：
    - 环境变量：`OPENCLAW_TWITCH_ACCESS_TOKEN=...`（仅默认账户）
    - 或配置：`channels.twitch.accessToken`
    - 如果两者都设置，配置优先（环境变量回退仅用于默认账户）。
-5) 启动 gateway。
+6. 启动 gateway。
 
 **⚠️ 重要：** 添加访问控制（`allowFrom` 或 `allowedRoles`）以防止未授权用户触发机器人。`requireMention` 默认为 `true`。
 
@@ -368,3 +374,11 @@ Agent 可以调用带有 action 的 `twitch`：
 - 每条消息 **500 个字符**（在单词边界处自动分块）
 - 分块前会去除 Markdown
 - 无速率限制（使用 Twitch 的内置速率限制）
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

@@ -1,6 +1,6 @@
 ---
 title: "Nostr"
-mmh3_hash: "493ab28046b6b4c513e501b1860420ea"
+mmh3_hash: "fc8715fadac943903f6b0da0cf913ac2"
 summary: "通过 NIP-04 加密消息实现的 Nostr DM Channel"
 read_when:
   - 您希望 OpenClaw 通过 Nostr 接收私信
@@ -9,25 +9,18 @@ read_when:
 
 # Nostr
 
-**状态：** 可选插件（默认禁用）。
+**状态：** 可选内置插件（配置前默认禁用）。
 
 Nostr 是一个去中心化的社交网络协议。此 Channel 使 OpenClaw 能够通过 NIP-04 接收和回复加密的私信（DM）。
 
-## 按需安装
+## 内置插件
 
-### 引导向导（推荐）
+当前 OpenClaw 版本将 Nostr 作为内置插件提供，因此正常的打包构建无需单独安装。
 
-- 引导向导（`openclaw onboard`）和 `openclaw channels add` 会列出可选的 Channel 插件。
-- 选择 Nostr 会提示您按需安装插件。
+### 较旧/自定义安装
 
-默认安装方式：
-
-- **开发版 Channel + git 检出可用：** 使用本地插件路径。
-- **稳定版/测试版：** 从 npm 下载。
-
-您可以在提示中覆盖默认选择。
-
-### 手动安装
+- 引导向导（`openclaw onboard`）和 `openclaw channels add` 仍会从共享 Channel 目录中列出 Nostr。
+- 如果您的构建不包含内置 Nostr，请手动安装。
 
 ```bash
 openclaw plugins install @openclaw/nostr
@@ -36,7 +29,7 @@ openclaw plugins install @openclaw/nostr
 使用本地检出（开发工作流）：
 
 ```bash
-openclaw plugins install --link <path-to-openclaw>/extensions/nostr
+openclaw plugins install --link <path-to-local-nostr-plugin>
 ```
 
 安装或启用插件后需要重启 Gateway。
@@ -56,7 +49,7 @@ openclaw channels add --channel nostr --private-key "$NOSTR_PRIVATE_KEY" --relay
 
 ```bash
 # 使用 nak
- nak key generate
+nak key generate
 ```
 
 2. 添加到配置：
@@ -133,7 +126,7 @@ export NOSTR_PRIVATE_KEY="nsec1..."
 
 执行注意事项：
 
-- 发送者策略在签名验证和 NIP-04 解密之前检查。
+- 入站事件签名在发送者策略和 NIP-04 解密之前验证，因此伪造的事件会被提前拒绝。
 - 配对回复在不处理原始 DM 内容的情况下发送。
 - 入站 DM 有速率限制，解密前会丢弃超大载荷。
 
@@ -241,10 +234,18 @@ docker run -p 7777:7777 ghcr.io/hoytech/strfry
 - 永远不要提交私钥。
 - 使用环境变量存储密钥。
 - 生产环境的 bot 考虑使用 `allowlist`。
-- 配对和 allowlist 策略在解密前执行，因此未知发送者无法强制进行完整的加密工作。
+- 签名在发送者策略之前验证，发送者策略在解密之前执行，因此伪造的事件会被提前拒绝，未知发送者无法强制进行完整的加密工作。
 
 ## 限制（MVP）
 
 - 仅支持私信（不支持群聊）。
 - 不支持媒体附件。
 - 仅支持 NIP-04（计划支持 NIP-17 礼品包装）。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

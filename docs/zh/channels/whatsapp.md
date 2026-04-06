@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp（Web 频道）"
 sidebarTitle: "WhatsApp"
-mmh3_hash: "0348abd65303dcdcb9608abf432f40df"
+mmh3_hash: "9b97a31303c639ca3478ce9c014ff149"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
@@ -447,14 +447,16 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
 WhatsApp 高优先级字段：
 
 - 访问：`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`
-- 传递：`textChunkLimit`、`chunkMode`、`mediaMaxMb`、`sendReadReceipts`、`ackReaction`
+- 传递：`textChunkLimit`、`chunkMode`、`mediaMaxMb`、`sendReadReceipts`、`ackReaction`、`reactionLevel`
 - 多账户：`accounts.<id>.enabled`、`accounts.<id>.authDir`、账户级覆盖
 - 运维：`configWrites`、`debounceMs`、`web.enabled`、`web.heartbeatSeconds`、`web.reconnect.*`
 - 会话行为：`session.dmScope`、`historyLimit`、`dmHistoryLimit`、`dms.<id>.historyLimit`
 
 ## 相关
 
-- [配对](/channels/pairing)
-- [频道路由](/channels/channel-routing)
+- [Pairing](/channels/pairing)
+- [Groups](/channels/groups)
+- [Security](/gateway/security)
+- [Channel 路由](/channels/channel-routing)
 - [多 Agent 路由](/concepts/multi-agent)
 - [故障排除](/channels/troubleshooting)

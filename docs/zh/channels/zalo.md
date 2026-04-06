@@ -1,7 +1,7 @@
 ---
 title: "Zalo (Bot API)"
 sidebarTitle: "Zalo"
-mmh3_hash: "0f5f8920da09713c8c2fd0cebd8df290"
+mmh3_hash: "6f402ab06410a005bdae657aed13a58e"
 summary: "Zalo bot 支持状态、功能和配置"
 read_when:
   - 开发 Zalo 功能或 webhook
@@ -243,3 +243,11 @@ Provider 选项：
 - `channels.zalo.accounts.<id>.webhookSecret`：每账户 webhook secret。
 - `channels.zalo.accounts.<id>.webhookPath`：每账户 webhook 路径。
 - `channels.zalo.accounts.<id>.proxy`：每账户代理 URL。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

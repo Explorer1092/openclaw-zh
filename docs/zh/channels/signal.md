@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0fdffe4516a58de97994e77a0923c311"
+mmh3_hash: "f76713a003eab8b6f20c1290035a4bb7"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置路径和号码模型"
 read_when:
   - 设置 Signal 支持
@@ -328,3 +328,11 @@ Provider 选项：
 - `agents.list[].groupChat.mentionPatterns`（Signal 不支持原生提及）。
 - `messages.groupChat.mentionPatterns`（全局回退）。
 - `messages.responsePrefix`。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

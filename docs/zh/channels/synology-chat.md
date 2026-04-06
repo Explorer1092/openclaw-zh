@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6b76ea3236f8e752d397ec6953fcbe79"
+mmh3_hash: "360cf740ee59888517a2edf97da0cb64"
 title: "Synology Chat"
 summary: "Synology Chat webhook 设置与 OpenClaw 配置"
 read_when:
@@ -133,6 +133,32 @@ openclaw message send --channel synology-chat --target synology-chat:123456 --te
 - 保持 `token` 机密，泄露后及时轮换。
 - 除非明确信任自签名的本地 NAS 证书，否则保持 `allowInsecureSsl: false`。
 - 入站 webhook 请求经过 token 验证，并按发送者限速。
+- 无效 token 检查使用常量时间密钥比较，失败时关闭。
 - 生产环境推荐使用 `dmPolicy: "allowlist"`。
 - 除非明确需要旧版基于用户名的回复投递，否则保持 `dangerouslyAllowNameMatching` 关闭。
 - 除非明确接受多账户设置中的共享路径路由风险，否则保持 `dangerouslyAllowInheritedWebhookPath` 关闭。
+
+## 故障排除
+
+- `Missing required fields (token, user_id, text)`：
+  - 出站 webhook 载荷缺少必填字段之一
+  - 如果 Synology 在请求头中发送 token，确保 gateway/proxy 保留这些请求头
+- `Invalid token`：
+  - 出站 webhook 密钥与 `channels.synology-chat.token` 不匹配
+  - 请求命中了错误的账户/webhook 路径
+  - 反向代理在请求到达 OpenClaw 之前剥离了 token 请求头
+- `Rate limit exceeded`：
+  - 来自同一来源的过多无效 token 尝试可能会暂时锁定该来源
+  - 已认证的发送者也有单独的每用户消息频率限制
+- `Allowlist is empty. Configure allowedUserIds or use dmPolicy=open.`：
+  - 启用了 `dmPolicy="allowlist"` 但未配置任何用户
+- `User not authorized`：
+  - 发送者的数字 `user_id` 不在 `allowedUserIds` 中
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

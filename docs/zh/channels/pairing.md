@@ -1,14 +1,14 @@
 ---
-mmh3_hash: "621ceb7126a347142dc8ab8d6203d8f2"
+mmh3_hash: "028a8061ead59c0167ded095913448e2"
 summary: "配对概述：批准谁可以私信您 + 哪些节点可以加入"
 read_when:
   - 设置 DM 访问控制
   - 配对新的 iOS/Android 节点
   - 审查 OpenClaw 安全态势
-title: "配对"
+title: "Pairing"
 ---
 
-# 配对
+# Pairing
 
 "配对"是 OpenClaw 的显式**所有者批准**步骤。它用于两个地方：
 
@@ -36,7 +36,7 @@ openclaw pairing list telegram
 openclaw pairing approve telegram <CODE>
 ```
 
-支持的 Channel：`bluebubbles`、`discord`、`feishu`、`googlechat`、`imessage`、`irc`、`line`、`matrix`、`mattermost`、`msteams`、`nextcloud-talk`、`nostr`、`signal`、`slack`、`synology-chat`、`telegram`、`twitch`、`whatsapp`、`zalo`、`zalouser`。
+支持的 Channel：`bluebubbles`、`discord`、`feishu`、`googlechat`、`imessage`、`irc`、`line`、`matrix`、`mattermost`、`msteams`、`nextcloud-talk`、`nostr`、`openclaw-weixin`、`signal`、`slack`、`synology-chat`、`telegram`、`twitch`、`whatsapp`、`zalo`、`zalouser`。
 
 ### 状态存储位置
 
@@ -53,6 +53,9 @@ openclaw pairing approve telegram <CODE>
 - 默认账户使用无范围的 Channel 级别 allowlist 文件。
 
 将这些视为敏感信息（它们控制对您的助手的访问）。
+
+重要：此存储用于 DM 访问。群组授权是单独的。
+批准 DM 配对代码不会自动允许该发送者在群组中运行命令或控制机器人。对于群组访问，请配置 Channel 的显式群组 allowlist（例如 `groupAllowFrom`、`groups` 或根据 Channel 的每个群组/每个话题覆盖）。
 
 ## 2) 节点设备配对（iOS/Android/macOS/无头节点）
 
@@ -72,6 +75,15 @@ openclaw pairing approve telegram <CODE>
 
 - `url`：Gateway WebSocket URL（`ws://...` 或 `wss://...`）
 - `bootstrapToken`：用于初始配对握手的短期单设备引导令牌
+
+该引导令牌携带内置的配对引导配置文件：
+
+- 主交接的 `node` 令牌保持 `scopes: []`
+- 任何交接的 `operator` 令牌保持绑定到引导 allowlist：
+  `operator.approvals`、`operator.read`、`operator.talk.secrets`、`operator.write`
+- 引导权限范围检查带角色前缀，而非单一扁平的权限池：
+  operator 权限范围条目仅满足 operator 请求，非 operator 角色
+  仍需在自己的角色前缀下请求权限范围
 
 在其有效期内，将设置代码视为密码。
 
@@ -94,7 +106,8 @@ openclaw devices reject <requestId>
 
 ### 注意事项
 
-- 旧版 `node.pair.*` API（CLI：`openclaw nodes pending/approve`）是单独的 Gateway 拥有的配对存储。WS 节点仍然需要设备配对。
+- 旧版 `node.pair.*` API（CLI：`openclaw nodes pending|approve|reject|rename`）是单独的 Gateway 拥有的配对存储。WS 节点仍然需要设备配对。
+- 配对记录是已批准角色的持久权威来源。活跃的设备令牌绑定到已批准的角色集；已批准角色之外的游离令牌条目不会创建新的访问权限。
 
 ## 相关文档
 
