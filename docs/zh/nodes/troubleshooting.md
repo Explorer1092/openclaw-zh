@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "171c8034b0700af40eb32de0cfc0f350"
+mmh3_hash: "ef6545b6364181b8d9088dd7167d1daa"
 summary: "排查节点配对、前台要求、权限和工具失败问题"
 read_when:
   - 节点已连接但 camera/canvas/screen/exec 工具失败
@@ -63,7 +63,8 @@ openclaw logs --follow
 这些是不同的门控：
 
 1. **设备配对**：此节点能否连接到 Gateway？
-2. **Exec 审批**：此节点能否运行特定的 Shell 命令？
+2. **Gateway 节点命令策略**：RPC 命令 ID 是否被 `gateway.nodes.allowCommands` / `denyCommands` 和平台默认值允许？
+3. **Exec 审批**：此节点能否运行特定的 Shell 命令？
 
 快速检查：
 
@@ -74,7 +75,13 @@ openclaw approvals get --node <idOrNameOrIp>
 openclaw approvals allowlist add --node <idOrNameOrIp> "/usr/bin/uname"
 ```
 
-如果配对缺失，请先批准节点设备。如果配对正常但 `system.run` 失败，请修复 Exec 审批/白名单。
+如果配对缺失，请先批准节点设备。
+如果 `nodes describe` 缺少某个命令，请检查 Gateway 节点命令策略以及该节点在连接时是否实际声明了该命令。
+如果配对正常但 `system.run` 失败，请修复 Exec 审批/白名单。
+
+节点配对是身份/信任门控，而不是按命令的审批接口。对于 `system.run`，按节点策略存在于该节点的 Exec 审批文件中（`openclaw approvals get --node ...`），而不在 Gateway 配对记录中。
+
+对于经审批的 `host=node` 运行，Gateway 也会将执行绑定到已准备的规范 `systemRunPlan`。如果后续调用者在批准的运行被转发之前改变了命令/cwd 或 Session 元数据，Gateway 将以审批不匹配拒绝该运行，而不是信任已编辑的载荷。
 
 ## 常见节点错误代码
 

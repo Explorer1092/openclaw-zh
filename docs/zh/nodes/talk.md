@@ -1,9 +1,11 @@
 ---
 title: "对讲模式"
 sidebarTitle: "对讲模式"
-mmh3_hash: "96a377d016440da2ab789445e467b1ad"
+mmh3_hash: "afb09b864c638ea8b33ff27032c9ffb7"
 summary: "对讲模式: 使用 ElevenLabs TTS 的连续语音对话"
-read_when: ["在 macOS/iOS/Android 上实现对讲模式","更改语音/TTS/打断行为"]
+read_when:
+  - 在 macOS/iOS/Android 上实现对讲模式
+  - 更改语音/TTS/打断行为
 ---
 
 # 对讲模式
@@ -13,7 +15,7 @@ read_when: ["在 macOS/iOS/Android 上实现对讲模式","更改语音/TTS/打�
 1. 监听语音
 2. 发送转录给模型 (主会话, chat.send)
 3. 等待回复
-4. 通过 ElevenLabs 朗读 (流式播放)
+4. 通过配置的 Talk provider (`talk.speak`) 朗读
 
 ## 行为 (macOS)
 
@@ -86,7 +88,7 @@ read_when: ["在 macOS/iOS/Android 上实现对讲模式","更改语音/TTS/打�
 
 - 需要语音 + 麦克风权限。
 - 对会话键 `main` 使用 `chat.send`。
-- TTS 使用 ElevenLabs 流式 API，带有 `ELEVENLABS_API_KEY`，并在 macOS/iOS/Android 上进行增量播放以降低延迟。
+- Gateway 通过 `talk.speak` 使用活动 Talk provider 解析对讲模式播放。当该 RPC 不可用时，Android 回退到本地系统 TTS。
 - `eleven_v3` 的 `stability` 验证为 `0.0`, `0.5`, 或 `1.0`；其他模型接受 `0..1`。
 - `latency_tier` 设置时验证为 `0..4`。
 - Android 支持 `pcm_16000`, `pcm_22050`, `pcm_24000`, 和 `pcm_44100` 输出格式，用于低延迟 AudioTrack 流式传输。
