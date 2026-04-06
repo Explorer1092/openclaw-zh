@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8ea488e3912c40d7b5fbf94c857af405"
+mmh3_hash: "a9abee2ead5103ca8612235719547ef2"
 summary: "向多个 Agents 广播 WhatsApp 消息"
 read_when:
   - 配置广播组

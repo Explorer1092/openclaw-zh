@@ -1,30 +1,38 @@
 ---
-mmh3_hash: "38538af6f2d4f59b3fe670eb62088b6d"
+mmh3_hash: "bd2ccac74a834d304e69add4be5b3fe6"
 summary: "通过 BlueBubbles macOS 服务器使用 iMessage（REST 发送/接收、输入中、反应、配对、高级操作）。"
 read_when:
-  - 设置 BlueBubbles channel
+  - 设置 BlueBubbles Channel
   - 排查 webhook 配对问题
   - 在 macOS 上配置 iMessage
 title: "BlueBubbles"
 ---
 # BlueBubbles (macOS REST)
 
-状态：内置插件，通过 HTTP 与 BlueBubbles macOS 服务器通信。**推荐用于 iMessage 集成**，因为其 API 更丰富，设置比传统的 imsg channel 更简单。
+状态：内置插件，通过 HTTP 与 BlueBubbles macOS 服务器通信。**推荐用于 iMessage 集成**，因为其 API 更丰富，设置比传统的 imsg Channel 更简单。
+
+## 内置插件
+
+当前 OpenClaw 版本内置了 BlueBubbles，因此正常打包的版本无需
+单独的 `openclaw plugins install` 步骤。
 
 ## 概述
+
 - 通过 BlueBubbles 辅助应用在 macOS 上运行（[bluebubbles.app](https://bluebubbles.app)）。
 - 推荐/已测试：macOS Sequoia (15)。macOS Tahoe (26) 可用；编辑功能在 Tahoe 上目前损坏，群组图标更新可能显示成功但不会同步。
 - OpenClaw 通过其 REST API 与之通信（`GET /api/v1/ping`、`POST /message/text`、`POST /chat/:id/*`）。
 - 传入消息通过 webhook 到达；传出回复、输入中指示器、已读回执和点赞反应是 REST 调用。
-- 附件和贴纸作为入站媒体获取（并在可能时呈现给 agent）。
-- 配对/allowlist 的工作方式与其他 channel 相同（`/channels/pairing` 等），使用 `channels.bluebubbles.allowFrom` + 配对代码。
-- 反应作为系统事件呈现，就像 Slack/Telegram 一样，因此 agent 可以在回复前"提及"它们。
+- 附件和贴纸作为入站媒体获取（并在可能时呈现给 Agent）。
+- 配对/allowlist 的工作方式与其他 Channel 相同（`/channels/pairing` 等），使用 `channels.bluebubbles.allowFrom` + 配对代码。
+- 反应作为系统事件呈现，就像 Slack/Telegram 一样，因此 Agent 可以在回复前"提及"它们。
 - 高级功能：编辑、撤回、回复线程、消息效果、群组管理。
 
 ## 快速开始
+
 1. 在你的 Mac 上安装 BlueBubbles 服务器（按照 [bluebubbles.app/install](https://bluebubbles.app/install) 的说明操作）。
 2. 在 BlueBubbles 配置中，启用 web API 并设置密码。
 3. 运行 `openclaw onboard` 并选择 BlueBubbles，或手动配置：
+
    ```json5
    {
      channels: {
@@ -32,18 +40,20 @@ title: "BlueBubbles"
          enabled: true,
          serverUrl: "http://192.168.1.100:1234",
          password: "example-password",
-         webhookPath: "/bluebubbles-webhook"
-       }
-     }
+         webhookPath: "/bluebubbles-webhook",
+       },
+     },
    }
    ```
-4. 将 BlueBubbles webhook 指向你的 gateway（示例：`https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`）。
-5. 启动 gateway；它将注册 webhook 处理器并开始配对。
+
+4. 将 BlueBubbles webhook 指向你的 Gateway（示例：`https://your-gateway-host:3000/bluebubbles-webhook?password=<password>`）。
+5. 启动 Gateway；它将注册 webhook 处理器并开始配对。
 
 安全说明：
 
 - 始终设置 webhook 密码。
-- Webhook 身份验证始终是必需的。OpenClaw 会拒绝 BlueBubbles webhook 请求，除非它们包含与 `channels.bluebubbles.password` 匹配的 password/guid（例如 `?password=<password>` 或 `x-password`），无论 loopback/代理拓扑如何。密码验证在读取/解析完整 webhook 请求体之前进行。
+- Webhook 身份验证始终是必需的。OpenClaw 会拒绝 BlueBubbles webhook 请求，除非它们包含与 `channels.bluebubbles.password` 匹配的 password/guid（例如 `?password=<password>` 或 `x-password`），无论 loopback/代理拓扑如何。
+- 密码验证在读取/解析完整 webhook 请求体之前进行。
 
 ## 保持 Messages.app 运行（VM / 无头设置）
 
@@ -120,12 +130,15 @@ launchctl load ~/Library/LaunchAgents/com.user.poke-messages.plist
 ```
 
 ## Onboarding
+
 BlueBubbles 在交互式设置向导中可用：
+
 ```
 openclaw onboard
 ```
 
 向导会提示输入：
+
 - **Server URL**（必需）：BlueBubbles 服务器地址（例如 `http://192.168.1.100:1234`）
 - **Password**（必需）：来自 BlueBubbles Server 设置的 API 密码
 - **Webhook path**（可选）：默认为 `/bluebubbles-webhook`
@@ -133,6 +146,7 @@ openclaw onboard
 - **Allow list**：电话号码、电子邮件或聊天目标
 
 你也可以通过 CLI 添加 BlueBubbles：
+
 ```
 openclaw channels add bluebubbles --http-url http://192.168.1.100:1234 --password <password>
 ```
@@ -153,15 +167,35 @@ DM：
 - `channels.bluebubbles.groupPolicy = open | allowlist | disabled`（默认：`allowlist`）。
 - `channels.bluebubbles.groupAllowFrom` 控制当设置为 `allowlist` 时谁可以在群组中触发。
 
+### 联系人名称丰富（macOS，可选）
+
+BlueBubbles 群组 webhook 通常只包含原始参与者地址。如果你希望 `GroupMembers` 上下文显示本地联系人名称而非原始地址，可以在 macOS 上选择启用本地联系人丰富：
+
+- `channels.bluebubbles.enrichGroupParticipantsFromContacts = true` 启用查找。默认：`false`。
+- 查找仅在群组访问、命令授权和提及门控允许消息通过后运行。
+- 仅丰富未命名的电话参与者。
+- 当没有找到本地匹配时，原始电话号码作为回退。
+
+```json5
+{
+  channels: {
+    bluebubbles: {
+      enrichGroupParticipantsFromContacts: true,
+    },
+  },
+}
+```
+
 ### 提及门控（群组）
 
 BlueBubbles 支持群聊的提及门控，匹配 iMessage/WhatsApp 行为：
 
 - 使用 `agents.list[].groupChat.mentionPatterns`（或 `messages.groupChat.mentionPatterns`）检测提及。
-- 当为群组启用 `requireMention` 时，agent 仅在被提及时响应。
+- 当为群组启用 `requireMention` 时，Agent 仅在被提及时响应。
 - 来自授权发送者的控制命令绕过提及门控。
 
 每个群组的配置：
+
 ```json5
 {
   channels: {
@@ -171,9 +205,9 @@ BlueBubbles 支持群聊的提及门控，匹配 iMessage/WhatsApp 行为：
       groups: {
         "*": { requireMention: true }, // 所有群组的默认值
         "iMessage;-;chat123": { requireMention: false }, // 特定群组的覆盖
-      }
-    }
-  }
+      },
+    },
+  },
 }
 ```
 
@@ -182,6 +216,60 @@ BlueBubbles 支持群聊的提及门控，匹配 iMessage/WhatsApp 行为：
 - 控制命令（例如 `/config`、`/model`）需要授权。
 - 使用 `allowFrom` 和 `groupAllowFrom` 确定命令授权。
 - 授权发送者可以运行控制命令，即使在群组中没有提及。
+
+## ACP 会话绑定
+
+BlueBubbles 聊天可以转换为持久的 ACP 工作区，而无需更改传输层。
+
+快速操作流程：
+
+- 在 DM 或允许的群聊中运行 `/acp spawn codex --bind here`。
+- 该 BlueBubbles 会话中的后续消息路由到已创建的 ACP 会话。
+- `/new` 和 `/reset` 就地重置同一个绑定的 ACP 会话。
+- `/acp close` 关闭 ACP 会话并移除绑定。
+
+还支持通过顶级 `bindings[]` 条目配置持久绑定，其中 `type: "acp"` 和 `match.channel: "bluebubbles"`。
+
+`match.peer.id` 可以使用任何支持的 BlueBubbles 目标形式：
+
+- 标准化的 DM 句柄，例如 `+15555550123` 或 `user@example.com`
+- `chat_id:<id>`
+- `chat_guid:<guid>`
+- `chat_identifier:<identifier>`
+
+对于稳定的群组绑定，优先使用 `chat_id:*` 或 `chat_identifier:*`。
+
+示例：
+
+```json5
+{
+  agents: {
+    list: [
+      {
+        id: "codex",
+        runtime: {
+          type: "acp",
+          acp: { agent: "codex", backend: "acpx", mode: "persistent" },
+        },
+      },
+    ],
+  },
+  bindings: [
+    {
+      type: "acp",
+      agentId: "codex",
+      match: {
+        channel: "bluebubbles",
+        accountId: "default",
+        peer: { kind: "dm", id: "+15555550123" },
+      },
+      acp: { label: "codex-imessage" },
+    },
+  ],
+}
+```
+
+参见 [ACP Agents](/tools/acp-agents) 了解共享的 ACP 绑定行为。
 
 ## 输入中 + 已读回执
 
@@ -237,8 +325,9 @@ BlueBubbles 在配置中启用时支持高级消息操作：
 - **addParticipant**：向群组添加某人（`chatGuid`、`address`）
 - **removeParticipant**：从群组移除某人（`chatGuid`、`address`）
 - **leaveGroup**：离开群聊（`chatGuid`）
-- **sendAttachment**：发送媒体/文件（`to`、`buffer`、`filename`、`asVoice`）
+- **upload-file**：发送媒体/文件（`to`、`buffer`、`filename`、`asVoice`）
   - 语音备忘录：使用 **MP3** 或 **CAF** 音频设置 `asVoice: true`，作为 iMessage 语音消息发送。BlueBubbles 在发送语音备忘录时将 MP3 转换为 CAF。
+- 旧版别名：`sendAttachment` 仍然有效，但 `upload-file` 是规范操作名称。
 
 ### 消息 ID（短 vs 完整）
 
@@ -282,7 +371,7 @@ OpenClaw 可能呈现_短_消息 ID（例如 `1`、`2`）以节省 token。
 
 Provider 选项：
 
-- `channels.bluebubbles.enabled`：启用/禁用 channel。
+- `channels.bluebubbles.enabled`：启用/禁用 Channel。
 - `channels.bluebubbles.serverUrl`：BlueBubbles REST API 基础 URL。
 - `channels.bluebubbles.password`：API 密码。
 - `channels.bluebubbles.webhookPath`：Webhook 端点路径（默认：`/bluebubbles-webhook`）。
@@ -290,6 +379,7 @@ Provider 选项：
 - `channels.bluebubbles.allowFrom`：DM allowlist（句柄、电子邮件、E.164 号码、`chat_id:*`、`chat_guid:*`）。
 - `channels.bluebubbles.groupPolicy`：`open | allowlist | disabled`（默认：`allowlist`）。
 - `channels.bluebubbles.groupAllowFrom`：群组发送者 allowlist。
+- `channels.bluebubbles.enrichGroupParticipantsFromContacts`：在 macOS 上，可选在门控通过后从本地联系人丰富未命名的群组参与者。默认：`false`。
 - `channels.bluebubbles.groups`：每个群组的配置（`requireMention` 等）。
 - `channels.bluebubbles.sendReadReceipts`：发送已读回执（默认：`true`）。
 - `channels.bluebubbles.blockStreaming`：启用块流式传输（默认：`false`；流式回复需要）。
@@ -319,14 +409,14 @@ Provider 选项：
 
 ## 安全性
 
-- Webhook 请求通过将 `guid`/`password` 查询参数或标头与 `channels.bluebubbles.password` 比较来进行身份验证。来自 `localhost` 的请求也被接受。
+- Webhook 请求通过将 `guid`/`password` 查询参数或标头与 `channels.bluebubbles.password` 比较来进行身份验证。
 - 保持 API 密码和 webhook 端点机密（将它们视为凭据）。
-- Localhost 信任意味着同主机反向代理可能无意中绕过密码。如果你代理 gateway，在代理处需要认证并配置 `gateway.trustedProxies`。参见 [Gateway security](/gateway/security#reverse-proxy-configuration)。
+- BlueBubbles webhook 认证没有 localhost 绕过。如果你代理 webhook 流量，请在整个请求链路上保留 BlueBubbles 密码。`gateway.trustedProxies` 在此不能替代 `channels.bluebubbles.password`。参见 [Gateway security](/gateway/security#reverse-proxy-configuration)。
 - 如果在 LAN 外部公开 BlueBubbles 服务器，启用 HTTPS + 防火墙规则。
 
 ## 故障排除
 
-- 如果输入中/已读事件停止工作，检查 BlueBubbles webhook 日志并验证 gateway 路径是否匹配 `channels.bluebubbles.webhookPath`。
+- 如果输入中/已读事件停止工作，检查 BlueBubbles webhook 日志并验证 Gateway 路径是否匹配 `channels.bluebubbles.webhookPath`。
 - 配对代码在一小时后过期；使用 `openclaw pairing list bluebubbles` 和 `openclaw pairing approve bluebubbles <code>`。
 - 反应需要 BlueBubbles 私有 API（`POST /api/v1/message/react`）；确保服务器版本公开它。
 - 编辑/撤回需要 macOS 13+ 和兼容的 BlueBubbles 服务器版本。在 macOS 26（Tahoe）上，由于私有 API 更改，编辑目前损坏。
@@ -334,4 +424,12 @@ Provider 选项：
 - OpenClaw 根据 BlueBubbles 服务器的 macOS 版本自动隐藏已知损坏的操作。如果编辑在 macOS 26（Tahoe）上仍然出现，使用 `channels.bluebubbles.actions.edit=false` 手动禁用。
 - 对于状态/健康信息：`openclaw status --all` 或 `openclaw status --deep`。
 
-有关一般 channel 工作流参考，参见 [Channels](/channels) 和 [Plugins](/tools/plugin) 指南。
+有关一般 Channel 工作流参考，参见 [Channels](/channels) 和 [Plugins](/tools/plugin) 指南。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

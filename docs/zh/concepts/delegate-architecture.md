@@ -283,6 +283,8 @@ https://www.googleapis.com/auth/calendar           # 层级 2
 
 delegate 的 `AGENTS.md` 定义其自主权限——它可以不经询问执行什么、需要批准什么以及禁止什么。[Cron Jobs](/automation/cron-jobs) 驱动其每日计划。
 
+如果你授予了 `sessions_history`，请记住它是一个有边界的、经过安全过滤的召回视图。OpenClaw 会编辑凭据/令牌类文本，截断长内容，剥离 thinking 标签、`<relevant-memories>` 脚手架、纯文本工具调用 XML payloads（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>`、`<function_calls>...</function_calls>` 以及截断的工具调用块）、降级的工具调用脚手架、泄露的 ASCII/全角 model 控制令牌、来自 assistant 召回的格式错误的 MiniMax 工具调用 XML，并且可以用 `[sessions_history omitted: message too large]` 替换过大的行，而不是返回原始 transcript 转储。
+
 ## 扩展模式
 
 delegate 模型适用于任何小型组织:

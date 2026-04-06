@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eb840e0060f7f0ba6c0f306d3f36b717"
+mmh3_hash: "1cf33efb721c9f270d286ea3209c05a6"
 title: "daemon"
 summary: "`openclaw daemon` 的 CLI 参考（Gateway 服务管理的旧版别名）"
 read_when:

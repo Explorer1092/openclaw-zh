@@ -61,7 +61,8 @@ workspace 是 agent 的家。它是用于文件工具和 workspace context 的�
 
 - `SOUL.md`
   - 人格、语气和边界。
-  - 每个 session 加载。
+  - 每个 Session 加载。
+  - 指南：[SOUL.md 个性指南](/concepts/soul)
 
 - `USER.md`
   - 用户是谁以及如何称呼他们。
@@ -100,7 +101,8 @@ workspace 是 agent 的家。它是用于文件工具和 workspace context 的�
 
 - `skills/` (可选)
   - 特定于 workspace 的 skills。
-  - 当名称冲突时覆盖托管/捆绑的 skills。
+  - 该 workspace 中最高优先级的 skill 位置。
+  - 当名称冲突时覆盖项目 Agent skills、个人 Agent skills、托管 skills、捆绑 skills 和 `skills.load.extraDirs`。
 
 - `canvas/` (可选)
   - 用于节点显示的 Canvas UI 文件(例如 `canvas/index.html`)。
@@ -110,11 +112,12 @@ workspace 是 agent 的家。它是用于文件工具和 workspace context 的�
 
 ## workspace 中没有的内容
 
-这些位于 `~/.openclaw/` 下,不应提交到 workspace 仓库:
+这些位于 `~/.openclaw/` 下，不应提交到 workspace 仓库：
 
 - `~/.openclaw/openclaw.json` (配置)
-- `~/.openclaw/credentials/` (OAuth tokens, API keys)
-- `~/.openclaw/agents/<agentId>/sessions/` (session 记录 + 元数据)
+- `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` (model auth profiles：OAuth + API 密钥)
+- `~/.openclaw/credentials/` (Channel/provider 状态以及旧版 OAuth 导入数据)
+- `~/.openclaw/agents/<agentId>/sessions/` (Session 记录 + 元数据)
 - `~/.openclaw/skills/` (托管 skills)
 
 如果你需要迁移 sessions 或配置,单独复制它们并将它们排除在版本控制之外。
@@ -209,6 +212,13 @@ git push
 
 ## 高级注意事项
 
-- Multi-agent 路由可以为每个 agent 使用不同的 workspaces。参见
+- Multi-agent 路由可以为每个 Agent 使用不同的 workspaces。参见
   [Channel routing](/channels/channel-routing) 了解路由配置。
-- 如果启用了 `agents.defaults.sandbox`,非主 sessions 可以使用 `agents.defaults.sandbox.workspaceRoot` 下的每个 session 沙箱 workspaces。
+- 如果启用了 `agents.defaults.sandbox`，非主 Sessions 可以使用 `agents.defaults.sandbox.workspaceRoot` 下的每个 Session 沙箱 workspaces。
+
+## 相关链接
+
+- [Standing Orders](/automation/standing-orders) — workspace 文件中的持久指令
+- [Heartbeat](/gateway/heartbeat) — HEARTBEAT.md workspace 文件
+- [Session](/concepts/session) — Session 存储路径
+- [Sandboxing](/gateway/sandboxing) — 沙盒环境中的 workspace 访问

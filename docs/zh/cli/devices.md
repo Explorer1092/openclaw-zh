@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9808eacfcec9d1f0089bf9956071b30f"
+mmh3_hash: "944fd723e8873d40a05c1e7bf4b0d48c"
 title: "`openclaw devices`"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
@@ -27,6 +27,8 @@ openclaw devices list --json
 ### `openclaw devices remove <deviceId>`
 
 删除一个已配对的设备条目。
+
+使用配对设备令牌进行身份验证时,非管理员调用者只能删除**自己的**设备条目。删除其他设备需要 `operator.admin`。
 
 ```
 openclaw devices remove <deviceId>
@@ -65,19 +67,25 @@ openclaw devices reject <requestId>
 
 ### `openclaw devices rotate --device <id> --role <role> [--scope <scope...>]`
 
-为特定角色轮换设备令牌(可选更新范围)。
+为特定角色轮换设备令牌(可选更新范围)。目标角色必须已存在于该设备的批准配对合约中;轮换不能铸造新的未批准角色。如果省略 `--scope`,使用存储的轮换令牌的后续重新连接会重用该令牌的缓存批准范围。如果传递显式的 `--scope` 值,这些将成为未来缓存令牌重新连接的存储范围集。非管理员配对设备调用者只能轮换**自己的**设备令牌。另外,任何显式的 `--scope` 值必须保持在调用者 Session 自身的操作者范围内;轮换不能铸造比调用者已有的更广泛的操作者令牌。
 
 ```
 openclaw devices rotate --device <deviceId> --role operator --scope operator.read --scope operator.write
 ```
 
+返回新令牌载荷为 JSON。
+
 ### `openclaw devices revoke --device <id> --role <role>`
 
 撤销特定角色的设备令牌。
 
+非管理员配对设备调用者只能撤销**自己的**设备令牌。撤销其他设备的令牌需要 `operator.admin`。
+
 ```
 openclaw devices revoke --device <deviceId> --role node
 ```
+
+返回撤销结果为 JSON。
 
 ## 常用选项
 
@@ -93,8 +101,11 @@ openclaw devices revoke --device <deviceId> --role node
 
 - 令牌轮换返回新令牌(敏感)。将其视为机密。
 - 这些命令需要 `operator.pairing`(或 `operator.admin`)范围。
+- 令牌轮换保持在批准的配对角色集和该设备批准的范围基线内。无关的缓存令牌条目不会授予新的轮换目标。
+- 对于配对设备令牌 Session,跨设备管理仅限管理员:`remove`、`rotate` 和 `revoke` 仅限自己操作,除非调用者具有 `operator.admin`。
 - `devices clear` 有意通过 `--yes` 进行门控。
 - 如果本地回环上的配对范围不可用(且未传递显式 `--url`),list/approve 可以使用本地配对回退。
+- `devices approve` 在省略 `requestId` 或传递 `--latest` 时自动选择最新的待处理请求。
 
 ## 令牌漂移恢复检查清单
 
@@ -127,6 +138,11 @@ openclaw devices approve <requestId>
 ```
 
 5. 使用当前共享令牌/密码重试客户端连接。
+
+说明:
+
+- 正常重新连接认证优先级为:显式共享令牌/密码优先,然后是显式 `deviceToken`,然后是存储的设备令牌,然后是引导令牌。
+- 受信任的 `AUTH_TOKEN_MISMATCH` 恢复可以临时同时发送共享令牌和存储的设备令牌,用于一次有界的重试。
 
 相关:
 

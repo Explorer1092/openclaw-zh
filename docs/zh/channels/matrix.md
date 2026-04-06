@@ -1,7 +1,7 @@
 ---
 title: "Matrix (插件)"
 sidebarTitle: "Matrix"
-mmh3_hash: "a08f2075694a7f868de7079838a7d4fb"
+mmh3_hash: "5ccb115670ab94c3e5e31350373051fc"
 summary: "Matrix 支持状态、设置和配置示例"
 read_when:
   - 在 OpenClaw 中设置 Matrix
@@ -145,6 +145,8 @@ Matrix 将缓存的凭据存储在 `~/.openclaw/credentials/matrix/`。
 
       dm: {
         policy: "pairing",
+        sessionScope: "per-room",
+        threadReplies: "off",
       },
 
       groupPolicy: "allowlist",
@@ -159,14 +161,41 @@ Matrix 将缓存的凭据存储在 `~/.openclaw/credentials/matrix/`。
       autoJoinAllowlist: ["!roomid:example.org"],
       threadReplies: "inbound",
       replyToMode: "off",
+      streaming: "partial",
     },
   },
 }
 ```
 
-## E2EE 设置
+## 流式预览
 
-## 机器人对机器人房间
+Matrix 回复流式传输是可选的。
+
+当您希望 OpenClaw 发送单个实时预览回复、在模型生成文本时就地编辑该预览，然后在回复完成时最终确定时，将 `channels.matrix.streaming` 设置为 `"partial"`：
+
+```json5
+{
+  channels: {
+    matrix: {
+      streaming: "partial",
+    },
+  },
+}
+```
+
+- `streaming: "off"` 是默认值。OpenClaw 等待最终回复并一次性发送。
+- `streaming: "partial"` 使用普通 Matrix 文本消息为当前助手块创建一个可编辑的预览消息。这保留了 Matrix 的传统预览优先通知行为，因此标准客户端可能会在第一条流式预览文本而非完成的块上发送通知。
+- `streaming: "quiet"` 为当前助手块创建一个可编辑的静默预览通知。仅在您也为最终确定的预览编辑配置了接收者推送规则时使用此选项。
+- `blockStreaming: true` 启用单独的 Matrix 进度消息。启用预览流式传输后，Matrix 保持当前块的实时草稿，并将已完成的块保留为单独的消息。
+- 当预览流式传输开启且 `blockStreaming` 关闭时，Matrix 就地编辑实时草稿，并在块或轮次完成时最终确定该同一事件。
+- 如果预览不再适合一个 Matrix 事件，OpenClaw 停止预览流式传输并回退到正常的最终传递。
+- 媒体回复仍正常发送附件。如果过时的预览无法安全重用，OpenClaw 在发送最终媒体回复之前将其撤回。
+
+## 加密和验证
+
+在加密（E2EE）房间中，出站图片事件使用 `thumbnail_file`，使图片预览与完整附件一起加密。未加密的房间仍使用普通的 `thumbnail_url`。无需配置——插件自动检测 E2EE 状态。
+
+### 机器人对机器人房间
 
 默认情况下，来自其他已配置 OpenClaw Matrix 账户的 Matrix 消息会被忽略。
 
@@ -666,9 +695,37 @@ Matrix 在 OpenClaw 要求您提供房间或用户目标的任何地方都接受
 - `mediaMaxMb`：出站媒体大小上限（MB）。
 - `autoJoin`：邀请自动加入策略（`always`、`allowlist`、`off`）。默认：`off`。
 - `autoJoinAllowlist`：`autoJoin` 为 `allowlist` 时允许的房间/别名。别名条目在邀请处理期间解析为房间 ID；OpenClaw 不信任被邀请房间声称的别名状态。
-- `dm`：私信策略块（`enabled`、`policy`、`allowFrom`）。
+- `dm`：私信策略块（`enabled`、`policy`、`allowFrom`、`sessionScope`、`threadReplies`）。
+- `dm.policy`：在 OpenClaw 加入房间并将其分类为私信后控制私信访问。不影响邀请是否自动加入。
 - `dm.allowFrom` 条目应为完整的 Matrix 用户 ID，除非已通过实时目录查找解析它们。
+- `dm.sessionScope`：`per-user`（默认）或 `per-room`。当您希望每个 Matrix 私信房间保持独立上下文（即使对等体相同）时使用 `per-room`。
+- `dm.threadReplies`：仅私信话题串策略覆盖（`off`、`inbound`、`always`）。覆盖私信中的顶层 `threadReplies` 设置（包括回复位置和会话隔离）。
+- `execApprovals`：Matrix 原生执行审批传递（`enabled`、`approvers`、`target`、`agentFilter`、`sessionFilter`）。
+- `execApprovals.approvers`：允许批准执行请求的 Matrix 用户 ID。当 `dm.allowFrom` 已识别审批者时为可选。
+- `execApprovals.target`：`dm | channel | both`（默认：`dm`）。
 - `accounts`：命名的每账户覆盖。顶层 `channels.matrix` 值作为这些条目的默认值。
 - `groups`：每房间策略映射。优先使用房间 ID 或别名；未解析的房间名称在运行时被忽略。会话/群组身份在解析后使用稳定的房间 ID，而人类可读标签仍来自房间名称。
+- `groups.<room>.account`：在多账户设置中将一个继承的房间条目限制到特定 Matrix 账户。
+- `groups.<room>.allowBots`：已配置机器人发送者的房间级覆盖（`true` 或 `"mentions"`）。
+- `groups.<room>.users`：每房间发送者 allowlist。
+- `groups.<room>.tools`：每房间工具允许/拒绝覆盖。
+- `groups.<room>.autoReply`：房间级提及门控覆盖。`true` 禁用该房间的提及要求；`false` 强制重新启用。
+- `groups.<room>.skills`：可选的房间级技能过滤器。
+- `groups.<room>.systemPrompt`：可选的房间级系统提示片段。
 - `rooms`：`groups` 的旧版别名。
 - `actions`：每操作工具门控（`messages`、`reactions`、`pins`、`profile`、`memberInfo`、`channelInfo`、`verification`）。
+- `contextVisibility`：补充房间上下文可见性模式（`all`、`allowlist`、`allowlist_quote`）。
+- `allowBots`：允许来自其他已配置 OpenClaw Matrix 账户的消息（`true` 或 `"mentions"`）。
+- `historyLimit`：作为群组历史上下文包含的最大房间消息数。回退到 `messages.groupChat.historyLimit`；如果两者都未设置，有效默认值为 `0`。设置 `0` 禁用。
+- `markdown`：出站 Matrix 文本的可选 Markdown 渲染配置。
+- `streaming`：`off`（默认）、`partial`、`quiet`、`true` 或 `false`。`partial` 和 `true` 启用带有普通 Matrix 文本消息的预览优先草稿更新。`quiet` 使用非通知预览通知，适用于自托管推送规则设置。
+- `blockStreaming`：`true` 在草稿预览流式传输活跃时为已完成的助手块启用单独的进度消息。
+- `proxy`：Matrix 流量的可选 HTTP(S) 代理 URL。命名账户可以用自己的 `proxy` 覆盖顶层默认值。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "38d958d2e2208e660b28900dbc8f6b4a"
+mmh3_hash: "f61a49a0864d1c448b8391aa6e4aac01"
 summary: "通过 imsg 实现传统 iMessage 支持（基于 stdio 的 JSON-RPC）。新设置应使用 BlueBubbles。"
 read_when:
   - 设置 iMessage 支持

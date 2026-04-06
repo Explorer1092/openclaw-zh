@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a1040b0ea760dfc4cbb362c021626059"
+mmh3_hash: "e46578ce73cff8ab3db42823dd368251"
 summary: "ClawHub 指南：公共注册表、原生 OpenClaw 安装流程和 ClawHub CLI 工作流"
 read_when:
   - 向新用户介绍 ClawHub
@@ -41,6 +41,10 @@ openclaw plugins install openclaw-codex-app-server
 ```
 
 原生 `openclaw` 命令安装到活动工作区并持久化源元数据，以便后续 `update` 调用可以保持在 ClawHub 上。
+
+Plugin 安装会在归档安装运行前验证公示的 `pluginApi` 和 `minGatewayVersion` 兼容性，因此不兼容的主机会提前失败，而不是部分安装包。
+
+`openclaw plugins install clawhub:...` 仅接受可安装的插件系列。如果 ClawHub 包实际上是一个技能，OpenClaw 会停止并指向 `openclaw skills install <slug>`。
 
 ## ClawHub 是什么
 
@@ -184,14 +188,22 @@ ClawHub 默认开放。任何人都可以上传技能，但 GitHub 账号必须�
 
 - `clawhub list`（读取 `.clawhub/lock.json`）
 
-发布：
+发布技能：
 
-- `clawhub publish <path>`
+- `clawhub skill publish <path>`
 - `--slug <slug>`：技能 slug。
 - `--name <name>`：显示名称。
 - `--version <version>`：Semver 版本。
 - `--changelog <text>`：更新日志文本（可以为空）。
 - `--tags <tags>`：逗号分隔的标签（默认：`latest`）。
+
+发布 Plugin：
+
+- `clawhub package publish <source>`
+- `<source>` 可以是本地文件夹、`owner/repo`、`owner/repo@ref` 或 GitHub URL。
+- `--dry-run`：构建确切的发布计划而不上传任何内容。
+- `--json`：输出 CI 机器可读格式。
+- `--source-repo`、`--source-commit`、`--source-ref`：自动检测不足时的可选覆盖。
 
 删除/取消删除（仅所有者/管理员）：
 
@@ -234,13 +246,43 @@ clawhub update --all
 对于单个技能文件夹：
 
 ```bash
-clawhub publish ./my-skill --slug my-skill --name "My Skill" --version 1.0.0 --tags latest
+clawhub skill publish ./my-skill --slug my-skill --name "My Skill" --version 1.0.0 --tags latest
 ```
 
 一次扫描并备份多个技能：
 
 ```bash
 clawhub sync --all
+```
+
+### 从 GitHub 发布插件
+
+```bash
+clawhub package publish your-org/your-plugin --dry-run
+clawhub package publish your-org/your-plugin
+clawhub package publish your-org/your-plugin@v1.0.0
+clawhub package publish https://github.com/your-org/your-plugin
+```
+
+代码插件必须在 `package.json` 中包含所需的 OpenClaw 元数据：
+
+```json
+{
+  "name": "@myorg/openclaw-my-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "openclaw": {
+    "extensions": ["./index.ts"],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
+    }
+  }
+}
 ```
 
 ## 高级详细信息（技术性）

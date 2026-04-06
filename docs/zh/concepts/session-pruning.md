@@ -1,123 +1,79 @@
 ---
-title: "会话修剪"
-sidebarTitle: "会话修剪"
-mmh3_hash: "534dd94697b7d5683e444cbf69a7770b"
-summary: "Session pruning: tool-result 修剪以减少 context 膨胀"
+title: "Session 修剪"
+summary: "修剪旧的 tool results 以保持 context 精简和缓存高效"
 read_when:
-  - 你想减少来自 tool 输出的 LLM context 增长
-  - 你正在调整 agents.defaults.contextPruning
+  - 你想减少来自 tool 输出的 context 增长
+  - 你想了解 Anthropic prompt cache 优化
 ---
 
-# 会话修剪
+# Session 修剪
 
-Session pruning 在每次 LLM 调用之前从内存中的 context 中修剪 **旧的 tool results**。它 **不** 重写磁盘上的 session 历史记录(`*.jsonl`)。
+Session 修剪在每次 LLM 调用之前从 context 中修剪**旧的 tool results**。它减少因累积的工具输出（exec 结果、文件读取、搜索结果）而导致的 context 膨胀，而不重写正常的对话文本。
 
-## 何时运行
+<Info>
+修剪仅在内存中进行——它不会修改磁盘上的 Session transcript。你的完整历史记录始终保留。
+</Info>
 
-- 当 `mode: "cache-ttl"` 启用且该 session 的最后一次 Anthropic 调用早于 `ttl` 时。
-- 仅影响为该请求发送到 model 的消息。
-- 仅对 Anthropic API 调用(和 OpenRouter Anthropic models)有效。
-- 为获得最佳结果,将 `ttl` 与你的 model `cacheRetention` 策略匹配(`short` = 5m,`long` = 1h)。
-- 修剪后,TTL 窗口重置,因此后续请求保持缓存,直到 `ttl` 再次过期。
+## 为什么重要
 
-## 智能默认值(Anthropic)
+长 Session 会累积工具输出，使 context window 膨胀。这会增加成本，并可能比必要时更早强制触发 [compaction](/concepts/compaction)。
 
-- **OAuth 或 setup-token** profiles: 启用 `cache-ttl` pruning 并将 heartbeat 设置为 `1h`。
-- **API key** profiles: 启用 `cache-ttl` pruning,将 heartbeat 设置为 `30m`,并在 Anthropic models 上将默认 `cacheRetention` 设置为 `short`。
-- 如果你明确设置任何这些值,OpenClaw **不会** 覆盖它们。
+修剪对于 **Anthropic prompt caching** 特别有价值。缓存 TTL 到期后，下一次请求会重新缓存完整 prompt。修剪减少了缓存写入大小，直接降低成本。
 
-## 这改善了什么(成本 + cache 行为)
+## 工作原理
 
-- **为什么修剪:** Anthropic prompt caching 仅在 TTL 内适用。如果 session 空闲超过 TTL,下一个请求会重新缓存完整 prompt,除非你先修剪它。
-- **什么变得更便宜:** 修剪减少了 TTL 过期后第一个请求的 **cacheWrite** 大小。
-- **为什么 TTL 重置很重要:** 一旦修剪运行,缓存窗口重置,因此后续请求可以重用新缓存的 prompt,而不是再次重新缓存完整历史记录。
-- **它不做什么:** 修剪不会添加 tokens 或"双倍"成本;它只改变在该第一个 TTL 后请求上缓存的内容。
+1. 等待缓存 TTL 到期（默认 5 分钟）。
+2. 找到旧的 tool results 进行正常修剪（对话文本保持不变）。
+3. **软修剪**过大的结果——保留头部和尾部，插入 `...`。
+4. **硬清除**其余部分——用占位符替换。
+5. 重置 TTL，以便后续请求重用新缓存。
 
-## 可以修剪什么
+## 旧版图像清理
 
-- 仅 `toolResult` 消息。
-- User + assistant 消息 **永远不会** 修改。
-- 保护最后 `keepLastAssistants` assistant 消息;该截止点之后的 tool results 不会被修剪。
-- 如果没有足够的 assistant 消息来建立截止点,则跳过修剪。
-- 包含 **image blocks** 的 Tool results 被跳过(永远不会修剪/清除)。
+OpenClaw 还对旧版 Session 运行单独的幂等清理，这些 Session 在历史记录中持久化了原始图像块。
 
-## Context window 估算
+- 它逐字节保留**3 个最近完成的回合**，以保持近期后续请求的 prompt 缓存前缀稳定。
+- `user` 或 `toolResult` 历史记录中已处理的旧图像块可以被替换为 `[image data removed - already processed by model]`。
+- 这与正常的 cache-TTL 修剪是分开的。它的存在是为了防止重复的图像 payload 在后续回合中破坏 prompt 缓存。
 
-Pruning 使用估计的 context window (chars ≈ tokens × 4)。基础窗口按以下顺序解析:
+## 智能默认值
 
-1. `models.providers.*.models[].contextWindow` 覆盖。
-2. Model 定义 `contextWindow`(来自 model registry)。
-3. 默认 `200000` tokens。
+OpenClaw 对 Anthropic 配置文件自动启用修剪：
 
-如果设置了 `agents.defaults.contextTokens`,它将被视为已解析窗口的上限(最小值)。
+| 配置文件类型                                             | 修剪已启用 | 心跳       |
+| -------------------------------------------------------- | ---------- | ---------- |
+| Anthropic OAuth/token auth（包括 Claude CLI 重用）       | 是         | 1 小时     |
+| API key                                                  | 是         | 30 分钟    |
 
-## 模式
+如果你设置了显式值，OpenClaw 不会覆盖它们。
 
-### cache-ttl
+## 启用或禁用
 
-- 仅当最后一次 Anthropic 调用早于 `ttl`(默认 `5m`)时才运行 Pruning。
-- 运行时:与以前相同的 soft-trim + hard-clear 行为。
-
-## Soft vs hard pruning
-
-- **Soft-trim**: 仅用于过大的 tool results。
-  - 保留头 + 尾,插入 `...`,并附加带有原始大小的注释。
-  - 跳过带有 image blocks 的结果。
-- **Hard-clear**: 用 `hardClear.placeholder` 替换整个 tool result。
-
-## Tool 选择
-
-- `tools.allow` / `tools.deny` 支持 `*` 通配符。
-- Deny 获胜。
-- 匹配不区分大小写。
-- 空 allow 列表 => 允许所有 tools。
-
-## 与其他限制的交互
-
-- 内置 tools 已经截断了它们自己的输出;session pruning 是一个额外的层,可以防止长时间运行的聊天在 model context 中累积过多的 tool 输出。
-- Compaction 是分开的:compaction 总结并持久化,pruning 是每个请求的瞬态。参见 [/concepts/compaction](/concepts/compaction)。
-
-## 默认值(启用时)
-
-- `ttl`: `"5m"`
-- `keepLastAssistants`: `3`
-- `softTrimRatio`: `0.3`
-- `hardClearRatio`: `0.5`
-- `minPrunableToolChars`: `50000`
-- `softTrim`: `{ maxChars: 4000, headChars: 1500, tailChars: 1500 }`
-- `hardClear`: `{ enabled: true, placeholder: "[Old tool result content cleared]" }`
-
-## 示例
-
-默认(关闭):
-
-```json5
-{
-  agents: { defaults: { contextPruning: { mode: "off" } } },
-}
-```
-
-启用 TTL 感知 pruning:
-
-```json5
-{
-  agents: { defaults: { contextPruning: { mode: "cache-ttl", ttl: "5m" } } },
-}
-```
-
-将 pruning 限制为特定 tools:
+非 Anthropic provider 默认禁用修剪。要启用：
 
 ```json5
 {
   agents: {
     defaults: {
-      contextPruning: {
-        mode: "cache-ttl",
-        tools: { allow: ["exec", "read"], deny: ["*image*"] },
-      },
+      contextPruning: { mode: "cache-ttl", ttl: "5m" },
     },
   },
 }
 ```
 
-参见配置参考:[Gateway Configuration](/gateway/configuration)
+要禁用：设置 `mode: "off"`。
+
+## 修剪 vs compaction
+
+|            | 修剪               | Compaction          |
+| ---------- | ------------------ | ------------------- |
+| **功能**   | 修剪 tool results  | 总结对话             |
+| **是否保存？** | 否（每次请求）  | 是（在 transcript 中）|
+| **范围**   | 仅 tool results    | 整个对话             |
+
+它们相互补充——修剪在 compaction 周期之间保持工具输出精简。
+
+## 延伸阅读
+
+- [Compaction](/concepts/compaction) — 基于总结的 context 减少
+- [Gateway Configuration](/gateway/configuration) — 所有修剪配置项（`contextPruning.*`）

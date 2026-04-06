@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "96225b1acfe9366d7f8c4199be1707a2"
+mmh3_hash: "09bec2cba305a0b4bd21e3ab08c67a7f"
 summary: "Brave Search API 设置，用于 web_search"
 read_when:
   - 希望将 Brave Search 用于 web_search
@@ -27,6 +27,7 @@ OpenClaw 支持将 Brave Search API 作为 `web_search` 提供商。
         config: {
           webSearch: {
             apiKey: "BRAVE_API_KEY_HERE",
+            mode: "web", // 或 "llm-context"
           },
         },
       },
@@ -47,6 +48,11 @@ OpenClaw 支持将 Brave Search API 作为 `web_search` 提供商。
 提供商专属的 Brave 搜索设置现在位于 `plugins.entries.brave.config.webSearch.*` 下。
 旧版 `tools.web.search.apiKey` 仍可通过兼容层加载，但已不再是规范配置路径。
 
+`webSearch.mode` 控制 Brave 传输方式：
+
+- `web`（默认）：普通 Brave 网页搜索，返回标题、URL 和摘要
+- `llm-context`：Brave LLM Context API，返回预提取的文本块和来源，用于信息溯源
+
 ## 工具参数
 
 | 参数          | 描述                                                             |
@@ -55,6 +61,7 @@ OpenClaw 支持将 Brave Search API 作为 `web_search` 提供商。
 | `count`       | 返回结果数量（1-10，默认：5）                                    |
 | `country`     | 2 位 ISO 国家代码（如 "US"、"DE"）                               |
 | `language`    | 搜索结果的 ISO 639-1 语言代码（如 "en"、"de"、"fr"）             |
+| `search_lang` | Brave 搜索语言代码（如 `en`、`en-gb`、`zh-hans`）               |
 | `ui_lang`     | 界面元素的 ISO 语言代码                                          |
 | `freshness`   | 时间过滤：`day`（24h）、`week`、`month` 或 `year`               |
 | `date_after`  | 仅返回此日期后发布的结果（YYYY-MM-DD）                           |
@@ -89,6 +96,9 @@ await web_search({
 - OpenClaw 使用 Brave **Search** 套餐。如果你有旧版订阅（如原始免费套餐，每月 2,000 次查询），它仍然有效，但不包含 LLM Context 或更高速率限制等新功能。
 - 每个 Brave 套餐包含每月 **\$5 免费额度**（每月更新）。Search 套餐每 1,000 次请求收费 \$5，因此额度可覆盖每月 1,000 次查询。请在 Brave 控制面板中设置使用限额以避免意外费用。当前套餐详情请参见 [Brave API 门户](https://brave.com/search/api/)。
 - Search 套餐包含 LLM Context 端点和 AI 推理权限。存储结果以训练或微调模型需要具有明确存储权限的套餐。请参见 Brave [服务条款](https://api-dashboard.search.brave.com/terms-of-service)。
+- `llm-context` 模式返回溯源条目，而非普通网页搜索摘要形式。
+- `llm-context` 模式不支持 `ui_lang`、`freshness`、`date_after` 或 `date_before`。
+- `ui_lang` 必须包含地区子标签，如 `en-US`。
 - 结果默认缓存 15 分钟（可通过 `cacheTtlMinutes` 配置）。
 
 ## 相关

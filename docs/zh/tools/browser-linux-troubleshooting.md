@@ -1,7 +1,7 @@
 ---
 title: "浏览器故障排除 (Linux)"
 sidebarTitle: "浏览器故障排除"
-mmh3_hash: "0a7858662e1e1a16996e53ba993dc1ca"
+mmh3_hash: "de84d7bd1842b3116abb2421a3c60f85"
 summary: "修复 Linux 上 OpenClaw 浏览器控制的 Chrome/Brave/Edge/Chromium CDP 启动问题"
 read_when: "浏览器控制在 Linux 上失败，特别是使用 snap Chromium"
 ---
@@ -136,4 +136,6 @@ curl -s http://127.0.0.1:18791/tabs
 注意事项：
 
 - `user` 仅适用于主机。对于 Linux 服务器、容器或远程主机，优先使用 CDP 配置文件。
+- `user` / 其他 `existing-session` 配置文件保持当前 Chrome MCP 限制：基于 ref 的操作、单文件上传 Hook、无对话框超时覆盖、不支持 `wait --load networkidle`，以及不支持 `responsebody`、PDF 导出、下载拦截或批量操作。
 - 本地 `openclaw` 配置文件会自动分配 `cdpPort`/`cdpUrl`；仅在远程 CDP 时才需手动设置。
+- 远程 CDP 配置文件支持 `http://`、`https://`、`ws://` 和 `wss://`。使用 HTTP(S) 进行 `/json/version` 发现，或在浏览器服务提供直接 DevTools Socket URL 时使用 WS(S)。

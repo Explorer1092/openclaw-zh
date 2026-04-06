@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "60e012f3aa6c282f05785290ee015491"
+mmh3_hash: "9c632b641b45996b75bc52d5b726a725"
 title: "acp"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:
@@ -14,6 +14,25 @@ read_when:
 此命令通过 stdio 与 IDE 进行 ACP 通信,并通过 WebSocket 将提示转发到 Gateway。它将 ACP Session 映射到 Gateway Session 密钥。
 
 `openclaw acp` 是一个由 Gateway 支持的 ACP 桥接,而非完整的 ACP 原生编辑器运行时。它专注于 Session 路由、提示传递和基本流式更新。
+
+如果您希望外部 MCP 客户端直接与 OpenClaw Channel 会话通信,而不是托管 ACP 运行环境 Session,请改用 [`openclaw mcp serve`](/cli/mcp)。
+
+## 这不是什么
+
+本页经常与 ACP 运行环境 Session 混淆。
+
+`openclaw acp` 的含义是:
+
+- OpenClaw 充当 ACP 服务器
+- IDE 或 ACP 客户端连接到 OpenClaw
+- OpenClaw 将该工作转发到 Gateway Session
+
+这与 [ACP Agents](/tools/acp-agents) 不同,在那里 OpenClaw 通过 `acpx` 运行外部运行环境(如 Codex 或 Claude Code)。
+
+快速规则:
+
+- 编辑器/客户端想与 OpenClaw 进行 ACP 通信:使用 `openclaw acp`
+- OpenClaw 应将 Codex/Claude/Gemini 作为 ACP 运行环境启动:使用 `/acp spawn` 和 [ACP Agents](/tools/acp-agents)
 
 ## 兼容性矩阵
 
@@ -80,8 +99,9 @@ openclaw acp client --server "node" --server-args openclaw.mjs acp --url ws://12
 
 - 自动批准基于允许列表,仅适用于受信任的核心工具 ID。
 - `read` 自动批准的范围限定于当前工作目录(设置了 `--cwd` 时)。
-- 未知/非核心工具名称、超出范围的读取操作以及危险工具始终需要明确的提示批准。
+- ACP 仅自动批准窄范围的只读类操作:活动工作目录下的范围 `read` 调用,以及只读搜索工具(`search`、`web_search`、`memory_search`)。未知/非核心工具、超出范围的读取操作、具有执行能力的工具、控制平面工具、变更性工具和交互式流程始终需要明确的提示批准。
 - 服务器提供的 `toolCall.kind` 被视为不受信任的元数据(不是授权来源)。
+- 此 ACP 桥接策略与 ACPX 运行环境权限分开。如果通过 `acpx` 后端运行 OpenClaw,`plugins.entries.acpx.config.permissionMode=approve-all` 是该运行环境 Session 的紧急"全允许"开关。
 
 ## 如何使用
 
@@ -121,6 +141,8 @@ openclaw acp --session agent:qa:bug-123
 每个 ACP Session 映射到单个 Gateway Session 密钥。一个 Agent 可以有多个 Session;除非您覆盖密钥或标签,否则 ACP 默认为隔离的 `acp:<uuid>` Session。
 
 每 Session 的 `mcpServers` 在桥接模式下不受支持。如果 ACP 客户端在 `newSession` 或 `loadSession` 期间发送它们,桥接会返回明确的错误而非静默忽略。
+
+如果您希望 ACPX 支持的 Session 能够使用 OpenClaw 插件工具,请启用 Gateway 侧的 ACPX 插件桥接,而不是尝试传递每 Session 的 `mcpServers`。参见 [ACP Agents](/tools/acp-agents#plugin-tools-mcp-bridge)。
 
 ## 从 `acpx` 使用(Codex、Claude 及其他 ACP 客户端)
 
@@ -241,6 +263,7 @@ env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 node openclaw.mjs acp ...
 - `--require-existing`:如果 Session 密钥/标签不存在则失败。
 - `--reset-session`:在首次使用前重置 Session 密钥。
 - `--no-prefix-cwd`:不在提示前添加工作目录前缀。
+- `--provenance <off|meta|meta+receipt>`:包含 ACP 出处元数据或收据。
 - `--verbose, -v`:详细日志输出到 stderr。
 
 安全说明:

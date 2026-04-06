@@ -25,9 +25,11 @@ Auth profiles 是 **每个 agent 的**。每个 agent 从自己的位置读取:
 ~/.openclaw/agents/<agentId>/agent/auth-profiles.json
 ```
 
-Main agent 凭据 **不** 自动共享。永远不要在 agents 之间重用 `agentDir`(它会导致 auth/session 冲突)。如果你想共享 creds,将 `auth-profiles.json` 复制到另一个 agent 的 `agentDir`。
+`sessions_history` 在这里也是更安全的跨 Session 召回路径：它返回有边界的、经过清理的视图，而非原始 transcript 转储。assistant 召回在编辑/截断之前会剥离 thinking 标签、`<relevant-memories>` 脚手架、纯文本工具调用 XML payloads（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>`、`<function_calls>...</function_calls>` 以及截断的工具调用块）、降级的工具调用脚手架、泄露的 ASCII/全角 model 控制令牌以及格式错误的 MiniMax 工具调用 XML。
 
-Skills 通过每个 workspace 的 `skills/` 文件夹按 agent 分配,共享 skills 可从 `~/.openclaw/skills` 获得。参见 [Skills: per-agent vs shared](/tools/skills#per-agent-vs-shared-skills)。
+Main agent 凭据**不**自动共享。永远不要在 Agent 之间重用 `agentDir`（会导致 auth/session 冲突）。如果你想共享 creds，将 `auth-profiles.json` 复制到另一个 Agent 的 `agentDir`。
+
+Skills 从每个 Agent workspace 以及 `~/.openclaw/skills` 等共享根目录加载，然后在配置了有效 Agent skill 允许列表时进行过滤。使用 `agents.defaults.skills` 设置共享基准，使用 `agents.list[].skills` 进行每个 Agent 的替换。参见 [Skills: per-agent vs shared](/tools/skills#per-agent-vs-shared-skills) 和 [Skills: agent skill allowlists](/tools/skills#agent-skill-allowlists)。
 
 Gateway 可以托管 **一个 agent**(默认)或 **多个 agents** 并排。
 
@@ -125,7 +127,44 @@ openclaw channels status --probe
 
 这让 **多个人** 共享一个 Gateway 服务器,同时保持他们的 AI "大脑"和数据隔离。
 
-## 一个 WhatsApp 号码,多个人(DM 拆分)
+## 跨 Agent QMD 内存搜索
+
+如果一个 Agent 需要搜索另一个 Agent 的 QMD Session 记录，在 `agents.list[].memorySearch.qmd.extraCollections` 下添加额外集合。仅当每个 Agent 都应继承相同的共享记录集合时，才使用 `agents.defaults.memorySearch.qmd.extraCollections`。
+
+```json5
+{
+  agents: {
+    defaults: {
+      workspace: "~/workspaces/main",
+      memorySearch: {
+        qmd: {
+          extraCollections: [{ path: "~/agents/family/sessions", name: "family-sessions" }],
+        },
+      },
+    },
+    list: [
+      {
+        id: "main",
+        workspace: "~/workspaces/main",
+        memorySearch: {
+          qmd: {
+            extraCollections: [{ path: "notes" }], // 在 workspace 内解析 -> 集合名为 "notes-main"
+          },
+        },
+      },
+      { id: "family", workspace: "~/workspaces/family" },
+    ],
+  },
+  memory: {
+    backend: "qmd",
+    qmd: { includeDefaultMemory: false },
+  },
+}
+```
+
+额外集合路径可以在 Agent 之间共享，但当路径在 Agent workspace 之外时，集合名称保持显式。workspace 内的路径保持 Agent 范围，因此每个 Agent 保留自己的记录搜索集合。
+
+## 一个 WhatsApp 号码，多个人（DM 拆分）
 
 你可以将 **不同的 WhatsApp DMs** 路由到不同的 agents,同时保持在 **一个 WhatsApp account** 上。使用 `peer.kind: "direct"` 匹配发送者 E.164(如 `+15551234567`)。回复仍来自同一 WhatsApp 号码(无每个 agent 的发送者身份)。
 

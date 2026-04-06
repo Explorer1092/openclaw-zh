@@ -1,6 +1,6 @@
 ---
 title: "在 DigitalOcean 上运行 OpenClaw"
-mmh3_hash: "919963730ebe673fb418909aa4f6c2be"
+mmh3_hash: "3208c26d47e2a9307a153bccff89a907"
 summary: "OpenClaw on DigitalOcean（简单的付费 VPS 选项）"
 read_when:
   - 在 DigitalOcean 上设置 OpenClaw
@@ -17,13 +17,13 @@ read_when:
 
 ## 成本比较（2026）
 
-| Provider     | 套餐            | 规格                   | 价格/月     | 说明                                |
-| ------------ | --------------- | ---------------------- | ----------- | ----------------------------------- |
-| Oracle Cloud | Always Free ARM | 最多 4 OCPU，24GB RAM  | $0          | ARM，容量有限 / 注册有些繁琐        |
-| Hetzner      | CX22            | 2 vCPU，4GB RAM        | €3.79（~$4）| 最便宜的付费选项                    |
-| DigitalOcean | Basic           | 1 vCPU，1GB RAM        | $6          | 简单 UI，好文档                     |
-| Vultr        | Cloud Compute   | 1 vCPU，1GB RAM        | $6          | 多个地区                            |
-| Linode       | Nanode          | 1 vCPU，1GB RAM        | $5          | 现属于 Akamai                       |
+| Provider     | 套餐            | 规格                   | 价格/月      | 说明                                |
+| ------------ | --------------- | ---------------------- | ------------ | ----------------------------------- |
+| Oracle Cloud | Always Free ARM | 最多 4 OCPU，24GB RAM  | $0           | ARM，容量有限 / 注册有些繁琐        |
+| Hetzner      | CX22            | 2 vCPU，4GB RAM        | €3.79（~$4） | 最便宜的付费选项                    |
+| DigitalOcean | Basic           | 1 vCPU，1GB RAM        | $6           | 简单 UI，好文档                     |
+| Vultr        | Cloud Compute   | 1 vCPU，1GB RAM        | $6           | 多个地区                            |
+| Linode       | Nanode          | 1 vCPU，1GB RAM        | $5           | 现属于 Akamai                       |
 
 **选择 provider：**
 
@@ -133,8 +133,8 @@ openclaw gateway restart
 
 说明：
 
-- Serve 保持 Gateway 仅 loopback，并通过 Tailscale 身份头验证 Control UI/WebSocket 流量（无 token auth 假定受信任的 gateway 主机；HTTP API 仍然需要 token/密码）。
-- 要改为需要 token/密码，设置 `gateway.auth.allowTailscale: false` 或使用 `gateway.auth.mode: "password"`。
+- Serve 保持 Gateway 仅 loopback，并通过 Tailscale 身份头验证 Control UI/WebSocket 流量（无 token auth 假定受信任的 gateway 主机；HTTP API 不使用这些 Tailscale 头，而是遵循 gateway 的正常 HTTP auth 模式）。
+- 要改为需要显式共享密钥凭据，设置 `gateway.auth.allowTailscale: false` 并使用 `gateway.auth.mode: "token"` 或 `"password"`。
 
 **选项 C：Tailnet 绑定（无 Serve）**
 
@@ -199,13 +199,13 @@ htop
 
 所有状态位于：
 
-- `~/.openclaw/` — 配置、凭据、session 数据
+- `~/.openclaw/` — `openclaw.json`、每个 agent 的 `auth-profiles.json`、channel/provider 状态和 session 数据
 - `~/.openclaw/workspace/` — workspace（SOUL.md、memory 等）
 
 这些在重启后仍然存在。定期备份它们：
 
 ```bash
-tar -czvf openclaw-backup.tar.gz ~/.openclaw ~/.openclaw/workspace
+openclaw backup create
 ```
 
 ---
@@ -237,7 +237,7 @@ Oracle Cloud 提供**始终免费**的 ARM 实例，比这里任何付费选项�
 ```bash
 openclaw gateway status
 openclaw doctor --non-interactive
-journalctl -u openclaw --no-pager -n 50
+journalctl --user -u openclaw-gateway.service --no-pager -n 50
 ```
 
 ### 端口已被占用

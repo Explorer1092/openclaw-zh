@@ -124,4 +124,11 @@ OpenClaw 可以公开或隐藏 model reasoning:
 - `messages.responsePrefix`、`channels.<channel>.responsePrefix` 和 `channels.<channel>.accounts.<id>.responsePrefix`(出站前缀级联),加上 `channels.whatsapp.messagePrefix`(WhatsApp 入站前缀)
 - 通过 `replyToMode` 和每个 channel 默认值进行回复 threading
 
-详细信息:[Configuration](/gateway/configuration-reference#messages) 和 channel 文档。
+详细信息：[Configuration](/gateway/configuration-reference#messages) 和 channel 文档。
+
+## 相关链接
+
+- [Streaming](/concepts/streaming) — 实时消息传递
+- [Retry](/concepts/retry) — 消息传递重试行为
+- [Queue](/concepts/queue) — 消息处理队列
+- [Channels](/channels) — 消息平台集成

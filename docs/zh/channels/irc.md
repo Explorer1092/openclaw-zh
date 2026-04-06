@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "526cccda37e57c83de760960303040f4"
+mmh3_hash: "a879caf68c05654c65558ac874f756d5"
 title: IRC
 summary: "IRC 插件设置、访问控制和故障排除"
 read_when:
@@ -238,3 +238,11 @@ IRC Channels 有两个单独的"门"：
 - 如果机器人连接但从不在 Channels 中回复，请验证 `channels.irc.groups` **以及**提及门控是否正在丢弃消息（`missing-mention`）。如果您希望它无需 ping 即可回复，请为 Channel 设置 `requireMention:false`。
 - 如果登录失败，请验证昵称可用性和服务器密码。
 - 如果 TLS 在自定义网络上失败，请验证主机/端口和证书设置。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

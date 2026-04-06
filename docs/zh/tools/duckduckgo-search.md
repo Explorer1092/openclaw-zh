@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "67914a2e0c4c057cfcc8237222f199b0"
+mmh3_hash: "69d699b971cbf6187de01e3e6b3e12ff"
 summary: "DuckDuckGo 网页搜索 -- 无需密钥的回退提供商（实验性，基于 HTML）"
 read_when:
   - 希望使用无需 API 密钥的网页搜索提供商
@@ -80,7 +80,7 @@ OpenClaw 支持将 DuckDuckGo 作为**无需密钥**的 `web_search` 提供商�
 - **实验性** -- 从 DuckDuckGo 的非 JavaScript HTML 搜索页面获取结果，并非官方 API 或 SDK
 - **机器人验证风险** -- 在高频或自动化使用时，DuckDuckGo 可能显示验证码或封锁请求
 - **HTML 解析** -- 结果依赖于页面结构，可能在无通知的情况下发生变化
-- **自动检测顺序** -- DuckDuckGo 在自动检测中排序最后（顺序 100），因此任何带密钥的 API 支持提供商都优先
+- **自动检测顺序** -- DuckDuckGo 是第一个无需密钥的回退（顺序 100）。带有已配置密钥的 API 支持提供商优先，然后是 Ollama Web Search（顺序 110），再是 SearXNG（顺序 200）
 - **安全搜索默认为中等** -- 未配置时默认为 `moderate`
 
 <Tip>

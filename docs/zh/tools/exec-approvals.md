@@ -1,6 +1,6 @@
 ---
 title: "Exec 批准"
-mmh3_hash: "96d4e27b8e4f7603a05625c3f50b8359"
+mmh3_hash: "8d2232962a2096cf0e629a8ad4698f38"
 summary: "Exec 批准、允许列表和沙盒逃逸提示"
 read_when:
   - 配置 exec 批准或允许列表
@@ -276,6 +276,15 @@ CLI：`openclaw approvals` 支持 Gateway 或节点编辑（参阅 [Approvals CL
 - **Always allow** → 添加到允许列表 + 运行
 - **Deny** → 阻止
 
+### 跟进交付行为
+
+已批准的异步 exec 完成后，OpenClaw 向同一 Session 发送跟进 `agent` 轮次。
+
+- 如果存在有效的外部交付目标（可交付 Channel 加目标 `to`），跟进交付使用该 Channel。
+- 在无外部目标的仅 webchat 或内部 Session 流程中，跟进交付保持仅 Session（`deliver: false`）。
+- 如果调用者明确请求严格外部交付但没有可解析的外部 Channel，请求以 `INVALID_REQUEST` 失败。
+- 如果启用了 `bestEffortDeliver` 且无法解析外部 Channel，交付降级为仅 Session 而非失败。
+
 ## 将批准转发到聊天 Channel
 
 你可以将 exec 批准提示转发到任何聊天 Channel（包括 Plugin Channel），并使用 `/approve` 批准它们。这使用正常的出站交付流水线。
@@ -307,28 +316,84 @@ CLI：`openclaw approvals` 支持 Gateway 或节点编辑（参阅 [Approvals CL
 /approve <id> deny
 ```
 
-### 内置聊天批准客户端
+### Plugin 批准转发
 
-Discord 和 Telegram 也可以作为明确的 exec 批准客户端，具有 Channel 特定的配置。
+Plugin 批准转发使用与 exec 批准相同的交付流水线，但在 `approvals.plugin` 下有独立配置。启用或禁用其中一个不影响另一个。
+
+```json5
+{
+  approvals: {
+    plugin: {
+      enabled: true,
+      mode: "targets",
+      agentFilter: ["main"],
+      targets: [
+        { channel: "slack", to: "U12345678" },
+        { channel: "telegram", to: "123456789" },
+      ],
+    },
+  },
+}
+```
+
+配置形态与 `approvals.exec` 相同：`enabled`、`mode`、`agentFilter`、`sessionFilter` 和 `targets` 工作方式相同。
+
+支持共享交互式回复的 Channel 为 exec 和 plugin 批准渲染相同的批准按钮。没有共享交互式 UI 的 Channel 退回到带 `/approve` 说明的纯文本。
+
+### 任意 Channel 上的同聊天批准
+
+当 exec 或 plugin 批准请求来自可交付的聊天界面时，同一聊天现在可以默认使用 `/approve` 批准它。这适用于 Slack、Matrix 和 Microsoft Teams 等 Channel，以及现有的 Web UI 和终端 UI 流程。
+
+这个共享文本命令路径使用该对话的正常 Channel 认证模型。如果发起聊天已经可以发送命令并接收回复，批准请求不再需要单独的原生交付适配器来保持待处理状态。
+
+Discord 和 Telegram 也支持同聊天 `/approve`，但这些 Channel 即使在禁用原生批准交付时仍使用其已解析的审批者列表进行授权。
+
+### 原生批准交付
+
+某些 Channel 也可以作为原生批准客户端。原生客户端在共享的同聊天 `/approve` 流程之上添加审批者私信、原始聊天扇出和 Channel 特定的交互式批准 UX。
+
+当原生批准卡片/按钮可用时，该原生 UI 是主要的面向 Agent 的路径。Agent 不应额外回显重复的纯聊天 `/approve` 命令，除非工具结果表明聊天批准不可用或手动批准是唯一剩余路径。
+
+原生批准客户端在以下所有条件为真时自动启用私信优先交付：
+
+- Channel 支持原生批准交付
+- 可以从明确的 `execApprovals.approvers` 或该 Channel 记录的回退来源解析审批者
+- `channels.<channel>.execApprovals.enabled` 未设置或为 `"auto"`
+
+将 `enabled: false` 设置为显式禁用原生批准客户端。当审批者解析时，将 `enabled: true` 强制开启。公共原始聊天交付通过 `channels.<channel>.execApprovals.target` 保持明确。
+
+FAQ：[为什么聊天批准有两个 exec 批准配置？](/help/faq#why-are-there-two-exec-approval-configs-for-chat-approvals)
 
 - Discord：`channels.discord.execApprovals.*`
+- Slack：`channels.slack.execApprovals.*`
 - Telegram：`channels.telegram.execApprovals.*`
 
-这些客户端是选择加入的。如果某个 Channel 未启用 exec 批准，OpenClaw 不会仅因为会话在该处发生而将其视为批准平台。
+这些原生批准客户端在共享的同聊天 `/approve` 流程和共享批准按钮之上添加私信路由和可选 Channel 扇出。
 
 共同行为：
 
-- 只有已配置的审批者才能批准或拒绝
+- Slack、Matrix、Microsoft Teams 和类似可交付聊天使用同聊天 `/approve` 的正常 Channel 认证模型
+- 当原生批准客户端自动启用时，默认原生交付目标为审批者私信
+- 对于 Discord 和 Telegram，只有已解析的审批者可以批准或拒绝
+- Discord 审批者可以是明确的（`execApprovals.approvers`）或从 `commands.ownerAllowFrom` 推断
+- Telegram 审批者可以是明确的（`execApprovals.approvers`）或从现有所有者配置推断（`allowFrom`，加上支持时的直接消息 `defaultTo`）
+- Slack 审批者可以是明确的（`execApprovals.approvers`）或从 `commands.ownerAllowFrom` 推断
+- Slack 原生按钮保留批准 id 类型，因此 `plugin:` id 可以解析 plugin 批准而无需第二个 Slack 本地回退层
+- Matrix 原生私信/Channel 路由仅限 exec；Matrix plugin 批准保留在共享的同聊天 `/approve` 和可选的 `approvals.plugin` 转发路径上
 - 请求者不需要是审批者
-- 当启用 Channel 交付时，批准提示包含命令文本
+- 当该聊天已经支持命令和回复时，原始聊天可以直接使用 `/approve` 批准
+- 原生 Discord 批准按钮按批准 id 类型路由：`plugin:` id 直接进入 plugin 批准，其他都进入 exec 批准
+- 原生 Telegram 批准按钮遵循与 `/approve` 相同的有界 exec 到 plugin 回退
+- 当原生 `target` 启用原始聊天交付时，批准提示包含命令文本
+- 待处理 exec 批准默认在 30 分钟后过期
 - 如果没有操作者 UI 或配置的批准客户端可以接受请求，提示回退到 `askFallback`
 
 Telegram 默认发送到审批者私信（`target: "dm"`）。当你希望批准提示也出现在原始 Telegram 聊天/话题中时，可以切换到 `channel` 或 `both`。对于 Telegram 论坛话题，OpenClaw 会为批准提示和批准后的跟进保留话题。
 
 参阅：
 
-- [Discord](/channels/discord#exec-approvals-in-discord)
-- [Telegram](/channels/telegram#exec-approvals-in-telegram)
+- [Discord](/channels/discord)
+- [Telegram](/channels/telegram)
 
 ### macOS IPC 流程
 
@@ -357,6 +422,10 @@ Exec 生命周期作为系统消息呈现：
 Gateway 主机 exec 批准在命令完成时（以及可选地在运行时间超过阈值时）发出相同的生命周期事件。
 受批准门控的 exec 将批准 id 复用为这些消息中的 `runId` 以便于关联。
 
+## 被拒绝批准的行为
+
+当异步 exec 批准被拒绝时，OpenClaw 会阻止 Agent 在 Session 中重用之前相同命令运行的输出。拒绝原因会带有明确的指导（没有命令输出可用），这会阻止 Agent 声称有新输出或使用之前成功运行的过时结果重复被拒绝的命令。
+
 ## 影响
 
 - **full** 功能强大；尽可能优先使用允许列表。
@@ -371,3 +440,10 @@ Gateway 主机 exec 批准在命令完成时（以及可选地在运行时间超
 - [Exec tool](/tools/exec)
 - [Elevated mode](/tools/elevated)
 - [Skills](/tools/skills)
+
+## 相关
+
+- [Exec](/tools/exec) — Shell 命令执行工具
+- [沙盒化](/gateway/sandboxing) — 沙盒模式和工作区访问
+- [安全](/gateway/security) — 安全模型和加固
+- [沙盒 vs 工具策略 vs 提升模式](/gateway/sandbox-vs-tool-policy-vs-elevated) — 何时使用各项功能

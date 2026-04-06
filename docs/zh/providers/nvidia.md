@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "2f6b10e818ef54f7a33043c3a331b596"
 summary: "在 OpenClaw 中使用 NVIDIA 的 OpenAI 兼容 API"
 read_when:
   - 您想要在 OpenClaw 中使用 NVIDIA 模型
@@ -9,11 +8,11 @@ title: "NVIDIA"
 
 # NVIDIA
 
-NVIDIA 在 `https://integrate.api.nvidia.com/v1` 为 Nemotron 和 NeMo 模型提供 OpenAI 兼容的 API。使用来自 [NVIDIA NGC](https://catalog.ngc.nvidia.com/) 的 API 密钥进行身份验证。
+NVIDIA 在 `https://integrate.api.nvidia.com/v1` 提供 Nemotron 和 NeMo 模型的 OpenAI 兼容 API。使用来自 [NVIDIA NGC](https://catalog.ngc.nvidia.com/) 的 API 密钥进行身份验证。
 
 ## CLI 设置
 
-导出密钥一次，然后运行引导并设置 NVIDIA 模型：
+导出密钥后，运行入门并设置 NVIDIA 模型：
 
 ```bash
 export NVIDIA_API_KEY="nvapi-..."
@@ -21,7 +20,7 @@ openclaw onboard --auth-choice skip
 openclaw models set nvidia/nvidia/llama-3.1-nemotron-70b-instruct
 ```
 
-如果您仍然传递 `--token`，请记住它会进入 Shell 历史记录和 `ps` 输出；尽可能优先使用环境变量。
+如果您仍然传递 `--token`，请记住它会出现在 Shell 历史和 `ps` 输出中；尽可能优先使用环境变量。
 
 ## 配置片段
 
@@ -46,11 +45,14 @@ openclaw models set nvidia/nvidia/llama-3.1-nemotron-70b-instruct
 
 ## 模型 ID
 
-- `nvidia/llama-3.1-nemotron-70b-instruct`（默认）
-- `meta/llama-3.3-70b-instruct`
-- `nvidia/mistral-nemo-minitron-8b-8k-instruct`
+| 模型引用                                             | 名称                                     | 上下文  | 最大输出 |
+| ---------------------------------------------------- | ---------------------------------------- | ------- | -------- |
+| `nvidia/nvidia/llama-3.1-nemotron-70b-instruct`      | NVIDIA Llama 3.1 Nemotron 70B Instruct   | 131,072 | 4,096    |
+| `nvidia/meta/llama-3.3-70b-instruct`                 | Meta Llama 3.3 70B Instruct              | 131,072 | 4,096    |
+| `nvidia/nvidia/mistral-nemo-minitron-8b-8k-instruct` | NVIDIA Mistral NeMo Minitron 8B Instruct | 8,192   | 2,048    |
 
 ## 注意事项
 
 - OpenAI 兼容的 `/v1` 端点；使用来自 NVIDIA NGC 的 API 密钥。
-- 当设置 `NVIDIA_API_KEY` 时，Provider 自动启用；使用静态默认值（131,072 令牌上下文窗口，4,096 最大令牌）。
+- 设置 `NVIDIA_API_KEY` 时，Provider 自动启用。
+- 内置目录是静态的；源代码中成本默认为 `0`。

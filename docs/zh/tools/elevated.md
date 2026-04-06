@@ -1,7 +1,7 @@
 ---
-title: "提升模式"
-mmh3_hash: "c3a3198761467fa72b94f0e0092086f8"
-summary: "提升执行模式：在沙盒 Agent 中从 Gateway 主机运行命令"
+title: "Elevated Mode"
+mmh3_hash: "a04f3d5b64f5b41bd90e6bc38aebe638"
+summary: "提升执行模式：在沙盒 Agent 中从沙盒外运行命令"
 read_when:
   - 调整提升模式默认值、允许列表或 Slash Command 行为
   - 了解沙盒 Agent 如何访问主机
@@ -21,9 +21,9 @@ read_when:
 
 | 指令             | 作用                                                |
 | ---------------- | --------------------------------------------------- |
-| `/elevated on`   | 在 Gateway 主机上运行，保持 exec 批准               |
+| `/elevated on`   | 在配置的主机路径上运行（沙盒外），保持批准          |
 | `/elevated ask`  | 与 `on` 相同（别名）                                |
-| `/elevated full` | 在 Gateway 主机上运行**并**跳过 exec 批准           |
+| `/elevated full` | 在配置的主机路径上运行（沙盒外）并跳过批准          |
 | `/elevated off`  | 返回到沙盒限制执行                                  |
 
 也可以使用 `/elev on|off|ask|full`。
@@ -67,8 +67,8 @@ read_when:
 
   </Step>
 
-  <Step title="命令在主机上运行">
-    提升激活后，`exec` 调用会路由到 Gateway 主机而非沙盒。在 `full` 模式下，exec 批准被跳过。在 `on`/`ask` 模式下，已配置的批准规则仍然适用。
+  <Step title="命令在沙盒外运行">
+    提升激活后，`exec` 调用会离开沙盒。有效主机默认为 `gateway`，当已配置/Session 的 exec 目标为 `node` 时为 `node`。在 `full` 模式下，exec 批准被跳过。在 `on`/`ask` 模式下，已配置的批准规则仍然适用。
   </Step>
 </Steps>
 
@@ -100,6 +100,7 @@ read_when:
 ## 提升不控制什么
 
 - **工具策略**：如果 `exec` 被工具策略拒绝，提升无法覆盖
+- **主机选择策略**：提升不会将 `auto` 变成自由的跨主机覆盖。它使用已配置/Session 的 exec 目标规则，仅在目标已经是 `node` 时才选择 `node`。
 - **与 `/exec` 分开**：`/exec` 指令为授权发送者调整每 Session 的 exec 默认值，不需要提升模式
 
 ## 相关

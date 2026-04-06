@@ -1,7 +1,7 @@
 ---
 title: "Windows"
 sidebarTitle: "Windows"
-mmh3_hash: "ed91c0a5b5e3bcdf22aaaeb7c1fb29d3"
+mmh3_hash: "cf78d74a0c58a050812f51bd5bf89bea"
 summary: "Windows 支持：原生和 WSL2 安装路径、守护进程及当前注意事项"
 read_when:
   - 在 Windows 上安装 OpenClaw
@@ -11,7 +11,7 @@ read_when:
 
 # Windows
 
-OpenClaw 同时支持**原生 Windows** 和 **WSL2**。WSL2 是更稳定的路径，推荐用于完整体验 — CLI、Gateway 和工具链在 Linux 内部运行，具有完整的兼容性。原生 Windows 适用于核心 CLI 和 Gateway 使用，但有以下注意事项。
+OpenClaw 同时支持**原生 Windows** 和 **WSL2**。WSL2 是更稳定的路径，推荐用于完整体验——CLI、Gateway 和工具链在 Linux 内部运行，具有完整的兼容性。原生 Windows 适用于核心 CLI 和 Gateway 使用，但有以下注意事项。
 
 原生 Windows 伴侣应用正在计划中。
 
@@ -131,8 +131,8 @@ wsl --list --verbose
 重启后（Windows 登录前），从 WSL 检查：
 
 ```bash
-systemctl --user is-enabled openclaw-gateway
-systemctl --user status openclaw-gateway --no-pager
+systemctl --user is-enabled openclaw-gateway.service
+systemctl --user status openclaw-gateway.service --no-pager
 ```
 
 ## 高级：通过 LAN 暴露 WSL 服务（portproxy）

@@ -1,7 +1,7 @@
 ---
 title: "LINE (插件)"
 sidebarTitle: "LINE"
-mmh3_hash: "b9f2aadda7544eaf1b4d2cc74ae33ba9"
+mmh3_hash: "6b46be0512462ac7299c8468980f436d"
 summary: "LINE Messaging API 插件设置、配置和使用"
 read_when:
   - 连接 OpenClaw 到 LINE
@@ -178,8 +178,35 @@ LINE 插件还提供了 `/card` 命令用于 Flex 消息预设：
 /card info "Welcome" "Thanks for joining!"
 ```
 
+## ACP 支持
+
+LINE 支持 ACP（Agent 通信协议）会话绑定：
+
+- `/acp spawn <agent> --bind here` 将当前 LINE 聊天绑定到 ACP 会话，而不创建子线程。
+- 已配置的 ACP 绑定和活跃的会话绑定 ACP 会话在 LINE 上与其他会话 Channel 一样工作。
+
+参见 [ACP agents](/tools/acp-agents) 了解详情。
+
+## 出站媒体
+
+LINE 插件支持通过 Agent 消息工具发送图片、视频和音频文件。媒体通过 LINE 特定的传递路径发送，具有适当的预览和跟踪处理：
+
+- **图片**：作为 LINE 图片消息发送，并自动生成预览。
+- **视频**：通过显式的预览和内容类型处理发送。
+- **音频**：作为 LINE 音频消息发送。
+
+当 LINE 特定路径不可用时，通用媒体发送回退到现有的仅图片路由。
+
 ## 故障排除
 
 - **Webhook 验证失败：** 确保 Webhook URL 是 HTTPS，且 `channelSecret` 与 LINE 控制台中的匹配。
 - **没有入站事件：** 确认 Webhook 路径与 `channels.line.webhookPath` 匹配，且 Gateway 可从 LINE 访问。
 - **媒体下载错误：** 如果媒体超出默认限制，请提高 `channels.line.mediaMaxMb`。
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

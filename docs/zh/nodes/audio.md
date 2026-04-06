@@ -24,12 +24,15 @@ read_when:
 如果你**没有配置模型**并且 `tools.media.audio.enabled` **未**设置为 `false`，
 OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止：
 
-1. **本地 CLI**（如果已安装）
+1. **活动回复模型**（当其 provider 支持音频理解时）。
+2. **本地 CLI**（如果已安装）
    - `sherpa-onnx-offline`（需要带有编码器/解码器/连接器/令牌的 `SHERPA_ONNX_MODEL_DIR`）
    - `whisper-cli`（来自 `whisper-cpp`；使用 `WHISPER_CPP_MODEL` 或捆绑的 tiny 模型）
    - `whisper`（Python CLI；自动下载模型）
-2. **Gemini CLI**（`gemini`）使用 `read_many_files`
-3. **Provider 密钥**（OpenAI → Groq → Deepgram → Google）
+3. **Gemini CLI**（`gemini`）使用 `read_many_files`
+4. **Provider 认证**
+   - 配置的 `models.providers.*` 支持音频的条目首先尝试
+   - 捆绑的回退顺序：OpenAI → Groq → Deepgram → Google → Mistral
 
 要禁用自动检测，请设置 `tools.media.audio.enabled: false`。
 要自定义，请设置 `tools.media.audio.models`。
@@ -130,6 +133,7 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 ## 说明与限制
 
 - Provider 认证遵循标准模型认证顺序（认证配置文件、环境变量、`models.providers.*.apiKey`）。
+- Groq 设置详情：[Groq](/providers/groq)。
 - 当使用 `provider: "deepgram"` 时，Deepgram 会获取 `DEEPGRAM_API_KEY`。
 - Deepgram 设置详情：[Deepgram（音频转录）](/providers/deepgram)。
 - Mistral 设置详情：[Mistral](/providers/mistral)。

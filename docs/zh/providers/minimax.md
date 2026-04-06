@@ -1,7 +1,7 @@
 ---
+mmh3_hash: "842112a3023200fe015d957d7ab26b67"
 title: "MiniMax"
 sidebarTitle: "MiniMax"
-mmh3_hash: "a8871e84938467e688ae2416d9b283fb"
 summary: "在 OpenClaw 中使用 MiniMax 模型"
 read_when:
   - 您想在 OpenClaw 中使用 MiniMax 模型
@@ -10,36 +10,149 @@ read_when:
 
 # MiniMax
 
-OpenClaw 的 MiniMax Provider 默认使用 **MiniMax M2.7**，并保留 **MiniMax M2.5** 用于兼容性。
+OpenClaw 的 MiniMax Provider 默认使用 **MiniMax M2.7**。
 
-## 模型概述
+MiniMax 还提供：
 
-- `MiniMax-M2.7`：默认托管文本模型。
-- `MiniMax-M2.7-highspeed`：更快的 M2.7 文本层级。
-- `MiniMax-M2.5`：上一代文本模型，仍在 MiniMax 目录中提供。
-- `MiniMax-M2.5-highspeed`：更快的 M2.5 文本层级。
-- `MiniMax-VL-01`：支持文本 + 图像输入的视觉模型。
+- 通过 T2A v2 内置语音合成
+- 通过 `MiniMax-VL-01` 内置图像理解
+- 通过 `music-2.5+` 内置音乐生成
+- 通过 MiniMax Coding Plan 搜索 API 内置 `web_search`
 
-## 选择设置
+Provider 拆分：
 
-### MiniMax OAuth（编码计划）— 推荐
+- `minimax`：API 密钥文本 Provider，加上内置图像生成、图像理解、语音和 Web 搜索
+- `minimax-portal`：OAuth 文本 Provider，加上内置图像生成和图像理解
 
-**适用于：** 通过 OAuth 使用 MiniMax 编码计划快速设置，无需 API 密钥。
+## 模型阵容
 
-启用捆绑的 OAuth Plugin 并进行身份验证：
+- `MiniMax-M2.7`：默认托管推理模型。
+- `MiniMax-M2.7-highspeed`：更快的 M2.7 推理层。
+- `image-01`：图像生成模型（生成和图像到图像编辑）。
 
-```bash
-openclaw plugins enable minimax  # 如果已加载则跳过。
-openclaw gateway restart  # 如果网关已经运行则重启
-openclaw onboard --auth-choice minimax-portal
+## 图像生成
+
+MiniMax 插件为 `image_generate` 工具注册了 `image-01` 模型。它支持：
+
+- **文本到图像生成**，带宽高比控制。
+- **图像到图像编辑**（主题参考），带宽高比控制。
+- 每次请求最多 **9** 张输出图像。
+- 每次编辑请求最多 **1** 张参考图像。
+- 支持的宽高比：`1:1`、`16:9`、`4:3`、`3:2`、`2:3`、`3:4`、`9:16`、`21:9`。
+
+将 MiniMax 用于图像生成，将其设置为图像生成 Provider：
+
+```json5
+{
+  agents: {
+    defaults: {
+      imageGenerationModel: { primary: "minimax/image-01" },
+    },
+  },
+}
 ```
 
-系统将提示您选择端点：
+插件使用与文本模型相同的 `MINIMAX_API_KEY` 或 OAuth 身份验证。如果 MiniMax 已经设置好，则无需额外配置。
 
-- **Global** - 国际用户（`api.minimax.io`）
-- **CN** - 中国用户（`api.minimaxi.com`）
+`minimax` 和 `minimax-portal` 都使用相同的 `image-01` 模型注册 `image_generate`。API 密钥设置使用 `MINIMAX_API_KEY`；OAuth 设置可以改用内置的 `minimax-portal` 身份验证路径。
 
-有关详细信息，请参见 [MiniMax plugin README](https://github.com/openclaw/openclaw/tree/main/extensions/minimax)。
+当入门或 API 密钥设置写入显式 `models.providers.minimax` 条目时，OpenClaw 会以 `input: ["text", "image"]` 具体化 `MiniMax-M2.7` 和 `MiniMax-M2.7-highspeed`。
+
+内置捆绑的 MiniMax 文本目录本身保持仅文本元数据，直到存在该显式 Provider 配置。图像理解通过插件自有的 `MiniMax-VL-01` 媒体 Provider 单独公开。
+
+请参阅[图像生成](/tools/image-generation)了解共享工具参数、Provider 选择和故障转移行为。
+
+## 音乐生成
+
+内置的 `minimax` 插件也通过共享的 `music_generate` 工具注册音乐生成。
+
+- 默认音乐模型：`minimax/music-2.5+`
+- 也支持 `minimax/music-2.5` 和 `minimax/music-2.0`
+- 提示控制：`lyrics`、`instrumental`、`durationSeconds`
+- 输出格式：`mp3`
+- 基于 Session 的运行通过共享任务/状态流程分离，包括 `action: "status"`
+
+将 MiniMax 设置为默认音乐 Provider：
+
+```json5
+{
+  agents: {
+    defaults: {
+      musicGenerationModel: {
+        primary: "minimax/music-2.5+",
+      },
+    },
+  },
+}
+```
+
+请参阅[音乐生成](/tools/music-generation)了解共享工具参数、Provider 选择和故障转移行为。
+
+## 视频生成
+
+内置的 `minimax` 插件也通过共享的 `video_generate` 工具注册视频生成。
+
+- 默认视频模型：`minimax/MiniMax-Hailuo-2.3`
+- 模式：文本到视频和单图像参考流程
+- 支持 `aspectRatio` 和 `resolution`
+
+将 MiniMax 设置为默认视频 Provider：
+
+```json5
+{
+  agents: {
+    defaults: {
+      videoGenerationModel: {
+        primary: "minimax/MiniMax-Hailuo-2.3",
+      },
+    },
+  },
+}
+```
+
+请参阅[视频生成](/tools/video-generation)了解共享工具参数、Provider 选择和故障转移行为。
+
+## 图像理解
+
+MiniMax 插件将图像理解与文本目录分开注册：
+
+- `minimax`：默认图像模型 `MiniMax-VL-01`
+- `minimax-portal`：默认图像模型 `MiniMax-VL-01`
+
+这就是为什么即使内置文本 Provider 目录仍显示仅文本的 M2.7 聊天引用，自动媒体路由也能使用 MiniMax 图像理解。
+
+## Web 搜索
+
+MiniMax 插件也通过 MiniMax Coding Plan 搜索 API 注册 `web_search`。
+
+- Provider id：`minimax`
+- 结构化结果：标题、URL、摘要、相关查询
+- 首选环境变量：`MINIMAX_CODE_PLAN_KEY`
+- 接受的环境别名：`MINIMAX_CODING_API_KEY`
+- 兼容回退：`MINIMAX_API_KEY`（当它已指向 Coding Plan 令牌时）
+- 区域复用：`plugins.entries.minimax.config.webSearch.region`，然后是 `MINIMAX_API_HOST`，然后是 MiniMax Provider Base URL
+- 搜索保持在 Provider id `minimax` 上；OAuth CN/全球设置仍可通过 `models.providers.minimax-portal.baseUrl` 间接控制区域
+
+配置位于 `plugins.entries.minimax.config.webSearch.*` 下。请参阅 [MiniMax Search](/tools/minimax-search)。
+
+## 选择设置方式
+
+### MiniMax OAuth（Coding Plan）- 推荐
+
+**适用于：** 通过 OAuth 使用 MiniMax Coding Plan 快速设置，无需 API 密钥。
+
+使用显式区域 OAuth 选项进行身份验证：
+
+```bash
+openclaw onboard --auth-choice minimax-global-oauth
+# 或
+openclaw onboard --auth-choice minimax-cn-oauth
+```
+
+选项映射：
+
+- `minimax-global-oauth`：国际用户（`api.minimax.io`）
+- `minimax-cn-oauth`：中国用户（`api.minimaxi.com`）
 
 ### MiniMax M2.7（API 密钥）
 
@@ -47,9 +160,16 @@ openclaw onboard --auth-choice minimax-portal
 
 通过 CLI 配置：
 
-- 运行 `openclaw configure`
-- 选择 **Model/auth**
-- 选择 **MiniMax** 身份验证选项
+- 交互式入门：
+
+```bash
+openclaw onboard --auth-choice minimax-global-api
+# 或
+openclaw onboard --auth-choice minimax-cn-api
+```
+
+- `minimax-global-api`：国际用户（`api.minimax.io`）
+- `minimax-cn-api`：中国用户（`api.minimaxi.com`）
 
 ```json5
 {
@@ -67,37 +187,19 @@ openclaw onboard --auth-choice minimax-portal
             id: "MiniMax-M2.7",
             name: "MiniMax M2.7",
             reasoning: true,
-            input: ["text"],
-            cost: { input: 0.3, output: 1.2, cacheRead: 0.03, cacheWrite: 0.12 },
-            contextWindow: 200000,
-            maxTokens: 8192,
+            input: ["text", "image"],
+            cost: { input: 0.3, output: 1.2, cacheRead: 0.06, cacheWrite: 0.375 },
+            contextWindow: 204800,
+            maxTokens: 131072,
           },
           {
             id: "MiniMax-M2.7-highspeed",
             name: "MiniMax M2.7 Highspeed",
             reasoning: true,
-            input: ["text"],
-            cost: { input: 0.3, output: 1.2, cacheRead: 0.03, cacheWrite: 0.12 },
-            contextWindow: 200000,
-            maxTokens: 8192,
-          },
-          {
-            id: "MiniMax-M2.5",
-            name: "MiniMax M2.5",
-            reasoning: true,
-            input: ["text"],
-            cost: { input: 0.3, output: 1.2, cacheRead: 0.03, cacheWrite: 0.12 },
-            contextWindow: 200000,
-            maxTokens: 8192,
-          },
-          {
-            id: "MiniMax-M2.5-highspeed",
-            name: "MiniMax M2.5 Highspeed",
-            reasoning: true,
-            input: ["text"],
-            cost: { input: 0.3, output: 1.2, cacheRead: 0.03, cacheWrite: 0.12 },
-            contextWindow: 200000,
-            maxTokens: 8192,
+            input: ["text", "image"],
+            cost: { input: 0.6, output: 2.4, cacheRead: 0.06, cacheWrite: 0.375 },
+            contextWindow: 204800,
+            maxTokens: 131072,
           },
         ],
       },
@@ -106,10 +208,11 @@ openclaw onboard --auth-choice minimax-portal
 }
 ```
 
-### MiniMax M2.7 作为后备（示例）
+在 Anthropic 兼容流式路径上，OpenClaw 现在默认禁用 MiniMax 思考，除非您自己显式设置 `thinking`。MiniMax 的流式端点在 OpenAI 样式的 delta 块中发出 `reasoning_content`，而不是原生 Anthropic 思考块，如果隐式启用，可能会将内部推理泄露到可见输出中。
 
-**适用于：** 将最强的最新一代模型作为主要，故障转移到 MiniMax M2.7。
-以下示例使用 Opus 作为具体主要模型；换成您偏好的最新一代主要模型。
+### MiniMax M2.7 作为备选（示例）
+
+**适用于：** 将最强的最新一代模型作为主要模型，故障转移到 MiniMax M2.7。下面的示例使用 Opus 作为具体的主要模型；请替换为您首选的最新一代主要模型。
 
 ```json5
 {
@@ -129,93 +232,66 @@ openclaw onboard --auth-choice minimax-portal
 }
 ```
 
-### 可选：通过 LM Studio 本地运行（手动）
-
-**适用于：** 使用 LM Studio 进行本地推理。
-我们在功能强大的硬件（例如台式机/服务器）上使用 LM Studio 的本地服务器看到了 MiniMax M2.5 的强大结果。
-
-通过 `openclaw.json` 手动配置：
-
-```json5
-{
-  agents: {
-    defaults: {
-      model: { primary: "lmstudio/minimax-m2.5-gs32" },
-      models: { "lmstudio/minimax-m2.5-gs32": { alias: "Minimax" } },
-    },
-  },
-  models: {
-    mode: "merge",
-    providers: {
-      lmstudio: {
-        baseUrl: "http://127.0.0.1:1234/v1",
-        apiKey: "lmstudio",
-        api: "openai-responses",
-        models: [
-          {
-            id: "minimax-m2.5-gs32",
-            name: "MiniMax M2.5 GS32",
-            reasoning: true,
-            input: ["text"],
-            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-            contextWindow: 196608,
-            maxTokens: 8192,
-          },
-        ],
-      },
-    },
-  },
-}
-```
-
 ## 通过 `openclaw configure` 配置
 
-使用交互式配置向导设置 MiniMax 而无需编辑 JSON：
+使用交互式配置向导设置 MiniMax，无需编辑 JSON：
 
 1. 运行 `openclaw configure`。
 2. 选择 **Model/auth**。
-3. 选择 **MiniMax** 身份验证选项。
-4. 在提示时选择您的默认模型。
+3. 选择一个 **MiniMax** 身份验证选项。
+4. 在提示时选择默认模型。
+
+向导/CLI 中当前的 MiniMax 身份验证选项：
+
+- `minimax-global-oauth`
+- `minimax-cn-oauth`
+- `minimax-global-api`
+- `minimax-cn-api`
 
 ## 配置选项
 
-- `models.providers.minimax.baseUrl`：首选 `https://api.minimax.io/anthropic`（Anthropic 兼容）；`https://api.minimax.io/v1` 对于 OpenAI 兼容的有效载荷是可选的。
-- `models.providers.minimax.api`：首选 `anthropic-messages`；`openai-completions` 对于 OpenAI 兼容的有效载荷是可选的。
+- `models.providers.minimax.baseUrl`：首选 `https://api.minimax.io/anthropic`（Anthropic 兼容）；`https://api.minimax.io/v1` 是 OpenAI 兼容负载的可选项。
+- `models.providers.minimax.api`：首选 `anthropic-messages`；`openai-completions` 是 OpenAI 兼容负载的可选项。
 - `models.providers.minimax.apiKey`：MiniMax API 密钥（`MINIMAX_API_KEY`）。
 - `models.providers.minimax.models`：定义 `id`、`name`、`reasoning`、`contextWindow`、`maxTokens`、`cost`。
-- `agents.defaults.models`：为您想要的模型设置别名。
-- `models.mode`：如果您想将 MiniMax 与内置模型一起添加，请保留 `merge`。
+- `agents.defaults.models`：为您想要在允许列表中的模型设置别名。
+- `models.mode`：如果您想在内置模型旁边添加 MiniMax，保持 `merge`。
 
 ## 注意事项
 
-- 模型引用为 `minimax/<model>`。
-- 默认文本模型：`MiniMax-M2.7`。
-- 其他文本模型：`MiniMax-M2.7-highspeed`、`MiniMax-M2.5`、`MiniMax-M2.5-highspeed`。
-- 编码计划使用 API：`https://api.minimaxi.com/v1/api/openplatform/coding_plan/remains`（需要编码计划密钥）。
-- 如果您需要精确的成本跟踪，请更新 `models.json` 中的定价值。
-- MiniMax 编码计划推荐链接（优惠 10%）：[https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link](https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link)
-- 参见 [/concepts/model-providers](/concepts/model-providers) 了解 Provider 规则。
-- 使用 `openclaw models list` 和 `openclaw models set minimax/MiniMax-M2.7` 进行切换。
+- 模型引用遵循身份验证路径：
+  - API 密钥设置：`minimax/<model>`
+  - OAuth 设置：`minimax-portal/<model>`
+- 默认聊天模型：`MiniMax-M2.7`
+- 备选聊天模型：`MiniMax-M2.7-highspeed`
+- 在 `api: "anthropic-messages"` 上，OpenClaw 注入 `thinking: { type: "disabled" }`，除非思考已在参数/配置中显式设置。
+- `/fast on` 或 `params.fastMode: true` 在 Anthropic 兼容流路径上将 `MiniMax-M2.7` 重写为 `MiniMax-M2.7-highspeed`。
+- 入门和直接 API 密钥设置为两个 M2.7 变体写入带 `input: ["text", "image"]` 的显式模型定义
+- 内置 Provider 目录目前将聊天引用作为仅文本元数据公开，直到存在显式 MiniMax Provider 配置
+- Coding Plan 使用量 API：`https://api.minimaxi.com/v1/api/openplatform/coding_plan/remains`（需要 Coding Plan 密钥）。
+- OpenClaw 将 MiniMax Coding Plan 使用量归一化为其他 Provider 使用的相同 `% left` 显示。
+- 如果需要精确的成本跟踪，请更新 `models.json` 中的价格值。
+- MiniMax Coding Plan 推荐链接（9折）：[https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link](https://platform.minimax.io/subscribe/coding-plan?code=DbXJTRClnb&source=link)
+- 请参阅 [/concepts/model-providers](/concepts/model-providers) 了解 Provider 规则。
+- 使用 `openclaw models list` 确认当前 Provider id，然后使用 `openclaw models set minimax/MiniMax-M2.7` 或 `openclaw models set minimax-portal/MiniMax-M2.7` 切换。
 
 ## 故障排除
 
 ### "未知模型：minimax/MiniMax-M2.7"
 
-这通常意味着 **MiniMax Provider 未配置**（没有 Provider 条目，也没有找到 MiniMax 身份验证配置文件/环境密钥）。此检测的修复在 **2026.1.12** 中。修复方法：
+这通常意味着 **MiniMax Provider 未配置**（未找到匹配的 Provider 条目且未找到 MiniMax 身份验证配置文件/环境密钥）。修复方法：
 
-- 升级到 **2026.1.12**（或从源代码 `main` 运行），然后重新启动网关。
-- 运行 `openclaw configure` 并选择 **MiniMax** 身份验证选项，或
-- 手动添加 `models.providers.minimax` 块，或
-- 设置 `MINIMAX_API_KEY`（或 MiniMax 身份验证配置文件），以便可以注入 Provider。
+- 升级到 **2026.1.12**（或从源代码 `main` 运行），然后重启 Gateway。
+- 运行 `openclaw configure` 并选择一个 **MiniMax** 身份验证选项，或
+- 手动添加匹配的 `models.providers.minimax` 或 `models.providers.minimax-portal` 块，或
+- 设置 `MINIMAX_API_KEY`、`MINIMAX_OAUTH_TOKEN` 或 MiniMax 身份验证配置文件，以便注入匹配的 Provider。
 
-确保模型 ID **区分大小写**：
+确保模型 id 区分大小写：
 
-- `minimax/MiniMax-M2.7`
-- `minimax/MiniMax-M2.7-highspeed`
-- `minimax/MiniMax-M2.5`
-- `minimax/MiniMax-M2.5-highspeed`
+- API 密钥路径：`minimax/MiniMax-M2.7` 或 `minimax/MiniMax-M2.7-highspeed`
+- OAuth 路径：`minimax-portal/MiniMax-M2.7` 或 `minimax-portal/MiniMax-M2.7-highspeed`
 
-然后重新检查：
+然后用以下命令重新检查：
 
 ```bash
 openclaw models list

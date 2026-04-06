@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f9c5e2715d835c64d5c16cd1c59cf214"
+mmh3_hash: "991d916f708bf95ed247cbf404a4932e"
 title: "macOS 开发设置"
 summary: "在 OpenClaw macOS 应用上工作的开发者设置指南"
 read_when:
@@ -15,7 +15,7 @@ read_when:
 在构建应用之前，确保你已安装以下内容：
 
 1. **Xcode 26.2+**：Swift 开发必需。
-2. **Node.js 24 & pnpm**：推荐用于 gateway、CLI 和打包脚本。Node 22 LTS，当前 `22.16+`，仍然支持兼容性。
+2. **Node.js 24 & pnpm**：推荐用于 gateway、CLI 和打包脚本。Node 22 LTS，当前 `22.14+`，仍然支持兼容性。
 
 ## 1. 安装依赖
 
@@ -55,6 +55,9 @@ macOS 应用期望一个全局 `openclaw` CLI 安装来管理后台任务。
 ```bash
 npm install -g openclaw@<version>
 ```
+
+`pnpm add -g openclaw@<version>` 和 `bun add -g openclaw@<version>` 也可以使用。
+对于 Gateway 运行时，Node 仍然是推荐的路径。
 
 ## 故障排除
 

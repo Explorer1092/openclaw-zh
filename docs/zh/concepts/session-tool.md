@@ -1,244 +1,104 @@
 ---
-title: "会话工具"
-sidebarTitle: "会话工具"
-mmh3_hash: "5cc2ee8a60fb6dc95e9a6211d63b2e3d"
-summary: "Agent session tools 用于列出 sessions、获取历史记录和发送跨 session 消息"
+title: "Session 工具"
+summary: "Agent 跨 Session 状态、召回、消息传递和子 Agent 编排工具"
 read_when:
-  - 添加或修改 session tools
+  - 你想了解 Agent 拥有哪些 Session 工具
+  - 你想配置跨 Session 访问或子 Agent 生成
+  - 你想检查状态或控制已生成的子 Agent
 ---
 
-# 会话工具
+# Session 工具
 
-目标:小型、难以误用的 tool 集,以便 agents 可以列出 sessions、获取历史记录和发送到另一个 session。
+OpenClaw 为 Agent 提供跨 Session 工作、检查状态和编排子 Agent 的工具。
 
-## Tool 名称
+## 可用工具
 
-- `sessions_list`
-- `sessions_history`
-- `sessions_send`
-- `sessions_spawn`
+| 工具               | 功能                                                                |
+| ------------------ | ------------------------------------------------------------------- |
+| `sessions_list`    | 列出带有可选过滤器（类型、近期性）的 Session                        |
+| `sessions_history` | 读取特定 Session 的 transcript                                      |
+| `sessions_send`    | 向另一个 Session 发送消息，并可选择等待                             |
+| `sessions_spawn`   | 生成一个隔离的子 Agent Session 用于后台工作                         |
+| `sessions_yield`   | 结束当前回合并等待后续子 Agent 结果                                 |
+| `subagents`        | 列出、引导或终止此 Session 的已生成子 Agent                         |
+| `session_status`   | 显示 `/status` 风格的卡片，并可选择设置每个 Session 的 model 覆盖  |
 
-## Key Model
+## 列出和读取 Session
 
-- Main direct chat bucket 始终是文字键 `"main"`(解析为当前 agent 的 main key)。
-- Group chats 使用 `agent:<agentId>:<channel>:group:<id>` 或 `agent:<agentId>:<channel>:channel:<id>`(传递完整键)。
-- Cron jobs 使用 `cron:<job.id>`。
-- Hooks 使用 `hook:<uuid>`,除非明确设置。
-- Node sessions 使用 `node-<nodeId>`,除非明确设置。
+`sessions_list` 返回带有键、类型、Channel、model、token 计数和时间戳的 Session。按类型（`main`、`group`、`cron`、`hook`、`node`）或近期性（`activeMinutes`）过滤。
 
-`global` 和 `unknown` 是保留值,永远不会列出。如果 `session.scope = "global"`,我们将其别名为 `main` 用于所有 tools,因此调用者永远看不到 `global`。
+`sessions_history` 获取特定 Session 的对话 transcript。默认情况下，工具结果被排除——传递 `includeTools: true` 可以查看它们。返回的视图有意地有边界和安全过滤：
 
-## sessions_list
+- assistant 文本在召回前进行规范化：
+  - thinking 标签被剥离
+  - `<relevant-memories>` / `<relevant_memories>` 脚手架块被剥离
+  - 纯文本工具调用 XML payload 块，如 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>` 和 `<function_calls>...</function_calls>` 被剥离，包括从未正确关闭的截断 payload
+  - 降级的工具调用/结果脚手架，如 `[Tool Call: ...]`、`[Tool Result ...]` 和 `[Historical context ...]` 被剥离
+  - 泄露的 model 控制令牌，如 `<|assistant|>`、其他 ASCII `<|...|>` 令牌和全角 `<｜...｜>` 变体被剥离
+  - 格式错误的 MiniMax 工具调用 XML，如 `<invoke ...>` / `</minimax:tool_call>` 被剥离
+- 凭据/令牌类文本在返回前被编辑
+- 长文本块被截断
+- 非常大的历史记录可能会删除旧行，或用 `[sessions_history omitted: message too large]` 替换过大的行
+- 工具报告摘要标志，如 `truncated`、`droppedMessages`、`contentTruncated`、`contentRedacted` 和 `bytes`
 
-将 sessions 列为行数组。
+两个工具都接受**Session key**（如 `"main"`）或来自先前列表调用的**Session ID**。
 
-参数:
+如果你需要精确的逐字节 transcript，请直接检查磁盘上的 transcript 文件，而不是将 `sessions_history` 视为原始转储。
 
-- `kinds?: string[]` 过滤器:以下任意 `"main" | "group" | "cron" | "hook" | "node" | "other"`
-- `limit?: number` 最大行数(默认:服务器默认值,钳位例如 200)
-- `activeMinutes?: number` 仅在 N 分钟内更新的 sessions
-- `messageLimit?: number` 0 = 无消息(默认 0);>0 = 包括最后 N 条消息
+## 发送跨 Session 消息
 
-行为:
+`sessions_send` 向另一个 Session 传递消息，并可选择等待响应：
 
-- `messageLimit > 0` 为每个 session 获取 `chat.history` 并包括最后 N 条消息。
-- Tool results 在列表输出中被过滤掉;使用 `sessions_history` 获取 tool 消息。
-- 在 **沙盒** agent session 中运行时,session tools 默认为 **仅生成可见性**(见下文)。
+- **发送后不等待：** 设置 `timeoutSeconds: 0` 入队后立即返回。
+- **等待回复：** 设置超时并内联获取响应。
 
-行形状(JSON):
+目标响应后，OpenClaw 可以运行**回复循环**，Agent 交替发送消息（最多 5 轮）。目标 Agent 可以回复 `REPLY_SKIP` 提前停止。
 
-- `key`: session key (string)
-- `kind`: `main | group | cron | hook | node | other`
-- `channel`: `whatsapp | telegram | discord | signal | imessage | webchat | internal | unknown`
-- `displayName` (如果可用,group 显示标签)
-- `updatedAt` (ms)
-- `sessionId`
-- `model`, `contextTokens`, `totalTokens`
-- `thinkingLevel`, `verboseLevel`, `systemSent`, `abortedLastRun`
-- `sendPolicy` (如果设置,session 覆盖)
-- `lastChannel`, `lastTo`
-- `deliveryContext` (规范化的 `{ channel, to, accountId }`,在可用时)
-- `transcriptPath` (从 store dir + sessionId 派生的尽力路径)
-- `messages?` (仅当 `messageLimit > 0` 时)
+## 状态和编排辅助
 
-## sessions_history
+`session_status` 是当前或另一个可见 Session 的轻量 `/status` 等效工具。它报告使用量、时间、model/runtime 状态，以及存在时的关联后台任务上下文。像 `/status` 一样，它可以从最新的 transcript 使用条目回填稀疏的 token/缓存计数器，`model=default` 可以清除每个 Session 的覆盖。
 
-获取一个 session 的 transcript。
+`sessions_yield` 有意结束当前回合，以便下一条消息可以是你等待的后续事件。在生成子 Agent 后使用它，当你希望完成结果作为下一条消息到达，而不是构建轮询循环时。
 
-参数:
+`subagents` 是已生成 OpenClaw 子 Agent 的控制平面辅助工具。它支持：
 
-- `sessionKey` (必需;接受 session key 或来自 `sessions_list` 的 `sessionId`)
-- `limit?: number` 最大消息数(服务器钳位)
-- `includeTools?: boolean` (默认 false)
+- `action: "list"` 检查活动/近期运行
+- `action: "steer"` 向正在运行的子 Agent 发送后续指导
+- `action: "kill"` 停止一个子 Agent 或 `all`
 
-行为:
+## 生成子 Agent
 
-- `includeTools=false` 过滤 `role: "toolResult"` 消息。
-- 以原始 transcript 格式返回消息数组。
-- 当给定 `sessionId` 时,OpenClaw 将其解析为相应的 session key(缺失 ids 错误)。
+`sessions_spawn` 为后台任务创建隔离 Session。它始终是非阻塞的——立即返回 `runId` 和 `childSessionKey`。
 
-## Gateway session history 和实时 transcript API
+关键选项：
 
-Control UI 和 gateway 客户端可以直接使用低级 history 和实时 transcript 接口。
+- `runtime: "subagent"`（默认）或 `"acp"` 用于外部 harness Agent。
+- 子 Session 的 `model` 和 `thinking` 覆盖。
+- `thread: true` 将生成绑定到聊天线程（Discord、Slack 等）。
+- `sandbox: "require"` 对子 Session 强制沙盒。
 
-HTTP:
+默认的叶子子 Agent 不获得 Session 工具。当 `maxSpawnDepth >= 2` 时，深度为 1 的编排子 Agent 还会获得 `sessions_spawn`、`subagents`、`sessions_list` 和 `sessions_history`，以便它们可以管理自己的子 Agent。叶子运行仍然不获得递归编排工具。
 
-- `GET /sessions/{sessionKey}/history`
-- 查询参数:`limit`、`cursor`、`includeTools=1`、`follow=1`
-- 未知 session 返回 HTTP `404`,`error.type = "not_found"`
-- `follow=1` 将响应升级为该 session 的 transcript 更新 SSE 流
+完成后，宣告步骤将结果发布到请求者的 Channel。完成传递在可用时保留绑定的线程/主题路由，如果完成来源只标识一个 Channel，OpenClaw 仍然可以重用请求者 Session 存储的路由（`lastChannel` / `lastTo`）进行直接传递。
 
-WebSocket:
+关于 ACP 特定行为，参见 [ACP Agents](/tools/acp-agents)。
 
-- `sessions.subscribe` 订阅对客户端可见的所有 session 生命周期和 transcript 事件
-- `sessions.messages.subscribe { key }` 仅订阅一个 session 的 `session.message` 事件
-- `sessions.messages.unsubscribe { key }` 移除该目标 transcript 订阅
-- `session.message` 携带追加的 transcript 消息以及可用时的实时 usage 元数据
-- `sessions.changed` 针对 transcript 追加发出 `phase: "message"`,以便 session 列表可以刷新计数器和预览
+## 可见性
 
-## sessions_send
+Session 工具的作用域限制了 Agent 可以看到的内容：
 
-向另一个 session 发送消息。
+| 级别    | 作用域                                   |
+| ------- | ---------------------------------------- |
+| `self`  | 仅当前 Session                           |
+| `tree`  | 当前 Session + 已生成的子 Agent          |
+| `agent` | 此 Agent 的所有 Session                  |
+| `all`   | 所有 Session（如果配置则跨 Agent）       |
 
-参数:
+默认为 `tree`。无论配置如何，沙盒 Session 都被限制为 `tree`。
 
-- `sessionKey` (必需;接受 session key 或来自 `sessions_list` 的 `sessionId`)
-- `message` (必需)
-- `timeoutSeconds?: number` (默认 >0;0 = fire-and-forget)
+## 延伸阅读
 
-行为:
-
-- `timeoutSeconds = 0`: 入队并返回 `{ runId, status: "accepted" }`。
-- `timeoutSeconds > 0`: 等待最多 N 秒完成,然后返回 `{ runId, status: "ok", reply }`。
-- 如果等待超时:`{ runId, status: "timeout", error }`。运行继续;稍后调用 `sessions_history`。
-- 如果运行失败:`{ runId, status: "error", error }`。
-- Announce delivery 在主运行完成后运行,并且是尽力而为;`status: "ok"` 不保证 announce 已传递。
-- 通过 gateway `agent.wait`(服务器端)等待,因此重新连接不会丢弃等待。
-- Agent-to-agent message context 为主运行注入。
-- 跨 session 消息以 `message.provenance.kind = "inter_session"` 持久化,以便 transcript 读取者可以区分路由的 agent 指令与外部用户输入。
-- 主运行完成后,OpenClaw 运行 **reply-back loop**:
-  - 第 2 轮+ 在请求者和目标 agents 之间交替。
-  - 精确回复 `REPLY_SKIP` 以停止乒乓。
-  - 最大回合数为 `session.agentToAgent.maxPingPongTurns` (0–5,默认 5)。
-- 一旦循环结束,OpenClaw 运行 **agent‑to‑agent announce 步骤**(仅目标 agent):
-  - 精确回复 `ANNOUNCE_SKIP` 以保持静默。
-  - 任何其他回复都发送到目标 channel。
-  - Announce 步骤包括原始请求 + 第 1 轮回复 + 最新乒乓回复。
-
-## Channel 字段
-
-- 对于 groups,`channel` 是在 session 条目上记录的 channel。
-- 对于直接聊天,`channel` 从 `lastChannel` 映射。
-- 对于 cron/hook/node,`channel` 是 `internal`。
-- 如果缺失,`channel` 是 `unknown`。
-
-## 安全 / Send Policy
-
-基于 channel/chat 类型(不是每个 session id)的基于 policy 的阻止。
-
-```json
-{
-  "session": {
-    "sendPolicy": {
-      "rules": [
-        {
-          "match": { "channel": "discord", "chatType": "group" },
-          "action": "deny"
-        }
-      ],
-      "default": "allow"
-    }
-  }
-}
-```
-
-Runtime 覆盖(每个 session 条目):
-
-- `sendPolicy: "allow" | "deny"` (未设置 = 继承配置)
-- 通过 `sessions.patch` 或仅所有者的 `/send on|off|inherit`(独立消息)可设置。
-
-强制执行点:
-
-- `chat.send` / `agent` (gateway)
-- auto-reply delivery 逻辑
-
-## sessions_spawn
-
-在隔离的 session 中生成 sub-agent 运行,并将结果宣布回请求者 chat channel。
-
-参数:
-
-- `task` (必需)
-- `label?` (可选;用于日志/UI)
-- `agentId?` (可选;如果允许,在另一个 agent id 下生成)
-- `model?` (可选;覆盖 sub-agent model;无效值错误)
-- `thinking?` (可选;覆盖 sub-agent 运行的 thinking level)
-- `runTimeoutSeconds?` (默认为 `agents.defaults.subagents.runTimeoutSeconds`(若已设置),否则为 `0`;设置时,在 N 秒后中止 sub-agent 运行)
-- `thread?` (默认 false;在支持的 channel/plugin 中请求线程绑定路由)
-- `mode?` (`run|session`;默认 `run`,但当 `thread=true` 时默认 `session`;`mode="session"` 需要 `thread=true`)
-- `cleanup?` (`delete|keep`,默认 `keep`)
-- `sandbox?` (`inherit|require`,默认 `inherit`;`require` 在目标子 runtime 未沙盒化时拒绝 spawn)
-- `attachments?` (可选内联文件数组;仅子 agent runtime,ACP 拒绝)。每个条目:`{ name, content, encoding?: "utf8" | "base64", mimeType? }`。文件被实例化到子 workspace 的 `.openclaw/attachments/<uuid>/` 中。返回包含每个文件 sha256 的收据。
-- `attachAs?` (可选;`{ mountPath? }` 提示,保留供将来挂载实现使用)
-
-允许列表:
-
-- `agents.list[].subagents.allowAgents`: 通过 `agentId` 允许的 agent ids 列表(`["*"]` 允许任何)。默认:仅请求者 agent。
-- Sandbox 继承守卫:如果请求者 session 是沙盒化的,`sessions_spawn` 拒绝将在非沙盒化环境中运行的目标。
-
-发现:
-
-- 使用 `agents_list` 发现哪些 agent ids 允许用于 `sessions_spawn`。
-
-行为:
-
-- 使用 `deliver: false` 启动新的 `agent:<agentId>:subagent:<uuid>` session。
-- Sub-agents 默认为完整 tool 集 **减去 session tools**(通过 `tools.subagents.tools` 可配置)。
-- Sub-agents 不允许调用 `sessions_spawn`(无 sub-agent → sub-agent 生成)。
-- 始终非阻塞:立即返回 `{ status: "accepted", runId, childSessionKey }`。
-- 当 `thread=true` 时,channel plugins 可以将传递/路由绑定到线程目标(Discord 支持由 `session.threadBindings.*` 和 `channels.discord.threadBindings.*` 控制)。
-- 完成后,OpenClaw 运行 sub-agent **announce 步骤** 并将结果发布到请求者 chat channel。
-  - 如果 assistant 最终回复为空,则将 sub-agent 历史中的最新 `toolResult` 包含为 `Result`。
-- 在 announce 步骤期间精确回复 `ANNOUNCE_SKIP` 以保持静默。
-- Announce 回复规范化为 `Status`/`Result`/`Notes`;`Status` 来自 runtime 结果(不是 model 文本)。
-- Sub-agent sessions 在 `agents.defaults.subagents.archiveAfterMinutes`(默认:60)后自动归档。
-- Announce 回复包括统计行(runtime、tokens、sessionKey/sessionId、transcript 路径和可选成本)。
-
-## Sandbox Session 可见性
-
-Session tools 可以限定范围以减少跨 session 访问。
-
-默认行为:
-
-- `tools.sessions.visibility` 默认为 `tree`(当前 session + 生成的 subagent sessions)。
-- 对于沙盒 sessions,`agents.defaults.sandbox.sessionToolsVisibility` 可以硬性限制可见性。
-
-配置:
-
-```json5
-{
-  tools: {
-    sessions: {
-      // "self" | "tree" | "agent" | "all"
-      // 默认: "tree"
-      visibility: "tree",
-    },
-  },
-  agents: {
-    defaults: {
-      sandbox: {
-        // 默认: "spawned"
-        sessionToolsVisibility: "spawned", // 或 "all"
-      },
-    },
-  },
-}
-```
-
-注意:
-
-- `self`: 仅当前 session key。
-- `tree`: 当前 session + 当前 session 生成的 sessions。
-- `agent`: 属于当前 agent id 的任何 session。
-- `all`: 任何 session(跨 agent 访问仍需要 `tools.agentToAgent`)。
-- 当 session 处于沙盒中且 `sessionToolsVisibility="spawned"` 时,即使您设置了 `tools.sessions.visibility="all"`,OpenClaw 也会将可见性限制到 `tree`。
+- [Session Management](/concepts/session) — 路由、生命周期、维护
+- [ACP Agents](/tools/acp-agents) — 外部 harness 生成
+- [Multi-agent](/concepts/multi-agent) — 多 Agent 架构
+- [Gateway Configuration](/gateway/configuration) — Session 工具配置项

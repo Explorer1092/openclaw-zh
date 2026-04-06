@@ -51,11 +51,14 @@ OpenClaw 使用单个 agent workspace 目录 (`agents.defaults.workspace`) 作�
 
 ## Skills
 
-OpenClaw 从三个位置加载 skills(workspace 在名称冲突时获胜):
+OpenClaw 从以下位置加载 skills（优先级从高到低）：
 
-- Bundled(随安装附带)
-- Managed/local: `~/.openclaw/skills`
 - Workspace: `<workspace>/skills`
+- Project agent skills: `<workspace>/.agents/skills`
+- Personal agent skills: `~/.agents/skills`
+- Managed/local: `~/.openclaw/skills`
+- Bundled（随安装附带）
+- Extra skill folders: `skills.load.extraDirs`
 
 Skills 可以通过配置/env 进行控制(参见 [Gateway configuration](/gateway/configuration) 中的 `skills`)。
 
@@ -85,7 +88,7 @@ Block 流式传输在完成后立即发送完成的 assistant blocks;它**默认
 
 - 配置 models 时使用 `provider/model`。
 - 如果 model ID 本身包含 `/`(OpenRouter 样式),请包含 provider 前缀(例如:`openrouter/moonshotai/kimi-k2`)。
-- 如果省略 provider,OpenClaw 将输入视为别名或**默认 provider** 的 model(仅当 model ID 中没有 `/` 时才有效)。
+- 如果省略 provider，OpenClaw 先尝试别名匹配，再进行唯一配置的 provider 精确 model id 匹配，最后才回退到配置的默认 provider。如果该 provider 不再提供配置的默认 model，OpenClaw 会回退到第一个配置的 provider/model，而不是显示过时的已移除 provider 默认值。
 
 ## 配置(最小)
 

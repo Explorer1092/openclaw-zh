@@ -1,9 +1,11 @@
 ---
 title: "频道位置解析"
 sidebarTitle: "频道位置解析"
-mmh3_hash: "99595129809bba37e1fc855b223a3b45"
-summary: "入站渠道位置解析（Telegram + WhatsApp）和上下文字段"
-read_when: ["Adding or modifying channel location parsing","Using location context fields in agent prompts or tools"]
+mmh3_hash: "68bc64ee7b309077e132905670fca78f"
+summary: "入站渠道位置解析（Telegram/WhatsApp/Matrix）和上下文字段"
+read_when:
+  - 添加或修改渠道位置解析
+  - 在 Agent 提示或工具中使用位置上下文字段
 ---
 
 # 频道位置解析

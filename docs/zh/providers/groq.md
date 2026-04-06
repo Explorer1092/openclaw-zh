@@ -1,15 +1,15 @@
 ---
-mmh3_hash: "73b6f6c858af3a930a20ccc1b89537f4"
+mmh3_hash: "caf8d6d67260147081e670ac5e490ce0"
 title: "Groq"
 summary: "Groq 设置（身份验证 + 模型选择）"
 read_when:
   - 您想在 OpenClaw 中使用 Groq
-  - 您需要 API 密钥环境变量或 CLI 身份验证选择
+  - 您需要 API 密钥环境变量或 CLI 身份验证选项
 ---
 
 # Groq
 
-[Groq](https://groq.com) 使用自定义 LPU 硬件在开源模型（Llama、Gemma、Mistral 等）上提供超快推理。OpenClaw 通过其 OpenAI 兼容 API 连接到 Groq。
+[Groq](https://groq.com) 使用定制 LPU 硬件为开源模型（Llama、Gemma、Mistral 等）提供超快速推理。OpenClaw 通过其 OpenAI 兼容 API 连接到 Groq。
 
 - Provider：`groq`
 - 身份验证：`GROQ_API_KEY`
@@ -52,12 +52,12 @@ export GROQ_API_KEY="gsk_..."
 
 ## 音频转录
 
-Groq 还提供快速的基于 Whisper 的音频转录。当配置为媒体理解 Provider 时，OpenClaw 使用 Groq 的 `whisper-large-v3-turbo` 模型转录语音消息。
+Groq 还提供基于 Whisper 的快速音频转录。当配置为媒体理解 Provider 时，OpenClaw 使用 Groq 的 `whisper-large-v3-turbo` 模型通过共享的 `tools.media.audio` 界面转录语音消息。
 
 ```json5
 {
-  media: {
-    understanding: {
+  tools: {
+    media: {
       audio: {
         models: [{ provider: "groq" }],
       },
@@ -70,11 +70,18 @@ Groq 还提供快速的基于 Whisper 的音频转录。当配置为媒体理解
 
 如果 Gateway 作为守护进程（launchd/systemd）运行，请确保 `GROQ_API_KEY` 对该进程可用（例如，在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
 
+## 音频注意事项
+
+- 共享配置路径：`tools.media.audio`
+- 默认 Groq 音频 Base URL：`https://api.groq.com/openai/v1`
+- 默认 Groq 音频模型：`whisper-large-v3-turbo`
+- Groq 音频转录使用 OpenAI 兼容的 `/audio/transcriptions` 路径
+
 ## 可用模型
 
-Groq 的模型目录变化频繁。运行 `openclaw models list | grep groq` 查看当前可用模型，或查看 [console.groq.com/docs/models](https://console.groq.com/docs/models)。
+Groq 的模型目录经常变化。运行 `openclaw models list | grep groq` 查看当前可用模型，或查看 [console.groq.com/docs/models](https://console.groq.com/docs/models)。
 
-热门选择：
+热门选择包括：
 
 - **Llama 3.3 70B Versatile** - 通用，大上下文
 - **Llama 3.1 8B Instant** - 快速，轻量
@@ -83,7 +90,7 @@ Groq 的模型目录变化频繁。运行 `openclaw models list | grep groq` 查
 
 ## 链接
 
-- [Groq 控制台](https://console.groq.com)
+- [Groq Console](https://console.groq.com)
 - [API 文档](https://console.groq.com/docs)
 - [模型列表](https://console.groq.com/docs/models)
-- [定价](https://groq.com/pricing)
+- [价格](https://groq.com/pricing)

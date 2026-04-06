@@ -1,7 +1,7 @@
 ---
 title: "apply_patch 工具"
 sidebarTitle: "apply_patch 工具"
-mmh3_hash: "e700dbedb218ead817d95cedead0f153"
+mmh3_hash: "d2c0ca5b3e1de8584a1b98527bc6ba1a"
 summary: "使用 apply_patch 工具应用多文件补丁"
 read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或调试基于补丁的编辑"]
 ---
@@ -35,8 +35,8 @@ read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或�
 - `tools.exec.applyPatch.workspaceOnly` 默认为 `true`(工作区包含)。仅当您有意希望 `apply_patch` 在工作区目录之外写入/删除时,才将其设置为 `false`。
 - 在 `*** Update File:` 块中使用 `*** Move to:` 重命名文件。
 - `*** End of File` 在需要时标记仅 EOF 插入。
-- 实验性功能,默认禁用。使用 `tools.exec.applyPatch.enabled` 启用。
-- 仅限 OpenAI(包括 OpenAI Codex)。可选择通过 `tools.exec.applyPatch.allowModels` 按模型限制。
+- 默认对 OpenAI 和 OpenAI Codex 模型可用。设置 `tools.exec.applyPatch.enabled: false` 可禁用。
+- 可选择通过 `tools.exec.applyPatch.allowModels` 按模型限制。
 - 配置仅在 `tools.exec` 下。
 
 ## 示例

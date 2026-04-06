@@ -1,111 +1,98 @@
 ---
-mmh3_hash: "a3adc52602d0442c55e9d08517102e0f"
-summary: "Context window + compaction: OpenClaw 如何将 sessions 保持在 model 限制内"
+summary: "OpenClaw 如何总结长对话以保持在 model 限制内"
 read_when:
   - 你想了解自动 compaction 和 /compact
-  - 你正在调试达到 context 限制的长 sessions
+  - 你正在调试达到 context 限制的长 Session
 title: "Compaction"
 ---
 
-# Context Window & Compaction
+# Compaction
 
-每个 model 都有一个 **context window**(它可以看到的最大 tokens)。长时间运行的聊天会累积消息和工具结果;一旦窗口紧张,OpenClaw 会 **compact** 较旧的历史记录以保持在限制内。
+每个 model 都有一个 context window——它能处理的最大 token 数量。当对话接近该限制时，OpenClaw 将较旧的消息**压缩**成摘要，以便聊天可以继续。
 
-## Compaction 是什么
+## 工作原理
 
-Compaction **将较旧的对话总结** 为紧凑的摘要条目,并保持最近的消息完整。摘要存储在 session 历史记录中,因此未来的请求使用:
+1. 较旧的对话回合被总结成一个紧凑条目。
+2. 摘要保存在 Session transcript 中。
+3. 近期消息保持完整。
 
-- Compaction 摘要
-- Compaction 点之后的最近消息
+当 OpenClaw 将历史记录分割成 compaction 块时，它会将 assistant 工具调用与其对应的 `toolResult` 条目配对保留。如果分割点落在工具块内部，OpenClaw 会移动边界以保持配对完整，当前未总结的尾部得以保留。
 
-Compaction **持久化** 在 session 的 JSONL 历史记录中。
+完整的对话历史保存在磁盘上。Compaction 只改变 model 在下一回合看到的内容。
 
-## 配置
+## 自动 compaction
 
-使用你的 `openclaw.json` 中的 `agents.defaults.compaction` 设置来配置 compaction 行为(模式、目标 tokens 等)。
-Compaction 摘要默认保留不透明标识符(`identifierPolicy: "strict"`)。你可以通过 `identifierPolicy: "off"` 覆盖此设置,或通过 `identifierPolicy: "custom"` 和 `identifierInstructions` 提供自定义文本。
+自动 compaction 默认开启。当 Session 接近 context 限制时运行，或当 model 返回 context 溢出错误时运行（此时 OpenClaw 会 compact 并重试）。典型的溢出信号包括 `request_too_large`、`context length exceeded`、`input exceeds the maximum number of tokens`、`input token count exceeds the maximum number of input tokens`、`input is too long for the model` 和 `ollama error: context length exceeded`。
 
-你可以通过 `agents.defaults.compaction.model` 为 compaction 摘要指定不同的模型。当你的主模型是本地或小型模型,而你希望 compaction 摘要由更强大的模型生成时,此功能非常有用。该覆盖接受任意 `provider/model-id` 字符串:
-
-```json
-{
-  "agents": {
-    "defaults": {
-      "compaction": {
-        "model": "openrouter/anthropic/claude-sonnet-4-6"
-      }
-    }
-  }
-}
-```
-
-这也适用于本地模型,例如专用于摘要的第二个 Ollama 模型或专门针对 compaction 微调的模型:
-
-```json
-{
-  "agents": {
-    "defaults": {
-      "compaction": {
-        "model": "ollama/llama3.1:8b"
-      }
-    }
-  }
-}
-```
-
-未设置时,compaction 使用 agent 的主模型。
-
-## 自动 compaction(默认开启)
-
-当 session 接近或超过 model 的 context window 时,OpenClaw 会触发自动 compaction,并可能使用压缩的 context 重试原始请求。
-
-你会看到:
-
-- 在 verbose 模式下看到 `🧹 Auto-compaction complete`
-- `/status` 显示 `🧹 Compactions: <count>`
-
-在 compaction 之前,OpenClaw 可以运行 **静默内存刷新** 回合以将持久注释存储到磁盘。参见 [Memory](/concepts/memory) 了解详细信息和配置。
+<Info>
+在 compact 之前，OpenClaw 会自动提醒 Agent 将重要笔记保存到[内存](/concepts/memory)文件。这可以防止 context 丢失。
+</Info>
 
 ## 手动 compaction
 
-使用 `/compact`(可选带有说明)强制进行 compaction 传递:
+在任何聊天中输入 `/compact` 可强制进行 compaction。可添加说明以引导摘要：
 
 ```
-/compact Focus on decisions and open questions
+/compact Focus on the API design decisions
 ```
 
-## Context window 来源
+## 使用不同的 model
 
-Context window 特定于 model。OpenClaw 使用配置的 provider catalog 中的 model 定义来确定限制。
+默认情况下，compaction 使用 Agent 的主 model。你可以使用更强大的 model 以获得更好的摘要：
+
+```json5
+{
+  agents: {
+    defaults: {
+      compaction: {
+        model: "openrouter/anthropic/claude-sonnet-4-6",
+      },
+    },
+  },
+}
+```
+
+## Compaction 开始提示
+
+默认情况下，compaction 静默运行。要在 compaction 开始时显示简短提示，启用 `notifyUser`：
+
+```json5
+{
+  agents: {
+    defaults: {
+      compaction: {
+        notifyUser: true,
+      },
+    },
+  },
+}
+```
+
+启用后，用户在每次 compaction 运行开始时会看到简短消息（例如"Compacting context..."）。
 
 ## Compaction vs pruning
 
-- **Compaction**: 总结并 **持久化** 在 JSONL 中。
-- **Session pruning**: 仅修剪旧的 **tool results**,**内存中**,每个请求。
+|                  | Compaction                       | Pruning                              |
+| ---------------- | -------------------------------- | ------------------------------------ |
+| **功能**         | 总结较旧的对话                   | 修剪旧的 tool results                |
+| **是否保存？**   | 是（在 Session transcript 中）   | 否（仅内存，每次请求）               |
+| **范围**         | 整个对话                         | 仅 tool results                      |
 
-参见 [/concepts/session-pruning](/concepts/session-pruning) 了解 pruning 详细信息。
+[Session pruning](/concepts/session-pruning) 是一个较轻量的补充，在不进行总结的情况下修剪工具输出。
 
-## OpenAI 服务端 compaction
+## 故障排除
 
-OpenClaw 还支持 OpenAI Responses 服务端 compaction 提示,适用于兼容的直接 OpenAI 模型。这与本地 OpenClaw compaction 是分开的,可以并行运行。
+**压缩太频繁？** model 的 context window 可能较小，或工具输出可能较大。尝试启用 [session pruning](/concepts/session-pruning)。
 
-- 本地 compaction: OpenClaw 进行摘要并持久化到 session JSONL 中。
-- 服务端 compaction: 当启用 `store` + `context_management` 时,OpenAI 在 provider 侧压缩 context。
+**compaction 后 context 感觉过时？** 使用 `/compact Focus on <topic>` 引导摘要，或启用[内存刷新](/concepts/memory)以保留笔记。
 
-参见 [OpenAI provider](/providers/openai) 了解 model 参数和覆盖设置。
+**需要全新开始？** `/new` 无需 compact 即可启动新 Session。
 
-## 自定义 context engines
+关于高级配置（reserve tokens、标识符保留、自定义 context engine、OpenAI 服务端 compaction），参见 [Session Management Deep Dive](/reference/session-management-compaction)。
 
-Compaction 行为由活动的 [context engine](/concepts/context-engine) 拥有。Legacy engine 使用上面描述的内置摘要。Plugin engine(通过 `plugins.slots.contextEngine` 选择)可以实现任何 compaction 策略——DAG 摘要、向量检索、增量压缩等。
+## 相关链接
 
-当 plugin engine 设置 `ownsCompaction: true` 时,OpenClaw 将所有 compaction 决策委托给该 engine,不运行内置自动 compaction。
-
-当 `ownsCompaction` 为 `false` 或未设置时,OpenClaw 仍可能使用 Pi 的内置运行中自动 compaction,但活动 engine 的 `compact()` 方法仍处理 `/compact` 和溢出恢复。没有自动回退到 legacy engine 的 compaction 路径。
-
-如果你正在构建非 owning context engine,通过从 `openclaw/plugin-sdk/core` 调用 `delegateCompactionToRuntime(...)` 来实现 `compact()`。
-
-## 提示
-
-- 当 sessions 感觉陈旧或 context 臃肿时使用 `/compact`。
-- 大型工具输出��经被截断;pruning 可以进一步减少工具结果的堆积。
-- 如果需要全新的开始,`/new` 或 `/reset` 会启动新的 session id。
+- [Session](/concepts/session) — Session 管理和生命周期
+- [Session Pruning](/concepts/session-pruning) — 修剪 tool results
+- [Context](/concepts/context) — Agent 回合的 context 如何构建
+- [Hooks](/automation/hooks) — compaction 生命周期 hooks（before_compaction、after_compaction）

@@ -218,4 +218,10 @@ slot 在运行时是独占的——对于给定的运行或 compaction 操作,�
 - Engine 错误被记录并在诊断中显示。如果 plugin engine 注册失败或无法解析所选 engine id,OpenClaw 不会自动回退;运行会失败,直到你修复 plugin 或将 `plugins.slots.contextEngine` 切换回 `"legacy"`。
 - 对于开发,使用 `openclaw plugins install -l ./my-engine` 链接本地 plugin 目录而无需复制。
 
-另请参见:[Compaction](/concepts/compaction)、[Context](/concepts/context)、[Plugins](/tools/plugin)、[Plugin manifest](/plugins/manifest)。
+另请参见：[Compaction](/concepts/compaction)、[Context](/concepts/context)、[Plugins](/tools/plugin)、[Plugin manifest](/plugins/manifest)。
+
+## 相关链接
+
+- [Context](/concepts/context) — Agent 回合的 context 如何构建
+- [Plugin Architecture](/plugins/architecture) — 注册 context engine plugin
+- [Compaction](/concepts/compaction) — 总结长对话

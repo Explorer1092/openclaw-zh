@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5993c9a8c6d25b56d00891192a3185a5"
+mmh3_hash: "f3a21edd96cbe58fb75d38b22bddc504"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
@@ -147,6 +147,7 @@ Lark（国际版）租户应使用 [https://open.larksuite.com/app](https://open
 
 1. 选择**使用长连接接收事件**（WebSocket）
 2. 添加事件：`im.message.receive_v1`
+3. （可选）对于 Drive 评论工作流，还需添加：`drive.notice.comment_add_v1`
 
 ⚠️ 如果 Gateway 未运行，长连接设置可能无法保存。
 
@@ -184,7 +185,7 @@ openclaw channels add
         main: {
           appId: "cli_xxx",
           appSecret: "xxx",
-          botName: "My AI assistant",
+          name: "My AI assistant",
         },
       },
     },
@@ -315,41 +316,43 @@ openclaw pairing approve feishu <CODE>
 
 **1. 群组策略**（`channels.feishu.groupPolicy`）：
 
-- `"open"` = 允许群组中的所有人（默认）
+- `"open"` = 允许群组中的所有人
 - `"allowlist"` = 仅允许 `groupAllowFrom`
 - `"disabled"` = 禁用群组消息
 
-**2. 提及要求**（`channels.feishu.groups.<chat_id>.requireMention`）：
+默认：`allowlist`
 
-- `true` = 需要 @提及（默认）
-- `false` = 无需提及即可响应
+**2. 提及要求**（`channels.feishu.requireMention`，可通过 `channels.feishu.groups.<chat_id>.requireMention` 覆盖）：
+
+- 显式 `true` = 需要 @提及
+- 显式 `false` = 无需提及即可响应
+- 未设置且 `groupPolicy: "open"` = 默认为 `false`
+- 未设置且 `groupPolicy` 不是 `"open"` = 默认为 `true`
 
 ---
 
 ## 群组配置示例
 
-### 允许所有群组，需要 @提及（默认）
+### 允许所有群组，无需 @提及（open 群组的默认值）
 
 ```json5
 {
   channels: {
     feishu: {
       groupPolicy: "open",
-      // 默认 requireMention: true
     },
   },
 }
 ```
 
-### 允许所有群组，无需 @提及
+### 允许所有群组，但仍需要 @提及
 
 ```json5
 {
   channels: {
     feishu: {
-      groups: {
-        oc_xxx: { requireMention: false },
-      },
+      groupPolicy: "open",
+      requireMention: true,
     },
   },
 }
@@ -498,7 +501,7 @@ openclaw pairing list feishu
         backup: {
           appId: "cli_yyy",
           appSecret: "yyy",
-          botName: "Backup bot",
+          name: "Backup bot",
           enabled: false,
         },
       },
@@ -679,9 +682,10 @@ Feishu ACP 由文本命令驱动。没有原生 slash 命令菜单，因此直�
 | `channels.feishu.accounts.<id>.domain` | 每账户 API 域名覆盖 | `feishu` |
 | `channels.feishu.dmPolicy` | 私信策略 | `pairing` |
 | `channels.feishu.allowFrom` | 私信 allowlist（open_id 列表） | - |
-| `channels.feishu.groupPolicy` | 群组策略 | `open` |
+| `channels.feishu.groupPolicy` | 群组策略 | `allowlist` |
 | `channels.feishu.groupAllowFrom` | 群组 allowlist | - |
-| `channels.feishu.groups.<chat_id>.requireMention` | 需要 @提及 | `true` |
+| `channels.feishu.requireMention` | 默认需要 @提及 | 条件性 |
+| `channels.feishu.groups.<chat_id>.requireMention` | 每群组需要 @提及覆盖 | 继承 |
 | `channels.feishu.groups.<chat_id>.enabled` | 启用群组 | `true` |
 | `channels.feishu.textChunkLimit` | 消息块大小 | `2000` |
 | `channels.feishu.mediaMaxMb` | 媒体大小限制 | `30` |

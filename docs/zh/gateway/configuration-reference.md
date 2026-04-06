@@ -220,7 +220,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
     discord: {
       enabled: true,
       token: "your-bot-token",
-      mediaMaxMb: 8,
+      mediaMaxMb: 100,
       allowBots: false,
       actions: {
         reactions: true,
@@ -239,7 +239,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
         events: true,
         moderation: false,
       },
-      replyToMode: "off", // off | first | all
+      replyToMode: "off", // off | first | all | batched
       dmPolicy: "pairing",
       allowFrom: ["1234567890", "123456789012345678"],
       dm: { enabled: true, groupEnabled: false, groupChannels: ["openclaw-dm"] },
@@ -293,6 +293,14 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
           openai: { voice: "alloy" },
         },
       },
+      execApprovals: {
+        enabled: "auto", // true | false | "auto"
+        approvers: ["987654321098765432"],
+        agentFilter: ["default"],
+        sessionFilter: ["discord:"],
+        target: "dm", // dm | channel | both
+        cleanupAfterResolve: false,
+      },
       retry: {
         attempts: 3,
         minDelayMs: 500,
@@ -305,6 +313,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
 ```
 
 - Token：`channels.discord.token`，默认账户环境变量回退为 `DISCORD_BOT_TOKEN`。
+- 直接出站调用若提供了显式的 Discord `token`，则使用该 token 进行调用；账户重试/策略设置仍来自活跃运行时快照中选定的账户。
 - 可选的 `channels.discord.defaultAccount` 在与已配置账户 ID 匹配时，覆盖默认账户选择。
 - 投递目标使用 `user:<id>`（私聊）或 `channel:<id>`（服务器频道）；裸数字 ID 会被拒绝。
 - 服务器 slug 为小写，空格替换为 `-`；频道键使用 slug 化名称（不含 `#`）。建议优先使用服务器 ID。
@@ -324,6 +333,13 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
 - `channels.discord.streaming` 是规范的流式模式键。旧版 `streamMode` 和布尔 `streaming` 值会自动迁移。
 - `channels.discord.autoPresence` 将运行时可用性映射到 Bot presence（healthy => online，degraded => idle，exhausted => dnd），并允许可选的状态文本覆盖。
 - `channels.discord.dangerouslyAllowNameMatching` 重新启用可变名称/标签匹配（紧急兼容模式）。
+- `channels.discord.execApprovals`：Discord 原生 exec 审批投递和审批者授权。
+  - `enabled`：`true`、`false` 或 `"auto"`（默认）。auto 模式下，当可从 `approvers` 或 `commands.ownerAllowFrom` 解析出审批者时，exec 审批激活。
+  - `approvers`：允许审批 exec 请求的 Discord 用户 ID。省略时回退到 `commands.ownerAllowFrom`。
+  - `agentFilter`：可选的 Agent ID 允许列表。省略表示转发所有 Agent 的审批。
+  - `sessionFilter`：可选的 Session 键模式（子字符串或正则表达式）。
+  - `target`：发送审批提示的位置。`"dm"`（默认）发送到审批者私聊，`"channel"` 发送到发起频道，`"both"` 两者均发送。当目标包含 `"channel"` 时，按钮仅供已解析的审批者使用。
+  - `cleanupAfterResolve`：为 `true` 时，审批、拒绝或超时后删除审批私聊消息。
 
 **反应通知模式：** `off`（无），`own`（Bot 消息，默认），`all`（所有消息），`allowlist`（来自所有消息中 `guilds.<id>.users` 的用户）。
 
@@ -389,7 +405,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
       allowBots: false,
       reactionNotifications: "own",
       reactionAllowlist: ["U123"],
-      replyToMode: "off", // off | first | all
+      replyToMode: "off", // off | first | all | batched
       thread: {
         historyScope: "thread", // thread | channel
         inheritParent: false,
@@ -413,6 +429,13 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
       streaming: "partial", // off | partial | block | progress（预览模式）
       nativeStreaming: true, // streaming=partial 时使用 Slack 原生流式 API
       mediaMaxMb: 20,
+      execApprovals: {
+        enabled: "auto", // true | false | "auto"
+        approvers: ["U123"],
+        agentFilter: ["default"],
+        sessionFilter: ["slack:"],
+        target: "dm", // dm | channel | both
+      },
     },
   },
 }
@@ -420,6 +443,8 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
 
 - **Socket 模式** 需要同时提供 `botToken` 和 `appToken`（默认账户环境变量回退：`SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN`）。
 - **HTTP 模式** 需要 `botToken` 加上 `signingSecret`（根级别或每账户）。
+- `botToken`、`appToken`、`signingSecret` 和 `userToken` 接受纯文本字符串或 SecretRef 对象。
+- Slack 账户快照公开每凭据的来源/状态字段，如 `botTokenSource`、`botTokenStatus`、`appTokenStatus`，以及 HTTP 模式下的 `signingSecretStatus`。`configured_unavailable` 表示账户通过 SecretRef 配置，但当前命令/运行时路径无法解析密钥值。
 - `configWrites: false` 阻止 Slack 发起的配置写入。
 - 可选的 `channels.slack.defaultAccount` 在与已配置账户 ID 匹配时，覆盖默认账户选择。
 - `channels.slack.streaming` 是规范的流式模式键。旧版 `streamMode` 和布尔 `streaming` 值会自动迁移。
@@ -428,6 +453,9 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
 **反应通知模式：** `off`、`own`（默认）、`all`、`allowlist`（来自 `reactionAllowlist`）。
 
 **线程 Session 隔离：** `thread.historyScope` 为每线程独立（默认）或在频道内共享。`thread.inheritParent` 将父频道对话记录复制到新线程。
+
+- `typingReaction` 在处理回复时向入站 Slack 消息临时添加一个反应，完成后移除。使用 Slack 表情符号简码，例如 `"hourglass_flowing_sand"`。
+- `channels.slack.execApprovals`：Slack 原生 exec 审批投递和审批者授权。与 Discord 相同的 schema：`enabled`（`true`/`false`/`"auto"`）、`approvers`（Slack 用户 ID）、`agentFilter`、`sessionFilter` 和 `target`（`"dm"`、`"channel"` 或 `"both"`）。
 
 | 操作组       | 默认   | 说明                   |
 | ------------ | ------ | ---------------------- |
@@ -565,6 +593,53 @@ exec ssh -T gateway-host imsg "$@"
 ```
 
 </Accordion>
+
+### Matrix
+
+Matrix 由扩展支持，在 `channels.matrix` 下配置。
+
+```json5
+{
+  channels: {
+    matrix: {
+      enabled: true,
+      homeserver: "https://matrix.example.org",
+      accessToken: "syt_bot_xxx",
+      proxy: "http://127.0.0.1:7890",
+      encryption: true,
+      initialSyncLimit: 20,
+      defaultAccount: "ops",
+      accounts: {
+        ops: {
+          name: "Ops",
+          userId: "@ops:example.org",
+          accessToken: "syt_ops_xxx",
+        },
+        alerts: {
+          userId: "@alerts:example.org",
+          password: "secret",
+          proxy: "http://127.0.0.1:7891",
+        },
+      },
+    },
+  },
+}
+```
+
+- Token 认证使用 `accessToken`；密码认证使用 `userId` + `password`。
+- `channels.matrix.proxy` 通过显式 HTTP(S) 代理路由 Matrix HTTP 流量。命名账户可通过 `channels.matrix.accounts.<id>.proxy` 覆盖。
+- `channels.matrix.allowPrivateNetwork` 允许私有/内部 homeserver。`proxy` 和 `allowPrivateNetwork` 是独立控制项。
+- `channels.matrix.defaultAccount` 在多账户设置中选择首选账户。
+- `channels.matrix.execApprovals`：Matrix 原生 exec 审批投递和审批者授权。
+  - `enabled`：`true`、`false` 或 `"auto"`（默认）。在 auto 模式下，当能从 `approvers` 或 `commands.ownerAllowFrom` 解析审批者时，exec 审批自动激活。
+  - `approvers`：允许审批 exec 请求的 Matrix 用户 ID（例如 `@owner:example.org`）。
+  - `agentFilter`：可选的 Agent ID 允许列表。省略则转发所有 Agent 的审批。
+  - `sessionFilter`：可选的 Session key 模式（子字符串或正则表达式）。
+  - `target`：发送审批提示的位置。`"dm"`（默认）、`"channel"`（发起房间）或 `"both"`。
+  - 每账户覆盖：`channels.matrix.accounts.<id>.execApprovals`。
+- `channels.matrix.dm.sessionScope` 控制 Matrix 私信如何分组到 Session：`per-user`（默认）按路由对等方共享，`per-room` 隔离每个私信房间。
+- Matrix 状态探测和实时目录查询使用与运行时流量相同的代理策略。
+- 完整 Matrix 配置、定向规则和设置示例文档：[Matrix](/channels/matrix)。
 
 ### Microsoft Teams
 
@@ -773,6 +848,28 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 }
 ```
 
+### `agents.defaults.skills`
+
+未设置 `agents.list[].skills` 的 Agent 的可选默认技能允许列表。
+
+```json5
+{
+  agents: {
+    defaults: { skills: ["github", "weather"] },
+    list: [
+      { id: "writer" }, // 继承 github、weather
+      { id: "docs", skills: ["docs-search"] }, // 替换默认值
+      { id: "locked-down", skills: [] }, // 无技能
+    ],
+  },
+}
+```
+
+- 省略 `agents.defaults.skills` 则默认不限制技能。
+- 省略 `agents.list[].skills` 则继承默认值。
+- 设置 `agents.list[].skills: []` 则无技能。
+- 非空的 `agents.list[].skills` 列表是该 Agent 的最终集合；不与默认值合并。
+
 ### `agents.defaults.skipBootstrap`
 
 禁用工作区引导文件（`AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`）的自动创建。
@@ -780,6 +877,18 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 ```json5
 {
   agents: { defaults: { skipBootstrap: true } },
+}
+```
+
+### `agents.defaults.contextInjection`
+
+控制工作区引导文件注入系统提示的时机。默认值：`"always"`。
+
+- `"continuation-skip"`：安全的续写轮次（在完成的助手响应后）跳过工作区引导重新注入，减小提示大小。Heartbeat 运行和压缩后重试仍会重建上下文。
+
+```json5
+{
+  agents: { defaults: { contextInjection: "continuation-skip" } },
 }
 ```
 
@@ -870,6 +979,14 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
         primary: "openrouter/qwen/qwen-2.5-vl-72b-instruct:free",
         fallbacks: ["openrouter/google/gemini-2.0-flash-vision:free"],
       },
+      imageGenerationModel: {
+        primary: "openai/gpt-image-1",
+        fallbacks: ["google/gemini-3.1-flash-image-preview"],
+      },
+      videoGenerationModel: {
+        primary: "qwen/wan2.6-t2v",
+        fallbacks: ["qwen/wan2.6-i2v"],
+      },
       pdfModel: {
         primary: "anthropic/claude-opus-4-6",
         fallbacks: ["openai/gpt-5-mini"],
@@ -894,6 +1011,22 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 - `imageModel`：接受字符串（`"provider/model"`）或对象（`{ primary, fallbacks }`）。
   - 用作 `image` 工具路径的视觉模型配置。
   - 当所选/默认模型无法接受图像输入时，也用作回退路由。
+- `imageGenerationModel`：接受字符串（`"provider/model"`）或对象（`{ primary, fallbacks }`）。
+  - 用于共享图像生成能力及任何未来生成图像的工具/插件接口。
+  - 典型值：`google/gemini-3.1-flash-image-preview`（原生 Gemini 图像生成）、`fal/fal-ai/flux/dev`（fal）或 `openai/gpt-image-1`（OpenAI Images）。
+  - 如果直接选择 Provider/模型，还需配置相应的 Provider 认证/API key（例如 Google 的 `GEMINI_API_KEY` 或 `GOOGLE_API_KEY`，OpenAI 的 `OPENAI_API_KEY`，fal 的 `FAL_KEY`）。
+  - 如省略，`image_generate` 仍可推断出有认证支持的 Provider 默认值。先尝试当前默认 Provider，再按 provider-id 顺序尝试其余已注册的图像生成 Provider。
+- `musicGenerationModel`：接受字符串（`"provider/model"`）或对象（`{ primary, fallbacks }`）。
+  - 用于共享音乐生成能力和内置 `music_generate` 工具。
+  - 典型值：`google/lyria-3-clip-preview`、`google/lyria-3-pro-preview` 或 `minimax/music-2.5+`。
+  - 如省略，`music_generate` 仍可推断出有认证支持的 Provider 默认值。
+  - 如果直接选择 Provider/模型，还需配置相应的 Provider 认证/API key。
+- `videoGenerationModel`：接受字符串（`"provider/model"`）或对象（`{ primary, fallbacks }`）。
+  - 用于共享视频生成能力和内置 `video_generate` 工具。
+  - 典型值：`qwen/wan2.6-t2v`、`qwen/wan2.6-i2v`、`qwen/wan2.6-r2v`、`qwen/wan2.6-r2v-flash` 或 `qwen/wan2.7-r2v`。
+  - 如省略，`video_generate` 仍可推断出有认证支持的 Provider 默认值。
+  - 如果直接选择 Provider/模型，还需配置相应的 Provider 认证/API key。
+  - 内置 Qwen 视频生成 Provider 目前支持最多 1 个输出视频、1 个输入图像、4 个输入视频、10 秒时长，以及 Provider 级别的 `size`、`aspectRatio`、`resolution`、`audio` 和 `watermark` 选项。
 - `pdfModel`：接受字符串（`"provider/model"`）或对象（`{ primary, fallbacks }`）。
   - 用于 `pdf` 工具的模型路由。
   - 如省略，PDF 工具回退到 `imageModel`，再回退到最优 Provider 默认值。
@@ -912,7 +1045,8 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 | `opus`              | `anthropic/claude-opus-4-6`            |
 | `sonnet`            | `anthropic/claude-sonnet-4-6`          |
 | `gpt`               | `openai/gpt-5.4`                       |
-| `gpt-mini`          | `openai/gpt-5-mini`                    |
+| `gpt-mini`          | `openai/gpt-5.4-mini`                  |
+| `gpt-nano`          | `openai/gpt-5.4-nano`                  |
 | `gemini`            | `google/gemini-3.1-pro-preview`        |
 | `gemini-flash`      | `google/gemini-3-flash-preview`        |
 | `gemini-flash-lite` | `google/gemini-3.1-flash-lite-preview` |
@@ -967,9 +1101,10 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
     defaults: {
       heartbeat: {
         every: "30m", // 0m 禁用
-        model: "openai/gpt-5.2-mini",
+        model: "openai/gpt-5.4-mini",
         includeReasoning: false,
         lightContext: false, // 默认：false；true 仅从 workspace bootstrap 文件中保留 HEARTBEAT.md
+        isolatedSession: false, // 默认：false；true 在全新 Session 中运行每次心跳（无对话历史）
         session: "main",
         to: "+15555550123",
         directPolicy: "allow", // allow（默认）| block
@@ -983,10 +1118,11 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
 }
 ```
 
-- `every`：持续时间字符串（ms/s/m/h）。默认值：`30m`。
+- `every`：持续时间字符串（ms/s/m/h）。默认值：`30m`（API key 认证）或 `1h`（OAuth 认证）。设为 `0m` 禁用。
 - `suppressToolErrorWarnings`：为 true 时，在心跳运行期间抑制工具错误警告载荷。
 - `directPolicy`：直接/私聊投递策略。`allow`（默认）允许直接目标投递。`block` 抑制直接目标投递并发出 `reason=dm-blocked`。
 - `lightContext`：为 true 时，心跳运行使用轻量级 bootstrap 上下文，仅从 workspace bootstrap 文件中保留 `HEARTBEAT.md`。
+- `isolatedSession`：为 true 时，每次心跳在无先前对话历史的全新 Session 中运行。与 cron `sessionTarget: "isolated"` 相同的隔离模式。将每次心跳的 Token 成本从约 10 万降低至约 2000-5000。
 - 每 Agent：设置 `agents.list[].heartbeat`。当任意 Agent 定义了 `heartbeat`，**只有那些 Agent** 运行心跳。
 - 心跳运行完整的 Agent 轮次 —— 间隔越短，Token 消耗越多。
 
@@ -1002,11 +1138,14 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
         reserveTokensFloor: 24000,
         identifierPolicy: "strict", // strict | off | custom
         identifierInstructions: "Preserve deployment IDs, ticket IDs, and host:port pairs exactly.", // 当 identifierPolicy=custom 时使用
+        postCompactionSections: ["Session Startup", "Red Lines"], // [] 禁用重新注入
+        model: "openrouter/anthropic/claude-sonnet-4-6", // 可选的仅压缩模型覆盖
+        notifyUser: true, // 压缩开始时发送简短通知（默认：false）
         memoryFlush: {
           enabled: true,
           softThresholdTokens: 6000,
           systemPrompt: "Session nearing compaction. Store durable memories now.",
-          prompt: "Write any lasting notes to memory/YYYY-MM-DD.md; reply with NO_REPLY if nothing to store.",
+          prompt: "Write any lasting notes to memory/YYYY-MM-DD.md; reply with the exact silent token NO_REPLY if nothing to store.",
         },
       },
     },
@@ -1015,8 +1154,12 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
 ```
 
 - `mode`：`default` 或 `safeguard`（对长历史记录进行分块摘要）。参见 [压缩](/concepts/compaction)。
+- `timeoutSeconds`：单次压缩操作在 OpenClaw 中止前允许的最大秒数。默认值：`900`。
 - `identifierPolicy`：`strict`（默认）、`off` 或 `custom`。`strict` 在压缩摘要期间前置内置的不透明标识符保留指导。
 - `identifierInstructions`：`identifierPolicy=custom` 时使用的可选自定义标识符保留文本。
+- `postCompactionSections`：压缩后重新注入的可选 AGENTS.md H2/H3 节名称。默认为 `["Session Startup", "Red Lines"]`；设为 `[]` 禁用重新注入。
+- `model`：仅用于压缩摘要的可选 `provider/model-id` 覆盖。当主 Session 应保留一个模型但压缩摘要应在另一个模型上运行时使用；未设置时，压缩使用 Session 的主模型。
+- `notifyUser`：为 `true` 时，在压缩开始时向用户发送简短通知（例如"正在压缩上下文..."）。默认禁用以保持压缩静默。
 - `memoryFlush`：自动压缩前的静默代理轮次，用于存储持久记忆。当工作区为只读时跳过。
 
 ### `agents.defaults.contextPruning`
@@ -1240,7 +1383,11 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
         workspace: "~/.openclaw/workspace",
         agentDir: "~/.openclaw/agents/main/agent",
         model: "anthropic/claude-opus-4-6", // 或 { primary, fallbacks }
+        thinkingDefault: "high", // 每 Agent 思考级别覆盖
+        reasoningDefault: "on", // 每 Agent 推理可见性覆盖
+        fastModeDefault: false, // 每 Agent 快速模式覆盖
         params: { cacheRetention: "none" }, // 按键覆盖匹配的 defaults.models params
+        skills: ["docs-search"], // 设置时替换 agents.defaults.skills
         identity: {
           name: "Samantha",
           theme: "helpful sloth",
@@ -1249,6 +1396,15 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
         },
         groupChat: { mentionPatterns: ["@openclaw"] },
         sandbox: { mode: "off" },
+        runtime: {
+          type: "acp",
+          acp: {
+            agent: "codex",
+            backend: "acpx",
+            mode: "persistent",
+            cwd: "/workspace/openclaw",
+          },
+        },
         subagents: { allowAgents: ["*"] },
         tools: {
           profile: "coding",
@@ -1266,10 +1422,16 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
 - `default`：设置多个时，第一个生效（记录警告）。如无设置，列表第一项为默认。
 - `model`：字符串形式仅覆盖 `primary`；对象形式 `{ primary, fallbacks }` 同时覆盖两者（`[]` 禁用全局回退）。仅覆盖 `primary` 的 Cron 任务仍继承默认回退，除非你设置 `fallbacks: []`。
 - `params`：每 Agent 的流式参数，合并到 `agents.defaults.models` 中所选模型条目之上。用于 Agent 专用覆盖（如 `cacheRetention`、`temperature` 或 `maxTokens`），无需复制整个模型目录。
+- `skills`：可选的每 Agent 技能允许列表。省略时，Agent 继承 `agents.defaults.skills`（如已设置）；显式列表替换默认值而非合并，`[]` 表示无技能。
+- `thinkingDefault`：可选的每 Agent 默认思考级别（`off | minimal | low | medium | high | xhigh | adaptive`）。未设置每消息或 Session 覆盖时，覆盖此 Agent 的 `agents.defaults.thinkingDefault`。
+- `reasoningDefault`：可选的每 Agent 默认推理可见性（`on | off | stream`）。未设置每消息或 Session 推理覆盖时应用。
+- `fastModeDefault`：可选的每 Agent 快速模式默认值（`true | false`）。未设置每消息或 Session 快速模式覆盖时应用。
+- `runtime`：可选的每 Agent 运行时描述符。当 Agent 应默认使用 ACP 运行时 Session 时，使用 `type: "acp"` 和 `runtime.acp` 默认值（`agent`、`backend`、`mode`、`cwd`）。
 - `identity.avatar`：工作区相对路径、`http(s)` URL 或 `data:` URI。
 - `identity` 推导默认值：`ackReaction` 来自 `emoji`，`mentionPatterns` 来自 `name`/`emoji`。
 - `subagents.allowAgents`：`sessions_spawn` 的 Agent ID 允许列表（`["*"]` = 任意；默认：仅同一 Agent）。
 - 沙箱继承保护：如果请求方 Session 处于沙箱中，`sessions_spawn` 拒绝会运行在非沙箱环境中的目标。
+- `subagents.requireAgentId`：为 true 时，阻止省略 `agentId` 的 `sessions_spawn` 调用（强制显式配置选择；默认：false）。
 
 ---
 
@@ -1294,10 +1456,12 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
 
 ### 绑定匹配字段
 
+- `type`（可选）：`route` 用于普通路由（缺少 type 默认为 route），`acp` 用于持久 ACP 对话绑定。
 - `match.channel`（必填）
 - `match.accountId`（可选；`*` = 任意账户；省略 = 默认账户）
 - `match.peer`（可选；`{ kind: direct|group|channel, id }`）
 - `match.guildId` / `match.teamId`（可选；Channel 专用）
+- `acp`（可选；仅用于 `type: "acp"`）：`{ mode, label, cwd, backend }`
 
 **确定性匹配顺序：**
 
@@ -1603,23 +1767,32 @@ Talk 模式的默认值（macOS/iOS/Android）。
 ```json5
 {
   talk: {
-    voiceId: "elevenlabs_voice_id",
-    voiceAliases: {
-      Clawd: "EXAVITQu4vr4xnSDxMaL",
-      Roger: "CwhRBWXzGAHq8TQ4Fs17",
+    provider: "elevenlabs",
+    providers: {
+      elevenlabs: {
+        voiceId: "elevenlabs_voice_id",
+        voiceAliases: {
+          Clawd: "EXAVITQu4vr4xnSDxMaL",
+          Roger: "CwhRBWXzGAHq8TQ4Fs17",
+        },
+        modelId: "eleven_v3",
+        outputFormat: "mp3_44100_128",
+        apiKey: "elevenlabs_api_key",
+      },
     },
-    modelId: "eleven_v3",
-    outputFormat: "mp3_44100_128",
-    apiKey: "elevenlabs_api_key",
     silenceTimeoutMs: 1500,
     interruptOnSpeech: true,
   },
 }
 ```
 
+- 配置多个 Talk Provider 时，`talk.provider` 必须与 `talk.providers` 中的某个键匹配。
+- 旧版 Talk 平铺键（`talk.voiceId`、`talk.voiceAliases`、`talk.modelId`、`talk.outputFormat`、`talk.apiKey`）仅用于兼容，会自动迁移到 `talk.providers.<provider>`。
 - 语音 ID 回退到 `ELEVENLABS_VOICE_ID` 或 `SAG_VOICE_ID`。
-- `apiKey` 回退到 `ELEVENLABS_API_KEY`。
-- `voiceAliases` 允许 Talk 指令使用友好名称。
+- `providers.*.apiKey` 接受明文字符串或 SecretRef 对象。
+- 仅在未配置 Talk API key 时才应用 `ELEVENLABS_API_KEY` 回退。
+- `providers.*.voiceAliases` 允许 Talk 指令使用友好名称。
+- `silenceTimeoutMs` 控制 Talk 模式在用户静默后等待多长时间再发送转录。未设置时保留平台默认暂停窗口（macOS 和 Android 为 `700 ms`，iOS 为 `900 ms`）。
 
 ---
 
@@ -1629,27 +1802,31 @@ Talk 模式的默认值（macOS/iOS/Android）。
 
 `tools.profile` 在 `tools.allow`/`tools.deny` 之前设置基础允许列表：
 
-| 配置文件    | 包含内容                                                                                  |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| `minimal`   | 仅 `session_status`                                                                       |
-| `coding`    | `group:fs`、`group:runtime`、`group:sessions`、`group:memory`、`image`                    |
-| `messaging` | `group:messaging`、`sessions_list`、`sessions_history`、`sessions_send`、`session_status` |
-| `full`      | 无限制（与未设置相同）                                                                    |
+本地引导在未设置时将新的本地配置默认为 `tools.profile: "coding"`（现有显式配置文件保留）。
+
+| 配置文件    | 包含内容                                                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `minimal`   | 仅 `session_status`                                                                                                                   |
+| `coding`    | `group:fs`、`group:runtime`、`group:web`、`group:sessions`、`group:memory`、`cron`、`image`、`image_generate`、`video_generate`        |
+| `messaging` | `group:messaging`、`sessions_list`、`sessions_history`、`sessions_send`、`session_status`                                             |
+| `full`      | 无限制（与未设置相同）                                                                                                                |
 
 ### 工具���
 
-| 组                 | 工具                                                                                     |
-| ------------------ | ---------------------------------------------------------------------------------------- |
-| `group:runtime`    | `exec`、`process`（`bash` 作为 `exec` 的别名接受）                                       |
-| `group:fs`         | `read`、`write`、`edit`、`apply_patch`                                                   |
-| `group:sessions`   | `sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`session_status` |
-| `group:memory`     | `memory_search`、`memory_get`                                                            |
-| `group:web`        | `web_search`、`web_fetch`                                                                |
-| `group:ui`         | `browser`、`canvas`                                                                      |
-| `group:automation` | `cron`、`gateway`                                                                        |
-| `group:messaging`  | `message`                                                                                |
-| `group:nodes`      | `nodes`                                                                                  |
-| `group:openclaw`   | 所有内置工具（不含 Provider 插件）                                                       |
+| 组                 | 工具                                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `group:runtime`    | `exec`、`process`、`code_execution`（`bash` 作为 `exec` 的别名接受）                                                    |
+| `group:fs`         | `read`、`write`、`edit`、`apply_patch`                                                                                  |
+| `group:sessions`   | `sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`sessions_yield`、`subagents`、`session_status` |
+| `group:memory`     | `memory_search`、`memory_get`                                                                                           |
+| `group:web`        | `web_search`、`x_search`、`web_fetch`                                                                                   |
+| `group:ui`         | `browser`、`canvas`                                                                                                     |
+| `group:automation` | `cron`、`gateway`                                                                                                       |
+| `group:messaging`  | `message`                                                                                                               |
+| `group:nodes`      | `nodes`                                                                                                                 |
+| `group:agents`     | `agents_list`                                                                                                           |
+| `group:media`      | `image`、`image_generate`、`video_generate`、`tts`                                                                      |
+| `group:openclaw`   | 所有内置工具（不含 Provider 插件）                                                                                      |
 
 ### `tools.allow` / `tools.deny`
 

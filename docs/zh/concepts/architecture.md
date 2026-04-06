@@ -79,15 +79,20 @@ sequenceDiagram
 - 握手后:
   - Requests: `{type:"req", id, method, params}` → `{type:"res", id, ok, payload|error}`
   - Events: `{type:"event", event, payload, seq?, stateVersion?}`
-- 如果设置了 `OPENCLAW_GATEWAY_TOKEN`(或 `--token`),`connect.params.auth.token` 必须匹配,否则 socket 关闭。
-- 副作用方法(`send`、`agent`)需要幂等性键以安全重试;server 保留短期去重缓存。
+- `hello-ok.features.methods` / `events` 是发现元数据，不是每个可调用辅助路由的生成转储。
+- 共享密钥验证使用 `connect.params.auth.token` 或 `connect.params.auth.password`，具体取决于配置的 Gateway 验证模式。
+- 带身份的模式，如 Tailscale Serve（`gateway.auth.allowTailscale: true`）或非 loopback `gateway.auth.mode: "trusted-proxy"`，通过请求标头而非 `connect.params.auth.*` 满足验证。
+- 私有入口 `gateway.auth.mode: "none"` 完全禁用共享密钥验证；请勿在公共/不受信任的入口开启此模式。
+- 副作用方法（`send`、`agent`）需要幂等性键以安全重试；server 保留短期去重缓存。
 - Nodes 必须在 `connect` 中包含 `role: "node"` 以及 caps/commands/permissions。
 
 ## 配对 + 本地信任
 
 - 所有 WS 客户端(operators + nodes)在 `connect` 时包含**设备身份**。
 - 新设备 ID 需要配对批准;Gateway 为后续连接颁发**设备 token**。
-- **本地**连接(loopback 或 gateway 主机自己的 tailnet 地址)可以自动批准以保持同主机 UX 流畅。
+- 直接本地 loopback 连接可以自动批准以保持同主机 UX 流畅。
+- OpenClaw 还有一个用于受信任共享密钥辅助流程的窄后端/容器本地自连接路径。
+- Tailnet 和 LAN 连接，包括同主机 tailnet 绑定，仍然需要显式配对批准。
 - 所有连接必须签署 `connect.challenge` nonce。
 - Signature payload `v3` 还绑定 `platform` + `deviceFamily`;gateway 在重新连接时固定已配对的元数据,并在元数据更改时要求重新配对。
 - **非本地**连接仍然需要显式批准。
@@ -120,5 +125,12 @@ sequenceDiagram
 ## 不变量
 
 - 每个主机恰好一个 Gateway 控制单个 Baileys session。
-- 握手是强制性的;任何非 JSON 或非 connect 的第一帧都是硬关闭。
-- Events 不会重放;客户端必须在间隙上刷新。
+- 握手是强制性的；任何非 JSON 或非 connect 的第一帧都是硬关闭。
+- Events 不会重放；客户端必须在间隙上刷新。
+
+## 相关链接
+
+- [Agent Loop](/concepts/agent-loop) — 详细的 Agent 执行周期
+- [Gateway Protocol](/gateway/protocol) — WebSocket 协议契约
+- [Queue](/concepts/queue) — 命令队列和并发
+- [Security](/gateway/security) — 信任模型和安全加固

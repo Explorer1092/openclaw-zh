@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d5cc5abd989c9df09aea002d71bb7c25"
+mmh3_hash: "d002799db085a995568473170c94e787"
 summary: "分层排查 WSL2 Gateway + Windows Chrome 远程 CDP"
 read_when:
   - 在 WSL2 中运行 OpenClaw Gateway 而 Chrome 在 Windows 上
@@ -143,6 +143,9 @@ curl http://WINDOWS_HOST_OR_IP:9222/json/list
 
 - 使用 WSL2 可达的地址，而非仅在 Windows 上有效的地址
 - 对外部管理的浏览器保持 `attachOnly: true`
+- `cdpUrl` 可以是 `http://`、`https://`、`ws://` 或 `wss://`
+- 需要 OpenClaw 发现 `/json/version` 时使用 HTTP(S)
+- 仅在浏览器提供商给你直接 DevTools Socket URL 时使用 WS(S)
 - 在期望 OpenClaw 成功之前，用 `curl` 测试相同的 URL
 
 ### 第四层：单独验证 Control UI 层
@@ -188,6 +191,11 @@ openclaw browser tabs --browser-profile remote
   - 设备批准问题
 - `Remote CDP for profile "remote" is not reachable`
   - WSL2 无法访问配置的 `cdpUrl`
+- `Browser attachOnly is enabled and CDP websocket for profile "remote" is not reachable`
+  - HTTP 端点有响应，但 DevTools WebSocket 仍无法打开
+- stale viewport / dark-mode / locale / offline overrides after a remote session
+  - 运行 `openclaw browser stop --browser-profile remote`
+  - 这会关闭活动控制 Session 并释放 Playwright/CDP 模拟状态，而不重启 Gateway 或外部浏览器
 - `gateway timeout after 1500ms`
   - 通常仍是 CDP 可达性或慢速/不可达的远程端点
 - `No Chrome tabs found for profile="user"`

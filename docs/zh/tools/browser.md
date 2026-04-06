@@ -1,7 +1,7 @@
 ---
 title: "浏览器 (OpenClaw 管理)"
 sidebarTitle: "浏览器"
-mmh3_hash: "ce87d8c088725bae6bcc5da638f23006"
+mmh3_hash: "093ed0a2c86512afe87d7b718015d0f7"
 summary: "集成浏览器控制服务 + 操作命令"
 read_when:
   - 添加 Agent 控制的浏览器自动化
@@ -40,6 +40,72 @@ openclaw browser --browser-profile openclaw snapshot
 ```
 
 如果出现"Browser disabled"，请在配置中启用它（见下文）并重启 Gateway。
+
+如果 `openclaw browser` 完全缺失，或 Agent 报告浏览器工具不可用，请跳转到[缺少浏览器命令或工具](/tools/browser#缺少浏览器命令或工具)。
+
+## Plugin 控制
+
+默认的 `browser` 工具现在是一个默认启用的捆绑插件。这意味着你可以禁用或替换它，而无需删除 OpenClaw 的其余插件系统：
+
+```json5
+{
+  plugins: {
+    entries: {
+      browser: {
+        enabled: false,
+      },
+    },
+  },
+}
+```
+
+在安装另一个提供相同 `browser` 工具名称的插件之前，请先禁用捆绑插件。默认浏览器体验需要同时满足：
+
+- `plugins.entries.browser.enabled` 未禁用
+- `browser.enabled=true`
+
+如果仅关闭插件，捆绑的浏览器 CLI（`openclaw browser`）、Gateway 方法（`browser.request`）、Agent 工具和默认浏览器控制服务会一起消失。你的 `browser.*` 配置保持完整，供替换插件复用。
+
+捆绑浏览器插件现在也拥有浏览器运行时实现。核心仅保留共享的 Plugin SDK 辅助程序加上兼容性重导出。实际上，删除或替换浏览器插件包会删除浏览器功能集，而不会留下第二个核心拥有的运行时。
+
+浏览器配置更改仍需 Gateway 重启，以便捆绑插件能够使用新设置重新注册其浏览器服务。
+
+## 缺少浏览器命令或工具
+
+如果升级后 `openclaw browser` 突然变成未知命令，或 Agent 报告浏览器工具缺失，最常见原因是限制性的 `plugins.allow` 列表中不包含 `browser`。
+
+示例损坏配置：
+
+```json5
+{
+  plugins: {
+    allow: ["telegram"],
+  },
+}
+```
+
+通过将 `browser` 添加到插件允许列表修复：
+
+```json5
+{
+  plugins: {
+    allow: ["telegram", "browser"],
+  },
+}
+```
+
+重要说明：
+
+- 当设置了 `plugins.allow` 时，`browser.enabled=true` 单独是不够的。
+- 当设置了 `plugins.allow` 时，`plugins.entries.browser.enabled=true` 单独也不够。
+- `tools.alsoAllow: ["browser"]` **不会**加载捆绑的浏览器插件。它只在插件已加载后调整工具策略。
+- 如果你不需要限制性的插件允许列表，删除 `plugins.allow` 也会恢复默认的捆绑浏览器行为。
+
+典型症状：
+
+- `openclaw browser` 是未知命令。
+- `browser.request` 缺失。
+- Agent 报告浏览器工具不可用或缺失。
 
 ## 配置文件：`openclaw` 与 `user`
 
@@ -155,6 +221,11 @@ openclaw config set browser.executablePath "/usr/bin/google-chrome"
 - **远程控制（节点主机）：** 在有浏览器的机器上运行节点主机；Gateway 将浏览器操作代理到该节点。
 - **远程 CDP：** 设置 `browser.profiles.<name>.cdpUrl`（或 `browser.cdpUrl`）以附加到远程基于 Chromium 的浏览器。这种情况下，OpenClaw 不会启动本地浏览器。
 
+停止行为因配置文件模式而异：
+
+- 本地托管配置文件：`openclaw browser stop` 停止 OpenClaw 启动的浏览器进程
+- 仅附加和远程 CDP 配置文件：`openclaw browser stop` 关闭活动控制 Session 并释放 Playwright/CDP 模拟覆盖（视口、配色方案、语言、时区、离线模式和类似状态），即使 OpenClaw 没有启动浏览器进程
+
 远程 CDP URL 可以包含认证信息：
 
 - 查询 token（例如 `https://provider.example?token=<token>`）
@@ -245,7 +316,10 @@ OpenClaw 在调用 `/json/*` 端点和连接 CDP WebSocket 时会保留认证信
 关键要点：
 
 - 浏览器控制仅限回环；访问通过 Gateway 认证或节点配对流转。
-- 如果浏览器控制已启用且未配置认证，OpenClaw 会在启动时自动生成 `gateway.auth.token` 并持久化到配置中。
+- 独立的回环浏览器 HTTP API 仅使用**共享密钥认证**：Gateway token bearer 认证、`x-openclaw-password` 或使用已配置 Gateway 密码的 HTTP Basic 认证。
+- Tailscale Serve 身份标头和 `gateway.auth.mode: "trusted-proxy"` **不会**对这个独立的回环浏览器 API 进行认证。
+- 如果浏览器控制已启用且未配置共享密钥认证，OpenClaw 会在启动时自动生成 `gateway.auth.token` 并持久化到配置中。
+- 当 `gateway.auth.mode` 已经是 `password`、`none` 或 `trusted-proxy` 时，OpenClaw **不会**自动生成该 token。
 - 将 Gateway 和所有节点主机保持在私有网络（Tailscale）中；避免公开暴露。
 - 将远程 CDP URL/token 视为机密；建议使用环境变量或密钥管理器。
 
@@ -357,8 +431,18 @@ Agent 使用：
 - OpenClaw 不会为此驱动启动浏览器；它仅附加到现有 Session。
 - OpenClaw 在这里使用官方 Chrome DevTools MCP `--autoConnect` 流程。如果设置了 `userDataDir`，OpenClaw 会将其传递以针对该显式 Chromium 用户数据目录。
 - 现有 Session 截图支持页面捕获和来自快照的 `--ref` 元素捕获，但不支持 CSS `--element` 选择器。
+- 现有 Session 页面截图通过 Chrome MCP 无需 Playwright 即可工作。基于 ref 的元素截图（`--ref`）也可在那里工作，但 `--full-page` 不能与 `--ref` 或 `--element` 组合。
+- 现有 Session 操作仍比托管浏览器路径更受限：
+  - `click`、`type`、`hover`、`scrollIntoView`、`drag` 和 `select` 需要快照 ref 而非 CSS 选择器
+  - `click` 仅支持左键（无按钮覆盖或修饰键）
+  - `type` 不支持 `slowly=true`；使用 `fill` 或 `press`
+  - `press` 不支持 `delayMs`
+  - `hover`、`scrollIntoView`、`drag`、`select`、`fill` 和 `evaluate` 不支持每次调用的超时覆盖
+  - `select` 目前仅支持单个值
 - 现有 Session `wait --url` 与其他浏览器驱动一样支持精确、子字符串和 glob 模式。目前不支持 `wait --load networkidle`。
-- 某些功能仍需要托管浏览器路径，如 PDF 导出和下载拦截。
+- 现有 Session 上传 Hook 需要 `ref` 或 `inputRef`，一次支持一个文件，不支持 CSS `element` 目标。
+- 现有 Session 对话框 Hook 不支持超时覆盖。
+- 某些功能仍需要托管浏览器路径，包括批量操作、PDF 导出、下载拦截和 `responsebody`。
 - 现有 Session 是主机本地的。如果 Chrome 位于不同机器或不同网络命名空间，请改用远程 CDP 或节点主机。
 
 ## 隔离保证
@@ -411,7 +495,24 @@ Agent 使用：
 
 ### Playwright 要求
 
-某些功能（navigate/act/AI 快照/role 快照、元素截图、PDF）需要 Playwright。如果未安装 Playwright，这些端点会返回清晰的 501 错误。ARIA 快照和基本截图仍然适用于 openclaw 托管的 Chrome。
+某些功能（navigate/act/AI 快照/role 快照、元素截图、PDF）需要 Playwright。如果未安装 Playwright，这些端点会返回清晰的 501 错误。
+
+没有 Playwright 仍然有效的功能：
+
+- ARIA 快照
+- 当每个标签页 CDP WebSocket 可用时，托管 `openclaw` 浏览器的页面截图
+- `existing-session` / Chrome MCP 配置文件的页面截图
+- `existing-session` 基于 ref 的截图（`--ref`）来自快照输出
+
+仍需要 Playwright 的功能：
+
+- `navigate`
+- `act`
+- AI 快照/role 快照
+- CSS 选择器元素截图（`--element`）
+- 完整浏览器 PDF 导出
+
+元素截图也拒绝 `--full-page`；路由返回 `fullPage is not supported for element screenshots`。
 
 如果你看到 `Playwright is not available in this gateway build`，请安装完整的 Playwright 包（而非 `playwright-core`）并重启 Gateway，或重新安装带浏览器支持的 OpenClaw。
 
@@ -470,6 +571,11 @@ docker compose run --rm openclaw-cli \
 - `openclaw browser snapshot --selector "#main" --interactive`
 - `openclaw browser snapshot --frame "iframe#main" --interactive`
 - `openclaw browser console --level error`
+
+生命周期说明：
+
+- 对于仅附加和远程 CDP 配置文件，`openclaw browser stop` 仍然是测试后正确的清理命令。它关闭活动控制 Session 并清除临时模拟覆盖，而不是终止底层浏览器。
+
 - `openclaw browser errors --clear`
 - `openclaw browser requests --filter api --clear`
 - `openclaw browser pdf`

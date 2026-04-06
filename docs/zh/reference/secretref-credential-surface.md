@@ -25,26 +25,33 @@ title: "SecretRef 凭据界面"
 
 - `models.providers.*.apiKey`
 - `models.providers.*.headers.*`
+- `models.providers.*.request.auth.token`
+- `models.providers.*.request.auth.value`
+- `models.providers.*.request.headers.*`
+- `models.providers.*.request.proxy.tls.ca`
+- `models.providers.*.request.proxy.tls.cert`
+- `models.providers.*.request.proxy.tls.key`
+- `models.providers.*.request.proxy.tls.passphrase`
+- `models.providers.*.request.tls.ca`
+- `models.providers.*.request.tls.cert`
+- `models.providers.*.request.tls.key`
+- `models.providers.*.request.tls.passphrase`
 - `skills.entries.*.apiKey`
 - `agents.defaults.memorySearch.remote.apiKey`
 - `agents.list[].memorySearch.remote.apiKey`
-- `talk.apiKey`
 - `talk.providers.*.apiKey`
-- `messages.tts.elevenlabs.apiKey`
-- `messages.tts.openai.apiKey`
+- `messages.tts.providers.*.apiKey`
 - `tools.web.fetch.firecrawl.apiKey`
+- `plugins.entries.firecrawl.config.webFetch.apiKey`
 - `plugins.entries.brave.config.webSearch.apiKey`
 - `plugins.entries.google.config.webSearch.apiKey`
 - `plugins.entries.xai.config.webSearch.apiKey`
 - `plugins.entries.moonshot.config.webSearch.apiKey`
 - `plugins.entries.perplexity.config.webSearch.apiKey`
 - `plugins.entries.firecrawl.config.webSearch.apiKey`
+- `plugins.entries.minimax.config.webSearch.apiKey`
 - `plugins.entries.tavily.config.webSearch.apiKey`
 - `tools.web.search.apiKey`
-- `tools.web.search.gemini.apiKey`
-- `tools.web.search.grok.apiKey`
-- `tools.web.search.kimi.apiKey`
-- `tools.web.search.perplexity.apiKey`
 - `gateway.auth.password`
 - `gateway.auth.token`
 - `gateway.remote.token`
@@ -64,12 +71,10 @@ title: "SecretRef 凭据界面"
 - `channels.slack.accounts.*.signingSecret`
 - `channels.discord.token`
 - `channels.discord.pluralkit.token`
-- `channels.discord.voice.tts.elevenlabs.apiKey`
-- `channels.discord.voice.tts.openai.apiKey`
+- `channels.discord.voice.tts.providers.*.apiKey`
 - `channels.discord.accounts.*.token`
 - `channels.discord.accounts.*.pluralkit.token`
-- `channels.discord.accounts.*.voice.tts.elevenlabs.apiKey`
-- `channels.discord.accounts.*.voice.tts.openai.apiKey`
+- `channels.discord.accounts.*.voice.tts.providers.*.apiKey`
 - `channels.irc.password`
 - `channels.irc.nickserv.password`
 - `channels.irc.accounts.*.password`
@@ -85,7 +90,9 @@ title: "SecretRef 凭据界面"
 - `channels.msteams.appPassword`
 - `channels.mattermost.botToken`
 - `channels.mattermost.accounts.*.botToken`
+- `channels.matrix.accessToken`
 - `channels.matrix.password`
+- `channels.matrix.accounts.*.accessToken`
 - `channels.matrix.accounts.*.password`
 - `channels.nextcloud-talk.botSecret`
 - `channels.nextcloud-talk.apiPassword`
@@ -100,42 +107,43 @@ title: "SecretRef 凭据界面"
 
 ### `auth-profiles.json` 目标（`secrets configure` + `secrets apply` + `secrets audit`）
 
-- `profiles.*.keyRef`（`type: "api_key"`）
-- `profiles.*.tokenRef`（`type: "token"`）
+- `profiles.*.keyRef`（`type: "api_key"`；当 `auth.profiles.<id>.mode = "oauth"` 时不支持）
+- `profiles.*.tokenRef`（`type: "token"`；当 `auth.profiles.<id>.mode = "oauth"` 时不支持）
 
 [//]: # "secretref-supported-list-end"
 
-说明：
+注意事项：
 
-- Auth Profile 计划目标需要 `agentId`。
-- 计划条目以 `profiles.*.key` / `profiles.*.token` 为目标，并写入同级引用（`keyRef` / `tokenRef`）。
-- Auth Profile 引用包含在运行时解析和审计覆盖中。
-- 对于 SecretRef 管理的模型 Provider，生成的 `agents/*/agent/models.json` 条目为 `apiKey`/header 界面持久化非 secret 标记（不是已解析的 secret 值）。
-- 标记持久化是以来源为权威的：OpenClaw 从活跃来源配置快照（解析前）写入标记，而不是从已解析的运行时 secret 值。
-- 对于 Web 搜索：
-  - 在显式 Provider 模式（已设置 `tools.web.search.provider`）下，仅激活所选 Provider 的键。
-  - 在自动模式（未设置 `tools.web.search.provider`）下，仅按优先级解析的第一个 Provider 键处于活跃状态。
-  - 在自动模式下，未选择的 Provider 引用在被选中之前视为非活跃状态。
-  - 旧版 `tools.web.search.*` Provider 路径在兼容窗口期间仍可解析，但规范 SecretRef 界面为 `plugins.entries.<plugin>.config.webSearch.*`。
+- 身份验证配置文件计划目标需要 `agentId`。
+- 计划条目以 `profiles.*.key` / `profiles.*.token` 为目标，并写入同级 ref（`keyRef` / `tokenRef`）。
+- 身份验证配置文件 ref 包含在运行时解析和审计覆盖中。
+- OAuth 策略守卫：`auth.profiles.<id>.mode = "oauth"` 不能与该配置文件的 SecretRef 输入结合使用。当违反此策略时，启动/重新加载和身份验证配置文件解析会快速失败。
+- 对于 SecretRef 管理的模型提供商，生成的 `agents/*/agent/models.json` 条目为 `apiKey`/头部界面持久化非密钥标记（而非解析的密钥值）。
+- 标记持久化以源为权威：OpenClaw 从活动源配置快照（预解析）写入标记，而非从解析的运行时密钥值写入。
+- 对于网络搜索：
+  - 在显式提供商模式（设置了 `tools.web.search.provider`）中，仅活动提供商密钥有效。
+  - 在自动模式（未设置 `tools.web.search.provider`）中，仅按优先级解析的第一个提供商密钥有效。
+  - 在自动模式中，未选择的提供商 ref 被视为非活动，直到被选择。
+  - 旧版 `tools.web.search.*` 提供商路径在兼容窗口期间仍会解析，但规范的 SecretRef 界面是 `plugins.entries.<plugin>.config.webSearch.*`。
 
 ## 不支持的凭据
 
-范围外的凭据包括：
+超出范围的凭据包括：
 
 [//]: # "secretref-unsupported-list-start"
 
 - `commands.ownerDisplaySecret`
-- `channels.matrix.accessToken`
-- `channels.matrix.accounts.*.accessToken`
 - `hooks.token`
 - `hooks.gmail.pushToken`
 - `hooks.mappings[].sessionKey`
 - `auth-profiles.oauth.*`
-- `discord.threadBindings.*.webhookToken`
-- `whatsapp.creds.json`
+- `channels.discord.threadBindings.webhookToken`
+- `channels.discord.accounts.*.threadBindings.webhookToken`
+- `channels.whatsapp.creds.json`
+- `channels.whatsapp.accounts.*.creds.json`
 
 [//]: # "secretref-unsupported-list-end"
 
 原因：
 
-- 这些凭据属于生成、轮换、携带 Session 或 OAuth 持久性类别，不适合只读的外部 SecretRef 解析。
+- 这些凭据是生成的、轮换的、承载 Session 的或 OAuth 持久类，不适合只读外部 SecretRef 解析。

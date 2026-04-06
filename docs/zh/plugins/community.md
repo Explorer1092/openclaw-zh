@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9372e49736d97e6cfd3c75f773cbe0b0"
+mmh3_hash: "9aa3f78d849ce762e3430250239304c6"
 summary: "社区维护的 OpenClaw Plugin：浏览、安装和提交您自己的 Plugin"
 read_when:
   - 您想查找第三方 OpenClaw Plugin
@@ -10,6 +10,8 @@ title: "社区 Plugin"
 # 社区 Plugin
 
 社区 Plugin 是扩展 OpenClaw 功能的第三方包，可添加新的 Channel、Tool、Provider 或其他能力。它们由社区构建和维护，发布在 [ClawHub](/tools/clawhub) 或 npm 上，并可以通过单个命令安装。
+
+ClawHub 是社区 Plugin 的规范发现入口。请不要仅仅为了在此处增加可发现性而打开文档 PR；请改为在 ClawHub 上发布。
 
 ```bash
 openclaw plugins install <package-name>
@@ -67,16 +69,16 @@ openclaw plugins install @opik/opik-openclaw
 
 通过 QQ Bot API 将 OpenClaw 连接到 QQ。支持私聊、群组提及、频道消息以及包括语音、图像、视频和文件在内的丰富媒体。
 
-- **npm：** `@sliverp/qqbot`
-- **仓库：** [github.com/sliverp/qqbot](https://github.com/sliverp/qqbot)
+- **npm：** `@tencent-connect/openclaw-qqbot`
+- **仓库：** [github.com/tencent-connect/openclaw-qqbot](https://github.com/tencent-connect/openclaw-qqbot)
 
 ```bash
-openclaw plugins install @sliverp/qqbot
+openclaw plugins install @tencent-connect/openclaw-qqbot
 ```
 
 ### wecom
 
-OpenClaw 企业微信 Channel Plugin。由企业微信 AI Bot WebSocket 持久连接驱动的机器人 Plugin，支持私信和群聊、流式回复和主动消息。
+腾讯企业微信团队出品的 OpenClaw 企业微信 Channel Plugin。由企业微信 Bot WebSocket 持久连接驱动，支持私信和群聊、流式回复、主动消息、图片/文件处理、Markdown 格式化、内置访问控制以及文档/会议/消息 Skill。
 
 - **npm：** `@wecom/wecom-openclaw-plugin`
 - **仓库：** [github.com/WecomTeam/wecom-openclaw-plugin](https://github.com/WecomTeam/wecom-openclaw-plugin)
@@ -100,14 +102,10 @@ openclaw plugins install @wecom/wecom-openclaw-plugin
 
   </Step>
 
-  <Step title="提交 PR">
-    将您的 Plugin 添加到本页，需包含：
+  <Step title="仅对源文档变更使用文档 PR">
+    您不需要提交文档 PR 只是为了让您的 Plugin 可被发现。请改为在 ClawHub 上发布。
 
-    - Plugin 名称
-    - npm 包名
-    - GitHub 仓库 URL
-    - 一行描述
-    - 安装命令
+    仅当 OpenClaw 的源文档需要实际内容更改时才打开文档 PR，例如更正安装指南或添加属于主文档集的跨仓库文档。
 
   </Step>
 </Steps>

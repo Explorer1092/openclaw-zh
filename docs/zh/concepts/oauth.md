@@ -12,11 +12,16 @@ read_when:
 
 # OAuth 认证
 
-OpenClaw 通过 OAuth 支持提供它的 providers 的"subscription auth"(特别是 **OpenAI Codex (ChatGPT OAuth)**)。对于 Anthropic subscriptions,使用 **setup-token** 流程。Anthropic 过去对某些在 Claude Code 之外的订阅使用进行了限制,因此请将其视为用户自主选择的风险并自行验证 Anthropic 当前政策。OpenAI Codex OAuth 明确支持在 OpenClaw 等外部工具中使用。
+OpenClaw 通过 OAuth 支持提供 provider"subscription auth"（特别是 **OpenAI Codex（ChatGPT OAuth）**）。对于 Anthropic，实际分工现在是：
 
-对于生产环境的 Anthropic 使用,API key 认证是比订阅 setup-token 认证更安全的推荐路径。
+- **Anthropic API key**：正常的 Anthropic API 计费
+- **OpenClaw 内的 Anthropic subscription auth**：Anthropic 于 **2026年4月4日美国太平洋时间下午12:00/英国夏令时间晚上8:00** 通知 OpenClaw 用户，这现在需要**Extra Usage**
 
-本页面解释:
+OpenAI Codex OAuth 明确支持在 OpenClaw 等外部工具中使用。本页面解释：
+
+对于 Anthropic 的生产使用，API key 认证是更安全的推荐路径。
+
+本页面解释：
 
 - OAuth **token 交换** 如何工作(PKCE)
 - tokens **存储** 在哪里(以及为什么)

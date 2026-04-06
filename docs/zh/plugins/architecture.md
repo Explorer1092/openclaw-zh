@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "59ca41c38152b42385fad9c639fc618c"
+mmh3_hash: "88b951ae1042cfcf7237350b5b9f14ab"
 summary: "Plugin 内部架构：能力模型、所有权、契约、加载管道和运行时辅助工具"
 read_when:
   - 构建或调试原生 OpenClaw Plugin
@@ -27,14 +27,19 @@ sidebarTitle: "内部架构"
 
 能力是 OpenClaw 内部原生 Plugin 的公共模型。每个原生 OpenClaw Plugin 都向一个或多个能力类型注册：
 
-| 能力           | 注册方法                                          | 示例 Plugin               |
-| -------------- | ------------------------------------------------- | ------------------------- |
-| 文本推理       | `api.registerProvider(...)`                       | `openai`, `anthropic`     |
-| 语音           | `api.registerSpeechProvider(...)`                 | `elevenlabs`, `microsoft` |
-| 媒体理解       | `api.registerMediaUnderstandingProvider(...)`     | `openai`, `google`        |
-| 图像生成       | `api.registerImageGenerationProvider(...)`        | `openai`, `google`        |
-| Web 搜索       | `api.registerWebSearchProvider(...)`              | `google`                  |
-| Channel / 消息 | `api.registerChannel(...)`                        | `msteams`, `matrix`       |
+| 能力               | 注册方法                                              | 示例 Plugin                      |
+| ------------------ | ----------------------------------------------------- | -------------------------------- |
+| 文本推理           | `api.registerProvider(...)`                           | `openai`, `anthropic`            |
+| 语音               | `api.registerSpeechProvider(...)`                     | `elevenlabs`, `microsoft`        |
+| 实时转录           | `api.registerRealtimeTranscriptionProvider(...)`      | `openai`                         |
+| 实时语音           | `api.registerRealtimeVoiceProvider(...)`              | `openai`                         |
+| 媒体理解           | `api.registerMediaUnderstandingProvider(...)`         | `openai`, `google`               |
+| 图像生成           | `api.registerImageGenerationProvider(...)`            | `openai`, `google`, `fal`, `minimax` |
+| 音乐生成           | `api.registerMusicGenerationProvider(...)`            | `google`, `minimax`              |
+| 视频生成           | `api.registerVideoGenerationProvider(...)`            | `qwen`                           |
+| Web 抓取           | `api.registerWebFetchProvider(...)`                   | `firecrawl`                      |
+| Web 搜索           | `api.registerWebSearchProvider(...)`                  | `google`                         |
+| Channel / 消息     | `api.registerChannel(...)`                            | `msteams`, `matrix`              |
 
 注册零个能力但提供 Hook、Tool 或服务的 Plugin 是**旧版仅 Hook** Plugin。该模式仍然完全受支持。
 
@@ -103,6 +108,13 @@ OpenClaw 的 Plugin 系统有四层：
 4. **接口消费**
    OpenClaw 的其余部分读取注册表以暴露 Tool、Channel、Provider 设置、Hook、HTTP 路由、CLI 命令和服务。
 
+对于 Plugin CLI 而言，根命令发现分为两个阶段：
+
+- 解析时元数据来自 `registerCli(..., { descriptors: [...] })`
+- 真正的 Plugin CLI 模块可以保持延迟加载，并在首次调用时注册
+
+这样插件自有的 CLI 代码保留在 Plugin 内部，同时仍然可以让 OpenClaw 在解析之前预留根命令名称。
+
 重要设计边界：
 
 - 发现 + 配置验证应该在**不执行 Plugin 代码**的情况下从清单/模式元数据工作
@@ -118,6 +130,7 @@ Channel Plugin 不需要为正常聊天操作注册单独的发送/编辑/反应
 
 - 核心拥有共享 `message` Tool 宿主、Prompt 连接、会话/线程记录和执行分发
 - Channel Plugin 拥有范围化的动作发现、能力发现以及任何 Channel 特定的模式片段
+- Channel Plugin 拥有 Provider 特定的会话对话语法，例如对话 id 如何编码线程 id 或从父级对话继承
 - Channel Plugin 通过其动作适配器执行最终动作
 
 对于 Channel Plugin，SDK 接口是 `ChannelMessageActionAdapter.describeMessageTool(...)`。这个统一的发现调用让 Plugin 一起返回其可见动作、能力和模式贡献，这样这些部分就不会相互偏离。
@@ -138,11 +151,25 @@ OpenClaw 将原生 Plugin 视为**公司**或**功能**的所有权边界，而�
 
 示例：
 
-- 打包的 `openai` Plugin 拥有 OpenAI 模型 Provider 行为以及 OpenAI 语音、媒体理解和图像生成行为
+- 打包的 `openai` Plugin 拥有 OpenAI 模型 Provider 行为以及 OpenAI 语音、实时语音、媒体理解和图像生成行为
 - 打包的 `elevenlabs` Plugin 拥有 ElevenLabs 语音行为
 - 打包的 `microsoft` Plugin 拥有 Microsoft 语音行为
 - 打包的 `google` Plugin 拥有 Google 模型 Provider 行为以及 Google 媒体理解、图像生成和 Web 搜索行为
-- `voice-call` Plugin 是功能 Plugin：它拥有通话传输、Tool、CLI、路由和运行时，但消费核心 TTS/STT 能力
+- 打包的 `firecrawl` Plugin 拥有 Firecrawl Web 抓取行为
+- 打包的 `minimax`、`mistral`、`moonshot` 和 `zai` Plugin 拥有各自的媒体理解后端
+- 打包的 `qwen` Plugin 拥有 Qwen 文本 Provider 行为以及媒体理解和视频生成行为
+- `voice-call` Plugin 是功能 Plugin：它拥有通话传输、Tool、CLI、路由和 Twilio 媒体流桥接，但消费共享语音、实时转录和实时语音能力，而不是直接导入厂商 Plugin
+
+预期的最终状态是：
+
+- OpenAI 即使跨越文本模型、语音、图像和未来视频也保留在一个 Plugin 中
+- 另一个厂商可以对其自己的接口面积做同样的事情
+- Channel 不关心哪个厂商 Plugin 拥有 Provider；它们消费核心暴露的共享能力契约
+
+这是关键区别：
+
+- **Plugin** = 所有权边界
+- **能力** = 多个 Plugin 可以实现或消费的核心契约
 
 ### 能力分层
 

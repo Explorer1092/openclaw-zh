@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f8d17bb5262b43116e8bae7e65f214b4"
+mmh3_hash: "6e674cac655242d0e27ec04c2a1b96d1"
 summary: "安装和使用 Codex、Claude 和 Cursor Bundle 作为 OpenClaw Plugin"
 read_when:
   - 您想安装 Codex、Claude 或 Cursor 兼容的 Bundle
@@ -53,7 +53,7 @@ OpenClaw 可以从三个外部生态系统安装 Plugin：**Codex**、**Claude**
     openclaw gateway restart
     ```
 
-    映射的功能（Skill、Hook、MCP Tool）在下一个会话中可用。
+    映射的功能（Skill、Hook、MCP Tool、LSP 默认值）在下一个会话中可用。
 
   </Step>
 </Steps>
@@ -64,19 +64,116 @@ OpenClaw 可以从三个外部生态系统安装 Plugin：**Codex**、**Claude**
 
 ### 当前支持
 
-| 功能          | 映射方式                                                                                       | 适用格式     |
-| ------------- | ---------------------------------------------------------------------------------------------- | ------------ |
-| Skill 内容    | Bundle Skill 根作为普通 OpenClaw Skill 加载                                                    | 所有格式     |
+| 功能          | 映射方式                                                                                       | 适用格式       |
+| ------------- | ---------------------------------------------------------------------------------------------- | -------------- |
+| Skill 内容    | Bundle Skill 根作为普通 OpenClaw Skill 加载                                                    | 所有格式       |
 | 命令          | `commands/` 和 `.cursor/commands/` 被视为 Skill 根                                             | Claude、Cursor |
-| Hook 包       | OpenClaw 风格的 `HOOK.md` + `handler.ts` 布局                                                  | Codex        |
-| MCP Tool      | Bundle MCP 配置合并到嵌入式 Pi 设置中；支持的 stdio 服务器作为子进程启动                       | 所有格式     |
-| 设置          | Claude `settings.json` 作为嵌入式 Pi 默认值导入                                                | Claude       |
+| Hook 包       | OpenClaw 风格的 `HOOK.md` + `handler.ts` 布局                                                  | Codex          |
+| MCP Tool      | Bundle MCP 配置合并到嵌入式 Pi 设置中；支持的 stdio 和 HTTP 服务器被加载                       | 所有格式       |
+| LSP 服务器    | Claude `.lsp.json` 和清单声明的 `lspServers` 合并到嵌入式 Pi LSP 默认值中                      | Claude         |
+| 设置          | Claude `settings.json` 作为嵌入式 Pi 默认值导入                                                | Claude         |
+
+#### Skill 内容
+
+- Bundle Skill 根作为普通 OpenClaw Skill 根加载
+- Claude `commands` 根被视为额外的 Skill 根
+- Cursor `.cursor/commands` 根被视为额外的 Skill 根
+
+这意味着 Claude Markdown 命令文件通过普通 OpenClaw Skill 加载器工作。Cursor 命令 Markdown 通过相同的路径工作。
+
+#### Hook 包
+
+- Bundle Hook 根**仅当**它们使用普通 OpenClaw Hook 包布局时才有效。目前这主要是 Codex 兼容的情况：
+  - `HOOK.md`
+  - `handler.ts` 或 `handler.js`
+
+#### 嵌入式 Pi 的 MCP
+
+- 启用的 Bundle 可以贡献 MCP 服务器配置
+- OpenClaw 将 Bundle MCP 配置合并到有效的嵌入式 Pi 设置中作为 `mcpServers`
+- OpenClaw 通过启动 stdio 服务器或连接到 HTTP 服务器，在嵌入式 Pi Agent 轮次期间暴露支持的 Bundle MCP Tool
+- 项目本地 Pi 设置在 Bundle 默认值之后仍然适用，因此工作区设置可以在需要时覆盖 Bundle MCP 条目
+- Bundle MCP Tool 目录在注册之前按确定性顺序排序，使上游 `listTools()` 顺序变化不会扰乱 Prompt 缓存 Tool 块
+
+##### 传输
+
+MCP 服务器可以使用 stdio 或 HTTP 传输：
+
+**Stdio** 启动一个子进程：
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "my-server": {
+        "command": "node",
+        "args": ["server.js"],
+        "env": { "PORT": "3000" }
+      }
+    }
+  }
+}
+```
+
+**HTTP** 默认通过 `sse` 连接到运行中的 MCP 服务器，或在请求时使用 `streamable-http`：
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "my-server": {
+        "url": "http://localhost:3100/mcp",
+        "transport": "streamable-http",
+        "headers": {
+          "Authorization": "Bearer ${MY_SECRET_TOKEN}"
+        },
+        "connectionTimeoutMs": 30000
+      }
+    }
+  }
+}
+```
+
+- `transport` 可以设置为 `"streamable-http"` 或 `"sse"`；当省略时，OpenClaw 使用 `sse`
+- 仅允许 `http:` 和 `https:` URL 方案
+- `headers` 值支持 `${ENV_VAR}` 插值
+- 同时具有 `command` 和 `url` 的服务器条目会被拒绝
+- URL 凭证（userinfo 和查询参数）会从 Tool 描述和日志中被编辑删除
+- `connectionTimeoutMs` 覆盖 stdio 和 HTTP 传输的默认 30 秒连接超时
+
+##### Tool 命名
+
+OpenClaw 以 `serverName__toolName` 格式使用 Provider 安全名称注册 Bundle MCP Tool。例如，键为 `"vigil-harbor"` 并暴露 `memory_search` Tool 的服务器会注册为 `vigil-harbor__memory_search`。
+
+- `A-Za-z0-9_-` 以外的字符替换为 `-`
+- 服务器前缀上限为 30 个字符
+- 完整 Tool 名称上限为 64 个字符
+- 空服务器名称回退到 `mcp`
+- 冲突的清理后名称用数字后缀消歧
+- 最终暴露的 Tool 顺序按安全名称确定，以保持重复 Pi 轮次缓存稳定
+
+#### 嵌入式 Pi 设置
+
+- 当 Bundle 启用时，Claude `settings.json` 作为默认嵌入式 Pi 设置导入
+- OpenClaw 在应用 Shell 覆盖键之前对其进行清理
+
+清理的键：
+
+- `shellPath`
+- `shellCommandPrefix`
+
+#### 嵌入式 Pi LSP
+
+- 启用的 Claude Bundle 可以贡献 LSP 服务器配置
+- OpenClaw 加载 `.lsp.json` 以及任何清单声明的 `lspServers` 路径
+- Bundle LSP 配置合并到有效的嵌入式 Pi LSP 默认值中
+- 今天只有支持 stdio 的 LSP 服务器可以运行；不支持的传输仍会显示在 `openclaw plugins inspect <id>` 中
 
 ### 已检测但未执行
 
 这些已被识别并显示在诊断中，但 OpenClaw 不运行它们：
 
-- Claude `agents`、`hooks.json` 自动化、`lspServers`、`outputStyles`
+- Claude `agents`、`hooks.json` 自动化、`outputStyles`
 - Cursor `.cursor/agents`、`.cursor/hooks.json`、`.cursor/rules`
 - 超出能力报告范围的 Codex 内联/应用元数据
 
@@ -96,13 +193,14 @@ OpenClaw 可以从三个外部生态系统安装 Plugin：**Codex**、**Claude**
     两种检测模式：
 
     - **基于清单：** `.claude-plugin/plugin.json`
-    - **无清单：** 默认 Claude 布局（`skills/`、`commands/`、`agents/`、`hooks/`、`.mcp.json`、`settings.json`）
+    - **无清单：** 默认 Claude 布局（`skills/`、`commands/`、`agents/`、`hooks/`、`.mcp.json`、`.lsp.json`、`settings.json`）
 
     Claude 特定行为：
 
     - `commands/` 被视为 Skill 内容
     - `settings.json` 被导入到嵌入式 Pi 设置中（Shell 覆盖键被清理）
     - `.mcp.json` 向嵌入式 Pi 暴露支持的 stdio Tool
+    - `.lsp.json` 以及清单声明的 `lspServers` 路径加载到嵌入式 Pi LSP 默认值中
     - `hooks/hooks.json` 已被检测但未执行
     - 清单中的自定义组件路径是加法性的（扩展默认值，而非替换）
 

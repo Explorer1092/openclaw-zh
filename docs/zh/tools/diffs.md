@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a41bb4b94e89158516f8ec0c1b5b8e90"
+mmh3_hash: "3890580283a7d4526df3442f92f7bd34"
 title: "Diffs"
 summary: "供 Agent 使用的只读 diff 查看器与文件渲染器（可选插件工具）"
 description: "使用可选的 Diffs 插件，将前后文本或统一格式的 patch 渲染为 Gateway 托管的 diff 查看页面、文件（PNG 或 PDF），或两者兼得。"

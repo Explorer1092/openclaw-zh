@@ -1,7 +1,7 @@
 ---
 title: "Google Chat (Chat API)"
 sidebarTitle: "Google Chat"
-mmh3_hash: "f5dab26d053a7c531f125737a985278d"
+mmh3_hash: "9a214c6b9d4795d65ba3a6e99d18b141"
 summary: "Google Chat 应用支持状态、功能和配置"
 read_when:
   - 使用 Google Chat channel 功能时
@@ -261,3 +261,11 @@ openclaw channels status
 - [Gateway 配置](/gateway/configuration)
 - [安全](/gateway/security)
 - [Reactions](/tools/reactions)
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channels
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel Routing](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

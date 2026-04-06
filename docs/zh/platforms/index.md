@@ -1,18 +1,20 @@
 ---
-mmh3_hash: "2bb88ac47d3503b0b462664c170aea99"
+mmh3_hash: "5c9f0883b5fb13f4054e43175f368383"
 title: "平台"
-summary: "平台支持概述(网关 + 配套应用)"
-read_when: ["寻找 OS 支持或安装路径","决定在哪里运行网关"]
+summary: "平台支持概述（Gateway + 配套应用）"
+read_when:
+  - 寻找 OS 支持或安装路径
+  - 决定在哪里运行 Gateway
 ---
 
 # 平台
 
 OpenClaw 核心用 TypeScript 编写。**推荐使用 Node 作为运行时**。
-不推荐在网关中使用 Bun(WhatsApp/Telegram 错误)。
+不推荐在 Gateway 中使用 Bun（WhatsApp/Telegram 问题）。
 
-存在 macOS(菜单栏应用)和移动节点(iOS/Android)的配套应用。计划推出 Windows 和
-Linux 配套应用,但网关今日已完全支持。
-也计划推出 Windows 的原生配套应用;推荐通过 WSL2 运行网关。
+存在 macOS（菜单栏应用）和移动节点（iOS/Android）的配套应用。计划推出 Windows 和
+Linux 配套应用，但 Gateway 今日已完全支持。
+也计划推出 Windows 的原生配套应用；推荐通过 WSL2 运行 Gateway。
 
 ## 选择你的 OS
 
@@ -34,20 +36,21 @@ Linux 配套应用,但网关今日已完全支持。
 ## 常见链接
 
 - 安装指南: [入门指南](/start/getting-started)
-- 网关运行手册: [网关](/gateway)
-- 网关配置: [配置](/gateway/configuration)
+- Gateway 运行手册: [Gateway](/gateway)
+- Gateway 配置: [配置](/gateway/configuration)
 - 服务状态: `openclaw gateway status`
 
-## 网关服务安装(CLI)
+## Gateway 服务安装（CLI）
 
-使用以下其中之一(均支持):
+使用以下其中之一（均支持）：
 
-- 向导(推荐): `openclaw onboard --install-daemon`
+- 向导（推荐）: `openclaw onboard --install-daemon`
 - 直接: `openclaw gateway install`
 - 配置流程: `openclaw configure` → 选择 **Gateway service**
-- 修复/迁移: `openclaw doctor`(提供安装或修复服务)
+- 修复/迁移: `openclaw doctor`（提供安装或修复服务）
 
-服务目标取决于 OS:
+服务目标取决于 OS：
 
-- macOS: LaunchAgent(`ai.openclaw.gateway` 或 `ai.openclaw.<profile>`;旧版 `com.openclaw.*`)
-- Linux/WSL2: systemd 用户服务(`openclaw-gateway[-<profile>].service`)
+- macOS: LaunchAgent（`ai.openclaw.gateway` 或 `ai.openclaw.<profile>`；旧版 `com.openclaw.*`）
+- Linux/WSL2: systemd 用户服务（`openclaw-gateway[-<profile>].service`）
+- 原生 Windows: 计划任务（`OpenClaw Gateway` 或 `OpenClaw Gateway (<profile>)`），如果任务创建被拒绝则回退到每用户 Startup 文件夹登录项

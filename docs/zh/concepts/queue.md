@@ -66,7 +66,7 @@ Summarize 保留已删除消息的简短项目符号列表,并将其作为合成
 ## 范围和保证
 - 适用于使用 gateway 回复管道的所有入站 channels 的自动回复 agent 运行(WhatsApp web、Telegram、Slack、Discord、Signal、iMessage、webchat 等)。
 - 默认 lane(`main`)是进程范围的,用于入站 + main heartbeats;设置 `agents.defaults.maxConcurrent` 以允许多个 sessions 并行。
-- 可能存在其他 lanes(例如 `cron`、`subagent`),因此后台作业可以并行运行而不会阻止入站回复。
+- 可能存在其他 lanes（例如 `cron`、`subagent`），因此后台作业可以并行运行而不会阻止入站回复。这些分离的运行被记录为[后台任务](/automation/tasks)。
 - 每个 session 的 lanes 保证一次只有一个 agent 运行触摸给定的 session。
 - 没有外部依赖项或后台工作线程;纯 TypeScript + promises。
 

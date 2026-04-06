@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1d19cb726f9f052e082d38b290354ed9"
+mmh3_hash: "f70dfcb2ccdf8e896114bfd2bbfb3b4d"
 title: "在 Raspberry Pi 上运行 OpenClaw"
 summary: "OpenClaw on Raspberry Pi（低价自托管设置）"
 read_when:
@@ -74,7 +74,7 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y git curl build-essential
 
 # 设置时区（对 cron/提醒很重要）
-sudo timedatectl set-timezone Asia/Shanghai  # 改为你的时区
+sudo timedatectl set-timezone America/Chicago  # 改为你的时区
 ```
 
 ## 4) 安装 Node.js 24（ARM64）
@@ -126,7 +126,7 @@ npm run build
 npm link
 ```
 
-可修改安装让你直接访问日志和代码 — 对调试 ARM 特定问题很有用。
+可修改安装让你直接访问日志和代码——对调试 ARM 特定问题很有用。
 
 ## 7) 运行引导向导
 
@@ -147,11 +147,11 @@ openclaw onboard --install-daemon
 # 检查状态
 openclaw status
 
-# 检查服务
-sudo systemctl status openclaw
+# 检查服务（标准安装 = systemd 用户单元）
+systemctl --user status openclaw-gateway.service
 
 # 查看日志
-journalctl -u openclaw -f
+journalctl --user -u openclaw-gateway.service -f
 ```
 
 ## 9) 访问 OpenClaw Dashboard
@@ -174,7 +174,7 @@ ssh -N -L 18789:127.0.0.1:18789 user@gateway-host
 
 然后在本地浏览器中打开打印的 Dashboard URL。
 
-如果 UI 要求 auth，从 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）粘贴 token 到 Control UI settings。
+如果 UI 要求 shared-secret auth，从 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）粘贴 token 或密码到 Control UI settings。
 
 对于始终在线的远程访问，参见 [Tailscale](/gateway/tailscale)。
 
@@ -198,7 +198,7 @@ lsblk
 在低功耗 Pi 主机上，启用 Node 的模块编译缓存，以便重复 CLI 运行更快：
 
 ```bash
-grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF'
+grep -q 'NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache' ~/.bashrc || cat >> ~/.bashrc <<'EOF' # pragma: allowlist secret
 export NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
 mkdir -p /var/tmp/openclaw-compile-cache
 export OPENCLAW_NO_RESPAWN=1
@@ -218,7 +218,7 @@ source ~/.bashrc
 如果此 Pi 主要运行 OpenClaw，添加服务 drop-in 以减少重启抖动并保持启动 env 稳定：
 
 ```bash
-sudo systemctl edit openclaw
+systemctl --user edit openclaw-gateway.service
 ```
 
 ```ini
@@ -233,11 +233,17 @@ TimeoutStartSec=90
 然后应用：
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl restart openclaw
+systemctl --user daemon-reload
+systemctl --user restart openclaw-gateway.service
 ```
 
 如果可能，将 OpenClaw 状态/缓存保存在 SSD 支持的存储上，以避免冷启动期间 SD 卡随机 I/O 瓶颈。
+
+如果这是无头 Pi，一次性启用 lingering，使用户服务在注销后存活：
+
+```bash
+sudo loginctl enable-linger "$(whoami)"
+```
 
 `Restart=` 策略如何帮助自动恢复：
 [systemd 可以自动化服务恢复](https://www.redhat.com/en/blog/systemd-automate-recovery)。
@@ -303,8 +309,8 @@ uname -m
   "agents": {
     "defaults": {
       "model": {
-        "primary": "anthropic/claude-sonnet-4-20250514",
-        "fallbacks": ["openai/gpt-4o-mini"]
+        "primary": "anthropic/claude-sonnet-4-6",
+        "fallbacks": ["openai/gpt-5.4-mini"]
       }
     }
   }
@@ -317,17 +323,17 @@ uname -m
 
 ## 启动时自动启动
 
-设置向导会设置这个，但要验证：
+引导向导会设置这个，但要验证：
 
 ```bash
 # 检查服务是否已启用
-sudo systemctl is-enabled openclaw
+systemctl --user is-enabled openclaw-gateway.service
 
 # 如果没有，启用
-sudo systemctl enable openclaw
+systemctl --user enable openclaw-gateway.service
 
 # 启动时启动
-sudo systemctl start openclaw
+systemctl --user start openclaw-gateway.service
 ```
 
 ---
@@ -354,12 +360,12 @@ free -h
 
 ```bash
 # 检查日志
-journalctl -u openclaw --no-pager -n 100
+journalctl --user -u openclaw-gateway.service --no-pager -n 100
 
 # 常见修复：重建
 cd ~/openclaw  # 如果使用可修改安装
 npm run build
-sudo systemctl restart openclaw
+systemctl --user restart openclaw-gateway.service
 ```
 
 ### ARM 二进制问题
@@ -386,14 +392,14 @@ echo 'wireless-power off' | sudo tee -a /etc/network/interfaces
 
 ## 成本比较
 
-| 设置              | 一次性成本 | 月费  | 说明                    |
-| ----------------- | ---------- | ----- | ----------------------- |
-| **Pi 4（2GB）**   | ~$45       | $0    | + 电费（~$5/年）        |
-| **Pi 4（4GB）**   | ~$55       | $0    | 推荐                    |
-| **Pi 5（4GB）**   | ~$60       | $0    | 最佳性能                |
-| **Pi 5（8GB）**   | ~$80       | $0    | 过剩但面向未来          |
-| DigitalOcean      | $0         | $6/月 | $72/年                  |
-| Hetzner           | $0         | €3.79/月 | ~$50/年              |
+| 设置              | 一次性成本 | 月费       | 说明                    |
+| ----------------- | ---------- | ---------- | ----------------------- |
+| **Pi 4（2GB）**   | ~$45       | $0         | + 电费（~$5/年）        |
+| **Pi 4（4GB）**   | ~$55       | $0         | 推荐                    |
+| **Pi 5（4GB）**   | ~$60       | $0         | 最佳性能                |
+| **Pi 5（8GB）**   | ~$80       | $0         | 过剩但面向未来          |
+| DigitalOcean      | $0         | $6/月      | $72/年                  |
+| Hetzner           | $0         | €3.79/月   | ~$50/年                 |
 
 **盈亏平衡：** Pi 与云 VPS 相比在约 6-12 个月内收回成本。
 

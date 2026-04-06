@@ -1,19 +1,38 @@
 ---
+mmh3_hash: "6c0078013e5641771771e53b3f713042"
 title: "`openclaw config`"
-mmh3_hash: "5635d0102cb036f7ce1f473b3eb6ea31"
-summary: "`openclaw config` 的 CLI 参考(获取/设置/取消设置/文件/验证配置值)"
+summary: "`openclaw config` 的 CLI 参考(获取/设置/取消设置/文件/Schema/验证配置值)"
 read_when:
   - 您想以非交互方式读取或编辑配置
 ---
 
 # `openclaw config`
 
-配置助手:按路径获取/设置/取消设置/验证值,并打印活动配置文件。不带子命令运行以打开配置向导(与 `openclaw configure` 相同)。
+配置助手,用于在 `openclaw.json` 中进行非交互式编辑:按路径获取/设置/取消设置/文件/Schema/验证值,并打印活动配置文件。不带子命令运行以打开配置向导(与 `openclaw configure` 相同)。
+
+根选项:
+
+- `--section <section>`:当不带子命令运行 `openclaw config` 时,可重复使用的引导设置部分过滤器
+
+支持的引导部分:
+
+- `workspace`
+- `model`
+- `web`
+- `gateway`
+- `daemon`
+- `channels`
+- `plugins`
+- `skills`
+- `health`
 
 ## 示例
 
 ```bash
 openclaw config file
+openclaw config --section model
+openclaw config --section gateway --section daemon
+openclaw config schema
 openclaw config get browser.executablePath
 openclaw config set browser.executablePath "/usr/bin/google-chrome"
 openclaw config set agents.defaults.heartbeat.every "2h"
@@ -26,7 +45,34 @@ openclaw config validate
 openclaw config validate --json
 ```
 
-## 路径
+### `config schema`
+
+将 `openclaw.json` 的生成 JSON Schema 打印到 stdout 为 JSON。
+
+包含内容:
+
+- 当前根配置 Schema,加上用于编辑器工具的根 `$schema` 字符串字段
+- Control UI 使用的字段 `title` 和 `description` 文档元数据
+- 当匹配的字段文档存在时,嵌套对象、通配符(`*`)和数组项(`[]`)节点继承相同的 `title`/`description` 元数据
+- 当匹配的字段文档存在时,`anyOf`/`oneOf`/`allOf` 分支也继承相同的文档元数据
+- 运行时清单可以加载时的最佳努力实时插件 + Channel Schema 元数据
+- 即使当前配置无效时也有干净的回退 Schema
+
+相关运行时 RPC:
+
+- `config.schema.lookup` 返回一个规范化的配置路径,包含浅层 Schema 节点(`title`、`description`、`type`、`enum`、`const`、常见边界)、匹配的 UI 提示元数据和直接子摘要。在 Control UI 或自定义客户端中用于路径范围钻取。
+
+```bash
+openclaw config schema
+```
+
+将其导入文件以便用其他工具检查或验证:
+
+```bash
+openclaw config schema > openclaw.schema.json
+```
+
+### 路径
 
 路径使用点或括号表示法:
 
@@ -52,6 +98,8 @@ openclaw config set agents.defaults.heartbeat.every "0m"
 openclaw config set gateway.port 19001 --strict-json
 openclaw config set channels.whatsapp.groups '["*"]' --strict-json
 ```
+
+`config get <path> --json` 将原始值打印为 JSON,而非终端格式化文本。
 
 ## `config set` 模式
 
@@ -96,6 +144,10 @@ openclaw config set --batch-json '[
 ```bash
 openclaw config set --batch-file ./config-set.batch.json --dry-run
 ```
+
+策略说明:
+
+- SecretRef 赋值在不受支持的运行时可变界面上被拒绝(例如 `hooks.token`、`commands.ownerDisplaySecret`、Discord 线程绑定 webhook 令牌和 WhatsApp 凭据 JSON)。参见 [SecretRef Credential Surface](/reference/secretref-credential-surface)。
 
 批量解析始终使用批量有效载荷(`--batch-json`/`--batch-file`)作为真实来源。
 `--strict-json` / `--json` 不影响批量解析行为。
@@ -188,6 +240,8 @@ openclaw config set channels.discord.token \
 
 - 构建器模式:对已更改的 ref/Provider 运行 SecretRef 可解析性检查。
 - JSON 模式(`--strict-json`、`--json` 或批量模式):运行 Schema 验证以及 SecretRef 可解析性检查。
+- 策略验证也对已知不支持的 SecretRef 目标界面运行。
+- 策略检查评估完整的修改后配置,因此父对象写入(例如将 `hooks` 设置为对象)无法绕过不支持界面验证。
 - 默认情况下,试运行期间跳过 Exec SecretRef 检查以避免命令副作用。
 - 使用 `--allow-exec` 配合 `--dry-run` 可启用 Exec SecretRef 检查(此操作可能执行 Provider 命令)。
 - `--allow-exec` 仅适用于试运行,不与 `--dry-run` 同时使用时会报错。
@@ -273,6 +327,7 @@ openclaw config set channels.discord.token \
 若试运行失败:
 
 - `config schema validation failed`:修改后的配置结构无效;请修正路径/值或 Provider/ref 对象结构。
+- `Config policy validation failed: unsupported SecretRef usage`:将该凭据移回明文/字符串输入,并仅在受支持的界面上保留 SecretRef。
 - `SecretRef assignment(s) could not be resolved`:引用的 Provider/ref 当前无法解析(缺少环境变量、无效文件指针、Exec Provider 失败或 Provider/来源不匹配)。
 - `Dry run note: skipped <n> exec SecretRef resolvability check(s)`:试运行跳过了 Exec ref;如需 Exec 可解析性验证,请重新运行并添加 `--allow-exec`。
 - 批量模式下,修复失败的条目后重新运行 `--dry-run` 再写入。

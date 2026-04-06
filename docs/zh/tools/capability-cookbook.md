@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fb2fd96dffeebcc58542add20e0783e9"
+mmh3_hash: "86614cfd8c67859a7f4bc12ad44ff394"
 summary: "为 OpenClaw Plugin 系统添加新共享能力的贡献者指南"
 read_when:
   - 添加新的核心能力和 Plugin 注册入口
@@ -52,7 +52,7 @@ sidebarTitle: "添加能力"
 - 请求/响应类型
 - 提供商注册表 + 解析
 - 回退行为
-- 配置 schema 和标签/帮助信息
+- 配置 schema 以及嵌套对象、通配符、数组项和组合节点上传播的 `title` / `description` 文档元数据
 - 运行时 Helper 接口
 
 供应商 Plugin：
@@ -81,7 +81,7 @@ sidebarTitle: "添加能力"
 - `src/plugins/runtime/index.ts`
 - `src/plugin-sdk/<capability>.ts`
 - `src/plugin-sdk/<capability>-runtime.ts`
-- 一个或多个 `extensions/<vendor>/...`
+- 一个或多个捆绑插件包
 - 配置/文档/测试
 
 ## 示例：图像生成
@@ -91,7 +91,7 @@ sidebarTitle: "添加能力"
 1. 核心定义 `ImageGenerationProvider`
 2. 核心暴露 `registerImageGenerationProvider(...)`
 3. 核心暴露 `runtime.imageGeneration.generate(...)`
-4. `openai` 和 `google` Plugin 注册供应商支持的实现
+4. `openai`、`google`、`fal` 和 `minimax` Plugin 注册供应商支持的实现
 5. 未来的供应商可注册相同契约，无需修改 Channel/工具
 
 配置键与视觉分析路由分离：

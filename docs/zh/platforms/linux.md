@@ -1,7 +1,7 @@
 ---
 title: "Linux 应用"
 sidebarTitle: "Linux"
-mmh3_hash: "1fc31d33374367e164ea27292c58f4ea"
+mmh3_hash: "bf69a90c062ba3a183b89e6d88558b56"
 summary: "Linux 支持 + 伴侣应用状态"
 read_when:
   - 查找 Linux 伴侣应用状态
@@ -11,17 +11,17 @@ read_when:
 # Linux 应用
 
 Gateway 在 Linux 上完全受支持。**Node 是推荐的运行时**。
-不推荐 Bun 用于 Gateway（WhatsApp/Telegram 错误）。
+不推荐 Bun 用于 Gateway（WhatsApp/Telegram 问题）。
 
 原生 Linux 伴侣应用正在计划中。如果你想帮助构建，欢迎贡献。
 
 ## 初学者快速路径（VPS）
 
-1. 安装 Node 24（推荐；Node 22 LTS，当前 `22.16+`，仍然用于兼容性）
+1. 安装 Node 24（推荐；Node 22 LTS，当前 `22.14+`，仍然用于兼容性）
 2. `npm i -g openclaw@latest`
 3. `openclaw onboard --install-daemon`
 4. 从你的笔记本：`ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`
-5. 打开 `http://127.0.0.1:18789/` 并粘贴你的 token
+5. 打开 `http://127.0.0.1:18789/` 并使用配置的共享密钥进行认证（默认为 token；如果你设置了 `gateway.auth.mode: "password"` 则为密码）
 
 完整 Linux 服务器指南：[Linux Server](/vps)。逐步 VPS 示例：[exe.dev](/install/exe-dev)
 
@@ -66,7 +66,7 @@ openclaw doctor
 
 ## 系统控制（systemd 用户单元）
 
-OpenClaw 默认安装 systemd **用户**服务。对于共享或始终在线的服务器，使用**系统**服务。完整的单元示例和指导位于 [Gateway 手册](/gateway)。
+OpenClaw 默认安装 systemd **用户**服务。对于共享或始终在线的服务器，使用**系统**服务。`openclaw gateway install` 和 `openclaw onboard --install-daemon` 已经为你渲染了当前的规范单元；仅当你需要自定义系统/服务管理器设置时才手动编写。完整的服务指导位于 [Gateway 手册](/gateway)。
 
 最小设置：
 
@@ -82,6 +82,10 @@ Wants=network-online.target
 ExecStart=/usr/local/bin/openclaw gateway --port 18789
 Restart=always
 RestartSec=5
+TimeoutStopSec=30
+TimeoutStartSec=30
+SuccessExitStatus=0 143
+KillMode=control-group
 
 [Install]
 WantedBy=default.target

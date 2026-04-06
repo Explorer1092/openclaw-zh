@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3441993d5c16d2631ea06cea39c66dbb"
+mmh3_hash: "c83c06ea6e2c7f697ab3b676e8effb7f"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -572,10 +572,13 @@ Modal 表单：
     - `off`（默认）
     - `first`
     - `all`
+    - `batched`
 
     注意：`off` 禁用隐式回复线程。显式 `[[reply_to_*]]` 标签仍然有效。
+    `first` 始终将隐式原生回复引用附加到该轮次的第一条出站 Discord 消息。
+    `batched` 仅在入站轮次是多条消息的防抖批次时附加 Discord 的隐式原生回复引用。这在你主要想为模糊的突发聊天而非每条单消息轮次使用原生回复时很有用。
 
-    消息 ID 在上下文/历史中显示，以便 agent 可以定位特定消息。
+    消息 ID 在上下文/历史中显示，以便 Agent 可以定位特定消息。
 
   </Accordion>
 
@@ -749,9 +752,13 @@ Modal 表单：
 
     注意：
 
+    - `/acp spawn codex --bind here` 就地绑定当前 Discord 频道或线程，并将后续消息路由到同一 ACP 会话。
+    - 这仍可能意味着"启动一个新的 Codex ACP 会话"，但它本身不会创建新的 Discord 线程。现有频道保持为聊天界面。
+    - Codex 仍可以在磁盘上其自己的 `cwd` 或后端工作区中运行。该工作区是运行时状态，不是 Discord 线程。
     - 线程消息可以继承父频道的 ACP 绑定。
     - 在绑定的频道或线程中，`/new` 和 `/reset` 就地重置同一个 ACP 会话。
     - 临时线程绑定仍然有效，并可以在活跃期间覆盖目标解析。
+    - 仅当 OpenClaw 需要通过 `--thread auto|here` 创建/绑定子线程时，才需要 `spawnAcpSessions`。在当前频道中使用 `/acp spawn ... --bind here` 不需要它。
 
     参见 [ACP Agents](/tools/acp-agents) 了解绑定行为详情。
 
@@ -1207,7 +1214,7 @@ Discord 高优先级字段：
 - 传递：`textChunkLimit`、`chunkMode`、`maxLinesPerMessage`
 - 流式传输：`streaming`（旧版别名：`streamMode`）、`draftChunk`、`blockStreaming`、`blockStreamingCoalesce`
 - 媒体/重试：`mediaMaxMb`、`retry`
-  - `mediaMaxMb` 限制出站 Discord 上传（默认：`8MB`）
+  - `mediaMaxMb` 限制出站 Discord 上传（默认：`100MB`）
 - 操作：`actions.*`
 - presence：`activity`、`status`、`activityType`、`activityUrl`
 - UI：`ui.components.accentColor`
@@ -1221,8 +1228,10 @@ Discord 高优先级字段：
 
 ## 相关
 
-- [配对](/channels/pairing)
-- [频道路由](/channels/channel-routing)
+- [Pairing](/channels/pairing)
+- [Groups](/channels/groups)
+- [Channel 路由](/channels/channel-routing)
+- [Security](/gateway/security)
 - [多 Agent 路由](/concepts/multi-agent)
 - [故障排除](/channels/troubleshooting)
 - [Slash commands](/tools/slash-commands)

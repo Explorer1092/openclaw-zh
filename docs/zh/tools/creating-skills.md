@@ -1,6 +1,6 @@
 ---
 title: "创建技能"
-mmh3_hash: "f3fa31f5411349fd79782484457309e6"
+mmh3_hash: "3d1bd9d19edb7d90fc844fb04deb82cb"
 summary: "使用 SKILL.md 构建和测试自定义工作区技能"
 read_when:
   - 在工作区中创建新的自定义技能
@@ -95,16 +95,18 @@ YAML frontmatter 支持以下字段：
 - **简洁** — 指示模型做_什么_，而不是如何成为 AI
 - **安全第一** — 如果你的技能使用 `exec`，确保提示不允许来自不受信任的输入的任意命令注入
 - **本地测试** — 在共享前使用 `openclaw agent --message "..."` 进行测试
-- **使用 ClawHub** — 在 [ClawHub](https://clawhub.com) 浏览和贡献技能
+- **使用 ClawHub** — 在 [ClawHub](https://clawhub.ai) 浏览和贡献技能
 
 ## 技能存放位置
 
-| 位置                            | 优先级 | 范围                  |
-| ------------------------------- | ------ | --------------------- |
-| `\<workspace\>/skills/`         | 最高   | 每个 Agent            |
-| `~/.openclaw/skills/`           | 中等   | 共享（所有 Agent）    |
-| 捆绑（随 OpenClaw 附带）        | 最低   | 全局                  |
-| `skills.load.extraDirs`         | 最低   | 自定义共享文件夹      |
+| 位置                                    | 优先级 | 范围                 |
+| --------------------------------------- | ------ | -------------------- |
+| `\<workspace\>/skills/`                 | 最高   | 每个 Agent           |
+| `\<workspace\>/.agents/skills/`         | 高     | 每个工作区 Agent     |
+| `~/.agents/skills/`                     | 中等   | 共享 Agent 配置文件  |
+| `~/.openclaw/skills/`                   | 中等   | 共享（所有 Agent）   |
+| 捆绑（随 OpenClaw 附带）                | 低     | 全局                 |
+| `skills.load.extraDirs`                 | 最低   | 自定义共享文件夹     |
 
 ## 相关
 

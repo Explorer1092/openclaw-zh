@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "196259a61095d1703aa384e0417c0d12"
+mmh3_hash: "afefdb078e416dd702e2901a14b17809"
 title: "iOS 应用 (节点)"
 summary: "iOS 节点应用：连接到 Gateway、配对、canvas 和故障排除"
 read_when:
@@ -42,6 +42,9 @@ openclaw gateway --port 18789
 openclaw devices list
 openclaw devices approve <requestId>
 ```
+
+如果应用使用更改的 auth 详情（角色/作用域/公钥）重试配对，之前的待处理请求将被取代，并创建新的 `requestId`。
+在批准之前重新运行 `openclaw devices list`。
 
 4. 验证连接：
 
@@ -152,7 +155,7 @@ export OPENCLAW_APNS_PRIVATE_KEY_P8="$(cat /path/to/AuthKey_KEYID.p8)"
 
 ### Bonjour（局域网）
 
-Gateway 在 `local.` 上广告 `_openclaw-gw._tcp`。iOS 应用自动列出这些。
+iOS 应用在 `local.` 上浏览 `_openclaw-gw._tcp`，配置时还会浏览相同的广域 DNS-SD 发现域。同一局域网的 gateways 从 `local.` 自动出现；跨网络发现可以使用配置的广域域，而无需更改 beacon 类型。
 
 ### Tailnet（跨网络）
 

@@ -1,5 +1,6 @@
 ---
-mmh3_hash: "d36f6ac09fa1c9d53287fc4c1638b09f"
+mmh3_hash: "3a8f664bd072e892e498dfab1e335b5e"
+title: "LiteLLM"
 summary: "通过 LiteLLM Proxy 运行 OpenClaw 以实现统一的模型访问和成本跟踪"
 read_when:
   - 您想要通过 LiteLLM 代理路由 OpenClaw
@@ -8,19 +9,19 @@ read_when:
 
 # LiteLLM
 
-[LiteLLM](https://litellm.ai) 是一个开源 LLM Gateway，为 100 多个模型 Provider 提供统一的 API。通过 LiteLLM 路由 OpenClaw 以获得集中式成本跟踪、日志记录以及在不更改 OpenClaw 配置的情况下切换后端的灵活性。
+[LiteLLM](https://litellm.ai) 是一个开源 LLM 网关，为 100 多个模型 Provider 提供统一 API。通过 LiteLLM 路由 OpenClaw，可以实现集中的成本跟踪、日志记录，以及无需更改 OpenClaw 配置即可切换后端的灵活性。
 
 ## 为什么在 OpenClaw 中使用 LiteLLM？
 
-- **成本跟踪** — 精确查看 OpenClaw 在所有模型上的花费
-- **模型路由** — 在 Claude、GPT-4、Gemini、Bedrock 之间切换，无需配置更改
-- **虚拟密钥** — 为 OpenClaw 创建具有支出限制的密钥
+- **成本跟踪** — 精确了解 OpenClaw 在所有模型上的支出
+- **模型路由** — 在 Claude、GPT-4、Gemini、Bedrock 之间切换，无需更改配置
+- **虚拟密钥** — 为 OpenClaw 创建带支出限制的密钥
 - **日志记录** — 用于调试的完整请求/响应日志
-- **回退** — 如果您的主 Provider 宕机，自动故障转移
+- **故障转移** — 当主要 Provider 宕机时自动切换
 
 ## 快速开始
 
-### 通过引导
+### 通过入门
 
 ```bash
 openclaw onboard --auth-choice litellm-api-key
@@ -43,7 +44,7 @@ export LITELLM_API_KEY="your-litellm-key"
 openclaw
 ```
 
-就这样。OpenClaw 现在通过 LiteLLM 路由。
+就这些。OpenClaw 现在通过 LiteLLM 路由。
 
 ## 配置
 
@@ -94,7 +95,7 @@ export LITELLM_API_KEY="sk-litellm-key"
 
 ## 虚拟密钥
 
-为 OpenClaw 创建具有支出限制的专用密钥：
+为 OpenClaw 创建一个带支出限制的专用密钥：
 
 ```bash
 curl -X POST "http://localhost:4000/key/generate" \
@@ -107,7 +108,7 @@ curl -X POST "http://localhost:4000/key/generate" \
   }'
 ```
 
-使用生成的密钥作为 `LITELLM_API_KEY`。
+将生成的密钥用作 `LITELLM_API_KEY`。
 
 ## 模型路由
 
@@ -130,7 +131,7 @@ OpenClaw 继续请求 `claude-opus-4-6` — LiteLLM 处理路由。
 
 ## 查看使用情况
 
-检查 LiteLLM 的仪表板或 API：
+查看 LiteLLM 的仪表板或 API：
 
 ```bash
 # 密钥信息
@@ -144,11 +145,12 @@ curl "http://localhost:4000/spend/logs" \
 
 ## 注意事项
 
-- LiteLLM 默认在 `http://localhost:4000` 上运行
-- OpenClaw 通过 OpenAI 兼容的 `/v1/chat/completions` 端点连接
-- 所有 OpenClaw 功能都可以通过 LiteLLM 工作 — 没有限制
+- LiteLLM 默认运行在 `http://localhost:4000`
+- OpenClaw 通过 LiteLLM 的代理样式 OpenAI 兼容 `/v1` 端点连接
+- 原生 OpenAI 独有的请求塑形不适用于 LiteLLM：无 `service_tier`、无 Responses `store`、无 prompt 缓存提示，也无 OpenAI 推理兼容负载塑形
+- 自定义 LiteLLM Base URL 上不注入隐藏的 OpenClaw 归因标头（`originator`、`version`、`User-Agent`）
 
-## 另见
+## 另请参阅
 
 - [LiteLLM 文档](https://docs.litellm.ai)
-- [模型 Providers](/concepts/model-providers)
+- [模型 Provider](/concepts/model-providers)

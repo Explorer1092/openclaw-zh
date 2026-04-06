@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9bb6d36bac49b740af8d425b7e94eb12"
+mmh3_hash: "f8450bc8fb329ca2c866714922050933"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:
   - 学习如何配置 OpenClaw
@@ -10,7 +10,7 @@ title: "配置示例"
 
 # 配置示例
 
-以下示例与当前配置 schema 对齐。有关详尽的参考和每个字段的注释,请参见 [Configuration](/gateway/configuration)。
+以下示例与当前配置 schema 对齐。有关详尽的参考和每个字段的注释，请参见 [Configuration](/gateway/configuration)。
 
 ## 快速入门
 
@@ -23,7 +23,7 @@ title: "配置示例"
 }
 ```
 
-保存到 `~/.openclaw/openclaw.json`,您可以从该号码向 bot 发送 DM。
+保存到 `~/.openclaw/openclaw.json`，您可以从该号码向 bot 发送 DM。
 
 ### 推荐的入门
 
@@ -47,7 +47,7 @@ title: "配置示例"
 }
 ```
 
-## 扩展示例(主要选项)
+## 扩展示例（主要选项）
 
 > JSON5 允许您使用注释和尾随逗号。常规 JSON 也可以。
 
@@ -65,22 +65,18 @@ title: "配置示例"
     },
   },
 
-  // Auth profile 元数据(secrets 位于 auth-profiles.json 中)
+  // Auth profile 元数据（secrets 位于 auth-profiles.json 中）
   auth: {
     profiles: {
-      "anthropic:me@example.com": {
-        provider: "anthropic",
-        mode: "oauth",
-        email: "me@example.com",
-      },
+      "anthropic:default": { provider: "anthropic", mode: "api_key" },
       "anthropic:work": { provider: "anthropic", mode: "api_key" },
       "openai:default": { provider: "openai", mode: "api_key" },
-      "openai-codex:default": { provider: "openai-codex", mode: "oauth" },
+      "openai-codex:personal": { provider: "openai-codex", mode: "oauth" },
     },
     order: {
-      anthropic: ["anthropic:me@example.com", "anthropic:work"],
+      anthropic: ["anthropic:default", "anthropic:work"],
       openai: ["openai:default"],
-      "openai-codex": ["openai-codex:default"],
+      "openai-codex": ["openai-codex:personal"],
     },
   },
 
@@ -139,7 +135,7 @@ title: "配置示例"
         maxBytes: 20971520,
         models: [
           { provider: "openai", model: "gpt-4o-mini-transcribe" },
-          // 可选的 CLI 回退(Whisper 二进制文件):
+          // 可选的 CLI 回退（Whisper 二进制文件）：
           // { type: "cli", command: "whisper", args: ["--model", "base", "{{MediaPath}}"] }
         ],
         timeoutSeconds: 120,
@@ -155,6 +151,7 @@ title: "配置示例"
   // Session 行为
   session: {
     scope: "per-sender",
+    dmScope: "per-channel-peer", // 推荐用于多用户收件箱
     reset: {
       mode: "daily",
       atHour: 4,
@@ -172,7 +169,7 @@ title: "配置示例"
       rotateBytes: "10mb",
       resetArchiveRetention: "30d", // 持续时间或 false
       maxDiskBytes: "500mb", // 可选
-      highWaterBytes: "400mb", // 可选(默认为 maxDiskBytes 的 80%)
+      highWaterBytes: "400mb", // 可选（默认为 maxDiskBytes 的 80%）
     },
     typingIntervalSeconds: 5,
     sendPolicy: {
@@ -240,7 +237,7 @@ title: "配置示例"
       userTimezone: "America/Chicago",
       model: {
         primary: "anthropic/claude-sonnet-4-6",
-        fallbacks: ["anthropic/claude-opus-4-6", "openai/gpt-5.2"],
+        fallbacks: ["anthropic/claude-opus-4-6", "openai/gpt-5.4"],
       },
       imageModel: {
         primary: "openrouter/anthropic/claude-sonnet-4-6",
@@ -248,8 +245,9 @@ title: "配置示例"
       models: {
         "anthropic/claude-opus-4-6": { alias: "opus" },
         "anthropic/claude-sonnet-4-6": { alias: "sonnet" },
-        "openai/gpt-5.2": { alias: "gpt" },
+        "openai/gpt-5.4": { alias: "gpt" },
       },
+      skills: ["github", "weather"], // 被省略 list[].skills 的 Agent 继承
       thinkingDefault: "low",
       verboseDefault: "off",
       elevatedDefault: "on",
@@ -274,7 +272,7 @@ title: "配置示例"
         every: "30m",
         model: "anthropic/claude-sonnet-4-6",
         target: "last",
-        directPolicy: "allow", // allow (默认) | block
+        directPolicy: "allow", // allow（默认）| block
         to: "+15555550123",
         prompt: "HEARTBEAT",
         ackMaxChars: 300,
@@ -289,7 +287,7 @@ title: "配置示例"
       },
       sandbox: {
         mode: "non-main",
-        perSession: true,
+        scope: "session", // 优先于旧版 perSession: true
         workspaceRoot: "~/.openclaw/sandboxes",
         docker: {
           image: "openclaw-sandbox:bookworm-slim",
@@ -308,13 +306,15 @@ title: "配置示例"
       {
         id: "main",
         default: true,
-        thinkingDefault: "high", // 每个 agent 的 thinking 覆盖
-        reasoningDefault: "on", // 每个 agent 的 reasoning 可见性
-        fastModeDefault: false, // 每个 agent 的 fast mode
+        // 继承 defaults.skills -> github, weather
+        thinkingDefault: "high", // 每个 Agent 的 thinking 覆盖
+        reasoningDefault: "on", // 每个 Agent 的 reasoning 可见性
+        fastModeDefault: false, // 每个 Agent 的 fast mode
       },
       {
         id: "quick",
-        fastModeDefault: true, // 此 agent 始终以 fast 模式运行
+        skills: [], // 此 Agent 无 skills
+        fastModeDefault: true, // 此 Agent 始终以 fast 模式运行
         thinkingDefault: "off",
       },
     ],
@@ -446,7 +446,7 @@ title: "配置示例"
     },
     install: {
       preferBrew: true,
-      nodeManager: "npm",
+      nodeManager: "npm", // npm | pnpm | yarn | bun
     },
     entries: {
       "image-lab": {
@@ -461,6 +461,27 @@ title: "配置示例"
 ```
 
 ## 常见模式
+
+### 共享 skill 基准配置与单个覆盖
+
+```json5
+{
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      skills: ["github", "weather"],
+    },
+    list: [
+      { id: "main", default: true },
+      { id: "docs", workspace: "~/.openclaw/workspace-docs", skills: ["docs-search"] },
+    ],
+  },
+}
+```
+
+- `agents.defaults.skills` 是共享基准。
+- `agents.list[].skills` 为单个 Agent 替换该基准。
+- 当 Agent 不需要任何 skill 时，使用 `skills: []`。
 
 ### 多平台设置
 
@@ -483,23 +504,23 @@ title: "配置示例"
 }
 ```
 
-### 安全 DM 模式(共享收件箱/多用户 DM)
+### 安全 DM 模式（共享收件箱/多用户 DM）
 
-如果有多个人可以向您的 bot 发送 DM(在 `allowFrom` 中有多个条目、为多人批准配对或 `dmPolicy: "open"`),请启用 **安全 DM 模式**,以便来自不同发件人的 DM 默认不共享一个上下文:
+如果有多个人可以向您的 bot 发送 DM（在 `allowFrom` 中有多个条目、为多人批准配对或 `dmPolicy: "open"`），请启用**安全 DM 模式**，以便来自不同发件人的 DM 默认不共享一个上下文：
 
 ```json5
 {
-  // 安全 DM 模式(推荐用于多用户或敏感 DM agent)
+  // 安全 DM 模式（推荐用于多用户或敏感 DM Agent）
   session: { dmScope: "per-channel-peer" },
 
   channels: {
-    // 示例:WhatsApp 多用户收件箱
+    // 示例：WhatsApp 多用户收件箱
     whatsapp: {
       dmPolicy: "allowlist",
       allowFrom: ["+15555550123", "+15555550124"],
     },
 
-    // 示例:Discord 多用户收件箱
+    // 示例：Discord 多用户收件箱
     discord: {
       enabled: true,
       token: "YOUR_DISCORD_BOT_TOKEN",
@@ -509,61 +530,22 @@ title: "配置示例"
 }
 ```
 
-对于 Discord/Slack/Google Chat/MS Teams/Mattermost/IRC,发送者授权默认以 ID 优先。
-仅在明确接受该风险的情况下,才通过每个 channel 的 `dangerouslyAllowNameMatching: true` 启用直接可变的姓名/邮箱/昵称匹配。
+对于 Discord/Slack/Google Chat/Microsoft Teams/Mattermost/IRC，发送者授权默认以 ID 优先。
+仅在明确接受该风险的情况下，才通过每个 Channel 的 `dangerouslyAllowNameMatching: true` 启用直接可变的姓名/邮箱/昵称匹配。
 
-### OAuth 与 API 密钥故障转移
+### Anthropic API 密钥 + MiniMax 回退
 
 ```json5
 {
   auth: {
     profiles: {
-      "anthropic:subscription": {
-        provider: "anthropic",
-        mode: "oauth",
-        email: "me@example.com",
-      },
       "anthropic:api": {
         provider: "anthropic",
         mode: "api_key",
       },
     },
     order: {
-      anthropic: ["anthropic:subscription", "anthropic:api"],
-    },
-  },
-  agent: {
-    workspace: "~/.openclaw/workspace",
-    model: {
-      primary: "anthropic/claude-sonnet-4-6",
-      fallbacks: ["anthropic/claude-opus-4-6"],
-    },
-  },
-}
-```
-
-### Anthropic setup-token + API 密钥,MiniMax 回退
-
-<Warning>
-Anthropic 在过去限制了部分用户在 Claude Code 之外使用 setup-token。请将此视为用户自主选择的风险,并在依赖订阅认证之前验证 Anthropic 的当前条款。
-</Warning>
-
-```json5
-{
-  auth: {
-    profiles: {
-      "anthropic:subscription": {
-        provider: "anthropic",
-        mode: "oauth",
-        email: "user@example.com",
-      },
-      "anthropic:api": {
-        provider: "anthropic",
-        mode: "api_key",
-      },
-    },
-    order: {
-      anthropic: ["anthropic:subscription", "anthropic:api"],
+      anthropic: ["anthropic:api"],
     },
   },
   models: {
@@ -579,13 +561,13 @@ Anthropic 在过去限制了部分用户在 Claude Code 之外使用 setup-token
     workspace: "~/.openclaw/workspace",
     model: {
       primary: "anthropic/claude-opus-4-6",
-      fallbacks: ["minimax/MiniMax-M2.5"],
+      fallbacks: ["minimax/MiniMax-M2.7"],
     },
   },
 }
 ```
 
-### Work bot(受限访问)
+### Work bot（受限访问）
 
 ```json5
 {
@@ -616,7 +598,7 @@ Anthropic 在过去限制了部分用户在 Claude Code 之外使用 setup-token
 {
   agent: {
     workspace: "~/.openclaw/workspace",
-    model: { primary: "lmstudio/minimax-m2.5-gs32" },
+    model: { primary: "lmstudio/my-local-model" },
   },
   models: {
     mode: "merge",
@@ -627,8 +609,8 @@ Anthropic 在过去限制了部分用户在 Claude Code 之外使用 setup-token
         api: "openai-responses",
         models: [
           {
-            id: "minimax-m2.5-gs32",
-            name: "MiniMax M2.5 GS32",
+            id: "my-local-model",
+            name: "Local Model",
             reasoning: false,
             input: ["text"],
             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
@@ -644,7 +626,7 @@ Anthropic 在过去限制了部分用户在 Claude Code 之外使用 setup-token
 
 ## 提示
 
-- 如果设置 `dmPolicy: "open"`,匹配的 `allowFrom` 列表必须包含 `"*"`。
-- Provider IDs 不同(电话号码、用户 IDs、channel IDs)。使用 provider 文档确认格式。
-- 稍后添加的可选部分:`web`、`browser`、`ui`、`discovery`、`canvasHost`、`talk`、`signal`、`imessage`。
-- 有关更深入的设置说明,请参见 [Providers](/providers) 和 [Troubleshooting](/gateway/troubleshooting)。
+- 如果设置 `dmPolicy: "open"`，匹配的 `allowFrom` 列表必须包含 `"*"`。
+- Provider IDs 不同（电话号码、用户 IDs、channel IDs）。使用 provider 文档确认格式。
+- 稍后添加的可选部分：`web`、`browser`、`ui`、`discovery`、`canvasHost`、`talk`、`signal`、`imessage`。
+- 有关更深入的设置说明，请参见 [Providers](/providers) 和 [Troubleshooting](/gateway/troubleshooting)。

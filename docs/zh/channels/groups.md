@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e9ca7d4e2dea4db1100c430df51a327a"
+mmh3_hash: "99dca46d04452ca80df86e4b811d614a"
 summary: "跨界面（WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams/Zalo）的群聊行为"
 read_when:
   - 更改群聊行为或提及门控
@@ -36,6 +36,28 @@ groupPolicy? allowlist -> 群组允许？ 否 -> 丢弃
 requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
 否则 -> 回复
 ```
+
+## 上下文可见性和 allowlist
+
+群组安全涉及两个不同的控制：
+
+- **触发授权**：谁可以触发 Agent（`groupPolicy`、`groups`、`groupAllowFrom`、特定 Channel 的 allowlist）。
+- **上下文可见性**：哪些补充上下文被注入到模型中（回复文本、引用、线程历史、转发元数据）。
+
+默认情况下，OpenClaw 优先考虑正常聊天行为，并保持上下文基本上按接收到的状态。这意味着 allowlist 主要决定谁可以触发操作，而不是对每条引用或历史片段的通用编辑边界。
+
+当前行为是特定于 Channel 的：
+
+- 某些 Channel 已在特定路径中对补充上下文应用基于发送者的过滤（例如 Slack 线程播种、Matrix 回复/线程查找）。
+- 其他 Channel 仍按接收到的状态传递引用/回复/转发上下文。
+
+加固方向（计划中）：
+
+- `contextVisibility: "all"`（默认）保持当前的按接收状态行为。
+- `contextVisibility: "allowlist"` 将补充上下文过滤为 allowlist 中的发送者。
+- `contextVisibility: "allowlist_quote"` 是 `allowlist` 加上一个显式的引用/回复例外。
+
+在此加固模型在各 Channel 中一致实施之前，预期不同平台之间会有差异。
 
 ![群组消息流程](/images/groups-flow.svg)
 
@@ -297,6 +319,9 @@ requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
 
 配置 `channels.whatsapp.groups`、`channels.telegram.groups` 或 `channels.imessage.groups` 时，键充当群组 allowlist。使用 `"*"` 允许所有群组，同时仍设置默认提及行为。
 
+常见混淆：DM 配对批准与群组授权不同。
+对于支持 DM 配对的 Channel，配对存储仅解锁 DM。群组命令仍需要来自配置 allowlist（如 `groupAllowFrom` 或该 Channel 的文档化配置回退）的显式群组发送者授权。
+
 常见意图（复制/粘贴）：
 
 1. 禁用所有群组回复
@@ -367,7 +392,11 @@ requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
 - `WasMentioned`（提及门控结果）
 - Telegram 论坛主题还包含 `MessageThreadId` 和 `IsForum`。
 
-Agent 系统提示在新群组会话的第一轮中包含群组介绍。它提醒模型像人一样响应，避免 Markdown 表格，避免输入字面 `\n` 序列。
+特定 Channel 说明：
+
+- BlueBubbles 可以选择在正常群组门控通过后从本地联系人数据库丰富未命名的 macOS 群组参与者，然后填充 `GroupMembers`。这默认关闭，仅在正常群组门控通过后运行。
+
+Agent 系统提示在新群组会话的第一轮中包含群组介绍。它提醒模型像人一样响应，避免 Markdown 表格，最小化空行并遵循正常的聊天间距，避免输入字面 `\n` 序列。
 
 ## iMessage 特性
 
