@@ -1,13 +1,15 @@
 ---
-title: "使用 OpenClaw 构建个人助手"
-sidebarTitle: "OpenClaw 助手设置"
-mmh3_hash: "ad92f70a8c7d5f7134c3574fb0bb3614"
+mmh3_hash: "39afd4ec03011b551d3bed04b8316c52"
 summary: "将 OpenClaw 作为带有安全警告的个人助手运行的端到端指南"
-read_when: ["引导新的助手实例","审查安全/权限影响"]
+read_when:
+  - 引导新的助手实例
+  - 审查安全/权限影响
+title: "个人助手设置"
 ---
+
 # 使用 OpenClaw 构建个人助手
 
-OpenClaw 是一个自托管的 Gateway，可将 WhatsApp、Telegram、Discord、iMessage 等连接到 AI Agent。本指南介绍"个人助手"设置：一个专用的 WhatsApp 号码，表现得像你永远在线的 AI 助手。
+OpenClaw 是一个自托管的 Gateway，可将 Discord、Google Chat、iMessage、Matrix、Microsoft Teams、Signal、Slack、Telegram、WhatsApp、Zalo 等连接到 AI Agent。本指南介绍"个人助手"设置：一个专用的 WhatsApp 号码，表现得像你永远在线的 AI 助手。
 
 ## ⚠️ 安全第一
 
@@ -15,7 +17,7 @@ OpenClaw 是一个自托管的 Gateway，可将 WhatsApp、Telegram、Discord、
 
 - 在你的机器上运行命令（取决于你的工具策略）
 - 读取/写入工作区中的文件
-- 通过 WhatsApp/Telegram/Discord/Mattermost (插件) 发送消息
+- 通过 WhatsApp/Telegram/Discord/Mattermost 及其他内置 Channel 发送消息
 
 从保守开始：
 
@@ -28,7 +30,7 @@ OpenClaw 是一个自托管的 Gateway，可将 WhatsApp、Telegram、Discord、
 - OpenClaw 已安装并完成引导 — 如果还没完成，请参阅[入门指南](/start/getting-started)
 - 第二个电话号码（SIM/eSIM/预付费），用于助手
 
-## 双手机设置 (推荐)
+## 双手机设置（推荐）
 
 你需要这样：
 
@@ -58,15 +60,16 @@ openclaw gateway --port 18789
 
 ```json5
 {
+  gateway: { mode: "local" },
   channels: { whatsapp: { allowFrom: ["+15555550123"] } },
 }
 ```
 
 现在从你的白名单手机向助手号码发送消息。
 
-当引导完成时，我们会自动打开 Dashboard 并打印一个干净的（非令牌化的）链接。如果提示需要认证，请将 `gateway.auth.token` 中的令牌粘贴到 Control UI 设置中。稍后重新打开：`openclaw dashboard`。
+当引导完成时，我们会自动打开 Dashboard 并打印一个干净的（非令牌化的）链接。如果提示需要认证，请将配置的共享密钥粘贴到 Control UI 设置中。引导默认使用令牌（`gateway.auth.token`），但如果你将 `gateway.auth.mode` 切换为 `password`，密码认证也可以使用。稍后重新打开：`openclaw dashboard`。
 
-## 给 Agent 一个工作区 (AGENTS)
+## 给 Agent 一个工作区（AGENTS）
 
 OpenClaw 从其工作区目录读取操作说明和"记忆"。
 
@@ -147,14 +150,14 @@ OpenClaw 默认为良好的助手设置，但你通常需要调整：
 }
 ```
 
-## 会话和记忆
+## Session 和记忆
 
-- 会话文件：`~/.openclaw/agents/<agentId>/sessions/{{SessionId}}.jsonl`
-- 会话元数据（Token 使用情况、最后路由等）：`~/.openclaw/agents/<agentId>/sessions/sessions.json`（旧版：`~/.openclaw/sessions/sessions.json`）
-- `/new` 或 `/reset` 为该聊天启动一个新的会话（通过 `resetTriggers` 配置）。如果是单独发送，Agent 会回复一个简短的问候以确认重置。
-- `/compact [instructions]` 压缩会话上下文并报告剩余的上下文预算。
+- Session 文件：`~/.openclaw/agents/<agentId>/sessions/{{SessionId}}.jsonl`
+- Session 元数据（Token 使用情况、最后路由等）：`~/.openclaw/agents/<agentId>/sessions/sessions.json`（旧版：`~/.openclaw/sessions/sessions.json`）
+- `/new` 或 `/reset` 为该聊天启动一个新的 Session（通过 `resetTriggers` 配置）。如果是单独发送，Agent 会回复一个简短的问候以确认重置。
+- `/compact [instructions]` 压缩 Session 上下文并报告剩余的上下文预算。
 
-## 心跳 (主动模式)
+## 心跳（主动模式）
 
 默认情况下，OpenClaw 每 30 分钟运行一次心跳，提示词为：
 `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
@@ -178,9 +181,9 @@ OpenClaw 默认为良好的助手设置，但你通常需要调整：
 
 入站附件（图像/音频/文档）可以通过模板显示给你的命令：
 
-- `{{MediaPath}}` (本地临时文件路径)
-- `{{MediaUrl}}` (伪 URL)
-- `{{Transcript}}` (如果启用了音频转录)
+- `{{MediaPath}}` （本地临时文件路径）
+- `{{MediaUrl}}` （伪 URL）
+- `{{Transcript}}` （如果启用了音频转录）
 
 来自 Agent 的出站附件：包含 `MEDIA:<path-or-url>` 在其自己的一行（无空格）。示例：
 
@@ -191,27 +194,33 @@ MEDIA:https://example.com/screenshot.png
 
 OpenClaw 提取这些并作为媒体与文本一起发送。
 
-对于本地路径，默认允许列表有意保持较窄：OpenClaw 临时根目录、媒体缓存、Agent 工作区路径和沙箱生成的文件。如果你需要更广泛的本地文件附件根目录，请配置明确的 Channel/插件允许列表，而不是依赖任意主机路径。
+本地路径行为遵循与 Agent 相同的文件读取信任模型：
+
+- 如果 `tools.fs.workspaceOnly` 为 `true`，出站 `MEDIA:` 本地路径仅限于 OpenClaw 临时根目录、媒体缓存、Agent 工作区路径和沙箱生成的文件。
+- 如果 `tools.fs.workspaceOnly` 为 `false`，出站 `MEDIA:` 可以使用 Agent 已被允许读取的主机本地文件。
+- 主机本地发送仍然只允许媒体和安全文档类型（图像、音频、视频、PDF 和 Office 文档）。纯文本和类似密钥的文件不被视为可发送媒体。
+
+这意味着当你的文件系统策略已经允许这些读取时，工作区之外生成的图像/文件现在可以发送，而无需重新开放任意主机文本附件的泄露风险。
 
 ## 运维清单
 
 ```bash
-openclaw status          # 本地状态 (凭据、会话、排队事件)
-openclaw status --all    # 完整诊断 (只读、可粘贴)
-openclaw status --deep   # 添加 Gateway 健康探针 (Telegram + Discord)
-openclaw health --json   # Gateway 健康快照 (WS)
+openclaw status          # 本地状态（凭据、Session、排队事件）
+openclaw status --all    # 完整诊断（只读、可粘贴）
+openclaw status --deep   # 向 Gateway 请求实时健康探针，支持时包含 Channel 探针
+openclaw health --json   # Gateway 健康快照（WS；默认可返回新鲜的缓存快照）
 ```
 
 日志位于 `/tmp/openclaw/` 下（默认：`openclaw-YYYY-MM-DD.log`）。
 
 ## 下一步
 
-- WebChat: [WebChat](/web/webchat)
-- Gateway 运维: [Gateway 手册](/gateway)
-- Cron + 唤醒: [Cron 任务](/automation/cron-jobs)
-- macOS 菜单栏配套应用: [OpenClaw macOS 应用](/platforms/macos)
-- iOS Node 应用: [iOS 应用](/platforms/ios)
-- Android Node 应用: [Android 应用](/platforms/android)
-- Windows 状态: [Windows (WSL2)](/platforms/windows)
-- Linux 状态: [Linux 应用](/platforms/linux)
-- 安全: [安全](/gateway/security)
+- WebChat：[WebChat](/web/webchat)
+- Gateway 运维：[Gateway 手册](/gateway)
+- Cron + 唤醒：[Cron 任务](/automation/cron-jobs)
+- macOS 菜单栏配套应用：[OpenClaw macOS 应用](/platforms/macos)
+- iOS 节点应用：[iOS 应用](/platforms/ios)
+- Android 节点应用：[Android 应用](/platforms/android)
+- Windows 状态：[Windows（WSL2）](/platforms/windows)
+- Linux 状态：[Linux 应用](/platforms/linux)
+- 安全：[安全](/gateway/security)

@@ -1,14 +1,14 @@
 ---
-title: "入门 (macOS 应用)"
-sidebarTitle: "macOS 入门"
-mmh3_hash: "0795495b5eea6c8644b586685ae5f7ad"
+mmh3_hash: "ca7bb00da3b1c744759f620e4e8defd7"
 summary: "OpenClaw 的首次运行入门流程（macOS 应用）"
 read_when:
   - 设计 macOS 入门助手
   - 实现认证或身份设置
+title: "入门（macOS 应用）"
+sidebarTitle: "入门：macOS 应用"
 ---
 
-# 入门 (macOS 应用)
+# 入门（macOS 应用）
 
 本文档描述了**当前**的首次运行入门流程。目标是流畅的"第 0 天"体验：选择 Gateway 运行位置，连接认证，运行向导，并让 Agent 自我引导。
 有关引导路径的一般概述，请参阅[引导概述](/start/onboarding-overview)。
@@ -64,7 +64,7 @@ read_when:
 
 引导请求以下所需的 TCC 权限：
 
-- 自动化 (AppleScript)
+- 自动化（AppleScript）
 - 通知
 - 辅助功能
 - 屏幕录制
@@ -76,7 +76,9 @@ read_when:
 </Step>
 <Step title="CLI">
   <Info>此步骤是可选的</Info>
-  该应用程序可以通过 npm/pnpm 安装全局 `openclaw` CLI，以便终端工作流和 launchd 任务开箱即用。
+  该应用程序可以通过 npm、pnpm 或 bun 安装全局 `openclaw` CLI。
+  优先选择 npm，其次是 pnpm，如果只检测到 bun 则使用 bun。
+  对于 Gateway 运行时，Node 仍是推荐路径。
 </Step>
 <Step title="入门聊天（专用 Session）">
   设置完成后，应用程序会打开一个专用的入门聊天 Session，以便 Agent 可以自我介绍并指导后续步骤。这使得首次运行指导与您的正常对话分开。有关 Gateway 主机上首次 Agent 运行期间发生的事情，请参阅[引导](/start/bootstrapping)。

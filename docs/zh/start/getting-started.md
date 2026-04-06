@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f5fb61484f478e11d18b073df374b20c"
+mmh3_hash: "86db91ee64126c4357988341f9385de1"
 summary: "从零开始安装 OpenClaw，在几分钟内完成第一次聊天。"
 read_when:
   - 首次从零开始设置
@@ -9,11 +9,11 @@ title: "快速开始"
 
 # 快速开始
 
-安装 OpenClaw，运行引导向导，与 AI 助手聊天——整个过程约需 5 分钟。完成后你将拥有一个运行中的 Gateway、已配置的认证和可用的聊天会话。
+安装 OpenClaw，运行引导向导，与 AI 助手聊天——整个过程约需 5 分钟。完成后你将拥有一个运行中的 Gateway、已配置的认证和可用的聊天 Session。
 
 ## 所需条件
 
-- **Node.js** — 推荐 Node 24（也支持 Node 22.16+）
+- **Node.js** — 推荐 Node 24（也支持 Node 22.14+）
 - 来自模型提供商（Anthropic、OpenAI、Google 等）的 **API 密钥** — 引导向导会提示您输入
 
 <Tip>
@@ -84,11 +84,42 @@ title: "快速开始"
   </Step>
 </Steps>
 
+<Accordion title="高级：挂载自定义 Control UI 构建版本">
+  如果你维护本地化或自定义的 Dashboard 构建版本，将
+  `gateway.controlUi.root` 指向包含构建后静态资产和 `index.html` 的目录。
+
+```bash
+mkdir -p "$HOME/.openclaw/control-ui-custom"
+# 将你构建好的静态文件复制到该目录。
+```
+
+然后设置：
+
+```json
+{
+  "gateway": {
+    "controlUi": {
+      "enabled": true,
+      "root": "$HOME/.openclaw/control-ui-custom"
+    }
+  }
+}
+```
+
+重启 Gateway 并重新打开 Dashboard：
+
+```bash
+openclaw gateway restart
+openclaw dashboard
+```
+
+</Accordion>
+
 ## 下一步
 
 <Columns>
   <Card title="连接 Channel" href="/channels" icon="message-square">
-    WhatsApp、Telegram、Discord、iMessage 等。
+    Discord、Feishu、iMessage、Matrix、Microsoft Teams、Signal、Slack、Telegram、WhatsApp、Zalo 等。
   </Card>
   <Card title="配对和安全" href="/channels/pairing" icon="shield">
     控制谁可以向你的 Agent 发消息。
@@ -97,7 +128,7 @@ title: "快速开始"
     模型、工具、沙箱和高级设置。
   </Card>
   <Card title="浏览工具" href="/tools" icon="wrench">
-    浏览器、执行、网络搜索、技能和插件。
+    浏览器、执行、网络搜索、Skills 和插件。
   </Card>
 </Columns>
 

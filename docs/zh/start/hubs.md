@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dcc8fb231018260b822ec3a5389a0a3c"
+mmh3_hash: "990492315bc24b6c01d4ad178b46e3eb"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图
@@ -21,12 +21,12 @@ title: "文档中心"
 - [引导向导](/start/onboarding)
 - [引导向导（CLI）](/start/wizard)
 - [设置](/start/setup)
-- [Dashboard (本地 Gateway)](http://127.0.0.1:18789/)
+- [Dashboard（本地 Gateway）](http://127.0.0.1:18789/)
 - [帮助](/help)
 - [文档目录](/start/docs-directory)
 - [配置](/gateway/configuration)
 - [配置示例](/gateway/configuration-examples)
-- [OpenClaw assistant](/start/openclaw)
+- [OpenClaw 助手](/start/openclaw)
 - [展示](/start/showcase)
 - [背景故事](/start/lore)
 
@@ -35,7 +35,7 @@ title: "文档中心"
 - [Docker](/install/docker)
 - [Nix](/install/nix)
 - [更新 / 回滚](/install/updating)
-- [Bun 工作流程 (实验性)](/install/bun)
+- [Bun 工作流（实验性）](/install/bun)
 
 ## 核心概念
 
@@ -53,9 +53,9 @@ title: "文档中心"
 - [Session 修剪](/concepts/session-pruning)
 - [Session 工具](/concepts/session-tool)
 - [队列](/concepts/queue)
-- [斜杠命令](/tools/slash-commands)
+- [Slash 命令](/tools/slash-commands)
 - [RPC 适配器](/reference/rpc)
-- [TypeBox schema](/concepts/typebox)
+- [TypeBox schemas](/concepts/typebox)
 - [时区处理](/concepts/timezone)
 - [在线状态](/concepts/presence)
 - [发现和传输](/gateway/discovery)
@@ -66,22 +66,23 @@ title: "文档中心"
 - [模型故障转移](/concepts/model-failover)
 - [OAuth](/concepts/oauth)
 
-## 提供商和入口
+## Provider 和入口
 
 - [聊天 Channel 中心](/channels)
-- [模型提供商中心](/providers/models)
+- [模型 Provider 中心](/providers/models)
 - [WhatsApp](/channels/whatsapp)
 - [Telegram](/channels/telegram)
 - [Slack](/channels/slack)
 - [Discord](/channels/discord)
-- [Mattermost](/channels/mattermost) (插件)
+- [Mattermost](/channels/mattermost)
 - [Signal](/channels/signal)
-- [BlueBubbles (iMessage)](/channels/bluebubbles)
-- [iMessage (旧版)](/channels/imessage)
+- [BlueBubbles（iMessage）](/channels/bluebubbles)
+- [QQ Bot](/channels/qqbot)
+- [iMessage（旧版）](/channels/imessage)
 - [位置解析](/channels/location)
 - [WebChat](/web/webchat)
-- [Webhook](/automation/webhook)
-- [Gmail Pub/Sub](/automation/gmail-pubsub)
+- [Webhook](/automation/cron-jobs#webhooks)
+- [Gmail Pub/Sub](/automation/cron-jobs#gmail-pubsub-integration)
 
 ## Gateway 和运维
 
@@ -96,7 +97,7 @@ title: "文档中心"
 - [日志](/gateway/logging)
 - [沙箱](/gateway/sandboxing)
 - [Dashboard](/web/dashboard)
-- [控制 UI](/web/control-ui)
+- [Control UI](/web/control-ui)
 - [远程访问](/gateway/remote)
 - [远程 Gateway README](/gateway/remote-gateway-readme)
 - [Tailscale](/gateway/tailscale)
@@ -112,19 +113,19 @@ title: "文档中心"
 - [PDF 工具](/tools/pdf)
 - [提升模式](/tools/elevated)
 - [Cron 任务](/automation/cron-jobs)
-- [Cron vs Heartbeat](/automation/cron-vs-heartbeat)
+- [自动化与任务](/automation)
 - [Thinking + verbose](/tools/thinking)
 - [模型](/concepts/models)
 - [子 Agent](/tools/subagents)
 - [Agent send CLI](/tools/agent-send)
 - [终端 UI](/web/tui)
 - [浏览器控制](/tools/browser)
-- [浏览器 (Linux 故障排查)](/tools/browser-linux-troubleshooting)
-- [投票](/automation/poll)
+- [浏览器（Linux 故障排查）](/tools/browser-linux-troubleshooting)
+- [投票](/cli/message)
 
-## Node、媒体、语音
+## 节点、媒体、语音
 
-- [Node 概述](/nodes)
+- [节点概述](/nodes)
 - [相机](/nodes/camera)
 - [图像](/nodes/images)
 - [音频](/nodes/audio)
@@ -138,11 +139,11 @@ title: "文档中心"
 - [macOS](/platforms/macos)
 - [iOS](/platforms/ios)
 - [Android](/platforms/android)
-- [Windows (WSL2)](/platforms/windows)
+- [Windows（WSL2）](/platforms/windows)
 - [Linux](/platforms/linux)
 - [Web 界面](/web)
 
-## macOS 配套应用 (高级)
+## macOS 配套应用（高级）
 
 - [macOS 开发设置](/platforms/mac/dev-setup)
 - [macOS 菜单栏](/platforms/mac/menu-bar)
@@ -157,9 +158,9 @@ title: "文档中心"
 - [macOS 权限](/platforms/mac/permissions)
 - [macOS 远程](/platforms/mac/remote)
 - [macOS 签名](/platforms/mac/signing)
-- [macOS Gateway (launchd)](/platforms/mac/bundled-gateway)
+- [macOS Gateway（launchd）](/platforms/mac/bundled-gateway)
 - [macOS XPC](/platforms/mac/xpc)
-- [macOS Skill](/platforms/mac/skills)
+- [macOS Skills](/platforms/mac/skills)
 - [macOS Peekaboo](/platforms/mac/peekaboo)
 
 ## 扩展和插件
@@ -176,17 +177,17 @@ title: "文档中心"
 
 ## 工作区和模板
 
-- [Skill](/tools/skills)
+- [Skills](/tools/skills)
 - [ClawHub](/tools/clawhub)
-- [Skill 配置](/tools/skills-config)
+- [Skills 配置](/tools/skills-config)
 - [默认 AGENTS](/reference/AGENTS.default)
-- [模板: AGENTS](/reference/templates/AGENTS)
-- [模板: BOOTSTRAP](/reference/templates/BOOTSTRAP)
-- [模板: HEARTBEAT](/reference/templates/HEARTBEAT)
-- [模板: IDENTITY](/reference/templates/IDENTITY)
-- [模板: SOUL](/reference/templates/SOUL)
-- [模板: TOOLS](/reference/templates/TOOLS)
-- [模板: USER](/reference/templates/USER)
+- [模板：AGENTS](/reference/templates/AGENTS)
+- [模板：BOOTSTRAP](/reference/templates/BOOTSTRAP)
+- [模板：HEARTBEAT](/reference/templates/HEARTBEAT)
+- [模板：IDENTITY](/reference/templates/IDENTITY)
+- [模板：SOUL](/reference/templates/SOUL)
+- [模板：TOOLS](/reference/templates/TOOLS)
+- [模板：USER](/reference/templates/USER)
 
 ## 项目
 
@@ -195,5 +196,5 @@ title: "文档中心"
 ## 测试和发布
 
 - [测试](/reference/test)
-- [发布检查清单](/reference/RELEASING)
+- [发布策略](/reference/RELEASING)
 - [设备型号](/reference/device-models)

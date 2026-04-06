@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b5ad401664b5c71f1c396dd973c5b88a"
+mmh3_hash: "21030ac16b34b66eb7d41baad6020213"
 summary: "CLI 引导向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
 read_when:
   - 运行或配置 CLI 引导向导
@@ -34,7 +34,9 @@ openclaw agents add <name>
 </Note>
 
 <Tip>
-CLI 引导向导包含网络搜索步骤，您可以在其中选择 Provider（Perplexity、Brave、Gemini、Grok 或 Kimi）并粘贴您的 API 密钥，以便 Agent 可以使用 `web_search`。您也可以稍后通过 `openclaw configure --section web` 进行配置。文档：[Web 工具](/tools/web)。
+CLI 引导向导包含网络搜索步骤，您可以在其中选择 Provider，如
+Brave、DuckDuckGo、Exa、Firecrawl、Gemini、Grok、Kimi、MiniMax Search、
+Ollama Web Search、Perplexity、SearXNG 或 Tavily。部分 Provider 需要 API 密钥，其他不需要。您也可以稍后通过 `openclaw configure --section web` 进行配置。文档：[Web 工具](/tools/web)。
 </Tip>
 
 ## QuickStart vs Advanced
@@ -61,18 +63,19 @@ CLI 引导向导包含网络搜索步骤，您可以在其中选择 Provider（P
 
 **Local 模式（默认）**引导您完成以下步骤：
 
-1. **模型/认证** — 选择任何支持的 Provider/认证流程（API 密钥、OAuth 或 setup-token），包括自定义 Provider
+1. **模型/认证** — 选择任何支持的 Provider/认证流程（API 密钥、OAuth 或 Provider 特定的手动认证），包括 Custom Provider
    （OpenAI 兼容、Anthropic 兼容或未知自动检测）。选择默认模型。
    安全提示：如果此 Agent 将运行工具或处理 Webhook/Hook 内容，请选择可用的最强最新一代模型并保持工具策略严格。较弱/较旧的层更容易被提示词注入。
    对于非交互式运行，`--secret-input-mode ref` 在认证配置文件中存储环境支持的引用，而不是明文 API 密钥值。
    在非交互式 `ref` 模式中，Provider 环境变量必须设置；不带该环境变量传递内联密钥标志会快速失败。
    在交互式运行中，选择密钥引用模式允许您指向环境变量或配置的 Provider 引用（`file` 或 `exec`），在保存之前进行快速预检验证。
+   对于 Anthropic，交互式引导/配置提供 **Anthropic Claude CLI** 作为本地回退，**Anthropic API 密钥**作为推荐的生产路径。Anthropic setup-token 也作为旧版/手动 OpenClaw 路径再次可用，并带有 Anthropic 的 OpenClaw 特定 **Extra Usage** 计费预期。
 2. **工作区** — Agent 文件的位置（默认 `~/.openclaw/workspace`）。播种引导文件。
 3. **Gateway** — 端口、绑定地址、认证模式、Tailscale 暴露。
    在交互式 Token 模式下，选择默认明文 Token 存储或选择加入 SecretRef。
    非交互式 Token SecretRef 路径：`--gateway-token-ref-env <ENV_VAR>`。
-4. **Channel** — WhatsApp、Telegram、Discord、Google Chat、Mattermost、Signal、BlueBubbles 或 iMessage。
-5. **Daemon** — 安装 LaunchAgent（macOS）或 systemd 用户单元（Linux/WSL2）。
+4. **Channel** — 内置和捆绑的聊天 Channel，如 BlueBubbles、Discord、Feishu、Google Chat、Mattermost、Microsoft Teams、QQ Bot、Signal、Slack、Telegram、WhatsApp 等。
+5. **Daemon** — 安装 LaunchAgent（macOS）、systemd 用户单元（Linux/WSL2），或原生 Windows 计划任务，带每用户 Startup 文件夹回退。
    如果 Token 认证需要 Token 且 `gateway.auth.token` 由 SecretRef 管理，守护程序安装会验证它，但不会将解析的 Token 保存到守护进程服务环境元数据中。
    如果 Token 认证需要 Token 且配置的 Token SecretRef 未解析，守护程序安装将被阻止，并提供可操作的指导。
    如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置，守护程序安装将被阻止，直到明确设置模式。
@@ -91,7 +94,7 @@ CLI `--reset` 默认为配置、凭据和 Session；使用 `--reset-scope full` 
 ## 添加另一个 Agent
 
 使用 `openclaw agents add <name>` 创建一个单独的 Agent，拥有自己的工作区、
-Session 和认证配置文件。不使用 `--workspace` 运行会启动向导。
+Session 和认证配置文件。不使用 `--workspace` 运行会启动引导向导。
 
 它设置什么：
 
@@ -102,7 +105,7 @@ Session 和认证配置文件。不使用 `--workspace` 运行会启动向导。
 注意：
 
 - 默认工作区遵循 `~/.openclaw/workspace-<agentId>`。
-- 添加 `bindings` 以路由入站消息（向导可以执行此操作）。
+- 添加 `bindings` 以路由入站消息（引导向导可以执行此操作）。
 - 非交互式标志：`--model`、`--agent-dir`、`--bind`、`--non-interactive`。
 
 ## 完整参考
@@ -111,7 +114,7 @@ Session 和认证配置文件。不使用 `--workspace` 运行会启动向导。
 [CLI 引导参考](/start/wizard-cli-reference)。
 有关非交互式示例，请参阅 [CLI 自动化](/start/wizard-cli-automation)。
 有关更深入的技术参考，包括 RPC 详情，请参阅
-[向导参考](/reference/wizard)。
+[引导参考](/reference/wizard)。
 
 ## 相关文档
 

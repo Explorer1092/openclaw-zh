@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "30b6f99ca7942fdb026c9b65904e6c07"
+mmh3_hash: "280d0fabc85c041d18a4eb487be973bf"
 summary: "OpenClaw CLI 的脚本化引导和 Agent 设置"
 read_when:
   - 您在脚本或 CI 中自动化引导
@@ -52,6 +52,16 @@ openclaw onboard --non-interactive \
 ## Provider 特定示例
 
 <AccordionGroup>
+  <Accordion title="Anthropic API 密钥示例">
+    ```bash
+    openclaw onboard --non-interactive \
+      --mode local \
+      --auth-choice apiKey \
+      --anthropic-api-key "$ANTHROPIC_API_KEY" \
+      --gateway-port 18789 \
+      --gateway-bind loopback
+    ```
+  </Accordion>
   <Accordion title="Gemini 示例">
     ```bash
     openclaw onboard --non-interactive \
@@ -183,6 +193,9 @@ openclaw onboard --non-interactive \
   </Accordion>
 </AccordionGroup>
 
+Anthropic setup-token 作为旧版/手动引导路径再次可用。
+使用时请注意，Anthropic 已告知 OpenClaw 用户，OpenClaw 的 Claude 登录路径需要**额外用量（Extra Usage）**。生产环境优先使用 Anthropic API 密钥。
+
 ## 添加另一个 Agent
 
 使用 `openclaw agents add <name>` 创建一个单独的 Agent，具有自己的工作区、Session 和认证配置文件。不使用 `--workspace` 运行会启动向导。
@@ -190,7 +203,7 @@ openclaw onboard --non-interactive \
 ```bash
 openclaw agents add work \
   --workspace ~/.openclaw/workspace-work \
-  --model openai/gpt-5.2 \
+  --model openai/gpt-5.4 \
   --bind whatsapp:biz \
   --non-interactive \
   --json
