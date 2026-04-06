@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5b7fe09e5fbf403b1ff18b2587d661fc"
+mmh3_hash: "33d4594330a717898e981ef6133ade65"
 summary: "Node 的配对、功能、权限和 canvas/camera/screen/device/notifications/system 的 CLI 辅助工具"
 read_when:
   - 将 iOS/Android Node 配对到 Gateway
@@ -114,7 +114,7 @@ openclaw devices approve <requestId>
 openclaw nodes status
 ```
 
-如果 node 使用更改的认证详情（角色/作用域/公钥）重试，请在批准前重新运行 `openclaw devices list` 并批准当前的 `requestId`。
+如果 node 使用更改的认证详情重试，请在批准前重新运行 `openclaw devices list` 并批准当前的 `requestId`。
 
 命名选项：
 

@@ -1,29 +1,39 @@
 ---
 title: "网关锁定"
 sidebarTitle: "网关锁定"
-mmh3_hash: "068c20c24d9b75eb9eb7d763a7fa3878"
+mmh3_hash: "2aa41845a73e4a6160c474cf80252c11"
 summary: "使用 WebSocket 监听器绑定的 Gateway 单例守护"
-read_when: ["运行或调试 gateway 进程","调查单实例强制执行"]
+read_when:
+  - 运行或调试 gateway 进程
+  - 调查单实例强制执行
 ---
+
 # 网关锁定
 
-最后更新:2025-12-11
-
 ## 为什么
-- 确保在同一主机上每个基础端口只运行一个 gateway 实例;额外的 gateways 必须使用隔离的配置文件和唯一的端口。
-- 在崩溃/SIGKILL 后存活,而不会留下过时的锁文件。
-- 当控制端口已被占用时,快速失败并提供清晰的错误。
+
+- 确保在同一主机上每个基础端口只运行一个 gateway 实例；额外的 gateways 必须使用隔离的配置文件和唯一的端口。
+- 在崩溃/SIGKILL 后存活，而不会留下过时的锁文件。
+- 当控制端口已被占用时，快速失败并提供清晰的错误。
 
 ## 机制
-- Gateway 在启动时立即使用独占 TCP 监听器绑定 WebSocket 监听器(默认 `ws://127.0.0.1:18789`)。
-- 如果绑定失败并出现 `EADDRINUSE`,启动会抛出 `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`。
-- 操作系统在任何进程退出时自动释放监听器,包括崩溃和 SIGKILL—不需要单独的锁文件或清理步骤。
-- 关闭时,gateway 关闭 WebSocket 服务器和底层 HTTP 服务器以立即释放端口。
+
+- Gateway 在启动时立即使用独占 TCP 监听器绑定 WebSocket 监听器（默认 `ws://127.0.0.1:18789`）。
+- 如果绑定失败并出现 `EADDRINUSE`，启动会抛出 `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`。
+- 操作系统在任何进程退出时自动释放监听器，包括崩溃和 SIGKILL——不需要单独的锁文件或清理步骤。
+- 关闭时，gateway 关闭 WebSocket 服务器和底层 HTTP 服务器以立即释放端口。
 
 ## 错误 surface
-- 如果另一个进程持有端口,启动会抛出 `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`。
+
+- 如果另一个进程持有端口，启动会抛出 `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`。
 - 其他绑定失败会显示为 `GatewayLockError("failed to bind gateway socket on ws://127.0.0.1:<port>: …")`。
 
 ## 操作注意事项
-- 如果端口被 *另一个* 进程占用,错误是相同的;释放端口或使用 `openclaw gateway --port <port>` 选择另一个端口。
-- macOS 应用程序在生成 gateway 之前仍然维护自己的轻量级 PID 守护;运行时锁由 WebSocket 绑定强制执行。
+
+- 如果端口被_另一个_进程占用，错误是相同的；释放端口或使用 `openclaw gateway --port <port>` 选择另一个端口。
+- macOS 应用程序在生成 gateway 之前仍然维护自己的轻量级 PID 守护；运行时锁由 WebSocket 绑定强制执行。
+
+## 相关
+
+- [多个 Gateway](/gateway/multiple-gateways) — 使用唯一端口运行多个实例
+- [故障排除](/gateway/troubleshooting) — 诊断 `EADDRINUSE` 和端口冲突

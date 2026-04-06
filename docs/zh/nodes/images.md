@@ -1,7 +1,7 @@
 ---
 title: "图像与媒体支持"
 sidebarTitle: "图像与媒体"
-mmh3_hash: "6dd574d2da22dc4ce69cbb4e131686ed"
+mmh3_hash: "645169322da91a7c2f73ec2465da9be2"
 summary: "发送、Gateway 和 Agent 回复的图像和媒体处理规则"
 read_when:
   - 修改媒体管道或附件时
@@ -25,7 +25,7 @@ WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、
 
 ## WhatsApp Web 频道行为
 
-- 输入：本地文件路径 **或** HTTP(S) URL。
+- 输入：本地文件路径**或** HTTP(S) URL。
 - 流程：加载到 Buffer，检测媒体种类，并构建正确的载荷：
   - **图像：** 调整大小并重新压缩为 JPEG（最大边长 2048px），目标为 `channels.whatsapp.mediaMaxMb`（默认：50 MB）。
   - **音频/语音/视频：** 透传高达 16 MB；音频作为语音笔记发送（`ptt: true`）。

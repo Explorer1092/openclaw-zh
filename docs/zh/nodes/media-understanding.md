@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ad111073fdee56a7d95a28de23fb736e"
+mmh3_hash: "d177ce43941b5cb8c22b6a44d5ce0ecb"
 summary: "入站图像/音频/视频理解（可选），带有 provider + CLI 回退"
 read_when:
   - 设计或重构媒体理解
@@ -73,7 +73,7 @@ OpenClaw 可以在回复管道运行之前**总结入站媒体**（图像/音频
 
 ### 模型条目
 
-每个 `models[]` 条目可以是 **provider（提供商）** 或 **CLI**：
+每个 `models[]` 条目可以是 **provider** 或 **CLI**：
 
 ```json5
 {
@@ -132,7 +132,7 @@ CLI 模板还可以使用：
 - 如果模型返回超过 `maxChars`，输出会被修剪。
 - `prompt` 默认为简单的 "Describe the {media}." 加上 `maxChars` 指导（仅图像/视频）。
 - 如果活动的主图像模型已经原生支持视觉，OpenClaw 会跳过 `[Image]` 摘要块，直接将原始图像传递给模型。
-- 如果 `<capability>.enabled: true` 但未配置模型，OpenClaw 尝试**活动回复模型**（当其提供商支持该功能时）。
+- 如果 `<capability>.enabled: true` 但未配置模型，OpenClaw 尝试**活动回复模型**（当其 provider 支持该功能时）。
 
 ### 自动检测媒体理解（默认）
 
@@ -147,7 +147,7 @@ CLI 模板还可以使用：
 4. **Gemini CLI**（`gemini`）使用 `read_many_files`
 5. **Provider 认证**
    - 配置的 `models.providers.*` 支持该功能的条目在捆绑的回退顺序之前尝试。
-   - 具有图像功能模型的仅图像配置提供商即使不是捆绑的供应商插件也会自动为媒体理解注册。
+   - 具有图像功能模型的仅图像配置 provider 即使不是捆绑的供应商插件也会自动为媒体理解注册。
    - 捆绑的回退顺序：
      - 音频：OpenAI → Groq → Deepgram → Google → Mistral
      - 图像：OpenAI → Anthropic → Google → MiniMax → MiniMax Portal → Z.AI
@@ -209,7 +209,7 @@ CLI 模板还可以使用：
 
 MiniMax 说明：
 
-- `minimax` 和 `minimax-portal` 图像理解来自插件拥有的 `MiniMax-VL-01` 媒体提供商。
+- `minimax` 和 `minimax-portal` 图像理解来自插件拥有的 `MiniMax-VL-01` 媒体 provider。
 - 捆绑的 MiniMax 文本目录仍然从仅文本开始；显式 `models.providers.minimax` 条目具体化了图像功能的 M2.7 聊天引用。
 
 ## 模型选择指南
@@ -394,7 +394,7 @@ MiniMax 说明：
 📎 Media: image ok (openai/gpt-5.4-mini) · audio skipped (maxBytes)
 ```
 
-这显示了适用的每个功能的结果和选择的提供商/模型。
+这显示了适用的每个功能的结果和选择的 provider/模型。
 
 ## 说明
 

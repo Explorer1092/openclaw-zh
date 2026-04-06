@@ -1,6 +1,6 @@
 ---
 title: "音频与语音笔记"
-mmh3_hash: "54f617bf193be7070716fad329289889"
+mmh3_hash: "ccd0a04c1ab17d747e04d7175d13331f"
 summary: "入站音频/语音笔记如何下载、转录并注入到回复中"
 read_when:
   - 更改音频转录或媒体处理时
@@ -181,7 +181,7 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 - 将 `channels.telegram.groups.<chatId>.topics.<threadId>.disableAudioPreflight` 设置为按话题覆盖（`true` 跳过，`false` 强制启用）。
 - 默认为 `false`（当满足提及门控条件时启用预检）。
 
-**示例：** 用户在设置了 `requireMention: true` 的 Telegram 群组中发送语音笔记，说"嘿 @Claude，今天天气怎么样？" 语音笔记被转录，检测到提及，Agent 回复。
+**示例：** 用户在设置了 `requireMention: true` 的 Telegram 群组中发送语音笔记，说"嘿 @Claude，今天天气怎么样？"语音笔记被转录，检测到提及，Agent 回复。
 
 ## 常见问题
 
