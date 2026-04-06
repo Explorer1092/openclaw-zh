@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "86c84c68c6ecf33a5b2694b016afe4dc"
+mmh3_hash: "387017f4f42bb6e62b8c754b1499b05f"
 title: "Pi 集成架构"
 summary: "OpenClaw 嵌入式 Pi Agent 集成的架构和会话生命周期"
 read_when:
@@ -26,10 +26,10 @@ OpenClaw 使用 pi SDK 将 AI 编程智能体嵌入到其消息 Gateway 架构�
 
 ```json
 {
-  "@mariozechner/pi-agent-core": "0.61.1",
-  "@mariozechner/pi-ai": "0.61.1",
-  "@mariozechner/pi-coding-agent": "0.61.1",
-  "@mariozechner/pi-tui": "0.61.1"
+  "@mariozechner/pi-agent-core": "0.64.0",
+  "@mariozechner/pi-ai": "0.64.0",
+  "@mariozechner/pi-coding-agent": "0.64.0",
+  "@mariozechner/pi-tui": "0.64.0"
 }
 ```
 
@@ -89,7 +89,7 @@ src/agents/
 ├── pi-tools.types.ts              # AnyAgentTool 类型别名
 ├── pi-tool-definition-adapter.ts  # AgentTool -> ToolDefinition 适配器
 ├── pi-settings.ts                 # Settings 覆盖
-├── pi-extensions/                 # 自定义 pi 扩展
+├── pi-hooks/                      # 自定义 pi 扩展
 │   ├── compaction-safeguard.ts    # Safeguard 扩展
 │   ├── compaction-safeguard-runtime.ts
 │   ├── context-pruning.ts         # Cache-TTL 上下文修剪扩展
@@ -132,10 +132,10 @@ src/agents/
 
 渠道特定消息操作运行时现在位于插件拥有的扩展目录中，而不是 `src/agents/tools` 下，例如：
 
-- `extensions/discord/src/actions/runtime*.ts`
-- `extensions/slack/src/action-runtime.ts`
-- `extensions/telegram/src/action-runtime.ts`
-- `extensions/whatsapp/src/action-runtime.ts`
+- Discord 插件 action runtime 文件
+- Slack 插件 action runtime 文件
+- Telegram 插件 action runtime 文件
+- WhatsApp 插件 action runtime 文件
 
 ## 核心集成流程
 
@@ -154,7 +154,7 @@ const result = await runEmbeddedPiAgent({
   config: openclawConfig,
   prompt: "Hello, how are you?",
   provider: "anthropic",
-  model: "claude-sonnet-4-20250514",
+  model: "claude-sonnet-4-6",
   timeoutMs: 120_000,
   runId: "run-abc",
   onBlockReply: async (payload) => {
@@ -324,7 +324,7 @@ trackSessionManagerAccess(params.sessionFile);
 
 ### 压缩
 
-上下文溢出时会触发自动压缩。`compactEmbeddedPiSessionDirect()` 处理手动压缩：
+上下文溢出时会触发自动压缩。常见的溢出特征包括 `request_too_large`、`context length exceeded`、`input exceeds the maximum number of tokens`、`input token count exceeds the maximum number of input tokens`、`input is too long for the model` 以及 `ollama error: context length exceeded`。`compactEmbeddedPiSessionDirect()` 处理手动压缩：
 
 ```typescript
 const compactResult = await compactEmbeddedPiSessionDirect({
@@ -388,7 +388,7 @@ OpenClaw 加载自定义 pi 扩展以实现专门的行为：
 
 ### 压缩保护
 
-`src/agents/pi-extensions/compaction-safeguard.ts` 为压缩添加护栏，包括自适应令牌预算以及工具失败和文件操作摘要：
+`src/agents/pi-hooks/compaction-safeguard.ts` 为压缩添加护栏，包括自适应令牌预算以及工具失败和文件操作摘要：
 
 ```typescript
 if (resolveCompactionMode(params.cfg) === "safeguard") {
@@ -399,7 +399,7 @@ if (resolveCompactionMode(params.cfg) === "safeguard") {
 
 ### 上下文修剪
 
-`src/agents/pi-extensions/context-pruning.ts` 实现基于缓存 TTL 的上下文修剪：
+`src/agents/pi-hooks/context-pruning.ts` 实现基于缓存 TTL 的上下文修剪：
 
 ```typescript
 if (cfg?.agents?.defaults?.contextPruning?.mode === "cache-ttl") {
@@ -496,13 +496,11 @@ if (sandboxRoot) {
 
 - 拒绝魔术字符串清理
 - 连续角色的轮次验证
-- Claude Code 参数兼容性
+- 严格的上游 Pi 工具参数验证
 
 ### Google/Gemini
 
-- 轮次排序修复（`applyGoogleTurnOrderingFix`）
-- 工具模式清理（`sanitizeToolsForGoogle`）
-- Session 历史清理（`sanitizeSessionHistory`）
+- 插件拥有的工具模式清理
 
 ### OpenAI
 
@@ -556,7 +554,7 @@ Pi 集成覆盖涵盖以下套件：
 - `src/agents/pi-tools*.test.ts`
 - `src/agents/pi-tool-definition-adapter*.test.ts`
 - `src/agents/pi-settings.test.ts`
-- `src/agents/pi-extensions/**/*.test.ts`
+- `src/agents/pi-hooks/**/*.test.ts`
 
 实时/选择加入：
 

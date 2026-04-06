@@ -1,6 +1,6 @@
 ---
 title: "BOOT.md 模板"
-mmh3_hash: "5457a23f160b8e63970640e408a717ff"
+mmh3_hash: "dd577309beef24b1ca607a7b8f25ef61"
 summary: "BOOT.md 的工作区模板"
 read_when:
   - 添加 BOOT.md 清单

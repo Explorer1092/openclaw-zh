@@ -1,6 +1,6 @@
 ---
 title: "SOUL.md 模板"
-mmh3_hash: "403cca2dfa1f6e5d5c99eaa576ef5050"
+mmh3_hash: "a3a5c7f9a9cf589ce6b664998fd7cf66"
 summary: "SOUL.md 的工作区模板"
 read_when:
   - 手动初始化工作区时

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "f663e106fdd84b1a3469b36ee3e1cc09"
 title: "AGENTS.md 模板"
 summary: "AGENTS.md 的工作区模板"
 read_when:

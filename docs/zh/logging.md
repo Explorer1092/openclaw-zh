@@ -1,6 +1,6 @@
 ---
 title: "日志记录"
-mmh3_hash: "9303b372d20a6504de5e3618bf073f02"
+mmh3_hash: "202cfa5b83ebc3a52e061a710c6407b2"
 summary: "日志记录概述：文件日志、控制台输出、CLI 跟踪和控制 UI"
 read_when:
   - 您需要日志记录的初学者友好概述
@@ -45,6 +45,12 @@ OpenClaw 在两个地方记录日志：
 openclaw logs --follow
 ```
 
+当前可用选项：
+
+- `--local-time`：以您的本地时区渲染时间戳
+- `--url <url>` / `--token <token>` / `--timeout <ms>`：标准 Gateway RPC 标志
+- `--expect-final`：Agent 支持的 RPC 最终响应等待标志（通过共享客户端层在此处接受）
+
 输出模式：
 
 - **TTY 会话**：漂亮、彩色、结构化的日志行。
@@ -59,6 +65,8 @@ openclaw logs --follow
 - `log`：已解析的日志条目
 - `notice`：截断/轮转提示
 - `raw`：未解析的日志行
+
+如果本地环回 Gateway 请求配对，`openclaw logs` 会自动回退到配置的本地日志文件。显式 `--url` 目标不使用此回退。
 
 如果 Gateway 不可访问，CLI 会打印简短提示以运行：
 
@@ -95,6 +103,23 @@ openclaw channels logs --channel whatsapp
 
 控制台格式由 `logging.consoleStyle` 控制。
 
+### Gateway WebSocket 日志
+
+`openclaw gateway` 还有针对 RPC 流量的 WebSocket 协议日志：
+
+- 正常模式：仅记录有趣的结果（错误、解析错误、慢调用）
+- `--verbose`：所有请求/响应流量
+- `--ws-log auto|compact|full`：选择详细渲染风格
+- `--compact`：`--ws-log compact` 的别名
+
+示例：
+
+```bash
+openclaw gateway
+openclaw gateway --verbose --ws-log compact
+openclaw gateway --verbose --ws-log full
+```
+
 ## 配置日志记录
 
 所有日志配置位于 `~/.openclaw/openclaw.json` 中的 `logging` 下。
@@ -119,7 +144,7 @@ openclaw channels logs --channel whatsapp
 
 您可以通过 **`OPENCLAW_LOG_LEVEL`** 环境变量覆盖两者（例如 `OPENCLAW_LOG_LEVEL=debug`）。环境变量优先于配置文件，因此您可以为单次运行提高详细程度而无需编辑 `openclaw.json`。您也可以传递全局 CLI 选项 **`--log-level <level>`**（例如，`openclaw --log-level debug gateway run`），它会为该命令覆盖环境变量。
 
-`--verbose` 仅影响控制台输出；它不会更改文件日志级别。
+`--verbose` 仅影响控制台输出和 WS 日志详细程度；它不会更改文件日志级别。
 
 ### 控制台样式
 
@@ -324,3 +349,8 @@ OPENCLAW_DIAGNOSTICS=telegram.http,telegram.payload
 - **Gateway 不可访问？** 首先运行 `openclaw doctor`。
 - **日志为空？** 检查 Gateway 是否正在运行并写入 `logging.file` 中的文件路径。
 - **需要更多详细信息？** 将 `logging.level` 设置为 `debug` 或 `trace` 并重试。
+
+## 相关
+
+- [Gateway 日志内部机制](/gateway/logging) — WS 日志风格、子系统前缀和控制台捕获
+- [诊断](/gateway/configuration-reference#diagnostics) — OpenTelemetry 导出和缓存追踪配置

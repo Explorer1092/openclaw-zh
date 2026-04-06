@@ -1,15 +1,23 @@
 ---
-mmh3_hash: "f34c2b981eb498f2a58d488af19ac5f4"
+mmh3_hash: "efd9a637b0866f0bd3585af2f7cdabe2"
 ---
 # 生成的文档工件
 
-这些基准工件由仓库拥有的 OpenClaw 配置模式和捆绑的 Channel/插件元数据生成。
+SHA-256 哈希文件是被追踪的漂移检测工件。完整的 JSON 基准在本地生成（已在 .gitignore 中忽略），仅供检查使用。
 
-- 请勿手动编辑 `config-baseline.json`。
-- 请勿手动编辑 `config-baseline.jsonl`。
-- 请勿手动编辑 `plugin-sdk-api-baseline.json`。
-- 请勿手动编辑 `plugin-sdk-api-baseline.jsonl`。
-- 使用 `pnpm config:docs:gen` 重新生成配置基准工件。
-- 在 CI 中或使用 `pnpm config:docs:check` 在本地验证配置基准工件。
-- 使用 `pnpm plugin-sdk:api:gen` 重新生成 Plugin SDK API 基准工件。
-- 在 CI 中或使用 `pnpm plugin-sdk:api:check` 在本地验证 Plugin SDK API 基准工件。
+**已追踪（提交到 git）：**
+
+- `config-baseline.sha256` — 配置基准 JSON 工件的哈希。
+- `plugin-sdk-api-baseline.sha256` — Plugin SDK API 基准工件的哈希。
+
+**仅本地（已忽略）：**
+
+- `config-baseline.json`、`config-baseline.core.json`、`config-baseline.channel.json`、`config-baseline.plugin.json`
+- `plugin-sdk-api-baseline.json`、`plugin-sdk-api-baseline.jsonl`
+
+请勿手动编辑这些文件。
+
+- 重新生成配置基准：`pnpm config:docs:gen`
+- 验证配置基准：`pnpm config:docs:check`
+- 重新生成 Plugin SDK API 基准：`pnpm plugin-sdk:api:gen`
+- 验证 Plugin SDK API 基准：`pnpm plugin-sdk:api:check`

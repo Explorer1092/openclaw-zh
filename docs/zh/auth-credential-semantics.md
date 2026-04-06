@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "164af954b5ff8f6454d1e4715c7e172b"
+mmh3_hash: "5f849a8de49f1ec0fa39644512a4788a"
 title: "Auth 凭据语义"
 summary: "auth profile 的标准凭据资格与解析语义"
 read_when:
@@ -20,10 +20,12 @@ read_when:
 ## 稳定的原因代码
 
 - `ok`
+- `excluded_by_auth_order`
 - `missing_credential`
 - `invalid_expires`
 - `expired`
 - `unresolved_ref`
+- `no_model`
 
 ## Token 凭据
 
@@ -43,6 +45,23 @@ Token 凭据（`type: "token"`）支持内联 `token` 和/或 `tokenRef`。
 1. 解析器语义与 `expires` 的资格语义保持一致。
 2. 对于符合资格的 Profile，Token 材料可以从内联值或 `tokenRef` 中解析。
 3. 无法解析的引用会在 `models status --probe` 输出中产生 `unresolved_ref`。
+
+## 显式身份验证顺序过滤
+
+- 当为某个 Provider 设置了 `auth.order.<provider>` 或 auth-store 顺序覆盖时，`models status --probe` 仅探测保留在该 Provider 解析身份验证顺序中的 Profile ID。
+- 为该 Provider 存储但被排除在显式顺序之外的 Profile 不会在稍后静默尝试。Probe 输出以 `reasonCode: excluded_by_auth_order` 和详情 `Excluded by auth.order for this provider.` 报告它。
+
+## Probe 目标解析
+
+- Probe 目标可以来自 auth profiles、环境凭据或 `models.json`。
+- 如果 Provider 有凭据，但 OpenClaw 无法为其解析可探测的模型候选，`models status --probe` 会报告 `status: no_model`，`reasonCode: no_model`。
+
+## OAuth SecretRef 策略保护
+
+- SecretRef 输入仅用于静态凭据。
+- 如果 Profile 凭据为 `type: "oauth"`，则该 Profile 凭据材料不支持 SecretRef 对象。
+- 如果 `auth.profiles.<id>.mode` 为 `"oauth"`，则该 Profile 的 SecretRef 支持的 `keyRef`/`tokenRef` 输入将被拒绝。
+- 违规是启动/重新加载身份验证解析路径中的硬失败。
 
 ## 向下兼容的消息格式
 

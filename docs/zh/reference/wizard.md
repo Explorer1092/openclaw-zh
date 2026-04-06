@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8841d57ebaf332bef868e52f167d70ff"
+mmh3_hash: "e09b9b342e692a3d78da52d430f705a2"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志
@@ -28,12 +28,13 @@ sidebarTitle: "向导参考"
   </Step>
   <Step title="模型/身份验证">
     - **Anthropic API 密钥**：如果存在则使用 `ANTHROPIC_API_KEY`，或提示输入密钥，然后保存以供守护程序使用。
-    - **Anthropic OAuth（Claude Code CLI）**：在 macOS 上，向导检查 Keychain 项"Claude Code-credentials"（选择"始终允许"，以便 launchd 启动不会阻塞）；在 Linux/Windows 上，如果存在则重用 `~/.claude/.credentials.json`。
-    - **Anthropic 令牌（粘贴 setup-token）**：在任何机器上运行 `claude setup-token`，然后粘贴令牌（您可以命名它；空白 = 默认）。
-    - **OpenAI Code（Codex）订阅（Codex CLI）**：如果 `~/.codex/auth.json` 存在，向导可以重用它。
+    - **Anthropic API 密钥**：引导/配置中首选的 Anthropic 助手选项。
+    - **Anthropic 安装令牌（旧版/手动）**：在引导/配置中再次可用，但 Anthropic 告知 OpenClaw 用户，OpenClaw Claude 登录路径算作第三方工具使用，需要 Claude 账户的 **Extra Usage**。
+    - **OpenAI Code（Codex）订阅（Codex CLI）**：如果 `~/.codex/auth.json` 存在，向导可以重用它。重用的 Codex CLI 凭据继续由 Codex CLI 管理；到期时 OpenClaw 首先重新读取该来源，当 Provider 可以刷新时，将刷新的凭据写回 Codex 存储，而不是自行接管。
     - **OpenAI Code（Codex）订阅（OAuth）**：浏览器流程；粘贴 `code#state`。
-      - 当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.2`。
+      - 当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.4`。
     - **OpenAI API 密钥**：如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将其存储在身份验证配置文件中。
+      - 当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.4`。
     - **xAI（Grok）API 密钥**：提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。
     - **OpenCode**：提示输入 `OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`，在 https://opencode.ai/auth 获取），并让您选择 Zen 或 Go 目录。
     - **API 密钥**：为您存储密钥。
@@ -41,23 +42,26 @@ sidebarTitle: "向导参考"
     - 更多详情：[Vercel AI Gateway](/providers/vercel-ai-gateway)
     - **Cloudflare AI Gateway**：提示输入帐户 ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。
     - 更多详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-    - **Ollama**：提示输入 Ollama base URL，提供 **Cloud + Local** 或 **Local** 模式，发现可用模型，并在需要时自动拉取所选本地模型。
-    - 更多详情：[Ollama](/providers/ollama)
-    - **MiniMax**：配置自动写入；托管默认为 `MiniMax-M2.7`，`MiniMax-M2.5` 仍可用。
+    - **MiniMax**：配置自动写入；托管默认为 `MiniMax-M2.7`，API 密钥使用 `minimax/...`，OAuth 使用 `minimax-portal/...`。
     - 更多详情：[MiniMax](/providers/minimax)
+    - **StepFun**：为 StepFun 标准版或 Step Plan（中国或全球端点）自动写入配置。
+    - 标准版目前包含 `step-3.5-flash`，Step Plan 还包含 `step-3.5-flash-2603`。
+    - 更多详情：[StepFun](/providers/stepfun)
     - **Synthetic（Anthropic 兼容）**：提示输入 `SYNTHETIC_API_KEY`。
     - 更多详情：[Synthetic](/providers/synthetic)
     - **Moonshot（Kimi K2）**：配置自动写入。
     - **Kimi Coding**：配置自动写入。
     - 更多详情：[Moonshot AI（Kimi + Kimi Coding）](/providers/moonshot)
+    - **Ollama**：提示输入 Ollama base URL，提供 **Cloud + Local** 或 **Local** 模式，发现可用模型，并在需要时自动拉取所选本地模型。
+    - 更多详情：[Ollama](/providers/ollama)
     - **Skip**：尚未配置身份验证。
     - 从检测到的选项中选择默认模型（或手动输入 Provider/模型）。为了获得最佳质量和降低提示注入风险，请选择您 Provider 堆栈中可用的最强最新一代模型。
     - 向导运行模型检查，如果配置的模型未知或缺少身份验证，则发出警告。
     - API 密钥存储模式默认为明文身份验证配置文件值。使用 `--secret-input-mode ref` 改为存储环境支持的引用（例如 `keyRef: { source: "env", provider: "default", id: "OPENAI_API_KEY" }`）。
-    - OAuth 凭据位于 `~/.openclaw/credentials/oauth.json`；身份验证配置文件位于 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`（API 密钥 + OAuth）。
+    - 身份验证配置文件位于 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`（API 密钥 + OAuth）。`~/.openclaw/credentials/oauth.json` 仅作为旧版导入来源。
     - 更多详情：[/concepts/oauth](/concepts/oauth)
     <Note>
-    无头/服务器提示：在具有浏览器的机器上完成 OAuth，然后将 `~/.openclaw/credentials/oauth.json`（或 `$OPENCLAW_STATE_DIR/credentials/oauth.json`）复制到 Gateway 主机。
+    无头/服务器提示：在具有浏览器的机器上完成 OAuth，然后将该 Agent 的 `auth-profiles.json`（例如 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`，或匹配的 `$OPENCLAW_STATE_DIR/...` 路径）复制到 Gateway 主机。`credentials/oauth.json` 仅作为旧版导入来源。
     </Note>
   </Step>
   <Step title="工作空间">
@@ -92,8 +96,8 @@ sidebarTitle: "向导参考"
     - DM 安全性：默认为配对。第一个 DM 发送代码；通过 `openclaw pairing approve <channel> <code>` 批准或使用白名单。
   </Step>
   <Step title="Web 搜索">
-    - 选择 Provider：Perplexity、Brave、Gemini、Grok 或 Kimi（或跳过）。
-    - 粘贴您的 API 密钥（QuickStart 从环境变量或现有配置中自动检测密钥）。
+    - 选择支持的 Provider，如 Brave、DuckDuckGo、Exa、Firecrawl、Gemini、Grok、Kimi、MiniMax Search、Ollama Web Search、Perplexity、SearXNG 或 Tavily（或跳过）。
+    - 支持 API 的 Provider 可以使用环境变量或现有配置快速设置；无需密钥的 Provider 使用其 Provider 特定的前提条件。
     - 使用 `--skip-search` 跳过。
     - 稍后配置：`openclaw configure --section web`。
   </Step>
@@ -169,7 +173,7 @@ Provider 特定的命令示例位于 [CLI 自动化](/start/wizard-cli-automatio
 ```bash
 openclaw agents add work \
   --workspace ~/.openclaw/workspace-work \
-  --model openai/gpt-5.2 \
+  --model openai/gpt-5.4 \
   --bind whatsapp:biz \
   --non-interactive \
   --json
@@ -202,9 +206,11 @@ Gateway 通过 RPC 暴露向导流程（`wizard.start`、`wizard.next`、`wizard
 - `tools.profile`（本地引导默认为 `"coding"` 如果未设置；保留现有的显式值）
 - `gateway.*`（模式、绑定、身份验证、Tailscale）
 - `session.dmScope`（行为详情：[CLI 引导参考](/start/wizard-cli-reference#outputs-and-internals)）
-- `channels.telegram.botToken`、`channels.discord.token`、`channels.signal.*`、`channels.imessage.*`
+- `channels.telegram.botToken`、`channels.discord.token`、`channels.matrix.*`、`channels.signal.*`、`channels.imessage.*`
 - Channel 白名单（Slack/Discord/Matrix/Microsoft Teams），当您在提示期间选择加入时（名称在可能的情况下解析为 ID）。
 - `skills.install.nodeManager`
+  - `setup --node-manager` 接受 `npm`、`pnpm` 或 `bun`。
+  - 手动配置仍可以通过直接设置 `skills.install.nodeManager` 使用 `yarn`。
 - `wizard.lastRunAt`
 - `wizard.lastRunVersion`
 - `wizard.lastRunCommit`

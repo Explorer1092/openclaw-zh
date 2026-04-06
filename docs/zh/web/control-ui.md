@@ -1,7 +1,7 @@
 ---
 title: "Control UI (浏览器)"
 sidebarTitle: "Control UI"
-mmh3_hash: "dc1166550015680e1d3af69c5a872bb4"
+mmh3_hash: "bd2f445934f9667b4a1fce7e36912359"
 summary: "Gateway 的基于浏览器的 Control UI（聊天、Node、配置）"
 read_when:
   - 您想从浏览器操作 Gateway
@@ -29,8 +29,10 @@ Control UI 是 Gateway 提供的小型 **Vite + Lit** 单页应用：
 
 - `connect.params.auth.token`
 - `connect.params.auth.password`
-  Dashboard 设置面板为当前浏览器标签会话和所选 Gateway URL 保留令牌；密码不会持久化。
-  引导向导默认生成 Gateway 令牌，因此在首次连接时在此处粘贴它。
+- 当 `gateway.auth.allowTailscale: true` 时的 Tailscale Serve 身份标头
+- 当 `gateway.auth.mode: "trusted-proxy"` 时的受信任代理身份标头
+
+Dashboard 设置面板为当前浏览器标签会话和所选 Gateway URL 保留令牌；密码不会持久化。引导向导通常在首次连接时生成 Gateway 令牌用于共享密钥认证，但当 `gateway.auth.mode` 为 `"password"` 时，密码认证也可以使用。
 
 ## 设备配对（首次连接）
 
@@ -68,9 +70,9 @@ openclaw devices approve <requestId>
 
 ## 语言支持
 
-Control UI 可以在首次加载时根据您的浏览器区域设置进行本地化，您也可以稍后从 Access 卡中的语言选择器进行覆盖。
+Control UI 可以在首次加载时根据您的浏览器区域设置进行本地化。要稍后覆盖，请打开 **Overview -> Gateway Access -> Language**。语言选择器位于 Gateway Access 卡中，而不是 Appearance 下。
 
-- 支持的区域设置：`en`、`zh-CN`、`zh-TW`、`pt-BR`、`de`、`es`
+- 支持的区域设置：`en`、`zh-CN`、`zh-TW`、`pt-BR`、`de`、`es`、`ja-JP`、`ko`、`fr`、`tr`、`uk`、`id`、`pl`
 - 非英语翻译在浏览器中延迟加载。
 - 选定的区域设置保存在浏览器存储中，并在未来访问时重用。
 - 缺少翻译的键会回退到英文。
@@ -79,9 +81,10 @@ Control UI 可以在首次加载时根据您的浏览器区域设置进行本地
 
 - 通过 Gateway WS 与模型聊天（`chat.history`、`chat.send`、`chat.abort`、`chat.inject`）
 - 在 Chat 中流式传输工具调用 + 实时工具输出卡（Agent 事件）
-- Channel：WhatsApp/Telegram/Discord/Slack + Plugin Channel（Mattermost 等）状态 + QR 登录 + 每 Channel 配置（`channels.status`、`web.login.*`、`config.patch`）
+- Channel：内置加上捆绑/外部 Plugin Channel 状态、QR 登录和每 Channel 配置（`channels.status`、`web.login.*`、`config.patch`）
 - 实例：在线状态列表 + 刷新（`system-presence`）
-- Session：列表 + 每 Session thinking/fast/verbose/reasoning 覆盖（`sessions.list`、`sessions.patch`）
+- Session：列表 + 每 Session 模型/thinking/fast/verbose/reasoning 覆盖（`sessions.list`、`sessions.patch`）
+- Dreams：Dreaming 状态、启用/禁用切换和 Dream Diary 阅读器（`doctor.memory.status`、`doctor.memory.dreamDiary`、`config.patch`）
 - Cron 作业：列表/添加/编辑/运行/启用/禁用 + 运行历史（`cron.*`）
 - Skill：状态、启用/禁用、安装、API 密钥更新（`skills.*`）
 - Node：列表 + 能力（`node.list`）
@@ -89,7 +92,10 @@ Control UI 可以在首次加载时根据您的浏览器区域设置进行本地
 - 配置：查看/编辑 `~/.openclaw/openclaw.json`（`config.get`、`config.set`）
 - 配置：使用验证应用 + 重启（`config.apply`）并唤醒最后活动的 Session
 - 配置写入包括基础哈希保护以防止覆盖并发编辑
-- 配置架构 + 表单呈现（`config.schema`，包括 Plugin + Channel 架构）；原始 JSON 编辑器仍然可用
+- 配置写入（`config.set`/`config.apply`/`config.patch`）同时对提交的配置有效载荷中的引用进行活跃 SecretRef 解析预检；未解析的活跃提交引用在写入前被拒绝
+- 配置架构 + 表单渲染（`config.schema` / `config.schema.lookup`，包括字段 `title` / `description`、匹配的 UI 提示、即时子项摘要、嵌套对象/通配符/数组/组合节点上的文档元数据，以及 Plugin + Channel 架构）；仅当快照具有安全的原始往返时，原始 JSON 编辑器才可用
+- 如果快照无法安全地以原始文本往返，Control UI 将强制使用表单模式并为该快照禁用原始模式
+- 结构化 SecretRef 对象值在表单文本输入中以只读方式渲染，以防止意外的对象到字符串损坏
 - 调试：状态/健康/模型快照 + 事件日志 + 手动 RPC 调用（`status`、`health`、`models.list`）
 - 日志：Gateway 文件日志的实时尾随，带过滤/导出（`logs.tail`）
 - 更新：运行包/git 更新 + 重启（`update.run`）并带有重启报告
@@ -110,6 +116,7 @@ Cron 作业面板注意事项：
 - `chat.send` 是**非阻塞的**：它立即确认 `{ runId, status: "started" }`，响应通过 `chat` 事件流式传输。
 - 使用相同的 `idempotencyKey` 重新发送在运行时返回 `{ status: "in_flight" }`，完成后返回 `{ status: "ok" }`。
 - `chat.history` 响应有大小限制以保证 UI 安全。当转录条目太大时，Gateway 可能截断长文本字段、省略大型元数据块，并用占位符替换超大消息（`[chat.history omitted: message too large]`）。
+- `chat.history` 还会从可见 assistant 文本中去除仅显示的内联指令标签（例如 `[[reply_to_*]]` 和 `[[audio_as_voice]]`）、纯文本工具调用 XML 有效载荷（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>`、`<function_calls>...</function_calls>` 和截断的工具调用块）以及泄漏的 ASCII/全角模型控制令牌，并省略整个可见文本仅为精确静默令牌 `NO_REPLY` / `no_reply` 的 assistant 条目。
 - `chat.inject` 将 assistant 注释附加到 Session 转录并广播 `chat` 事件以进行仅 UI 更新（无 Agent 运行，无 Channel 投递）。
 - 停止：
   - 点击 **Stop**（调用 `chat.abort`）
@@ -161,6 +168,12 @@ openclaw gateway --bind tailnet --token "$(openssl rand -hex 32)"
 浏览器在**非安全上下文**中运行并阻止 WebCrypto。默认情况下，OpenClaw **阻止**没有
 设备身份的 Control UI 连接。
 
+有文档记录的例外情况：
+
+- 带有 `gateway.controlUi.allowInsecureAuth=true` 的仅限 localhost 的不安全 HTTP 兼容性
+- 通过 `gateway.auth.mode: "trusted-proxy"` 成功的运营商 Control UI 认证
+- 紧急情况 `gateway.controlUi.dangerouslyDisableDeviceAuth=true`
+
 **推荐修复：** 使用 HTTPS（Tailscale Serve）或在本地打开 UI：
 
 - `https://<magicdns>/`（Serve）
@@ -198,6 +211,12 @@ openclaw gateway --bind tailnet --token "$(openssl rand -hex 32)"
 
 `dangerouslyDisableDeviceAuth` 禁用 Control UI 设备身份检查，是严重的安全降级。紧急
 使用后请迅速恢复。
+
+受信任代理注意事项：
+
+- 成功的受信任代理认证可以接受**运营商** Control UI 会话而无需设备身份
+- 这**不**延伸到 node 角色的 Control UI 会话
+- 同一主机环回反向代理仍然不满足受信任代理认证；请参见 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)
 
 有关 HTTPS 设置指导，请参见 [Tailscale](/gateway/tailscale)。
 
@@ -266,3 +285,9 @@ http://localhost:5173/?gatewayUrl=wss://<gateway-host>:18789#token=<gateway-toke
 ```
 
 远程访问设置详细信息：[远程访问](/gateway/remote)。
+
+## 相关
+
+- [Dashboard](/web/dashboard) — Gateway 仪表板
+- [WebChat](/web/webchat) — 基于浏览器的聊天界面
+- [TUI](/web/tui) — 终端用户界面

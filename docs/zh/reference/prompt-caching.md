@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1dae035ac4394dbc8f6465f0412ce225"
+mmh3_hash: "e004310841d503abae188609041f1665"
 title: "Prompt Caching"
 summary: "Prompt caching 配置项、合并顺序、Provider 行为及调优模式"
 read_when:

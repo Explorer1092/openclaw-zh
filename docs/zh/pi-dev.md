@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "66eef577e10f25bb46ed56aa84030555"
+mmh3_hash: "c386287ee64e66732e9a0d8ff1f09c2a"
 title: "Pi 开发工作流"
 summary: "Pi 集成的开发工作流：构建、测试和实时验证"
 read_when:
@@ -13,29 +13,28 @@ read_when:
 
 ## 类型检查和代码检查
 
-- 类型检查和构建: `pnpm build`
-- 代码检查: `pnpm lint`
-- 格式检查: `pnpm format`
-- 推送前的完整检查: `pnpm lint && pnpm build && pnpm test`
+- 默认本地门控：`pnpm check`
+- 构建门控：当变更可能影响构建输出、打包或延迟加载/模块边界时，运行 `pnpm build`
+- Pi 密集型变更的完整落地门控：`pnpm check && pnpm test`
 
 ## 运行 Pi 测试
 
 使用 Vitest 直接运行 pi 专项测试集：
 
 ```bash
-pnpm test -- \
+pnpm test \
   "src/agents/pi-*.test.ts" \
   "src/agents/pi-embedded-*.test.ts" \
   "src/agents/pi-tools*.test.ts" \
   "src/agents/pi-settings.test.ts" \
   "src/agents/pi-tool-definition-adapter*.test.ts" \
-  "src/agents/pi-extensions/**/*.test.ts"
+  "src/agents/pi-hooks/**/*.test.ts"
 ```
 
 要包含实际 Provider 行为的实时测试：
 
 ```bash
-OPENCLAW_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live.test.ts
+OPENCLAW_LIVE_TEST=1 pnpm test src/agents/pi-embedded-runner-extraparams.live.test.ts
 ```
 
 该脚本覆盖主要 Pi 单元套件：
@@ -45,7 +44,7 @@ OPENCLAW_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live
 - `src/agents/pi-tools*.test.ts`
 - `src/agents/pi-settings.test.ts`
 - `src/agents/pi-tool-definition-adapter.test.ts`
-- `src/agents/pi-extensions/*.test.ts`
+- `src/agents/pi-hooks/*.test.ts`
 
 ## 手动测试
 
@@ -67,13 +66,14 @@ OPENCLAW_LIVE_TEST=1 pnpm test -- src/agents/pi-embedded-runner-extraparams.live
 要重置所有内容：
 
 - `openclaw.json` 用于配置
-- `credentials/` 用于认证配置文件和令牌
+- `agents/<agentId>/agent/auth-profiles.json` 用于模型身份验证配置文件（API 密钥 + OAuth）
+- `credentials/` 用于仍在身份验证配置文件存储之外的 Provider/Channel 状态
 - `agents/<agentId>/sessions/` 用于 Agent 会话历史
-- `agents/<agentId>/sessions.json` 用于会话索引
+- `agents/<agentId>/sessions/sessions.json` 用于会话索引
 - `sessions/` 如果存在旧版路径
 - `workspace/` 如果你想要空白工作区
 
-如果只想重置会话，请删除该 Agent 的 `agents/<agentId>/sessions/` 和 `agents/<agentId>/sessions.json`。如果不想重新认证，请保留 `credentials/`。
+如果只想重置会话，请删除该 Agent 的 `agents/<agentId>/sessions/`。如果想保留认证，请保留 `agents/<agentId>/agent/auth-profiles.json` 和 `credentials/` 下的任何 Provider 状态。
 
 ## 参考资料
 

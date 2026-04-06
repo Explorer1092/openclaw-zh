@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1477dd1aebd5a92994a3c9c2e4452ec3"
+mmh3_hash: "f1eed30dedbaac4e66a94cd664c143e4"
 summary: "OpenProse: .prose 工作流、slash 命令和 OpenClaw 中的状态"
 read_when:
   - 您想运行或编写 .prose 工作流
@@ -30,7 +30,7 @@ openclaw plugins enable open-prose
 
 启用插件后重启 Gateway。
 
-开发/本地检出: `openclaw plugins install ./extensions/open-prose`
+开发/本地检出: `openclaw plugins install ./path/to/local/open-prose-plugin`
 
 相关文档: [插件](/tools/plugin)、[插件清单](/plugins/manifest)、[Skills](/tools/skills)。
 

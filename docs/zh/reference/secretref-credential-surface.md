@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7a93f30db2ab3689646ff69c68a0f6be"
+mmh3_hash: "9c82fc9b08f12c1ebf1702221ce8f360"
 summary: "SecretRef 凭据界面的规范支持与不支持范围"
 read_when:
   - 验证 SecretRef 凭据覆盖范围

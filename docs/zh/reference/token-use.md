@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "12ab6554e5b0d6917f1346a6e7adf80a"
+mmh3_hash: "14eafd3b7e9955a9ef294f7d0676a28b"
 summary: "OpenClaw 如何构建提示词上下文并报告令牌使用情况 + 成本"
 read_when:
   - 解释令牌使用情况、成本或上下文窗口
@@ -57,7 +57,19 @@ OpenClaw 在每次运行时组装自己的系统提示词。它包括：
 其他界面：
 
 - **TUI/Web TUI：**支持 `/status` + `/usage`。
-- **CLI：**`openclaw status --usage` 和 `openclaw channels list` 显示 Provider 配额窗口（不是每个响应的成本）。
+- **CLI：**`openclaw status --usage` 和 `openclaw channels list` 显示
+  标准化的 Provider 配额窗口（`X% 剩余`，而非每响应成本）。
+  当前支持使用量窗口的 Provider：Anthropic、GitHub Copilot、Gemini CLI、
+  OpenAI Codex、MiniMax、Xiaomi 和 z.ai。
+
+使用量界面在显示前标准化常见的 Provider 原生字段别名。
+对于 OpenAI 系 Responses 流量，包括 `input_tokens` /
+`output_tokens` 和 `prompt_tokens` / `completion_tokens`，因此传输特定字段名不会影响 `/status`、`/usage` 或 Session 摘要。
+Gemini CLI JSON 使用量同样被标准化：回复文本来自 `response`，
+`stats.cached` 映射到 `cacheRead`，当 CLI 省略显式 `stats.input` 字段时使用 `stats.input_tokens - stats.cached`。
+对于原生 OpenAI 系 Responses 流量，WebSocket/SSE 使用量别名同样被标准化，当 `total_tokens` 缺失或为 `0` 时，合计退回到标准化的 input + output。
+当当前 Session 快照较稀疏时，`/status` 和 `session_status` 也可以从最近的转录使用量日志中恢复 token/缓存计数器和活跃运行时模型标签。现有非零实时值仍然优先于转录回退值，较大的面向提示词的转录合计在存储合计缺失或更小时可以胜出。
+Provider 配额窗口的使用量认证来自 Provider 特定的 Hooks（如果可用）；否则 OpenClaw 回退到来自身份验证配置文件、环境变量或配置的匹配 OAuth/API 密钥凭据。
 
 ## 成本估算（显示时）
 

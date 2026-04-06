@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dee613a9b63148965c2780e1a745e48b"
+mmh3_hash: "bf5a14d62a86df1807ccc2beb19cf0f7"
 summary: "Gateway web surfaces: Control UI, 绑定模式和安全性"
 read_when:
   - 您想通过 Tailscale 访问 Gateway
@@ -95,14 +95,15 @@ openclaw gateway
 
 ## 安全说明
 
-- 默认情况下需要 Gateway 身份验证(令牌/密码或 Tailscale 身份标头)。
-- 非环回绑定仍然**需要**共享令牌/密码(`gateway.auth` 或 env)。
-- 向导默认生成 Gateway 令牌(即使在环回上)。
-- UI 发送 `connect.params.auth.token` 或 `connect.params.auth.password`。
-- 对于非环回 Control UI 部署,请明确设置 `gateway.controlUi.allowedOrigins`(完整源)。不设置时,Gateway 启动时默认拒绝。
-- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` 启用 Host 标头源回退模式,但这是一种危险的安全降级。
-- 使用 Serve 时,当 `gateway.auth.allowTailscale` 为 `true` 时,Tailscale 身份标头可以满足 Control UI/WebSocket 身份验证(不需要令牌/密码)。HTTP API 端点仍然需要令牌/密码。设置 `gateway.auth.allowTailscale: false` 以要求显式凭证。请参见 [Tailscale](/gateway/tailscale) 和 [安全性](/gateway/security)。此无令牌流程假设 Gateway 主机是受信任的。
-- `gateway.tailscale.mode: "funnel"` 需要 `gateway.auth.mode: "password"`(共享密码)。
+- 默认情况下需要 Gateway 身份验证（令牌、密码、受信任代理或启用时的 Tailscale Serve 身份标头）。
+- 非环回绑定仍然**需要** Gateway 认证。实际上，这意味着令牌/密码认证或带 `gateway.auth.mode: "trusted-proxy"` 的身份感知反向代理。
+- 向导默认创建共享密钥认证，通常生成 Gateway 令牌（即使在环回上）。
+- 在共享密钥模式下，UI 发送 `connect.params.auth.token` 或 `connect.params.auth.password`。
+- 在 Tailscale Serve 或 `trusted-proxy` 等身份标头模式下，WebSocket 认证检查从请求标头中满足。
+- 对于非环回 Control UI 部署，请明确设置 `gateway.controlUi.allowedOrigins`（完整源）。不设置时，Gateway 启动时默认拒绝。
+- `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` 启用 Host 标头源回退模式，但这是一种危险的安全降级。
+- 使用 Serve 时，当 `gateway.auth.allowTailscale` 为 `true` 时，Tailscale 身份标头可以满足 Control UI/WebSocket 身份验证（不需要令牌/密码）。HTTP API 端点不使用这些 Tailscale 身份标头；它们遵循 Gateway 的正常 HTTP 认证模式。设置 `gateway.auth.allowTailscale: false` 以要求显式凭证。请参见 [Tailscale](/gateway/tailscale) 和 [安全性](/gateway/security)。此无令牌流程假设 Gateway 主机是受信任的。
+- `gateway.tailscale.mode: "funnel"` 需要 `gateway.auth.mode: "password"`（共享密码）。
 
 ## 构建 UI
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "19011cb9009cb0ea5ac099243b428c57"
+mmh3_hash: "24c87fc80e173ff45cd545c3c572430f"
 title: "威胁模型（MITRE ATLAS）"
 summary: "映射到 MITRE ATLAS 框架的 OpenClaw 威胁模型"
 read_when:
@@ -587,12 +587,9 @@ T-EXEC-002 → T-EXFIL-001 → 外部渗漏
 | ----------------------------------- | ---------------------- | ---------- |
 | `src/infra/exec-approvals.ts`       | 命令批准逻辑           | **严重**   |
 | `src/gateway/auth.ts`               | Gateway 身份验证       | **严重**   |
-| `src/web/inbound/access-control.ts` | Channel 访问控制       | **严重**   |
 | `src/infra/net/ssrf.ts`             | SSRF 保护              | **严重**   |
 | `src/security/external-content.ts`  | 提示词注入缓解         | **严重**   |
 | `src/agents/sandbox/tool-policy.ts` | Tool 策略执行          | **严重**   |
-| `convex/lib/moderation.ts`          | ClawHub 审核           | **高**     |
-| `convex/lib/skillPublish.ts`        | Skill 发布流程         | **高**     |
 | `src/routing/resolve-route.ts`      | 会话隔离               | **中等**   |
 
 ### 7.3 词汇表

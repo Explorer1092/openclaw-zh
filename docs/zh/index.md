@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f9694eb81c4e539efdc37ab4ba50fcaa"
+mmh3_hash: "e8871606fb0f5640591c9dfd8f1df804"
 summary: "OpenClaw 是一个可在任何操作系统上运行的 AI agent 多通道 gateway。"
 read_when:
   - 向新人介绍 OpenClaw
@@ -26,8 +26,8 @@ title: "OpenClaw"
 > _"脱壳！脱壳！"_ — 来自一只太空龙虾，大概
 
 <p align="center">
-  <strong>适用于任何操作系统的 gateway，用于跨 WhatsApp、Telegram、Discord、iMessage 等的 AI agent。</strong><br />
-  发送消息，从口袋里获取 agent 响应。插件支持 Mattermost 等更多平台。
+  <strong>适用于任何操作系统的 gateway，用于跨 Discord、Google Chat、iMessage、Matrix、Microsoft Teams、Signal、Slack、Telegram、WhatsApp、Zalo 等的 AI agent。</strong><br />
+  发送消息，从口袋里获取 agent 响应。通过内置 Channel、捆绑 Channel 插件、WebChat 和移动节点运行单个 Gateway。
 </p>
 
 <Columns>
@@ -44,18 +44,18 @@ title: "OpenClaw"
 
 ## 什么是 OpenClaw?
 
-OpenClaw 是一个**自托管 gateway**，它将您最喜欢的聊天应用 — WhatsApp、Telegram、Discord、iMessage 等 — 连接到 AI 编码 agent，如 Pi。您在自己的机器（或服务器）上运行单个 Gateway 进程，它就成为您的消息应用和始终可用的 AI 助手之间的桥梁。
+OpenClaw 是一个**自托管 gateway**，它将您最喜欢的聊天应用和 Channel surfaces — 内置 Channel 加上捆绑或外部 Channel 插件，如 Discord、Google Chat、iMessage、Matrix、Microsoft Teams、Signal、Slack、Telegram、WhatsApp、Zalo 等 — 连接到 AI 编码 agent，如 Pi。您在自己的机器（或服务器）上运行单个 Gateway 进程，它就成为您的消息应用和始终可用的 AI 助手之间的桥梁。
 
 **适合谁？** 希望拥有可以随时随地发送消息的个人 AI 助手的开发人员和高级用户 — 无需放弃对数据的控制或依赖托管服务。
 
 **它有何不同？**
 
 - **自托管**：在您的硬件上运行，按您的规则
-- **多通道**：一个 Gateway 同时服务 WhatsApp、Telegram、Discord 等
+- **多通道**：一个 Gateway 同时服务内置 Channel 加上捆绑或外部 Channel 插件
 - **原生 Agent**：专为具有工具使用、会话、内存和多 agent 路由的编码 agent 而构建
 - **开源**：MIT 许可证，社区驱动
 
-**需要什么？** Node 24（推荐），或 Node 22 LTS（`22.16+`）以保持兼容性，来自您选择的 Provider 的 API 密钥，以及 5 分钟时间。为了最佳质量和安全性，请使用可用的最强最新一代模型。
+**需要什么？** Node 24（推荐），或 Node 22 LTS（`22.14+`）以保持兼容性，来自您选择的 Provider 的 API 密钥，以及 5 分钟时间。为了最佳质量和安全性，请使用可用的最强最新一代模型。
 
 ## 工作原理
 
@@ -75,10 +75,10 @@ Gateway 是会话、路由和通道连接的单一真实来源。
 
 <Columns>
   <Card title="多通道 gateway" icon="network">
-    使用单个 Gateway 进程支持 WhatsApp、Telegram、Discord 和 iMessage。
+    使用单个 Gateway 进程支持 Discord、iMessage、Signal、Slack、Telegram、WhatsApp、WebChat 等。
   </Card>
-  <Card title="插件通道" icon="plug">
-    使用扩展包添加 Mattermost 等更多通道。
+  <Card title="插件 Channel" icon="plug">
+    捆绑插件在正常当前版本中添加 Matrix、Nostr、Twitch、Zalo 等。
   </Card>
   <Card title="多 agent 路由" icon="route">
     每个 agent、workspace 或发送者的隔离会话。
@@ -165,8 +165,8 @@ Gateway 启动后打开浏览器控制 UI。
   <Card title="远程访问" href="/gateway/remote" icon="globe">
     SSH 和 tailnet 访问模式。
   </Card>
-  <Card title="通道" href="/channels/telegram" icon="message-square">
-    WhatsApp、Telegram、Discord 等的通道特定设置。
+  <Card title="Channel" href="/channels/telegram" icon="message-square">
+    Feishu、Microsoft Teams、WhatsApp、Telegram、Discord 等的 Channel 特定设置。
   </Card>
   <Card title="节点" href="/nodes" icon="smartphone">
     iOS 和 Android 节点，支持配对、Canvas、相机和设备操作。

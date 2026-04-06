@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "df4e31a30351140b0ef0f92ac07ba2b2"
 title: "发布策略"
 summary: "公开发布渠道、版本命名和发布节奏"
 read_when:

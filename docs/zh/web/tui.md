@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4c483b15414d5cd6b615b035bbd41d54"
+mmh3_hash: "5ec1e8f580494957a450c8b16be17206"
 summary: "Terminal UI（TUI）：从任何机器连接到 Gateway"
 read_when:
   - 您想要 TUI 的入门友好演练
@@ -38,7 +38,7 @@ openclaw tui --url ws://<host>:<port> --token <gateway-token>
 - 标题：连接 URL、当前 Agent、当前会话。
 - 聊天日志：用户消息、助手回复、系统通知、工具卡片。
 - 状态行：连接/运行状态（连接中、运行中、流式传输中、空闲、错误）。
-- 页脚：连接状态 + Agent + Session + 模型 + think/verbose/reasoning + 令牌计数 + 传递。
+- 页脚：连接状态 + Agent + Session + 模型 + think/fast/verbose/reasoning + 令牌计数 + 传递。
 - 输入：带自动完成的文本编辑器。
 
 ## 心智模型：Agents + Sessions
@@ -93,6 +93,7 @@ openclaw tui --url ws://<host>:<port> --token <gateway-token>
 Session 控制：
 
 - `/think <off|minimal|low|medium|high>`
+- `/fast <status|on|off>`
 - `/verbose <on|full|off>`
 - `/reasoning <on|off|stream>`
 - `/usage <off|tokens|full>`
@@ -148,7 +149,9 @@ Session 生命周期：
 - `--session <key>`：Session 键（默认：`main`，或范围为 global 时为 `global`）
 - `--deliver`：将助手回复传递到 Provider（默认关闭）
 - `--thinking <level>`：覆盖发送的思考级别
+- `--message <text>`：连接后发送初始消息
 - `--timeout-ms <ms>`：Agent 超时（毫秒）（默认为 `agents.defaults.timeoutSeconds`）
+- `--history-limit <n>`：要加载的历史条目（默认 200）
 
 注意：当您设置 `--url` 时，TUI 不会回退到配置或环境凭据。明确传递 `--token` 或 `--password`。缺少明确凭据是错误。
 
@@ -160,10 +163,14 @@ Session 生命周期：
 - 检查 Gateway 日志：`openclaw logs --follow`。
 - 确认 Agent 可以运行：`openclaw status` 和 `openclaw models status`。
 - 如果您期望聊天 Channel 中的消息，请启用传递（`/deliver on` 或 `--deliver`）。
-- `--history-limit <n>`：要加载的历史条目（默认 200）
 
 ## 连接故障排除
 
 - `disconnected`：确保 Gateway 正在运行，并且您的 `--url/--token/--password` 正确。
 - 选择器中没有 Agents：检查 `openclaw agents list` 和您的路由配置。
 - Session 选择器为空：您可能处于全局范围或尚未有会话。
+
+## 相关
+
+- [Control UI](/web/control-ui) — 基于 Web 的控制界面
+- [CLI 参考](/cli) — 完整 CLI 命令参考

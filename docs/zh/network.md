@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9b68e94c181ec943e8a46731df6c4f4c"
+mmh3_hash: "0b697e413a925a1a0b387420db6a6ab0"
 summary: "网络中心: gateway 界面、配对、发现和安全"
 read_when:
   - 您需要网络架构 + 安全概述
@@ -14,6 +14,15 @@ title: "网络"
 
 ## 核心模型
 
+大多数操作通过 Gateway（`openclaw gateway`）流动，这是一个拥有 Channel 连接和 WebSocket 控制平面的单一长运行进程。
+
+- **环回优先**：Gateway WS 默认为 `ws://127.0.0.1:18789`。非环回绑定需要有效的 Gateway 认证路径：共享密钥令牌/密码认证，或正确配置的非环回 `trusted-proxy` 部署。
+- **推荐每台主机一个 Gateway**。为了隔离，请使用隔离的配置文件和端口运行多个 Gateway（[多个 Gateway](/gateway/multiple-gateways)）。
+- **Canvas host** 与 Gateway 在同一端口提供（`/__openclaw__/canvas/`、`/__openclaw__/a2ui/`），在超出环回绑定时受 Gateway 认证保护。
+- **远程访问** 通常通过 SSH 隧道或 Tailscale VPN（[远程访问](/gateway/remote)）。
+
+关键参考：
+
 - [Gateway 架构](/concepts/architecture)
 - [Gateway 协议](/gateway/protocol)
 - [Gateway 运行手册](/gateway)
@@ -26,10 +35,11 @@ title: "网络"
 - [设备 CLI (配对 + 令牌轮换)](/cli/devices)
 - [配对 CLI (DM 批准)](/cli/pairing)
 
-本地信任:
+本地信任：
 
-- 本地连接(loopback 或 gateway 主机自己的 tailnet 地址)可以自动批准配对,以保持同主机 UX 流畅。
-- 非本地 tailnet/LAN 客户端仍需要显式配对批准。
+- 直接本地环回连接可以自动批准配对，以保持同主机 UX 流畅。
+- OpenClaw 也为受信任的共享密钥助手流程提供了一条窄的后端/容器本地自连接路径。
+- Tailnet 和 LAN 客户端，包括同主机 tailnet 绑定，仍然需要显式配对批准。
 
 ## 发现 + 传输
 

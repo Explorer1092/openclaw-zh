@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "59a5706978a4473e2820199ba9ac1d2b"
+mmh3_hash: "517e238c73bd1f1b256fc3639f4f908a"
 summary: "在 Linux 服务器或云 VPS 上运行 OpenClaw — 提供商选择、架构和调优"
 read_when:
   - 您想在 Linux 服务器或云 VPS 上运行 Gateway
@@ -92,10 +92,10 @@ source ~/.bashrc
   - `TimeoutStartSec=90`
 - 首选 SSD 支持的磁盘用于状态/缓存路径，以减少随机 I/O 冷启动惩罚。
 
-示例：
+对于标准的 `openclaw onboard --install-daemon` 路径，编辑用户单元：
 
 ```bash
-sudo systemctl edit openclaw
+systemctl --user edit openclaw-gateway.service
 ```
 
 ```ini
@@ -106,6 +106,8 @@ Restart=always
 RestartSec=2
 TimeoutStartSec=90
 ```
+
+如果您有意安装了系统单元，请通过 `sudo systemctl edit openclaw-gateway.service` 编辑 `openclaw-gateway.service`。
 
 `Restart=` 策略如何帮助自动化恢复：
 [systemd 可以自动化服务恢复](https://www.redhat.com/en/blog/systemd-automate-recovery)。

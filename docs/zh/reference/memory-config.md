@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6843c8e314704ea525b511b6b82ac345"
+mmh3_hash: "f34581724153423ac5d711258028602a"
 title: "记忆配置参考"
 summary: "记忆搜索、嵌入 Provider、QMD、混合搜索和多模态索引的所有配置选项"
 read_when:

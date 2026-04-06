@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6ba49c4408086170b4a3b3272f819537"
+mmh3_hash: "2a101d0181241cc7dc2cb8e95d2615bd"
 summary: "如何在本地运行测试（vitest）以及何时使用 force/coverage 模式"
 read_when:
   - 运行或修复测试
