@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d57a51e59cdbebdf732f7d7996e0dac4"
+mmh3_hash: "dab63912ac54e8759dc2aedaadba2c76"
 summary: "OpenClaw 如何将之前的 Matrix 插件就地升级，包括加密状态恢复限制和手动恢复步骤。"
 read_when:
   - 升级现有的 Matrix 安装

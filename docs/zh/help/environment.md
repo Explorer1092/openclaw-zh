@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8b513d72daa02f6929f66852f9f6af7e"
+mmh3_hash: "a294d93ff251562b9c96961118aaffe6"
 summary: "OpenClaw 加载环境变量的位置和优先级顺序"
 read_when:
   - 您需要知道加载哪些环境变量,以及按什么顺序
@@ -20,7 +20,9 @@ OpenClaw 从多个来源提取环境变量。规则是**永不覆盖现有值**�
 4. **配置 `env` 块**，位于 `~/.openclaw/openclaw.json`（仅在缺失时应用）。
 5. **可选的登录 Shell 导入**（`env.shellEnv.enabled` 或 `OPENCLAW_LOAD_SHELL_ENV=1`）,仅对缺失的预期键应用。
 
-如果配置文件完全缺失,则跳过步骤 4;如果启用,Shell 导入仍然运行。
+在使用默认状态目录的 Ubuntu 全新安装中，OpenClaw 还会将 `~/.config/openclaw/gateway.env` 作为全局 `.env` 之后的兼容性回退处理。如果两个文件都存在且不一致，OpenClaw 保留 `~/.openclaw/.env` 并打印警告。
+
+如果配置文件完全缺失，则跳过步骤 4；如果启用，Shell 导入仍然运行。
 
 ## 配置 `env` 块
 
@@ -127,7 +129,7 @@ OpenClaw 支持两种环境驱动的模式：
 <key>EnvironmentVariables</key>
 <dict>
   <key>OPENCLAW_HOME</key>
-  <string>/Users/kira</string>
+  <string>/Users/user</string>
 </dict>
 ```
 

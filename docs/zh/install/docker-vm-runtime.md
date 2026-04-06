@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8394813a993af4a0ec1a882e2763beb0"
+mmh3_hash: "35a7c53fce6d5d6ec308ef41276ca576"
 summary: "适用于长期运行 OpenClaw Gateway 主机的共享 Docker VM 运行时步骤"
 read_when:
   - 您正在使用 Docker 在云 VM 上部署 OpenClaw
@@ -111,18 +111,18 @@ docker compose logs -f openclaw-gateway
 
 OpenClaw 在 Docker 中运行，但 Docker 不是真相来源。所有长期状态必须在重启、重建和重新启动后保留。
 
-| 组件                | 位置                              | 持久化机制         | 注意事项                          |
-| ------------------- | --------------------------------- | ------------------ | --------------------------------- |
-| Gateway 配置        | `/home/node/.openclaw/`           | 主机卷挂载         | 包括 `openclaw.json`、令牌        |
-| 模型身份验证配置文件| `/home/node/.openclaw/`           | 主机卷挂载         | OAuth 令牌、API 密钥              |
-| Skill 配置          | `/home/node/.openclaw/skills/`    | 主机卷挂载         | Skill 级别状态                    |
-| Agent 工作空间      | `/home/node/.openclaw/workspace/` | 主机卷挂载         | 代码和 Agent 工件                 |
-| WhatsApp 会话       | `/home/node/.openclaw/`           | 主机卷挂载         | 保留 QR 登录                      |
-| Gmail 密钥环        | `/home/node/.openclaw/`           | 主机卷 + 密码      | 需要 `GOG_KEYRING_PASSWORD`       |
-| 外部二进制文件      | `/usr/local/bin/`                 | Docker 镜像        | 必须在构建时烘焙                  |
-| Node 运行时         | 容器文件系统                      | Docker 镜像        | 每次镜像构建时重建                |
-| OS 软件包           | 容器文件系统                      | Docker 镜像        | 不要在运行时安装                  |
-| Docker 容器         | 短暂                              | 可重启             | 可以安全销毁                      |
+| 组件                | 位置                                    | 持久化机制         | 注意事项                                                           |
+| ------------------- | --------------------------------------- | ------------------ | ------------------------------------------------------------------ |
+| Gateway 配置        | `/home/node/.openclaw/`                 | 主机卷挂载         | 包括 `openclaw.json`、`.env`                                       |
+| 模型身份验证配置文件| `/home/node/.openclaw/agents/`          | 主机卷挂载         | `agents/<agentId>/agent/auth-profiles.json`（OAuth、API 密钥）     |
+| Skill 配置          | `/home/node/.openclaw/skills/`          | 主机卷挂载         | Skill 级别状态                                                     |
+| Agent 工作空间      | `/home/node/.openclaw/workspace/`       | 主机卷挂载         | 代码和 Agent 工件                                                  |
+| WhatsApp 会话       | `/home/node/.openclaw/`                 | 主机卷挂载         | 保留 QR 登录                                                       |
+| Gmail 密钥环        | `/home/node/.openclaw/`                 | 主机卷 + 密码      | 需要 `GOG_KEYRING_PASSWORD`                                        |
+| 外部二进制文件      | `/usr/local/bin/`                       | Docker 镜像        | 必须在构建时烘焙                                                   |
+| Node 运行时         | 容器文件系统                            | Docker 镜像        | 每次镜像构建时重建                                                 |
+| OS 软件包           | 容器文件系统                            | Docker 镜像        | 不要在运行时安装                                                   |
+| Docker 容器         | 短暂                                    | 可重启             | 可以安全销毁                                                       |
 
 ## 更新
 

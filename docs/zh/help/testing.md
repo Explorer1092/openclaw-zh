@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ffde88d81952af9c7efa6f112ed0098a"
+mmh3_hash: "286fd61e9b491da8749b01683dcf2f41"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
   - 在本地或 CI 中运行测试

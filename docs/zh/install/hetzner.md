@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "29c05d059f57226866241604fdf0e3da"
+mmh3_hash: "cb592b8c96b133acdff8fb891eb370d8"
 summary: "在廉价的 Hetzner VPS（Docker）上全天候运行 OpenClaw Gateway，具有持久状态和嵌入的二进制文件"
 read_when:
   - 您希望 OpenClaw 在云 VPS 上全天候运行（不是您的笔记本电脑）

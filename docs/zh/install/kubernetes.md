@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7d2878423eb09ac351a09fc4da57223d"
+mmh3_hash: "bf648d9fd2c651e5393b2caf768b63fb"
 summary: "使用 Kustomize 将 OpenClaw Gateway 部署到 Kubernetes 集群"
 read_when:
   - 您想在 Kubernetes 集群上运行 OpenClaw

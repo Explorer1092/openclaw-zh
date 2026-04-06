@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "da55b1fa20b50ea6c2aa504fb51eb5bf"
+mmh3_hash: "c2e3cfdf88b76d3f21bbf2d8af3f3f34"
 title: "Node.js"
 summary: "安装和配置 Node.js 以供 OpenClaw 使用 — 版本要求、安装选项和 PATH 故障排除"
 read_when:
@@ -10,7 +10,7 @@ read_when:
 
 # Node.js
 
-OpenClaw 需要 **Node 22.16 或更高版本**。**Node 24 是安装、CI 和发布工作流的默认和推荐运行时。** Node 22 通过活跃的 LTS 线仍受支持。[安装程序脚本](/install#install-methods)将自动检测和安装 Node — 本页适用于您想自行设置 Node 并确保一切正确连接（版本、PATH、全局安装）的情况。
+OpenClaw 需要 **Node 22.14 或更高版本**。**Node 24 是安装、CI 和发布工作流的默认和推荐运行时。** Node 22 通过活跃的 LTS 线仍受支持。[安装程序脚本](/install#install-methods)将自动检测和安装 Node — 本页适用于您想自行设置 Node 并确保一切正确连接（版本、PATH、全局安装）的情况。
 
 ## 检查您的版本
 

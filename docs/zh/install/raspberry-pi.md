@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f409af24b4f79726a13d7fe32038e22"
+mmh3_hash: "cabf3c84e9be7665f8dc16f4088526ec"
 summary: "在 Raspberry Pi 上托管 OpenClaw，实现始终在线的自托管"
 read_when:
   - 在 Raspberry Pi 上设置 OpenClaw

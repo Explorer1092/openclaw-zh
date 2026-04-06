@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f892d53fde2d323782e5a5c25d0b802"
+mmh3_hash: "232887ed864edfa942ec93b55404de3c"
 summary: "在 exe.dev（VM + HTTPS 代理）上运行 OpenClaw Gateway 以实现远程访问"
 read_when:
   - 你想要便宜的永久在线 Linux 主机来运行 Gateway
@@ -18,7 +18,7 @@ title: "exe.dev"
 1. [https://exe.new/openclaw](https://exe.new/openclaw)
 2. 根据需要填写你的身份验证密钥/令牌
 3. 点击 VM 旁边的"Agent"，等待 Shelley 完成配置
-4. 打开 `https://<vm-name>.exe.xyz/` 并粘贴你的 Gateway 令牌进行身份验证
+4. 打开 `https://<vm-name>.exe.xyz/` 并使用配置的共享密钥进行身份验证（本指南默认使用令牌认证，但如果你切换了 `gateway.auth.mode`，密码认证同样有效）
 5. 使用 `openclaw devices approve <requestId>` 批准所有待处理的设备配对请求
 
 ## 你需要准备
@@ -91,7 +91,7 @@ server {
         # 标准代理头
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header X-Forwarded-Proto $scheme;
 
         # 长连接的超时设置
@@ -100,6 +100,8 @@ server {
     }
 }
 ```
+
+覆盖转发头而非保留客户端提供的链接。OpenClaw 仅从明确配置的代理信任转发的 IP 元数据，而追加式 `X-Forwarded-For` 链被视为安全加固风险。
 
 ## 5) 访问 OpenClaw 并授予权限
 

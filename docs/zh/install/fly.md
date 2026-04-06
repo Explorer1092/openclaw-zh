@@ -1,7 +1,10 @@
 ---
-mmh3_hash: "7aa51ae23fac51293ae2fb840fda9eb2"
+mmh3_hash: "4ac3d711d8bdd2337c2bc4ac7e9ed277"
 title: Fly.io
-description: 在 Fly.io 上部署 OpenClaw
+summary: "在 Fly.io 上逐步部署 OpenClaw，支持持久存储和 HTTPS"
+read_when:
+  - 在 Fly.io 上部署 OpenClaw
+  - 设置 Fly 卷、密钥和首次运行配置
 ---
 
 # Fly.io 部署
@@ -22,7 +25,8 @@ description: 在 Fly.io 上部署 OpenClaw
 3. 使用 `fly deploy` 部署
 4. SSH 进入以创建配置或使用 Control UI
 
-## 1) 创建 Fly 应用
+<Steps>
+  <Step title="创建 Fly 应用">
 
 ```bash
 # 克隆仓库
@@ -106,7 +110,7 @@ fly secrets set DISCORD_BOT_TOKEN=MTQ...
 
 **注意：**
 
-- 非回环绑定（`--bind lan`）需要 `OPENCLAW_GATEWAY_TOKEN` 以确保安全。
+- 非回环绑定（`--bind lan`）需要有效的 Gateway 认证路径。此 Fly.io 示例使用 `OPENCLAW_GATEWAY_TOKEN`，但 `gateway.auth.password` 或正确配置的非回环 `trusted-proxy` 部署也满足该要求。
 - 将这些令牌视为密码。
 - **优先使用环境变量而不是配置文件**来存储所有 API 密钥和令牌。这将密钥保留在 `openclaw.json` 之外，在那里它们可能会意外暴露或记录。
 
@@ -150,7 +154,7 @@ cat > /data/openclaw.json << 'EOF'
     "defaults": {
       "model": {
         "primary": "anthropic/claude-opus-4-6",
-        "fallbacks": ["anthropic/claude-sonnet-4-5", "openai/gpt-4o"]
+        "fallbacks": ["anthropic/claude-sonnet-4-6", "openai/gpt-5.4"]
       },
       "maxConcurrent": 4
     },
@@ -189,9 +193,7 @@ cat > /data/openclaw.json << 'EOF'
     "mode": "local",
     "bind": "auto"
   },
-  "meta": {
-    "lastTouchedVersion": "2026.1.29"
-  }
+  "meta": {}
 }
 EOF
 ```
@@ -289,7 +291,7 @@ fly machine restart <machine-id>
 
 ### 配置未被读取
 
-如果使用 `--allow-unconfigured`，Gateway 会创建最小配置。您在 `/data/openclaw.json` 的自定义配置应在重启时被读取。
+`--allow-unconfigured` 只是绕过启动保护。它不会创建或修复 `/data/openclaw.json`，因此请确保你的真实配置存在，并在需要正常本地 Gateway 启动时包含 `gateway.mode="local"`。
 
 验证配置存在：
 
@@ -485,3 +487,9 @@ ngrok 隧道在容器内运行，并提供公共 Webhook URL，而不暴露 Fly 
 - 免费套餐包括一些津贴
 
 有关详细信息，请参阅 [Fly.io 定价](https://fly.io/docs/about/pricing/)。
+
+## 下一步
+
+- 设置消息 Channel：[Channel](/channels)
+- 配置 Gateway：[Gateway 配置](/gateway/configuration)
+- 保持 OpenClaw 最新：[更新](/install/updating)

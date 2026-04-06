@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7d733170f1da6626278b06e51a3c54cc"
+mmh3_hash: "276250a76328b8310a76539aa9135171"
 title: "迁移指南"
 sidebarTitle: "迁移"
 summary: "将 OpenClaw 安装从一台机器移动（迁移）到另一台机器"

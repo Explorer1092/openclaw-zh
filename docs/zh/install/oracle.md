@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e8b173748d2871374e0c526db6cb8b7b"
+mmh3_hash: "aaa84d94092cbd624e6213e62ca46c12"
 summary: "在 Oracle Cloud 永久免费 ARM 层上托管 OpenClaw"
 read_when:
   - 在 Oracle Cloud 上设置 OpenClaw

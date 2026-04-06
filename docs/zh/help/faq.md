@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "377e01d386c2ac68563277173fdb1a7a"
+mmh3_hash: "4da4248fee19011fb95dea024b4995e9"
 title: "常见问题解答"
 sidebarTitle: "常见问题"
 summary: "关于 OpenClaw 设置、配置和使用的常见问题解答"
@@ -703,43 +703,45 @@ openclaw update --no-restart
 
 不需要。你可以使用 **API keys**（Anthropic/OpenAI/其他）或使用**仅本地 models** 运行 OpenClaw，这样你的数据就保留在你的设备上。订阅（Claude Pro/Max 或 OpenAI Codex）是验证这些提供商的可选方式。
 
-文档：[Anthropic](/providers/anthropic)、[OpenAI](/providers/openai)、[Local models](/gateway/local-models)、[Models](/concepts/models)。
+对于 OpenClaw 中的 Anthropic，实际区别是：
+
+- **Anthropic API key**：正常的 Anthropic API 计费
+- **OpenClaw 中的 Claude 订阅 auth**：Anthropic 于 **2026 年 4 月 4 日 PT 时间下午 12:00 / BST 晚上 8:00** 通知 OpenClaw 用户，这需要单独计费的**额外使用**
+
+我们本地的复现也显示，当追加的提示标识了 OpenClaw 时，`claude -p --append-system-prompt ...` 会触发相同的额外使用限制，而在 Anthropic SDK + API key 路径上使用相同的提示字符串**不会**触发该限制。OpenAI Codex OAuth 明确支持在 OpenClaw 等外部工具中使用。
+
+OpenClaw 还支持其他托管订阅式选项，包括 **Qwen Cloud Coding Plan**、**MiniMax Coding Plan** 和 **Z.AI / GLM Coding Plan**。
+
+文档：[Anthropic](/providers/anthropic)、[OpenAI](/providers/openai)、[Qwen Cloud](/providers/qwen)、[MiniMax](/providers/minimax)、[GLM Models](/providers/glm)、[Local models](/gateway/local-models)、[Models](/concepts/models)。
 
 ### 我可以在没有 API key 的情况下使用 Claude Max 订阅吗
 
-可以。你可以使用 **setup-token** 代替 API key 进行身份验证。这是订阅路径。
+可以，但将其视为**需要额外使用的 Claude 订阅 auth**。
 
-Claude Pro/Max 订阅**不包括 API key**，所以这是订阅账户的技术路径。但对于生产环境或多用户工作负载，Anthropic API key auth 是更安全、推荐的选择。
-
-### Anthropic setup-token auth 如何工作
-
-`claude setup-token` 通过 Claude Code CLI 生成一个 **token 字符串**（它在 web 控制台中不可用）。你可以在**任何机器**上运行它。在 onboarding 中选择 **Anthropic token（粘贴 setup-token）**，或使用 `openclaw models auth paste-token --provider anthropic` 粘贴它。token 作为 **anthropic** provider 的 auth profile 存储，并像 API key 一样使用（无自动刷新）。更多详情：[OAuth](/concepts/oauth)。
-
-### 在哪里找到 Anthropic setup-token
-
-它**不**在 Anthropic Console 中。setup-token 由**任何机器**上的 **Claude Code CLI** 生成：
-
-```bash
-claude setup-token
-```
-
-复制它打印的 token，然后在 onboarding 中选择 **Anthropic token（粘贴 setup-token）**。参见 [Anthropic](/providers/anthropic)。
+Claude Pro/Max 订阅不包括 API key。在 OpenClaw 中，这意味着 Anthropic 特定的计费通知适用：订阅流量需要**额外使用**。如果你想要没有额外使用路径的 Anthropic 流量，请改用 Anthropic API key。
 
 ### 你支持 Claude 订阅 auth（Claude Pro 或 Max）吗
 
-是的——通过 **setup-token**。OpenClaw 不再重用 Claude Code CLI OAuth tokens；使用 setup-token 或 Anthropic API key。在任何地方生成 token 并在 gateway 主机上粘贴它。参见 [Anthropic](/providers/anthropic) 和 [OAuth](/concepts/oauth)。
+是的，但现在支持的解释是：
 
-重要：这是技术兼容性，不是策略保证。Anthropic 过去曾阻止 Claude Code 之外的某些订阅使用。对于生产或多用户工作负载，Anthropic API key auth 是更安全、推荐的选择。
+- OpenClaw 中使用订阅的 Anthropic 意味着**额外使用**
+- OpenClaw 中不使用该路径的 Anthropic 意味着 **API key**
+
+Anthropic setup-token 仍然作为旧版/手动的 OpenClaw 路径可用，Anthropic 的 OpenClaw 特定计费通知仍然适用。我们还本地复现了直接使用 `claude -p --append-system-prompt ...` 时出现的相同计费限制，当追加的提示标识了 OpenClaw 时，而在 Anthropic SDK + API key 路径上使用相同的提示字符串则**没有**出现该限制。
+
+对于生产环境或多用户工作负载，Anthropic API key auth 是更安全、推荐的选择。如果你想要 OpenClaw 中其他订阅式托管选项，请参阅 [OpenAI](/providers/openai)、[Qwen / Model Cloud](/providers/qwen)、[MiniMax](/providers/minimax) 和 [GLM Models](/providers/glm)。
 
 ### 为什么我看到来自 Anthropic 的 HTTP 429 rate_limit_error
 
-这意味着你的 **Anthropic 配额/速率限制**在当前窗口内已耗尽。如果你使用 **Claude 订阅**（setup-token），等待窗口重置或升级你的计划。如果你使用 **Anthropic API key**，请检查 Anthropic Console 的使用/账单并根据需要提高限制。
+这意味着你的 **Anthropic 配额/速率限制**在当前窗口内已耗尽。如果你使用 **Claude CLI**，等待窗口重置或升级你的计划。如果你使用 **Anthropic API key**，请检查 Anthropic Console 的使用/账单并根据需要提高限制。
 
-提示：设置**备用 model**，这样 OpenClaw 在 provider 受到速率限制时可以继续回复。参见 [Models](/cli/models) 和 [OAuth](/concepts/oauth)。
+如果消息具体是：`Extra usage is required for long context requests`，则请求正在尝试使用 Anthropic 的 1M 上下文 beta（`context1m: true`）。这仅在你的凭证符合长上下文计费资格时才有效（API key 计费或带额外使用的 OpenClaw Claude 登录路径）。
+
+提示：设置**备用 model**，这样 OpenClaw 在 provider 受到速率限制时可以继续回复。参见 [Models](/cli/models)、[OAuth](/concepts/oauth) 和 [/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context)。
 
 ### 支持 AWS Bedrock 吗
 
-是的——通过 pi-ai 的 **Amazon Bedrock (Converse)** provider 和**手动配置**。你必须在 gateway 主机上提供 AWS 凭证/区域，并在你的 models 配置中添加 Bedrock provider 条目。参见 [Amazon Bedrock](/providers/bedrock) 和 [Model providers](/providers/models)。
+是的。OpenClaw 有一个捆绑的 **Amazon Bedrock (Converse)** provider。有 AWS 环境标记时，OpenClaw 可以自动发现流式/文本 Bedrock 目录并将其合并为隐式的 `amazon-bedrock` provider；否则你可以明确启用 `plugins.entries.amazon-bedrock.config.discovery.enabled` 或添加手动 provider 条目。参见 [Amazon Bedrock](/providers/bedrock) 和 [Model providers](/providers/models)。如果你偏好托管的密钥流程，在 Bedrock 前放一个 OpenAI 兼容代理仍然是有效的选项。
 
 ### Codex auth 如何工作
 

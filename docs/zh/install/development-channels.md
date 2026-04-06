@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "286017540e13d6966509e1920ac3f8da"
+mmh3_hash: "bbe82a3859a7744875e2db34aee095d0"
 title: "发布频道"
 sidebarTitle: "发布频道"
 summary: "稳定版、测试版和开发版频道：语义、切换、固定版本和标记"
@@ -14,11 +14,11 @@ read_when:
 OpenClaw 发布三个更新频道：
 
 - **stable（稳定版）**：npm dist-tag `latest`。推荐大多数用户使用。
-- **beta（测试版）**：npm dist-tag `beta`（测试中的构建）。
+- **beta（测试版）**：npm dist-tag `beta`（当前时为 beta；如果 beta 缺失或比最新稳定版旧，更新流程将回退到 `latest`）。
 - **dev（开发版）**：`main`（git）的移动头。npm dist-tag：`dev`（当发布时）。
   `main` 分支用于实验和活跃开发。可能包含不完整的功能或破坏性变更。请勿将其用于生产 Gateway。
 
-我们将构建发布到 **beta**，测试它们，然后**将经过审查的构建提升到 `latest`** 而不更改版本号 —— dist-tags 是 npm 安装的事实来源。
+我们通常先将稳定构建发布到 **beta**，在那里测试，然后运行一个明确的晋升步骤，将经过审查的构建移动到 `latest` 而不更改版本号。维护者在需要时也可以直接发布稳定版本到 `latest`。Dist-tags 是 npm 安装的事实来源。
 
 ## 切换频道
 
@@ -30,8 +30,10 @@ openclaw update --channel dev
 
 `--channel` 会将你的选择持久化到配置中（`update.channel`）并对齐安装方法：
 
-- **`stable`/`beta`**（包安装）：通过匹配的 npm dist-tag 更新。
-- **`stable`/`beta`**（git 安装）：检出最新匹配的 git 标签。
+- **`stable`**（包安装）：通过 npm dist-tag `latest` 更新。
+- **`beta`**（包安装）：首选 npm dist-tag `beta`，但当 `beta` 缺失或比当前稳定标签旧时回退到 `latest`。
+- **`stable`**（git 安装）：检出最新稳定版 git 标签。
+- **`beta`**（git 安装）：首选最新 beta git 标签，但当 beta 缺失或比稳定版旧时回退到最新稳定标签。
 - **`dev`**：确保 git checkout（默认 `~/openclaw`，使用 `OPENCLAW_GIT_DIR` 覆盖），切换到 `main`，在上游进行变基，构建，并从该 checkout 安装全局 CLI。
 
 提示：如果你想要并行 stable + dev，保留两个克隆并将 Gateway 指向 stable 的那个。
@@ -42,7 +44,7 @@ openclaw update --channel dev
 
 ```bash
 # 安装特定版本
-openclaw update --tag 2026.3.22
+openclaw update --tag 2026.4.1-beta.1
 
 # 从 beta dist-tag 安装（一次性，不持久化）
 openclaw update --tag beta
@@ -51,7 +53,7 @@ openclaw update --tag beta
 openclaw update --tag main
 
 # 安装特定的 npm 包规范
-openclaw update --tag openclaw@2026.3.22
+openclaw update --tag openclaw@2026.4.1-beta.1
 ```
 
 注意：
@@ -59,6 +61,7 @@ openclaw update --tag openclaw@2026.3.22
 - `--tag` 仅适用于**包（npm）安装**。git 安装会忽略它。
 - 标签不持久化。下次 `openclaw update` 将按常规使用你配置的频道。
 - 降级保护：如果目标版本比当前版本旧，OpenClaw 会提示确认（使用 `--yes` 跳过）。
+- `--channel beta` 与 `--tag beta` 不同：频道流程可以在 beta 缺失或比最新稳定版旧时回退到 stable/latest，而 `--tag beta` 在该次运行中直接针对原始 `beta` dist-tag。
 
 ## 预演
 
@@ -67,7 +70,7 @@ openclaw update --tag openclaw@2026.3.22
 ```bash
 openclaw update --dry-run
 openclaw update --channel beta --dry-run
-openclaw update --tag 2026.3.22 --dry-run
+openclaw update --tag 2026.4.1-beta.1 --dry-run
 openclaw update --dry-run --json
 ```
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7b54e02e80d71f6f2baed1b0f81ebab3"
+mmh3_hash: "7327c54bac67ec4eaac74f76b0954ee6"
 summary: "安装 OpenClaw — 安装程序脚本、npm/pnpm、从源码、Docker 等"
 read_when:
   - 你需要入门快速入门之外的安装方法
@@ -46,13 +46,23 @@ title: "安装"
 
 ## 系统要求
 
-- **Node 24**（推荐）或 Node 22.16+ — 安装程序脚本会自动处理
+- **Node 24**（推荐）或 Node 22.14+ — 安装程序脚本会自动处理
 - **macOS、Linux 或 Windows** — 支持原生 Windows 和 WSL2；WSL2 更稳定。请参阅 [Windows](/platforms/windows)。
 - 仅在从源码构建时需要 `pnpm`
 
 ## 其他安装方法
 
-### npm 或 pnpm
+### 本地前缀安装程序（`install-cli.sh`）
+
+当你希望将 OpenClaw 和 Node 保留在本地前缀（如 `~/.openclaw`）下而不依赖系统级 Node 安装时使用：
+
+```bash
+curl -fsSL https://openclaw.ai/install-cli.sh | bash
+```
+
+它默认支持 npm 安装，以及在相同前缀流程下的 git checkout 安装。完整参考：[安装程序内部](/install/installer#install-clish)。
+
+### npm、pnpm 或 bun
 
 如果你已经自己管理 Node：
 
@@ -72,6 +82,17 @@ title: "安装"
 
     <Note>
     pnpm 需要对具有构建脚本的包进行显式批准。在第一次安装后运行 `pnpm approve-builds -g`。
+    </Note>
+
+  </Tab>
+  <Tab title="bun">
+    ```bash
+    bun add -g openclaw@latest
+    openclaw onboard --install-daemon
+    ```
+
+    <Note>
+    Bun 支持全局 CLI 安装路径。对于 Gateway 运行时，Node 仍是推荐的守护进程运行时。
     </Note>
 
   </Tab>
@@ -133,6 +154,12 @@ openclaw --version      # 确认 CLI 可用
 openclaw doctor         # 检查配置问题
 openclaw gateway status # 验证 Gateway 是否运行
 ```
+
+如果你想在安装后进行托管启动：
+
+- macOS：通过 `openclaw onboard --install-daemon` 或 `openclaw gateway install` 安装 LaunchAgent
+- Linux/WSL2：通过相同命令安装 systemd 用户服务
+- 原生 Windows：首先尝试计划任务，如果任务创建被拒绝则回退到每用户启动文件夹登录项
 
 ## 托管和部署
 

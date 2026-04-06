@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "34707321423c4208f32543f9dc1073fd"
+mmh3_hash: "00a37f2f611c0ef79cf059cd97fffa19"
 title: "Ansible"
 sidebarTitle: "Ansible"
 summary: "使用 Ansible、Tailscale VPN 和防火墙隔离实现自动化、强化的 OpenClaw 安装"
@@ -50,7 +50,7 @@ Ansible playbook 安装并配置：
 1. **Tailscale** -- 用于安全远程访问的网状 VPN
 2. **UFW 防火墙** -- 仅 SSH + Tailscale 端口
 3. **Docker CE + Compose V2** -- 用于 Agent 沙盒
-4. **Node.js 24 + pnpm** -- 运行时依赖（Node 22 LTS，目前为 `22.16+`，仍受支持以兼容）
+4. **Node.js 24 + pnpm** -- 运行时依赖（Node 22 LTS，目前为 `22.14+`，仍受支持）
 5. **OpenClaw** -- 基于主机，非容器化
 6. **Systemd 服务** -- 开机自启并带有安全加固
 

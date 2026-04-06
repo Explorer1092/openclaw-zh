@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "30bb09b67f515ec01344ba545e5fcdd8"
+mmh3_hash: "c8d0fa880176864472fb08c78d1ac14a"
 title: "Bun（实验性）"
 sidebarTitle: "Bun"
 summary: "Bun 工作流（实验性）：安装以及与 pnpm 相比的注意事项"
@@ -43,7 +43,7 @@ Bun 是一个可选的本地运行时，用于直接运行 TypeScript（`bun run
 
 Bun 会阻止依赖的生命周期脚本，除非明确信任。对于此仓库，通常被阻止的脚本不是必需的：
 
-- `@whiskeysockets/baileys` `preinstall` -- 检查 Node major >= 20（OpenClaw 默认使用 Node 24，仍支持 Node 22 LTS，目前为 `22.16+`）
+- `@whiskeysockets/baileys` `preinstall` -- 检查 Node major >= 20（OpenClaw 默认使用 Node 24，仍支持 Node 22 LTS，目前为 `22.14+`）
 - `protobufjs` `postinstall` -- 发出关于不兼容版本方案的警告（无构建工件）
 
 如果你遇到需要这些脚本的运行时问题，明确信任它们：
