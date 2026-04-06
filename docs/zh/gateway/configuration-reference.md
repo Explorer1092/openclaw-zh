@@ -1848,7 +1848,7 @@ Talk 模式的默认值（macOS/iOS/Android）。
     profile: "coding",
     byProvider: {
       "google-antigravity": { profile: "minimal" },
-      "openai/gpt-5.2": { allow: ["group:fs", "sessions_list"] },
+      "openai/gpt-5.4": { allow: ["group:fs", "sessions_list"] },
     },
   },
 }
