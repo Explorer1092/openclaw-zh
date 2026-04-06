@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "234f9d4b73298f0e4643ad5d885bb08e"
 title: "Dreaming(实验性功能)"
 summary: "后台内存整合系统，包含轻度、深度和 REM 阶段以及梦境日记"
 read_when:

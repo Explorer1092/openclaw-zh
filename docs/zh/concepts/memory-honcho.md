@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1a3889c5c7a2344952f0bb3a8415dca9"
 title: "Honcho 内存"
 summary: "通过 Honcho 插件实现的 AI 原生跨 Session 内存"
 read_when:

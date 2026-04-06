@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "4a8d1a6a7c949e0feab2dda16040c8ba"
 title: "模型故障转移"
 summary: "OpenClaw 如何轮换 auth profiles 并跨 model 后备"
 read_when:

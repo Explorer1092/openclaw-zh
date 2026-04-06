@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3d53a26fa334319f396e7d5c7278daec"
+mmh3_hash: "a2ec813baec60fa989409d4b053dfbe6"
 summary: "Context engine: 可插拔的 context 组装、compaction 和子 agent 生命周期"
 read_when:
   - 你想了解 OpenClaw 如何组装 model context

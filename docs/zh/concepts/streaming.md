@@ -1,7 +1,7 @@
 ---
 title: "流式与分片"
 sidebarTitle: "流式与分片"
-mmh3_hash: "8e2360d2cf1814e6e480a50d9f94d26f"
+mmh3_hash: "f9c593afe3ac485ab1bfcfe520e77d5e"
 summary: "Streaming + chunking 行为(block 回复、channel 预览 streaming、模式映射)"
 read_when:
   - 解释 streaming 或 chunking 在 channels 上如何工作
@@ -146,3 +146,9 @@ Slack:
 - `partial` 可以使用 Slack 原生 streaming(`chat.startStream`/`append`/`stop`)(在可用时)。
 - `block` 使用追加式 draft 预览。
 - `progress` 使用状态预览文本,然后给出最终答案。
+
+## 延伸阅读
+
+- [消息](/concepts/messages) — 消息生命周期和传递
+- [重试](/concepts/retry) — 传递失败时的重试行为
+- [Channels](/channels) — 每个 Channel 的 streaming 支持

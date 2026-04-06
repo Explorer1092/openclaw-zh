@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "854e3bc491aa3ccef548e9d67c24d276"
 title: "内存搜索"
 summary: "内存搜索如何使用 embedding 和混合检索找到相关笔记"
 read_when:

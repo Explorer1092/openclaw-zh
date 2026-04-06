@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "961419bece71ecd67dd125c8529ab78b"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:
   - 你需要了解 agent loop 或生命周期事件的详细流程

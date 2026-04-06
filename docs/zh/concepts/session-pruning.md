@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "bbc340570ed7a0dd0c225f16bd1f9e38"
 title: "Session 修剪"
 summary: "修剪旧的 tool results 以保持 context 精简和缓存高效"
 read_when:

@@ -1,7 +1,7 @@
 ---
 title: "时区"
 sidebarTitle: "时区"
-mmh3_hash: "a7ee7758a156a94ca523c6063eedadb6"
+mmh3_hash: "640f1f99385f34cbefecb4153fb4b03b"
 summary: "Agents、envelopes 和 prompts 的 Timezone 处理"
 read_when: ["你需要了解如何为 model 规范化时间戳","为 system prompts 配置用户 timezone"]
 ---
@@ -85,4 +85,10 @@ System prompt 包括:
 
 你可以使用 `agents.defaults.timeFormat` (`auto` | `12` | `24`)控制 prompt 格式。
 
-参见 [Date & Time](/zh/date-time) 了解完整行为和示例。
+参见 [Date & Time](/date-time) 了解完整行为和示例。
+
+## 延伸阅读
+
+- [Heartbeat](/gateway/heartbeat) — 活跃时间使用 timezone 进行调度
+- [Cron Jobs](/automation/cron-jobs) — cron 表达式使用 timezone 进行调度
+- [Date & Time](/date-time) — 完整的日期/时间行为和示例

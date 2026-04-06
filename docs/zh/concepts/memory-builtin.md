@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "928584fd4a197ca7408b218f986b41c7"
 title: "内置内存引擎"
 summary: "默认的基于 SQLite 的内存后端，支持关键词、向量和混合搜索"
 read_when:

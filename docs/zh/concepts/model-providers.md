@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "32419c69d5e6123046391680918873f0"
+mmh3_hash: "03e250c96885479225f68b8ce4b786a5"
 summary: "Model provider 概述,包含示例配置 + CLI 流程"
 read_when:
   - 你需要按 provider 的 model 设置参考

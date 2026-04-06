@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "20b212ebb651e4c118e36100163c6186"
 summary: "使用 SOUL.md 为你的 OpenClaw Agent 赋予真正的声音，而非千篇一律的 Assistant 腔调"
 read_when:
   - 你希望 Agent 听起来不那么千篇一律

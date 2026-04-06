@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "013bd46767f807e2da03adebb18b80a4"
 title: "QMD 内存引擎"
 summary: "本地优先的搜索辅助程序，支持 BM25、向量、重排序和查询扩展"
 read_when:

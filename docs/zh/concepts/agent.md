@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "212fe714522ab2a25b2affc7c59171c1"
+mmh3_hash: "dc778c09172e87242b95ae236960d8fb"
 summary: "Agent runtime、workspace 契约和 session bootstrap"
 read_when:
   - 更改 agent runtime、workspace bootstrap 或 session 行为

@@ -1,7 +1,7 @@
 ---
 title: "输入指示器"
 sidebarTitle: "输入指示器"
-mmh3_hash: "2446f18bc19c32513d3ef0292abb8ab4"
+mmh3_hash: "a8df5172d22a9781b3e04f83fff7f9ff"
 summary: "OpenClaw 何时显示 typing indicators 以及如何调整它们"
 read_when: ["更改 typing indicator 行为或默认值"]
 ---
@@ -47,7 +47,7 @@ Typing indicators 在运行处于活动状态时发送到 chat channel。使用 
 ```
 
 ## 注意
-- `message` 模式不会为仅静默回复(例如用于抑制输出的 `NO_REPLY` token)显示 typing。
+- `message` 模式不会为整个 payload 是精确静默 token 的静默专属回复（例如 `NO_REPLY` / `no_reply`，不区分大小写匹配）显示 typing。
 - `thinking` 仅在运行 streams reasoning (`reasoningLevel: "stream"`)时触发。如果 model 不发出 reasoning deltas,typing 不会开始。
 - Heartbeats 永远不会显示 typing,无论模式如何。
 - `typingIntervalSeconds` 控制 **刷新节奏**,而不是开始时间。默认值为 6 秒。

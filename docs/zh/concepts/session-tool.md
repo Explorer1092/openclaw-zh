@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "365ce00d1ed5b15cdd359adfae36b9d9"
 title: "Session 工具"
 summary: "Agent 跨 Session 状态、召回、消息传递和子 Agent 编排工具"
 read_when:

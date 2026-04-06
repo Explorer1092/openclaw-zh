@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8f83b8949ca5f0f6cc0d2913fa5fc369"
+mmh3_hash: "63428bbee72e236da0e2365addcc60ea"
 summary: "Delegate 架构: 以组织成员身份运行 OpenClaw 作为具名 agent"
 title: "Delegate Architecture"
 read_when: "你想要一个具有自己身份、代表组织中人员行动的 agent。"

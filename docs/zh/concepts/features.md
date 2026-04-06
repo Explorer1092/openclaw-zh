@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "10a966495ad92fd1f5155703dc06d2e3"
 summary: "OpenClaw 跨 Channel、路由、媒体和用户体验的功能"
 read_when:
   - 你想要 OpenClaw 支持内容的完整列表

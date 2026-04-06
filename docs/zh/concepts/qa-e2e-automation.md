@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "3e94dfa3d43caf89cf979fdf8ecbf03c"
 summary: "qa-lab、qa-channel、种子场景和协议报告的私有 QA 自动化形态"
 read_when:
   - 扩展 qa-lab 或 qa-channel

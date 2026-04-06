@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "2693efb5514eaeb0a290537a43fddd3e"
 summary: "OpenClaw 如何总结长对话以保持在 model 限制内"
 read_when:
   - 你想了解自动 compaction 和 /compact
