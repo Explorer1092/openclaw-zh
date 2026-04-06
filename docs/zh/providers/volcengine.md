@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1bb513d13d5ff5d8d0f66e49ca588acc"
+mmh3_hash: "79acc58a455757cb25393850f3878a8a"
 title: "Volcengine (Doubao)"
 summary: "火山引擎设置（Doubao 模型、通用 + 编码端点）"
 read_when:
@@ -55,14 +55,30 @@ openclaw onboard --non-interactive \
 
 ## 可用模型
 
-- **doubao-seed-1-8** - Doubao Seed 1.8（通用，默认）
-- **doubao-seed-code-preview** - Doubao 编码模型
-- **ark-code-latest** - 编码计划默认值
-- **Kimi K2.5** - 通过火山引擎的 Moonshot AI
-- **GLM-4.7** - 通过火山引擎的 GLM
-- **DeepSeek V3.2** - 通过火山引擎的 DeepSeek
+通用 Provider（`volcengine`）：
 
-大多数模型支持文本 + 图像输入。上下文窗口范围从 128K 到 256K Token。
+| 模型引用                                             | 名称                            | 输入        | 上下文  |
+| ---------------------------------------------------- | ------------------------------- | ----------- | ------- |
+| `volcengine/doubao-seed-1-8-251228`                  | Doubao Seed 1.8                 | text, image | 256,000 |
+| `volcengine/doubao-seed-code-preview-251028`         | doubao-seed-code-preview-251028 | text, image | 256,000 |
+| `volcengine/kimi-k2-5-260127`                        | Kimi K2.5                       | text, image | 256,000 |
+| `volcengine/glm-4-7-251222`                          | GLM 4.7                         | text, image | 200,000 |
+| `volcengine/deepseek-v3-2-251201`                    | DeepSeek V3.2                   | text, image | 128,000 |
+
+编码 Provider（`volcengine-plan`）：
+
+| 模型引用                                              | 名称                     | 输入 | 上下文  |
+| ----------------------------------------------------- | ------------------------ | ---- | ------- |
+| `volcengine-plan/ark-code-latest`                     | Ark Coding Plan          | text | 256,000 |
+| `volcengine-plan/doubao-seed-code`                    | Doubao Seed Code         | text | 256,000 |
+| `volcengine-plan/glm-4.7`                             | GLM 4.7 Coding           | text | 200,000 |
+| `volcengine-plan/kimi-k2-thinking`                    | Kimi K2 Thinking         | text | 256,000 |
+| `volcengine-plan/kimi-k2.5`                           | Kimi K2.5 Coding         | text | 256,000 |
+| `volcengine-plan/doubao-seed-code-preview-251028`     | Doubao Seed Code Preview | text | 256,000 |
+
+`openclaw onboard --auth-choice volcengine-api-key` 目前将 `volcengine-plan/ark-code-latest` 设置为默认模型，同时也注册通用 `volcengine` 目录。
+
+在入门/配置模型选择时，Volcengine auth 选项会优先显示 `volcengine/*` 和 `volcengine-plan/*` 行。如果这些模型尚未加载，OpenClaw 会回退到未过滤的目录，而不是显示空的 Provider 范围选择器。
 
 ## 环境注意事项
 

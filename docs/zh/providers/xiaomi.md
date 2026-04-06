@@ -1,6 +1,6 @@
 ---
 title: "Xiaomi MiMo"
-mmh3_hash: "46c4d22a19255b810cc7a78abea5a196"
+mmh3_hash: "8656b6dfd017adc35951c6ae630ab832"
 summary: "将 Xiaomi MiMo 模型与 OpenClaw 一起使用"
 read_when:
   - 您想在 OpenClaw 中使用 Xiaomi MiMo 模型
@@ -11,14 +11,17 @@ read_when:
 
 Xiaomi MiMo 是 **MiMo** 模型的 API 平台。OpenClaw 使用 Xiaomi OpenAI 兼容端点和 API 密钥身份验证。在 [Xiaomi MiMo 控制台](https://platform.xiaomimimo.com/#/console/api-keys)中创建您的 API 密钥，然后使用该密钥配置内置的 `xiaomi` Provider。
 
-## 模型概述
+## 内置目录
 
-- **mimo-v2-flash**：默认文本模型，262144 Token 上下文窗口
-- **mimo-v2-pro**：推理文本模型，1048576 Token 上下文窗口
-- **mimo-v2-omni**：支持文本和图像输入的推理多模态模型，262144 Token 上下文窗口
 - Base URL：`https://api.xiaomimimo.com/v1`
 - API：`openai-completions`
 - 授权：`Bearer $XIAOMI_API_KEY`
+
+| 模型引用               | 输入        | 上下文    | 最大输出 | 说明                         |
+| ---------------------- | ----------- | --------- | -------- | ---------------------------- |
+| `xiaomi/mimo-v2-flash` | text        | 262,144   | 8,192    | 默认模型                     |
+| `xiaomi/mimo-v2-pro`   | text        | 1,048,576 | 32,000   | 已启用推理                   |
+| `xiaomi/mimo-v2-omni`  | text, image | 262,144   | 32,000   | 已启用推理的多模态            |
 
 ## CLI 设置
 

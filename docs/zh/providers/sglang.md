@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7588b05140e96c56d8fb02cbf3d29516"
+mmh3_hash: "c7ff813875d24c5408efc42a6d9ce054"
 title: "SGLang"
 sidebarTitle: "SGLang"
 summary: "使用 SGLang（OpenAI 兼容自托管服务器）运行 OpenClaw"
@@ -20,7 +20,7 @@ OpenClaw 还可以在您使用 `SGLANG_API_KEY` 选择加入时（如果您的�
 
 1. 启动带有 OpenAI 兼容服务器的 SGLang。
 
-您的基础 URL 应公开 `/v1` 端点（例如 `/v1/models`、
+您的 Base URL 应公开 `/v1` 端点（例如 `/v1/models`、
 `/v1/chat/completions`）。SGLang 通常运行在：
 
 - `http://127.0.0.1:30000/v1`
@@ -31,7 +31,7 @@ OpenClaw 还可以在您使用 `SGLANG_API_KEY` 选择加入时（如果您的�
 export SGLANG_API_KEY="sglang-local"
 ```
 
-3. 运行引导并选择 `SGLang`，或直接设置模型：
+3. 运行入门并选择 `SGLang`，或直接设置模型：
 
 ```bash
 openclaw onboard
@@ -47,7 +47,7 @@ openclaw onboard
 }
 ```
 
-## 模型发现（隐式提供商）
+## 模型发现（隐式 Provider）
 
 当设置了 `SGLANG_API_KEY`（或存在身份验证配置文件）且您**不**
 定义 `models.providers.sglang` 时，OpenClaw 将查询：
@@ -101,4 +101,12 @@ curl http://127.0.0.1:30000/v1/models
 ```
 
 - 如果请求因身份验证错误而失败，请设置与您的服务器配置匹配的真实 `SGLANG_API_KEY`，
-  或在 `models.providers.sglang` 下显式配置提供商。
+  或在 `models.providers.sglang` 下显式配置 Provider。
+
+## 代理风格行为
+
+SGLang 被视为代理风格的 OpenAI 兼容 `/v1` 后端，而非原生 OpenAI 端点。
+
+- 原生 OpenAI 专属请求塑形在此不适用
+- 不支持 `service_tier`、Responses `store`、提示缓存提示和 OpenAI 推理兼容负载塑形
+- 隐藏的 OpenClaw 归因标头（`originator`、`version`、`User-Agent`）不会注入到自定义 SGLang Base URL 上

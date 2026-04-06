@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ab7adbde4bffd25c03fef69e8d751a1f"
+mmh3_hash: "1f01858a7fe7ba442ba1af524d068a80"
 summary: "使用 vLLM 运行 OpenClaw（OpenAI 兼容的本地服务器）"
 read_when:
   - 您想要针对本地 vLLM 服务器运行 OpenClaw
@@ -91,3 +91,11 @@ curl http://127.0.0.1:8000/v1/models
 ```
 
 - 如果请求因身份验证错误而失败，请设置与您的服务器配置匹配的真实 `VLLM_API_KEY`，或在 `models.providers.vllm` 下显式配置 Provider。
+
+## 代理风格行为
+
+vLLM 被视为代理风格的 OpenAI 兼容 `/v1` 后端，而非原生 OpenAI 端点。
+
+- 原生 OpenAI 专属请求塑形在此不适用
+- 不支持 `service_tier`、Responses `store`、提示缓存提示和 OpenAI 推理兼容负载塑形
+- 隐藏的 OpenClaw 归因标头（`originator`、`version`、`User-Agent`）不会注入到自定义 vLLM Base URL 上
