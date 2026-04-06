@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "da182887d97cca5d2f7c86dd31ad9792"
-title: "常设指令"
+mmh3_hash: "12c171fa0d4ce382a69507ff12e1ee72"
 summary: "为自主 Agent 程序定义永久操作权限"
 read_when:
   - 设置无需逐任务提示即可运行的自主 Agent 工作流时
   - 定义 Agent 可以独立执行的操作与需要人工审批的操作时
   - 为多程序 Agent 构建具有明确边界和上报规则的结构时
+title: "常设指令"
 ---
 
 # 常设指令
@@ -95,7 +95,7 @@ openclaw cron add \
   --announce \
   --channel bluebubbles \
   --to "+1XXXXXXXXXX" \
-  --message "按常设指令执行每日收件箱分类。检查邮件中的新警报。解析、分类并持久化每个条目。向所有者报告摘要。上报未知情况。"
+  --message "Execute daily inbox triage per standing orders. Check mail for new alerts. Parse, categorize, and persist each item. Report summary to owner. Escalate unknowns."
 ```
 
 ## 示例
@@ -156,7 +156,7 @@ openclaw cron add \
 
 **权限：** 检查系统健康状况、重启服务、发送警报
 **审批门：** 自动重启服务。如果重启失败两次，则上报。
-**触发器：** 每次心跳周期
+**触发器：** 每次 Heartbeat 周期
 
 ### 检查项
 
@@ -248,5 +248,8 @@ openclaw cron add \
 
 ## 相关文档
 
+- [自动化与任务](/automation) — 所有自动化机制一览
 - [Cron 作业](/automation/cron-jobs) — 常设指令的计划强制执行
+- [Hooks](/automation/hooks) — Agent 生命周期事件的事件驱动脚本
+- [Webhooks](/automation/cron-jobs#webhooks) — 入站 HTTP 事件触发器
 - [Agent 工作空间](/concepts/agent-workspace) — 常设指令的存放位置，包括自动注入引导文件的完整列表（AGENTS.md、SOUL.md 等）
