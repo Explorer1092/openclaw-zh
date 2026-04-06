@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5e3087c865f393c1bb52dbfdf22537b5"
+mmh3_hash: "ba1c4fd73e20ccd3d643412bddeae074"
 summary: "Gemini 网页搜索，基于 Google Search 接地"
 read_when:
   - 希望将 Gemini 用于 web_search
@@ -67,7 +67,11 @@ OpenClaw 支持带内置 [Google Search 接地](https://ai.google.dev/gemini-api
 
 ## 支持的参数
 
-Gemini 搜索支持标准的 `query` 和 `count` 参数。不支持 `country`、`language`、`freshness` 和 `domain_filter` 等特定提供商过滤器。
+Gemini 搜索支持 `query`。
+
+`count` 为共享 `web_search` 兼容性而被接受，但 Gemini 接地仍返回一个带引用的合成答案，而非 N 条结果列表。
+
+不支持 `country`、`language`、`freshness` 和 `domain_filter` 等特定提供商过滤器。
 
 ## 模型选择
 

@@ -1,7 +1,7 @@
 ---
 title: "思考级别（/think 指令）"
 sidebarTitle: "思考级别"
-mmh3_hash: "117290e5e30b48e2fdf41884000c9832"
+mmh3_hash: "4782ff5fe4991377d88fed80de9ab897"
 summary: "/think、/fast、/verbose 和推理可见性的指令语法"
 read_when:
   - 调整 thinking、fast 模式或 verbose 指令解析或默认值
@@ -23,6 +23,7 @@ read_when:
   - `highest`、`max` 映射到 `high`。
 - Provider 注意事项：
   - Anthropic Claude 4.6 模型在未设置显式 thinking 级别时默认为 `adaptive`。
+  - MiniMax（`minimax/*`）在 Anthropic 兼容流式路径上默认为 `thinking: { type: "disabled" }`，除非您在模型参数或请求参数中显式设置 thinking。这避免了 MiniMax 非原生 Anthropic 流格式的 `reasoning_content` 增量泄漏。
   - Z.AI（`zai/*`）仅支持二进制 thinking（`on`/`off`）。任何非 `off` 级别都被视为 `on`（映射到 `low`）。
   - Moonshot（`moonshot/*`）将 `/think off` 映射到 `thinking: { type: "disabled" }`，将任何非 `off` 级别映射到 `thinking: { type: "enabled" }`。当 thinking 启用时，Moonshot 只接受 `tool_choice` 为 `auto|none`；OpenClaw 会将不兼容的值标准化为 `auto`。
 
@@ -56,10 +57,11 @@ read_when:
   3. 每 Agent 默认值（`agents.list[].fastModeDefault`）
   4. 每模型配置：`agents.defaults.models["<provider>/<model>"].params.fastMode`
   5. 回退：`off`
-- 对于 `openai/*`，快速模式应用 OpenAI 快速配置文件：在支持时 `service_tier=priority`，加上低推理效率和低文本冗长度。
-- 对于 `openai-codex/*`，快速模式在 Codex Responses 上应用相同的低延迟配置文件。OpenClaw 在两种身份验证路径之间保持一个共享的 `/fast` 切换。
-- 对于直接 `anthropic/*` API 密钥请求，快速模式映射到 Anthropic 服务层：`/fast on` 设置 `service_tier=auto`，`/fast off` 设置 `service_tier=standard_only`。
-- Anthropic 快速模式仅限 API 密钥。OpenClaw 对 Claude setup-token / OAuth 身份验证和非 Anthropic 代理基础 URL 跳过 Anthropic 服务层注入。
+- 对于 `openai/*`，快速模式通过在支持的 Responses 请求上发送 `service_tier=priority` 映射到 OpenAI 优先处理。
+- 对于 `openai-codex/*`，快速模式在 Codex Responses 上发送相同的 `service_tier=priority` 标志。OpenClaw 在两种身份验证路径之间保持一个共享的 `/fast` 切换。
+- 对于直接公共 `anthropic/*` 请求（包括发送到 `api.anthropic.com` 的 OAuth 认证流量），快速模式映射到 Anthropic 服务层：`/fast on` 设置 `service_tier=auto`，`/fast off` 设置 `service_tier=standard_only`。
+- 对于 Anthropic 兼容路径上的 `minimax/*`，`/fast on`（或 `params.fastMode: true`）将 `MiniMax-M2.7` 改写为 `MiniMax-M2.7-highspeed`。
+- 显式 Anthropic `serviceTier` / `service_tier` 模型参数在同时设置时覆盖快速模式默认值。对于非 Anthropic 代理基础 URL，OpenClaw 仍然跳过 Anthropic 服务层注入。
 
 ## 详细指令（/verbose 或 /v）
 
@@ -94,5 +96,9 @@ read_when:
 ## Web 聊天 UI
 
 - 网络聊天思考选择器在页面加载时从入站 Session 存储/配置中镜像 Session 的存储级别。
-- 选择另一个级别仅适用于下一条消息（`thinkingOnce`）；发送后，选择器返回到存储的 Session 级别。
-- 要更改 Session 默认值，发送 `/think:<level>` 指令（如前）；选择器将在下次重新加载后反映它。
+- 选择另一个级别通过 `sessions.patch` 立即写入 Session 覆盖；它不等待下次发送，也不是一次性的 `thinkingOnce` 覆盖。
+- 第一个选项始终是 `Default (<resolved level>)`，其中解析的默认值来自活动 Session 模型：Anthropic/Bedrock 上的 Claude 4.6 为 `adaptive`，其他推理能力模型为 `low`，否则为 `off`。
+- 选择器保持 Provider 感知：
+  - 大多数 Provider 显示 `off | minimal | low | medium | high | adaptive`
+  - Z.AI 显示二进制 `off | on`
+- `/think:<level>` 仍然有效并更新相同的存储 Session 级别，因此聊天指令和选择器保持同步。

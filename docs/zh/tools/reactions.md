@@ -1,6 +1,6 @@
 ---
 title: "Reactions"
-mmh3_hash: "07c03626cd0855450336be39cf5593f3"
+mmh3_hash: "96e341f0eaeca6cf755f3f465b239a36"
 summary: "跨所有支持 Channel 的 Reaction 工具语义"
 read_when:
   - 在任何 Channel 中处理 Reaction
@@ -53,10 +53,24 @@ Agent 可以使用 `message` 工具的 `react` action 在消息上添加和移�
     - `remove: true` 移除该特定 emoji 反应。
   </Accordion>
 
+  <Accordion title="Feishu/Lark">
+    - 使用 `feishu_reaction` 工具，支持 `add`、`remove` 和 `list` actions。
+    - 添加/移除需要 `emoji_type`；移除还需要 `reaction_id`。
+  </Accordion>
+
   <Accordion title="Signal">
     - 入站反应通知由 `channels.signal.reactionNotifications` 控制：`"off"` 禁用，`"own"`（默认）在用户对机器人消息做出反应时发出事件，`"all"` 对所有反应发出事件。
   </Accordion>
 </AccordionGroup>
+
+## Reaction 级别
+
+每个 Channel 的 `reactionLevel` 配置控制 Agent 使用反应的范围。值通常为 `off`、`ack`、`minimal` 或 `extensive`。
+
+- [Telegram reactionLevel](/channels/telegram#reaction-notifications) — `channels.telegram.reactionLevel`
+- [WhatsApp reactionLevel](/channels/whatsapp#reactions) — `channels.whatsapp.reactionLevel`
+
+在各个 Channel 上设置 `reactionLevel` 以调整 Agent 在每个平台上对消息做出反应的活跃程度。
 
 ## 相关
 

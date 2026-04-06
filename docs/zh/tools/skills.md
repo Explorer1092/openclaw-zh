@@ -1,7 +1,7 @@
 ---
 title: "Skill (OpenClaw)"
 sidebarTitle: "Skill"
-mmh3_hash: "b09c8937f69c5c61076da3552ec04417"
+mmh3_hash: "f59e4b44e0083878a9454b678acb52fe"
 summary: "Skill: 管理 vs 工作区、门控规则和配置/环境接线"
 read_when:
   - 添加或修改 Skill
@@ -14,27 +14,63 @@ OpenClaw 使用**[AgentSkills](https://agentskills.io) 兼容**的 Skill 文件�
 
 ## 位置和优先级
 
-Skill 从**三个**位置加载:
+OpenClaw 从以下来源加载 Skill：
 
-1. **捆绑 Skill**: 随安装一起提供(npm 包或 OpenClaw.app)
-2. **管理/本地 Skill**: `~/.openclaw/skills`
-3. **工作区 Skill**: `<workspace>/skills`
+1. **额外 Skill 文件夹**：通过 `skills.load.extraDirs` 配置
+2. **捆绑 Skill**：随安装一起提供（npm 包或 OpenClaw.app）
+3. **管理/本地 Skill**：`~/.openclaw/skills`
+4. **个人 Agent Skill**：`~/.agents/skills`
+5. **项目 Agent Skill**：`<workspace>/.agents/skills`
+6. **工作区 Skill**：`<workspace>/skills`
 
-如果 Skill 名称冲突,优先级是:
+如果 Skill 名称冲突，优先级是：
 
-`<workspace>/skills`(最高) → `~/.openclaw/skills` → 捆绑 Skill(最低)
+`<workspace>/skills`（最高）→ `<workspace>/.agents/skills` → `~/.agents/skills` → `~/.openclaw/skills` → 捆绑 Skill → `skills.load.extraDirs`（最低）
 
-此外,您可以通过 `~/.openclaw/openclaw.json` 中的 `skills.load.extraDirs` 配置额外的 Skill 文件夹(最低优先级)。
+## 每个 Agent vs 共享 Skill
 
-## 每个 agent vs 共享 Skill
+在**多 Agent** 设置中，每个 Agent 都有自己的工作区。这意味着：
 
-在**多 agent** 设置中,每个 agent 都有自己的工作区。这意味着:
+- **每个 Agent 的 Skill** 位于该 Agent 的 `<workspace>/skills` 中，仅对该 Agent 可用。
+- **项目 Agent Skill** 位于 `<workspace>/.agents/skills` 中，在普通工作区 `skills/` 文件夹之前应用于该工作区。
+- **个人 Agent Skill** 位于 `~/.agents/skills` 中，适用于该机器上的所有工作区。
+- **共享 Skill** 位于 `~/.openclaw/skills`（管理/本地）中，对同一台机器上的**所有 Agent** 可见。
+- **共享文件夹**也可以通过 `skills.load.extraDirs` 添加（最低优先级），如果你想要多个 Agent 使用的公共 Skill 包。
 
-- **每个 agent 的 Skill**位于该 agent 的 `<workspace>/skills` 中。
-- **共享 Skill**位于 `~/.openclaw/skills`(管理/本地)中,对同一台机器上的**所有 agent** 可见。
-- **共享文件夹**也可以通过 `skills.load.extraDirs` 添加(最低优先级),如果您想要多个 agent 使用的公共 Skill 包。
+如果同一 Skill 名称存在于多个位置，则应用通常的优先级：工作区优先，然后是项目 Agent Skill，然后是个人 Agent Skill，然后是管理/本地，然后是捆绑，然后是额外目录。
 
-如果同一 Skill 名称存在于多个位置,则应用通常的优先级: 工作区优先,然后是管理/本地,然后是捆绑。
+## Agent Skill 允许列表
+
+Skill **位置**和 Skill **可见性**是独立的控制项。
+
+- 位置/优先级决定同名 Skill 中哪个副本胜出。
+- Agent 允许列表决定 Agent 实际上可以使用哪些可见 Skill。
+
+使用 `agents.defaults.skills` 作为共享基线，然后使用 `agents.list[].skills` 按 Agent 覆盖：
+
+```json5
+{
+  agents: {
+    defaults: {
+      skills: ["github", "weather"],
+    },
+    list: [
+      { id: "writer" }, // 继承 github, weather
+      { id: "docs", skills: ["docs-search"] }, // 替换默认值
+      { id: "locked-down", skills: [] }, // 无 Skill
+    ],
+  },
+}
+```
+
+规则：
+
+- 省略 `agents.defaults.skills` 以默认不限制 Skill。
+- 省略 `agents.list[].skills` 以继承 `agents.defaults.skills`。
+- 设置 `agents.list[].skills: []` 以无 Skill。
+- 非空的 `agents.list[].skills` 列表是该 Agent 的最终集合；它不与默认值合并。
+
+OpenClaw 在提示构建、Skill slash 命令发现、沙箱同步和 Skill 快照中应用有效的 Agent Skill 集。
 
 ## Plugin + Skill
 
@@ -42,7 +78,7 @@ Plugin 可以通过在 `openclaw.plugin.json` 中列出 `skills` 目录(相对�
 
 ## ClawHub（安装 + 同步）
 
-ClawHub 是 OpenClaw 的公共 Skill 注册表。在 [https://clawhub.com](https://clawhub.com) 浏览。使用原生 `openclaw skills` 命令发现/安装/更新 Skill，或在需要发布/同步工作流时使用单独的 `clawhub` CLI。
+ClawHub 是 OpenClaw 的公共 Skill 注册表。在 [https://clawhub.ai](https://clawhub.ai) 浏览。使用原生 `openclaw skills` 命令发现/安装/更新 Skill，或在需要发布/同步工作流时使用单独的 `clawhub` CLI。
 完整指南: [ClawHub](/tools/clawhub)。
 
 常见流程:

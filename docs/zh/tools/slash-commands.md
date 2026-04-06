@@ -1,7 +1,7 @@
 ---
 title: "斜杠命令"
 sidebarTitle: "斜杠命令"
-mmh3_hash: "0d0f2c6240b4051db7fe0be22b676ab0"
+mmh3_hash: "f60f823d7cd72240f1a4552c17d4392c"
 summary: "斜杠命令：文本 vs 原生、配置和支持的命令"
 read_when:
   - 使用或配置聊天命令
@@ -71,10 +71,12 @@ read_when:
 
 - `/help`
 - `/commands`
+- `/tools [compact|verbose]`（显示当前 Agent 现在可以使用的工具；`verbose` 添加描述）
 - `/skill <name> [input]`（按名称运行 Skill）
 - `/status`（显示当前状态；当可用时包括当前模型 Provider 的提供商使用/配额）
+- `/tasks`（列出当前 Session 的后台任务；显示活动和最近的任务详情及 Agent 本地回退计数）
 - `/allowlist`（列出/添加/删除允许列表条目）
-- `/approve <id> allow-once|allow-always|deny`（解决 exec 批准提示）
+- `/approve <id> <decision>`（解决 exec 批准提示；使用待处理批准消息获取可用决策）
 - `/context [list|detail|json]`（解释"上下文"；`detail` 显示每个文件 + 每个工具 + 每个 Skill + 系统提示大小）
 - `/btw <question>`（询问关于当前 Session 的临时旁问，不改变未来的 Session 上下文；参见 [/tools/btw](/tools/btw)）
 - `/export-session [path]`（别名：`/export`）（将当前 Session 导出为包含完整系统提示的 HTML）
@@ -112,10 +114,11 @@ read_when:
 - `/verbose on|full|off`（别名：`/v`）
 - `/reasoning on|off|stream`（别名：`/reason`；开启时，发送单独的消息，前缀为 `Reasoning:`；`stream` = 仅 Telegram 草稿）
 - `/elevated on|off|ask|full`（别名：`/elev`；`full` 跳过 exec 批准）
-- `/exec host=<sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>`（发送 `/exec` 以显示当前）
+- `/exec host=<auto|sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>`（发送 `/exec` 以显示当前）
 - `/model <name>`（别名：`/models`；或来自 `agents.defaults.models.*.alias` 的 `/<alias>`）
 - `/queue <mode>`（加上 `debounce:2s cap:25 drop:summarize` 等选项；发送 `/queue` 以查看当前设置）
 - `/bash <command>`（仅主机；`! <command>` 的别名；需要 `commands.bash: true` + `tools.elevated` 允许列表）
+- `/dreaming [on|off|status|help]`（切换全局 dreaming 或显示状态；参见 [Dreaming](/concepts/dreaming)）
 
 仅文本：
 
@@ -138,8 +141,13 @@ read_when:
 - ACP 命令参考和运行时行为：[ACP Agents](/tools/acp-agents)。
 - `/verbose` 用于调试和额外的可见性；在正常使用中保持**关闭**。
 - `/fast on|off` 持久化 Session 覆盖。使用 Sessions UI `inherit` 选项清除它并回退到配置默认值。
+- `/fast` 因 Provider 而异：OpenAI/OpenAI Codex 在原生 Responses 端点上将其映射到 `service_tier=priority`，而直接的公共 Anthropic 请求（包括发送到 `api.anthropic.com` 的 OAuth 认证流量）映射到 `service_tier=auto` 或 `standard_only`。参见 [OpenAI](/providers/openai) 和 [Anthropic](/providers/anthropic)。
 - 工具失败摘要在相关时仍然显示，但详细失败文本仅在 `/verbose` 为 `on` 或 `full` 时包含。
 - `/reasoning`（和 `/verbose`）在组设置中有风险：它们可能会暴露您不想公开的内部推理或工具输出。优先保持关闭，特别是在组聊天中。
+- `/model` 立即持久化新的 Session 模型。
+- 如果 Agent 处于空闲状态，下次运行将立即使用它。
+- 如果运行已经激活，OpenClaw 将实时切换标记为待处理，并仅在干净的重试点重启到新模型。
+- 如果工具活动或回复输出已经开始，待处理的切换可以保持排队，直到稍后的重试机会或下一个用户轮次。
 - **快速路径：** 来自允许列表发送者的仅命令消息立即处理（绕过队列 + 模型）。
 - **组提及门控：** 来自允许列表发送者的仅命令消息绕过提及要求。
 - **内联快捷方式（仅允许列表发送者）：** 某些命令在嵌入正常消息中时也有效，并在模型看到剩余文本之前被剥离。
@@ -153,9 +161,22 @@ read_when:
   - 示例：`/prose`（OpenProse Plugin）— 参见 [OpenProse](/prose)。
 - **原生命令参数：** Discord 对动态选项使用自动完成（并在您省略必需参数时使用按钮菜单）。当命令支持选择且您省略参数时，Telegram 和 Slack 显示按钮菜单。
 
+## `/tools`
+
+`/tools` 回答的是运行时问题，而非配置问题：**当前 Agent 在此对话中现在可以使用什么**。
+
+- 默认 `/tools` 紧凑，针对快速扫描进行了优化。
+- `/tools verbose` 添加简短描述。
+- 支持参数的原生命令表面提供与 `compact|verbose` 相同的模式切换。
+- 结果是 Session 范围的，因此更改 Agent、Channel、线程、发送者授权或模型可能会更改输出。
+- `/tools` 包括运行时实际可访问的工具，包括核心工具、连接的 Plugin 工具和 Channel 自有工具。
+
+如需编辑配置文件和覆盖，请使用 Control UI 工具面板或配置/目录表面，而不是将 `/tools` 视为静态目录。
+
 ## 使用表面（在哪里显示什么）
 
-- **Provider 使用/配额**（示例："Claude 剩余 80%"）在当前模型 Provider 启用使用跟踪时显示在 `/status` 中。
+- **Provider 使用/配额**（示例："Claude 剩余 80%"）在当前模型 Provider 启用使用跟踪时显示在 `/status` 中。OpenClaw 将 Provider 窗口规范化为"剩余 %"；对于 MiniMax，仅剩余百分比字段在显示前取反，`model_remains` 响应优先使用聊天模型条目加上模型标记的计划标签。
+- `/status` 中的**令牌/缓存行**可以在实时 Session 快照稀疏时回退到最新的转录使用条目。现有的非零实时值仍然优先，转录回退也可以恢复活动运行时模型标签，以及在存储总量缺失或较小时的更大的面向提示的总量。
 - **每响应令牌/成本**由 `/usage off|tokens|full` 控制（附加到正常回复）。
 - `/model status` 是关于**模型/认证/端点**，而非使用。
 
@@ -169,7 +190,7 @@ read_when:
 /model
 /model list
 /model 3
-/model openai/gpt-5.2
+/model openai/gpt-5.4
 /model opus@anthropic:default
 /model status
 ```

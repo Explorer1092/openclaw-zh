@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "579af81323b13348a8870e1f8ca4e308"
+mmh3_hash: "9fca6fdd61675df190f11fe9498b67ac"
 title: "PDF 工具"
 summary: "使用原生 Provider 支持和提取回退分析一个或多个 PDF 文档"
 read_when:
@@ -24,9 +24,16 @@ read_when:
 
 1. `agents.defaults.pdfModel`
 2. 回退到 `agents.defaults.imageModel`
-3. 根据可用认证，回退到最佳 Provider 默认值
+3. 回退到 Agent 已解析的 Session/默认模型
+4. 如果原生 PDF Provider 有认证支持，优先于通用图像回退候选
 
 如果无法解析可用的模型，`pdf` 工具不会暴露。
+
+可用性说明：
+
+- 回退链是认证感知的。已配置的 `provider/model` 仅在 OpenClaw 实际上能为 Agent 认证该 Provider 时才有效。
+- 原生 PDF Provider 目前为 **Anthropic** 和 **Google**。
+- 如果已解析的 Session/默认 Provider 已有配置的视觉/PDF 模型，PDF 工具会在回退到其他有认证的 Provider 之前复用它。
 
 ## 输入参考
 
@@ -66,6 +73,7 @@ read_when:
 原生模式限制：
 
 - 不支持 `pages`。如果设置了，工具返回错误。
+- 支持多 PDF 输入；每个 PDF 在提示之前作为原生文档块/内联 PDF 部分发送。
 
 ### 提取回退模式
 
@@ -81,6 +89,7 @@ read_when:
 
 - 页面图像提取使用 `4,000,000` 像素预算。
 - 如果目标模型不支持图像输入且没有可提取的文本，工具报错。
+- 如果文本提取成功，但图像提取需要在仅文本模型上使用视觉功能，OpenClaw 会丢弃已渲染的图像并继续使用提取的文本。
 - 提取回退需要 `pdfjs-dist`（以及用于图像渲染的 `@napi-rs/canvas`）。
 
 ## 配置
@@ -91,7 +100,7 @@ read_when:
     defaults: {
       pdfModel: {
         primary: "anthropic/claude-opus-4-6",
-        fallbacks: ["openai/gpt-5-mini"],
+        fallbacks: ["openai/gpt-5.4-mini"],
       },
       pdfMaxBytesMb: 10,
       pdfMaxPages: 20,
@@ -151,7 +160,12 @@ read_when:
 {
   "pdf": "https://example.com/report.pdf",
   "pages": "1-3,7",
-  "model": "openai/gpt-5-mini",
+  "model": "openai/gpt-5.4-mini",
   "prompt": "Extract only customer-impacting incidents"
 }
 ```
+
+## 相关
+
+- [工具概览](/tools) — 所有可用的 Agent 工具
+- [配置参考](/gateway/configuration-reference#agent-defaults) — pdfMaxBytesMb 和 pdfMaxPages 配置

@@ -1,10 +1,10 @@
 ---
-mmh3_hash: "b23bbefa0479c7e106014733b29465e0"
-summary: "使用 ACP 运行时 Session 运行 Pi、Claude Code、Codex、OpenCode、Gemini CLI 及其他 harness Agent"
+mmh3_hash: "301e39eb6ea0345a625f46699a94bb3a"
+summary: "使用 ACP 运行时 Session 运行 Codex、Claude Code、Cursor、Gemini CLI、OpenClaw ACP 及其他 harness Agent"
 read_when:
   - 通过 ACP 运行编程 harness
-  - 在支持 thread 的 Channel 上设置绑定 thread 的 ACP Session
-  - 将 Discord Channel 或 Telegram 论坛话题绑定到持久化 ACP Session
+  - 在消息 Channel 上设置绑定对话的 ACP Session
+  - 将消息 Channel 对话绑定到持久化 ACP Session
   - 排查 ACP 后端及 Plugin 接线问题
   - 从聊天中操作 /acp 命令
 title: "ACP Agent"
@@ -12,17 +12,49 @@ title: "ACP Agent"
 
 # ACP Agent
 
-[Agent Client Protocol (ACP)](https://agentclientprotocol.com/) Session 让 OpenClaw 通过 ACP 后端 Plugin 运行外部编程 harness（例如 Pi、Claude Code、Codex、OpenCode 和 Gemini CLI）。
+[Agent Client Protocol (ACP)](https://agentclientprotocol.com/) Session 让 OpenClaw 通过 ACP 后端 Plugin 运行外部编程 harness（例如 Pi、Claude Code、Codex、Cursor、Copilot、OpenClaw ACP、OpenCode、Gemini CLI 及其他受支持的 ACPX harness）。
 
-如果你用自然语言告诉 OpenClaw"在 Codex 里运行这个"或"在 thread 里启动 Claude Code"，OpenClaw 会将请求路由到 ACP 运行时（而非原生子 Agent 运行时）。
+如果你用自然语言告诉 OpenClaw"在 Codex 里运行这个"或"在 thread 里启动 Claude Code"，OpenClaw 应将请求路由到 ACP 运行时（而非原生子 Agent 运行时）。每个 ACP Session 的启动都会作为[后台任务](/automation/tasks)被跟踪。
+
+如果你希望 Codex 或 Claude Code 作为外部 MCP 客户端直接连接到现有的 OpenClaw Channel 对话，请使用 [`openclaw mcp serve`](/cli/mcp) 而非 ACP。
+
+## 我需要哪个页面？
+
+有三个容易混淆的相邻功能：
+
+| 你想要...                                                          | 使用                       | 说明                                                                                                       |
+| ------------------------------------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 通过 OpenClaw _运行_ Codex、Claude Code、Gemini CLI 或其他外部 harness | 本页：ACP Agent            | 聊天绑定 Session、`/acp spawn`、`sessions_spawn({ runtime: "acp" })`、后台任务、运行时控制                |
+| 将 OpenClaw Gateway Session _暴露为_ ACP 服务器供编辑器或客户端使用  | [`openclaw acp`](/cli/acp) | 桥接模式。IDE/客户端通过 stdio/WebSocket 以 ACP 协议连接 OpenClaw                                          |
+
+## 开箱即用吗？
+
+通常是的。
+
+- 全新安装默认已启用捆绑的 `acpx` 运行时 Plugin。
+- 捆绑的 `acpx` Plugin 优先使用其 Plugin 本地固定的 `acpx` 二进制文件。
+- 启动时，OpenClaw 会探测该二进制文件并在需要时自动修复。
+- 如需快速检查就绪状态，从 `/acp doctor` 开始。
+
+首次使用时仍可能发生的情况：
+
+- 目标 harness 适配器可能在首次使用该 harness 时通过 `npx` 按需获取。
+- 该 harness 仍然需要在主机上存在供应商认证。
+- 如果主机没有 npm/网络访问权限，首次运行的适配器获取可能会失败，直到缓存预热或以其他方式安装了适配器。
+
+示例：
+
+- `/acp spawn codex`：OpenClaw 应准备好引导 `acpx`，但 Codex ACP 适配器可能仍需要首次运行获取。
+- `/acp spawn claude`：Claude ACP 适配器类似，加上该主机上的 Claude 端认证。
 
 ## 快速操作流程
 
 当你需要 `/acp` 实操手册时使用以下步骤：
 
 1. 启动 Session：
+   - `/acp spawn codex --bind here`
    - `/acp spawn codex --mode persistent --thread auto`
-2. 在绑定的 thread 中工作（或显式指定该 Session key）。
+2. 在绑定的对话或 thread 中工作（或显式指定该 Session key）。
 3. 查看运行时状态：
    - `/acp status`
 4. 按需调整运行时选项：
@@ -39,16 +71,19 @@ title: "ACP Agent"
 
 自然语言请求示例：
 
+- "将此 Discord Channel 绑定到 Codex。"
 - "在此 thread 中启动一个持久化 Codex Session 并保持专注。"
 - "以一次性 Claude Code ACP Session 运行此任务并汇总结果。"
+- "将此 iMessage 聊天绑定到 Codex，并让后续跟进保持在同一工作区中。"
 - "在 thread 中使用 Gemini CLI 完成这个任务，后续跟进保持在同一 thread 中。"
 
 OpenClaw 应执行的操作：
 
 1. 选择 `runtime: "acp"`。
 2. 解析请求的 harness 目标（`agentId`，例如 `codex`）。
-3. 如果请求了 thread 绑定且当前 Channel 支持，将 ACP Session 绑定到该 thread。
-4. 将后续 thread 消息路由到同一 ACP Session，直至取消焦点/关闭/过期。
+3. 如果请求了当前对话绑定且活跃 Channel 支持，将 ACP Session 绑定到该对话。
+4. 否则，如果请求了 thread 绑定且当前 Channel 支持，将 ACP Session 绑定到该 thread。
+5. 将后续绑定消息路由到同一 ACP Session，直至取消焦点/关闭/过期。
 
 ## ACP 与子 Agent 对比
 
@@ -63,7 +98,74 @@ OpenClaw 应执行的操作：
 
 另见 [子 Agent](/tools/subagents)。
 
-## Thread 绑定 Session（与 Channel 无关）
+## ACP 如何运行 Claude Code
+
+对于通过 ACP 的 Claude Code，栈结构为：
+
+1. OpenClaw ACP Session 控制平面
+2. 捆绑的 `acpx` 运行时 Plugin
+3. Claude ACP 适配器
+4. Claude 端运行时/Session 机制
+
+重要区别：
+
+- ACP Claude 是具有 ACP 控制、Session 恢复、后台任务跟踪和可选对话/thread 绑定的 harness Session。
+  对于运营者，实际规则是：
+
+- 需要 `/acp spawn`、可绑定 Session、运行时控制或持久化 harness 工作：使用 ACP
+
+## 绑定 Session
+
+### 当前对话绑定
+
+当你希望当前对话成为持久化 ACP 工作区而不创建子 thread 时，使用 `/acp spawn <harness> --bind here`。
+
+行为：
+
+- OpenClaw 继续拥有 Channel 传输、认证、安全和交付。
+- 当前对话被固定到已启动的 ACP Session key。
+- 该对话中的后续消息路由到同一 ACP Session。
+- `/new` 和 `/reset` 原地重置同一绑定 ACP Session。
+- `/acp close` 关闭 Session 并移除当前对话绑定。
+
+实际意味着：
+
+- `--bind here` 保持相同的聊天界面。在 Discord 上，当前 Channel 仍然是当前 Channel。
+- `--bind here` 在启动全新工作时仍然可以创建新的 ACP Session。绑定将该 Session 附加到当前对话。
+- `--bind here` 本身不会创建子 Discord thread 或 Telegram 话题。
+- ACP 运行时仍然可以有自己的工作目录（`cwd`）或磁盘上后端管理的工作区。该运行时工作区与聊天界面分离，不意味着新的消息 thread。
+- 如果你启动到不同的 ACP Agent 且不传递 `--cwd`，OpenClaw 默认继承**目标 Agent** 的工作区，而非请求者的工作区。
+- 如果继承的工作区路径缺失（`ENOENT`/`ENOTDIR`），OpenClaw 回退到后端默认 cwd，而不是静默地重用错误的目录树。
+- 如果继承的工作区存在但无法访问（例如 `EACCES`），启动会返回真实的访问错误而非丢弃 `cwd`。
+
+概念模型：
+
+- 聊天界面：人们继续交谈的地方（`Discord channel`、`Telegram topic`、`iMessage chat`）
+- ACP Session：OpenClaw 路由到的持久化 Codex/Claude/Gemini 运行时状态
+- 子 thread/话题：仅通过 `--thread ...` 创建的可选额外消息界面
+- 运行时工作区：harness 运行的文件系统位置（`cwd`、代码仓库检出、后端工作区）
+
+示例：
+
+- `/acp spawn codex --bind here`：保持此聊天，启动或附加 Codex ACP Session，并将此处的未来消息路由到它
+- `/acp spawn codex --thread auto`：OpenClaw 可能创建子 thread/话题并将 ACP Session 绑定到那里
+- `/acp spawn codex --bind here --cwd /workspace/repo`：与上述相同的聊天绑定，但 Codex 在 `/workspace/repo` 中运行
+
+当前对话绑定支持：
+
+- 公开了当前对话绑定支持的聊天/消息 Channel 可以通过共享对话绑定路径使用 `--bind here`。
+- 具有自定义 thread/话题语义的 Channel 仍然可以在同一共享接口后面提供 Channel 特定的规范化。
+- `--bind here` 始终意味着"原地绑定当前对话"。
+- 通用当前对话绑定使用共享 OpenClaw 绑定存储，并在正常 Gateway 重启后仍然存在。
+
+注意事项：
+
+- `--bind here` 和 `--thread ...` 在 `/acp spawn` 调用中互斥。
+- 在 Discord 上，`--bind here` 原地绑定当前 Channel 或 thread。仅当 OpenClaw 需要为 `--thread auto|here` 创建子 thread 时才需要 `spawnAcpSessions`。
+- 如果活跃 Channel 不暴露当前对话 ACP 绑定，OpenClaw 返回明确的不支持消息。
+- `resume` 和"新 Session"问题是 ACP Session 问题，而非 Channel 问题。你可以在不更改当前聊天界面的情况下重用或替换运行时状态。
+
+### Thread 绑定 Session
 
 当 Channel 适配器启用 thread 绑定时，ACP Session 可绑定到 thread：
 
@@ -100,6 +202,10 @@ Thread 绑定 ACP 所需的功能标志：
 - `bindings[].match` 标识目标对话：
   - Discord Channel 或 thread：`match.channel="discord"` + `match.peer.id="<channelOrThreadId>"`
   - Telegram 论坛话题：`match.channel="telegram"` + `match.peer.id="<chatId>:topic:<topicId>"`
+  - BlueBubbles DM/群聊：`match.channel="bluebubbles"` + `match.peer.id="<handle|chat_id:*|chat_guid:*|chat_identifier:*>"`
+    对于稳定的群组绑定，首选 `chat_id:*` 或 `chat_identifier:*`。
+  - iMessage DM/群聊：`match.channel="imessage"` + `match.peer.id="<handle|chat_id:*|chat_guid:*|chat_identifier:*>"`
+    对于稳定的群组绑定，首选 `chat_id:*`。
 - `bindings[].agentId` 是归属的 OpenClaw Agent ID。
 - 可选的 ACP 覆盖位于 `bindings[].acp` 下：
   - `mode`（`persistent` 或 `oneshot`）
@@ -209,6 +315,8 @@ ACP 绑定 Session 的覆盖优先级：
 - 该 Channel 或话题中的消息路由到已配置的 ACP Session。
 - 在绑定对话中，`/new` 和 `/reset` 原地重置同一 ACP Session key。
 - 临时运行时绑定（例如由 thread 焦点流程创建的）在存在时仍然适用。
+
+当前对话绑定不需要创建子 thread。它们需要活跃的对话上下文和暴露了 ACP 对话绑定的 Channel 适配器。
 
 ## 启动 ACP Session（接口）
 
@@ -326,6 +434,7 @@ ACP Session 目前在主机运行时上运行，而不是在 OpenClaw 沙箱内�
 需要时从聊天中使用 `/acp spawn` 进行显式运营者控制。
 
 ```text
+/acp spawn codex --bind here
 /acp spawn codex --mode persistent --thread auto
 /acp spawn codex --mode oneshot --thread off
 /acp spawn codex --thread here
@@ -333,6 +442,7 @@ ACP Session 目前在主机运行时上运行，而不是在 OpenClaw 沙箱内�
 
 主要标志：
 
+- `--bind here|off`
 - `--mode persistent|oneshot`
 - `--thread auto|here|off`
 - `--cwd <absolute-path>`
@@ -353,7 +463,25 @@ ACP Session 目前在主机运行时上运行，而不是在 OpenClaw 沙箱内�
 2. 当前 thread 绑定（如果此对话/thread 已绑定到 ACP Session）
 3. 当前请求者 Session 回退
 
+当前对话绑定和 thread 绑定都参与第 2 步。
+
 如果没有目标解析，OpenClaw 返回明确的错误（`Unable to resolve session target: ...`）。
+
+## 启动绑定模式
+
+`/acp spawn` 支持 `--bind here|off`。
+
+| 模式   | 行为                                               |
+| ------ | -------------------------------------------------- |
+| `here` | 原地绑定当前活跃对话；如果没有活跃对话则失败。     |
+| `off`  | 不创建当前对话绑定。                               |
+
+注意事项：
+
+- `--bind here` 是"使此 Channel 或聊天由 Codex 支持"的最简单运营者路径。
+- `--bind here` 不会创建子 thread。
+- `--bind here` 仅在暴露了当前对话绑定支持的 Channel 上可用。
+- `--bind` 和 `--thread` 不能在同一个 `/acp spawn` 调用中组合使用。
 
 ## 启动 Thread 模式
 
@@ -371,6 +499,7 @@ ACP Session 目前在主机运行时上运行，而不是在 OpenClaw 沙箱内�
 - Thread 绑定启动需要 Channel 策略支持：
   - Discord：`channels.discord.threadBindings.spawnAcpSessions=true`
   - Telegram：`channels.telegram.threadBindings.spawnAcpSessions=true`
+- 当你希望固定当前对话而不创建子 thread 时，使用 `--bind here`。
 
 ## ACP 控制
 
@@ -398,23 +527,23 @@ ACP Session 目前在主机运行时上运行，而不是在 OpenClaw 沙箱内�
 
 ## ACP 命令手册
 
-| 命令                 | 功能                                             | 示例                                                           |
-| -------------------- | ------------------------------------------------ | -------------------------------------------------------------- |
-| `/acp spawn`         | 创建 ACP Session；可选 thread 绑定。             | `/acp spawn codex --mode persistent --thread auto --cwd /repo` |
-| `/acp cancel`        | 取消目标 Session 的进行中 turn。                 | `/acp cancel agent:codex:acp:<uuid>`                           |
-| `/acp steer`         | 向运行中的 Session 发送引导指令。                | `/acp steer --session support inbox prioritize failing tests`  |
-| `/acp close`         | 关闭 Session 并解绑 thread 目标。                | `/acp close`                                                   |
-| `/acp status`        | 显示后端、模式、状态、运行时选项、能力。         | `/acp status`                                                  |
-| `/acp set-mode`      | 设置目标 Session 的运行时模式。                  | `/acp set-mode plan`                                           |
-| `/acp set`           | 通用运行时配置选项写入。                         | `/acp set model openai/gpt-5.2`                                |
-| `/acp cwd`           | 设置运行时工作目录覆盖。                         | `/acp cwd /Users/user/Projects/repo`                           |
-| `/acp permissions`   | 设置审批策略配置文件。                           | `/acp permissions strict`                                      |
-| `/acp timeout`       | 设置运行时超时（秒）。                           | `/acp timeout 120`                                             |
-| `/acp model`         | 设置运行时模型覆盖。                             | `/acp model anthropic/claude-opus-4-6`                         |
-| `/acp reset-options` | 移除 Session 运行时选项覆盖。                    | `/acp reset-options`                                           |
-| `/acp sessions`      | 从存储中列出最近的 ACP Session。                 | `/acp sessions`                                                |
-| `/acp doctor`        | 后端健康状况、能力、可操作修复建议。             | `/acp doctor`                                                  |
-| `/acp install`       | 打印确定性安装和启用步骤。                       | `/acp install`                                                 |
+| 命令                 | 功能                                             | 示例                                                             |
+| -------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| `/acp spawn`         | 创建 ACP Session；可选当前绑定或 thread 绑定。   | `/acp spawn codex --bind here --cwd /repo`                       |
+| `/acp cancel`        | 取消目标 Session 的进行中 turn。                 | `/acp cancel agent:codex:acp:<uuid>`                             |
+| `/acp steer`         | 向运行中的 Session 发送引导指令。                | `/acp steer --session support inbox prioritize failing tests`    |
+| `/acp close`         | 关闭 Session 并解绑 thread 目标。                | `/acp close`                                                     |
+| `/acp status`        | 显示后端、模式、状态、运行时选项、能力。         | `/acp status`                                                    |
+| `/acp set-mode`      | 设置目标 Session 的运行时模式。                  | `/acp set-mode plan`                                             |
+| `/acp set`           | 通用运行时配置选项写入。                         | `/acp set model openai/gpt-5.4`                                  |
+| `/acp cwd`           | 设置运行时工作目录覆盖。                         | `/acp cwd /Users/user/Projects/repo`                             |
+| `/acp permissions`   | 设置审批策略配置文件。                           | `/acp permissions strict`                                        |
+| `/acp timeout`       | 设置运行时超时（秒）。                           | `/acp timeout 120`                                               |
+| `/acp model`         | 设置运行时模型覆盖。                             | `/acp model anthropic/claude-opus-4-6`                           |
+| `/acp reset-options` | 移除 Session 运行时选项覆盖。                    | `/acp reset-options`                                             |
+| `/acp sessions`      | 从存储中列出最近的 ACP Session。                 | `/acp sessions`                                                  |
+| `/acp doctor`        | 后端健康状况、能力、可操作修复建议。             | `/acp doctor`                                                    |
+| `/acp install`       | 打印确定性安装和启用步骤。                       | `/acp install`                                                   |
 
 `/acp sessions` 从当前绑定或请求者 Session 的存储中读取。接受 `session-key`、`session-id` 或 `session-label` 令牌的命令通过 Gateway Session 发现解析目标，包括自定义的每 Agent `session.store` 根目录。
 
@@ -436,14 +565,23 @@ ACP Session 目前在主机运行时上运行，而不是在 OpenClaw 沙箱内�
 
 当前 acpx 内置 harness 别名：
 
-- `pi`
 - `claude`
 - `codex`
-- `opencode`
+- `copilot`
+- `cursor`（Cursor CLI：`cursor-agent acp`）
+- `droid`
 - `gemini`
+- `iflow`
+- `kilocode`
 - `kimi`
+- `kiro`
+- `openclaw`
+- `opencode`
+- `pi`
+- `qwen`
 
 当 OpenClaw 使用 acpx 后端时，除非你的 acpx 配置定义了自定义 Agent 别名，否则优先使用这些值作为 `agentId`。
+如果你本地的 Cursor 安装仍将 ACP 暴露为 `agent acp`，请在 acpx 配置中覆盖 `cursor` Agent 命令，而不是更改内置默认值。
 
 直接 acpx CLI 使用也可以通过 `--agent <command>` 定向到任意适配器，但这是 acpx CLI 功能（不是正常的 OpenClaw `agentId` 路径）。
 
@@ -459,7 +597,22 @@ ACP Session 目前在主机运行时上运行，而不是在 OpenClaw 沙箱内�
     dispatch: { enabled: true },
     backend: "acpx",
     defaultAgent: "codex",
-    allowedAgents: ["pi", "claude", "codex", "opencode", "gemini", "kimi"],
+    allowedAgents: [
+      "claude",
+      "codex",
+      "copilot",
+      "cursor",
+      "droid",
+      "gemini",
+      "iflow",
+      "kilocode",
+      "kimi",
+      "kiro",
+      "openclaw",
+      "opencode",
+      "pi",
+      "qwen",
+    ],
     maxConcurrentSessions: 8,
     stream: {
       coalesceIdleMs: 300,
@@ -498,11 +651,21 @@ Thread 绑定配置因 Channel 适配器而异。Discord 示例：
 
 - Discord：`channels.discord.threadBindings.spawnAcpSessions=true`
 
+当前对话绑定不需要创建子 thread。它们需要活跃的对话上下文和暴露了 ACP 对话绑定的 Channel 适配器。
+
 参见 [配置参考](/gateway/configuration-reference)。
 
 ## acpx 后端的 Plugin 设置
 
-安装并启用 Plugin：
+全新安装默认已启用捆绑的 `acpx` 运行时 Plugin，因此 ACP 通常无需手动安装 Plugin 步骤即可工作。
+
+从以下命令开始：
+
+```text
+/acp doctor
+```
+
+如果你禁用了 `acpx`、通过 `plugins.allow`/`plugins.deny` 拒绝了它，或者想切换到本地开发检出，请使用显式 Plugin 路径：
 
 ```bash
 openclaw plugins install acpx
@@ -512,7 +675,7 @@ openclaw config set plugins.entries.acpx.enabled true
 开发期间本地工作区安装：
 
 ```bash
-openclaw plugins install ./extensions/acpx
+openclaw plugins install ./path/to/local/acpx-plugin
 ```
 
 然后验证后端健康状况：
@@ -525,7 +688,7 @@ openclaw plugins install ./extensions/acpx
 
 默认情况下，捆绑的 acpx 后端 Plugin（`acpx`）使用 Plugin 本地固定的二进制文件：
 
-1. 命令默认为 `extensions/acpx/node_modules/.bin/acpx`。
+1. 命令默认为 ACPX Plugin 包内 Plugin 本地的 `node_modules/.bin/acpx`。
 2. 预期版本默认为扩展固定版本。
 3. 启动时立即将 ACP 后端注册为未就绪。
 4. 后台确保作业验证 `acpx --version`。
@@ -559,9 +722,40 @@ openclaw plugins install ./extensions/acpx
 
 参见 [Plugin](/tools/plugin)。
 
+### 自动依赖安装
+
+当你使用 `npm install -g openclaw` 全局安装 OpenClaw 时，acpx 运行时依赖项（平台特定的二进制文件）会通过 postinstall hook 自动安装。如果自动安装失败，Gateway 仍会正常启动，并通过 `openclaw acp doctor` 报告缺失的依赖项。
+
+### Plugin 工具 MCP 桥接
+
+默认情况下，ACPX Session **不**向 ACP harness 暴露 OpenClaw Plugin 注册的工具。
+
+如果你希望 Codex 或 Claude Code 等 ACP Agent 调用已安装的 OpenClaw Plugin 工具（如记忆召回/存储），请启用专用桥接：
+
+```bash
+openclaw config set plugins.entries.acpx.config.pluginToolsMcpBridge true
+```
+
+此操作的作用：
+
+- 将名为 `openclaw-plugin-tools` 的内置 MCP 服务器注入 ACPX Session 引导程序。
+- 暴露已安装且启用的 OpenClaw Plugin 已注册的 Plugin 工具。
+- 保持该功能显式且默认关闭。
+
+安全和信任注意事项：
+
+- 这会扩展 ACP harness 工具界面。
+- ACP Agent 只能访问 Gateway 中已激活的 Plugin 工具。
+- 将其视为与让这些 Plugin 在 OpenClaw 本身中执行相同的信任边界。
+- 启用前请检查已安装的 Plugin。
+
+自定义 `mcpServers` 仍像以前一样工作。内置 Plugin 工具桥接是额外的可选便捷功能，而非通用 MCP 服务器配置的替代品。
+
 ## 权限配置
 
 ACP Session 以非交互方式运行——没有 TTY 来批准或拒绝文件写入和 shell 执行权限提示。acpx Plugin 提供了两个配置键来控制权限处理方式：
+
+这些 ACPX harness 权限与 OpenClaw exec 批准分离，也与 CLI 后端供应商绕过标志（如 Claude CLI `--permission-mode bypassPermissions`）分离。ACPX `approve-all` 是 ACP Session 的 harness 级别破玻璃开关。
 
 ### `permissionMode`
 
@@ -606,8 +800,10 @@ openclaw config set plugins.entries.acpx.config.nonInteractivePermissions fail
 | `ACP dispatch is disabled by policy (acp.dispatch.enabled=false)`        | 来自普通 thread 消息的调度已禁用。                                          | 设置 `acp.dispatch.enabled=true`。                                                                                                                           |
 | `ACP agent "<id>" is not allowed by policy`                              | Agent 不在允许列表中。                                                     | 使用允许的 `agentId` 或更新 `acp.allowedAgents`。                                                                                                            |
 | `Unable to resolve session target: ...`                                  | 错误的 key/id/label 令牌。                                                 | 运行 `/acp sessions`，复制确切的 key/label，重试。                                                                                                           |
+| `--bind here requires running /acp spawn inside an active ... conversation` | `--bind here` 在没有活跃可绑定对话的情况下使用。                          | 移至目标聊天/Channel 并重试，或使用未绑定的启动。                                                                                                            |
+| `Conversation bindings are unavailable for <channel>.`                   | 适配器缺少当前对话 ACP 绑定能力。                                          | 在支持的地方使用 `/acp spawn ... --thread ...`、配置顶层 `bindings[]`，或移至支持的 Channel。                                                                |
 | `--thread here requires running /acp spawn inside an active ... thread`  | `--thread here` 在 thread 上下文外使用。                                   | 移至目标 thread 或使用 `--thread auto`/`off`。                                                                                                               |
-| `Only <user-id> can rebind this thread.`                                 | 另一用户拥有 thread 绑定。                                                 | 以所有者身份重新绑定或使用不同的 thread。                                                                                                                    |
+| `Only <user-id> can rebind this channel/conversation/thread.`            | 另一用户拥有活跃绑定目标。                                                 | 以所有者身份重新绑定或使用不同的对话或 thread。                                                                                                              |
 | `Thread bindings are unavailable for <channel>.`                         | 适配器缺少 thread 绑定能力。                                               | 使用 `--thread off` 或移至支持的适配器/Channel。                                                                                                             |
 | `Sandboxed sessions cannot spawn ACP sessions ...`                       | ACP 运行时在主机端；请求者 Session 已沙箱化。                              | 在沙箱化 Session 中使用 `runtime="subagent"`，或从未沙箱化 Session 运行 ACP 启动。                                                                           |
 | `sessions_spawn sandbox="require" is unsupported for runtime="acp" ...`  | 为 ACP 运行时请求了 `sandbox="require"`。                                  | 使用 `runtime="subagent"` 进行必需的沙箱隔离，或使用 ACP 配合从未沙箱化 Session 的 `sandbox="inherit"`。                                                    |

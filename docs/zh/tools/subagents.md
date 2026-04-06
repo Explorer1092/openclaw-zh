@@ -1,7 +1,7 @@
 ---
 title: "子 Agent"
 sidebarTitle: "子 Agent"
-mmh3_hash: "89ccc3a0d63c87041e4d691143f0beea"
+mmh3_hash: "ed1e88c3adcc70c343a1e850bebe2d50"
 summary: "子 Agent：生成隔离的 Agent 运行，将结果公告回请求者聊天"
 read_when:
   - 您想通过 Agent 进行后台/并行工作
@@ -11,7 +11,7 @@ read_when:
 
 # 子 Agent
 
-子 Agent 是从现有 Agent 运行生成的后台 Agent 运行。它们在自己的 Session（`agent:<agentId>:subagent:<uuid>`）中运行，完成后，将其结果**公告**回请求者聊天 Channel。
+子 Agent 是从现有 Agent 运行生成的后台 Agent 运行。它们在自己的 Session（`agent:<agentId>:subagent:<uuid>`）中运行，完成后，将其结果**公告**回请求者聊天 Channel。每个子 Agent 运行都作为[后台任务](/automation/tasks)被追踪。
 
 ## 斜杠命令
 
@@ -35,7 +35,7 @@ read_when:
 - `/session idle <duration|off>`
 - `/session max-age <duration|off>`
 
-`/subagents info` 显示运行元数据（状态、时间戳、Session id、脚本路径、清理）。
+`/subagents info` 显示运行元数据（状态、时间戳、Session id、转录路径、清理）。使用 `sessions_history` 进行有界、安全过滤的回顾视图；当需要原始完整转录时，在磁盘上检查转录路径。
 
 ### 生成行为
 
@@ -43,12 +43,17 @@ read_when:
 
 - 生成命令是非阻塞的；它立即返回运行 id。
 - 完成时，子 Agent 将摘要/结果消息公告回请求者聊天 Channel。
+- 完成是推送式的。一旦生成，不要在循环中轮询 `/subagents list`、`sessions_list` 或 `sessions_history` 只是为了等待它完成；仅在需要调试或干预时按需检查状态。
+- 完成时，OpenClaw 在公告清理流程继续之前，尽力关闭该子 Agent Session 打开的已追踪浏览器标签页/进程。
 - 对于手动生成，投递是弹性的：
   - OpenClaw 首先使用稳定的幂等键尝试直接 `agent` 投递。
   - 如果直接投递失败，则回退到队列路由。
   - 如果队列路由仍不可用，则以短指数退避重试公告，然后最终放弃。
-- 完成消息是系统生成的内部上下文（非用户编写的文本），包括：
-  - `Result`（`assistant` 回复文本，或者如果 Agent 回复为空则是最新的 `toolResult`）
+- 完成投递保留已解析的请求者路由：
+  - 线程绑定或对话绑定的完成路由在可用时优先
+  - 如果完成来源仅提供 Channel，OpenClaw 从请求者 Session 的已解析路由（`lastChannel` / `lastTo` / `lastAccountId`）中填充缺失的目标/账户，使直接投递仍然有效
+- 完成移交给请求者 Session 的内容是运行时生成的内部上下文（非用户编写的文本），包括：
+  - `Result`（最新可见的 `assistant` 回复文本，否则为经过处理的最新工具/toolResult 文本）
   - `Status`（`completed successfully` / `failed` / `timed out` / `unknown`）
   - 紧凑的运行时/令牌统计
   - 一条投递指令，告诉请求者 Agent 以正常 assistant 语气重写（不转发原始内部元数据）
@@ -126,7 +131,9 @@ read_when:
 允许列表：
 
 - `agents.list[].subagents.allowAgents`：可以通过 `agentId` 定位的 Agent id 列表（`["*"]` 表示允许任何）。默认：仅请求者 Agent。
+- `agents.defaults.subagents.allowAgents`：当请求者 Agent 没有设置自己的 `subagents.allowAgents` 时使用的默认目标 Agent 允许列表。
 - 沙盒继承守卫：如果请求者 Session 被沙盒化，`sessions_spawn` 拒绝会在未沙盒化的情况下运行的目标。
+- `agents.defaults.subagents.requireAgentId` / `agents.list[].subagents.requireAgentId`：为 true 时，阻止省略 `agentId` 的 `sessions_spawn` 调用（强制显式配置文件选择）。默认：false。
 
 发现：
 
@@ -140,6 +147,7 @@ read_when:
 - 自动归档是尽力而为的；如果 Gateway 重启，待处理的计时器将丢失。
 - `runTimeoutSeconds` **不**自动归档；它只停止运行。Session 保持直到自动归档。
 - 自动归档同样适用于深度 1 和深度 2 Session。
+- 浏览器清理与归档清理是独立的：即使转录/Session 记录保留，已追踪的浏览器标签页/进程也会在运行完成时尽力关闭。
 
 ## 嵌套子 Agent
 
@@ -180,6 +188,11 @@ read_when:
 
 每个级别只看到来自其直接子 Agent 的公告。
 
+操作指南：
+
+- 一次启动子 Agent 工作并等待完成事件，而不是围绕 `sessions_list`、`sessions_history`、`/subagents list` 或 `exec` sleep 命令构建轮询循环。
+- 如果子 Agent 完成事件在您已经发送最终答案之后到达，正确的后续动作是精确的静默令牌 `NO_REPLY` / `no_reply`。
+
 ### 按深度划分的工具策略
 
 - 角色和控制范围在生成时写入 Session 元数据。这防止扁平或还原的 Session 键意外重新获得编排器权限。
@@ -215,10 +228,12 @@ read_when:
 
 - 公告步骤在子 Agent Session 内运行（不在请求者 Session 中）。
 - 如果子 Agent 回复恰好是 `ANNOUNCE_SKIP`，则不发布任何内容。
+- 如果最新的 assistant 文本是精确的静默令牌 `NO_REPLY` / `no_reply`，即使之前存在可见进度，公告输出也会被抑制。
 - 否则投递取决于请求者深度：
   - 顶层请求者 Session 使用带外部投递的后续 `agent` 调用（`deliver=true`）
   - 嵌套请求者子 Agent Session 接收内部后续注入（`deliver=false`），以便编排器可在 Session 内综合子 Agent 结果
   - 如果嵌套请求者子 Agent Session 已消失，OpenClaw 在可用时回退到该 Session 的请求者
+- 对于顶层请求者 Session，完成模式直接投递首先解析任何绑定的对话/线程路由和 hook 覆盖，然后从请求者 Session 的存储路由中填充缺失的 Channel 目标字段。即使完成来源仅标识 Channel，这也能使完成保持在正确的聊天/主题上。
 - 子 Agent 完成聚合在构建嵌套完成结果时的作用域限于当前请求者运行，防止过期的先前运行子 Agent 输出泄漏到当前公告中。
 - 公告回复在 Channel 适配器上可用时保留线程/主题路由。
 - 公告上下文被规范化为稳定的内部事件块：
@@ -226,9 +241,10 @@ read_when:
   - 子 Session 键/id
   - 公告类型 + 任务标签
   - 从运行时结果派生的状态行（`success`、`error`、`timeout` 或 `unknown`）
-  - 来自公告步骤的结果内容（或如果缺失则为 `(no output)`）
+  - 从最新可见 assistant 文本中选取的结果内容，否则为经过处理的最新工具/toolResult 文本
   - 一条后续指令，描述何时回复与保持静默
 - `Status` 不从模型输出推断；它来自运行时结果信号。
+- 超时时，如果子 Agent 只完成了工具调用，公告可以将该历史压缩为简短的部分进度摘要，而不是重放原始工具输出。
 
 公告有效负载在末尾包含统计行（即使在包装时）：
 
@@ -238,6 +254,20 @@ read_when:
 - `sessionKey`、`sessionId` 和脚本路径（以便主 Agent 可以通过 `sessions_history` 获取历史记录或在磁盘上检查文件）
 - 内部元数据仅供编排使用；面向用户的回复应以正常 assistant 语气重写。
 
+`sessions_history` 是更安全的编排路径：
+
+- assistant 回顾首先被规范化：
+  - thinking 标签被剥离
+  - `<relevant-memories>` / `<relevant_memories>` 脚手架块被剥离
+  - 纯文本工具调用 XML 有效载荷块（如 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>` 和 `<function_calls>...</function_calls>`）被剥离，包括从未正确闭合的截断有效载荷
+  - 降级的工具调用/结果脚手架和历史上下文标记被剥离
+  - 泄露的模型控制令牌（如 `<|assistant|>`、其他 ASCII `<|...|>` 令牌和全角 `<｜...｜>` 变体）被剥离
+  - 格式错误的 MiniMax 工具调用 XML 被剥离
+- 凭据/令牌类文本被编辑
+- 长块可能被截断
+- 非常大的历史记录可以删除旧行或将超大行替换为 `[sessions_history omitted: message too large]`
+- 当需要完整的字节级转录时，原始磁盘上的转录检查是回退方案
+
 ## 工具策略（子 Agent 工具）
 
 默认情况下，子 Agent 获取**除 Session 工具和系统工具之外的所有工具**：
@@ -246,6 +276,8 @@ read_when:
 - `sessions_history`
 - `sessions_send`
 - `sessions_spawn`
+
+此处 `sessions_history` 也保持有界、经过处理的回顾视图；不是原始转录转储。
 
 当 `maxSpawnDepth >= 2` 时，深度 1 编排器子 Agent 额外接收 `sessions_spawn`、`subagents`、`sessions_list` 和 `sessions_history`，以便管理其子 Agent。
 

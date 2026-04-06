@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "97ab15d0b533334d6b74d119b0f43e69"
+mmh3_hash: "017d8d86a3fbbbc8eedfb82128791cc4"
 summary: "Perplexity Search API 及 Sonar/OpenRouter 兼容性，用于 web_search"
 read_when:
   - 希望使用 Perplexity Search 进行网页搜索
@@ -108,8 +108,11 @@ OpenClaw 支持将 Perplexity Search API 作为 `web_search` 提供商。它返�
 | `max_tokens`          | 总内容预算（默认：25000，最大：1000000）           |
 | `max_tokens_per_page` | 每页 token 限制（默认：2048）                     |
 
-对于旧版 Sonar/OpenRouter 兼容路径，仅支持 `query` 和 `freshness`。
-`country`、`language`、`date_after`、`date_before`、`domain_filter`、`max_tokens` 和 `max_tokens_per_page` 等仅 Search API 支持的过滤器会返回明确的错误。
+对于旧版 Sonar/OpenRouter 兼容路径：
+
+- 接受 `query`、`count` 和 `freshness`
+- `count` 在那里仅供兼容性使用；响应仍然是一个带引用的合成答案，而非 N 条结果列表
+- `country`、`language`、`date_after`、`date_before`、`domain_filter`、`max_tokens` 和 `max_tokens_per_page` 等仅 Search API 支持的过滤器会返回明确的错误
 
 **示例：**
 
@@ -164,6 +167,7 @@ await web_search({
 
 - Perplexity Search API 返回结构化网页搜索结果（`title`、`url`、`snippet`）
 - 使用 OpenRouter 或显式设置 `plugins.entries.perplexity.config.webSearch.baseUrl` / `model` 会将 Perplexity 切换回 Sonar 聊天补全模式，以保持兼容性
+- Sonar/OpenRouter 兼容返回一个带引用的合成答案，而非结构化结果行
 - 结果默认缓存 15 分钟（可通过 `cacheTtlMinutes` 配置）
 
 ## 相关

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cba321e447e076e574dbcdea025574c7"
+mmh3_hash: "18f29af82a159c2810f2cdfc4a182945"
 summary: "安装、配置和管理 OpenClaw Plugin"
 read_when:
   - 安装或配置 Plugin
@@ -11,7 +11,7 @@ sidebarTitle: "安装和配置"
 
 # Plugin
 
-Plugin 为 OpenClaw 扩展新能力：Channel、模型 Provider、工具、技能、语音、图像生成等。某些 Plugin 是**核心**的（随 OpenClaw 附带），其他是**外部**的（由社区发布在 npm 上）。
+Plugin 为 OpenClaw 扩展新能力：Channel、模型 Provider、工具、技能、语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取、Web 搜索等。某些 Plugin 是**核心**的（随 OpenClaw 附带），其他是**外部**的（由社区发布在 npm 上）。
 
 ## 快速入门
 
@@ -54,6 +54,8 @@ Plugin 为 OpenClaw 扩展新能力：Channel、模型 Provider、工具、技�
 
 安装路径使用与 CLI 相同的解析器：本地路径/存档、显式 `clawhub:<pkg>`，或裸包规格（ClawHub 优先，然后 npm 回退）。
 
+如果配置无效，安装通常会安全失败并指向 `openclaw doctor --fix`。唯一的恢复例外是针对选择加入 `openclaw.install.allowInvalidConfigRecovery` 的 Plugin 的窄范围捆绑 Plugin 重新安装路径。
+
 ## Plugin 类型
 
 OpenClaw 识别两种 Plugin 格式：
@@ -85,9 +87,9 @@ OpenClaw 识别两种 Plugin 格式：
 <AccordionGroup>
   <Accordion title="模型 Provider（默认启用）">
     `anthropic`、`byteplus`、`cloudflare-ai-gateway`、`github-copilot`、`google`、
-    `huggingface`、`kilocode`、`kimi-coding`、`minimax`、`mistral`、`modelstudio`、
+    `huggingface`、`kilocode`、`kimi-coding`、`minimax`、`mistral`、`qwen`、
     `moonshot`、`nvidia`、`openai`、`opencode`、`opencode-go`、`openrouter`、
-    `qianfan`、`qwen-portal-auth`、`synthetic`、`together`、`venice`、
+    `qianfan`、`synthetic`、`together`、`venice`、
     `vercel-ai-gateway`、`volcengine`、`xiaomi`、`zai`
   </Accordion>
 
@@ -101,6 +103,7 @@ OpenClaw 识别两种 Plugin 格式：
   </Accordion>
 
   <Accordion title="其他">
+    - `browser` — 浏览器工具、`openclaw browser` CLI、`browser.request` Gateway 方法、浏览器运行时和默认浏览器控制服务的捆绑 Plugin（默认启用；替换前先禁用）
     - `copilot-proxy` — VS Code Copilot Proxy 桥接（默认禁用）
   </Accordion>
 </AccordionGroup>
@@ -150,11 +153,11 @@ OpenClaw 按以下顺序扫描 Plugin（第一个匹配优先）：
   </Step>
 
   <Step title="工作区扩展">
-    `\<workspace\>/.openclaw/extensions/*.ts` 和 `\<workspace\>/.openclaw/extensions/*/index.ts`。
+    `\<workspace\>/.openclaw/<plugin-root>/*.ts` 和 `\<workspace\>/.openclaw/<plugin-root>/*/index.ts`。
   </Step>
 
   <Step title="全局扩展">
-    `~/.openclaw/extensions/*.ts` 和 `~/.openclaw/extensions/*/index.ts`。
+    `~/.openclaw/<plugin-root>/*.ts` 和 `~/.openclaw/<plugin-root>/*/index.ts`。
   </Step>
 
   <Step title="捆绑 Plugin">
@@ -194,28 +197,56 @@ OpenClaw 按以下顺序扫描 Plugin（第一个匹配优先）：
 ## CLI 参考
 
 ```bash
-openclaw plugins list                    # 紧凑清单
-openclaw plugins inspect <id>            # 详细信息
-openclaw plugins inspect <id> --json     # 机器可读
-openclaw plugins status                  # 操作摘要
-openclaw plugins doctor                  # 诊断
+openclaw plugins list                       # 紧凑清单
+openclaw plugins list --enabled            # 仅已加载的 Plugin
+openclaw plugins list --verbose            # 每个 Plugin 的详细行
+openclaw plugins list --json               # 机器可读清单
+openclaw plugins inspect <id>              # 深度详情
+openclaw plugins inspect <id> --json       # 机器可读
+openclaw plugins inspect --all             # 全范围表格
+openclaw plugins info <id>                 # inspect 别名
+openclaw plugins doctor                    # 诊断
 
-openclaw plugins install <package>        # 安装（ClawHub 优先，然后 npm）
-openclaw plugins install clawhub:<pkg>   # 仅从 ClawHub 安装
-openclaw plugins install <path>          # 从本地路径安装
-openclaw plugins install -l <path>       # 链接（不复制）用于开发
+openclaw plugins install <package>         # 安装（ClawHub 优先，然后 npm）
+openclaw plugins install clawhub:<pkg>     # 仅从 ClawHub 安装
+openclaw plugins install <spec> --force    # 覆盖现有安装
+openclaw plugins install <path>            # 从本地路径安装
+openclaw plugins install -l <path>         # 链接（不复制）用于开发
+openclaw plugins install <plugin> --marketplace <source>
+openclaw plugins install <plugin> --marketplace https://github.com/<owner>/<repo>
+openclaw plugins install <spec> --pin      # 记录精确解析的 npm 规格
+openclaw plugins install <spec> --dangerously-force-unsafe-install
 openclaw plugins update <id>             # 更新单个 Plugin
+openclaw plugins update <id> --dangerously-force-unsafe-install
 openclaw plugins update --all            # 更新全部
+openclaw plugins uninstall <id>          # 移除配置/安装记录
+openclaw plugins uninstall <id> --keep-files
+openclaw plugins marketplace list <source>
+openclaw plugins marketplace list <source> --json
 
 openclaw plugins enable <id>
 openclaw plugins disable <id>
 ```
 
+捆绑 Plugin 随 OpenClaw 附带。许多默认启用（例如捆绑的模型 Provider、捆绑的语音 Provider 和捆绑的 browser Plugin）。其他捆绑 Plugin 仍然需要 `openclaw plugins enable <id>`。
+
+`--force` 原地覆盖现有安装的 Plugin 或 hook 包。不支持与 `--link` 一起使用，因为 `--link` 重用源路径而不是复制到托管安装目标。
+
+`--pin` 仅限 npm。不支持与 `--marketplace` 一起使用，因为 marketplace 安装保留 marketplace 源元数据而非 npm 规格。
+
+`--dangerously-force-unsafe-install` 是内置危险代码扫描器误报的破玻璃覆盖。它允许 Plugin 安装和更新继续通过内置 `critical` 发现，但仍然不会绕过 Plugin `before_install` 策略阻止或扫描失败阻止。
+
+兼容包参与相同的 Plugin list/inspect/enable/disable 流程。当前运行时支持包括包技能、Claude command-skills、Claude `settings.json` 默认值、Claude `.lsp.json` 和 manifest 声明的 `lspServers` 默认值、Cursor command-skills 和兼容的 Codex hook 目录。
+
+`openclaw plugins inspect <id>` 还会报告检测到的包能力以及包支持 Plugin 的已支持或不支持的 MCP 和 LSP 服务器条目。
+
+Marketplace 源可以是来自 `~/.claude/plugins/known_marketplaces.json` 的 Claude 已知 marketplace 名称、本地 marketplace 根目录或 `marketplace.json` 路径、GitHub 简写如 `owner/repo`、GitHub 仓库 URL 或 git URL。对于远程 marketplace，Plugin 条目必须保持在克隆的 marketplace 仓库内并仅使用相对路径源。
+
 参见 [`openclaw plugins` CLI 参考](/cli/plugins) 了解完整详情。
 
 ## Plugin API 概览
 
-Plugin 导出函数或带有 `register(api)` 的对象：
+原生 Plugin 导出一个暴露 `register(api)` 的入口对象。较旧的 Plugin 仍可使用 `activate(api)` 作为旧版别名，但新 Plugin 应使用 `register`。
 
 ```typescript
 export default definePluginEntry({
@@ -235,22 +266,40 @@ export default definePluginEntry({
 });
 ```
 
+OpenClaw 加载入口对象并在 Plugin 激活期间调用 `register(api)`。加载器仍然为旧 Plugin 回退到 `activate(api)`，但捆绑 Plugin 和新外部 Plugin 应将 `register` 视为公共契约。
+
 常用注册方法：
 
-| 方法                                 | 注册内容              |
-| ------------------------------------ | --------------------- |
-| `registerProvider`                   | 模型 Provider（LLM）  |
-| `registerChannel`                    | 聊天 Channel          |
-| `registerTool`                       | Agent 工具            |
-| `registerHook` / `on(...)`           | 生命周期 Hook         |
-| `registerSpeechProvider`             | 文本转语音 / STT      |
-| `registerMediaUnderstandingProvider` | 图像/音频分析         |
-| `registerImageGenerationProvider`    | 图像生成              |
-| `registerWebSearchProvider`          | 网页搜索              |
-| `registerHttpRoute`                  | HTTP 端点             |
-| `registerCommand` / `registerCli`    | CLI 命令              |
-| `registerContextEngine`              | 上下文引擎            |
-| `registerService`                    | 后台服务              |
+| 方法                                    | 注册内容              |
+| --------------------------------------- | --------------------- |
+| `registerProvider`                      | 模型 Provider（LLM）  |
+| `registerChannel`                       | 聊天 Channel          |
+| `registerTool`                          | Agent 工具            |
+| `registerHook` / `on(...)`              | 生命周期 Hook         |
+| `registerSpeechProvider`                | 文本转语音 / STT      |
+| `registerRealtimeTranscriptionProvider` | 流式 STT              |
+| `registerRealtimeVoiceProvider`         | 双工实时语音          |
+| `registerMediaUnderstandingProvider`    | 图像/音频分析         |
+| `registerImageGenerationProvider`       | 图像生成              |
+| `registerMusicGenerationProvider`       | 音乐生成              |
+| `registerVideoGenerationProvider`       | 视频生成              |
+| `registerWebFetchProvider`              | Web 抓取/提取 Provider |
+| `registerWebSearchProvider`             | 网页搜索              |
+| `registerHttpRoute`                     | HTTP 端点             |
+| `registerCommand` / `registerCli`       | CLI 命令              |
+| `registerContextEngine`                 | 上下文引擎            |
+| `registerService`                       | 后台服务              |
+
+类型化生命周期 Hook 的 Hook 守卫行为：
+
+- `before_tool_call`：`{ block: true }` 是终端性的；低优先级处理器被跳过。
+- `before_tool_call`：`{ block: false }` 是无操作的，不会清除较早的阻止。
+- `before_install`：`{ block: true }` 是终端性的；低优先级处理器被跳过。
+- `before_install`：`{ block: false }` 是无操作的，不会清除较早的阻止。
+- `message_sending`：`{ cancel: true }` 是终端性的；低优先级处理器被跳过。
+- `message_sending`：`{ cancel: false }` 是无操作的，不会清除较早的取消。
+
+有关完整的类型化 Hook 行为，参见 [SDK 概览](/plugins/sdk-overview#hook-decision-semantics)。
 
 ## 相关
 

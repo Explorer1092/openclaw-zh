@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dff41bb0a2dda8fd4484efa02702a14e"
+mmh3_hash: "54104d47bf008c162d6d5f33b5b5a021"
 title: "Lobster"
 sidebarTitle: "Lobster 工作流"
 summary: "OpenClaw 的类型化工作流运行时，具有可恢复的批准门控。"
@@ -12,6 +12,8 @@ read_when:
 # Lobster
 
 Lobster 是一个工作流 Shell，让 OpenClaw 将多步骤工具序列作为单个、确定性操作运行，并具有明确的批准检查点。
+
+Lobster 是在独立后台工作之上的一个创作层。对于超越单个任务的流程编排，参见 [Task Flow](/automation/taskflow)（`openclaw tasks flow`）。对于任务活动账本，参见 [`openclaw tasks`](/automation/tasks)。
 
 ## Hook
 
@@ -37,7 +39,7 @@ Lobster 有意保持小巧。目标不是"一种新语言"，而是一个可预�
 
 ## 工作原理
 
-OpenClaw 在**工具模式**下启动本地 `lobster` CLI，并从 stdout 解析 JSON 信封。如果管道暂停以等待批准，工具会返回 `resumeToken`，以便您稍后继续。
+OpenClaw 使用嵌入式运行器**进程内**运行 Lobster 工作流。不会生成外部 CLI 子进程；工作流引擎在 Gateway 进程内执行，并直接返回 JSON 信封。如果管道暂停以等待批准，工具会返回 `resumeToken`，以便您稍后继续。
 
 ## 模式：小型 CLI + JSON 管道 + 批准
 
@@ -153,7 +155,9 @@ steps:
 
 ## 安装 Lobster
 
-在运行 OpenClaw Gateway 的**同一主机**上安装 Lobster CLI（参见 [Lobster 仓库](https://github.com/openclaw/lobster)），并确保 `lobster` 在 `PATH` 上。
+捆绑的 Lobster 工作流进程内运行；不需要单独的 `lobster` 二进制文件。嵌入式运行器随 Lobster Plugin 一起提供。
+
+如果你需要用于开发或外部管道的独立 Lobster CLI，请从 [Lobster 仓库](https://github.com/openclaw/lobster) 安装，并确保 `lobster` 在 `PATH` 上。
 
 ## 启用工具
 
@@ -283,9 +287,9 @@ Lobster 是一个**可选**插件工具（默认不启用）。
 
 ### 可选输入
 
-- `cwd`：管道的相对工作目录（必须保持在当前进程工作目录内）。
-- `timeoutMs`：如果超过此持续时间，杀死子进程（默认：20000）。
-- `maxStdoutBytes`：如果 stdout 超过此大小，杀死子进程（默认：512000）。
+- `cwd`：管道的相对工作目录（必须保持在 Gateway 工作目录内）。
+- `timeoutMs`：如果超过此持续时间，中止工作流（默认：20000）。
+- `maxStdoutBytes`：如果输出超过此大小，中止工作流（默认：512000）。
 - `argsJson`：传递给 `lobster run --args-json` 的 JSON 字符串（仅工作流文件）。
 
 ## 输出信封
@@ -313,17 +317,17 @@ OpenProse 与 Lobster 配合得很好：使用 `/prose` 编排多 Agent 准备�
 
 ## 安全
 
-- **仅本地子进程** — 插件本身没有网络调用。
+- **仅本地进程内** — 工作流在 Gateway 进程内执行；插件本身没有网络调用。
 - **无秘密** — Lobster 不管理 OAuth；它调用执行此操作的 OpenClaw 工具。
 - **沙箱感知** — 当工具上下文被沙箱化时禁用。
-- **加固** — `PATH` 上的固定可执行文件名（`lobster`）；强制执行超时和输出上限。
+- **加固** — 嵌入式运行器强制执行超时和输出上限。
 
 ## 故障排除
 
-- **`lobster subprocess timed out`** → 增加 `timeoutMs`，或拆分长管道。
+- **`lobster timed out`** → 增加 `timeoutMs`，或拆分长管道。
 - **`lobster output exceeded maxStdoutBytes`** → 提高 `maxStdoutBytes` 或减少输出大小。
 - **`lobster returned invalid JSON`** → 确保管道在工具模式下运行并且仅打印 JSON。
-- **`lobster failed (code …)`** → 在终端中运行相同的管道以检查 stderr。
+- **`lobster failed`** → 检查 Gateway 日志以获取嵌入式运行器的错误详情。
 
 ## 了解更多
 

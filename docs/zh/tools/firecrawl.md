@@ -1,6 +1,6 @@
 ---
 title: "Firecrawl"
-mmh3_hash: "d8eab7d5acc5637ad53c14edd834db8f"
+mmh3_hash: "345c44f8243ea46370673d6ffd7508bd"
 summary: "Firecrawl 搜索、抓取和 web_fetch 回退"
 read_when:
   - 需要 Firecrawl 支持的网页提取
@@ -56,6 +56,8 @@ OpenClaw 可以通过三种方式使用 **Firecrawl**：
 - 在引导程序或 `openclaw configure --section web` 中选择 Firecrawl 会自动启用捆绑的 Firecrawl Plugin。
 - 使用 Firecrawl 的 `web_search` 支持 `query` 和 `count`。
 - 对于 Firecrawl 特定的控制（如 `sources`、`categories` 或结果抓取），使用 `firecrawl_search`。
+- `baseUrl` 覆盖必须保持在 `https://api.firecrawl.dev`。
+- `FIRECRAWL_BASE_URL` 是 Firecrawl 搜索和抓取基础 URL 的共享环境变量回退。
 
 ## 配置 Firecrawl 抓取 + web_fetch 回退
 
@@ -65,18 +67,14 @@ OpenClaw 可以通过三种方式使用 **Firecrawl**：
     entries: {
       firecrawl: {
         enabled: true,
-      },
-    },
-  },
-  tools: {
-    web: {
-      fetch: {
-        firecrawl: {
-          apiKey: "FIRECRAWL_API_KEY_HERE",
-          baseUrl: "https://api.firecrawl.dev",
-          onlyMainContent: true,
-          maxAgeMs: 172800000,
-          timeoutSeconds: 60,
+        config: {
+          webFetch: {
+            apiKey: "FIRECRAWL_API_KEY_HERE",
+            baseUrl: "https://api.firecrawl.dev",
+            onlyMainContent: true,
+            maxAgeMs: 172800000,
+            timeoutSeconds: 60,
+          },
         },
       },
     },
@@ -86,11 +84,12 @@ OpenClaw 可以通过三种方式使用 **Firecrawl**：
 
 注意事项：
 
-- `firecrawl.enabled` 默认为 `true`，除非显式设为 `false`。
-- Firecrawl 回退尝试仅在 API 密钥可用时运行（`tools.web.fetch.firecrawl.apiKey` 或 `FIRECRAWL_API_KEY`）。
+- Firecrawl 回退尝试仅在 API 密钥可用时运行（`plugins.entries.firecrawl.config.webFetch.apiKey` 或 `FIRECRAWL_API_KEY`）。
 - `maxAgeMs` 控制缓存结果的最大存活时间（毫秒）。默认为 2 天。
+- 旧版 `tools.web.fetch.firecrawl.*` 配置由 `openclaw doctor --fix` 自动迁移。
+- Firecrawl 抓取/基础 URL 覆盖限制为 `https://api.firecrawl.dev`。
 
-`firecrawl_scrape` 复用相同的 `tools.web.fetch.firecrawl.*` 设置和环境变量。
+`firecrawl_scrape` 复用相同的 `plugins.entries.firecrawl.config.webFetch.*` 设置和环境变量。
 
 ## Firecrawl Plugin 工具
 
@@ -133,8 +132,10 @@ OpenClaw 始终对 Firecrawl 请求使用 `proxy: "auto"` 加 `storeInCache: tru
 `web_fetch` 提取顺序：
 
 1. Readability（本地）
-2. Firecrawl（若已配置）
+2. Firecrawl（若已选择或自动检测为活跃的 web-fetch 回退）
 3. 基本 HTML 清理（最后回退）
+
+选择旋钮为 `tools.web.fetch.provider`。如果省略，OpenClaw 从可用凭证中自动检测第一个就绪的 web-fetch Provider。当前捆绑的 Provider 是 Firecrawl。
 
 ## 相关
 

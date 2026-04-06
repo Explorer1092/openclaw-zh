@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8dd7d1aa8b21c2b89f223244617ed5a6"
+mmh3_hash: "835e121aa7399fdf62d3cd832df25ee6"
 summary: "每个 Agent 的沙箱 + 工具限制、优先级和示例"
 title: 多 Agent 沙箱和工具
 read_when: "您想在多 Agent Gateway 中实现每个 Agent 的沙箱或每个 Agent 的工具允许/拒绝策略。"
@@ -199,7 +199,7 @@ agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
 7. **沙箱工具策略**（`tools.sandbox.tools` 或 `agents.list[].tools.sandbox.tools`）
 8. **Subagent 工具策略**（`tools.subagents.tools`，如果适用）
 
-每个级别都可以进一步限制工具，但不能授予早期级别拒绝的工具。如果设置了 `agents.list[].tools.sandbox.tools`，它将替换该 Agent 的 `tools.sandbox.tools`。如果设置了 `agents.list[].tools.profile`，它将覆盖该 Agent 的 `tools.profile`。Provider 工具键接受 `provider`（例如 `google-antigravity`）或 `provider/model`（例如 `openai/gpt-5.2`）。
+每个级别都可以进一步限制工具，但不能授予早期级别拒绝的工具。如果设置了 `agents.list[].tools.sandbox.tools`，它将替换该 Agent 的 `tools.sandbox.tools`。如果设置了 `agents.list[].tools.profile`，它将覆盖该 Agent 的 `tools.profile`。Provider 工具键接受 `provider`（例如 `google-antigravity`）或 `provider/model`（例如 `openai/gpt-5.4`）。
 
 工具策略支持 `group:*` 简写，可展开为多个工具。参见 [工具组简写](/gateway/sandbox-vs-tool-policy-vs-elevated#tool-groups-shorthands) 查看完整列表。
 
@@ -288,6 +288,8 @@ agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
   }
 }
 ```
+
+此配置文件中的 `sessions_history` 仍然返回有界的、经过净化的回溯视图，而不是原始转录导出。助手回溯会去除 thinking 标签、`<relevant-memories>` 脚手架、纯文本工具调用 XML 负载（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>`、`<function_calls>...</function_calls>` 以及截断的工具调用块）、降级的工具调用脚手架、泄漏的 ASCII/全角模型控制令牌，以及格式错误的 MiniMax 工具调用 XML，然后才进行修订/截断。
 
 ---
 
