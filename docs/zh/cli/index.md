@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "24f61a292f35d44b28bb2d260454e8f0"
+mmh3_hash: "9f2bcef44ceeb9b329365a5db634a35b"
 title: "CLI 参考"
 sidebarTitle: "CLI 参考"
 summary: "`openclaw` 命令、子命令和选项的 OpenClaw CLI 参考"
@@ -29,6 +29,7 @@ read_when:
 - [`agent`](/cli/agent)
 - [`agents`](/cli/agents)
 - [`acp`](/cli/acp)
+- [`mcp`](/cli/mcp)
 - [`status`](/cli/status)
 - [`health`](/cli/health)
 - [`sessions`](/cli/sessions)
@@ -46,6 +47,8 @@ read_when:
 - [`tui`](/cli/tui)
 - [`browser`](/cli/browser)
 - [`cron`](/cli/cron)
+- [`tasks`](/cli/index#tasks)
+- [`flows`](/cli/flows)
 - [`dns`](/cli/dns)
 - [`docs`](/cli/docs)
 - [`hooks`](/cli/hooks)
@@ -65,6 +68,7 @@ read_when:
 
 - `--dev`:在 `~/.openclaw-dev` 下隔离状态并移动默认端口。
 - `--profile <name>`:在 `~/.openclaw-<name>` 下隔离状态。
+- `--container <name>`:针对命名容器执行。
 - `--no-color`:禁用 ANSI 颜色。
 - `--update`:`openclaw update` 的简写(仅限源安装)。
 - `-V`、`--version`、`-v`:打印版本并退出。
@@ -148,6 +152,12 @@ openclaw [--dev] [--profile <name>] <command>
     add
     delete
   acp
+  mcp
+    serve
+    list
+    show
+    set
+    unset
   status
   health
   sessions

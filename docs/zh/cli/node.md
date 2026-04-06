@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4afc0f39036c23ae425b543b663436fb"
+mmh3_hash: "b1c3e37d56a85e6c7fca4def45714c49"
 title: "`openclaw node`"
 summary: "`openclaw node` 的 CLI 参考(无头 Node 主机)"
 read_when:
@@ -110,6 +110,10 @@ openclaw devices list
 openclaw devices approve <requestId>
 ```
 
+如果 Node 使用更改的身份验证详细信息(角色/范围/公钥)重试配对,
+之前的待处理请求将被取代并创建新的 `requestId`。
+在批准前再次运行 `openclaw devices list`。
+
 Node 主机将其 Node ID、令牌、显示名称和 Gateway 连接信息存储在
 `~/.openclaw/node.json` 中。
 
@@ -120,3 +124,7 @@ Node 主机将其 Node ID、令牌、显示名称和 Gateway 连接信息存储�
 - `~/.openclaw/exec-approvals.json`
 - [Exec 批准](/tools/exec-approvals)
 - `openclaw approvals --node <id|name|ip>`(从 Gateway 编辑)
+
+对于已批准的异步 Node exec,OpenClaw 在提示前准备一个规范的 `systemRunPlan`。
+之后批准的 `system.run` 转发重用该存储的计划,因此在批准请求创建后
+对命令/cwd/会话字段的编辑将被拒绝,而不是更改 Node 执行的内容。

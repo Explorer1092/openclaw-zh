@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "252f8170d00da1779f930aa124942057"
+mmh3_hash: "e52b673edab52c26d4d1a95374abbc11"
 summary: "`openclaw secrets` 的 CLI 参考(reload、audit、configure、apply)"
 read_when:
   - 在运行时重新解析 secret ref
@@ -56,6 +56,13 @@ openclaw secrets reload --json
 - 使用 Gateway RPC 方法 `secrets.reload`。
 - 如果解析失败，Gateway 保留上一个已知正常的快照并返回错误（不进行部分激活）。
 - JSON 响应包含 `warningCount`。
+
+选项:
+
+- `--url <url>`
+- `--token <token>`
+- `--timeout <ms>`
+- `--json`
 
 ## 审计
 

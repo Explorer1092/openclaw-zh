@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "052a6d1306137ec11ec8dd80ef46d16f"
+mmh3_hash: "ae0242c83315d6f0a20991c3b698cea6"
 title: "`openclaw hooks`"
 sidebarTitle: "openclaw hooks"
 summary: "`openclaw hooks` 的 CLI 参考(Agent Hook)"

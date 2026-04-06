@@ -1,7 +1,7 @@
 ---
 title: "`openclaw sessions`"
 sidebarTitle: "openclaw sessions"
-mmh3_hash: "8796051292c9cc65cf79a5d305a6bd31"
+mmh3_hash: "cc3d5a70d4cdf1fc9f1a438a02ef44da"
 summary: "`openclaw sessions` 的 CLI 参考(列出存储的 Session + 使用情况)"
 read_when:
   - 您想列出存储的 Session 并查看最近的活动
@@ -16,12 +16,14 @@ openclaw sessions
 openclaw sessions --agent work
 openclaw sessions --all-agents
 openclaw sessions --active 120
+openclaw sessions --verbose
 openclaw sessions --json
 ```
 
 范围选择:
 
 - 默认:配置的默认 Agent 存储
+- `--verbose`:详细日志
 - `--agent <id>`:一个已配置的 Agent 存储
 - `--all-agents`:聚合所有已配置的 Agent 存储
 - `--store <path>`:显式存储路径(不能与 `--agent` 或 `--all-agents` 组合使用)
@@ -69,6 +71,7 @@ openclaw sessions cleanup --json
 - `--dry-run`:预览将修剪/限制多少条目而不写入。
   - 在文本模式下,dry-run 打印每个 Session 的操作表(`Action`、`Key`、`Age`、`Model`、`Flags`),以便您查看将保留什么与删除什么。
 - `--enforce`:即使 `session.maintenance.mode` 为 `warn` 也应用维护。
+- `--fix-missing`:删除其记录文件丢失的条目,即使它们通常不会因年龄/计数而被删除。
 - `--active-key <key>`:保护特定活动密钥免受磁盘预算驱逐。
 - `--agent <id>`:对一个已配置的 Agent 存储运行清理。
 - `--all-agents`:对所有已配置的 Agent 存储运行清理。

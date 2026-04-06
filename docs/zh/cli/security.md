@@ -1,7 +1,7 @@
 ---
 title: "`openclaw security`"
 sidebarTitle: "openclaw security"
-mmh3_hash: "a70f223b62deca956a1977f5922857c8"
+mmh3_hash: "04d6f028bbcb0d48a1ae8a1006afcde0"
 summary: "`openclaw security` 的 CLI 参考(审计和修复常见的安全陷阱)"
 read_when:
   - 您想对配置/状态运行快速安全审计
@@ -67,8 +67,11 @@ openclaw security audit --fix --json | jq '{fix: .fix.ok, summary: .report.summa
 `--fix` 应用安全、确定性的修复措施:
 
 - 将常见的 `groupPolicy="open"` 翻转为 `groupPolicy="allowlist"`(包括支持 Channel 中的账户变体)
+- 当 WhatsApp 群组策略翻转为 `allowlist` 时,当该列表存在且配置尚未定义 `allowFrom` 时,从存储的 `allowFrom` 文件中播种 `groupAllowFrom`
 - 将 `logging.redactSensitive` 从 `"off"` 设置为 `"tools"`
 - 收紧状态/配置和常见敏感文件的权限(`credentials/*.json`、`auth-profiles.json`、`sessions.json`、Session `*.jsonl`)
+- 还收紧从 `openclaw.json` 引用的配置包含文件
+- 在 POSIX 主机上使用 `chmod`,在 Windows 上使用 `icacls` 重置
 
 `--fix` **不会**:
 

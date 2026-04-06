@@ -1,22 +1,35 @@
 ---
+mmh3_hash: "9f839ba2ff4aaec1a7b90d122ea6bffa"
 title: "`openclaw health`"
 sidebarTitle: "openclaw health"
-mmh3_hash: "10dd2a9449a17d13112359c44c582d79"
-summary: "`openclaw health` 的 CLI 参考(通过 RPC 的Gateway健康端点)"
+summary: "`openclaw health` 的 CLI 参考(通过 RPC 获取 Gateway 健康快照)"
 read_when:
-  - 您想快速检查正在运行的Gateway的健康状况
+  - 您想快速检查正在运行的 Gateway 的健康状况
 ---
 
 # `openclaw health`
 
-从正在运行的Gateway获取健康状况。
+从正在运行的 Gateway 获取健康状况。
+
+选项:
+
+- `--json`:机器可读输出
+- `--timeout <ms>`:连接超时(毫秒,默认 `10000`)
+- `--verbose`:详细日志
+- `--debug`:`--verbose` 的别名
+
+示例:
 
 ```bash
 openclaw health
 openclaw health --json
+openclaw health --timeout 2500
 openclaw health --verbose
+openclaw health --debug
 ```
 
-注意:
-- `--verbose` 运行实时探测,并在配置多个账户时打印每个账户的时间。
-- 配置多个Agent时,输出包括每个Agent的Session存储。
+说明:
+
+- 默认 `openclaw health` 向正在运行的 Gateway 请求其健康快照。当 Gateway 已有新鲜的缓存快照时,它可以返回该缓存载荷并在后台刷新。
+- `--verbose` 强制进行实时探测,打印 Gateway 连接详情,并在所有已配置的账户和 Agent 中扩展人类可读输出。
+- 配置多个 Agent 时,输出包括每个 Agent 的 Session 存储。

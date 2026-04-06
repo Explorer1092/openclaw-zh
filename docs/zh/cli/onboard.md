@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "790629e711aab9805e1bdabd5d07a984"
+mmh3_hash: "ab52049bc9617e44beb3de209297a478"
 title: "`openclaw onboard`"
 sidebarTitle: "openclaw onboard"
 summary: "`openclaw onboard` 的 CLI 参考(交互式入职向导)"
@@ -83,6 +83,8 @@ openclaw onboard --non-interactive \
 - 使用 `--install-daemon` 时,当令牌身份验证需要令牌,SecretRef 管理的 Gateway 令牌会被验证但不会作为已解析的明文持久化到监督服务环境元数据中。
 - 使用 `--install-daemon` 时,如果令牌模式需要令牌且配置的令牌 SecretRef 未解析,入职会失败关闭并提供修复指引。
 - 使用 `--install-daemon` 时,如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置,入职会阻止安装直到明确设置模式。
+- 本地入职将 `gateway.mode="local"` 写入配置。如果后续配置文件缺少 `gateway.mode`,将其视为配置损坏或不完整的手动编辑,而不是有效的本地模式快捷方式。
+- `--allow-unconfigured` 是一个单独的 Gateway 运行时逃生舱口。它不意味着入职可以省略 `gateway.mode`。
 
 示例:
 
@@ -140,6 +142,11 @@ openclaw onboard --non-interactive \
 
 - `quickstart`:最少提示,自动生成 Gateway 令牌。
 - `manual`:端口/绑定/身份验证的完整提示(`advanced` 的别名)。
+- 当身份验证选择暗示首选提供商时,入职将默认模型和允许列表选择器预过滤到该提供商。对于 Volcengine 和 BytePlus,这也匹配编码计划变体(`volcengine-plan/*`、`byteplus-plan/*`)。
+- 如果首选提供商过滤器尚未加载任何模型,入职将回退到未过滤的目录,而不是让选择器为空。
+- 在网页搜索步骤中,某些提供商可能触发特定于提供商的后续提示:
+  - **Grok** 可以使用相同的 `XAI_API_KEY` 提供可选的 `x_search` 设置以及 `x_search` 模型选择。
+  - **Kimi** 可能询问 Moonshot API 地区(`api.moonshot.ai` 与 `api.moonshot.cn`)和默认的 Kimi 网页搜索模型。
 - 本地入职 DM 范围行为:[CLI 入职参考](/start/wizard-cli-reference#outputs-and-internals)。
 - 最快的第一次聊天:`openclaw dashboard`(控制 UI,无 Channel 设置)。
 - 自定义提供商:连接任何 OpenAI 或 Anthropic 兼容端点,包括未列出的托管提供商。使用 Unknown 自动检测。
