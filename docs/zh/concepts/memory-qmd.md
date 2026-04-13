@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "013bd46767f807e2da03adebb18b80a4"
-title: "QMD 内存引擎"
+mmh3_hash: "0a7ec68cee508bb1747c185f77d00278"
+title: "QMD Memory Engine"
 summary: "本地优先的搜索辅助程序，支持 BM25、向量、重排序和查询扩展"
 read_when:
   - 你想将 QMD 设置为内存后端
@@ -43,6 +43,7 @@ OpenClaw 在 `~/.openclaw/agents/<agentId>/qmd/` 下创建一个自包含的 QMD
 ## 辅助程序工作原理
 
 - OpenClaw 从工作区内存文件和任何配置的 `memory.qmd.paths` 创建集合，然后在启动时和定期（默认每 5 分钟）运行 `qmd update` + `qmd embed`。
+- 默认工作区集合跟踪 `MEMORY.md` 加上 `memory/` 目录树。小写 `memory.md` 仍作为 bootstrap 备用，不是单独的 QMD 集合。
 - 启动刷新在后台运行，不会阻塞聊天启动。
 - 搜索使用配置的 `searchMode`（默认：`search`；也支持 `vsearch` 和 `query`）。如果某个模式失败，OpenClaw 会使用 `qmd query` 重试。
 - 如果 QMD 完全失败，OpenClaw 回退到内置 SQLite 引擎。

@@ -1,12 +1,13 @@
 ---
-title: "系统提示词 (System Prompt)"
-sidebarTitle: "系统提示词"
-mmh3_hash: "5df19fa6acc4c3fa2b1f0f249fe40271"
+title: "System Prompt"
+mmh3_hash: "998da00b9aca0f5a4800ab8ac60d3978"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
-read_when: ["编辑 system prompt 文本、tools 列表或 time/heartbeat 部分","更改 workspace bootstrap 或 skills 注入行为"]
+read_when:
+  - 编辑 system prompt 文本、tools 列表或 time/heartbeat 部分
+  - 更改 workspace bootstrap 或 skills 注入行为
 ---
 
-# 系统提示词 (System Prompt)
+# System Prompt
 
 OpenClaw 为每个 agent 运行构建自定义 system prompt。Prompt 由 **OpenClaw 拥有**，不使用 pi-coding-agent 默认 prompt。
 
@@ -34,7 +35,7 @@ Prompt 有意紧凑并使用固定部分：
 - **Sandbox**（在启用时）：表示沙盒运行时、沙盒路径以及是否有提升的 exec 可用。
 - **Current Date & Time**：用户本地时间、时区和时间格式。
 - **Reply Tags**：支持的 providers 的可选回复标签语法。
-- **Heartbeats**：heartbeat prompt 和 ack 行为。
+- **Heartbeats**：heartbeat prompt 和 ack 行为（在为默认 agent 启用 heartbeats 时）。
 - **Runtime**：主机、OS、node、model、repo root（在检测到时）、thinking 级别（一行）。
 - **Reasoning**：当前可见性级别 + /reasoning 切换提示。
 
@@ -76,9 +77,9 @@ Bootstrap 文件被修剪并附加在 **Project Context** 下，以便 model 在
 - `BOOTSTRAP.md`（仅在全新 workspaces 上）
 - `MEMORY.md`（在存在时），否则以小写 `memory.md` 作为备用
 
-所有这些文件在每次回合都**注入到 context 窗口中**，这意味着它们消耗 tokens。保持它们简洁 — 特别是 `MEMORY.md`，它可能随时间增长并导致意外的高 context 使用和更频繁的 compaction。
+所有这些文件在每次回合都**注入到 context 窗口中**，除非有特定于文件的门控条件。`HEARTBEAT.md` 在 heartbeats 对默认 agent 禁用或 `agents.defaults.heartbeat.includeSystemPromptSection` 为 false 时的正常运行中会被忽略。保持注入文件简洁 — 特别是 `MEMORY.md`，它可能随时间增长并导致意外的高 context 使用和更频繁的 compaction。
 
-> **注意：** `memory/*.md` 每日文件**不会**自动注入。它们通过 `memory_search` 和 `memory_get` tools 按需访问，因此除非 model 明确读取它们，否则不会计入 context 窗口。
+> **注意：** `memory/*.md` 每日文件**不是**正常 bootstrap Project Context 的一部分。在普通回合中，它们通过 `memory_search` 和 `memory_get` tools 按需访问，因此除非 model 明确读取它们，否则不会计入 context 窗口。裸 `/new` 和 `/reset` 回合是例外：runtime 可以为第一次回合预先附加最近的每日内存作为一次性启动上下文块。
 
 大文件会用标记截断。每个文件的最大大小由 `agents.defaults.bootstrapMaxChars` 控制（默认：20000）。跨文件的总注入 bootstrap 内容上限由 `agents.defaults.bootstrapTotalMaxChars` 控制（默认：150000）。缺失文件注入一个简短的缺失文件标记。当发生截断时，OpenClaw 可以在 Project Context 中注入警告块；通过 `agents.defaults.bootstrapPromptTruncationWarning` 控制（`off`、`once`、`always`；默认：`once`）。
 

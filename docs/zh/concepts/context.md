@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7865b9a655030c28d6f43b55eeb03a10"
+mmh3_hash: "287f2afd06c6ddad14d4e6c7c21d130c"
 summary: "Context: model 看到什么、如何构建以及如何检查"
 read_when:
   - 你想了解 OpenClaw 中"context"的含义
@@ -137,7 +137,7 @@ Tools 以两种方式影响 context：
 Slash commands 由 Gateway 处理。有几种不同的行为：
 
 - **独立 commands**：仅为 `/...` 的消息作为 command 运行。
-- **Directives**：`/think`、`/verbose`、`/reasoning`、`/elevated`、`/model`、`/queue` 在 model 看到消息之前被剥离。
+- **Directives**：`/think`、`/verbose`、`/trace`、`/reasoning`、`/elevated`、`/model`、`/queue` 在 model 看到消息之前被剥离。
   - 仅 directive 的消息持久化 session 设置。
   - 正常消息中的内联 directives 作为每条消息的提示。
 - **内联快捷方式**（仅允许列表发送者）：正常消息中的某些 `/...` tokens 可以立即运行（例如："hey /status"），并在 model 看到剩余文本之前被剥离。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2693efb5514eaeb0a290537a43fddd3e"
+mmh3_hash: "059a3cd6e4559d45484846c296d1ffca"
 summary: "OpenClaw 如何总结长对话以保持在 model 限制内"
 read_when:
   - 你想了解自动 compaction 和 /compact
@@ -28,6 +28,70 @@ title: "Compaction"
 <Info>
 在 compact 之前，OpenClaw 会自动提醒 Agent 将重要笔记保存到[内存](/concepts/memory)文件。这可以防止 context 丢失。
 </Info>
+
+使用 `openclaw.json` 中的 `agents.defaults.compaction` 设置来配置 compaction 行为（模式、目标 tokens 等）。
+Compaction 摘要默认保留不透明标识符（`identifierPolicy: "strict"`）。可以用 `identifierPolicy: "off"` 覆盖，或使用 `identifierPolicy: "custom"` 和 `identifierInstructions` 提供自定义文本。
+
+你可以通过 `agents.defaults.compaction.model` 为 compaction 摘要指定不同的 model。当主 model 是本地或小型 model 时，这很有用——可以让更有能力的 model 来生成 compaction 摘要。覆盖值接受任意 `provider/model-id` 字符串：
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "model": "openrouter/anthropic/claude-sonnet-4-6"
+      }
+    }
+  }
+}
+```
+
+本地 model 同样适用，例如专门用于摘要的第二个 Ollama model 或经过微调的 compaction 专用模型：
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "model": "ollama/llama3.1:8b"
+      }
+    }
+  }
+}
+```
+
+未设置时，compaction 使用 agent 的主 model。
+
+## 可插拔 compaction provider
+
+Plugin 可以通过 plugin API 上的 `registerCompactionProvider()` 注册自定义 compaction provider。当 provider 注册并配置后，OpenClaw 会将摘要委托给它，而不是内置 LLM 管道。
+
+要使用已注册的 provider，在配置中设置 provider id：
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "compaction": {
+        "provider": "my-provider"
+      }
+    }
+  }
+}
+```
+
+设置 `provider` 会自动强制 `mode: "safeguard"`。Provider 接收与内置路径相同的 compaction 指令和标识符保留策略，OpenClaw 在 provider 输出后仍保留最近回合和拆分回合后缀 context。如果 provider 失败或返回空结果，OpenClaw 回退到内置 LLM 摘要。
+
+## 自动 compaction（默认开启）
+
+当 Session 接近或超过 model 的 context window 时，OpenClaw 触发自动 compaction，并可能使用已压缩的 context 重试原始请求。
+
+你会看到：
+
+- 在 verbose 模式下显示 `🧹 Auto-compaction complete`
+- `/status` 显示 `🧹 Compactions: <count>`
+
+在 compaction 之前，OpenClaw 可以运行**静默内存刷新**回合，将持久笔记保存到磁盘。详情和配置参见 [Memory](/concepts/memory)。
 
 ## 手动 compaction
 

@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "234f9d4b73298f0e4643ad5d885bb08e"
-title: "Dreaming(实验性功能)"
+mmh3_hash: "73b513ce3a48f2cd81e29cf00c8a26c2"
+title: "Dreaming (experimental)"
 summary: "后台内存整合系统，包含轻度、深度和 REM 阶段以及梦境日记"
 read_when:
   - 你希望内存升级自动运行
@@ -39,7 +39,7 @@ Dreaming 使用三个协作阶段：
 
 轻度阶段摄取最近的每日内存信号和召回痕迹，去重后暂存候选行。
 
-- 从短期召回状态和最近的每日内存文件读取。
+- 从短期召回状态、最近的每日内存文件和可用时的已脱敏 Session 记录中读取。
 - 当存储包含内联输出时，写入一个托管的 `## Light Sleep` 块。
 - 记录强化信号，供后续深度排名使用。
 - 永不写入 `MEMORY.md`。
@@ -63,11 +63,24 @@ REM 阶段提取模式和反思信号。
 - 记录用于深度排名的 REM 强化信号。
 - 永不写入 `MEMORY.md`。
 
+## Session 记录摄取
+
+Dreaming 可以将已脱敏的 Session 记录摄取到 dreaming 语料库中。当记录可用时，它们与每日内存信号和召回痕迹一起被送入轻度阶段。个人和敏感内容在摄取前会被脱敏处理。
+
 ## 梦境日记
 
 Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶段积累足够材料后，`memory-core` 会运行一个尽力而为的后台子 Agent 回合（使用默认运行时模型）并追加一条简短的日记条目。
 
 此日记供人类在 Dreams UI 中阅读，不作为升级来源。
+
+还有一个用于审阅和恢复工作的有依据的历史回填通道：
+
+- `memory rem-harness --path ... --grounded` 从历史 `YYYY-MM-DD.md` 笔记预览有依据的日记输出。
+- `memory rem-backfill --path ...` 将可逆的有依据日记条目写入 `DREAMS.md`。
+- `memory rem-backfill --path ... --stage-short-term` 将有依据的持久候选项暂存到正常深度阶段已使用的同一短期证据存储中。
+- `memory rem-backfill --rollback` 和 `--rollback-short-term` 删除这些暂存的回填工件，不影响普通日记条目或实时短期召回。
+
+控制 UI 提供相同的日记回填/重置流程，你可以在决定有依据的候选项是否值得升级之前，在 Dreams 场景中检查结果。该场景还显示一个独特的有依据通道，让你能看到哪些暂存的短期条目来自历史重放，哪些升级项目是有依据引导的，并仅清除有依据的暂存条目而不影响普通实时短期状态。
 
 ## 深度排名信号
 
@@ -189,8 +202,9 @@ openclaw memory rem-harness --json
 
 - 当前 dreaming 启用状态
 - 阶段级别状态和托管扫描是否存在
-- 短期、长期和今日已升级计数
+- 短期、有依据、信号和今日已升级计数
 - 下次计划运行时间
+- 用于暂存历史重放条目的独特有依据场景通道
 - 由 `doctor.memory.dreamDiary` 支持的可展开梦境日记阅读器
 
 ## 相关链接

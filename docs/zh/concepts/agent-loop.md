@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "961419bece71ecd67dd125c8529ab78b"
+mmh3_hash: "d6436e48d3642e9e8b3a6bdb0816781f"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:
   - 你需要了解 agent loop 或生命周期事件的详细流程
@@ -22,7 +22,7 @@ agentic loop 是 Agent 的完整"真实"运行过程：接收输入 → 上下�
 
 1. `agent` RPC 验证参数，解析 Session（sessionKey/sessionId），持久化 Session 元数据，立即返回 `{ runId, acceptedAt }`。
 2. `agentCommand` 运行 Agent：
-   - 解析 model + thinking/verbose 默认值
+   - 解析 model + thinking/verbose/trace 默认值
    - 加载 skills 快照
    - 调用 `runEmbeddedPiAgent`（pi-agent-core runtime）
    - 如果嵌入式 loop 未发出生命周期事件，则发出 **lifecycle end/error**
@@ -148,6 +148,7 @@ OpenClaw 有两个 hook 系统：
 
 - `agent.wait` 默认值：30s（仅等待）。`timeoutMs` 参数覆盖。
 - Agent runtime：`agents.defaults.timeoutSeconds` 默认 172800s（48 小时）；在 `runEmbeddedPiAgent` abort 计时器中强制执行。
+- LLM 空闲超时：`agents.defaults.llm.idleTimeoutSeconds` 在指定空闲窗口内没有响应块到达时中止 model 请求。对慢速本地模型或 reasoning/tool-call 提供商需显式设置；设为 0 可禁用。未设置时，如果已配置 `agents.defaults.timeoutSeconds` 则使用该值，否则使用 120s。Cron 触发的运行若没有显式 LLM 或 agent 超时，则禁用空闲看门狗，依赖 cron 外部超时。
 
 ## 可能提前结束的位置
 

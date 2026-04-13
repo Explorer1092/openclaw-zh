@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a2ec813baec60fa989409d4b053dfbe6"
+mmh3_hash: "19b3a7724bc36137eb5f044ec11a0db3"
 summary: "Context engine: 可插拔的 context 组装、compaction 和子 agent 生命周期"
 read_when:
   - 你想了解 OpenClaw 如何组装 model context
@@ -98,6 +98,8 @@ Legacy engine 不注册工具,也不提供 `systemPromptAddition`。
 Plugin 可以使用 plugin API 注册 context engine:
 
 ```ts
+import { buildMemorySystemPromptAddition } from "openclaw/plugin-sdk/core";
+
 export default function register(api) {
   api.registerContextEngine("my-engine", () => ({
     info: {
@@ -111,12 +113,15 @@ export default function register(api) {
       return { ingested: true };
     },
 
-    async assemble({ sessionId, messages, tokenBudget }) {
+    async assemble({ sessionId, messages, tokenBudget, availableTools, citationsMode }) {
       // 返回符合预算的消息
       return {
         messages: buildContext(messages, tokenBudget),
         estimatedTokens: countTokens(messages),
-        systemPromptAddition: "Use lcm_grep to search history...",
+        systemPromptAddition: buildMemorySystemPromptAddition({
+          availableTools: availableTools ?? new Set(),
+          citationsMode,
+        }),
       };
     },
 
@@ -208,7 +213,7 @@ slot 在运行时是独占的——对于给定的运行或 compaction 操作,�
 ## 与 compaction 和 memory 的关系
 
 - **Compaction** 是 context engine 的一项职责。Legacy engine 委托给 OpenClaw 的内置摘要。Plugin engine 可以实现任何 compaction 策略(DAG 摘要、向量检索等)。
-- **Memory plugins**(`plugins.slots.memory`)与 context engine 是分开的。Memory plugin 提供搜索/检索;context engine 控制 model 看到什么。它们可以协同工作——context engine 可能在组装期间使用 memory plugin 数据。
+- **Memory plugins**(`plugins.slots.memory`)与 context engine 是分开的。Memory plugin 提供搜索/检索;context engine 控制 model 看到什么。它们可以协同工作——context engine 可能在组装期间使用 memory plugin 数据。希望使用活动 memory prompt 路径的 Plugin engine 应优先使用 `openclaw/plugin-sdk/core` 中的 `buildMemorySystemPromptAddition(...)`，它将活动 memory prompt 部分转换为可直接插入的 `systemPromptAddition`。如果 engine 需要更底层的控制，仍可通过 `openclaw/plugin-sdk/memory-host-core` 中的 `buildActiveMemoryPromptSection(...)` 获取原始行。
 - **Session pruning**(在内存中修剪旧工具结果)仍然运行,无论哪个 context engine 处于活动状态。
 
 ## 提示

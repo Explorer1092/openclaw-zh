@@ -1,15 +1,14 @@
 ---
-title: "流式与分片"
-sidebarTitle: "流式与分片"
-mmh3_hash: "f9c593afe3ac485ab1bfcfe520e77d5e"
-summary: "Streaming + chunking 行为(block 回复、channel 预览 streaming、模式映射)"
+title: "Streaming and Chunking"
+mmh3_hash: "62f81a4ce4bd77327613af931cce5767"
+summary: "Streaming + chunking 行为（block 回复、channel 预览 streaming、模式映射）"
 read_when:
   - 解释 streaming 或 chunking 在 channels 上如何工作
   - 更改 block streaming 或 channel chunking 行为
   - 调试重复/早期 block 回复或 channel 预览 streaming
 ---
 
-# 流式与分片
+# Streaming + chunking
 
 OpenClaw 有两个单独的 streaming 层:
 
@@ -119,13 +118,14 @@ Block chunking 由 `EmbeddedBlockChunker` 实现:
 
 仅限 Slack:
 
-- `channels.slack.nativeStreaming` 当 `streaming=partial` 时切换 Slack 原生 streaming API 调用(默认:`true`)。
+- `channels.slack.streaming.nativeTransport` 当 `channels.slack.streaming.mode="partial"` 时切换 Slack 原生 streaming API 调用（默认：`true`）。
+- Slack 原生 streaming 和 Slack assistant 线程状态需要一个回复线程目标；顶级私信不会显示这种线程式预览。
 
 旧版 key 迁移:
 
 - Telegram: `streamMode` + 布尔值 `streaming` 自动迁移到 `streaming` 枚举。
 - Discord: `streamMode` + 布尔值 `streaming` 自动迁移到 `streaming` 枚举。
-- Slack: `streamMode` 自动迁移到 `streaming` 枚举;布尔值 `streaming` 自动迁移到 `nativeStreaming`。
+- Slack: `streamMode` 自动迁移到 `streaming.mode`；布尔值 `streaming` 自动迁移到 `streaming.mode` 加 `streaming.nativeTransport`；旧版 `nativeStreaming` 自动迁移到 `streaming.nativeTransport`。
 
 ### 运行时行为
 
@@ -147,8 +147,8 @@ Slack:
 - `block` 使用追加式 draft 预览。
 - `progress` 使用状态预览文本,然后给出最终答案。
 
-## 延伸阅读
+## 相关
 
-- [消息](/concepts/messages) — 消息生命周期和传递
-- [重试](/concepts/retry) — 传递失败时的重试行为
+- [Messages](/concepts/messages) — 消息生命周期和传递
+- [Retry](/concepts/retry) — 传递失败时的重试行为
 - [Channels](/channels) — 每个 Channel 的 streaming 支持

@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "4a8d1a6a7c949e0feab2dda16040c8ba"
-title: "模型故障转移"
+mmh3_hash: "8fcf87ab97f702d9c66c261a73ce0268"
+title: "Model Failover"
 summary: "OpenClaw 如何轮换 auth profiles 并跨 model 后备"
 read_when:
   - 诊断 auth profile 轮换、cooldown 或 model 后备行为
@@ -52,6 +52,7 @@ OpenClaw 分两个阶段处理故障：
 OpenClaw 对 API keys 和 OAuth tokens 都使用 **auth profiles**。
 
 - Secrets 位于 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`（旧版：`~/.openclaw/agent/auth-profiles.json`）。
+- 运行时 auth 路由状态位于 `~/.openclaw/agents/<agentId>/agent/auth-state.json`。
 - 配置 `auth.profiles` / `auth.order` 是**仅元数据 + 路由**（无 secrets）。
 - 旧版仅导入 OAuth 文件：`~/.openclaw/credentials/oauth.json`（首次使用时导入 `auth-profiles.json`）。
 
@@ -106,6 +107,7 @@ OpenClaw **每个 Session 固定选择的 auth profile** 以保持 provider 缓�
 ## Cooldown
 
 当 profile 由于 auth/速率限制错误（或看起来像速率限制的超时）失败时，OpenClaw 将其标记为 cooldown 并移至下一个 profile。该速率限制桶比普通 `429` 更宽泛：它还包括提供商消息，如 `Too many concurrent requests`、`ThrottlingException`、`concurrency limit reached`、`workers_ai ... quota limit exceeded`、`throttled`、`resource exhausted` 以及定期使用窗口限制，如 `weekly/monthly limit reached`。Format/invalid-request 错误（例如 Cloud Code Assist tool call ID 验证失败）被视为值得 failover，并使用相同的 cooldown。OpenAI 兼容的停止原因错误，如 `Unhandled stop reason: error`、`stop reason: error` 和 `reason: error`，被归类为超时/failover 信号。
+Provider 范围的通用服务器文本在来源匹配已知临时模式时也会进入该超时桶。例如，Anthropic 裸 `An unknown error occurred` 和带有临时服务器文本（如 `internal server error`、`unknown error, 520`、`upstream error` 或 `backend error`）的 JSON `api_error` payloads 被视为值得 failover 的超时。OpenRouter 特定的通用上游文本（如裸 `Provider returned error`）仅在 provider context 实际为 OpenRouter 时才被视为超时。通用内部备用文本（如 `LLM request failed with an unknown error.`）保持保守处理，不会自行触发 failover。
 
 速率限制 cooldown 也可以是 model 范围的：
 
@@ -120,7 +122,7 @@ Cooldown 使用指数退避：
 - 25 分钟
 - 1 小时（上限）
 
-状态存储在 `auth-profiles.json` 的 `usageStats` 下：
+状态存储在 `auth-state.json` 的 `usageStats` 下：
 
 ```json
 {
@@ -138,7 +140,7 @@ Cooldown 使用指数退避：
 
 账单/信用失败（例如"insufficient credits" / "credit balance too low"）被视为值得 failover，但通常不是暂时的。OpenClaw 不是短暂的 cooldown，而是将 profile 标记为**disabled**（具有更长的退避），并轮换到下一个 profile/provider。
 
-状态存储在 `auth-profiles.json` 中：
+状态存储在 `auth-state.json` 中：
 
 ```json
 {
@@ -161,6 +163,8 @@ Cooldown 使用指数退避：
 ## Model 后备
 
 如果 provider 的所有 profile 都失败，OpenClaw 移动到 `agents.defaults.model.fallbacks` 中的下一个 model。这适用于 auth 失败、速率限制和耗尽 profile 轮换的超时（其他错误不推进 fallback）。
+
+过载和速率限制错误比账单 cooldown 处理得更激进。默认情况下，OpenClaw 允许一次同 provider auth profile 重试，然后切换到下一个配置的 model fallback，无需等待。provider 忙信号（如 `ModelNotReadyException`）属于该过载桶。通过 `auth.cooldowns.overloadedProfileRotations`、`auth.cooldowns.overloadedBackoffMs` 和 `auth.cooldowns.rateLimitedProfileRotations` 调整。
 
 当运行以 model 覆盖（hooks 或 CLI）开始时，fallback 在尝试任何配置的 fallback 后仍以 `agents.defaults.model.primary` 结束。
 
@@ -193,6 +197,16 @@ Model fallback 在以下情况不继续：
 - 非超时/failover 形态的显式中止
 - 应保留在 compaction/重试逻辑内的 context 溢出错误（例如 `request_too_large`、`INVALID_ARGUMENT: input exceeds the maximum number of tokens`、`input token count exceeds the maximum number of input tokens`、`The input is too long for the model` 或 `ollama error: context length exceeded`）
 - 没有剩余候选项时的最终未知错误
+
+### Cooldown 跳过 vs 探测行为
+
+当 provider 的每个 auth profile 都已处于 cooldown 时，OpenClaw 不会自动永远跳过该 provider。它会按候选项做出决策：
+
+- 持久性 auth 失败立即跳过整个 provider。
+- 账单禁用通常会跳过，但主候选项仍可在节流时进行探测，以便无需重启即可恢复。
+- 主候选项可在 cooldown 临近到期时进行探测，每个 provider 设有探测节流限制。
+- 当失败看起来是临时性的（`rate_limit`、`overloaded` 或未知）时，同 provider 的 fallback 兄弟 model 仍可尝试，即使处于 cooldown。当速率限制是 model 范围的而兄弟 model 可能立即恢复时，这尤为重要。
+- 临时 cooldown 探测每次 fallback 运行中每个 provider 限制一次，以避免单个 provider 阻塞跨 provider fallback。
 
 ## Session 覆盖和实时 model 切换
 

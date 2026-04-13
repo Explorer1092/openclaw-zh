@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "854e3bc491aa3ccef548e9d67c24d276"
-title: "内存搜索"
+mmh3_hash: "570b326737b390e137a1cf9acb78c32b"
+title: "Memory Search"
 summary: "内存搜索如何使用 embedding 和混合检索找到相关笔记"
 read_when:
   - 你想了解 memory_search 的工作原理
@@ -62,6 +62,8 @@ flowchart LR
 
 如果只有一条路径可用（无 embedding 或无 FTS），则单独运行另一条。
 
+当 embedding 不可用时，OpenClaw 仍会对 FTS 结果使用词法排名，而不仅仅是回退到原始精确匹配排序。这种降级模式会对查询词覆盖率更强、相关文件路径更相关的块进行加权，即使没有 `sqlite-vec` 或 embedding provider 也能保持有效的召回。
+
 ## 提升搜索质量
 
 当你有大量笔记历史时，两个可选功能有所帮助：
@@ -119,5 +121,6 @@ flowchart LR
 
 ## 延伸阅读
 
+- [Active Memory](/concepts/active-memory) — 交互式聊天 Session 的子 Agent 内存
 - [Memory](/concepts/memory) — 文件布局、后端、工具
 - [内存配置参考](/reference/memory-config) — 所有配置项
