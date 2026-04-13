@@ -1,6 +1,6 @@
 ---
 title: "Xiaomi MiMo"
-mmh3_hash: "8656b6dfd017adc35951c6ae630ab832"
+mmh3_hash: "a33e9be7ffe9bfde3820301215d9f611"
 summary: "将 Xiaomi MiMo 模型与 OpenClaw 一起使用"
 read_when:
   - 您想在 OpenClaw 中使用 Xiaomi MiMo 模型
@@ -9,29 +9,54 @@ read_when:
 
 # Xiaomi MiMo
 
-Xiaomi MiMo 是 **MiMo** 模型的 API 平台。OpenClaw 使用 Xiaomi OpenAI 兼容端点和 API 密钥身份验证。在 [Xiaomi MiMo 控制台](https://platform.xiaomimimo.com/#/console/api-keys)中创建您的 API 密钥，然后使用该密钥配置内置的 `xiaomi` Provider。
+Xiaomi MiMo 是 **MiMo** 模型的 API 平台。OpenClaw 使用 Xiaomi
+OpenAI 兼容端点和 API 密钥身份验证。
 
-## 内置目录
+| 属性     | 值                              |
+| -------- | ------------------------------- |
+| Provider | `xiaomi`                        |
+| 身份验证 | `XIAOMI_API_KEY`                |
+| API      | OpenAI 兼容                     |
+| Base URL | `https://api.xiaomimimo.com/v1` |
 
-- Base URL：`https://api.xiaomimimo.com/v1`
-- API：`openai-completions`
-- 授权：`Bearer $XIAOMI_API_KEY`
+## 快速开始
 
-| 模型引用               | 输入        | 上下文    | 最大输出 | 说明                         |
-| ---------------------- | ----------- | --------- | -------- | ---------------------------- |
-| `xiaomi/mimo-v2-flash` | text        | 262,144   | 8,192    | 默认模型                     |
-| `xiaomi/mimo-v2-pro`   | text        | 1,048,576 | 32,000   | 已启用推理                   |
-| `xiaomi/mimo-v2-omni`  | text, image | 262,144   | 32,000   | 已启用推理的多模态            |
+<Steps>
+  <Step title="获取 API 密钥">
+    在 [Xiaomi MiMo 控制台](https://platform.xiaomimimo.com/#/console/api-keys)中创建 API 密钥。
+  </Step>
+  <Step title="运行入门">
+    ```bash
+    openclaw onboard --auth-choice xiaomi-api-key
+    ```
 
-## CLI 设置
+    或直接传递密钥：
 
-```bash
-openclaw onboard --auth-choice xiaomi-api-key
-# 或非交互式
-openclaw onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
-```
+    ```bash
+    openclaw onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
+    ```
 
-## 配置片段
+  </Step>
+  <Step title="验证模型是否可用">
+    ```bash
+    openclaw models list --provider xiaomi
+    ```
+  </Step>
+</Steps>
+
+## 可用模型
+
+| 模型引用               | 输入        | 上下文    | 最大输出 | 推理 | 说明     |
+| ---------------------- | ----------- | --------- | -------- | ---- | -------- |
+| `xiaomi/mimo-v2-flash` | text        | 262,144   | 8,192    | 否   | 默认模型 |
+| `xiaomi/mimo-v2-pro`   | text        | 1,048,576 | 32,000   | 是   | 大上下文 |
+| `xiaomi/mimo-v2-omni`  | text, image | 262,144   | 32,000   | 是   | 多模态   |
+
+<Tip>
+默认模型引用为 `xiaomi/mimo-v2-flash`。当设置 `XIAOMI_API_KEY` 或存在身份验证配置文件时，Provider 会自动注入。
+</Tip>
+
+## 配置示例
 
 ```json5
 {
@@ -79,9 +104,43 @@ openclaw onboard --auth-choice xiaomi-api-key --xiaomi-api-key "$XIAOMI_API_KEY"
 }
 ```
 
-## 注意事项
+<AccordionGroup>
+  <Accordion title="自动注入行为">
+    当您的环境中设置了 `XIAOMI_API_KEY` 或存在身份验证配置文件时，`xiaomi` Provider 会自动注入。除非您想覆盖模型元数据或 Base URL，否则无需手动配置 Provider。
+  </Accordion>
 
-- 默认模型引用：`xiaomi/mimo-v2-flash`。
-- 其他内置模型：`xiaomi/mimo-v2-pro`、`xiaomi/mimo-v2-omni`。
-- 当设置 `XIAOMI_API_KEY`（或存在身份验证配置文件）时，Provider 会自动注入。
-- 有关 Provider 规则，请参见 [/concepts/model-providers](/concepts/model-providers)。
+  <Accordion title="模型详情">
+    - **mimo-v2-flash** — 轻量快速，适合通用文本任务。不支持推理。
+    - **mimo-v2-pro** — 支持推理，拥有 1M 词元上下文窗口，适合长文档工作负载。
+    - **mimo-v2-omni** — 支持推理的多模态模型，可接受文本和图像输入。
+
+    <Note>
+    所有模型使用 `xiaomi/` 前缀（例如 `xiaomi/mimo-v2-pro`）。
+    </Note>
+
+  </Accordion>
+
+  <Accordion title="故障排查">
+    - 如果模型未显示，请确认 `XIAOMI_API_KEY` 已设置且有效。
+    - 当 Gateway 作为守护进程运行时，请确保密钥对该进程可用（例如在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
+
+    <Warning>
+    仅在交互式 shell 中设置的密钥对守护进程管理的 Gateway 进程不可见。请使用 `~/.openclaw/.env` 或 `env.shellEnv` 配置以持久可用。
+    </Warning>
+
+  </Accordion>
+</AccordionGroup>
+
+## 相关
+
+<CardGroup cols={2}>
+  <Card title="模型选择" href="/concepts/model-providers" icon="layers">
+    选择 Provider、模型引用和故障转移行为。
+  </Card>
+  <Card title="配置参考" href="/gateway/configuration" icon="gear">
+    完整的 OpenClaw 配置参考。
+  </Card>
+  <Card title="Xiaomi MiMo 控制台" href="https://platform.xiaomimimo.com" icon="arrow-up-right-from-square">
+    Xiaomi MiMo 控制台和 API 密钥管理。
+  </Card>
+</CardGroup>
