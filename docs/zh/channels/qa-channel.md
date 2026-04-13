@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5d59a839e4d174ba1d8490e5de7d39c0"
+mmh3_hash: "7a5a584d2316dd5e0b339a2674abcb83"
 title: "QA Channel"
 summary: "用于确定性 OpenClaw QA 场景的合成 Slack 级别 Channel 插件"
 read_when:
@@ -75,9 +75,12 @@ QA 总线，启动内置的 `qa-channel` 运行时切片，运行确定性
 私有调试器 UI：
 
 ```bash
-pnpm qa:lab:build
-pnpm openclaw qa ui
+pnpm qa:lab:up
 ```
+
+该命令构建 QA 站点，启动 Docker 支持的 Gateway + QA Lab
+技术栈，并打印 QA Lab URL。从该站点可以选择场景、选择
+模型通道、启动单个运行并实时查看结果。
 
 完整仓库支持的 QA 套件：
 
@@ -96,10 +99,10 @@ pnpm openclaw qa suite
 - 线程路由语法
 - Channel 拥有的消息操作
 - Markdown 报告
+- Docker 支持的 QA 站点及运行控制
 
 后续工作将添加：
 
-- Docker 化的 OpenClaw 编排
 - provider/模型矩阵执行
 - 更丰富的场景发现
 - 后续的 OpenClaw 原生编排

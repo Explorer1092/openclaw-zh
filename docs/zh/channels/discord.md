@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c83c06ea6e2c7f697ab3b676e8effb7f"
+mmh3_hash: "6d8cac15d772397953d59f4de60bcdfe"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -104,7 +104,7 @@ openclaw config set channels.discord.enabled true --strict-json
 openclaw gateway
 ```
 
-    如果 OpenClaw 已经作为后台服务运行，请改用 `openclaw gateway restart`。
+    如果 OpenClaw 已经作为后台服务运行，请通过 OpenClaw Mac 应用重启，或停止并重新启动 `openclaw gateway run` 进程。
 
   </Step>
 
@@ -586,6 +586,7 @@ Modal 表单：
     OpenClaw 可以通过发送临时消息并在文本到达时编辑来流式传输草稿回复。
 
     - `channels.discord.streaming` 控制预览流式传输（`off` | `partial` | `block` | `progress`，默认：`off`）。
+    - 默认保持 `off`，因为 Discord 预览编辑可能很快触及频率限制，尤其是当多个 bot 或 gateway 共享同一账户或公会流量时。
     - `progress` 接受用于跨频道一致性，在 Discord 上映射到 `partial`。
     - `channels.discord.streamMode` 是旧版别名，会自动迁移。
     - `partial` 在 token 到达时编辑单个预览消息。
@@ -645,6 +646,8 @@ Modal 表单：
     - 线程配置继承父频道配置，除非存在线程特定条目
 
     频道主题作为**不可信**上下文注入（不作为系统提示）。
+    回复和引用消息上下文当前保持原样接收。
+    Discord allowlist 主要控制谁可以触发 Agent，而不是完整的补充上下文编辑边界。
 
   </Accordion>
 

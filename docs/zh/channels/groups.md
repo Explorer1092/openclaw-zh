@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "99dca46d04452ca80df86e4b811d614a"
-summary: "跨界面（WhatsApp/Telegram/Discord/Slack/Signal/iMessage/Microsoft Teams/Zalo）的群聊行为"
+mmh3_hash: "821241401ba0d796c53681928a0004a7"
+summary: "跨界面（Discord/iMessage/Matrix/Microsoft Teams/Signal/Slack/Telegram/WhatsApp/Zalo）的群聊行为"
 read_when:
   - 更改群聊行为或提及门控
 title: "群组"
@@ -8,7 +8,7 @@ title: "群组"
 
 # 群组
 
-OpenClaw 在各界面中一致处理群聊：WhatsApp、Telegram、Discord、Slack、Signal、iMessage、Microsoft Teams、Zalo。
+OpenClaw 在各界面中一致处理群聊：Discord、iMessage、Matrix、Microsoft Teams、Signal、Slack、Telegram、WhatsApp、Zalo。
 
 ## 新手入门（2 分钟）
 
@@ -189,8 +189,8 @@ requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
       groupPolicy: "allowlist",
       groupAllowFrom: ["@owner:example.org"],
       groups: {
-        "!roomId:example.org": { allow: true },
-        "#alias:example.org": { allow: true },
+        "!roomId:example.org": { enabled: true },
+        "#alias:example.org": { enabled: true },
       },
     },
   },
@@ -210,7 +210,7 @@ requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
 - 私信配对批准（`*-allowFrom` 存储条目）仅适用于私信访问；群组发送者授权保持对群组 allowlist 明确。
 - Discord：allowlist 使用 `channels.discord.guilds.<id>.channels`。
 - Slack：allowlist 使用 `channels.slack.channels`。
-- Matrix：allowlist 使用 `channels.matrix.groups`（房间 ID、别名或名称）。使用 `channels.matrix.groupAllowFrom` 限制发送者；也支持每房间 `users` allowlist。
+- Matrix：allowlist 使用 `channels.matrix.groups`。优先使用房间 ID 或别名；已加入房间的名称查找是尽力而为的，运行时无法解析的名称会被忽略。使用 `channels.matrix.groupAllowFrom` 限制发送者；也支持每房间 `users` allowlist。
 - 群组私信分开控制（`channels.discord.dm.*`、`channels.slack.dm.*`）。
 - Telegram allowlist 可以匹配用户 ID（`"123456789"`、`"telegram:123456789"`、`"tg:123456789"`）或用户名（`"@alice"` 或 `"alice"`）；前缀不区分大小写。
 - 默认为 `groupPolicy: "allowlist"`；如果您的群组 allowlist 为空，群组消息被阻止。
@@ -226,7 +226,7 @@ requireMention? yes -> 被提及？ 否 -> 仅存储为上下文
 
 群组消息需要提及，除非按群组覆盖。默认值在每个子系统的 `*.groups."*"` 下。
 
-回复 bot 消息算作隐式提及（当 Channel 支持回复元数据时）。这适用于 Telegram、WhatsApp、Slack、Discord 和 Microsoft Teams。
+回复 bot 消息算作隐式提及（当 Channel 支持回复元数据时）。引用 bot 消息在暴露引用元数据的 Channel 上也可算作隐式提及。目前内置支持的 Channel 包括 Telegram、WhatsApp、Slack、Discord、Microsoft Teams 和 ZaloUser。
 
 ```json5
 {

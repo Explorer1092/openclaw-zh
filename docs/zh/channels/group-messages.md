@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e2c81951cc3b9b7c0e919f77ce16db5e"
+mmh3_hash: "e35833f4f0e8e6aa12a0b2103be34293"
 summary: "WhatsApp 群组消息处理的行为和配置（mentionPatterns 在各界面间共享）"
 read_when:
   - 更改群组消息规则或提及
@@ -16,7 +16,7 @@ title: "群组消息"
 
 - 激活模式：`mention`（默认）或 `always`。`mention` 需要 ping（通过 `mentionedJids` 的真实 WhatsApp @提及、安全的正则表达式模式，或文本中任意位置的 bot E.164 号码）。`always` 在每条消息上唤醒 agent，但只有在能添加有意义价值时才回复；否则返回静默 token `NO_REPLY`。默认值可在配置中设置（`channels.whatsapp.groups`），并可通过 `/activation` 按群组覆盖。设置 `channels.whatsapp.groups` 时，它也充当群组 allowlist（包含 `"*"` 以允许所有群组）。
 - 群组策略：`channels.whatsapp.groupPolicy` 控制是否接受群组消息（`open|disabled|allowlist`）。`allowlist` 使用 `channels.whatsapp.groupAllowFrom`（回退：显式的 `channels.whatsapp.allowFrom`）。默认为 `allowlist`（添加发送者之前被阻止）。
-- 每群组会话：会话键格式为 `agent:<agentId>:whatsapp:group:<jid>`，因此 `/verbose on` 或 `/think high` 等命令（作为独立消息发送）的作用域限于该群组；个人私信状态不受影响。群组线程跳过心跳。
+- 每群组会话：会话键格式为 `agent:<agentId>:whatsapp:group:<jid>`，因此 `/verbose on`、`/trace on` 或 `/think high` 等命令（作为独立消息发送）的作用域限于该群组；个人私信状态不受影响。群组线程跳过心跳。
 - 上下文注入：**仅待处理的**群组消息（默认 50 条）——那些_没有_触发运行的消息——以 `[Chat messages since your last reply - for context]` 为前缀，触发行在 `[Current message - respond to this]` 下。已在会话中的消息不会重新注入。
 - 发送者显示：每个群组批次现在以 `[from: Sender Name (+E164)]` 结尾，让 agent 知道谁在发言。
 - 临时/仅查看一次：在提取文本/提及之前解包这些消息，因此其中的 ping 仍会触发。
@@ -68,7 +68,7 @@ title: "群组消息"
 1. 将您的 WhatsApp 账户（运行 OpenClaw 的那个）添加到群组。
 2. 说 `@openclaw …`（或包含号码）。除非设置 `groupPolicy: "open"`，否则只有在 allowlist 中的发送者才能触发它。
 3. Agent 提示将包含最近的群组上下文以及末尾的 `[from: …]` 标记，以便它能向正确的人回复。
-4. 会话级指令（`/verbose on`、`/think high`、`/new` 或 `/reset`、`/compact`）仅适用于该群组的会话；将它们作为独立消息发送以使其生效。您的个人私信会话保持独立。
+4. 会话级指令（`/verbose on`、`/trace on`、`/think high`、`/new` 或 `/reset`、`/compact`）仅适用于该群组的会话；将它们作为独立消息发送以使其生效。您的个人私信会话保持独立。
 
 ## 测试/验证
 

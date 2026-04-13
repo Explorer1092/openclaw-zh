@@ -1,29 +1,25 @@
 ---
-title: "Microsoft Teams (插件)"
+title: "Microsoft Teams"
 sidebarTitle: "Microsoft Teams"
-mmh3_hash: "9070b560e3cc0e84d61ae537b988abae"
+mmh3_hash: "4034235ce3803b0a726b7da24d35f256"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when:
   - 开发 Microsoft Teams Channel 功能
 ---
 
-# Microsoft Teams (插件)
+# Microsoft Teams
 
 > "Abandon all hope, ye who enter here."
 
-更新时间：2026-01-21
+更新时间：2026-03-25
 
-状态：支持文本 + DM 附件；Channel/群组文件发送需要 `sharePointSiteId` + Graph 权限（参见[在群聊中发送文件](#sending-files-in-group-chats)）。投票通过 Adaptive Cards 发送。
+状态：支持文本 + DM 附件；Channel/群组文件发送需要 `sharePointSiteId` + Graph 权限（参见[在群聊中发送文件](#sending-files-in-group-chats)）。投票通过 Adaptive Cards 发送。消息操作提供显式 `upload-file` 用于文件优先发送。
 
-## 需要插件
+## 内置插件
 
-Microsoft Teams 作为插件发布，不包含在核心安装中。
+Microsoft Teams 作为内置插件随当前 OpenClaw 版本提供，正常打包的构建无需单独安装。
 
-**重大变更 (2026.1.15)：** Microsoft Teams 已从核心移出。如果您使用它，必须安装插件。
-
-说明：保持核心安装更轻量，并允许 MS Teams 依赖项独立更新。
-
-通过 CLI 安装（npm registry）：
+如果您使用的是旧版本或不包含内置 Teams 的自定义安装，请手动安装：
 
 ```bash
 openclaw plugins install @openclaw/msteams
@@ -32,17 +28,16 @@ openclaw plugins install @openclaw/msteams
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/msteams
+openclaw plugins install ./path/to/local/msteams-plugin
 ```
-
-如果您在配置/入门期间选择 Teams 并检测到 git 检出，
-OpenClaw 将自动提供本地安装路径。
 
 详情：[插件](/tools/plugin)
 
 ## 快速设置（初学者）
 
-1. 安装 Microsoft Teams 插件。
+1. 确认 Microsoft Teams 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 旧版/自定义安装可使用上述命令手动添加。
 2. 创建一个 **Azure Bot**（App ID + client secret + tenant ID）。
 3. 使用这些凭据配置 OpenClaw。
 4. 通过公共 URL 或隧道公开 `/api/messages`（默认端口 3978）。

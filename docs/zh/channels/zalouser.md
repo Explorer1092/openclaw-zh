@@ -1,30 +1,40 @@
 ---
 title: "Zalo 个人号 (非官方)"
 sidebarTitle: "Zalo 个人号"
-mmh3_hash: "b1970bbeca3b8519ee153f17f8f74c3a"
+mmh3_hash: "43d385ce55001b2e61a8fad5dd14b7c6"
 summary: "Zalo personal account support via native zca-js (QR login), capabilities, and configuration"
-read_when: ["Setting up Zalo Personal for OpenClaw","Debugging Zalo Personal login or message flow"]
+read_when:
+  - Setting up Zalo Personal for OpenClaw
+  - Debugging Zalo Personal login or message flow
 ---
+
 # Zalo Personal (非官方)
 
 状态：实验性。此集成通过 OpenClaw 内置的原生 `zca-js` 自动化 **个人 Zalo 账户**。
 
 > **警告：** 这是一个非官方集成，可能导致账户被暂停/封禁。使用风险自负。
 
-## 需要插件
-Zalo Personal 作为插件提供，不包含在核心安装中。
+## 内置插件
+
+Zalo Personal 作为内置插件随当前 OpenClaw 版本提供，正常打包的构建无需单独安装。
+
+如果您使用的是旧版本或不包含 Zalo Personal 的自定义安装，请手动安装：
+
 - 通过 CLI 安装：`openclaw plugins install @openclaw/zalouser`
-- 或从源码检出安装：`openclaw plugins install ./extensions/zalouser`
+- 或从源码检出安装：`openclaw plugins install ./path/to/local/zalouser-plugin`
 - 详情：[插件](/tools/plugin)
 
 不需要外部 `zca`/`openzca` CLI 二进制文件。
 
 ## 快速设置（新手）
-1) 安装插件（见上文）。
-2) 登录（二维码，在 Gateway 机器上）：
+
+1. 确认 Zalo Personal 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 旧版/自定义安装可使用上述命令手动添加。
+2. 登录（二维码，在 Gateway 机器上）：
    - `openclaw channels login --channel zalouser`
-   - 使用 Zalo 移动应用扫描终端中的二维码。
-3) 启用通道：
+   - 使用 Zalo 移动应用扫描二维码。
+3. 启用 Channel：
 
 ```json5
 {
@@ -37,8 +47,8 @@ Zalo Personal 作为插件提供，不包含在核心安装中。
 }
 ```
 
-4) 重启 Gateway（或完成初始化配置）。
-5) DM 访问默认为配对模式；首次联系时批准配对码。
+4. 重启 Gateway（或完成设置）。
+5. DM 访问默认为配对模式；首次联系时批准配对码。
 
 ## 它是什么
 - 完全在进程内通过 `zca-js` 运行。

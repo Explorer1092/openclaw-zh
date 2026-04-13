@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7a926f2124d4d6c1d524941dc25e30c1"
+mmh3_hash: "72933cb5cb3601476c8003b536069621"
 summary: "ACP 运行、子 Agent、独立 Cron 作业和 CLI 操作的后台任务追踪"
 read_when:
   - 检查进行中或最近完成的后台工作时
@@ -174,7 +174,7 @@ openclaw tasks show <lookup>
 openclaw tasks cancel <lookup>
 ```
 
-对于 ACP 和子 Agent 任务，这会终止子会话。状态过渡到 `cancelled` 并发送传递通知。
+对于 ACP 和子 Agent 任务，这会终止子会话。对于 CLI 追踪的任务，取消操作记录在任务注册表中（没有单独的子运行时句柄）。状态过渡到 `cancelled` 并在适用时发送传递通知。
 
 ### `tasks notify`
 

@@ -1,21 +1,22 @@
 ---
-title: "Matrix (插件)"
-sidebarTitle: "Matrix"
-mmh3_hash: "5ccb115670ab94c3e5e31350373051fc"
+title: "Matrix"
+mmh3_hash: "7d2074d9aa5cc8b196c1dfde54e34755"
 summary: "Matrix 支持状态、设置和配置示例"
 read_when:
   - 在 OpenClaw 中设置 Matrix
   - 配置 Matrix E2EE 和验证
 ---
 
-# Matrix (插件)
+# Matrix
 
-Matrix 是 OpenClaw 的 Matrix Channel 插件。
+Matrix 是 OpenClaw 的内置 Channel Plugin。
 它使用官方 `matrix-js-sdk` 并支持私信、房间、话题串、媒体、表情反应、投票、位置和 E2EE。
 
-## 需要插件
+## 内置插件
 
-Matrix 作为插件提供，不随核心 OpenClaw 捆绑。
+Matrix 作为内置插件随当前 OpenClaw 版本提供，正常打包的构建无需单独安装。
+
+如果你使用的是旧版本或不包含 Matrix 的自定义安装，请手动安装：
 
 从 npm 安装：
 
@@ -26,20 +27,23 @@ openclaw plugins install @openclaw/matrix
 从本地检出安装：
 
 ```bash
-openclaw plugins install ./extensions/matrix
+openclaw plugins install ./path/to/local/matrix-plugin
 ```
 
 详情参见 [插件](/tools/plugin)。
 
 ## 设置
 
-1. 安装插件。
+1. 确认 Matrix 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 旧版/自定义安装可使用上述命令手动添加。
 2. 在 Homeserver 上创建 Matrix 账户。
 3. 配置 `channels.matrix`，使用以下之一：
    - `homeserver` + `accessToken`，或
    - `homeserver` + `userId` + `password`。
 4. 重启 Gateway。
 5. 向机器人发送私信或邀请它加入房间。
+   - 全新的 Matrix 邀请仅在 `channels.matrix.autoJoin` 允许时才有效。
 
 交互式设置：
 

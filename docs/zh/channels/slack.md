@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cffbfcfa77de6223229ab1514ce8379c"
+mmh3_hash: "a2723312dae87248b506e1e78d4a279d"
 summary: "Slack setup and runtime behavior (Socket Mode + HTTP Events API)"
 read_when:
   - 设置 Slack 或调试 Slack socket/HTTP 模式
@@ -27,12 +27,13 @@ title: "Slack"
 <Tabs>
   <Tab title="Socket Mode（默认）">
     <Steps>
-      <Step title="创建 Slack 应用和 token">
-        在 Slack 应用设置中：
+      <Step title="创建新的 Slack 应用">
+        在 Slack 应用设置中点击 **[Create New App](https://api.slack.com/apps/new)** 按钮：
 
-        - 启用 **Socket Mode**
-        - 创建 **App Token**（`xapp-...`）并授予 `connections:write` 权限
-        - 安装应用并复制 **Bot Token**（`xoxb-...`）
+        - 选择 **from a manifest** 并为应用选择工作区
+        - 粘贴下方的 [manifest 示例](#manifest-and-scope-checklist) 并继续创建
+        - 生成带 `connections:write` 权限的 **App-Level Token**（`xapp-...`）
+        - 安装应用并复制显示的 **Bot Token**（`xoxb-...`）
       </Step>
 
       <Step title="配置 OpenClaw">
@@ -59,19 +60,6 @@ SLACK_BOT_TOKEN=xoxb-...
 
       </Step>
 
-      <Step title="订阅应用事件">
-        订阅 bot 事件：
-
-        - `app_mention`
-        - `message.channels`, `message.groups`, `message.im`, `message.mpim`
-        - `reaction_added`, `reaction_removed`
-        - `member_joined_channel`, `member_left_channel`
-        - `channel_rename`
-        - `pin_added`, `pin_removed`
-
-        同时启用 App Home 的 **Messages Tab** 以支持私信。
-      </Step>
-
       <Step title="启动 Gateway">
 
 ```bash
@@ -83,17 +71,19 @@ openclaw gateway
 
   </Tab>
 
-  <Tab title="HTTP Events API 模式">
+  <Tab title="HTTP Request URLs">
     <Steps>
-      <Step title="为 HTTP 配置 Slack 应用">
+      <Step title="创建新的 Slack 应用">
+        在 Slack 应用设置中点击 **[Create New App](https://api.slack.com/apps/new)** 按钮：
 
-        - 设置模式为 HTTP（`channels.slack.mode="http"`）
-        - 复制 Slack **Signing Secret**
-        - 将 Event Subscriptions + Interactivity + Slash command Request URL 设置为同一个 Webhook 路径（默认 `/slack/events`）
+        - 选择 **from a manifest** 并为应用选择工作区
+        - 粘贴 [manifest 示例](#manifest-and-scope-checklist) 并在创建前更新 URL
+        - 保存 **Signing Secret** 用于请求验证
+        - 安装应用并复制显示的 **Bot Token**（`xoxb-...`）
 
       </Step>
 
-      <Step title="配置 OpenClaw HTTP 模式">
+      <Step title="配置 OpenClaw">
 
 ```json5
 {
@@ -109,12 +99,20 @@ openclaw gateway
 }
 ```
 
+        <Note>
+        多账户 HTTP 请使用唯一的 webhook 路径
+
+        为每个账户提供不同的 `webhookPath`（默认 `/slack/events`）以避免注册冲突。
+        </Note>
+
       </Step>
 
-      <Step title="多账户 HTTP 使用唯一 Webhook 路径">
-        支持按账户的 HTTP 模式。
+      <Step title="启动 Gateway">
 
-        为每个账户提供不同的 `webhookPath` 以避免注册冲突。
+```bash
+openclaw gateway
+```
+
       </Step>
     </Steps>
 

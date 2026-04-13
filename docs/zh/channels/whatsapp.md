@@ -1,7 +1,7 @@
 ---
 title: "WhatsApp（Web 频道）"
 sidebarTitle: "WhatsApp"
-mmh3_hash: "9b97a31303c639ca3478ce9c014ff149"
+mmh3_hash: "d30ad184c95ebeae5f4260791a19bce7"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
@@ -145,6 +145,7 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 - 状态和广播聊天被忽略（`@status`、`@broadcast`）。
 - 直接聊天使用私信会话规则（`session.dmScope`；默认 `main` 将私信折叠到 agent 主会话）。
 - 群组会话是隔离的（`agent:<agentId>:whatsapp:group:<jid>`）。
+- WhatsApp Web 传输遵循 Gateway 主机上的标准代理环境变量（`HTTPS_PROXY`、`HTTP_PROXY`、`NO_PROXY` / 小写变体）。优先使用主机级代理配置，而非特定于 Channel 的 WhatsApp 代理设置。
 
 ## 访问控制和激活
 

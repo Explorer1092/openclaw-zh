@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ce3412af5075e5ab5368ff7aa519d5f3"
+mmh3_hash: "7b41063d5ccd3b1fca51c579a7370fee"
 summary: "Hooks：用于命令和生命周期事件的事件驱动自动化"
 read_when:
   - 你需要为 /new、/reset、/stop 和 Agent 生命周期事件设置事件驱动自动化
@@ -165,9 +165,13 @@ npm 规范仅限注册表（包名 + 可选的精确版本或 dist-tag）。拒�
 openclaw hooks enable <hook-name>
 ```
 
+<a id="session-memory"></a>
+
 ### session-memory 详情
 
 提取最后 15 条用户/助手消息，通过 LLM 生成描述性文件名 slug，并保存到 `<workspace>/memory/YYYY-MM-DD-slug.md`。需要配置 `workspace.dir`。
+
+<a id="bootstrap-extra-files"></a>
 
 ### bootstrap-extra-files 配置
 
@@ -187,6 +191,18 @@ openclaw hooks enable <hook-name>
 ```
 
 路径相对于工作空间解析。只加载已识别的引导文件基本名称（`AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`、`MEMORY.md`）。
+
+<a id="command-logger"></a>
+
+### command-logger 详情
+
+将每个斜杠命令记录到 `~/.openclaw/logs/commands.log`。
+
+<a id="boot-md"></a>
+
+### boot-md 详情
+
+Gateway 启动时从活动工作空间运行 `BOOT.md`。
 
 ## Plugin Hooks
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bc459ba40c37741b04d460584c7598ab"
+mmh3_hash: "61a39f024f6ffb0f2e9298dd5b9fb892"
 summary: "Gateway 调度器的定时作业、Webhooks 和 Gmail PubSub 触发器"
 read_when:
   - 调度后台作业或唤醒时
@@ -40,6 +40,8 @@ openclaw cron runs --id <job-id>
 - 独立 Cron 运行在完成时尽力关闭其 `cron:<jobId>` 会话的追踪浏览器标签/进程，避免后台浏览器自动化留下孤立进程。
 - 独立 Cron 运行还会防范陈旧的确认回复。如果第一个结果只是中间状态更新（"on it"、"pulling everything together"等类似提示），且没有后代子 Agent 运行负责最终答案，OpenClaw 会在传递前再次提示获取实际结果。
 
+<a id="maintenance"></a>
+
 Cron 的任务协调是运行时拥有的：活动的 Cron 任务在 Cron 运行时仍将该作业追踪为运行时保持活动，即使旧的子会话行仍然存在。一旦运行时停止拥有该作业且 5 分钟宽限窗口过期，维护可以将任务标记为 `lost`。
 
 ## 调度类型
@@ -53,6 +55,18 @@ Cron 的任务协调是运行时拥有的：活动的 Cron 任务在 Cron 运行
 没有时区的时间戳被视为 UTC。添加 `--tz America/New_York` 以按本地时钟调度。
 
 周期性整点表达式会自动错开最多 5 分钟，以减少负载峰值。使用 `--exact` 强制精确时间，或使用 `--stagger 30s` 设置显式窗口。
+
+### 月份日和星期日使用 OR 逻辑
+
+Cron 表达式由 [croner](https://github.com/Hexagon/croner) 解析。当月份日和星期日字段均非通配符时，croner 在**任一**字段匹配时触发——而非两者同时匹配。这是标准 Vixie cron 行为。
+
+```
+# 预期：「15 号上午 9 点，且仅在周一时」
+# 实际：「每个 15 号上午 9 点，以及每个周一上午 9 点」
+0 9 15 * 1
+```
+
+这会每月触发约 5-6 次，而非 0-1 次。OpenClaw 使用 Croner 的默认 OR 行为。若需要同时满足两个条件，请使用 Croner 的 `+` 星期日修饰符（`0 9 15 * +1`），或在一个字段上调度并在作业提示或命令中守卫另一个条件。
 
 ## 执行风格
 
