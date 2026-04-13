@@ -7,7 +7,7 @@ read_when:
   - 将消息 Channel 对话绑定到持久化 ACP Session
   - 排查 ACP 后端及 Plugin 接线问题
   - 从聊天中操作 /acp 命令
-title: "ACP Agent"
+title: "ACP Agents"
 ---
 
 # ACP Agent
@@ -26,6 +26,7 @@ title: "ACP Agent"
 | ------------------------------------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | 通过 OpenClaw _运行_ Codex、Claude Code、Gemini CLI 或其他外部 harness | 本页：ACP Agent            | 聊天绑定 Session、`/acp spawn`、`sessions_spawn({ runtime: "acp" })`、后台任务、运行时控制                |
 | 将 OpenClaw Gateway Session _暴露为_ ACP 服务器供编辑器或客户端使用  | [`openclaw acp`](/cli/acp) | 桥接模式。IDE/客户端通过 stdio/WebSocket 以 ACP 协议连接 OpenClaw                                          |
+| 将本地 AI CLI 复用为纯文本回退模型                                    | [CLI Backends](/gateway/cli-backends) | 非 ACP。无 OpenClaw 工具、无 ACP 控制、无 harness 运行时                                    |
 
 ## 开箱即用吗？
 
@@ -110,9 +111,12 @@ OpenClaw 应执行的操作：
 重要区别：
 
 - ACP Claude 是具有 ACP 控制、Session 恢复、后台任务跟踪和可选对话/thread 绑定的 harness Session。
-  对于运营者，实际规则是：
+- CLI backend 是独立的纯文本本地回退运行时。参见 [CLI Backends](/gateway/cli-backends)。
+
+对于运营者，实际规则是：
 
 - 需要 `/acp spawn`、可绑定 Session、运行时控制或持久化 harness 工作：使用 ACP
+- 需要通过原始 CLI 进行简单本地文本回退：使用 CLI backend
 
 ## 绑定 Session
 

@@ -13,8 +13,13 @@ read_when:
 Exec 批准是**配套应用/节点主机的安全联锁**，用于允许沙盒 Agent 在真实主机（`gateway` 或 `node`）上运行命令。可以把它想象成安全联锁：只有当策略 + 允许列表 + （可选）用户批准三者都同意时，命令才会被允许执行。
 Exec 批准是工具策略和提权门控**之外**的额外保障（除非提权设置为 `full`，这会跳过批准）。
 有效策略是 `tools.exec.*` 和批准默认值中**更严格**的一个；如果批准字段被省略，则使用 `tools.exec` 的值。
+主机 exec 也使用该机器上的本地批准状态。`~/.openclaw/exec-approvals.json` 中的主机本地 `ask: "always"` 即使 Session 或配置默认值请求 `ask: "on-miss"` 也会继续提示。
+使用 `openclaw approvals get`、`openclaw approvals get --gateway` 或 `openclaw approvals get --node <id|name|ip>` 检查请求的策略、主机策略来源和有效结果。
+对于本地机器，`openclaw exec-policy show` 暴露相同的合并视图，`openclaw exec-policy set|preset` 可以一步将本地请求的策略与本地主机批准文件同步。当本地范围请求 `host=node` 时，`openclaw exec-policy show` 将该范围报告为运行时由节点管理，而不是假装本地批准文件是有效的事实来源。
 
 如果配套应用 UI **不可用**，任何需要提示的请求都由**询问回退**处理（默认：拒绝）。
+
+原生聊天批准客户端也可以在待处理批准消息上暴露 Channel 特定的功能。例如，Matrix 可以在批准提示上种入反应快捷键（`✅` 允许一次，`❌` 拒绝，`♾️` 在可用时始终允许），同时仍将 `/approve ...` 命令留在消息中作为回退。
 
 ## 适用范围
 
@@ -78,6 +83,93 @@ macOS 分工：
 }
 ```
 
+## 无批准的"YOLO"模式
+
+如果你希望主机 exec 在没有批准提示的情况下运行，必须开放**两个**策略层：
+
+- OpenClaw 配置中请求的 exec 策略（`tools.exec.*`）
+- `~/.openclaw/exec-approvals.json` 中的主机本地批准策略
+
+这现在是默认主机行为，除非你显式收紧它：
+
+- `tools.exec.security`：在 `gateway`/`node` 上设置 `full`
+- `tools.exec.ask`：设置 `off`
+- 主机 `askFallback`：设置 `full`
+
+重要区别：
+
+- `tools.exec.host=auto` 选择 exec 运行位置：有沙盒时在沙盒中，否则在 gateway 中。
+- YOLO 选择主机 exec 的批准方式：`security=full` 加 `ask=off`。
+- 在 YOLO 模式下，OpenClaw 不会在配置的主机 exec 策略之上添加单独的启发式命令混淆批准门。
+- `auto` 不会让 gateway 路由成为沙盒 Session 的自由覆盖。沙盒 Session 允许每次调用的 `host=node` 请求，`host=gateway` 仅在没有活跃沙盒运行时从 `auto` 允许。如果你想要稳定的非自动默认值，请显式设置 `tools.exec.host` 或使用 `/exec host=...`。
+
+如果你想要更保守的设置，将任一层收紧回 `allowlist` / `on-miss` 或 `deny`。
+
+持久 gateway 主机"永不提示"设置：
+
+```bash
+openclaw config set tools.exec.host gateway
+openclaw config set tools.exec.security full
+openclaw config set tools.exec.ask off
+openclaw gateway restart
+```
+
+然后将主机批准文件设置为匹配：
+
+```bash
+openclaw approvals set --stdin <<'EOF'
+{
+  version: 1,
+  defaults: {
+    security: "full",
+    ask: "off",
+    askFallback: "full"
+  }
+}
+EOF
+```
+
+当前机器上相同 gateway 主机策略的本地快捷方式：
+
+```bash
+openclaw exec-policy preset yolo
+```
+
+该本地快捷方式同时更新：
+
+- 本地 `tools.exec.host/security/ask`
+- 本地 `~/.openclaw/exec-approvals.json` 默认值
+
+它是故意仅本地的。如果你需要远程更改 gateway 主机或节点主机批准，请继续使用 `openclaw approvals set --gateway` 或 `openclaw approvals set --node <id|name|ip>`。
+
+对于节点主机，在该节点上应用相同的批准文件：
+
+```bash
+openclaw approvals set --node <id|name|ip> --stdin <<'EOF'
+{
+  version: 1,
+  defaults: {
+    security: "full",
+    ask: "off",
+    askFallback: "full"
+  }
+}
+EOF
+```
+
+重要的仅本地限制：
+
+- `openclaw exec-policy` 不同步节点批准
+- `openclaw exec-policy set --host node` 被拒绝
+- 节点 exec 批准在运行时从节点获取，因此针对节点的更新必须使用 `openclaw approvals --node ...`
+
+仅 Session 快捷方式：
+
+- `/exec security=full ask=off` 仅更改当前 Session。
+- `/elevated full` 是破玻璃快捷方式，也跳过该 Session 的 exec 批准。
+
+如果主机批准文件比配置更严格，更严格的主机策略仍然优先。
+
 ## 策略旋钮
 
 ### 安全性（`exec.security`）
@@ -91,6 +183,7 @@ macOS 分工：
 - **off**：永不提示。
 - **on-miss**：仅在允许列表不匹配时提示。
 - **always**：每次命令都提示。
+- `allow-always` 持久信任在有效询问模式为 `always` 时不会抑制提示
 
 ### 询问回退（`askFallback`）
 
@@ -124,6 +217,7 @@ macOS 分工：
 允许列表是**每个 Agent** 独立的。如果存在多个 Agent，在 macOS 应用中切换你正在编辑的 Agent。模式是**不区分大小写的 glob 匹配**。
 模式应解析为**二进制文件路径**（仅基本名称的条目会被忽略）。
 旧版 `agents.default` 条目在加载时迁移到 `agents.main`。
+Shell 链式（如 `echo ok && pwd`）仍需要每个顶层段满足允许列表规则。
 
 示例：
 
@@ -150,7 +244,7 @@ macOS 分工：
 
 ## 安全 bin（仅标准输入）
 
-`tools.exec.safeBins` 定义了一小组**仅限标准输入**的二进制文件（例如 `jq`），这些文件可以在允许列表模式下运行**而无需**显式允许列表条目。安全 bin 拒绝位置文件参数和类路径令牌，因此它们只能对传入流进行操作。
+`tools.exec.safeBins` 定义了一小组**仅限标准输入**的二进制文件（例如 `cut`），这些文件可以在允许列表模式下运行**而无需**显式允许列表条目。安全 bin 拒绝位置文件参数和类路径令牌，因此它们只能对传入流进行操作。
 将此视为流过滤器的窄通道，而非通用信任列表。
 **不要**将解释器或运行时二进制文件（例如 `python3`、`node`、`ruby`、`bash`、`sh`、`zsh`）添加到 `safeBins`。
 如果命令可以评估代码、执行子命令或按设计读取文件，优先使用显式允许列表条目并保持批准提示启用。
@@ -379,7 +473,7 @@ FAQ：[为什么聊天批准有两个 exec 批准配置？](/help/faq#why-are-th
 - Telegram 审批者可以是明确的（`execApprovals.approvers`）或从现有所有者配置推断（`allowFrom`，加上支持时的直接消息 `defaultTo`）
 - Slack 审批者可以是明确的（`execApprovals.approvers`）或从 `commands.ownerAllowFrom` 推断
 - Slack 原生按钮保留批准 id 类型，因此 `plugin:` id 可以解析 plugin 批准而无需第二个 Slack 本地回退层
-- Matrix 原生私信/Channel 路由仅限 exec；Matrix plugin 批准保留在共享的同聊天 `/approve` 和可选的 `approvals.plugin` 转发路径上
+- Matrix 原生私信/Channel 路由和反应快捷键处理 exec 和 plugin 批准；plugin 授权仍来自 `channels.matrix.dm.allowFrom`
 - 请求者不需要是审批者
 - 当该聊天已经支持命令和回复时，原始聊天可以直接使用 `/approve` 批准
 - 原生 Discord 批准按钮按批准 id 类型路由：`plugin:` id 直接进入 plugin 批准，其他都进入 exec 批准

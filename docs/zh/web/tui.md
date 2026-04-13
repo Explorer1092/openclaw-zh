@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5ec1e8f580494957a450c8b16be17206"
+mmh3_hash: "cb91603851063476fd820eb8e1f21610"
 summary: "Terminal UI（TUI）：从任何机器连接到 Gateway"
 read_when:
   - 您想要 TUI 的入门友好演练
@@ -38,7 +38,7 @@ openclaw tui --url ws://<host>:<port> --token <gateway-token>
 - 标题：连接 URL、当前 Agent、当前会话。
 - 聊天日志：用户消息、助手回复、系统通知、工具卡片。
 - 状态行：连接/运行状态（连接中、运行中、流式传输中、空闲、错误）。
-- 页脚：连接状态 + Agent + Session + 模型 + think/fast/verbose/reasoning + 令牌计数 + 传递。
+- 页脚：连接状态 + Agent + Session + 模型 + think/fast/verbose/trace/reasoning + 令牌计数 + 传递。
 - 输入：带自动完成的文本编辑器。
 
 ## 心智模型：Agents + Sessions
@@ -95,6 +95,7 @@ Session 控制：
 - `/think <off|minimal|low|medium|high>`
 - `/fast <status|on|off>`
 - `/verbose <on|full|off>`
+- `/trace <on|off>`
 - `/reasoning <on|off|stream>`
 - `/usage <off|tokens|full>`
 - `/elevated <on|off|ask|full>`（别名：`/elev`）

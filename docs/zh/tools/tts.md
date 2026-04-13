@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9b8de4330f5ccafde9135be5ecdb67ba"
+mmh3_hash: "dde173a678bfb56d05b14f9db0d73737"
 summary: "用于出站回复的文本转语音（TTS）"
 read_when:
   - 为回复启用文本转语音
@@ -225,7 +225,7 @@ TTS 配置位于 `openclaw.json` 中的 `messages.tts` 下。
 
 - `auto`：自动 TTS 模式（`off`、`always`、`inbound`、`tagged`）。
   - `inbound` 仅在收到语音消息后发送音频。
-  - `tagged` 仅在回复包含 `[[tts]]` 标签时发送音频。
+  - `tagged` 仅在回复包含 `[[tts:key=value]]` 指令或 `[[tts:text]]...[[/tts:text]]` 块时发送音频。
 - `enabled`：旧版开关（doctor 会将其迁移到 `auto`）。
 - `mode`：`"final"`（默认）或 `"all"`（包含工具/块回复）。
 - `provider`：语音提供商 ID，如 `"elevenlabs"`、`"microsoft"`、`"minimax"` 或 `"openai"`（自动回退）。
@@ -392,9 +392,7 @@ Discord 注意：`/tts` 是 Discord 内置命令，因此 OpenClaw 在 Discord �
 
 ```
 /tts off
-/tts always
-/tts inbound
-/tts tagged
+/tts on
 /tts status
 /tts provider openai
 /tts limit 2000
@@ -406,7 +404,9 @@ Discord 注意：`/tts` 是 Discord 内置命令，因此 OpenClaw 在 Discord �
 
 - 命令需要授权发送者（允许列表/所有者规则仍然适用）。
 - 必须启用 `commands.text` 或原生命令注册。
-- `off|always|inbound|tagged` 是每会话切换（`/tts on` 是 `/tts always` 的别名）。
+- 配置中的 `messages.tts.auto` 接受 `off|always|inbound|tagged`。
+- `/tts on` 将本地 TTS 偏好写入 `always`；`/tts off` 将其写入 `off`。
+- 如果需要 `inbound` 或 `tagged` 默认值，使用配置。
 - `limit` 和 `summary` 存储在本地偏好中，而非主配置。
 - `/tts audio` 生成一次性音频回复（不会切换 TTS 开启）。
 - `/tts status` 包含最近尝试的回退可见性：

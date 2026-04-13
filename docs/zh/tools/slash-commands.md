@@ -1,7 +1,7 @@
 ---
 title: "斜杠命令"
 sidebarTitle: "斜杠命令"
-mmh3_hash: "f60f823d7cd72240f1a4552c17d4392c"
+mmh3_hash: "4472d8e86d100118f34cb15b0ed58940"
 summary: "斜杠命令：文本 vs 原生、配置和支持的命令"
 read_when:
   - 使用或配置聊天命令
@@ -15,7 +15,7 @@ read_when:
 有两个相关系统：
 
 - **命令**：独立的 `/...` 消息。
-- **指令**：`/think`、`/fast`、`/verbose`、`/reasoning`、`/elevated`、`/exec`、`/model`、`/queue`。
+- **指令**：`/think`、`/fast`、`/verbose`、`/trace`、`/reasoning`、`/elevated`、`/exec`、`/model`、`/queue`。
   - 在模型看到消息之前，指令会从消息中剥离。
   - 在正常聊天消息（非仅指令）中，它们被视为"内联提示"，**不**持久化 Session 设置。
   - 在仅指令消息（消息仅包含指令）中，它们持久化到 Session 并回复确认。
@@ -37,7 +37,10 @@ read_when:
     mcp: false,
     plugins: false,
     debug: false,
-    restart: false,
+    restart: true,
+    ownerAllowFrom: ["discord:123456789012345678"],
+    ownerDisplay: "raw",
+    ownerDisplaySecret: "${OWNER_ID_HASH_SECRET}",
     allowFrom: {
       "*": ["user1"],
       discord: ["user:123"],
@@ -62,70 +65,105 @@ read_when:
 - `commands.mcp`（默认 `false`）启用 `/mcp`（读取/写入 `mcp.servers` 下 OpenClaw 管理的 MCP 配置）。
 - `commands.plugins`（默认 `false`）启用 `/plugins`（Plugin 发现/状态以及安装 + 启用/禁用控制）。
 - `commands.debug`（默认 `false`）启用 `/debug`（仅运行时覆盖）。
+- `commands.restart`（默认 `true`）启用 `/restart` 及 Gateway 重启工具操作。
+- `commands.ownerAllowFrom`（可选）设置仅所有者命令/工具表面的显式所有者允许列表。与 `commands.allowFrom` 独立。
+- `commands.ownerDisplay` 控制所有者 id 在系统提示中的显示方式：`raw` 或 `hash`。
+- `commands.ownerDisplaySecret` 在 `commands.ownerDisplay="hash"` 时可选设置 HMAC 密钥。
 - `commands.allowFrom`（可选）设置命令授权的每 Provider 允许列表。配置时，它是命令和指令的唯一授权来源（Channel 允许列表/配对和 `commands.useAccessGroups` 被忽略）。使用 `"*"` 作为全局默认值；Provider 特定的键覆盖它。
 - `commands.useAccessGroups`（默认 `true`）在未设置 `commands.allowFrom` 时对命令强制执行允许列表/策略。
 
 ## 命令列表
 
-文本 + 原生（启用时）：
+当前事实来源：
 
-- `/help`
-- `/commands`
-- `/tools [compact|verbose]`（显示当前 Agent 现在可以使用的工具；`verbose` 添加描述）
-- `/skill <name> [input]`（按名称运行 Skill）
-- `/status`（显示当前状态；当可用时包括当前模型 Provider 的提供商使用/配额）
-- `/tasks`（列出当前 Session 的后台任务；显示活动和最近的任务详情及 Agent 本地回退计数）
-- `/allowlist`（列出/添加/删除允许列表条目）
-- `/approve <id> <decision>`（解决 exec 批准提示；使用待处理批准消息获取可用决策）
-- `/context [list|detail|json]`（解释"上下文"；`detail` 显示每个文件 + 每个工具 + 每个 Skill + 系统提示大小）
-- `/btw <question>`（询问关于当前 Session 的临时旁问，不改变未来的 Session 上下文；参见 [/tools/btw](/tools/btw)）
-- `/export-session [path]`（别名：`/export`）（将当前 Session 导出为包含完整系统提示的 HTML）
-- `/whoami`（显示您的发送者 ID；别名：`/id`）
-- `/session idle <duration|off>`（管理聚焦线程绑定的非活动自动取消聚焦）
-- `/session max-age <duration|off>`（管理聚焦线程绑定的硬最大年龄自动取消聚焦）
-- `/subagents list|kill|log|info|send|steer|spawn`（检查、控制或生成当前 Session 的子 Agent 运行）
-- `/acp spawn|cancel|steer|close|status|set-mode|set|cwd|permissions|timeout|model|reset-options|doctor|install|sessions`（检查和控制 ACP 运行时 Session）
-- `/agents`（列出此 Session 的线程绑定 Agent）
-- `/focus <target>`（Discord：将此线程或新线程绑定到 Session/子 Agent 目标）
-- `/unfocus`（Discord：删除当前线程绑定）
-- `/kill <id|#|all>`（立即中止一个或所有运行中的子 Agent；无确认消息）
-- `/steer <id|#> <message>`（立即引导运行中的子 Agent：运行中时就地，否则中止当前工作并在引导消息上重启）
-- `/tell <id|#> <message>`（`/steer` 的别名）
-- `/config show|get|set|unset`（将配置持久化到磁盘，仅所有者；需要 `commands.config: true`）
-- `/mcp show|get|set|unset`（管理 OpenClaw MCP 服务器配置，仅所有者；需要 `commands.mcp: true`）
-- `/plugins list|show|get|install|enable|disable`（检查已发现的 Plugin，安装新 Plugin，切换启用状态；写入操作仅所有者；需要 `commands.plugins: true`）
-  - `/plugin` 是 `/plugins` 的别名。
-  - `/plugin install <spec>` 接受与 `openclaw plugins install` 相同的 Plugin 规格：本地路径/存档、npm 包或 `clawhub:<pkg>`。
-  - 启用/禁用写入仍会回复重启提示。在带监视的前台 Gateway 上，OpenClaw 可能在写入后自动执行重启。
-- `/debug show|set|unset|reset`（运行时覆盖，仅所有者；需要 `commands.debug: true`）
-- `/usage off|tokens|full|cost`（每响应使用页脚或本地成本摘要）
-- `/tts off|always|inbound|tagged|status|provider|limit|summary|audio`（控制 TTS；参见 [/tts](/tools/tts)）
-  - Discord：原生命令是 `/voice`（Discord 保留 `/tts`）；文本 `/tts` 仍然有效。
-- `/stop`
-- `/restart`
-- `/dock-telegram`（别名：`/dock_telegram`）（将回复切换到 Telegram）
-- `/dock-discord`（别名：`/dock_discord`）（将回复切换到 Discord）
-- `/dock-slack`（别名：`/dock_slack`）（将回复切换到 Slack）
-- `/activation mention|always`（仅组）
-- `/send on|off|inherit`（仅所有者）
-- `/reset` 或 `/new [model]`（可选模型提示；剩余部分通过）
-- `/think <off|minimal|low|medium|high|xhigh>`（按模型/Provider 的动态选择；别名：`/thinking`、`/t`）
-- `/fast status|on|off`（省略参数显示当前有效的快速模式状态）
-- `/verbose on|full|off`（别名：`/v`）
-- `/reasoning on|off|stream`（别名：`/reason`；开启时，发送单独的消息，前缀为 `Reasoning:`；`stream` = 仅 Telegram 草稿）
-- `/elevated on|off|ask|full`（别名：`/elev`；`full` 跳过 exec 批准）
-- `/exec host=<auto|sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>`（发送 `/exec` 以显示当前）
-- `/model <name>`（别名：`/models`；或来自 `agents.defaults.models.*.alias` 的 `/<alias>`）
-- `/queue <mode>`（加上 `debounce:2s cap:25 drop:summarize` 等选项；发送 `/queue` 以查看当前设置）
-- `/bash <command>`（仅主机；`! <command>` 的别名；需要 `commands.bash: true` + `tools.elevated` 允许列表）
-- `/dreaming [on|off|status|help]`（切换全局 dreaming 或显示状态；参见 [Dreaming](/concepts/dreaming)）
+- 核心内置命令来自 `src/auto-reply/commands-registry.shared.ts`
+- 生成的 dock 命令来自 `src/auto-reply/commands-registry.data.ts`
+- Plugin 命令来自 Plugin 的 `registerCommand()` 调用
+- 您的 Gateway 上的实际可用性仍取决于配置标志、Channel 表面和已安装/启用的 Plugin
 
-仅文本：
+### 核心内置命令
 
-- `/compact [instructions]`（参见 [/concepts/compaction](/concepts/compaction)）
-- `! <command>`（仅主机；一次一个；对长时间运行的作业使用 `!poll` + `!stop`）
-- `!poll`（检查输出/状态；接受可选的 `sessionId`；`/bash poll` 也有效）
-- `!stop`（停止正在运行的 bash 作业；接受可选的 `sessionId`；`/bash stop` 也有效）
+今天可用的内置命令：
+
+- `/new [model]` 开始新 Session；`/reset` 是重置别名。
+- `/compact [instructions]` 压缩 Session 上下文。参见 [/concepts/compaction](/concepts/compaction)。
+- `/stop` 中止当前运行。
+- `/session idle <duration|off>` 和 `/session max-age <duration|off>` 管理线程绑定过期。
+- `/think <off|minimal|low|medium|high|xhigh>` 设置思考级别。别名：`/thinking`、`/t`。
+- `/verbose on|off|full` 切换详细输出。别名：`/v`。
+- `/trace on|off` 切换当前 Session 的 Plugin 跟踪输出。
+- `/fast [status|on|off]` 显示或设置快速模式。
+- `/reasoning [on|off|stream]` 切换推理可见性。别名：`/reason`。
+- `/elevated [on|off|ask|full]` 切换提升模式。别名：`/elev`。
+- `/exec host=<auto|sandbox|gateway|node> security=<deny|allowlist|full> ask=<off|on-miss|always> node=<id>` 显示或设置 exec 默认值。
+- `/model [name|#|status]` 显示或设置模型。
+- `/models [provider] [page] [limit=<n>|size=<n>|all]` 列出 Provider 或某个 Provider 的模型。
+- `/queue <mode>` 管理队列行为（`steer`、`interrupt`、`followup`、`collect`、`steer-backlog`）及 `debounce:2s cap:25 drop:summarize` 等选项。
+- `/help` 显示简短帮助摘要。
+- `/commands` 显示生成的命令目录。
+- `/tools [compact|verbose]` 显示当前 Agent 现在可以使用的工具。
+- `/status` 显示运行时状态，包括可用时的 Provider 使用/配额。
+- `/tasks` 列出当前 Session 的活动/最近后台任务。
+- `/context [list|detail|json]` 解释上下文是如何组装的。
+- `/export-session [path]` 将当前 Session 导出为 HTML。别名：`/export`。
+- `/whoami` 显示您的发送者 id。别名：`/id`。
+- `/skill <name> [input]` 按名称运行 Skill。
+- `/allowlist [list|add|remove] ...` 管理允许列表条目。仅文本。
+- `/approve <id> <decision>` 解决 exec 批准提示。
+- `/btw <question>` 询问旁问，不改变未来的 Session 上下文。参见 [/tools/btw](/tools/btw)。
+- `/subagents list|kill|log|info|send|steer|spawn` 管理当前 Session 的子 Agent 运行。
+- `/acp spawn|cancel|steer|close|sessions|status|set-mode|set|cwd|permissions|timeout|model|reset-options|doctor|install|help` 管理 ACP Session 和运行时选项。
+- `/focus <target>` 将当前 Discord 线程或 Telegram 话题/对话绑定到 Session 目标。
+- `/unfocus` 移除当前绑定。
+- `/agents` 列出当前 Session 的线程绑定 Agent。
+- `/kill <id|#|all>` 中止一个或所有运行中的子 Agent。
+- `/steer <id|#> <message>` 向运行中的子 Agent 发送引导。别名：`/tell`。
+- `/config show|get|set|unset` 读取或写入 `openclaw.json`。仅所有者。需要 `commands.config: true`。
+- `/mcp show|get|set|unset` 读取或写入 `mcp.servers` 下 OpenClaw 管理的 MCP 服务器配置。仅所有者。需要 `commands.mcp: true`。
+- `/plugins list|inspect|show|get|install|enable|disable` 检查或修改 Plugin 状态。`/plugin` 是别名。写入操作仅所有者。需要 `commands.plugins: true`。
+- `/debug show|set|unset|reset` 管理仅运行时配置覆盖。仅所有者。需要 `commands.debug: true`。
+- `/usage off|tokens|full|cost` 控制每响应使用页脚或打印本地成本摘要。
+- `/tts on|off|status|provider|limit|summary|audio|help` 控制 TTS。参见 [/tools/tts](/tools/tts)。
+- `/restart` 在启用时重启 OpenClaw。默认：启用；设置 `commands.restart: false` 以禁用。
+- `/activation mention|always` 设置组激活模式。
+- `/send on|off|inherit` 设置发送策略。仅所有者。
+- `/bash <command>` 运行主机 Shell 命令。仅文本。别名：`! <command>`。需要 `commands.bash: true` 加 `tools.elevated` 允许列表。
+- `!poll [sessionId]` 检查后台 bash 作业。
+- `!stop [sessionId]` 停止后台 bash 作业。
+
+### 生成的 dock 命令
+
+Dock 命令由具有原生命令支持的 Channel Plugin 生成。当前捆绑集：
+
+- `/dock-discord`（别名：`/dock_discord`）
+- `/dock-mattermost`（别名：`/dock_mattermost`）
+- `/dock-slack`（别名：`/dock_slack`）
+- `/dock-telegram`（别名：`/dock_telegram`）
+
+### 捆绑 Plugin 命令
+
+捆绑 Plugin 可以添加更多斜杠命令。本仓库中当前的捆绑命令：
+
+- `/dreaming [on|off|status|help]` 切换记忆 dreaming。参见 [Dreaming](/concepts/dreaming)。
+- `/pair [qr|status|pending|approve|cleanup|notify]` 管理设备配对/设置流程。参见 [配对](/channels/pairing)。
+- `/phone status|arm <camera|screen|writes|all> [duration]|disarm` 临时启用高风险手机节点命令。
+- `/voice status|list [limit]|set <voiceId|name>` 管理 Talk 语音配置。在 Discord 上，原生命令名称为 `/talkvoice`。
+- `/card ...` 发送 LINE 富卡预设。参见 [LINE](/channels/line)。
+- `/codex status|models|threads|resume|compact|review|account|mcp|skills` 检查和控制捆绑的 Codex 应用服务器框架。参见 [Codex Harness](/plugins/codex-harness)。
+- 仅 QQBot 命令：
+  - `/bot-ping`
+  - `/bot-version`
+  - `/bot-help`
+  - `/bot-upgrade`
+  - `/bot-logs`
+
+### 动态 Skill 命令
+
+用户可调用的 Skill 也作为斜杠命令公开：
+
+- `/skill <name> [input]` 始终作为通用入口点有效。
+- Skill 也可能作为直接命令出现，如 Skill/Plugin 注册时的 `/prose`。
+- 原生 Skill 命令注册由 `commands.nativeSkills` 和 `channels.<provider>.commands.nativeSkills` 控制。
 
 注意：
 
@@ -136,14 +174,17 @@ read_when:
 - 在多账户 Channel 中，`/allowlist --account <id>` 和 `/config set channels.<provider>.accounts.<id>...` 的配置目标也遵守目标账户的 `configWrites`。
 - `/usage` 控制每响应使用页脚；`/usage cost` 从 OpenClaw Session 日志打印本地成本摘要。
 - `/restart` 默认启用；设置 `commands.restart: false` 以禁用它。
+- `/plugins install <spec>` 接受与 `openclaw plugins install` 相同的 Plugin 规格：本地路径/存档、npm 包或 `clawhub:<pkg>`。
+- `/plugins enable|disable` 更新 Plugin 配置，可能提示重启。
 - Discord 专有原生命令：`/vc join|leave|status` 控制语音 Channel（需要 `channels.discord.voice` 和原生命令；不作为文本使用）。
 - Discord 线程绑定命令（`/focus`、`/unfocus`、`/agents`、`/session idle`、`/session max-age`）需要启用有效的线程绑定（`session.threadBindings.enabled` 和/或 `channels.discord.threadBindings.enabled`）。
 - ACP 命令参考和运行时行为：[ACP Agents](/tools/acp-agents)。
 - `/verbose` 用于调试和额外的可见性；在正常使用中保持**关闭**。
+- `/trace` 比 `/verbose` 范围更窄：它只显示 Plugin 拥有的跟踪/调试行，保持普通详细工具内容关闭。
 - `/fast on|off` 持久化 Session 覆盖。使用 Sessions UI `inherit` 选项清除它并回退到配置默认值。
 - `/fast` 因 Provider 而异：OpenAI/OpenAI Codex 在原生 Responses 端点上将其映射到 `service_tier=priority`，而直接的公共 Anthropic 请求（包括发送到 `api.anthropic.com` 的 OAuth 认证流量）映射到 `service_tier=auto` 或 `standard_only`。参见 [OpenAI](/providers/openai) 和 [Anthropic](/providers/anthropic)。
 - 工具失败摘要在相关时仍然显示，但详细失败文本仅在 `/verbose` 为 `on` 或 `full` 时包含。
-- `/reasoning`（和 `/verbose`）在组设置中有风险：它们可能会暴露您不想公开的内部推理或工具输出。优先保持关闭，特别是在组聊天中。
+- `/reasoning`、`/verbose` 和 `/trace` 在组设置中有风险：它们可能会暴露您不想公开的内部推理、工具输出或 Plugin 诊断。优先保持关闭，特别是在组聊天中。
 - `/model` 立即持久化新的 Session 模型。
 - 如果 Agent 处于空闲状态，下次运行将立即使用它。
 - 如果运行已经激活，OpenClaw 将实时切换标记为待处理，并仅在干净的重试点重启到新模型。
@@ -220,6 +261,27 @@ read_when:
 
 - 覆盖立即应用于新的配置读取，但**不**写入 `openclaw.json`。
 - 使用 `/debug reset` 清除所有覆盖并返回到磁盘上的配置。
+
+## Plugin 跟踪输出
+
+`/trace` 让您在不开启完整详细模式的情况下切换**Session 范围的 Plugin 跟踪/调试行**。
+
+示例：
+
+```text
+/trace
+/trace on
+/trace off
+```
+
+注意：
+
+- 不带参数的 `/trace` 显示当前 Session 跟踪状态。
+- `/trace on` 为当前 Session 启用 Plugin 跟踪行。
+- `/trace off` 再次禁用它们。
+- Plugin 跟踪行可以出现在 `/status` 中，以及在正常助手回复之后作为跟进诊断消息。
+- `/trace` 不替代 `/debug`；`/debug` 仍然管理仅运行时配置覆盖。
+- `/trace` 不替代 `/verbose`；普通详细工具/状态输出仍属于 `/verbose`。
 
 ## 配置更新
 

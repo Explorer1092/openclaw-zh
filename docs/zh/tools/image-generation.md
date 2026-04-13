@@ -69,7 +69,9 @@ Agent 会自动调用 `image_generate`。无需设置工具允许列表——当
 | `count`       | number   | 生成图像数量（1–4）                                                               |
 | `filename`    | string   | 输出文件名提示                                                                    |
 
-并非所有提供商都支持所有参数。工具会传递每个提供商支持的内容，忽略其余部分，并在工具结果中报告被忽略的覆盖项。
+并非所有提供商都支持所有参数。当回退提供商支持近似的几何选项而非确切请求的选项时，OpenClaw 在提交前会重新映射到最近支持的尺寸、宽高比或分辨率。真正不支持的覆盖项仍然会在工具结果中报告。
+
+工具结果会报告应用的设置。当 OpenClaw 在提供商回退期间重新映射几何参数时，返回的 `size`、`aspectRatio` 和 `resolution` 值反映实际发送的内容，`details.normalization` 记录请求到应用的转换。
 
 ## 配置
 
@@ -104,6 +106,7 @@ Agent 会自动调用 `image_generate`。无需设置工具允许列表——当
 注意：
 
 - 自动检测是认证感知的。只有 OpenClaw 能够实际验证该提供商时，提供商默认值才会进入候选列表。
+- 自动检测默认启用。如果你希望图像生成仅使用显式 `model`、`primary` 和 `fallbacks` 条目，请设置 `agents.defaults.mediaGenerationAutoProviderFallback: false`。
 - 使用 `action: "list"` 查看当前已注册的提供商、其默认模型及认证环境变量提示。
 
 ### 图像编辑

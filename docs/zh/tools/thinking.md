@@ -1,8 +1,8 @@
 ---
 title: "思考级别（/think 指令）"
 sidebarTitle: "思考级别"
-mmh3_hash: "4782ff5fe4991377d88fed80de9ab897"
-summary: "/think、/fast、/verbose 和推理可见性的指令语法"
+mmh3_hash: "ad3ab6ca57660d827d028a9549b400c4"
+summary: "/think、/fast、/verbose、/trace 和推理可见性的指令语法"
 read_when:
   - 调整 thinking、fast 模式或 verbose 指令解析或默认值
 ---
@@ -73,6 +73,15 @@ read_when:
 - 当详细模式开启时，发出结构化工具结果的 Agent（Pi、其他 JSON Agent）将每次工具调用作为自己的元数据消息发回，前缀为 `<emoji> <tool-name>: <arg>`（路径/命令可用时）。这些工具摘要在每个工具开始时立即发送（单独的气泡），而不是作为流式增量。
 - 工具失败摘要在正常模式下仍然可见，但原始错误详细后缀被隐藏，除非详细模式为 `on` 或 `full`。
 - 当详细模式为 `full` 时，工具输出也在完成后转发（单独的气泡，截断为安全长度）。如果您在运行进行时切换 `/verbose on|full|off`，后续工具气泡遵循新设置。
+
+## Plugin 跟踪指令（/trace）
+
+- 级别：`on` | `off`（默认）。
+- 仅指令消息切换 Session Plugin 跟踪输出并回复 `Plugin trace enabled.` / `Plugin trace disabled.`。
+- 内联指令仅影响该消息；否则应用 Session/全局默认值。
+- 发送 `/trace`（或 `/trace:`）不带参数以查看当前跟踪级别。
+- `/trace` 比 `/verbose` 范围更窄：它只显示 Plugin 拥有的跟踪/调试行，例如 Active Memory 调试摘要。
+- 跟踪行可以出现在 `/status` 中，以及在正常助手回复之后作为跟进诊断消息。
 
 ## 推理可见性（/reasoning）
 

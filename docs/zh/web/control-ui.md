@@ -1,7 +1,7 @@
 ---
 title: "Control UI (浏览器)"
 sidebarTitle: "Control UI"
-mmh3_hash: "bd2f445934f9667b4a1fce7e36912359"
+mmh3_hash: "d617ad935213e1f618b583ca7bc2080c"
 summary: "Gateway 的基于浏览器的 Control UI（聊天、Node、配置）"
 read_when:
   - 您想从浏览器操作 Gateway
@@ -83,7 +83,7 @@ Control UI 可以在首次加载时根据您的浏览器区域设置进行本地
 - 在 Chat 中流式传输工具调用 + 实时工具输出卡（Agent 事件）
 - Channel：内置加上捆绑/外部 Plugin Channel 状态、QR 登录和每 Channel 配置（`channels.status`、`web.login.*`、`config.patch`）
 - 实例：在线状态列表 + 刷新（`system-presence`）
-- Session：列表 + 每 Session 模型/thinking/fast/verbose/reasoning 覆盖（`sessions.list`、`sessions.patch`）
+- Session：列表 + 每 Session 模型/thinking/fast/verbose/trace/reasoning 覆盖（`sessions.list`、`sessions.patch`）
 - Dreams：Dreaming 状态、启用/禁用切换和 Dream Diary 阅读器（`doctor.memory.status`、`doctor.memory.dreamDiary`、`config.patch`）
 - Cron 作业：列表/添加/编辑/运行/启用/禁用 + 运行历史（`cron.*`）
 - Skill：状态、启用/禁用、安装、API 密钥更新（`skills.*`）
@@ -118,6 +118,7 @@ Cron 作业面板注意事项：
 - `chat.history` 响应有大小限制以保证 UI 安全。当转录条目太大时，Gateway 可能截断长文本字段、省略大型元数据块，并用占位符替换超大消息（`[chat.history omitted: message too large]`）。
 - `chat.history` 还会从可见 assistant 文本中去除仅显示的内联指令标签（例如 `[[reply_to_*]]` 和 `[[audio_as_voice]]`）、纯文本工具调用 XML 有效载荷（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>`、`<function_calls>...</function_calls>` 和截断的工具调用块）以及泄漏的 ASCII/全角模型控制令牌，并省略整个可见文本仅为精确静默令牌 `NO_REPLY` / `no_reply` 的 assistant 条目。
 - `chat.inject` 将 assistant 注释附加到 Session 转录并广播 `chat` 事件以进行仅 UI 更新（无 Agent 运行，无 Channel 投递）。
+- 聊天标题中的模型和 thinking 选择器通过 `sessions.patch` 立即修改活动 Session；它们是持久化的 Session 覆盖，而非单次发送选项。
 - 停止：
   - 点击 **Stop**（调用 `chat.abort`）
   - 输入 `/stop`（或独立中止短语如 `stop`、`stop action`、`stop run`、`stop openclaw`、`please stop`）以带外中止
@@ -126,6 +127,30 @@ Cron 作业面板注意事项：
   - 当运行被中止时，部分 assistant 文本仍然可以在 UI 中显示
   - Gateway 在存在缓冲输出时将中止的部分 assistant 文本持久化到转录历史中
   - 持久化条目包含中止元数据，以便转录消费者可以区分中止的部分输出和正常完成输出
+
+## 托管嵌入
+
+Assistant 消息可以使用 `[embed ...]` 短代码内联渲染托管 Web 内容。iframe 沙盒策略由 `gateway.controlUi.embedSandbox` 控制：
+
+- `strict`：禁用托管嵌入内部的脚本执行
+- `scripts`：允许交互式嵌入同时保持源隔离；这是默认值，通常足够用于自包含的浏览器游戏/小部件
+- `trusted`：在 `allow-scripts` 之上添加 `allow-same-origin`，用于有意需要更强权限的同站文档
+
+示例：
+
+```json5
+{
+  gateway: {
+    controlUi: {
+      embedSandbox: "scripts",
+    },
+  },
+}
+```
+
+仅在嵌入文档确实需要同源行为时使用 `trusted`。对于大多数 Agent 生成的游戏和交互式画布，`scripts` 是更安全的选择。
+
+绝对外部 `http(s)` 嵌入 URL 默认被阻止。如果你有意希望 `[embed url="https://..."]` 加载第三方页面，请设置 `gateway.controlUi.allowExternalEmbedUrls: true`。
 
 ## Tailnet 访问（推荐）
 
@@ -141,14 +166,9 @@ openclaw gateway --tailscale serve
 
 - `https://<magicdns>/`（或您配置的 `gateway.controlUi.basePath`）
 
-默认情况下，当 `gateway.auth.allowTailscale` 为 `true` 时，Control UI/WebSocket Serve
-请求可以通过 Tailscale 身份标头（`tailscale-user-login`）进行身份验证。OpenClaw 通过
-使用 `tailscale whois` 解析 `x-forwarded-for` 地址并将其与标头匹配来验证身份，并且仅
-在请求使用 Tailscale 的 `x-forwarded-*` 标头命中环回时才接受这些。如果您想即使对于
-Serve 流量也要求令牌/密码，请设置 `gateway.auth.allowTailscale: false`（或强制
-`gateway.auth.mode: "password"`）。
-无令牌 Serve 身份验证假设 Gateway 主机是受信任的。如果不受信任的本地代码可能在该主机
-上运行，则需要令牌/密码身份验证。
+默认情况下，当 `gateway.auth.allowTailscale` 为 `true` 时，Control UI/WebSocket Serve 请求可以通过 Tailscale 身份标头（`tailscale-user-login`）进行身份验证。OpenClaw 通过使用 `tailscale whois` 解析 `x-forwarded-for` 地址并将其与标头匹配来验证身份，并且仅在请求使用 Tailscale 的 `x-forwarded-*` 标头命中环回时才接受这些。如果您想即使对于 Serve 流量也要求显式共享密钥凭据，请设置 `gateway.auth.allowTailscale: false`，然后使用 `gateway.auth.mode: "token"` 或 `"password"`。
+对于该异步 Serve 身份路径，同一客户端 IP 和认证范围的失败认证尝试在速率限制写入前会被串行化。来自同一浏览器的并发错误重试因此可能在第二个请求上显示 `retry later` 而非两个不匹配并行竞争。
+无令牌 Serve 身份验证假设 Gateway 主机是受信任的。如果不受信任的本地代码可能在该主机上运行，则需要令牌/密码身份验证。
 
 ### 绑定到 tailnet + 令牌
 
@@ -291,3 +311,4 @@ http://localhost:5173/?gatewayUrl=wss://<gateway-host>:18789#token=<gateway-toke
 - [Dashboard](/web/dashboard) — Gateway 仪表板
 - [WebChat](/web/webchat) — 基于浏览器的聊天界面
 - [TUI](/web/tui) — 终端用户界面
+- [健康检查](/gateway/health) — Gateway 健康监控

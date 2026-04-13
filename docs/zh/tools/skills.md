@@ -1,7 +1,6 @@
 ---
 title: "Skill (OpenClaw)"
-sidebarTitle: "Skill"
-mmh3_hash: "f59e4b44e0083878a9454b678acb52fe"
+mmh3_hash: "394113f00527dd0f519fd33918b29642"
 summary: "Skill: 管理 vs 工作区、门控规则和配置/环境接线"
 read_when:
   - 添加或修改 Skill
@@ -74,7 +73,7 @@ OpenClaw 在提示构建、Skill slash 命令发现、沙箱同步和 Skill 快�
 
 ## Plugin + Skill
 
-Plugin 可以通过在 `openclaw.plugin.json` 中列出 `skills` 目录(相对于 Plugin 根的路径)来提供自己的 Skill。当 Plugin 启用时加载 Plugin Skill,并参与正常的 Skill 优先级规则。您可以通过 Plugin 配置条目上的 `metadata.openclaw.requires.config` 来限制它们。有关发现/配置,请参见 [Plugin](/tools/plugin),有关这些 Skill 教授的工具表面,请参见 [工具](/tools)。
+Plugin 可以通过在 `openclaw.plugin.json` 中列出 `skills` 目录（相对于 Plugin 根的路径）来提供自己的 Skill。当 Plugin 启用时加载 Plugin Skill。这些目录目前被合并到与 `skills.load.extraDirs` 相同的低优先级路径中，因此同名的捆绑、管理、Agent 或工作区 Skill 会覆盖它们。您可以通过 Plugin 配置条目上的 `metadata.openclaw.requires.config` 来限制它们。有关发现/配置，请参见 [Plugin](/tools/plugin)，有关这些 Skill 教授的工具表面，请参见 [工具](/tools)。
 
 ## ClawHub（安装 + 同步）
 
@@ -95,10 +94,12 @@ ClawHub 是 OpenClaw 的公共 Skill 注册表。在 [https://clawhub.ai](https:
 ## 安全注意事项
 
 - 将第三方 Skill 视为**不受信任的代码**。在启用之前阅读它们。
-- 对于不受信任的输入和有风险的工具,优先使用沙箱运行。参见 [沙箱](/gateway/sandboxing)。
+- 对于不受信任的输入和有风险的工具，优先使用沙箱运行。参见 [沙箱](/gateway/sandboxing)。
 - 工作区和额外目录的 Skill 发现只接受 Skill 根目录和 `SKILL.md` 文件，其解析的 realpath 须保持在配置的根目录内。
-- `skills.entries.*.env` 和 `skills.entries.*.apiKey` 将秘密注入该 agent 转换的**主机**进程(而非沙箱)。将秘密排除在提示和日志之外。
-- 有关更广泛的威胁模型和检查清单,请参见 [安全](/gateway/security)。
+- Gateway 支持的 Skill 依赖安装（`skills.install`、引导向导和 Skills 设置 UI）在执行安装器元数据之前会运行内置的危险代码扫描器。`critical` 级发现默认会阻止安装，除非调用者显式设置了危险覆盖；`suspicious` 级发现仍然只会发出警告。
+- `openclaw skills install <slug>` 与此不同：它将 ClawHub Skill 文件夹下载到工作区，不使用上述安装器元数据路径。
+- `skills.entries.*.env` 和 `skills.entries.*.apiKey` 将秘密注入该 Agent 转换的**主机**进程（而非沙箱）。将秘密排除在提示和日志之外。
+- 有关更广泛的威胁模型和检查清单，请参见 [安全](/gateway/security)。
 
 ## 格式（AgentSkills + Pi 兼容）
 
@@ -194,12 +195,14 @@ metadata:
 
 注意:
 
-- 如果列出多个安装程序,Gateway 会选择**单个**首选选项(可用时为 brew,否则为 node)。
-- 如果所有安装程序都是 `download`,OpenClaw 会列出每个条目,以便您可以看到可用的工件。
+- 如果列出多个安装程序，Gateway 会选择**单个**首选选项（可用时为 brew，否则为 node）。
+- 如果所有安装程序都是 `download`，OpenClaw 会列出每个条目，以便您可以看到可用的工件。
 - 安装程序规范可以包含 `os: ["darwin"|"linux"|"win32"]` 以按平台过滤选项。
-- Node 安装遵守 `openclaw.json` 中的 `skills.install.nodeManager`(默认: npm;选项: npm/pnpm/yarn/bun)。这仅影响 **Skill 安装**;Gateway 运行时仍应为 Node(不推荐 Bun 用于 WhatsApp/Telegram)。
-- Go 安装: 如果缺少 `go` 且 `brew` 可用,Gateway 首先通过 Homebrew 安装 Go,并在可能的情况下将 `GOBIN` 设置为 Homebrew 的 `bin`。
-- 下载安装: `url`(必需)、`archive`(`tar.gz` | `tar.bz2` | `zip`)、`extract`(默认: 检测到存档时自动)、`stripComponents`、`targetDir`(默认: `~/.openclaw/tools/<skillKey>`)。
+- Node 安装遵守 `openclaw.json` 中的 `skills.install.nodeManager`（默认：npm；选项：npm/pnpm/yarn/bun）。这仅影响 **Skill 安装**；Gateway 运行时仍应为 Node（不推荐 Bun 用于 WhatsApp/Telegram）。
+- Gateway 支持的安装器选择是偏好驱动的，而不仅限于 node：当安装规范混合多种类型时，OpenClaw 优先使用 Homebrew（当 `skills.install.preferBrew` 启用且 `brew` 存在时），其次是 `uv`，然后是配置的 node 管理器，再然后是 `go` 或 `download` 等其他回退。
+- 如果所有安装规范都是 `download`，OpenClaw 会显示所有下载选项，而不是折叠为一个首选安装器。
+- Go 安装：如果缺少 `go` 且 `brew` 可用，Gateway 首先通过 Homebrew 安装 Go，并在可能的情况下将 `GOBIN` 设置为 Homebrew 的 `bin`。
+- 下载安装：`url`（必需）、`archive`（`tar.gz` | `tar.bz2` | `zip`）、`extract`（默认：检测到存档时自动）、`stripComponents`、`targetDir`（默认：`~/.openclaw/tools/<skillKey>`）。
 
 如果不存在 `metadata.openclaw`,则 Skill 始终符合条件(除非在配置中禁用或被捆绑 Skill 的 `skills.allowBundled` 阻止)。
 
@@ -254,19 +257,23 @@ metadata:
 3. 使用**符合条件的** Skill 构建系统提示。
 4. 在运行结束后恢复原始环境。
 
-这是**限定于 agent 运行的**,而不是全局 shell 环境。
+这是**限定于 Agent 运行的**，而不是全局 shell 环境。
+
+对于捆绑的 `claude-cli` 后端，OpenClaw 还会将相同的符合条件快照物化为临时 Claude Code Plugin，并通过 `--plugin-dir` 传递。Claude Code 可以使用其原生 Skill 解析器，而 OpenClaw 仍然掌管优先级、每 Agent 允许列表、门控和 `skills.entries.*` 环境/API 密钥注入。其他 CLI 后端仅使用提示目录。
 
 ## Session 快照（性能）
 
 OpenClaw 在 **Session 开始时**对符合条件的 Skill 进行快照,并在同一 Session 的后续转换中重用该列表。对 Skill 或配置的更改在下一个新 Session 时生效。
 
-当启用 Skill 监视器或出现新的符合条件的远程节点时,Skill 也可以在 Session 中刷新(见下文)。将此视为**热重载**: 刷新的列表在下一个 agent 转换时被获取。
+当启用 Skill 监视器或出现新的符合条件的远程节点时，Skill 也可以在 Session 中刷新（见下文）。将此视为**热重载**：刷新的列表在下一个 Agent 转换时被获取。
+
+如果该 Session 的有效 Agent Skill 允许列表发生变化，OpenClaw 会刷新快照，使可见 Skill 与当前 Agent 保持同步。
 
 ## 远程 macOS 节点（Linux Gateway）
 
-如果 Gateway 在 Linux 上运行,但连接了**允许 `system.run`** 的 **macOS 节点**(Exec 批准安全性未设置为 `deny`),OpenClaw 可以在该节点上存在所需的二进制文件时将仅 macOS Skill 视为符合条件。agent 应通过 `nodes` 工具(通常是 `nodes.run`)执行这些 Skill。
+如果 Gateway 在 Linux 上运行，但连接了**允许 `system.run`** 的 **macOS 节点**（Exec 批准安全性未设置为 `deny`），OpenClaw 可以在该节点上存在所需的二进制文件时将仅 macOS Skill 视为符合条件。Agent 应通过 `exec` 工具（使用 `host=node`）执行这些 Skill。
 
-这依赖于节点报告其命令支持以及通过 `system.run` 进行的 bin 探测。如果 macOS 节点稍后离线,Skill 保持可见;调用可能会失败,直到节点重新连接。
+这依赖于节点报告其命令支持以及通过 `system.run` 进行的 bin 探测。如果 macOS 节点稍后离线，Skill 保持可见；调用可能会失败，直到节点重新连接。
 
 ## Skill 监视器（自动刷新）
 
@@ -311,4 +318,13 @@ OpenClaw 将一组基线 Skill 作为安装的一部分(npm 包或 OpenClaw.app)
 
 ## 寻找更多 Skill?
 
-浏览 [https://clawhub.com](https://clawhub.com)。
+浏览 [https://clawhub.ai](https://clawhub.ai)。
+
+---
+
+## 相关
+
+- [创建 Skill](/tools/creating-skills) — 构建自定义 Skill
+- [Skill 配置](/tools/skills-config) — Skill 配置参考
+- [Slash 命令](/tools/slash-commands) — 所有可用 Slash 命令
+- [Plugin](/tools/plugin) — Plugin 系统概览

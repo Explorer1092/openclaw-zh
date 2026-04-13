@@ -129,7 +129,7 @@ openclaw browser --browser-profile openclaw snapshot
   browser: {
     enabled: true, // 默认：true
     ssrfPolicy: {
-      dangerouslyAllowPrivateNetwork: true, // 默认信任网络模式
+      // dangerouslyAllowPrivateNetwork: true, // 仅在信任私有网络访问时选择启用
       // allowPrivateNetwork: true, // 旧版别名
       // hostnameAllowlist: ["*.example.com", "example.com"],
       // allowedHostnames: ["localhost"],
@@ -172,7 +172,7 @@ openclaw browser --browser-profile openclaw snapshot
 - `remoteCdpHandshakeTimeoutMs` 适用于远程 CDP WebSocket 可达性检查。
 - 浏览器导航/打开标签页在导航前受 SSRF 保护，并在导航后对最终的 `http(s)` URL 进行尽力重检。
 - 在严格 SSRF 模式下，远程 CDP 端点发现/探测（`cdpUrl`，包括 `/json/version` 查找）也会被检查。
-- `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork` 默认为 `true`（信任网络模型）。将其设置为 `false` 可实现严格的仅公网浏览。
+- `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork` 默认禁用。仅在你有意信任私有网络浏览器访问时设置为 `true`。
 - `browser.ssrfPolicy.allowPrivateNetwork` 作为旧版别名保持兼容性支持。
 - `attachOnly: true` 表示"永不启动本地浏览器；仅在已运行时附加"。
 - `color` 和每个配置文件的 `color` 为浏览器 UI 着色，让你可以看到哪个配置文件处于活动状态。
@@ -249,7 +249,7 @@ OpenClaw 在调用 `/json/*` 端点和连接 CDP WebSocket 时会保留认证信
 
 ## Browserless（托管远程 CDP）
 
-[Browserless](https://browserless.io) 是一个托管 Chromium 服务，通过 HTTPS 暴露 CDP 端点。你可以将 OpenClaw 浏览器配置文件指向 Browserless 区域端点，并使用你的 API 密钥进行认证。
+[Browserless](https://browserless.io) 是一个托管 Chromium 服务，通过 HTTPS 和 WebSocket 暴露 CDP 连接 URL。OpenClaw 两种形式均可使用，但对于远程浏览器配置文件，最简单的选项是 Browserless 连接文档中的直接 WebSocket URL。
 
 示例：
 
@@ -262,7 +262,7 @@ OpenClaw 在调用 `/json/*` 端点和连接 CDP WebSocket 时会保留认证信
     remoteCdpHandshakeTimeoutMs: 4000,
     profiles: {
       browserless: {
-        cdpUrl: "https://production-sfo.browserless.io?token=<BROWSERLESS_API_KEY>",
+        cdpUrl: "wss://production-sfo.browserless.io?token=<BROWSERLESS_API_KEY>",
         color: "#00AA00",
       },
     },
@@ -274,6 +274,7 @@ OpenClaw 在调用 `/json/*` 端点和连接 CDP WebSocket 时会保留认证信
 
 - 将 `<BROWSERLESS_API_KEY>` 替换为你真实的 Browserless token。
 - 选择与你的 Browserless 账号匹配的区域端点（参见其文档）。
+- 如果 Browserless 提供的是 HTTPS 基础 URL，你可以将其转换为 `wss://` 进行直接 CDP 连接，或保留 HTTPS URL 让 OpenClaw 自动发现 `/json/version`。
 
 ## 直接 WebSocket CDP 提供商
 
@@ -782,3 +783,9 @@ Agent 获得**一个工具**用于浏览器自动化：
   - 如果连接了具有浏览器能力的节点，工具可能自动路由到该节点，除非你固定 `target="host"` 或 `target="node"`。
 
 这保持了 Agent 的确定性，避免了脆弱的选择器。
+
+## 相关
+
+- [工具概览](/tools) — 所有可用 Agent 工具
+- [沙盒化](/gateway/sandboxing) — 沙盒环境中的浏览器控制
+- [安全](/gateway/security) — 浏览器控制风险和加固
