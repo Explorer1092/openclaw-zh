@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f9db4e8fa07eda74ab761e187a2c86d6"
+mmh3_hash: "55a41c565da06672748b7d528c415a57"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
 read_when:
   - 添加或修改 doctor 迁移
@@ -113,7 +113,7 @@ Doctor 将:
 - 显示它应用的迁移。
 - 用更新的 schema 重写 `~/.openclaw/openclaw.json`。
 
-Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁移,因此无需手动干预即可修复过时的配置。
+Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁移,因此无需手动干预即可修复过时的配置。Cron 作业存储迁移由 `openclaw doctor --fix` 处理。
 
 当前迁移:
 
@@ -236,9 +236,9 @@ Doctor 检查:
 
 ### 5) 模型认证健康（OAuth 过期）
 
-Doctor 检查认证存储中的 OAuth 配置文件，在令牌即将过期/已过期时发出警告，并在安全时刷新它们。如果 Anthropic OAuth/token 配置文件过时，它建议使用 Anthropic API key 或旧版 Anthropic setup-token 路径。刷新提示仅在以交互方式运行（TTY）时出现；`--non-interactive` 跳过刷新尝试。
+Doctor 检查认证存储中的 OAuth 配置文件，在令牌即将过期/已过期时发出警告，并在安全时刷新它们。如果 Anthropic OAuth/token 配置文件过时，它建议使用 Anthropic API key 或 Anthropic setup-token 路径。刷新提示仅在以交互方式运行（TTY）时出现；`--non-interactive` 跳过刷新尝试。
 
-Doctor 还检测陈旧的已移除 Anthropic Claude CLI 状态。如果旧版 `anthropic:claude-cli` 凭证字节仍然存在于 `auth-profiles.json` 中，doctor 将其转换回 Anthropic token/OAuth 配置文件并重写陈旧的 `claude-cli/...` 模型引用。如果字节已消失，doctor 删除陈旧配置并打印恢复命令。
+当 OAuth 刷新永久失败时（例如 `refresh_token_reused`、`invalid_grant` 或 Provider 要求重新登录），Doctor 会报告需要重新认证，并打印确切的 `openclaw models auth login --provider ...` 命令供运行。
 
 Doctor 还报告由于以下原因暂时不可用的认证配置文件：
 

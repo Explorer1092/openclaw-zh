@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8c267a599c32b0edfc56e99fdfb5c8eb"
+mmh3_hash: "e75869b181c77299d8d4e672fbab7a6d"
 summary: "Gateway 服务、生命周期和操作手册"
 read_when:
   - 运行或调试 Gateway 进程
@@ -79,22 +79,6 @@ Gateway 配置重载监视活动配置文件路径(从 profile/state 默认值�
 - 默认绑定模式:`loopback`。
 - 默认需要认证。共享密钥设置使用 `gateway.auth.token` / `gateway.auth.password`(或 `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`),非 loopback 反向代理设置可以使用 `gateway.auth.mode: "trusted-proxy"`。
 
-### 端口和绑定优先级
-
-| 设置       | 解析顺序                                                      |
-| ---------- | ------------------------------------------------------------- |
-| Gateway 端口 | `--port` → `OPENCLAW_GATEWAY_PORT` → `gateway.port` → `18789` |
-| 绑定模式     | CLI/覆盖 → `gateway.bind` → `loopback`                        |
-
-### 热重载模式
-
-| `gateway.reload.mode` | 行为                              |
-| --------------------- | --------------------------------- |
-| `off`                 | 无配置重载                         |
-| `hot`                 | 仅应用热安全的更改                  |
-| `restart`             | 在需要重载的更改时重启              |
-| `hybrid`(默认)        | 安全时热应用,需要时重启             |
-
 ## OpenAI 兼容端点
 
 OpenClaw 最高价值的兼容接口现在是:
@@ -118,6 +102,22 @@ OpenClaw 最高价值的兼容接口现在是:
 - 当您想要后端 provider/model 覆盖时使用 `x-openclaw-model`;否则选定 Agent 的正常模型和嵌入设置保持控制。
 
 所有这些都在主 Gateway 端口上运行,并使用与 Gateway HTTP API 其余部分相同的受信任操作员认证边界。
+
+### 端口和绑定优先级
+
+| 设置       | 解析顺序                                                      |
+| ---------- | ------------------------------------------------------------- |
+| Gateway 端口 | `--port` → `OPENCLAW_GATEWAY_PORT` → `gateway.port` → `18789` |
+| 绑定模式     | CLI/覆盖 → `gateway.bind` → `loopback`                        |
+
+### 热重载模式
+
+| `gateway.reload.mode` | 行为                              |
+| --------------------- | --------------------------------- |
+| `off`                 | 无配置重载                         |
+| `hot`                 | 仅应用热安全的更改                  |
+| `restart`             | 在需要重载的更改时重启              |
+| `hybrid`(默认)        | 安全时热应用,需要时重启             |
 
 ## 操作员命令集
 

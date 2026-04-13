@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fc0390cf7fcf1e8037fd5360c908a37a"
+mmh3_hash: "4774ef275834c5bc196c292dc88025a2"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
 read_when:
   - 您想从自己的 GPU 机器提供模型
@@ -12,7 +12,7 @@ title: "本地模型"
 
 本地运行是可行的,但 OpenClaw 需要大上下文 + 强大的防提示注入防御。小卡截断上下文并泄漏安全。目标要高:**≥2 个满配 Mac Studio 或等效 GPU 设备(约 3 万美元以上)**。单个 **24 GB** GPU 仅适用于较轻的提示,延迟较高。使用**您能运行的最大/完整尺寸模型变体**;激进量化或"小型"检查点会增加提示注入风险(参见[安全](/gateway/security))。
 
-如果您想要最简单的本地设置,从 [Ollama](/providers/ollama) 和 `openclaw onboard` 开始。本页是针对高端本地堆栈和自定义 OpenAI 兼容本地服务器的意见指南。
+如果您想要最简单的本地设置,从 [LM Studio](/providers/lmstudio) 或 [Ollama](/providers/ollama) 和 `openclaw onboard` 开始。本页是针对高端本地堆栈和自定义 OpenAI 兼容本地服务器的意见指南。
 
 ## 推荐:LM Studio + 大型本地模型(Responses API)
 
@@ -152,9 +152,17 @@ vLLM、LiteLLM、OAI-proxy 或自定义网关在它们公开 OpenAI 风格的 `/
 - 原生 OpenAI 专用请求形状不适用于此:无 `service_tier`,无 Responses `store`,无 OpenAI 推理兼容负载形状,以及无提示缓存提示
 - 隐藏的 OpenClaw 归因头(`originator`、`version`、`User-Agent`)不注入到这些自定义代理 URL 上
 
+兼容性说明(针对较严格的 OpenAI 兼容后端):
+
+- 某些服务器在 Chat Completions 上只接受字符串 `messages[].content`,而不是结构化内容部分数组。对于这些端点,设置 `models.providers.<provider>.models[].compat.requiresStringContent: true`。
+- 某些较小或较严格的本地后端在 OpenClaw 的完整 Agent 运行时提示形状下不稳定,尤其是当包含工具 schema 时。如果后端对小型直接 `/v1/chat/completions` 调用有效,但在正常 OpenClaw Agent 轮次上失败,请先尝试 `models.providers.<provider>.models[].compat.supportsTools: false`。
+- 如果后端仅在较大的 OpenClaw 运行上仍然失败,剩余问题通常是上游模型/服务器容量或后端 bug,而不是 OpenClaw 的传输层。
+
 ## 故障排除
 
 - Gateway 能够访问代理?`curl http://127.0.0.1:1234/v1/models`。
 - LM Studio 模型已卸载?重新加载;冷启动是常见的"挂起"原因。
 - 上下文错误?降低 `contextWindow` 或提高服务器限制。
+- OpenAI 兼容服务器返回 `messages[].content ... expected a string`?在该模型条目上添加 `compat.requiresStringContent: true`。
+- 直接小型 `/v1/chat/completions` 调用有效,但 `openclaw infer model run` 在 Gemma 或其他本地模型上失败?先用 `compat.supportsTools: false` 禁用工具 schema,然后重新测试。如果服务器仍然只在较大的 OpenClaw 提示上崩溃,将其视为上游服务器/模型限制。
 - 安全:本地模型跳过提供商端过滤器;保持 Agent 范围窄,并启用压缩以限制提示注入爆炸半径。

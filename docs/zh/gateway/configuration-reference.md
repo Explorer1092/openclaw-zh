@@ -1,8 +1,8 @@
 ---
-mmh3_hash: "838e8f04056edcaf2da8b52821e66766"
+mmh3_hash: "0df6de4d249962c703575461bcc16ee0"
 title: "配置参考"
 description: "~/.openclaw/openclaw.json 的完整字段级参考文档"
-summary: "每个 OpenClaw 配置键、默认值及 Channel 设置的完整参考"
+summary: "核心 OpenClaw 键、默认值以及专项子系统参考链接的 Gateway 配置参考"
 read_when:
   - 需要精确的字段级配置语义或默认值时
   - 验证 Channel、模型、Gateway 或工具配置块时
@@ -10,7 +10,21 @@ read_when:
 
 # 配置参考
 
-`~/.openclaw/openclaw.json` 中所有可用字段。如需面向任务的概览，请参阅 [配置](/gateway/configuration)。
+`~/.openclaw/openclaw.json` 的核心配置参考。如需面向任务的概览，请参阅 [配置](/gateway/configuration)。
+
+本页面涵盖 OpenClaw 的主要配置接口，并在子系统有自己更深入的参考文档时提供链接。本页**不**尝试将每个 Channel/插件拥有的命令目录或每个深层内存/QMD 配置项都内联到一页中。
+
+代码事实来源：
+
+- `openclaw config schema` 输出用于验证和控制 UI 的实时 JSON Schema（在可用时合并捆绑/插件/Channel 元数据）
+- `config.schema.lookup` 返回路径范围内的 schema 节点，供深入工具使用
+- `pnpm config:docs:check` / `pnpm config:docs:gen` 根据当前 schema 表面验证配置文档的基准哈希
+
+专项深度参考：
+
+- [内存配置参考](/reference/memory-config)，用于 `agents.defaults.memorySearch.*`、`memory.qmd.*`、`memory.citations` 和 `plugins.entries.memory-core.config.dreaming` 下的 dreaming 配置
+- [Slash Commands](/tools/slash-commands)，用于当前内置 + 捆绑命令目录
+- 拥有 Channel/插件页面，用于各 Channel 专用命令接口
 
 配置格式为 **JSON5**（支持注释和末尾逗号）。所有字段均为可选 —— 省略时 OpenClaw 使用安全默认值。
 
@@ -75,6 +89,7 @@ read_when:
   channels: {
     defaults: {
       groupPolicy: "allowlist", // open | allowlist | disabled
+      contextVisibility: "all", // all | allowlist | allowlist_quote
       heartbeat: {
         showOk: false,
         showAlerts: true,
@@ -86,6 +101,7 @@ read_when:
 ```
 
 - `channels.defaults.groupPolicy`：当 Provider 级别的 `groupPolicy` 未设置时的回退群组策略。
+- `channels.defaults.contextVisibility`：所有 Channel 的默认补充上下文可见性模式。值：`all`（默认，包含所有引用/线程/历史上下文）、`allowlist`（仅包含来自白名单发送者的上下文）、`allowlist_quote`（与 allowlist 相同，但保留显式引用/回复上下文）。每 Channel 覆盖：`channels.<channel>.contextVisibility`。
 - `channels.defaults.heartbeat.showOk`：在心跳输出中包含健康的 Channel 状态。
 - `channels.defaults.heartbeat.showAlerts`：在心跳输出中包含降级/错误状态。
 - `channels.defaults.heartbeat.useIndicator`：渲染紧凑指示器样式的心跳输出。
@@ -179,7 +195,7 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
         { command: "generate", description: "Create an image" },
       ],
       historyLimit: 50,
-      replyToMode: "first", // off | first | all
+      replyToMode: "first", // off | first | all | batched
       linkPreview: true,
       streaming: "partial", // off | partial | block | progress（默认：off）
       actions: { reactions: true, sendMessage: true },
@@ -426,8 +442,10 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
       typingReaction: "hourglass_flowing_sand",
       textChunkLimit: 4000,
       chunkMode: "length",
-      streaming: "partial", // off | partial | block | progress（预览模式）
-      nativeStreaming: true, // streaming=partial 时使用 Slack 原生流式 API
+      streaming: {
+        mode: "partial", // off | partial | block | progress
+        nativeTransport: true, // mode=partial 时使用 Slack 原生流式 API
+      },
       mediaMaxMb: 20,
       execApprovals: {
         enabled: "auto", // true | false | "auto"
@@ -447,13 +465,14 @@ WhatsApp 通过 Gateway 的 web Channel（Baileys Web）运行。当已关联 Se
 - Slack 账户快照公开每凭据的来源/状态字段，如 `botTokenSource`、`botTokenStatus`、`appTokenStatus`，以及 HTTP 模式下的 `signingSecretStatus`。`configured_unavailable` 表示账户通过 SecretRef 配置，但当前命令/运行时路径无法解析密钥值。
 - `configWrites: false` 阻止 Slack 发起的配置写入。
 - 可选的 `channels.slack.defaultAccount` 在与已配置账户 ID 匹配时，覆盖默认账户选择。
-- `channels.slack.streaming` 是规范的流式模式键。旧版 `streamMode` 和布尔 `streaming` 值会自动迁移。
+- `channels.slack.streaming.mode` 是规范的 Slack 流式模式键。`channels.slack.streaming.nativeTransport` 控制 Slack 的原生流式传输。旧版 `streamMode`、布尔 `streaming` 和 `nativeStreaming` 值会自动迁移。
 - 投递目标使用 `user:<id>`（私聊）或 `channel:<id>`。
 
 **反应通知模式：** `off`、`own`（默认）、`all`、`allowlist`（来自 `reactionAllowlist`）。
 
 **线程 Session 隔离：** `thread.historyScope` 为每线程独立（默认）或在频道内共享。`thread.inheritParent` 将父频道对话记录复制到新线程。
 
+- Slack 原生流式传输加上 Slack 助手风格的"正在输入..."线程状态需要一个回复线程目标。顶级私聊默认保持非线程状态，因此使用 `typingReaction` 或普通投递，而非线程样式预览。
 - `typingReaction` 在处理回复时向入站 Slack 消息临时添加一个反应，完成后移除。使用 Slack 表情符号简码，例如 `"hourglass_flowing_sand"`。
 - `channels.slack.execApprovals`：Slack 原生 exec 审批投递和审批者授权。与 Discord 相同的 schema：`enabled`（`true`/`false`/`"auto"`）、`approvers`（Slack 用户 ID）、`agentFilter`、`sessionFilter` 和 `target`（`"dm"`、`"channel"` 或 `"both"`）。
 
@@ -584,6 +603,7 @@ OpenClaw 通过 stdio 的 JSON-RPC 调用 `imsg rpc`。无需守护进程或端�
 - `attachmentRoots` 和 `remoteAttachmentRoots` 限制入站附件路径（默认：`/Users/*/Library/Messages/Attachments`）。
 - SCP 使用严格主机密钥检查，需确保中继主机密钥已存在于 `~/.ssh/known_hosts`。
 - `channels.imessage.configWrites`：允许或拒绝 iMessage 发起的配置写入。
+- 带有 `type: "acp"` 的顶级 `bindings[]` 条目可将 iMessage 对话绑定到持久 ACP Session。在 `match.peer.id` 中使用规范化的联系方式或显式聊天目标（`chat_id:*`、`chat_guid:*`、`chat_identifier:*`）。共享字段语义：[ACP Agents](/tools/acp-agents#channel-specific-settings)。
 
 <Accordion title="iMessage SSH 包装器示例">
 
@@ -628,7 +648,7 @@ Matrix 由扩展支持，在 `channels.matrix` 下配置。
 
 - Token 认证使用 `accessToken`；密码认证使用 `userId` + `password`。
 - `channels.matrix.proxy` 通过显式 HTTP(S) 代理路由 Matrix HTTP 流量。命名账户可通过 `channels.matrix.accounts.<id>.proxy` 覆盖。
-- `channels.matrix.allowPrivateNetwork` 允许私有/内部 homeserver。`proxy` 和 `allowPrivateNetwork` 是独立控制项。
+- `channels.matrix.network.dangerouslyAllowPrivateNetwork` 允许私有/内部 homeserver。`proxy` 和此网络选项是独立控制项。
 - `channels.matrix.defaultAccount` 在多账户设置中选择首选账户。
 - `channels.matrix.execApprovals`：Matrix 原生 exec 审批投递和审批者授权。
   - `enabled`：`true`、`false` 或 `"auto"`（默认）。在 auto 模式下，当能从 `approvers` 或 `commands.ownerAllowFrom` 解析审批者时，exec 审批自动激活。
@@ -795,12 +815,18 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 {
   commands: {
     native: "auto", // 支持时注册原生命令
+    nativeSkills: "auto", // 支持时注册原生技能命令
     text: true, // 解析聊天消息中的 /命令
     bash: false, // 允许 !（别名：/bash）
     bashForegroundMs: 2000,
     config: false, // 允许 /config
+    mcp: false, // 允许 /mcp
+    plugins: false, // 允许 /plugins
     debug: false, // 允许 /debug
-    restart: false, // 允许 /restart 及 Gateway 重启工具
+    restart: true, // 允许 /restart 及 Gateway 重启工具
+    ownerAllowFrom: ["discord:123456789012345678"],
+    ownerDisplay: "raw", // raw | hash
+    ownerDisplaySecret: "${OWNER_ID_HASH_SECRET}",
     allowFrom: {
       "*": ["user1"],
       discord: ["user:123"],
@@ -812,13 +838,23 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 
 <Accordion title="命令详情">
 
+- 此块配置命令接口。当前内置 + 捆绑命令目录，请参见 [Slash Commands](/tools/slash-commands)。
+- 本页是**配置键参考**，而非完整命令目录。Channel/插件拥有的命令（如 QQ Bot `/bot-ping` `/bot-help` `/bot-logs`、LINE `/card`、设备配对 `/pair`、内存 `/dreaming`、手机控制 `/phone` 和 Talk `/voice`）在各自的 Channel/插件页面及 [Slash Commands](/tools/slash-commands) 中记录。
 - 文本命令必须是以 `/` 开头的**独立**消息。
 - `native: "auto"` 为 Discord/Telegram 启用原生命令，Slack 保持关闭。
+- `nativeSkills: "auto"` 为 Discord/Telegram 启用原生技能命令，Slack 保持关闭。
 - 每个 Channel 覆盖：`channels.discord.commands.native`（布尔值或 `"auto"`）。`false` 清除之前注册的命令。
+- 通过 `channels.<provider>.commands.nativeSkills` 覆盖每 Channel 的原生技能注册。
 - `channels.telegram.customCommands` 添加额外的 Telegram Bot 菜单条目。
 - `bash: true` 为主机 Shell 启用 `! <cmd>`。需要 `tools.elevated.enabled` 且发送者在 `tools.elevated.allowFrom.<channel>` 中。
 - `config: true` 启用 `/config`（读写 `openclaw.json`）。对于 Gateway `chat.send` 客户端，持久化 `/config set|unset` 写入还需要 `operator.admin`；只读 `/config show` 对普通写作用域的 operator 客户端仍然可用。
+- `mcp: true` 为 `mcp.servers` 下由 OpenClaw 管理的 MCP 服务器配置启用 `/mcp`。
+- `plugins: true` 为插件发现、安装及启用/禁用控制启用 `/plugins`。
 - `channels.<provider>.configWrites` 按 Channel 控制配置修改（默认：true）。
+- 对于多账户 Channel，`channels.<provider>.accounts.<id>.configWrites` 还控制针对该账户的写入。
+- `restart: false` 禁用 `/restart` 和 Gateway 重启工具操作。默认：`true`。
+- `ownerAllowFrom` 是仅限所有者命令/工具的显式所有者允许列表，与 `allowFrom` 分开。
+- `ownerDisplay: "hash"` 对系统提示中的所有者 ID 进行哈希。设置 `ownerDisplaySecret` 控制哈希。
 - `allowFrom` 按 Provider 设置。设置后，它是**唯一**的授权来源（Channel 允许列表/配对和 `useAccessGroups` 被忽略）。
 - `useAccessGroups: false` 在未设置 `allowFrom` 时，允许命令绕过访问组策略。
 
@@ -1066,8 +1102,8 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
   agents: {
     defaults: {
       cliBackends: {
-        "claude-cli": {
-          command: "/opt/homebrew/bin/claude",
+        "codex-cli": {
+          command: "/opt/homebrew/bin/codex",
         },
         "my-cli": {
           command: "my-cli",
@@ -1091,6 +1127,20 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
 - 设置 `sessionArg` 后支持 Session。
 - 设置 `imageArg` 接受文件路径时支持图像传递。
 
+### `agents.defaults.systemPromptOverride`
+
+用固定字符串替换整个 OpenClaw 组装的系统提示。可在默认级别（`agents.defaults.systemPromptOverride`）或每 Agent（`agents.list[].systemPromptOverride`）设置。每 Agent 值优先；空白值被忽略。用于受控提示实验。
+
+```json5
+{
+  agents: {
+    defaults: {
+      systemPromptOverride: "You are a helpful assistant.",
+    },
+  },
+}
+```
+
 ### `agents.defaults.heartbeat`
 
 定期心跳运行。
@@ -1103,6 +1153,7 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
         every: "30m", // 0m 禁用
         model: "openai/gpt-5.4-mini",
         includeReasoning: false,
+        includeSystemPromptSection: true, // 默认：true；false 从系统提示中省略 Heartbeat 节
         lightContext: false, // 默认：false；true 仅从 workspace bootstrap 文件中保留 HEARTBEAT.md
         isolatedSession: false, // 默认：false；true 在全新 Session 中运行每次心跳（无对话历史）
         session: "main",
@@ -1112,6 +1163,7 @@ Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `ada
         prompt: "Read HEARTBEAT.md if it exists...",
         ackMaxChars: 300,
         suppressToolErrorWarnings: false,
+        timeoutSeconds: 45,
       },
     },
   },

@@ -1,6 +1,6 @@
 ---
 title: "安全 🔒"
-mmh3_hash: "5d47bd11ffa5dde415557bb43a1b14cf"
+mmh3_hash: "253a9c481e10f4bc1a2c25875a179673"
 summary: "运行具有 shell 访问权限的 AI 网关的安全注意事项和威胁模型"
 read_when:
   - 添加扩大访问权限或自动化的功能
@@ -8,10 +8,13 @@ read_when:
 
 # 安全 🔒
 
-> [!WARNING]
-> **个人助手信任模型:** 本指南假设每个 Gateway 有一个受信任的操作员边界(单用户/个人助手模型)。
-> OpenClaw **不是**针对多个对抗用户共享一个 agent/gateway 的敌对多租户安全边界。
-> 如果您需要混合信任或对抗用户操作,请拆分信任边界(单独的 Gateway + 凭证,最好是单独的 OS 用户/主机)。
+<Warning>
+**个人助手信任模型:** 本指南假设每个 Gateway 有一个受信任的操作员边界(单用户/个人助手模型)。
+OpenClaw **不是**针对多个对抗用户共享一个 agent/gateway 的敌对多租户安全边界。
+如果您需要混合信任或对抗用户操作,请拆分信任边界(单独的 Gateway + 凭证,最好是单独的 OS 用户/主机)。
+</Warning>
+
+**本页内容:** [信任模型](#scope-first-personal-assistant-security-model) | [快速审计](#quick-check-openclaw-security-audit) | [强化基线](#hardened-baseline-in-60-seconds) | [DM 访问模型](#dm-access-model-pairing-allowlist-open-disabled) | [配置强化](#configuration-hardening-examples) | [事件响应](#incident-response)
 
 ## 首先明确范围:个人助手安全模型
 
@@ -37,7 +40,9 @@ openclaw security audit --fix
 openclaw security audit --json
 ```
 
-它会标记常见的安全隐患(Gateway 身份验证暴露、浏览器控制暴露、提升权限白名单、文件系统权限)。
+`security audit --fix` 保持有意较窄的范围：将常见的开放群组策略翻转为允许列表，恢复 `logging.redactSensitive: "tools"`，收紧状态/配置/包含文件权限，以及在 Windows 上运行时使用 Windows ACL 重置而不是 POSIX `chmod`。
+
+它会标记常见的安全隐患(Gateway 身份验证暴露、浏览器控制暴露、提升权限白名单、文件系统权限、宽松的 exec 批准以及开放 Channel 工具暴露)。
 
 OpenClaw 既是产品又是实验:您正在将前沿模型行为连接到真实的消息表面和真实工具。**没有"完全安全"的设置。** 目标是深思熟虑:
 

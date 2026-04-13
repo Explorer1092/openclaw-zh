@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "9c92ccf79aeb6eeda9862919f2d420ad"
-summary: "模型认证:OAuth、API 密钥和旧版 Anthropic setup-token"
+mmh3_hash: "eb306fc328891159d20cb4829712a7b2"
+summary: "模型认证:OAuth、API 密钥、Claude CLI 复用和 Anthropic setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
   - 记录认证或凭证存储相关内容
@@ -10,7 +10,7 @@ title: "认证"
 # 认证（模型提供商）
 
 <Note>
-本页面涵盖**模型提供商**认证（API 密钥、OAuth 和旧版 Anthropic setup-token）。有关 **Gateway 连接**认证（token、密码、trusted-proxy），请参见 [Configuration](/gateway/configuration) 和 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)。
+本页面涵盖**模型提供商**认证（API 密钥、OAuth 和 Claude CLI 复用及 Anthropic setup-token）。有关 **Gateway 连接**认证（token、密码、trusted-proxy），请参见 [Configuration](/gateway/configuration) 和 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)。
 </Note>
 
 OpenClaw 支持模型提供商的 OAuth 和 API 密钥认证。对于长期运行的 Gateway 主机，API 密钥通常是最可预测的选项。当提供商账户模式匹配时，也支持订阅/OAuth 流程。
@@ -22,7 +22,7 @@ OpenClaw 支持模型提供商的 OAuth 和 API 密钥认证。对于长期运�
 ## 推荐的设置（API 密钥，任意提供商）
 
 如果您在运行长期 Gateway，请从所选提供商的 API 密钥开始。
-对于 Anthropic，API 密钥认证是安全路径。OpenClaw 中 Anthropic 订阅式认证是旧版 setup-token 路径，应视为**额外使用量**路径，而非套餐限制路径。
+对于 Anthropic，API 密钥认证仍然是最可预测的服务器设置，但 OpenClaw 也支持复用本地 Claude CLI 登录。
 
 1. 在提供商控制台中创建一个 API 密钥。
 2. 将其放在 **Gateway 主机**（运行 `openclaw gateway` 的机器）上。
@@ -51,11 +51,11 @@ openclaw doctor
 
 有关环境变量继承的详细信息（`env.shellEnv`、`~/.openclaw/.env`、systemd/launchd），请参见 [Help](/help)。
 
-## Anthropic：旧版 token 兼容性
+## Anthropic：Claude CLI 和 token 兼容性
 
-Anthropic setup-token 认证在 OpenClaw 中仍作为旧版/手动路径可用。Anthropic 的公开 Claude Code 文档仍涵盖在 Claude 套餐下直接使用 Claude Code 终端，但 Anthropic 另行通知 OpenClaw 用户，**OpenClaw** 的 Claude 登录路径算作第三方工具使用，需要从订阅中单独计费的**额外使用量**。
+Anthropic setup-token 认证在 OpenClaw 中作为受支持的 token 路径仍然可用。Anthropic 工作人员告知我们 OpenClaw 风格的 Claude CLI 使用已再次获得许可，因此除非 Anthropic 发布新的政策，OpenClaw 将 Claude CLI 复用和 `claude -p` 的使用视为此集成的认可路径。当 Claude CLI 复用在主机上可用时，该路径现在是首选路径。
 
-为了最清晰的设置路径，请使用 Anthropic API 密钥。如果您必须在 OpenClaw 中保留订阅式 Anthropic 路径，请使用旧版 setup-token 路径，并预期 Anthropic 将其视为**额外使用量**。
+对于长期 Gateway 主机，Anthropic API 密钥仍然是最可预测的设置。如果您想在同一主机上复用现有的 Claude 登录，请使用引导/配置中的 Anthropic Claude CLI 路径。
 
 手动输入令牌（任何提供商；写入 `auth-profiles.json` 并更新配置）：
 
@@ -93,11 +93,11 @@ openclaw models status --probe
 
 ## Anthropic 说明
 
-Anthropic `claude-cli` 后端已被移除。
+Anthropic `claude-cli` 后端再次被支持。
 
-- 在 OpenClaw 中使用 Anthropic API 密钥处理 Anthropic 流量。
-- Anthropic setup-token 仍作为旧版/手动路径保留，使用时应预期 Anthropic 将其告知 OpenClaw 用户的额外使用量计费。
-- `openclaw doctor` 现在可检测过时的已移除 Anthropic Claude CLI 状态。如果存储的凭证字节仍然存在，doctor 会将其转换回 Anthropic token/OAuth profile。如果不存在，doctor 会删除过时的 Claude CLI 配置，并指引您进行 API 密钥或 setup-token 恢复。
+- Anthropic 工作人员告知我们此 OpenClaw 集成路径已再次获得许可。
+- 因此，除非 Anthropic 发布新的政策，OpenClaw 将 Claude CLI 复用和 `claude -p` 的使用视为 Anthropic 支持的运行的认可路径。
+- 对于长期 Gateway 主机和明确的服务器端计费控制，Anthropic API 密钥仍然是最可预测的选择。
 
 ## 检查模型认证状态
 
@@ -131,7 +131,7 @@ openclaw doctor
 
 ### Per-agent（CLI 覆盖）
 
-为 Agent 设置显式的认证 profile 顺序覆盖（存储在该 Agent 的 `auth-profiles.json` 中）：
+为 Agent 设置显式的认证 profile 顺序覆盖（存储在该 Agent 的 `auth-state.json` 中）：
 
 ```bash
 openclaw models auth order get --provider anthropic
@@ -147,7 +147,7 @@ openclaw models auth order clear --provider anthropic
 
 ### "未找到凭证"
 
-如果 Anthropic profile 缺失，请在 **Gateway 主机**上配置 Anthropic API 密钥或设置旧版 Anthropic setup-token 路径，然后重新检查：
+如果 Anthropic profile 缺失，请在 **Gateway 主机**上配置 Anthropic API 密钥或设置 Anthropic setup-token 路径，然后重新检查：
 
 ```bash
 openclaw models status
@@ -155,12 +155,4 @@ openclaw models status
 
 ### 令牌即将过期/已过期
 
-运行 `openclaw models status` 确认哪个 profile 即将过期。如果旧版 Anthropic token profile 缺失或已过期，请通过 setup-token 刷新该设置或迁移到 Anthropic API 密钥。
-
-如果机器上仍有旧版本遗留的过时 Anthropic Claude CLI 状态，请运行：
-
-```bash
-openclaw doctor --yes
-```
-
-Doctor 在存储的凭证字节仍然存在时，会将 `anthropic:claude-cli` 转换回 Anthropic token/OAuth。否则，它会删除过时的 Claude CLI profile/配置/模型引用，并留下下一步操作指引。
+运行 `openclaw models status` 确认哪个 profile 即将过期。如果 Anthropic token profile 缺失或已过期，请通过 setup-token 刷新该设置或迁移到 Anthropic API 密钥。

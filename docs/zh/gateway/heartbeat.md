@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "be1886c484a95d16ddee135c7c659aed"
+mmh3_hash: "b2d8be1758bf1fa55e4132c15c9e8ce7"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -129,6 +129,7 @@ Heartbeat 可以响应已完成的[后台任务](/automation/tasks),但 Heartbea
           every: "1h",
           target: "whatsapp",
           to: "+15551234567",
+          timeoutSeconds: 45,
           prompt: "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.",
         },
       },

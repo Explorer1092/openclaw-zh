@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c4d5339d4993c2aa58288467c51ac5b2"
+mmh3_hash: "8eb0700015100dedbd992acef8149d21"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
@@ -52,7 +52,7 @@ OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSO
   </Tab>
   <Tab title="Control UI">
     打开 [http://127.0.0.1:18789](http://127.0.0.1:18789) 并使用 **Config** 标签页。
-    Control UI 从配置架构渲染表单,并提供 **Raw JSON** 编辑器作为备选方案。
+    Control UI 从实时配置 schema 渲染表单，包含字段 `title` / `description` 文档元数据，以及在可用时包含插件和 Channel schema，并以 **Raw JSON** 编辑器作为备选方案。如需下探 UI 和其他工具，Gateway 还公开 `config.schema.lookup` 以获取一个路径范围的 schema 节点加上直接子摘要。
   </Tab>
   <Tab title="直接编辑">
     直接编辑 `~/.openclaw/openclaw.json`。Gateway 会监视文件并自动应用更改(参见[热重载](#config-hot-reload))。
@@ -68,11 +68,13 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
 Schema 工具说明：
 
 - `openclaw config schema` 输出 Control UI 和配置验证使用的相同 JSON Schema 系列。
+- 将该 schema 输出视为 `openclaw.json` 的规范机器可读契约；本概览和配置参考对其进行了总结。
 - 字段 `title` 和 `description` 值会被携带到 schema 输出中，供编辑器和表单工具使用。
 - 嵌套对象、通配符（`*`）和数组项（`[]`）条目在存在匹配字段文档时继承相同的文档元数据。
 - `anyOf` / `oneOf` / `allOf` 组合分支同样继承相同的文档元数据，因此联合/交叉变体保留相同的字段帮助信息。
 - `config.schema.lookup` 返回一个带有浅层 schema 节点（`title`、`description`、`type`、`enum`、`const`、常见边界及类似验证字段）、匹配 UI 提示元数据和即时子摘要的规范化配置路径，供下探工具使用。
 - 当 gateway 可以加载当前清单注册表时，运行时插件/channel schema 会被合并进来。
+- `pnpm config:docs:check` 检测文档面向的配置基线工件与当前 schema 表面之间的漂移。
 
 当验证失败时：
 
@@ -90,12 +92,13 @@ Schema 工具说明：
     - [WhatsApp](/channels/whatsapp) — `channels.whatsapp`
     - [Telegram](/channels/telegram) — `channels.telegram`
     - [Discord](/channels/discord) — `channels.discord`
+    - [Feishu](/channels/feishu) — `channels.feishu`
+    - [Google Chat](/channels/googlechat) — `channels.googlechat`
+    - [Microsoft Teams](/channels/msteams) — `channels.msteams`
     - [Slack](/channels/slack) — `channels.slack`
     - [Signal](/channels/signal) — `channels.signal`
     - [iMessage](/channels/imessage) — `channels.imessage`
-    - [Google Chat](/channels/googlechat) — `channels.googlechat`
     - [Mattermost](/channels/mattermost) — `channels.mattermost`
-    - [MS Teams](/channels/msteams) — `channels.msteams`
 
     所有 Channel 共享相同的 DM 策略模式:
 

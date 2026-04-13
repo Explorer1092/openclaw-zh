@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4d89390836565b39e4a81660fda5f82e"
+mmh3_hash: "66d0c19735b9475b8fe604ace81d1a43"
 summary: "Gateway、Channel、自动化、节点和 Browser 的深度故障排除运行手册"
 read_when:
   - 故障排除中心将您引导到这里进行更深入的诊断
@@ -50,7 +50,7 @@ openclaw config get agents.defaults.models
 修复选项:
 
 1. 禁用该模型的 `context1m` 以回退到普通上下文窗口。
-2. 使用带计费的 Anthropic API 密钥,或在订阅账户上启用 Anthropic Extra Usage。
+2. 使用符合长上下文请求条件的 Anthropic 凭证，或切换到 Anthropic API 密钥。
 3. 配置备用模型,以便在 Anthropic 长上下文请求被拒绝时运行继续。
 
 相关:
@@ -58,6 +58,48 @@ openclaw config get agents.defaults.models
 - [/providers/anthropic](/providers/anthropic)
 - [/reference/token-use](/reference/token-use)
 - [/help/faq#why-am-i-seeing-http-429-ratelimiterror-from-anthropic](/help/faq#why-am-i-seeing-http-429-ratelimiterror-from-anthropic)
+
+## 本地 OpenAI 兼容后端通过直接探测但 Agent 运行失败
+
+当以下情况时使用:
+
+- `curl ... /v1/models` 有效
+- 小型直接 `/v1/chat/completions` 调用有效
+- OpenClaw 模型运行仅在正常 Agent 轮次上失败
+
+```bash
+curl http://127.0.0.1:1234/v1/models
+curl http://127.0.0.1:1234/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{"model":"<id>","messages":[{"role":"user","content":"hi"}],"stream":false}'
+openclaw infer model run --model <provider/model> --prompt "hi" --json
+openclaw logs --follow
+```
+
+查找:
+
+- 直接小型调用成功,但 OpenClaw 运行仅在较大提示上失败
+- 关于 `messages[].content` 期望字符串的后端错误
+- 仅在较大提示 token 数量或完整 Agent 运行时提示下出现的后端崩溃
+
+常见特征:
+
+- `messages[...].content: invalid type: sequence, expected a string` → 后端拒绝结构化 Chat Completions 内容部分。修复:设置 `models.providers.<provider>.models[].compat.requiresStringContent: true`。
+- 直接小型请求成功,但 OpenClaw Agent 运行因后端/模型崩溃而失败(例如某些 `inferrs` 构建上的 Gemma) → OpenClaw 传输层可能已经正确；后端在较大的 Agent 运行时提示形状上失败。
+- 禁用工具后失败减少但未消失 → 工具 schema 是部分原因,但剩余问题仍然是上游模型/服务器容量或后端 bug。
+
+修复选项:
+
+1. 为仅字符串 Chat Completions 后端设置 `compat.requiresStringContent: true`。
+2. 为无法可靠处理 OpenClaw 工具 schema 的模型/后端设置 `compat.supportsTools: false`。
+3. 尽可能降低提示压力:更小的 workspace 引导、更短的 Session 历史、更轻量的本地模型，或支持更强长上下文的后端。
+4. 如果小型直接请求持续通过而 OpenClaw Agent 轮次仍在后端内崩溃,将其视为上游服务器/模型限制,并使用接受的负载形状在那里提交复现报告。
+
+相关:
+
+- [/gateway/local-models](/gateway/local-models)
+- [/gateway/configuration](/gateway/configuration)
+- [/gateway/configuration-reference#openai-compatible-endpoints](/gateway/configuration-reference#openai-compatible-endpoints)
 
 ## 无回复
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0e6d1f3e0bc9d409ce80b7b2e16d46f8"
+mmh3_hash: "14f9b19cb50b281128a3f87e3c45e40c"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 Gateway WS 客户端
@@ -289,18 +289,18 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 
 #### 批准系列
 
-- `exec.approval.request` 和 `exec.approval.resolve` 涵盖一次性 exec 批准请求。
+- `exec.approval.request`、`exec.approval.get`、`exec.approval.list` 和 `exec.approval.resolve` 涵盖一次性 exec 批准请求以及待处理批准查找/回放。
 - `exec.approval.waitDecision` 等待一个待处理的 exec 批准并返回最终决定（或超时时为 `null`）。
 - `exec.approvals.get` 和 `exec.approvals.set` 管理 Gateway exec 批准策略快照。
 - `exec.approvals.node.get` 和 `exec.approvals.node.set` 通过节点中继命令管理节点本地 exec 批准策略。
-- `plugin.approval.request`、`plugin.approval.waitDecision` 和 `plugin.approval.resolve` 涵盖插件定义的批准流程。
+- `plugin.approval.request`、`plugin.approval.list`、`plugin.approval.waitDecision` 和 `plugin.approval.resolve` 涵盖插件定义的批准流程。
 
 #### 其他主要系列
 
 - 自动化：
   - `wake` 调度立即或下一个 Heartbeat 唤醒文本注入
   - `cron.list`、`cron.status`、`cron.add`、`cron.update`、`cron.remove`、`cron.run`、`cron.runs`
-- 技能/工具：`skills.*`、`tools.catalog`、`tools.effective`
+- 技能/工具：`commands.list`、`skills.*`、`tools.catalog`、`tools.effective`
 
 ### 常见事件系列
 
@@ -326,6 +326,15 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 
 ### 操作员辅助方法
 
+- 操作员可以调用 `commands.list`（`operator.read`）获取 Agent 的运行时命令清单。
+  - `agentId` 是可选的；省略它以读取默认 Agent workspace。
+  - `scope` 控制主 `name` 的目标界面：
+    - `text` 返回不带前导 `/` 的主文本命令令牌
+    - `native` 和默认 `both` 路径在可用时返回 Provider 感知的原生名称
+  - `textAliases` 携带精确的斜杠别名,例如 `/model` 和 `/m`。
+  - `nativeName` 携带 Provider 感知的原生命令名称（如果存在）。
+  - `provider` 是可选的,仅影响原生命名加上原生插件命令可用性。
+  - `includeArgs=false` 从响应中省略序列化的参数元数据。
 - 操作员可以调用 `tools.catalog`(`operator.read`)获取 Agent 的运行时工具目录。响应包括分组工具和来源元数据:
   - `source`:`core` 或 `plugin`
   - `pluginId`:当 `source="plugin"` 时的插件所有者
@@ -350,6 +359,14 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 - 当 exec 请求需要审批时,Gateway 广播 `exec.approval.requested`。
 - 操作员客户端通过调用 `exec.approval.resolve` 来解决(需要 `operator.approvals` 范围)。
 - 对于 `host=node`,`exec.approval.request` 必须包含 `systemRunPlan`(规范的 `argv`/`cwd`/`rawCommand`/Session 元数据)。缺少 `systemRunPlan` 的请求会被拒绝。
+- 批准后，转发的 `node.invoke system.run` 调用将该规范 `systemRunPlan` 作为权威命令/cwd/Session 上下文重用。
+- 如果调用者在准备和最终批准的 `system.run` 转发之间修改了 `command`、`rawCommand`、`cwd`、`agentId` 或 `sessionKey`，Gateway 会拒绝运行而不是信任修改后的负载。
+
+## Agent 交付回退
+
+- `agent` 请求可以包含 `deliver=true` 以请求出站交付。
+- `bestEffortDeliver=false` 保持严格行为：未解析或仅内部交付目标返回 `INVALID_REQUEST`。
+- `bestEffortDeliver=true` 在无法解析外部可交付路由时（例如内部/webchat Session 或不明确的多 Channel 配置）允许回退到仅 Session 执行。
 
 ## 版本控制
 
