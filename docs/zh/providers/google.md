@@ -1,10 +1,10 @@
 ---
-mmh3_hash: "fe648c177577d792ab6f55ced4de5d7e"
 title: "Google (Gemini)"
-summary: "Google Gemini 设置（API 密钥、图像生成、媒体理解、Web 搜索）"
+mmh3_hash: "5bcfc24e90395e4dc73f46ed74498859"
+summary: "Google Gemini 设置（API 密钥 + OAuth、图像生成、媒体理解、Web 搜索）"
 read_when:
   - 您想在 OpenClaw 中使用 Google Gemini 模型
-  - 您需要 API 密钥身份验证流程
+  - 您需要 API 密钥或 OAuth 身份验证流程
 ---
 
 # Google (Gemini)
@@ -14,35 +14,110 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
 - Provider：`google`
 - 身份验证：`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`
 - API：Google Gemini API
+- 备选 Provider：`google-gemini-cli`（OAuth）
 
 ## 快速开始
 
-1. 设置 API 密钥：
+选择您首选的身份验证方式并按照设置步骤操作。
 
-```bash
-openclaw onboard --auth-choice gemini-api-key
-```
+<Tabs>
+  <Tab title="API 密钥">
+    **最适合：** 通过 Google AI Studio 的标准 Gemini API 访问。
 
-2. 设置默认模型：
+    <Steps>
+      <Step title="运行入门">
+        ```bash
+        openclaw onboard --auth-choice gemini-api-key
+        ```
 
-```json5
-{
-  agents: {
-    defaults: {
-      model: { primary: "google/gemini-3.1-pro-preview" },
-    },
-  },
-}
-```
+        或直接传递密钥：
 
-## 非交互式示例
+        ```bash
+        openclaw onboard --non-interactive \
+          --mode local \
+          --auth-choice gemini-api-key \
+          --gemini-api-key "$GEMINI_API_KEY"
+        ```
+      </Step>
+      <Step title="设置默认模型">
+        ```json5
+        {
+          agents: {
+            defaults: {
+              model: { primary: "google/gemini-3.1-pro-preview" },
+            },
+          },
+        }
+        ```
+      </Step>
+      <Step title="验证模型是否可用">
+        ```bash
+        openclaw models list --provider google
+        ```
+      </Step>
+    </Steps>
 
-```bash
-openclaw onboard --non-interactive \
-  --mode local \
-  --auth-choice gemini-api-key \
-  --gemini-api-key "$GEMINI_API_KEY"
-```
+    <Tip>
+    环境变量 `GEMINI_API_KEY` 和 `GOOGLE_API_KEY` 均可接受。使用您已配置的任意一个。
+    </Tip>
+
+  </Tab>
+
+  <Tab title="Gemini CLI（OAuth）">
+    **最适合：** 通过 PKCE OAuth 复用现有的 Gemini CLI 登录，而不需要单独的 API 密钥。
+
+    <Warning>
+    `google-gemini-cli` Provider 是非官方集成。部分用户反映以这种方式使用 OAuth 会导致账户受限。使用风险自担。
+    </Warning>
+
+    <Steps>
+      <Step title="安装 Gemini CLI">
+        本地 `gemini` 命令必须在 `PATH` 中可用。
+
+        ```bash
+        # Homebrew
+        brew install gemini-cli
+
+        # 或 npm
+        npm install -g @google/gemini-cli
+        ```
+
+        OpenClaw 支持 Homebrew 安装和全局 npm 安装，包括常见的 Windows/npm 布局。
+      </Step>
+      <Step title="通过 OAuth 登录">
+        ```bash
+        openclaw models auth login --provider google-gemini-cli --set-default
+        ```
+      </Step>
+      <Step title="验证模型是否可用">
+        ```bash
+        openclaw models list --provider google-gemini-cli
+        ```
+      </Step>
+    </Steps>
+
+    - 默认模型：`google-gemini-cli/gemini-3-flash-preview`
+    - 别名：`gemini-cli`
+
+    **环境变量：**
+
+    - `OPENCLAW_GEMINI_OAUTH_CLIENT_ID`
+    - `OPENCLAW_GEMINI_OAUTH_CLIENT_SECRET`
+
+    （或 `GEMINI_CLI_*` 变体。）
+
+    <Note>
+    如果 Gemini CLI OAuth 请求在登录后失败，请在 Gateway 主机上设置 `GOOGLE_CLOUD_PROJECT` 或 `GOOGLE_CLOUD_PROJECT_ID` 并重试。
+    </Note>
+
+    <Note>
+    如果登录在浏览器流程启动前失败，请确保本地 `gemini` 命令已安装并在 `PATH` 中。
+    </Note>
+
+    仅 OAuth 的 `google-gemini-cli` Provider 是独立的文本推理界面。图像生成、媒体理解和 Gemini Grounding 保留在 `google` Provider id 上。
+
+  </Tab>
+</Tabs>
 
 ## 能力
 
@@ -56,33 +131,11 @@ openclaw onboard --non-interactive \
 | 视频理解               | 是                |
 | Web 搜索（Grounding）  | 是                |
 | 思考/推理              | 是（Gemini 3.1+） |
+| Gemma 4 模型           | 是                |
 
-## 直接 Gemini 缓存复用
-
-对于直接 Gemini API 运行（`api: "google-generative-ai"`），OpenClaw 现在将配置的 `cachedContent` 句柄透传到 Gemini 请求。
-
-- 可以通过 `cachedContent` 或旧版 `cached_content` 为每个模型或全局参数配置
-- 如果两者都存在，`cachedContent` 优先
-- 示例值：`cachedContents/prebuilt-context`
-- Gemini 缓存命中使用量从上游 `cachedContentTokenCount` 归一化为 OpenClaw `cacheRead`
-
-示例：
-
-```json5
-{
-  agents: {
-    defaults: {
-      models: {
-        "google/gemini-2.5-pro": {
-          params: {
-            cachedContent: "cachedContents/prebuilt-context",
-          },
-        },
-      },
-    },
-  },
-}
-```
+<Tip>
+Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将 `thinkingBudget` 重写为 Gemma 4 支持的 Google `thinkingLevel`。将思考设置为 `off` 会保留禁用思考，而不是映射到 `MINIMAL`。
+</Tip>
 
 ## 图像生成
 
@@ -92,8 +145,6 @@ openclaw onboard --non-interactive \
 - 每次请求最多生成 4 张图像
 - 编辑模式：已启用，最多 5 张输入图像
 - 几何控件：`size`、`aspectRatio` 和 `resolution`
-
-图像生成、媒体理解和 Gemini Grounding 都保持在 `google` Provider id 上。
 
 将 Google 设置为默认图像 Provider：
 
@@ -109,7 +160,9 @@ openclaw onboard --non-interactive \
 }
 ```
 
+<Note>
 请参阅[图像生成](/tools/image-generation)了解共享工具参数、Provider 选择和故障转移行为。
+</Note>
 
 ## 视频生成
 
@@ -134,7 +187,9 @@ openclaw onboard --non-interactive \
 }
 ```
 
+<Note>
 请参阅[视频生成](/tools/video-generation)了解共享工具参数、Provider 选择和故障转移行为。
+</Note>
 
 ## 音乐生成
 
@@ -161,8 +216,67 @@ openclaw onboard --non-interactive \
 }
 ```
 
+<Note>
 请参阅[音乐生成](/tools/music-generation)了解共享工具参数、Provider 选择和故障转移行为。
+</Note>
 
-## 环境注意事项
+## 高级配置
 
-如果 Gateway 作为守护进程（launchd/systemd）运行，请确保 `GEMINI_API_KEY` 对该进程可用（例如，在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
+<AccordionGroup>
+  <Accordion title="直接 Gemini 缓存复用">
+    对于直接 Gemini API 运行（`api: "google-generative-ai"`），OpenClaw 将配置的 `cachedContent` 句柄透传到 Gemini 请求。
+
+    - 可以通过 `cachedContent` 或旧版 `cached_content` 为每个模型或全局参数配置
+    - 如果两者都存在，`cachedContent` 优先
+    - 示例值：`cachedContents/prebuilt-context`
+    - Gemini 缓存命中使用量从上游 `cachedContentTokenCount` 归一化为 OpenClaw `cacheRead`
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          models: {
+            "google/gemini-2.5-pro": {
+              params: {
+                cachedContent: "cachedContents/prebuilt-context",
+              },
+            },
+          },
+        },
+      },
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Gemini CLI JSON 使用注意事项">
+    使用 `google-gemini-cli` OAuth Provider 时，OpenClaw 按如下方式规范化 CLI JSON 输出：
+
+    - 回复文本来自 CLI JSON `response` 字段。
+    - 当 CLI 将 `usage` 留空时，使用量回退到 `stats`。
+    - `stats.cached` 归一化为 OpenClaw `cacheRead`。
+    - 如果 `stats.input` 缺失，OpenClaw 从 `stats.input_tokens - stats.cached` 推导输入令牌数。
+
+  </Accordion>
+
+  <Accordion title="环境和守护进程设置">
+    如果 Gateway 作为守护进程（launchd/systemd）运行，请确保 `GEMINI_API_KEY` 对该进程可用（例如，在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
+  </Accordion>
+</AccordionGroup>
+
+## 相关
+
+<CardGroup cols={2}>
+  <Card title="模型选择" href="/concepts/model-providers" icon="layers">
+    选择 Provider、模型引用和故障转移行为。
+  </Card>
+  <Card title="图像生成" href="/tools/image-generation" icon="image">
+    共享图像工具参数和 Provider 选择。
+  </Card>
+  <Card title="视频生成" href="/tools/video-generation" icon="video">
+    共享视频工具参数和 Provider 选择。
+  </Card>
+  <Card title="音乐生成" href="/tools/music-generation" icon="music">
+    共享音乐工具参数和 Provider 选择。
+  </Card>
+</CardGroup>

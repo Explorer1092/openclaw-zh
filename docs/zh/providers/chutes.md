@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "54ed4a11a725f16c274623bebd31103d"
+mmh3_hash: "14268b9e50d6e74fd06ac3090de57897"
 title: "Chutes"
 summary: "Chutes 设置（OAuth 或 API 密钥、模型发现、别名）"
 read_when:
@@ -12,40 +12,49 @@ read_when:
 
 [Chutes](https://chutes.ai) 通过 OpenAI 兼容的 API 公开开源模型目录。OpenClaw 支持内置 `chutes` Provider 的浏览器 OAuth 和直接 API 密钥两种身份验证方式。
 
-- Provider：`chutes`
-- API：OpenAI 兼容
-- Base URL：`https://llm.chutes.ai/v1`
-- 身份验证：
-  - 通过 `openclaw onboard --auth-choice chutes` 进行 OAuth
-  - 通过 `openclaw onboard --auth-choice chutes-api-key` 使用 API 密钥
-  - 运行时环境变量：`CHUTES_API_KEY`、`CHUTES_OAUTH_TOKEN`
+| 属性     | 值                           |
+| -------- | ---------------------------- |
+| Provider | `chutes`                     |
+| API      | OpenAI 兼容                  |
+| Base URL | `https://llm.chutes.ai/v1`   |
+| 身份验证 | OAuth 或 API 密钥（见下文）  |
 
 ## 快速开始
 
-### OAuth
+<Tabs>
+  <Tab title="OAuth">
+    <Steps>
+      <Step title="运行 OAuth 入门流程">
+        ```bash
+        openclaw onboard --auth-choice chutes
+        ```
+        OpenClaw 在本地启动浏览器流程，或在远程/无头主机上显示 URL + 重定向粘贴流程。OAuth 令牌通过 OpenClaw 身份验证配置文件自动刷新。
+      </Step>
+      <Step title="验证默认模型">
+        入门完成后，默认模型设置为 `chutes/zai-org/GLM-4.7-TEE`，并注册内置的 Chutes 目录。
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="API 密钥">
+    <Steps>
+      <Step title="获取 API 密钥">
+        在 [chutes.ai/settings/api-keys](https://chutes.ai/settings/api-keys) 创建密钥。
+      </Step>
+      <Step title="运行 API 密钥入门流程">
+        ```bash
+        openclaw onboard --auth-choice chutes-api-key
+        ```
+      </Step>
+      <Step title="验证默认模型">
+        入门完成后，默认模型设置为 `chutes/zai-org/GLM-4.7-TEE`，并注册内置的 Chutes 目录。
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
 
-```bash
-openclaw onboard --auth-choice chutes
-```
-
-OpenClaw 在本地启动浏览器流程，或在远程/无头主机上显示 URL + 重定向粘贴流程。OAuth 令牌通过 OpenClaw 身份验证配置文件自动刷新。
-
-可选的 OAuth 覆盖：
-
-- `CHUTES_CLIENT_ID`
-- `CHUTES_CLIENT_SECRET`
-- `CHUTES_OAUTH_REDIRECT_URI`
-- `CHUTES_OAUTH_SCOPES`
-
-### API 密钥
-
-```bash
-openclaw onboard --auth-choice chutes-api-key
-```
-
-在 [chutes.ai/settings/api-keys](https://chutes.ai/settings/api-keys) 获取您的密钥。
-
-两种身份验证方式都会注册内置的 Chutes 目录，并将默认模型设置为 `chutes/zai-org/GLM-4.7-TEE`。
+<Note>
+两种身份验证方式都会注册内置的 Chutes 目录，并将默认模型设置为 `chutes/zai-org/GLM-4.7-TEE`。运行时环境变量：`CHUTES_API_KEY`、`CHUTES_OAUTH_TOKEN`。
+</Note>
 
 ## 发现行为
 
@@ -53,24 +62,28 @@ openclaw onboard --auth-choice chutes-api-key
 
 ## 默认别名
 
-OpenClaw 还为内置的 Chutes 目录注册了三个便捷别名：
+OpenClaw 为内置的 Chutes 目录注册了三个便捷别名：
 
-- `chutes-fast` -> `chutes/zai-org/GLM-4.7-FP8`
-- `chutes-pro` -> `chutes/deepseek-ai/DeepSeek-V3.2-TEE`
-- `chutes-vision` -> `chutes/chutesai/Mistral-Small-3.2-24B-Instruct-2506`
+| 别名            | 目标模型                                              |
+| --------------- | ----------------------------------------------------- |
+| `chutes-fast`   | `chutes/zai-org/GLM-4.7-FP8`                          |
+| `chutes-pro`    | `chutes/deepseek-ai/DeepSeek-V3.2-TEE`                |
+| `chutes-vision` | `chutes/chutesai/Mistral-Small-3.2-24B-Instruct-2506` |
 
 ## 内置入门目录
 
-内置的回退目录包含当前的 Chutes 引用，例如：
+内置的回退目录包含当前的 Chutes 引用：
 
-- `chutes/zai-org/GLM-4.7-TEE`
-- `chutes/zai-org/GLM-5-TEE`
-- `chutes/deepseek-ai/DeepSeek-V3.2-TEE`
-- `chutes/deepseek-ai/DeepSeek-R1-0528-TEE`
-- `chutes/moonshotai/Kimi-K2.5-TEE`
-- `chutes/chutesai/Mistral-Small-3.2-24B-Instruct-2506`
-- `chutes/Qwen/Qwen3-Coder-Next-TEE`
-- `chutes/openai/gpt-oss-120b-TEE`
+| 模型引用                                              |
+| ----------------------------------------------------- |
+| `chutes/zai-org/GLM-4.7-TEE`                          |
+| `chutes/zai-org/GLM-5-TEE`                            |
+| `chutes/deepseek-ai/DeepSeek-V3.2-TEE`                |
+| `chutes/deepseek-ai/DeepSeek-R1-0528-TEE`             |
+| `chutes/moonshotai/Kimi-K2.5-TEE`                     |
+| `chutes/chutesai/Mistral-Small-3.2-24B-Instruct-2506` |
+| `chutes/Qwen/Qwen3-Coder-Next-TEE`                    |
+| `chutes/openai/gpt-oss-120b-TEE`                      |
 
 ## 配置示例
 
@@ -88,8 +101,41 @@ OpenClaw 还为内置的 Chutes 目录注册了三个便捷别名：
 }
 ```
 
-## 注意事项
+<AccordionGroup>
+  <Accordion title="OAuth 覆盖">
+    您可以使用可选的环境变量自定义 OAuth 流程：
 
-- OAuth 帮助和重定向应用要求：[Chutes OAuth 文档](https://chutes.ai/docs/sign-in-with-chutes/overview)
-- API 密钥和 OAuth 发现都使用相同的 `chutes` Provider id。
-- Chutes 模型注册为 `chutes/<model-id>`。
+    | 变量 | 用途 |
+    | ---- | ---- |
+    | `CHUTES_CLIENT_ID` | 自定义 OAuth 客户端 ID |
+    | `CHUTES_CLIENT_SECRET` | 自定义 OAuth 客户端密钥 |
+    | `CHUTES_OAUTH_REDIRECT_URI` | 自定义重定向 URI |
+    | `CHUTES_OAUTH_SCOPES` | 自定义 OAuth 范围 |
+
+    有关重定向应用要求和帮助，请参阅 [Chutes OAuth 文档](https://chutes.ai/docs/sign-in-with-chutes/overview)。
+
+  </Accordion>
+
+  <Accordion title="注意事项">
+    - API 密钥和 OAuth 发现都使用相同的 `chutes` Provider id。
+    - Chutes 模型注册为 `chutes/<model-id>`。
+    - 如果发现在启动时失败，将自动使用内置静态目录。
+  </Accordion>
+</AccordionGroup>
+
+## 相关
+
+<CardGroup cols={2}>
+  <Card title="模型 Provider" href="/concepts/model-providers" icon="layers">
+    Provider 规则、模型引用和故障转移行为。
+  </Card>
+  <Card title="配置参考" href="/gateway/configuration-reference" icon="gear">
+    完整配置 Schema，包括 Provider 设置。
+  </Card>
+  <Card title="Chutes" href="https://chutes.ai" icon="arrow-up-right-from-square">
+    Chutes 控制台和 API 文档。
+  </Card>
+  <Card title="Chutes API 密钥" href="https://chutes.ai/settings/api-keys" icon="key">
+    创建和管理 Chutes API 密钥。
+  </Card>
+</CardGroup>

@@ -1,7 +1,6 @@
 ---
-mmh3_hash: "4d40bc0d8e4f8bbdad0d1b50dd72e55c"
-title: "模型 Provider"
-sidebarTitle: "模型 Provider"
+title: "Provider Directory"
+mmh3_hash: "a9b831292cca43673752cdd1bc8d835f"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
   - 您想选择一个模型 Provider
@@ -30,6 +29,7 @@ OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份�
 - [Alibaba Model Studio](/providers/alibaba)
 - [Amazon Bedrock](/providers/bedrock)
 - [Anthropic (API + Claude CLI)](/providers/anthropic)
+- [Arcee AI (Trinity 模型)](/providers/arcee)
 - [BytePlus（国际版）](/concepts/model-providers#byteplus-international)
 - [Chutes](/providers/chutes)
 - [ComfyUI](/providers/comfy)
@@ -42,8 +42,10 @@ OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份�
 - [Google (Gemini)](/providers/google)
 - [Groq（LPU 推理）](/providers/groq)
 - [Hugging Face (Inference)](/providers/huggingface)
+- [inferrs（本地模型）](/providers/inferrs)
 - [Kilocode](/providers/kilocode)
 - [LiteLLM（统一网关）](/providers/litellm)
+- [LM Studio（本地模型）](/providers/lmstudio)
 - [MiniMax](/providers/minimax)
 - [Mistral](/providers/mistral)
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)

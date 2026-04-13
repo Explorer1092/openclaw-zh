@@ -1,20 +1,19 @@
 ---
-mmh3_hash: "e121b32d34c5406ea26449930f0e8ac2"
-title: "模型提供商"
-sidebarTitle: "模型提供商示例"
-summary: "OpenClaw 支持的模型提供商 (LLMs)"
+title: "Model Provider Quickstart"
+mmh3_hash: "a1856b9da2f87771038fb4cf5aaa7dd9"
+summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
-  - 您想选择一个模型提供商
+  - 您想选择一个模型 Provider
   - 您需要 LLM 身份验证 + 模型选择的快速设置示例
 ---
 
-# 模型提供商
+# 模型 Provider
 
-OpenClaw 可以使用多个 LLM 提供商。选择一个，进行身份验证，然后将默认模型设置为 `provider/model`。
+OpenClaw 可以使用多个 LLM Provider。选择一个，进行身份验证，然后将默认模型设置为 `provider/model`。
 
 ## 快速开始（两步）
 
-1. 使用提供商进行身份验证（通常通过 `openclaw onboard`）。
+1. 使用 Provider 进行身份验证（通常通过 `openclaw onboard`）。
 2. 设置默认模型：
 
 ```json5
@@ -23,7 +22,7 @@ OpenClaw 可以使用多个 LLM 提供商。选择一个，进行身份验证，
 }
 ```
 
-## 支持的提供商（入门集）
+## 支持的 Provider（入门集）
 
 - [Alibaba Model Studio](/providers/alibaba)
 - [Anthropic (API + Claude CLI)](/providers/anthropic)
@@ -51,9 +50,10 @@ OpenClaw 可以使用多个 LLM 提供商。选择一个，进行身份验证，
 - [xAI](/providers/xai)
 - [Z.AI](/providers/zai)
 
-## 额外的内置提供商变体
+## 其他内置 Provider 变体
 
-- `anthropic-vertex` - 当 Vertex 凭据可用时隐式 Anthropic 支持 Google Vertex；无需单独的入门身份验证选项
+- `anthropic-vertex` - 当 Vertex 凭据可用时隐式支持 Anthropic 在 Google Vertex 上运行；无需单独的入门身份验证选项
 - `copilot-proxy` - 本地 VS Code Copilot Proxy 桥接；使用 `openclaw onboard --auth-choice copilot-proxy`
+- `google-gemini-cli` - 非官方 Gemini CLI OAuth 流程；需要本地安装 `gemini`（`brew install gemini-cli` 或 `npm install -g @google/gemini-cli`）；默认模型 `google-gemini-cli/gemini-3-flash-preview`；使用 `openclaw onboard --auth-choice google-gemini-cli` 或 `openclaw models auth login --provider google-gemini-cli --set-default`
 
-有关完整的提供商目录（xAI、Groq、Mistral 等）和高级配置，请参见[模型提供商](/concepts/model-providers)。
+有关完整的 Provider 目录（xAI、Groq、Mistral 等）和高级配置，请参见[模型 Provider](/concepts/model-providers)。
