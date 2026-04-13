@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dcfd03a8f54726b443fa4e7f67ebbf7e"
+mmh3_hash: "3dd2cc9666ccc38d3073eaaee1d7ea2a"
 title: "`openclaw models`"
 sidebarTitle: "openclaw models"
 summary: "`openclaw models` 的 CLI 参考(状态/列表/设置/扫描、别名、回退、身份验证)"
@@ -114,5 +114,5 @@ openclaw models auth login --provider openai-codex --set-default
 - `paste-token` 接受从其他地方生成的令牌字符串或来自自动化的令牌字符串。
 - `paste-token` 需要 `--provider`,提示输入令牌值,并将其写入默认配置文件 ID `<provider>:manual`,除非您传递 `--profile-id`。
 - `paste-token --expires-in <duration>` 从相对持续时间(如 `365d` 或 `12h`)存储绝对令牌到期时间。
-- Anthropic 计费说明:对于 OpenClaw 中的 Anthropic,实际选择是 **API 密钥**或**具有额外使用量的 Claude 订阅**。Anthropic 于 **2026 年 4 月 4 日太平洋时间下午 12:00 / 英国夏令时间晚上 8:00** 通知 OpenClaw 用户,**OpenClaw** Claude 登录路径算作第三方套件使用,需要与订阅单独计费的**额外使用量**。我们的本地重现也表明,OpenClaw 标识提示字符串在 Anthropic SDK + API 密钥路径上不会重现。
-- Anthropic `setup-token` / `paste-token` 再次作为传统/手动 OpenClaw 路径提供。使用它们时请注意 Anthropic 告知 OpenClaw 用户此路径需要**额外使用量**。
+- Anthropic 说明：Anthropic 员工告诉我们 OpenClaw 风格的 Claude CLI 使用再次被允许，因此 OpenClaw 将 Claude CLI 重用和 `claude -p` 使用视为此集成的授权使用，除非 Anthropic 发布新政策。
+- Anthropic `setup-token` / `paste-token` 仍然作为受支持的 OpenClaw 令牌路径提供。但在可用时 OpenClaw 现在优先使用 Claude CLI 重用和 `claude -p`。

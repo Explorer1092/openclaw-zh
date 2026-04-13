@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ab52049bc9617e44beb3de209297a478"
+mmh3_hash: "31831b8db6d3d90bfbdd047b0c1b2e17"
 title: "`openclaw onboard`"
 sidebarTitle: "openclaw onboard"
 summary: "`openclaw onboard` 的 CLI 参考(交互式入职向导)"
@@ -43,6 +43,17 @@ openclaw onboard --non-interactive \
 ```
 
 `--custom-api-key` 在非交互模式下是可选的。如果省略,入职检查 `CUSTOM_API_KEY`。
+
+LM Studio 在非交互模式下也支持特定于提供商的密钥标志:
+
+```bash
+openclaw onboard --non-interactive \
+  --auth-choice lmstudio \
+  --custom-base-url "http://localhost:1234/v1" \
+  --custom-model-id "qwen/qwen3.5-9b" \
+  --lmstudio-api-key "$LM_API_TOKEN" \
+  --accept-risk
+```
 
 非交互式 Ollama:
 
@@ -116,7 +127,7 @@ openclaw onboard --non-interactive \
 
 非交互式 Z.AI 端点选择:
 
-注意:`--auth-choice zai-api-key` 现在自动检测您密钥的最佳 Z.AI 端点(优先使用 `zai/glm-5` 的通用 API)。如果您特别想要 GLM Coding Plan 端点,请选择 `zai-coding-global` 或 `zai-coding-cn`。
+注意:`--auth-choice zai-api-key` 现在自动检测您密钥的最佳 Z.AI 端点(优先使用 `zai/glm-5.1` 的通用 API)。如果您特别想要 GLM Coding Plan 端点,请选择 `zai-coding-global` 或 `zai-coding-cn`。
 
 ```bash
 # 无提示端点选择

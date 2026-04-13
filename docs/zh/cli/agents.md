@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3818968c03e35fd064f98672f699783e"
+mmh3_hash: "70c39440c13d5b6e73f9452887506265"
 title: "`openclaw agents`"
 sidebarTitle: "openclaw agents"
 summary: "`openclaw agents` 的 CLI 参考(列出/添加/删除/绑定/解绑/设置身份)"
@@ -39,7 +39,7 @@ openclaw agents delete work
 如果您还希望每个 Agent 有不同的可见 Skill,请在 `openclaw.json` 中配置
 `agents.defaults.skills` 和 `agents.list[].skills`。参见
 [Skills config](/tools/skills-config) 和
-[Configuration Reference](/gateway/configuration-reference#agentsdefaultsskills)。
+[Configuration Reference](/gateway/configuration-reference#agents-defaults-skills)。
 
 列出绑定:
 

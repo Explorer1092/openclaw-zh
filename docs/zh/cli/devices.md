@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "944fd723e8873d40a05c1e7bf4b0d48c"
+mmh3_hash: "c3401a3e3486f461c520bbf4107cff94"
 title: "`openclaw devices`"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
@@ -47,7 +47,7 @@ openclaw devices clear --yes --pending --json
 
 ### `openclaw devices approve [requestId] [--latest]`
 
-批准待处理的设备配对请求。如果省略 `requestId`,OpenClaw 将自动批准最近的待处理请求。
+通过精确的 `requestId` 批准待处理的设备配对请求。如果省略 `requestId` 或传递 `--latest`，OpenClaw 仅打印选定的待处理请求并退出；验证详情后请使用精确的请求 ID 重新运行批准。
 
 注意:如果设备以更改的身份验证详情(角色/范围/公钥)重试配对,OpenClaw 会覆盖之前的待处理条目并发出新的 `requestId`。批准前请运行 `openclaw devices list` 以使用当前 ID。
 
@@ -105,7 +105,7 @@ openclaw devices revoke --device <deviceId> --role node
 - 对于配对设备令牌 Session,跨设备管理仅限管理员:`remove`、`rotate` 和 `revoke` 仅限自己操作,除非调用者具有 `operator.admin`。
 - `devices clear` 有意通过 `--yes` 进行门控。
 - 如果本地回环上的配对范围不可用(且未传递显式 `--url`),list/approve 可以使用本地配对回退。
-- `devices approve` 在省略 `requestId` 或传递 `--latest` 时自动选择最新的待处理请求。
+- `devices approve` 在铸造令牌前需要显式的请求 ID；省略 `requestId` 或传递 `--latest` 仅预览最新的待处理请求。
 
 ## 令牌漂移恢复检查清单
 
