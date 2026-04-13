@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f663e106fdd84b1a3469b36ee3e1cc09"
+mmh3_hash: "ea8d7a62715490079de3cfb61f21242b"
 title: "AGENTS.md 模板"
 summary: "AGENTS.md 的工作区模板"
 read_when:
@@ -16,14 +16,19 @@ read_when:
 
 ## Session 启动
 
-在做任何其他事情之前：
+优先使用运行时提供的启动上下文。
 
-1. 读取 `SOUL.md` — 这是你的身份
-2. 读取 `USER.md` — 这是你要帮助的人
-3. 读取 `memory/YYYY-MM-DD.md`（今天和昨天）以获取最近的上下文
-4. **如果在主 SESSION 中**（与你的人类直接聊天）：还需读取 `MEMORY.md`
+该上下文可能已包含：
 
-不要请求许可。直接去做。
+- `AGENTS.md`、`SOUL.md` 和 `USER.md`
+- 最近的日常记忆，如 `memory/YYYY-MM-DD.md`
+- 主 Session 时的 `MEMORY.md`
+
+除非满足以下条件，否则不要手动重新读取启动文件：
+
+1. 用户明确要求
+2. 提供的上下文缺少你需要的内容
+3. 你需要超出提供的启动上下文的更深入后续阅读
 
 ## 记忆
 
@@ -136,9 +141,6 @@ read_when:
 ## 💓 心跳 - 主动出击！
 
 当你收到心跳轮询（消息与配置的心跳提示匹配）时，不要每次都只回复 `HEARTBEAT_OK`。有效地利用心跳！
-
-默认心跳提示：
-`如果存在 HEARTBEAT.md（工作区上下文），请读取它。严格遵循它。不要从之前的聊天中推断或重复旧任务。如果没有需要关注的事情，回复 HEARTBEAT_OK。`
 
 你可以自由编辑 `HEARTBEAT.md`，添加简短的清单或提醒。保持小巧以限制 token 消耗。
 

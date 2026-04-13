@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "280d0fabc85c041d18a4eb487be973bf"
+mmh3_hash: "22c405da0672d99610b2733a08c26d5f"
 summary: "OpenClaw CLI 的脚本化引导和 Agent 设置"
 read_when:
   - 您在脚本或 CI 中自动化引导
@@ -193,8 +193,7 @@ openclaw onboard --non-interactive \
   </Accordion>
 </AccordionGroup>
 
-Anthropic setup-token 作为旧版/手动引导路径再次可用。
-使用时请注意，Anthropic 已告知 OpenClaw 用户，OpenClaw 的 Claude 登录路径需要**额外用量（Extra Usage）**。生产环境优先使用 Anthropic API 密钥。
+Anthropic setup-token 作为受支持的引导 Token 路径仍然可用，但 OpenClaw 现在在可用时优先重用 Claude CLI。生产环境优先使用 Anthropic API 密钥。
 
 ## 添加另一个 Agent
 

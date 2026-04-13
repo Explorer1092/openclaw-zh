@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "21030ac16b34b66eb7d41baad6020213"
+mmh3_hash: "0477c788331772a723f63e5821d92b9d"
 summary: "CLI 引导向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
 read_when:
   - 运行或配置 CLI 引导向导
@@ -69,7 +69,7 @@ Ollama Web Search、Perplexity、SearXNG 或 Tavily。部分 Provider 需要 API
    对于非交互式运行，`--secret-input-mode ref` 在认证配置文件中存储环境支持的引用，而不是明文 API 密钥值。
    在非交互式 `ref` 模式中，Provider 环境变量必须设置；不带该环境变量传递内联密钥标志会快速失败。
    在交互式运行中，选择密钥引用模式允许您指向环境变量或配置的 Provider 引用（`file` 或 `exec`），在保存之前进行快速预检验证。
-   对于 Anthropic，交互式引导/配置提供 **Anthropic Claude CLI** 作为本地回退，**Anthropic API 密钥**作为推荐的生产路径。Anthropic setup-token 也作为旧版/手动 OpenClaw 路径再次可用，并带有 Anthropic 的 OpenClaw 特定 **Extra Usage** 计费预期。
+   对于 Anthropic，交互式引导/配置提供 **Anthropic Claude CLI** 作为首选本地路径，**Anthropic API 密钥**作为推荐的生产路径。Anthropic setup-token 也作为受支持的 Token 身份验证路径继续可用。
 2. **工作区** — Agent 文件的位置（默认 `~/.openclaw/workspace`）。播种引导文件。
 3. **Gateway** — 端口、绑定地址、认证模式、Tailscale 暴露。
    在交互式 Token 模式下，选择默认明文 Token 存储或选择加入 SecretRef。
