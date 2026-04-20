@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ed4c98f2de56a5cf6f2f843140d01f37"
+mmh3_hash: "031ca70e0f6cc87128590db48c8a1a3f"
 title: "`openclaw browser`"
 sidebarTitle: "openclaw browser"
 summary: "`openclaw browser` 的 CLI 参考(生命周期、配置文件、标签、操作、状态和调试)"
@@ -34,6 +34,20 @@ openclaw browser --browser-profile openclaw start
 openclaw browser --browser-profile openclaw open https://example.com
 openclaw browser --browser-profile openclaw snapshot
 ```
+
+## 快速故障排除
+
+如果 `start` 失败并提示 `not reachable after start`，请先排查 CDP 就绪性问题。如果 `start` 和 `tabs` 成功但 `open` 或 `navigate` 失败，说明浏览器控制平面正常，故障通常是导航 SSRF 策略问题。
+
+最小操作序列:
+
+```bash
+openclaw browser --browser-profile openclaw start
+openclaw browser --browser-profile openclaw tabs
+openclaw browser --browser-profile openclaw open https://example.com
+```
+
+详细指导:[Browser troubleshooting](/tools/browser#cdp-startup-failure-vs-navigation-ssrf-block)
 
 ## 生命周期
 

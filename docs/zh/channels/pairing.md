@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "028a8061ead59c0167ded095913448e2"
+mmh3_hash: "02efc0ed076351062f333d606fc1232f"
 summary: "配对概述：批准谁可以私信您 + 哪些节点可以加入"
 read_when:
   - 设置 DM 访问控制

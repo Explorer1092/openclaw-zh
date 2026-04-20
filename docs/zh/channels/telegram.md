@@ -1,7 +1,7 @@
 ---
 title: "Telegram (Bot API)"
 sidebarTitle: "Telegram"
-mmh3_hash: "449a6809b12f98b0cdee5a04b99dbd7b"
+mmh3_hash: "6c740a43faf2e6d848cbab44d8e21132"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook
@@ -721,7 +721,9 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
     - `channels.telegram.execApprovals.target`（`dm` | `channel` | `both`，默认：`dm`）
     - `agentFilter`、`sessionFilter`
 
-    审批者必须是数字 Telegram 用户 ID。当 `enabled` 为 false 或 `approvers` 为空时，Telegram 不作为 exec 审批客户端。审批请求回退到其他已配置的审批路由或 exec 审批后备策略。
+    审批者必须是数字 Telegram 用户 ID。当 `enabled` 未设置或为 `"auto"` 且至少一个审批者可以解析时（来自 `execApprovals.approvers` 或账户数字所有者配置），Telegram 自动启用原生 exec 审批。设置 `enabled: false` 可明确禁用 Telegram 作为原生审批客户端。否则审批请求回退到其他已配置的审批路由或 exec 审批后备策略。
+
+    Telegram 还渲染其他聊天 Channel 使用的共享审批按钮。当这些按钮存在时，它们是主要的审批 UX；仅在工具结果表明聊天审批不可用或手动审批是唯一路径时，OpenClaw 才应包含手动 `/approve` 命令。
 
     传递规则：
 
@@ -731,7 +733,14 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 
     只有已配置的审批者才能批准或拒绝。非审批者无法使用 `/approve`，也无法使用 Telegram 审批按钮。
 
-    频道传递在聊天中显示命令文本，因此仅在受信任的群组/主题中启用 `channel` 或 `both`。当提示落在论坛主题中时，OpenClaw 为审批提示和审批后续跟进保留该主题。
+    审批解析行为：
+
+    - 带 `plugin:` 前缀的 ID 始终通过插件审批解析。
+    - 其他审批 ID 首先尝试 `exec.approval.resolve`。
+    - 如果 Telegram 也被授权用于插件审批，且 Gateway 返回 exec 审批未知/过期，Telegram 通过 `plugin.approval.resolve` 重试一次。
+    - 真正的 exec 审批拒绝/错误不会静默地降级到插件审批解析。
+
+    频道传递在聊天中显示命令文本，因此仅在受信任的群组/主题中启用 `channel` 或 `both`。当提示落在论坛主题中时，OpenClaw 为审批提示和审批后续跟进保留该主题。Exec 审批默认在 30 分钟后过期。
 
     内联审批按钮还取决于 `channels.telegram.capabilities.inlineButtons` 是否允许目标表面（`dm`、`group` 或 `all`）。
 
@@ -881,6 +890,23 @@ channels:
       autoSelectFamily: false
 ```
 
+    - RFC 2544 基准范围响应（`198.18.0.0/15`）默认已对 Telegram 媒体下载放行。如果受信任的假 IP 或透明代理在媒体下载期间将 `api.telegram.org` 改写为其他私有/内部/特殊用途地址，您可以选择启用仅 Telegram 的绕过：
+
+```yaml
+channels:
+  telegram:
+    network:
+      dangerouslyAllowPrivateNetwork: true
+```
+
+    - 同样的选项也可按账户设置：
+      `channels.telegram.accounts.<accountId>.network.dangerouslyAllowPrivateNetwork`。
+    - 如果您的代理将 Telegram 媒体主机解析到 `198.18.x.x`，请先关闭危险标志。Telegram 媒体默认已允许 RFC 2544 基准范围。
+
+    <Warning>
+      `channels.telegram.network.dangerouslyAllowPrivateNetwork` 会削弱 Telegram 媒体的 SSRF 保护。仅在受运营者信任控制的代理环境（如 Clash、Mihomo 或 Surge 假 IP 路由）中使用，且仅当它们将 Telegram 媒体主机解析为 RFC 2544 基准范围之外的私有或特殊用途地址时。正常公网 Telegram 访问请勿启用。
+    </Warning>
+
     - 环境覆盖（临时）：
       - `OPENCLAW_TELEGRAM_DISABLE_AUTO_SELECT_FAMILY=1`
       - `OPENCLAW_TELEGRAM_ENABLE_AUTO_SELECT_FAMILY=1`
@@ -896,6 +922,33 @@ dig +short api.telegram.org AAAA
 </AccordionGroup>
 
 更多帮助：[频道故障排除](/channels/troubleshooting)。
+
+## 错误回复控制
+
+当 Agent 遇到传递或 Provider 错误时，Telegram 可以回复错误文本或抑制错误。两个配置键控制此行为：
+
+| 键                                  | 值                | 默认值  | 描述                                                                                       |
+| ----------------------------------- | ----------------- | ------- | ------------------------------------------------------------------------------------------ |
+| `channels.telegram.errorPolicy`     | `reply`、`silent` | `reply` | `reply` 向聊天发送友好的错误消息。`silent` 完全抑制错误回复。                             |
+| `channels.telegram.errorCooldownMs` | 数字（毫秒）      | `60000` | 向同一聊天发送错误回复之间的最短间隔时间。防止服务中断时的错误轰炸。                      |
+
+支持每账户、每群组和每主题覆盖（与其他 Telegram 配置键相同的继承方式）。
+
+```json5
+{
+  channels: {
+    telegram: {
+      errorPolicy: "reply",
+      errorCooldownMs: 120000,
+      groups: {
+        "-1001234567890": {
+          errorPolicy: "silent", // 在此群组中抑制错误
+        },
+      },
+    },
+  },
+}
+```
 
 ## Telegram 配置参考指针
 
@@ -930,13 +983,14 @@ dig +short api.telegram.org AAAA
   - 顶层 `bindings[]` 中使用 `type: "acp"` 和 `match.peer.id` 为规范主题 ID `chatId:topic:topicId`：持久化 ACP 主题绑定字段（参见 [ACP Agents](/tools/acp-agents#channel-specific-settings)）。
   - `channels.telegram.direct.<id>.topics.<threadId>.agentId`：将私信主题路由到特定 agent（与论坛主题行为相同）。
 - `channels.telegram.execApprovals.enabled`：启用 Telegram 作为此账户的聊天端 exec 审批客户端。
-- `channels.telegram.execApprovals.approvers`：允许批准或拒绝 exec 请求的 Telegram 用户 ID。启用 exec 审批时必填。
+- `channels.telegram.execApprovals.approvers`：允许批准或拒绝 exec 请求的 Telegram 用户 ID。当 `channels.telegram.allowFrom` 或直接 `channels.telegram.defaultTo` 已识别所有者时为可选。
 - `channels.telegram.execApprovals.target`：`dm | channel | both`（默认：`dm`）。`channel` 和 `both` 在存在时保留发起的 Telegram 主题。
 - `channels.telegram.execApprovals.agentFilter`：转发审批提示的可选 agent ID 过滤器。
 - `channels.telegram.execApprovals.sessionFilter`：转发审批提示的可选会话键过滤器（子字符串或正则表达式）。
 - `channels.telegram.accounts.<account>.execApprovals`：每账户 Telegram exec 审批路由和审批者授权覆盖。
 - `channels.telegram.capabilities.inlineButtons`：`off | dm | group | all | allowlist`（默认：allowlist）。
 - `channels.telegram.accounts.<account>.capabilities.inlineButtons`：每账户覆盖。
+- `channels.telegram.commands.nativeSkills`：启用/禁用 Telegram 原生技能命令。
 - `channels.telegram.replyToMode`：`off | first | all`（默认：`off`）。
 - `channels.telegram.textChunkLimit`：出站分块大小（字符）。
 - `channels.telegram.chunkMode`：`length`（默认）或 `newline`，在长度分块之前按空行（段落边界）分割。
@@ -946,6 +1000,7 @@ dig +short api.telegram.org AAAA
 - `channels.telegram.retry`：出站 Telegram API 调用的重试策略（attempts、minDelayMs、maxDelayMs、jitter）。
 - `channels.telegram.network.autoSelectFamily`：覆盖 Node autoSelectFamily（true=启用，false=禁用）。在 Node 22+ 上默认启用，WSL2 默认禁用。
 - `channels.telegram.network.dnsResultOrder`：覆盖 DNS 结果顺序（`ipv4first` 或 `verbatim`）。在 Node 22+ 上默认为 `ipv4first`。
+- `channels.telegram.network.dangerouslyAllowPrivateNetwork`：危险的可选项，适用于受信任的假 IP 或透明代理环境，当 Telegram 媒体下载将 `api.telegram.org` 解析为默认 RFC 2544 基准范围之外的私有/内部/特殊用途地址时使用。
 - `channels.telegram.proxy`：Bot API 调用的代理 URL（SOCKS/HTTP）。
 - `channels.telegram.webhookUrl`：启用 webhook 模式（需要 `channels.telegram.webhookSecret`）。
 - `channels.telegram.webhookSecret`：webhook 密钥（设置 webhookUrl 时必填）。

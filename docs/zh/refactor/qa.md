@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "60eda3709dbb9b57da9305d4e20cac01"
+mmh3_hash: "a3e78d5a3701c94502a7d7b66fd010f4"
 ---
 # QA 重构
 
@@ -20,7 +20,7 @@ mmh3_hash: "60eda3709dbb9b57da9305d4e20cac01"
 
 ## 当前状态
 
-主要事实来源现在位于 `qa/scenarios/index.md` 加上 `qa/scenarios/*.md` 下每个场景的一个文件。
+主要事实来源现在位于 `qa/scenarios/index.md` 加上 `qa/scenarios/<theme>/*.md` 下每个场景的一个文件。
 
 已实现：
 
@@ -28,7 +28,7 @@ mmh3_hash: "60eda3709dbb9b57da9305d4e20cac01"
   - 规范 QA 包元数据
   - 操作员身份
   - 启动任务
-- `qa/scenarios/*.md`
+- `qa/scenarios/<theme>/*.md`
   - 每个场景一个 Markdown 文件
   - 场景元数据
   - 处理程序绑定
@@ -109,7 +109,7 @@ mmh3_hash: "60eda3709dbb9b57da9305d4e20cac01"
 
 ### 单一事实来源
 
-使用 `qa/scenarios/index.md` 加上 `qa/scenarios/*.md` 作为撰写的事实来源。
+使用 `qa/scenarios/index.md` 加上 `qa/scenarios/<theme>/*.md` 作为撰写的事实来源。
 
 包应该保持：
 
@@ -364,7 +364,7 @@ DSL 必须支持保存的输出和后续引用。
 已完成。
 
 - 添加了 `qa/scenarios/index.md`
-- 将场景拆分到 `qa/scenarios/*.md`
+- 将场景拆分到 `qa/scenarios/<theme>/*.md`
 - 添加了命名 Markdown YAML 包内容的解析器
 - 使用 zod 验证
 - 将消费者切换到解析的包

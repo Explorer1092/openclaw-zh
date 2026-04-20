@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "37614023f7d3fe87e825d2a79c6659a9"
+mmh3_hash: "5c9a79de2f8c71e88e66856831d062d1"
 title: "聊天频道"
 sidebarTitle: "聊天频道"
 summary: "OpenClaw 可以连接的消息平台"
@@ -35,7 +35,7 @@ OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 C
 - [Twitch](/channels/twitch) — 通过 IRC 连接的 Twitch 聊天（内置插件）。
 - [Voice Call](/plugins/voice-call) — 通过 Plivo 或 Twilio 的电话（插件，需单独安装）。
 - [WebChat](/web/webchat) — 通过 WebSocket 的 Gateway WebChat UI。
-- [WeChat](https://www.npmjs.com/package/@tencent-weixin/openclaw-weixin) — 通过二维码登录的腾讯 iLink Bot 插件；仅支持私聊。
+- [WeChat](/channels/wechat) — 通过二维码登录的腾讯 iLink Bot 插件；仅支持私聊（外部插件）。
 - [WhatsApp](/channels/whatsapp) — 最流行；使用 Baileys 并需要二维码配对。
 - [Zalo](/channels/zalo) — Zalo Bot API；越南流行的即时通讯（内置插件）。
 - [Zalo Personal](/channels/zalouser) — 通过二维码登录的 Zalo 个人账户（内置插件）。

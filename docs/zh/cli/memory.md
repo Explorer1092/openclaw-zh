@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "47b5508447c7b744136f119b62ffc896"
+mmh3_hash: "e75ed19ba71b21bca0c53c6692c1f649"
 title: "`openclaw memory`"
 sidebarTitle: "openclaw memory"
 summary: "`openclaw memory` 的 CLI 参考(状态/索引/搜索/提升/提升解释/REM 运行环境)"
@@ -123,7 +123,7 @@ openclaw memory rem-harness [--agent <id>] [--include-promoted] [--json]
 - `--include-promoted`:包含已提升的深度候选。
 - `--json`:打印 JSON 输出。
 
-## 梦境(实验性)
+## 梦境
 
 梦境是后台内存整合系统,具有三个协作阶段:**light**(排序/暂存短期材料)、**deep**(将持久事实提升到 `MEMORY.md`)和 **REM**(反思和浮现主题)。
 
@@ -167,8 +167,8 @@ openclaw memory rem-harness [--agent <id>] [--include-promoted] [--json]
 - 如果有效活动内存远程 API 密钥字段被配置为 SecretRef,命令会从活动 Gateway 快照解析这些值。如果 Gateway 不可用,命令会快速失败。
 - Gateway 版本偏差说明:此命令路径需要支持 `secrets.resolve` 的 Gateway;旧版 Gateway 返回未知方法错误。
 - 使用 `dreaming.frequency` 调整计划扫描节奏。Deep 提升策略是内部的;当您需要一次性手动覆盖时,在 `memory promote` 上使用 CLI 标志。
-- `memory rem-harness --path <file-or-dir> --grounded` 从历史每日笔记预览有根据的 `What Happened`、`Reflections` 和 `Possible Lasting Updates`，而不写入任何内容。
+- `memory rem-harness --path <file-or-dir> --grounded` 从历史每日笔记预览有根据的 `What Happened`、`Reflections` 和 `Possible Lasting Updates`,而不写入任何内容。
 - `memory rem-backfill --path <file-or-dir>` 将可逆的有根据的日记条目写入 `DREAMS.md` 供 UI 审查。
-- `memory rem-backfill --path <file-or-dir> --stage-short-term` 同时将有根据的持久候选植入到实时短期提升存储中，以便正常的 deep 阶段可以对其排名。
-- `memory rem-backfill --rollback` 删除之前写入的有根据的日记条目，`memory rem-backfill --rollback-short-term` 删除之前暂存的有根据的短期候选。
+- `memory rem-backfill --path <file-or-dir> --stage-short-term` 同时将有根据的持久候选植入到实时短期提升存储中,以便正常的 deep 阶段可以对其排名。
+- `memory rem-backfill --rollback` 删除之前写入的有根据的日记条目,`memory rem-backfill --rollback-short-term` 删除之前暂存的有根据的短期候选。
 - 有关完整的阶段描述和配置参考,请参见 [Dreaming](/concepts/dreaming)。

@@ -1,7 +1,7 @@
 ---
 title: "Google (Gemini)"
-mmh3_hash: "5bcfc24e90395e4dc73f46ed74498859"
-summary: "Google Gemini 设置（API 密钥 + OAuth、图像生成、媒体理解、Web 搜索）"
+mmh3_hash: "b0ebca4fb724b22d6e2f3d59a10c4c53"
+summary: "Google Gemini 设置（API 密钥 + OAuth、图像生成、媒体理解、TTS、Web 搜索）"
 read_when:
   - 您想在 OpenClaw 中使用 Google Gemini 模型
   - 您需要 API 密钥或 OAuth 身份验证流程
@@ -9,7 +9,7 @@ read_when:
 
 # Google (Gemini)
 
-Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及图像生成、媒体理解（图像/音频/视频）和通过 Gemini Grounding 实现的 Web 搜索。
+Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及图像生成、媒体理解（图像/音频/视频）、文本转语音和通过 Gemini Grounding 实现的 Web 搜索。
 
 - Provider：`google`
 - 身份验证：`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`
@@ -121,19 +121,22 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
 
 ## 能力
 
-| 能力                   | 支持              |
-| ---------------------- | ----------------- |
-| 聊天补全               | 是                |
-| 图像生成               | 是                |
-| 音乐生成               | 是                |
-| 图像理解               | 是                |
-| 音频转录               | 是                |
-| 视频理解               | 是                |
-| Web 搜索（Grounding）  | 是                |
-| 思考/推理              | 是（Gemini 3.1+） |
-| Gemma 4 模型           | 是                |
+| 能力                   | 支持                          |
+| ---------------------- | ----------------------------- |
+| 聊天补全               | 是                            |
+| 图像生成               | 是                            |
+| 音乐生成               | 是                            |
+| 文本转语音             | 是                            |
+| 图像理解               | 是                            |
+| 音频转录               | 是                            |
+| 视频理解               | 是                            |
+| Web 搜索（Grounding）  | 是                            |
+| 思考/推理              | 是（Gemini 2.5+ / Gemini 3+） |
+| Gemma 4 模型           | 是                            |
 
 <Tip>
+Gemini 3 模型使用 `thinkingLevel` 而非 `thinkingBudget`。OpenClaw 将 Gemini 3、Gemini 3.1 及 `gemini-*-latest` 别名的推理控制映射到 `thinkingLevel`，以便默认/低延迟运行不发送已禁用的 `thinkingBudget` 值。
+
 Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将 `thinkingBudget` 重写为 Gemma 4 支持的 Google `thinkingLevel`。将思考设置为 `off` 会保留禁用思考，而不是映射到 `MINIMAL`。
 </Tip>
 
@@ -218,6 +221,46 @@ Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将
 
 <Note>
 请参阅[音乐生成](/tools/music-generation)了解共享工具参数、Provider 选择和故障转移行为。
+</Note>
+
+## 文本转语音
+
+内置的 `google` 语音 Provider 使用 Gemini API TTS 路径，模型为 `gemini-3.1-flash-tts-preview`。
+
+- 默认语音：`Kore`
+- 身份验证：`messages.tts.providers.google.apiKey`、`models.providers.google.apiKey`、`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`
+- 输出：常规 TTS 附件为 WAV，Talk/电话为 PCM
+- 原生语音消息输出：此 Gemini API 路径不支持，因为 API 返回 PCM 而非 Opus
+
+将 Google 设置为默认 TTS Provider：
+
+```json5
+{
+  messages: {
+    tts: {
+      auto: "always",
+      provider: "google",
+      providers: {
+        google: {
+          model: "gemini-3.1-flash-tts-preview",
+          voiceName: "Kore",
+        },
+      },
+    },
+  },
+}
+```
+
+Gemini API TTS 接受文本中的表达性方括号音频标签，例如 `[whispers]` 或 `[laughs]`。若要在将标签发送到 TTS 的同时让其不出现在可见的聊天回复中，请将其放在 `[[tts:text]]...[[/tts:text]]` 块内：
+
+```text
+Here is the clean reply text.
+
+[[tts:text]][whispers] Here is the spoken version.[[/tts:text]]
+```
+
+<Note>
+限制为 Gemini API 的 Google Cloud Console API 密钥对此 Provider 有效。这不是单独的 Cloud Text-to-Speech API 路径。
 </Note>
 
 ## 高级配置

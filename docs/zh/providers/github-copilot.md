@@ -1,7 +1,7 @@
 ---
 title: "GitHub Copilot"
 sidebarTitle: "GitHub Copilot"
-mmh3_hash: "6d79d78981a12b4f9a4a0bb62a209a7d"
+mmh3_hash: "861aa7362aca8f876f8dfe8c33d0ec4d"
 summary: "使用设备流从 OpenClaw 登录 GitHub Copilot"
 read_when:
   - 您想将 GitHub Copilot 用作模型 Provider
@@ -102,6 +102,40 @@ openclaw models auth login --provider github-copilot --method device --set-defau
 <Warning>
 需要交互式 TTY。直接在终端中运行登录命令，而不是在无头脚本或 CI 作业中。
 </Warning>
+
+## Memory 搜索嵌入
+
+GitHub Copilot 也可以作为 [Memory 搜索](/concepts/memory-search) 的嵌入 Provider。如果您拥有 Copilot 订阅并已登录，OpenClaw 无需单独的 API 密钥即可将其用于嵌入。
+
+### 自动检测
+
+当 `memorySearch.provider` 为 `"auto"`（默认值）时，GitHub Copilot 以优先级 15 被尝试——在本地嵌入之后、OpenAI 和其他付费 Provider 之前。如果 GitHub 令牌可用，OpenClaw 将从 Copilot API 发现可用的嵌入模型并自动选择最佳模型。
+
+### 显式配置
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "github-copilot",
+        // 可选：覆盖自动发现的模型
+        model: "text-embedding-3-small",
+      },
+    },
+  },
+}
+```
+
+### 工作原理
+
+1. OpenClaw 解析您的 GitHub 令牌（来自环境变量或身份验证配置文件）。
+2. 将其交换为短期有效的 Copilot API 令牌。
+3. 查询 Copilot `/models` 端点以发现可用的嵌入模型。
+4. 选择最佳模型（优先选择 `text-embedding-3-small`）。
+5. 向 Copilot `/embeddings` 端点发送嵌入请求。
+
+模型可用性取决于您的 GitHub 计划。如果没有可用的嵌入模型，OpenClaw 会跳过 Copilot 并尝试下一个 Provider。
 
 ## 相关
 

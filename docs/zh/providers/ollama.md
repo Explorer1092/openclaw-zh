@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2f79954e66b35dbacdb133a432e76eb2"
+mmh3_hash: "7d9ed5188bf6402e0b412fe44ed14625"
 title: "Ollama"
 summary: "使用 Ollama 运行 OpenClaw（云端和本地模型）"
 read_when:
@@ -9,7 +9,7 @@ read_when:
 
 # Ollama
 
-Ollama 是一个本地 LLM 运行时，可以轻松在您的机器上运行开源模型。OpenClaw 与 Ollama 的原生 API（`/api/chat`）集成，支持流式传输和工具调用，并且当您通过 `OLLAMA_API_KEY`（或身份验证配置文件）选择加入且未定义显式 `models.providers.ollama` 条目时，可以自动发现本地 Ollama 模型。
+OpenClaw 与 Ollama 的原生 API（`/api/chat`）集成，支持托管的云端模型和本地/自托管的 Ollama 服务器。您可以通过三种模式使用 Ollama：通过可访问的 Ollama 主机同时使用 `Cloud + Local`，通过 `https://ollama.com` 仅使用 `Cloud`，或通过可访问的 Ollama 主机仅使用 `Local`。
 
 <Warning>
 **远程 Ollama 用户**：不要在 OpenClaw 中使用 `/v1` OpenAI 兼容 URL（`http://host:11434/v1`）。这会破坏工具调用，模型可能会将原始工具 JSON 输出为纯文本。请改用原生 Ollama API URL：`baseUrl: "http://host:11434"`（不带 `/v1`）。
@@ -21,7 +21,7 @@ Ollama 是一个本地 LLM 运行时，可以轻松在您的机器上运行开�
 
 <Tabs>
   <Tab title="入门（推荐）">
-    **适合：** 通过自动模型发现最快速地完成 Ollama 设置。
+    **适合：** 快速完成 Ollama 云端或本地设置的最快路径。
 
     <Steps>
       <Step title="运行入门">
@@ -32,13 +32,12 @@ Ollama 是一个本地 LLM 运行时，可以轻松在您的机器上运行开�
         从 Provider 列表中选择 **Ollama**。
       </Step>
       <Step title="选择模式">
-        - **Cloud + Local** — 同时使用云端托管模型和本地模型
-        - **Local** — 仅使用本地模型
-
-        如果您选择 **Cloud + Local** 且未登录 ollama.com，入门将打开浏览器登录流程。
+        - **Cloud + Local** — 通过该主机路由的本地 Ollama 主机加云端模型
+        - **Cloud only** — 通过 `https://ollama.com` 托管的 Ollama 模型
+        - **Local only** — 仅本地模型
       </Step>
       <Step title="选择模型">
-        入门会发现可用模型并建议默认值。如果所选模型本地不可用，会自动拉取。
+        `Cloud only` 会提示输入 `OLLAMA_API_KEY` 并建议托管的云端默认值。`Cloud + Local` 和 `Local only` 会询问 Ollama Base URL，发现可用模型，并在所选本地模型尚不可用时自动拉取。`Cloud + Local` 还会检查该 Ollama 主机是否已登录以获取云端访问权限。
       </Step>
       <Step title="验证模型是否可用">
         ```bash
@@ -68,13 +67,15 @@ Ollama 是一个本地 LLM 运行时，可以轻松在您的机器上运行开�
   </Tab>
 
   <Tab title="手动设置">
-    **适合：** 完全控制安装、模型拉取和配置。
+    **适合：** 完全控制云端或本地设置。
 
     <Steps>
-      <Step title="安装 Ollama">
-        从 [ollama.com/download](https://ollama.com/download) 下载。
+      <Step title="选择云端或本地">
+        - **Cloud + Local**：安装 Ollama，使用 `ollama signin` 登录，然后通过该主机路由云端请求
+        - **Cloud only**：使用带 `OLLAMA_API_KEY` 的 `https://ollama.com`
+        - **Local only**：从 [ollama.com/download](https://ollama.com/download) 安装 Ollama
       </Step>
-      <Step title="拉取本地模型">
+      <Step title="拉取本地模型（仅本地）">
         ```bash
         ollama pull gemma4
         # 或
@@ -83,22 +84,18 @@ Ollama 是一个本地 LLM 运行时，可以轻松在您的机器上运行开�
         ollama pull llama3.3
         ```
       </Step>
-      <Step title="登录以使用云端模型（可选）">
-        如果您也想使用云端模型：
-
-        ```bash
-        ollama signin
-        ```
-      </Step>
       <Step title="为 OpenClaw 启用 Ollama">
-        为 API 密钥设置任意值（Ollama 不需要真实密钥）：
+        对于 `Cloud only`，请使用真实的 `OLLAMA_API_KEY`。对于主机支持的设置，任何占位符值均有效：
 
         ```bash
-        # 设置环境变量
+        # 云端
+        export OLLAMA_API_KEY="your-ollama-api-key"
+
+        # 仅本地
         export OLLAMA_API_KEY="ollama-local"
 
         # 或在配置文件中配置
-        openclaw config set models.providers.ollama.apiKey "ollama-local"
+        openclaw config set models.providers.ollama.apiKey "OLLAMA_API_KEY"
         ```
       </Step>
       <Step title="检查并设置模型">
@@ -128,18 +125,23 @@ Ollama 是一个本地 LLM 运行时，可以轻松在您的机器上运行开�
 
 <Tabs>
   <Tab title="Cloud + Local">
-    云端模型允许您将云端托管的模型与本地模型一起运行。例如 `kimi-k2.5:cloud`、`minimax-m2.7:cloud` 和 `glm-5.1:cloud`——这些**不需要**本地 `ollama pull`。
+    `Cloud + Local` 使用可访问的 Ollama 主机作为本地模型和云端模型的控制点。这是 Ollama 首选的混合流程。
 
-    在设置期间选择 **Cloud + Local** 模式。向导会检查您是否已登录，并在需要时打开浏览器登录流程。如果无法验证身份验证，向导将回退到本地模型默认值。
+    在设置期间选择 **Cloud + Local**。OpenClaw 会提示输入 Ollama Base URL，从该主机发现本地模型，并使用 `ollama signin` 检查主机是否已登录以获取云端访问权限。当主机已登录时，OpenClaw 还会建议托管的云端默认值，例如 `kimi-k2.5:cloud`、`minimax-m2.7:cloud` 和 `glm-5.1:cloud`。
 
-    您也可以直接在 [ollama.com/signin](https://ollama.com/signin) 登录。
-
-    OpenClaw 目前建议的云端默认值：`kimi-k2.5:cloud`、`minimax-m2.7:cloud`、`glm-5.1:cloud`。
+    如果主机尚未登录，OpenClaw 将保持仅本地设置，直到您运行 `ollama signin`。
 
   </Tab>
 
-  <Tab title="仅本地">
-    在仅本地模式下，OpenClaw 从本地 Ollama 实例发现模型。无需云端登录。
+  <Tab title="Cloud only">
+    `Cloud only` 针对 `https://ollama.com` 上 Ollama 的托管 API 运行。
+
+    在设置期间选择 **Cloud only**。OpenClaw 会提示输入 `OLLAMA_API_KEY`，设置 `baseUrl: "https://ollama.com"`，并填充托管云端模型列表。此路径**不需要**本地 Ollama 服务器或 `ollama signin`。
+
+  </Tab>
+
+  <Tab title="Local only">
+    在仅本地模式下，OpenClaw 从配置的 Ollama 实例发现模型。此路径适用于本地或自托管的 Ollama 服务器。
 
     OpenClaw 目前建议 `gemma4` 作为本地默认值。
 
@@ -183,7 +185,7 @@ ollama pull mistral
 
 <Tabs>
   <Tab title="基本（隐式发现）">
-    启用 Ollama 的最简单方式是通过环境变量：
+    启用 Ollama 的最简单本地路径是通过环境变量：
 
     ```bash
     export OLLAMA_API_KEY="ollama-local"
@@ -196,25 +198,25 @@ ollama pull mistral
   </Tab>
 
   <Tab title="显式（手动模型）">
-    在以下情况下使用显式配置：Ollama 在另一台主机/端口上运行、您想强制使用特定的上下文窗口或模型列表，或者您想要完全手动的模型定义。
+    在以下情况下使用显式配置：需要托管云端设置、Ollama 在另一台主机/端口上运行、您想强制使用特定的上下文窗口或模型列表，或者您想要完全手动的模型定义。
 
     ```json5
     {
       models: {
         providers: {
           ollama: {
-            baseUrl: "http://ollama-host:11434",
-            apiKey: "ollama-local",
+            baseUrl: "https://ollama.com",
+            apiKey: "OLLAMA_API_KEY",
             api: "ollama",
             models: [
               {
-                id: "gpt-oss:20b",
-                name: "GPT-OSS 20B",
+                id: "kimi-k2.5:cloud",
+                name: "kimi-k2.5:cloud",
                 reasoning: false,
-                input: ["text"],
+                input: ["text", "image"],
                 cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-                contextWindow: 8192,
-                maxTokens: 8192 * 10
+                contextWindow: 128000,
+                maxTokens: 8192
               }
             ]
           }

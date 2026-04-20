@@ -1,7 +1,7 @@
 ---
 title: "频道故障排除"
 sidebarTitle: "频道故障排除"
-mmh3_hash: "aef1510f79567d267a7101e2eb5d57f2"
+mmh3_hash: "8024fba6bc9d662265e9e76c742f6cc4"
 summary: "快速频道级故障排除，含各频道故障特征和修复方法"
 read_when:
   - 频道传输显示已连接但回复失败
@@ -27,7 +27,8 @@ openclaw channels status --probe
 健康基线：
 
 - `Runtime: running`
-- `RPC probe: ok`
+- `Connectivity probe: ok`
+- `Capability: read-only`、`write-capable` 或 `admin-capable`
 - 频道探测显示传输已连接，并在支持的情况下显示 `works` 或 `audit ok`
 
 ## WhatsApp
@@ -74,7 +75,7 @@ openclaw channels status --probe
 
 | 症状 | 最快检查方法 | 修复方法 |
 | --- | --- | --- |
-| Socket 模式已连接但无响应 | `openclaw channels status --probe` | 验证 app token + bot token 和所需权限范围。 |
+| Socket 模式已连接但无响应 | `openclaw channels status --probe` | 验证 app token + bot token 和所需权限范围；注意 SecretRef 配置下的 `botTokenStatus` / `appTokenStatus = configured_unavailable`。 |
 | 私信被阻止 | `openclaw pairing list slack` | 批准配对或放宽私信策略。 |
 | 频道消息被忽略 | 检查 `groupPolicy` 和频道 allowlist | 允许该频道或将策略切换为 `open`。 |
 
