@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bdea0df0cc88a580d49465e2ed808cc5"
+mmh3_hash: "476abe52a1f6a6bef7527e3452aca00e"
 title: "Plugin SDK 迁移"
 sidebarTitle: "迁移至 SDK"
 summary: "从旧版向后兼容层迁移到现代 Plugin SDK"
@@ -48,6 +48,23 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
 ## 如何迁移
 
 <Steps>
+  <Step title="将批准原生处理程序迁移到能力事实">
+    支持批准的 Channel Plugin 现在通过 `approvalCapability.nativeRuntime` 加上共享运行时上下文注册表暴露原生批准行为。
+
+    关键变更：
+
+    - 将 `approvalCapability.handler.loadRuntime(...)` 替换为 `approvalCapability.nativeRuntime`
+    - 将批准特定的认证/传递从旧版 `plugin.auth` / `plugin.approvals` 连接移到 `approvalCapability`
+    - `ChannelPlugin.approvals` 已从公共 Channel Plugin 契约中移除；将传递/原生/渲染字段移到 `approvalCapability`
+    - `plugin.auth` 仅保留用于 Channel 登录/注销流程；核心不再读取其中的批准认证 Hook
+    - 通过 `openclaw/plugin-sdk/channel-runtime-context` 注册 Channel 自有的运行时对象（如客户端、令牌或 Bolt 应用）
+    - 不要从原生批准处理程序发送 Plugin 自有的重路由通知；核心现在拥有来自实际传递结果的路由到其他地方通知
+    - 将 `channelRuntime` 传递给 `createChannelManager(...)` 时，提供真实的 `createPluginRuntime().channel` 界面。部分存根会被拒绝。
+
+    关于当前批准能力布局，请参见 [Channel Plugin](/plugins/sdk-channel-plugins)。
+
+  </Step>
+
   <Step title="审计 Windows 包装器回退行为">
     如果您的 Plugin 使用 `openclaw/plugin-sdk/windows-spawn`，未解析的 Windows `.cmd`/`.bat` 包装器现在将失败关闭，除非您明确传递 `allowShellFallback: true`。
 
@@ -176,8 +193,12 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/approval-auth-runtime` | 批准认证辅助工具 | 批准者解析、同聊天操作认证 |
   | `plugin-sdk/approval-client-runtime` | 批准客户端辅助工具 | 原生 Exec 批准配置文件/过滤器辅助工具 |
   | `plugin-sdk/approval-delivery-runtime` | 批准交付辅助工具 | 原生批准能力/交付适配器 |
+  | `plugin-sdk/approval-gateway-runtime` | 批准 Gateway 辅助工具 | 共享批准 Gateway 解析辅助工具 |
+  | `plugin-sdk/approval-handler-adapter-runtime` | 批准适配器辅助工具 | 热路径 Channel 入口点的轻量级原生批准适配器加载辅助工具 |
+  | `plugin-sdk/approval-handler-runtime` | 批准处理程序辅助工具 | 更广泛的批准处理程序运行时辅助工具；当窄向适配器/Gateway 接缝足够时优先使用它们 |
   | `plugin-sdk/approval-native-runtime` | 批准目标辅助工具 | 原生批准目标/账户绑定辅助工具 |
   | `plugin-sdk/approval-reply-runtime` | 批准回复辅助工具 | Exec/Plugin 批准回复有效载荷辅助工具 |
+  | `plugin-sdk/channel-runtime-context` | Channel 运行时上下文辅助工具 | 通用 Channel 运行时上下文注册/获取/监听辅助工具 |
   | `plugin-sdk/security-runtime` | 安全辅助工具 | 共享信任、DM 门控、外部内容和密钥收集辅助工具 |
   | `plugin-sdk/ssrf-policy` | SSRF 策略辅助工具 | 主机允许列表和私有网络策略辅助工具 |
   | `plugin-sdk/ssrf-runtime` | SSRF 运行时辅助工具 | 固定调度器、守卫获取、SSRF 策略辅助工具 |
@@ -190,6 +211,7 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/allow-from` | 允许列表格式化 | `formatAllowFromLowercase` |
   | `plugin-sdk/allowlist-resolution` | 允许列表输入映射 | `mapAllowlistResolutionInputs` |
   | `plugin-sdk/command-auth` | 命令门控和命令界面辅助工具 | `resolveControlCommandGate`、发送者授权辅助工具、命令注册表辅助工具 |
+  | `plugin-sdk/command-status` | 命令状态/帮助渲染器 | `buildCommandsMessage`, `buildCommandsMessagePaginated`, `buildHelpMessage` |
   | `plugin-sdk/secret-input` | 密钥输入解析 | 密钥输入辅助工具 |
   | `plugin-sdk/webhook-ingress` | Webhook 请求辅助工具 | Webhook 目标工具 |
   | `plugin-sdk/webhook-request-guards` | Webhook 正文守卫辅助工具 | 请求正文读取/限制辅助工具 |
@@ -207,6 +229,7 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/request-url` | 请求 URL 辅助工具 | 从类请求输入中提取字符串 URL |
   | `plugin-sdk/run-command` | 定时命令辅助工具 | 带规范化 stdout/stderr 的定时命令运行器 |
   | `plugin-sdk/param-readers` | 参数读取器 | 常用 Tool/CLI 参数读取器 |
+  | `plugin-sdk/tool-payload` | Tool 有效载荷提取 | 从 Tool 结果对象中提取规范化有效载荷 |
   | `plugin-sdk/tool-send` | Tool 发送提取 | 从 Tool 参数中提取规范发送目标字段 |
   | `plugin-sdk/temp-path` | 临时路径辅助工具 | 共享临时下载路径辅助工具 |
   | `plugin-sdk/logging-core` | 日志辅助工具 | 子系统日志器和编辑辅助工具 |
@@ -224,7 +247,10 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/provider-onboard` | Provider 入门补丁 | 入门配置辅助工具 |
   | `plugin-sdk/provider-http` | Provider HTTP 辅助工具 | 通用 Provider HTTP/端点能力辅助工具 |
   | `plugin-sdk/provider-web-fetch` | Provider Web 抓取辅助工具 | Web 抓取 Provider 注册/缓存辅助工具 |
-  | `plugin-sdk/provider-web-search` | Provider Web 搜索辅助工具 | Web 搜索 Provider 注册/缓存/配置辅助工具 |
+  | `plugin-sdk/provider-web-search-config-contract` | Provider Web 搜索配置辅助工具 | 不需要 Plugin 启用连接的 Provider 的窄向 Web 搜索配置/凭据辅助工具 |
+  | `plugin-sdk/provider-web-search-contract` | Provider Web 搜索契约辅助工具 | 窄向 Web 搜索配置/凭据契约辅助工具，如 `createWebSearchProviderContractFields`、`enablePluginInConfig`、`resolveProviderWebSearchPluginConfig` 和范围化凭据设置器/获取器 |
+  | `plugin-sdk/provider-web-search` | Provider Web 搜索辅助工具 | Web 搜索 Provider 注册/缓存/运行时辅助工具 |
+  | `plugin-sdk/provider-transport-runtime` | Provider 传输辅助工具 | 原生 Provider 传输辅助工具，如守卫获取、传输消息变换和可写传输事件流 |
   | `plugin-sdk/provider-tools` | Provider Tool/Schema 兼容辅助工具 | `ProviderToolCompatFamily`, `buildProviderToolCompatFamilyHooks`、Gemini Schema 清理 + 诊断，以及 xAI 兼容辅助工具（如 `resolveXaiModelCompatPatch` / `applyXaiModelCompat`） |
   | `plugin-sdk/provider-usage` | Provider 使用辅助工具 | `fetchClaudeUsage`, `fetchGeminiUsage`, `fetchGithubCopilotUsage` 及其他 Provider 使用辅助工具 |
   | `plugin-sdk/provider-stream` | Provider 流包装辅助工具 | `ProviderStreamFamily`, `buildProviderStreamFamilyHooks`, `composeProviderStreamWrappers`、流包装类型，以及共享的 Anthropic/Bedrock/Google/Kilocode/Moonshot/OpenAI/OpenRouter/Z.A.I/MiniMax/Copilot 包装辅助工具 |

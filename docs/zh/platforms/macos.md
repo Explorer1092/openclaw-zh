@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "aa9153d61c1017e3a7647239f4134070"
+mmh3_hash: "bf7617e01c2813c439fe9989f7e60e38"
 title: "OpenClaw macOS 配套应用 (菜单栏 + Gateway 代理)"
 sidebarTitle: "macOS 配套应用"
 summary: "OpenClaw macOS 配套应用（菜单栏 + Gateway 代理）"
@@ -49,7 +49,7 @@ macOS 应用将自己呈现为节点。常用命令：
 
 - Canvas：`canvas.present`、`canvas.navigate`、`canvas.eval`、`canvas.snapshot`、`canvas.a2ui.*`
 - 相机：`camera.snap`、`camera.clip`
-- 屏幕：`screen.record`
+- 屏幕：`screen.snapshot`、`screen.record`
 - 系统：`system.run`、`system.notify`
 
 节点报告 `permissions` 映射，以便 agent 可以决定允许什么。

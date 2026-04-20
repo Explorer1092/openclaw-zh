@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "009ff0352d838097c3e0101176c41438"
+mmh3_hash: "308fd2531cf002a0c8debd0b820c795f"
 summary: "Plugin 清单 + JSON Schema 要求（严格配置验证）"
 read_when:
   - 您正在构建 OpenClaw Plugin
@@ -37,9 +37,12 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 - Plugin 身份标识
 - 配置验证
 - 不启动 Plugin 运行时即可获取的身份验证和入门元数据
+- 控制平面接口在运行时加载之前可检查的廉价激活提示
+- 设置/入门接口在运行时加载之前可检查的廉价设置描述符
 - 在 Plugin 运行时加载之前应解析的别名和自动启用元数据
 - 应在运行时加载之前自动激活 Plugin 的简写模型系列所有权元数据
 - 用于打包兼容连接和契约覆盖的静态能力所有权快照
+- 共享 `openclaw qa` 主机在 Plugin 运行时加载之前可检查的廉价 QA 运行器元数据
 - 在不加载运行时的情况下应合并到目录和验证接口中的 Channel 特定配置元数据
 - 配置 UI 提示
 
@@ -76,8 +79,22 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
   "modelSupport": {
     "modelPrefixes": ["router-"]
   },
+  "providerEndpoints": [
+    {
+      "endpointClass": "xai-native",
+      "hosts": ["api.x.ai"]
+    }
+  ],
+  "cliBackends": ["openrouter-cli"],
+  "syntheticAuthRefs": ["openrouter-cli"],
   "providerAuthEnvVars": {
     "openrouter": ["OPENROUTER_API_KEY"]
+  },
+  "providerAuthAliases": {
+    "openrouter-coding": "openrouter"
+  },
+  "channelEnvVars": {
+    "openrouter-chatops": ["OPENROUTER_CHATOPS_TOKEN"]
   },
   "providerAuthChoices": [
     {
@@ -126,8 +143,18 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 | `channels`                          | 否   | `string[]`                       | 此 Plugin 拥有的 Channel id，用于发现和配置验证。                                                                                                                                                            |
 | `providers`                         | 否   | `string[]`                       | 此 Plugin 拥有的 Provider id。                                                                                                                                                                               |
 | `modelSupport`                      | 否   | `object`                         | 清单拥有的简写模型系列元数据，用于在运行时之前自动加载 Plugin。                                                                                                                                              |
+| `providerEndpoints`                 | 否   | `object[]`                       | 清单拥有的端点主机/baseUrl 元数据，用于核心在 Provider 运行时加载之前必须分类的 Provider 路由。                                                                                                              |
+| `cliBackends`                       | 否   | `string[]`                       | 此 Plugin 拥有的 CLI 推理后端 id，用于从显式配置引用启动自动激活。                                                                                                                                           |
+| `syntheticAuthRefs`                 | 否   | `string[]`                       | Provider 或 CLI 后端引用，其 Plugin 拥有的合成身份验证 Hook 应在运行时加载之前的冷模型发现期间被探测。                                                                                                       |
+| `nonSecretAuthMarkers`              | 否   | `string[]`                       | 打包 Plugin 拥有的占位符 API 密钥值，代表非机密本地、OAuth 或环境凭据状态。                                                                                                                                  |
+| `commandAliases`                    | 否   | `object[]`                       | 此 Plugin 拥有的命令名称，在运行时加载之前应生成 Plugin 感知的配置和 CLI 诊断。                                                                                                                              |
 | `providerAuthEnvVars`               | 否   | `Record<string, string[]>`       | 廉价 Provider 身份验证环境变量元数据，OpenClaw 可以在不加载 Plugin 代码的情况下检查。                                                                                                                        |
+| `providerAuthAliases`               | 否   | `Record<string, string>`         | 应重用另一个 Provider id 进行身份验证查找的 Provider id，例如共享基础 Provider API 密钥和身份验证配置文件的编码 Provider。                                                                                   |
+| `channelEnvVars`                    | 否   | `Record<string, string[]>`       | 廉价 Channel 环境变量元数据，OpenClaw 可以在不加载 Plugin 代码的情况下检查。用于通用启动/配置辅助工具应看到的环境驱动的 Channel 设置或身份验证接口。                                                          |
 | `providerAuthChoices`               | 否   | `object[]`                       | 用于入门选择器、首选 Provider 解析和简单 CLI 标志连接的廉价身份验证选择元数据。                                                                                                                              |
+| `activation`                        | 否   | `object`                         | 用于 Provider、命令、Channel、路由和能力触发加载的廉价激活提示。仅元数据；Plugin 运行时仍然拥有实际行为。                                                                                                    |
+| `setup`                             | 否   | `object`                         | 发现和设置接口在不加载 Plugin 运行时的情况下可以检查的廉价设置/入门描述符。                                                                                                                                  |
+| `qaRunners`                         | 否   | `object[]`                       | 共享 `openclaw qa` 主机在 Plugin 运行时加载之前使用的廉价 QA 运行器描述符。                                                                                                                                  |
 | `contracts`                         | 否   | `object`                         | 用于语音、实时转录、实时语音、媒体理解、图像生成、音乐生成、视频生成、Web 抓取、Web 搜索和 Tool 所有权的静态打包能力快照。                                                                                    |
 | `channelConfigs`                    | 否   | `Record<string, object>`         | 在运行时加载之前合并到发现和验证接口的清单拥有 Channel 配置元数据。                                                                                                                                          |
 | `skills`                            | 否   | `string[]`                       | 要加载的 Skill 目录，相对于 Plugin 根目录。                                                                                                                                                                  |
@@ -158,6 +185,124 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 | `cliOption`           | 否   | `string`                                        | 完整 CLI 选项形状，例如 `--openrouter-api-key <key>`。                                              |
 | `cliDescription`      | 否   | `string`                                        | CLI 帮助中使用的描述。                                                                              |
 | `onboardingScopes`    | 否   | `Array<"text-inference" \| "image-generation">` | 此选择应出现在哪些入门接口中。省略时，默认为 `["text-inference"]`。                                  |
+
+## commandAliases 参考
+
+当 Plugin 拥有用户可能错误放在 `plugins.allow` 中或尝试作为根 CLI 命令运行的运行时命令名时，使用 `commandAliases`。OpenClaw 使用此元数据进行诊断，而无需导入 Plugin 运行时代码。
+
+```json
+{
+  "commandAliases": [
+    {
+      "name": "dreaming",
+      "kind": "runtime-slash",
+      "cliCommand": "memory"
+    }
+  ]
+}
+```
+
+| 字段          | 必需 | 类型              | 含义                                                          |
+| ------------ | ---- | ----------------- | ------------------------------------------------------------- |
+| `name`       | 是   | `string`          | 属于此 Plugin 的命令名称。                                    |
+| `kind`       | 否   | `"runtime-slash"` | 将别名标记为聊天斜杠命令而不是根 CLI 命令。                   |
+| `cliCommand` | 否   | `string`          | 如果存在，用于建议 CLI 操作的相关根 CLI 命令。                |
+
+## activation 参考
+
+当 Plugin 可以廉价地声明哪些控制平面事件应稍后激活它时，使用 `activation`。
+
+## qaRunners 参考
+
+当 Plugin 在共享 `openclaw qa` 根下贡献一个或多个传输运行器时，使用 `qaRunners`。保持此元数据廉价且静态；Plugin 运行时仍然通过导出 `qaRunnerCliRegistrations` 的轻量级 `runtime-api.ts` 接口拥有实际 CLI 注册。
+
+```json
+{
+  "qaRunners": [
+    {
+      "commandName": "matrix",
+      "description": "Run the Docker-backed Matrix live QA lane against a disposable homeserver"
+    }
+  ]
+}
+```
+
+| 字段          | 必需 | 类型     | 含义                                                             |
+| ------------- | ---- | -------- | ---------------------------------------------------------------- |
+| `commandName` | 是   | `string` | 挂载在 `openclaw qa` 下的子命令，例如 `matrix`。                 |
+| `description` | 否   | `string` | 当共享主机需要存根命令时使用的回退帮助文本。                     |
+
+此块仅为元数据。它不注册运行时行为，也不替换 `register(...)`、`setupEntry` 或其他运行时/Plugin 入口点。当前使用者在更广泛的 Plugin 加载之前将其用作缩小提示，因此缺少激活元数据通常只影响性能；在旧版清单所有权回退仍然存在的情况下，不应改变正确性。
+
+```json
+{
+  "activation": {
+    "onProviders": ["openai"],
+    "onCommands": ["models"],
+    "onChannels": ["web"],
+    "onRoutes": ["gateway-webhook"],
+    "onCapabilities": ["provider", "tool"]
+  }
+}
+```
+
+| 字段             | 必需 | 类型                                                 | 含义                                                          |
+| ---------------- | ---- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| `onProviders`    | 否   | `string[]`                                           | 请求时应激活此 Plugin 的 Provider id。                        |
+| `onCommands`     | 否   | `string[]`                                           | 应激活此 Plugin 的命令 id。                                   |
+| `onChannels`     | 否   | `string[]`                                           | 应激活此 Plugin 的 Channel id。                               |
+| `onRoutes`       | 否   | `string[]`                                           | 应激活此 Plugin 的路由类型。                                  |
+| `onCapabilities` | 否   | `Array<"provider" \| "channel" \| "tool" \| "hook">` | 控制平面激活规划使用的广泛能力提示。                          |
+
+当前活跃的使用者：
+
+- 命令触发的 CLI 规划回退到旧版 `commandAliases[].cliCommand` 或 `commandAliases[].name`
+- Channel 触发的设置/Channel 规划在缺少显式 Channel 激活元数据时回退到旧版 `channels[]` 所有权
+- Provider 触发的设置/运行时规划在缺少显式 Provider 激活元数据时回退到旧版 `providers[]` 和顶级 `cliBackends[]` 所有权
+
+## setup 参考
+
+当设置和入门接口在运行时加载之前需要廉价 Plugin 拥有的元数据时，使用 `setup`。
+
+```json
+{
+  "setup": {
+    "providers": [
+      {
+        "id": "openai",
+        "authMethods": ["api-key"],
+        "envVars": ["OPENAI_API_KEY"]
+      }
+    ],
+    "cliBackends": ["openai-cli"],
+    "configMigrations": ["legacy-openai-auth"],
+    "requiresRuntime": false
+  }
+}
+```
+
+顶级 `cliBackends` 保持有效，并继续描述 CLI 推理后端。`setup.cliBackends` 是应保持仅元数据的控制平面/设置流程的特定于设置的描述符接口。
+
+当存在时，`setup.providers` 和 `setup.cliBackends` 是设置发现的首选描述符优先查找接口。如果描述符仅缩小候选 Plugin，而设置仍然需要更丰富的设置时运行时 Hook，则设置 `requiresRuntime: true` 并将 `setup-api` 保留为回退执行路径。
+
+由于设置查找可以执行 Plugin 拥有的 `setup-api` 代码，规范化的 `setup.providers[].id` 和 `setup.cliBackends[]` 值必须在已发现 Plugin 中保持唯一。模糊的所有权失败关闭，而不是从发现顺序中选择获胜者。
+
+### setup.providers 参考
+
+| 字段          | 必需 | 类型       | 含义                                                                                  |
+| ------------- | ---- | ---------- | ------------------------------------------------------------------------------------- |
+| `id`          | 是   | `string`   | 设置或入门期间暴露的 Provider id。保持规范化 id 全局唯一。                            |
+| `authMethods` | 否   | `string[]` | 此 Provider 支持的设置/身份验证方法 id，无需加载完整运行时。                          |
+| `envVars`     | 否   | `string[]` | Plugin 运行时加载之前通用设置/状态接口可以检查的环境变量。                            |
+
+### setup 字段
+
+| 字段               | 必需 | 类型       | 含义                                                                                         |
+| ------------------ | ---- | ---------- | -------------------------------------------------------------------------------------------- |
+| `providers`        | 否   | `object[]` | 设置和入门期间暴露的 Provider 设置描述符。                                                   |
+| `cliBackends`      | 否   | `string[]` | 用于描述符优先设置查找的设置时后端 id。保持规范化 id 全局唯一。                              |
+| `configMigrations` | 否   | `string[]` | 此 Plugin 设置接口拥有的配置迁移 id。                                                        |
+| `requiresRuntime`  | 否   | `boolean`  | 设置在描述符查找后是否仍然需要 `setup-api` 执行。                                            |
 
 ## uiHints 参考
 
@@ -384,11 +529,16 @@ OpenClaw 应用此优先级：
 - 原生清单使用 JSON5 解析，因此只要最终值仍然是对象，注释、尾随逗号和不带引号的键都是允许的。
 - 清单加载器只读取已记录的清单字段。避免在此处添加自定义顶级键。
 - `providerAuthEnvVars` 是用于身份验证探测、环境变量标记验证等不应启动 Plugin 运行时来检查环境变量名的 Provider 身份验证接口的廉价元数据路径。
+- `providerAuthAliases` 允许 Provider 变体重用另一个 Provider 的身份验证环境变量、身份验证配置文件、配置支持的身份验证和 API 密钥入门选择，而无需在核心中硬编码该关系。
+- `providerEndpoints` 允许 Provider Plugin 拥有简单的端点主机/baseUrl 匹配元数据。仅用于核心已支持的端点类；Plugin 仍然拥有运行时行为。
+- `syntheticAuthRefs` 是 Provider 拥有的合成身份验证 Hook 的廉价元数据路径，这些 Hook 必须在运行时注册表存在之前对冷模型发现可见。仅列出其运行时 Provider 或 CLI 后端实际实现了 `resolveSyntheticAuth` 的引用。
+- `nonSecretAuthMarkers` 是打包 Plugin 拥有的占位符 API 密钥（如本地、OAuth 或环境凭据标记）的廉价元数据路径。核心将这些视为非机密，用于身份验证显示和机密审计，无需硬编码拥有 Provider。
+- `channelEnvVars` 是 shell 环境回退、设置提示和类似 Channel 接口的廉价元数据路径，这些接口不应启动 Plugin 运行时来检查环境变量名。
 - `providerAuthChoices` 是用于身份验证选择选择器、`--auth-choice` 解析、首选 Provider 映射和简单入门 CLI 标志注册的廉价元数据路径（在 Provider 运行时加载之前）。关于需要 Provider 代码的运行时向导元数据，请参见 [Provider 运行时 Hook](/plugins/architecture#provider-runtime-hooks)。
 - 专属 Plugin 类型通过 `plugins.slots.*` 选择。
   - `kind: "memory"` 通过 `plugins.slots.memory` 选择。
   - `kind: "context-engine"` 通过 `plugins.slots.contextEngine` 选择（默认：内置 `legacy`）。
-- 当 Plugin 不需要 `channels`、`providers` 和 `skills` 时，可以省略它们。
+- 当 Plugin 不需要 `channels`、`providers`、`cliBackends` 和 `skills` 时，可以省略它们。
 - 如果您的 Plugin 依赖于本机模块，请记录构建步骤和任何包管理器 allowlist 要求（例如 pnpm `allow-build-scripts` + `pnpm rebuild <package>`）。
 
 ## 相关

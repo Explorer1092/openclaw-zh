@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "92495bcf056bd8f6d58c5ef542478ed5"
+mmh3_hash: "a4cae684a84fd55d54be7d437871eb46"
 title: "构建 Channel Plugin"
 sidebarTitle: "Channel Plugin"
 summary: "构建 OpenClaw 消息 Channel Plugin 的分步指南"
@@ -31,6 +31,8 @@ Channel Plugin 不需要自己的发送/编辑/反应 Tool。OpenClaw 在核心�
 
 核心拥有共享消息 Tool、Prompt 连接、外部 Session 键形状、通用 `:thread:` 记录和分发。
 
+如果您的 Channel 添加携带媒体来源的消息工具参数，通过 `describeMessageTool(...).mediaSourceParams` 暴露这些参数名称。核心将该显式列表用于沙盒路径规范化和出站媒体访问策略，因此 Plugin 不需要针对 Provider 特定的头像、附件或封面图片参数进行共享核心特殊处理。优先返回操作键控映射（如 `{ "set-profile": ["avatarUrl", "avatarPath"] }`），以便无关操作不会继承另一个操作的媒体参数。对于有意在每个暴露操作中共享的参数，平面数组仍然有效。
+
 如果您的平台在会话 id 内存储额外的作用域，请在 Plugin 中使用 `messaging.resolveSessionConversation(...)` 保留该解析。这是将 `rawId` 映射到基础会话 id、可选线程 id、显式 `baseConversationId` 以及任何 `parentConversationCandidates` 的规范 Hook。当您返回 `parentConversationCandidates` 时，请从最窄的父级到最宽/基础会话排序。
 
 在 Channel 注册表启动之前需要相同解析的捆绑 Plugin 也可以暴露一个顶级 `session-key-api.ts` 文件，其中包含匹配的 `resolveSessionConversation(...)` 导出。核心仅在运行时 Plugin 注册表尚不可用时才使用该引导安全的界面。
@@ -44,18 +46,27 @@ Channel Plugin 不需要自己的发送/编辑/反应 Tool。OpenClaw 在核心�
 - 核心拥有同聊天 `/approve`、共享批准按钮有效载荷和通用回退交付。
 - 当 Channel 需要批准特定行为时，优先在 Channel Plugin 上使用一个 `approvalCapability` 对象。
 - `approvalCapability.authorizeActorAction` 和 `approvalCapability.getActionAvailabilityState` 是规范的批准认证接缝。
-- 如果您的 Channel 暴露了原生 exec 批准，即使原生传输完全位于 `approvalCapability.native` 下，也要实现 `approvalCapability.getActionAvailabilityState`。核心使用该可用性 Hook 区分 `enabled` 与 `disabled`，决定发起 Channel 是否支持原生批准，并将 Channel 纳入原生客户端回退指南。
+- 使用 `approvalCapability.getActionAvailabilityState` 实现同聊天批准认证可用性。
+- 如果您的 Channel 暴露原生 exec 批准，使用 `approvalCapability.getExecInitiatingSurfaceState` 表示当发起界面/原生客户端状态与同聊天批准认证不同时的情况。核心使用该 exec 特定 Hook 区分 `enabled` 与 `disabled`，决定发起 Channel 是否支持原生 exec 批准，并将 Channel 纳入原生客户端回退指南。`createApproverRestrictedNativeApprovalCapability(...)` 为常见情况填充此值。
 - 使用 `outbound.shouldSuppressLocalPayloadPrompt` 或 `outbound.beforeDeliverPayload` 处理 Channel 特定的有效载荷生命周期行为，如隐藏重复的本地批准提示或在交付前发送输入指示器。
 - 仅对原生批准路由或回退抑制使用 `approvalCapability.delivery`。
 - 仅当 Channel 真正需要自定义批准有效载荷而不是共享渲染器时，才使用 `approvalCapability.render`。
 - 当 Channel 希望禁用路径回复解释启用原生 exec 批准所需的确切配置项时，使用 `approvalCapability.describeExecApprovalSetup`。该 Hook 接收 `{ channel, channelLabel, accountId }`；命名账户的 Channel 应渲染账户范围的路径，如 `channels.<channel>.accounts.<id>.execApprovals.*` 而不是顶级默认值。
 - 如果 Channel 可以从现有配置推断出稳定的所有者类 DM 身份，使用来自 `openclaw/plugin-sdk/approval-runtime` 的 `createResolvedApproverActionAuthAdapter` 限制同聊天 `/approve`，而无需添加批准特定的核心逻辑。
-- 如果 Channel 需要原生批准交付，让 Channel 代码专注于目标规范化和传输 Hook。使用来自 `openclaw/plugin-sdk/approval-runtime` 的 `createChannelExecApprovalProfile`、`createChannelNativeOriginTargetResolver`、`createChannelApproverDmTargetResolver`、`createApproverRestrictedNativeApprovalCapability` 和 `createChannelNativeApprovalRuntime`，这样核心就拥有请求过滤、路由、去重、过期和 Gateway 订阅。
+- 如果 Channel 需要原生批准交付，让 Channel 代码专注于目标规范化以及传输/呈现事实。使用来自 `openclaw/plugin-sdk/approval-runtime` 的 `createChannelExecApprovalProfile`、`createChannelNativeOriginTargetResolver`、`createChannelApproverDmTargetResolver` 和 `createApproverRestrictedNativeApprovalCapability`。将 Channel 特定事实放在 `approvalCapability.nativeRuntime` 后面，最好通过 `createChannelApprovalNativeRuntimeAdapter(...)` 或 `createLazyChannelApprovalNativeRuntimeAdapter(...)` 实现，这样核心就可以组装处理程序并拥有请求过滤、路由、去重、过期、Gateway 订阅和路由到其他地方的通知。`nativeRuntime` 被拆分为几个较小的接缝：
+- `availability` — 账户是否已配置以及是否应处理请求
+- `presentation` — 将共享批准视图模型映射到待处理/已解决/已过期原生有效载荷或最终操作
+- `transport` — 准备目标以及发送/更新/删除原生批准消息
+- `interactions` — 原生按钮或反应的可选绑定/解绑/清除操作 Hook
+- `observe` — 可选的交付诊断 Hook
 - 原生批准 Channel 必须通过这些辅助工具路由 `accountId` 和 `approvalKind`。`accountId` 将多账户批准策略范围限定到正确的机器人账户，`approvalKind` 使 exec 与 Plugin 批准行为对 Channel 可用，而无需在核心中硬编码分支。
-- 端到端保留交付的批准 id 类型。原生客户端不应从 Channel 本地状态猜测或重写 exec 与 Plugin 批准路由。
 - 不同的批准类型可以有意地暴露不同的原生界面。当前捆绑示例：
   - Slack 使 exec 和 Plugin id 都可用原生批准路由。
-  - Matrix 仅为 exec 批准保留原生 DM/Channel 路由，将 Plugin 批准留在共享的同聊天 `/approve` 路径上。
+  - Matrix 为 exec 和 Plugin 批准保留相同的原生 DM/Channel 路由和反应 UX，同时仍允许批准类型的认证有所不同。
+- 核心现在也拥有批准重路由通知。Channel Plugin 不应从 `createChannelNativeApprovalRuntime` 发送自己的"批准已转至 DM/另一个 Channel"后续消息；而是通过共享批准能力辅助工具暴露准确的来源 + 批准者 DM 路由，让核心在将任何通知发回发起聊天之前汇总实际的交付情况。
+- 端到端保留交付的批准 id 类型。原生客户端不应从 Channel 本地状态猜测或重写 exec 与 Plugin 批准路由。
+- 如果 Channel 需要运行时拥有的对象（如客户端、令牌、Bolt 应用或 Webhook 接收器），通过 `openclaw/plugin-sdk/channel-runtime-context` 注册它们。通用运行时上下文注册表让核心可以从 Channel 启动状态引导能力驱动的处理程序，而无需添加批准特定的包装胶水。
+- 仅当能力驱动的接缝表达能力不足时，才使用较低级别的 `createChannelApprovalHandler` 或 `createChannelNativeApprovalRuntime`。
 - `createApproverRestrictedNativeApprovalAdapter` 仍作为兼容性包装器存在，但新代码应优先使用能力构建器并在 Plugin 上暴露 `approvalCapability`。
 
 对于热路径的 Channel 入口点，当您只需要该家族的一部分时，优先使用窄向运行时子路径：
@@ -63,8 +74,12 @@ Channel Plugin 不需要自己的发送/编辑/反应 Tool。OpenClaw 在核心�
 - `openclaw/plugin-sdk/approval-auth-runtime`
 - `openclaw/plugin-sdk/approval-client-runtime`
 - `openclaw/plugin-sdk/approval-delivery-runtime`
+- `openclaw/plugin-sdk/approval-gateway-runtime`
+- `openclaw/plugin-sdk/approval-handler-adapter-runtime`
+- `openclaw/plugin-sdk/approval-handler-runtime`
 - `openclaw/plugin-sdk/approval-native-runtime`
 - `openclaw/plugin-sdk/approval-reply-runtime`
+- `openclaw/plugin-sdk/channel-runtime-context`
 
 同样，当您不需要更宽泛的综合界面时，优先使用 `openclaw/plugin-sdk/setup-runtime`、`openclaw/plugin-sdk/setup-adapter-runtime`、`openclaw/plugin-sdk/reply-runtime`、`openclaw/plugin-sdk/reply-dispatch-runtime`、`openclaw/plugin-sdk/reply-reference` 和 `openclaw/plugin-sdk/reply-chunking`。
 
@@ -305,6 +320,8 @@ Channel Plugin 不需要自己的发送/编辑/反应 Tool。OpenClaw 在核心�
     ```
 
     当 Channel 被禁用或未配置时，OpenClaw 加载此文件而不是完整入口。它避免在设置流程中引入重量级运行时代码。详见 [设置和配置](/plugins/sdk-setup#setup-entry)。
+
+    将设置安全导出拆分到辅助模块的打包工作区 Channel 可以在还需要显式设置时运行时设置器时，使用来自 `openclaw/plugin-sdk/channel-entry-contract` 的 `defineBundledChannelSetupEntry(...)`。
 
   </Step>
 

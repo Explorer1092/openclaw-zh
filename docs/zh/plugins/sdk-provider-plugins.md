@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "042599f33f22e848d6dbba6c9be048a0"
+mmh3_hash: "dc7076ba4946138ff2a43292b14c3fe8"
 title: "构建 Provider Plugin"
 sidebarTitle: "Provider Plugin"
 summary: "构建 OpenClaw 模型 Provider Plugin 的分步指南"
@@ -17,6 +17,10 @@ read_when:
   如果您之前没有构建过任何 OpenClaw Plugin，请先阅读
   [入门指南](/plugins/building-plugins) 了解基本包结构和清单设置。
 </Info>
+
+<Tip>
+  Provider Plugin 将模型添加到 OpenClaw 的正常推理循环。如果模型必须通过拥有线程、压缩或 Tool 事件的原生 Agent 守护进程运行，请将 Provider 与 [agent harness](/plugins/sdk-agent-harness) 配对，而不是将守护进程协议详情放入核心。
+</Tip>
 
 ## 演练
 
@@ -56,6 +60,9 @@ read_when:
       "providerAuthEnvVars": {
         "acme-ai": ["ACME_AI_API_KEY"]
       },
+      "providerAuthAliases": {
+        "acme-ai-coding": "acme-ai"
+      },
       "providerAuthChoices": [
         {
           "provider": "acme-ai",
@@ -77,7 +84,7 @@ read_when:
     ```
     </CodeGroup>
 
-    清单声明 `providerAuthEnvVars`，这样 OpenClaw 可以在不加载 Plugin 运行时的情况下检测凭证。`modelSupport` 是可选的，让 OpenClaw 在运行时 Hook 存在之前就能从简写模型 id（如 `acme-large`）自动加载您的 Provider Plugin。如果您在 ClawHub 上发布 Provider，`package.json` 中的 `openclaw.compat` 和 `openclaw.build` 字段是必需的。
+    清单声明 `providerAuthEnvVars`，这样 OpenClaw 可以在不加载 Plugin 运行时的情况下检测凭证。当 Provider 变体应该复用另一个 Provider id 的认证时，添加 `providerAuthAliases`。`modelSupport` 是可选的，让 OpenClaw 在运行时 Hook 存在之前就能从简写模型 id（如 `acme-large`）自动加载您的 Provider Plugin。如果您在 ClawHub 上发布 Provider，`package.json` 中的 `openclaw.compat` 和 `openclaw.build` 字段是必需的。
 
   </Step>
 
@@ -154,6 +161,25 @@ read_when:
     ```
 
     这是一个可工作的 Provider。用户现在可以使用 `openclaw onboard --acme-ai-api-key <key>` 并选择 `acme-ai/acme-large` 作为模型。
+
+    如果上游 Provider 使用与 OpenClaw 不同的控制令牌，添加一个小型双向文本转换，而不是替换流路径：
+
+    ```typescript
+    api.registerTextTransforms({
+      input: [
+        { from: /red basket/g, to: "blue basket" },
+        { from: /paper ticket/g, to: "digital ticket" },
+        { from: /left shelf/g, to: "right shelf" },
+      ],
+      output: [
+        { from: /blue basket/g, to: "red basket" },
+        { from: /digital ticket/g, to: "paper ticket" },
+        { from: /right shelf/g, to: "left shelf" },
+      ],
+    });
+    ```
+
+    `input` 在传输前重写最终系统 Prompt 和文本消息内容。`output` 在 OpenClaw 解析自己的控制标记或 Channel 交付之前重写助手文本增量和最终文本。
 
     对于只注册一个带 API 密钥认证和单一目录支持运行时的文本 Provider 的捆绑 Provider，优先使用更窄的 `defineSingleProviderPluginEntry(...)` 辅助工具：
 
@@ -257,7 +283,7 @@ read_when:
 
     真实捆绑示例：
 
-    - `google`：`google-gemini`
+    - `google` 和 `google-gemini-cli`：`google-gemini`
     - `openrouter`、`kilocode`、`opencode` 和 `opencode-go`：`passthrough-gemini`
     - `amazon-bedrock` 和 `anthropic-vertex`：`anthropic-by-model`
     - `minimax`：`hybrid-anthropic-openai`
@@ -277,7 +303,7 @@ read_when:
 
     真实捆绑示例：
 
-    - `google`：`google-thinking`
+    - `google` 和 `google-gemini-cli`：`google-thinking`
     - `kilocode`：`kilocode-thinking`
     - `moonshot`：`moonshot-thinking`
     - `minimax` 和 `minimax-portal`：`minimax-fast-mode`
@@ -517,9 +543,20 @@ read_when:
         id: "acme-ai",
         label: "Acme Video",
         capabilities: {
-          maxVideos: 1,
-          maxDurationSeconds: 10,
-          supportsResolution: true,
+          generate: {
+            maxVideos: 1,
+            maxDurationSeconds: 10,
+            supportsResolution: true,
+          },
+          imageToVideo: {
+            enabled: true,
+            maxVideos: 1,
+            maxInputImages: 1,
+            maxDurationSeconds: 5,
+          },
+          videoToVideo: {
+            enabled: false,
+          },
         },
         generateVideo: async (req) => ({ videos: [] }),
       });
@@ -553,6 +590,10 @@ read_when:
     ```
 
     OpenClaw 将此分类为 **hybrid-capability** Plugin。这是公司 Plugin 的推荐模式（每个厂商一个 Plugin）。请参见 [内部架构：能力所有权](/plugins/architecture#capability-ownership-model)。
+
+    对于视频生成，优先使用上面展示的模式感知能力形状：`generate`、`imageToVideo` 和 `videoToVideo`。`maxInputImages`、`maxInputVideos` 和 `maxDurationSeconds` 等扁平聚合字段不足以干净地宣传变换模式支持或禁用的模式。
+
+    音乐生成 Provider 应遵循相同的模式：`generate` 用于仅 Prompt 的生成，`edit` 用于基于参考图像的生成。`maxInputImages`、`supportsLyrics` 和 `supportsFormat` 等扁平聚合字段不足以宣传编辑支持；显式的 `generate` / `edit` 块是预期的契约。
 
   </Step>
 

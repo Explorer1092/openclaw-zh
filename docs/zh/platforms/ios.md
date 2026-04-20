@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "afefdb078e416dd702e2901a14b17809"
+mmh3_hash: "77cd04dbd80a29ca093d0c4c7335bf7d"
 title: "iOS 应用 (节点)"
 summary: "iOS 节点应用：连接到 Gateway、配对、canvas 和故障排除"
 read_when:
@@ -150,6 +150,20 @@ export OPENCLAW_APNS_TEAM_ID="TEAMID"
 export OPENCLAW_APNS_KEY_ID="KEYID"
 export OPENCLAW_APNS_PRIVATE_KEY_P8="$(cat /path/to/AuthKey_KEYID.p8)"
 ```
+
+这些是 gateway 主机运行时 env 变量，而不是 Fastlane 设置。`apps/ios/fastlane/.env` 只存储 App Store Connect / TestFlight 身份验证，例如 `ASC_KEY_ID` 和 `ASC_ISSUER_ID`；它不配置本地 iOS 构建的直接 APNs 传递。
+
+推荐的 gateway 主机存储：
+
+```bash
+mkdir -p ~/.openclaw/credentials/apns
+chmod 700 ~/.openclaw/credentials/apns
+mv /path/to/AuthKey_KEYID.p8 ~/.openclaw/credentials/apns/AuthKey_KEYID.p8
+chmod 600 ~/.openclaw/credentials/apns/AuthKey_KEYID.p8
+export OPENCLAW_APNS_PRIVATE_KEY_PATH="$HOME/.openclaw/credentials/apns/AuthKey_KEYID.p8"
+```
+
+不要提交 `.p8` 文件或将其放在仓库检出目录下。
 
 ## 发现路径
 

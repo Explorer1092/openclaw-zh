@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "195254a98a19929731e64138d261e92c"
+mmh3_hash: "cd0bbba66b258685aac4a504bb77714a"
 title: "构建 Plugin"
 sidebarTitle: "入门指南"
 summary: "几分钟内创建您的第一个 OpenClaw Plugin"
@@ -142,6 +142,7 @@ OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
 | 能力                | 注册方法                                                 | 详细指南                                                                          |
 | ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | 文本推理 (LLM)      | `api.registerProvider(...)`                              | [Provider Plugin](/plugins/sdk-provider-plugins)                                  |
+| CLI 推理后端        | `api.registerCliBackend(...)`                            | [CLI Backends](/gateway/cli-backends)                                             |
 | Channel / 消息      | `api.registerChannel(...)`                               | [Channel Plugin](/plugins/sdk-channel-plugins)                                    |
 | 语音 (TTS/STT)      | `api.registerSpeechProvider(...)`                        | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
 | 实时转录            | `api.registerRealtimeTranscriptionProvider(...)`         | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
@@ -244,6 +245,8 @@ import { ... } from "openclaw/plugin-sdk";
 - OpenRouter：Provider 构建器加上入门/配置辅助工具
 
 如果辅助工具仅在一个打包 Provider 包内有用，请将其保留在该包根接口上，而不是将其提升到 `openclaw/plugin-sdk/*` 中。
+
+一些生成的 `openclaw/plugin-sdk/<bundled-id>` 辅助接口仍然存在，用于打包 Plugin 维护和兼容性，例如 `plugin-sdk/feishu-setup` 或 `plugin-sdk/zalo-setup`。将这些视为保留接口，而不是新第三方 Plugin 的默认模式。
 
 ## 提交前检查清单
 

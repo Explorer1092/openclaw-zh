@@ -1,7 +1,7 @@
 ---
 title: "Windows"
 sidebarTitle: "Windows"
-mmh3_hash: "cf78d74a0c58a050812f51bd5bf89bea"
+mmh3_hash: "b21ed87c3e978aea4fc5f426260b7a27"
 summary: "Windows 支持：原生和 WSL2 安装路径、守护进程及当前注意事项"
 read_when:
   - 在 Windows 上安装 OpenClaw
@@ -215,15 +215,24 @@ systemctl --user status
 
 ### 3) 安装 OpenClaw（在 WSL 内）
 
-在 WSL 内按照 Linux 入门流程：
+在 WSL 内按照 Linux 入门流程进行正常首次设置：
 
 ```bash
 git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 pnpm install
-pnpm ui:build # 首次运行时自动安装 UI 依赖
 pnpm build
-openclaw onboard
+pnpm ui:build
+pnpm openclaw onboard --install-daemon
+```
+
+如果你是从源码开发而不是首次引导，请使用 [设置](/start/setup) 中的源码开发循环：
+
+```bash
+pnpm install
+# 仅首次运行（或重置本地 OpenClaw 配置/工作区后）
+pnpm openclaw setup
+pnpm gateway:watch
 ```
 
 完整指南：[入门](/start/getting-started)

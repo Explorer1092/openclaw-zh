@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "142245812223f44c027ad1e2e82e81e3"
+mmh3_hash: "7bc60beec8c589f24bf9b569c790a244"
 title: "Plugin 运行时辅助工具"
 sidebarTitle: "运行时辅助工具"
 summary: "api.runtime -- 注入到 Plugin 的运行时辅助工具"
@@ -48,8 +48,9 @@ const timeoutMs = api.runtime.agent.resolveAgentTimeoutMs(cfg);
 // 确保工作区存在
 await api.runtime.agent.ensureAgentWorkspace(cfg);
 
-// 运行嵌入式 Pi Agent
-const result = await api.runtime.agent.runEmbeddedPiAgent({
+// 运行嵌入式 Agent 轮次
+const agentDir = api.runtime.agent.resolveAgentDir(cfg);
+const result = await api.runtime.agent.runEmbeddedAgent({
   sessionId: "my-plugin:task-1",
   runId: crypto.randomUUID(),
   sessionFile: path.join(agentDir, "sessions", "my-plugin-task-1.jsonl"),
@@ -58,6 +59,10 @@ const result = await api.runtime.agent.runEmbeddedPiAgent({
   timeoutMs: api.runtime.agent.resolveAgentTimeoutMs(cfg),
 });
 ```
+
+`runEmbeddedAgent(...)` 是从 Plugin 代码启动正常 OpenClaw Agent 轮次的中性辅助工具。它使用与 Channel 触发的回复相同的 Provider/模型解析和 Agent 执行器选择。
+
+`runEmbeddedPiAgent(...)` 作为兼容性别名保留。
 
 **会话存储辅助工具**在 `api.runtime.agent.session` 下：
 
@@ -320,6 +325,43 @@ api.runtime.tools.registerMemoryCli(/* ... */);
 
 Channel 特定的运行时辅助工具（在加载 Channel Plugin 时可用）。
 
+`api.runtime.channel.mentions` 是使用运行时注入的捆绑 Channel Plugin 的共享入站提及策略接口：
+
+```typescript
+const mentionMatch = api.runtime.channel.mentions.matchesMentionWithExplicit(text, {
+  mentionRegexes,
+  mentionPatterns,
+});
+
+const decision = api.runtime.channel.mentions.resolveInboundMentionDecision({
+  facts: {
+    canDetectMention: true,
+    wasMentioned: mentionMatch.matched,
+    implicitMentionKinds: api.runtime.channel.mentions.implicitMentionKindWhen(
+      "reply_to_bot",
+      isReplyToBot,
+    ),
+  },
+  policy: {
+    isGroup,
+    requireMention,
+    allowTextCommands,
+    hasControlCommand,
+    commandAuthorized,
+  },
+});
+```
+
+可用的提及辅助工具：
+
+- `buildMentionRegexes`
+- `matchesMentionPatterns`
+- `matchesMentionWithExplicit`
+- `implicitMentionKindWhen`
+- `resolveInboundMentionDecision`
+
+`api.runtime.channel.mentions` 有意不暴露旧版 `resolveMentionGating*` 兼容性辅助工具。优先使用规范化的 `{ facts, policy }` 路径。
+
 ## 存储运行时引用
 
 使用 `createPluginRuntimeStore` 存储运行时引用，以便在 `register` 回调外部使用：
@@ -328,7 +370,10 @@ Channel 特定的运行时辅助工具（在加载 Channel Plugin 时可用）�
 import { createPluginRuntimeStore } from "openclaw/plugin-sdk/runtime-store";
 import type { PluginRuntime } from "openclaw/plugin-sdk/runtime-store";
 
-const store = createPluginRuntimeStore<PluginRuntime>("my-plugin runtime not initialized");
+const store = createPluginRuntimeStore<PluginRuntime>({
+  pluginId: "my-plugin",
+  errorMessage: "my-plugin runtime not initialized",
+});
 
 // 在您的入口点
 export default defineChannelPluginEntry({
@@ -348,6 +393,8 @@ export function tryGetRuntime() {
   return store.tryGetRuntime(); // 如果未初始化则返回 null
 }
 ```
+
+优先使用 `pluginId` 作为运行时存储身份。较低级别的 `key` 形式适用于一个 Plugin 有意需要多个运行时槽的不常见情况。
 
 ## 其他顶级 `api` 字段
 

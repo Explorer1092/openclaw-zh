@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "62803fdeffa6eb115cefa63c083aa078"
+mmh3_hash: "6a4c39a3d484d2ae7bdca3617bd6108d"
 title: "Plugin 入口点"
 sidebarTitle: "入口点"
 summary: "definePluginEntry、defineChannelPluginEntry 和 defineSetupPluginEntry 的参考文档"
@@ -118,6 +118,26 @@ export default defineSetupPluginEntry(myChannelPlugin);
 - `openclaw/plugin-sdk/setup-tools` 用于设置/安装 CLI/存档/文档辅助工具
 
 将重型 SDK、CLI 注册和长期运行时服务保留在完整入口中。
+
+将设置和运行时界面拆分的打包工作区 Channel 可以改为使用来自 `openclaw/plugin-sdk/channel-entry-contract` 的 `defineBundledChannelSetupEntry(...)`。该契约让设置入口在仍然暴露运行时设置器的同时保留设置安全的 Plugin/机密导出：
+
+```typescript
+import { defineBundledChannelSetupEntry } from "openclaw/plugin-sdk/channel-entry-contract";
+
+export default defineBundledChannelSetupEntry({
+  importMetaUrl: import.meta.url,
+  plugin: {
+    specifier: "./channel-plugin-api.js",
+    exportName: "myChannelPlugin",
+  },
+  runtime: {
+    specifier: "./runtime-api.js",
+    exportName: "setMyChannelRuntime",
+  },
+});
+```
+
+仅当设置流程在完整 Channel 入口加载之前真正需要轻量运行时设置器时，才使用该打包契约。
 
 ## 注册模式
 

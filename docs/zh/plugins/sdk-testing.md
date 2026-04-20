@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ab35b8817a1d55e21e303755b4cfdc2c"
+mmh3_hash: "4e2123f11da75af1727911779845dc77"
 title: "Plugin 测试"
 sidebarTitle: "测试"
 summary: "OpenClaw Plugin 的测试工具和模式"
@@ -151,7 +151,10 @@ describe("my-provider plugin", () => {
 import { createPluginRuntimeStore } from "openclaw/plugin-sdk/runtime-store";
 import type { PluginRuntime } from "openclaw/plugin-sdk/runtime-store";
 
-const store = createPluginRuntimeStore<PluginRuntime>("test runtime not set");
+const store = createPluginRuntimeStore<PluginRuntime>({
+  pluginId: "test-plugin",
+  errorMessage: "test runtime not set",
+});
 
 // 在测试设置中
 const mockRuntime = {

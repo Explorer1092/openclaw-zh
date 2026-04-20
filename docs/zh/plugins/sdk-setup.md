@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "da22e1c5aa23073c987a63a8176e7ed9"
+mmh3_hash: "d2f2b12064d7ea1ba2d723a6d48d2261"
 title: "Plugin 设置和配置"
 sidebarTitle: "设置和配置"
 summary: "设置向导、setup-entry.ts、配置模式和 package.json 元数据"
@@ -253,6 +253,8 @@ export default defineSetupPluginEntry(myChannelPlugin);
 ```
 
 这避免在设置流程中加载重量级运行时代码（加密库、CLI 注册、后台服务）。
+
+将设置安全导出保存在附属模块中的捆绑工作区 Channel 可以使用来自 `openclaw/plugin-sdk/channel-entry-contract` 的 `defineBundledChannelSetupEntry(...)` 代替 `defineSetupPluginEntry(...)`。该捆绑契约还支持可选的 `runtime` 导出，以便设置时的运行时连接保持轻量且显式。
 
 **OpenClaw 使用 `setupEntry` 而不是完整入口的时机：**
 
