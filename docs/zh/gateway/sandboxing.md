@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "82ef2879dff97ca416e512667389134e"
+mmh3_hash: "949eb99ff4bd350e4b5630cb3fe352f1"
 summary: "OpenClaw 沙盒的工作原理:模式、作用域、工作空间访问和镜像"
 title: 沙盒
 read_when: "您想要沙盒的专门解释或需要调整 agents.defaults.sandbox。"
@@ -28,8 +28,8 @@ OpenClaw 可以在**沙盒后端内运行工具**以减少爆炸半径。这是*
 未沙盒化:
 
 - Gateway 进程本身。
-- 任何明确允许在主机上运行的工具(例如 `tools.elevated`)。
-  - **Elevated exec 在主机上运行并绕过沙盒化。**
+- 任何明确允许在沙盒外运行的工具(例如 `tools.elevated`)。
+  - **Elevated exec 绕过沙盒化,使用配置的转义路径(默认为 `gateway`,或当 exec 目标为 `node` 时为 `node`)。**
   - 如果沙盒化关闭,`tools.elevated` 不会改变执行(已经在主机上)。参见[Elevated 模式](/tools/elevated)。
 
 ## 模式
@@ -46,8 +46,8 @@ OpenClaw 可以在**沙盒后端内运行工具**以减少爆炸半径。这是*
 
 `agents.defaults.sandbox.scope` 控制**创建多少容器**:
 
-- `"session"`(默认):每个 Session 一个容器。
-- `"agent"`:每个 Agent 一个容器。
+- `"agent"`(默认):每个 Agent 一个容器。
+- `"session"`:每个 Session 一个容器。
 - `"shared"`:一个容器由所有沙盒化 Session 共享。
 
 ## 后端
@@ -72,6 +72,18 @@ OpenShell 特定配置位于 `plugins.entries.openshell.config` 下。
 | **Browser 沙盒**    | 支持                                 | 不支持                          | 尚不支持                                              |
 | **绑定挂载**        | `docker.binds`                      | N/A                            | N/A                                                   |
 | **最适合**          | 本地开发，完全隔离                   | 卸载到远程机器                  | 带有可选双向同步的托管远程沙盒                         |
+
+### Docker 后端
+
+Docker 后端是默认运行时,通过 Docker 守护进程 socket(`/var/run/docker.sock`)在本地执行工具和沙盒 Browser。沙盒容器隔离由 Docker 命名空间决定。
+
+**Docker-out-of-Docker (DooD) 约束**:
+如果您将 OpenClaw Gateway 本身部署为 Docker 容器,它使用主机的 Docker socket (DooD) 编排同级沙盒容器。这会引入特定的路径映射约束:
+
+- **配置需要主机路径**:`openclaw.json` 的 `workspace` 配置**必须**包含**主机的绝对路径**(例如 `/home/user/.openclaw/workspaces`),而不是内部 Gateway 容器路径。当 OpenClaw 要求 Docker 守护进程生成沙盒时,守护进程相对于主机 OS 命名空间而不是 Gateway 命名空间来评估路径。
+- **FS 桥接一致性(相同卷映射)**:OpenClaw Gateway 原生进程也会将心跳和桥接文件写入 `workspace` 目录。因为 Gateway 在其自己的容器化环境中评估完全相同的字符串(主机路径),Gateway 部署**必须**包含一个相同的卷映射,将主机命名空间原生连接(`-v /home/user/.openclaw:/home/user/.openclaw`)。
+
+如果您在没有绝对主机一致性的情况下内部映射路径,OpenClaw 原生会抛出 `EACCES` 权限错误,尝试在容器环境内写入其心跳,因为完全限定的路径字符串在原生情况下不存在。
 
 ### SSH 后端
 
@@ -127,6 +139,12 @@ OpenShell 特定配置位于 `plugins.entries.openshell.config` 下。
 - SSH 后端不支持 Browser 沙盒化。
 - `sandbox.docker.*` 设置不适用于 SSH 后端。
 
+### OpenShell 后端
+
+当您想要 OpenClaw 在 OpenShell 管理的远程环境中沙盒化工具时,使用 `backend: "openshell"`。有关完整设置指南、配置参考和 workspace 模式比较,请参见专门的 [OpenShell 页面](/gateway/openshell)。
+
+OpenShell 重用与通用 SSH 后端相同的核心 SSH 传输和远程文件系统桥,并添加了 OpenShell 特定的生命周期(`sandbox create/get/delete`、`sandbox ssh-config`)以及可选的 `mirror` workspace 模式。
+
 ```json5
 {
   agents: {
@@ -160,8 +178,6 @@ OpenShell 模式:
 - `mirror`(默认):本地 workspace 保持规范。OpenClaw 在 exec 之前将本地文件同步到 OpenShell,并在 exec 之后将远程 workspace 同步回来。
 - `remote`:沙盒创建后,OpenShell workspace 成为规范。OpenClaw 从本地 workspace 一次性播种远程 workspace,然后文件工具和 exec 直接针对远程沙盒运行,不将更改同步回来。
 
-OpenShell 重用与通用 SSH 后端相同的核心 SSH 传输和远程文件系统桥。插件添加了 OpenShell 特定的生命周期(`sandbox create/get/delete`、`sandbox ssh-config`)和可选的 `mirror` 模式。
-
 远程传输详情:
 
 - OpenClaw 通过 `openshell sandbox ssh-config <name>` 向 OpenShell 请求特定于沙盒的 SSH 配置。
@@ -174,11 +190,11 @@ OpenShell 重用与通用 SSH 后端相同的核心 SSH 传输和远程文件系
 - `sandbox.docker.binds` 在 OpenShell 后端不支持
 - `sandbox.docker.*` 下的 Docker 特定运行时旋钮仍仅适用于 Docker 后端
 
-## OpenShell workspace 模式
+#### Workspace 模式
 
 OpenShell 有两种 workspace 模型。这是实践中最重要的部分。
 
-### `mirror`
+##### `mirror`
 
 当您希望**本地 workspace 保持规范**时,使用 `plugins.entries.openshell.config.mode: "mirror"`。
 
@@ -198,7 +214,7 @@ OpenShell 有两种 workspace 模型。这是实践中最重要的部分。
 
 - exec 之前和之后的额外同步成本
 
-### `remote`
+##### `remote`
 
 当您希望 **OpenShell workspace 成为规范**时,使用 `plugins.entries.openshell.config.mode: "remote"`。
 
@@ -225,7 +241,7 @@ OpenShell 有两种 workspace 模型。这是实践中最重要的部分。
 如果您将沙盒视为临时执行环境,选择 `mirror`。
 如果您将沙盒视为真实 workspace,选择 `remote`。
 
-## OpenShell 生命周期
+#### OpenShell 生命周期
 
 OpenShell 沙盒仍通过普通沙盒生命周期管理:
 
@@ -299,6 +315,10 @@ Skills 注意:`read` 工具以沙盒为根。使用 `workspaceAccess: "none"`,Op
 
 - 绑定绕过沙盒文件系统:它们以您设置的模式(`:ro` 或 `:rw`)暴露主机路径。
 - OpenClaw 阻止危险的绑定来源(例如:`docker.sock`、`/etc`、`/proc`、`/sys`、`/dev` 以及会暴露它们的父挂载)。
+- OpenClaw 还阻止常见的 home 目录凭证根,例如 `~/.aws`、`~/.cargo`、`~/.config`、`~/.docker`、`~/.gnupg`、`~/.netrc`、`~/.npm` 和 `~/.ssh`。
+- 绑定验证不只是字符串匹配。OpenClaw 规范化源路径,然后通过最深的现有祖先再次解析它,然后重新检查阻止的路径和允许的根。
+- 这意味着即使最终叶子节点尚不存在,符号链接父逃逸仍然关闭失败。示例:如果 `run-link` 指向那里,`/workspace/run-link/new-file` 仍然解析为 `/var/run/...`。
+- 允许的源根以相同方式规范化,因此在符号链接解析之前只看起来在允许列表内的路径仍被拒绝为 `outside allowed roots`。
 - 敏感挂载(密钥、SSH 密钥、服务凭证)应该是 `:ro`,除非绝对必要。
 - 如果只需要对 workspace 的读访问,结合 `workspaceAccess: "ro"`;绑定模式保持独立。
 - 参见[沙盒 vs 工具策略 vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated)了解绑定如何与工具策略和 elevated exec 交互。
@@ -335,7 +355,7 @@ scripts/sandbox-browser-setup.sh
 捆绑的沙盒 Browser 镜像还对容器化工作负载应用保守的 Chromium 启动默认值。当前容器默认值包括:
 
 - `--remote-debugging-address=127.0.0.1`
-- `--remote-debugging-port=<from OPENCLAW_BROWSER_CDP_PORT>`
+- `--remote-debugging-port=<derived from OPENCLAW_BROWSER_CDP_PORT>`
 - `--user-data-dir=${HOME}/.chrome`
 - `--no-first-run`
 - `--no-default-browser-check`
@@ -366,7 +386,7 @@ scripts/sandbox-browser-setup.sh
 
 Docker 安装和容器化 Gateway 在此:[Docker](/install/docker)
 
-对于 Docker Gateway 部署,`docker-setup.sh` 可以引导沙盒配置。设置 `OPENCLAW_SANDBOX=1`(或 `true`/`yes`/`on`)以启用该路径。您可以使用 `OPENCLAW_DOCKER_SOCKET` 覆盖 socket 位置。完整设置和环境参考:[Docker](/install/docker#enable-agent-sandbox-for-docker-gateway-opt-in)。
+对于 Docker Gateway 部署,`scripts/docker/setup.sh` 可以引导沙盒配置。设置 `OPENCLAW_SANDBOX=1`(或 `true`/`yes`/`on`)以启用该路径。您可以使用 `OPENCLAW_DOCKER_SOCKET` 覆盖 socket 位置。完整设置和环境参考:[Docker](/install/docker#agent-sandbox)。
 
 ## setupCommand(一次性容器设置)
 
@@ -389,7 +409,7 @@ Docker 安装和容器化 Gateway 在此:[Docker](/install/docker)
 
 工具允许/拒绝策略在沙盒规则之前仍然适用。如果工具被全局或每个 Agent 拒绝,沙盒化不会将其带回。
 
-`tools.elevated` 是一个显式的应急方案,在主机上运行 `exec`。
+`tools.elevated` 是一个显式的应急方案,在沙盒外运行 `exec`(默认为 `gateway`,或当 exec 目标为 `node` 时为 `node`)。
 `/exec` 指令仅适用于授权发送者,并在 Session 中持续存在;要硬禁用 `exec`,使用工具策略拒绝(参见[沙盒 vs 工具策略 vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated))。
 
 调试:
@@ -422,6 +442,8 @@ Docker 安装和容器化 Gateway 在此:[Docker](/install/docker)
 
 ## 相关文档
 
-- [沙盒配置](/gateway/configuration#agentsdefaults-sandbox)
-- [多 Agent 沙盒与工具](/tools/multi-agent-sandbox-tools)
+- [OpenShell](/gateway/openshell) -- 托管沙盒后端设置、workspace 模式和配置参考
+- [沙盒配置](/gateway/configuration-reference#agentsdefaultssandbox)
+- [沙盒 vs 工具策略 vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) -- 调试"为什么这被阻止?"
+- [多 Agent 沙盒与工具](/tools/multi-agent-sandbox-tools) -- 每个 Agent 覆盖和优先级
 - [安全](/gateway/security)

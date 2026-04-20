@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e75869b181c77299d8d4e672fbab7a6d"
+mmh3_hash: "a791fecac2edefc4de108cc4b4ffbe81"
 summary: "Gateway 服务、生命周期和操作手册"
 read_when:
   - 运行或调试 Gateway 进程
@@ -48,7 +48,7 @@ openclaw status
 openclaw logs --follow
 ```
 
-健康基线:`Runtime: running` 和 `RPC probe: ok`。
+健康基线：`Runtime: running`、`Connectivity probe: ok` 以及与预期匹配的 `Capability: ...`。当您需要读范围 RPC 证明而不仅仅是可达性时，使用 `openclaw gateway status --require-rpc`。
 
   </Step>
 
@@ -74,7 +74,7 @@ Gateway 配置重载监视活动配置文件路径(从 profile/state 默认值�
 - 一个始终在线的进程,用于路由、控制平面和 Channel 连接。
 - 单个多路复用端口用于:
   - WebSocket 控制/RPC
-  - HTTP API(OpenAI 兼容、Responses、tools invoke)
+  - HTTP API（OpenAI 兼容，`/v1/models`、`/v1/embeddings`、`/v1/chat/completions`、`/v1/responses`、`/tools/invoke`）
   - Control UI 和 hooks
 - 默认绑定模式:`loopback`。
 - 默认需要认证。共享密钥设置使用 `gateway.auth.token` / `gateway.auth.password`(或 `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`),非 loopback 反向代理设置可以使用 `gateway.auth.mode: "trusted-proxy"`。

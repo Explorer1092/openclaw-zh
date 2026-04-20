@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0df6de4d249962c703575461bcc16ee0"
+mmh3_hash: "bc97d29b5e2e398cc941e2e23394bb3d"
 title: "配置参考"
 description: "~/.openclaw/openclaw.json 的完整字段级参考文档"
 summary: "核心 OpenClaw 键、默认值以及专项子系统参考链接的 Gateway 配置参考"
@@ -1025,7 +1025,12 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
       },
       pdfModel: {
         primary: "anthropic/claude-opus-4-6",
-        fallbacks: ["openai/gpt-5-mini"],
+        fallbacks: ["openai/gpt-5.4-mini"],
+      },
+      params: { cacheRetention: "long" }, // 全局默认 Provider 参数
+      embeddedHarness: {
+        runtime: "auto", // auto | pi | 已注册 harness id，例如 codex
+        fallback: "pi", // pi | none
       },
       pdfMaxBytesMb: 10,
       pdfMaxPages: 20,
@@ -1072,7 +1077,7 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 - `models`：为 `/model` 配置的模型目录和允许列表。每个条目可包含 `alias`（快捷方式）和 `params`（Provider 专用，例如 `temperature`、`maxTokens`、`cacheRetention`、`context1m`）。
 - `params` 合并优先级（配置）：`agents.defaults.models["provider/model"].params` 为基础，然后 `agents.list[].params`（匹配 Agent id）按键覆盖。
 - 修改这些字段的配置写入器（例如 `/models set`、`/models set-image` 及回退添加/删除命令）以规范对象形式保存，并尽可能保留现有回退列表。
-- `maxConcurrent`：跨 Session 的最大并行 Agent 运行数（每个 Session 仍串行化）。默认值：1。
+- `maxConcurrent`：跨 Session 的最大并行 Agent 运行数（每个 Session 仍串行化）。默认值：4。
 
 **内置别名快捷方式**（仅当模型在 `agents.defaults.models` 中时有效）：
 
@@ -1092,6 +1097,32 @@ IRC 由扩展支持，在 `channels.irc` 下配置。
 Z.AI GLM-4.x 模型会自动启用思考模式，除非你设置 `--thinking off` 或自行定义 `agents.defaults.models["zai/<model>"].params.thinking`。
 Z.AI 模型默认启用 `tool_stream` 用于工具调用流式传输。将 `agents.defaults.models["zai/<model>"].params.tool_stream` 设为 `false` 可禁用。
 Anthropic Claude 4.6 模型在未设置明确思考级别时，默认使用 `adaptive` 思考模式。
+
+### `agents.defaults.embeddedHarness`
+
+`embeddedHarness` 控制哪个底层执行器运行嵌入式 Agent 轮次。
+大多数部署应保持默认值 `{ runtime: "auto", fallback: "pi" }`。
+当受信任的插件提供原生 harness 时（例如捆绑的 Codex app-server harness）使用此配置。
+
+```json5
+{
+  agents: {
+    defaults: {
+      model: "codex/gpt-5.4",
+      embeddedHarness: {
+        runtime: "codex",
+        fallback: "none",
+      },
+    },
+  },
+}
+```
+
+- `runtime`：`"auto"`、`"pi"` 或已注册的插件 harness ID。捆绑的 Codex 插件注册了 `codex`。
+- `fallback`：`"pi"` 或 `"none"`。`"pi"` 将内置 PI harness 作为兼容性回退保留。`"none"` 使缺失或不支持的插件 harness 选择失败，而不是静默使用 PI。
+- 环境变量覆盖：`OPENCLAW_AGENT_RUNTIME=<id|auto|pi>` 覆盖 `runtime`；`OPENCLAW_AGENT_HARNESS_FALLBACK=none` 为该进程禁用 PI 回退。
+- 对于仅 Codex 的部署，设置 `model: "codex/gpt-5.4"`、`embeddedHarness.runtime: "codex"` 和 `embeddedHarness.fallback: "none"`。
+- 这仅控制嵌入式聊天 harness。媒体生成、视觉、PDF、音乐、视频和 TTS 仍使用其 Provider/模型设置。
 
 ### `agents.defaults.cliBackends`
 
@@ -2710,6 +2741,50 @@ openclaw gateway --port 19001
 
 参见 [多 Gateway](/gateway/multiple-gateways)。
 
+### `gateway.tls`
+
+```json5
+{
+  gateway: {
+    tls: {
+      enabled: false,
+      autoGenerate: false,
+      certPath: "/etc/openclaw/tls/server.crt",
+      keyPath: "/etc/openclaw/tls/server.key",
+      caPath: "/etc/openclaw/tls/ca-bundle.crt",
+    },
+  },
+}
+```
+
+- `enabled`：在 Gateway 监听器（HTTPS/WSS）启用 TLS 终止（默认：`false`）。
+- `autoGenerate`：当未配置明确文件时自动生成本地自签名证书/密钥对；仅用于本地/开发环境。
+- `certPath`：TLS 证书文件的文件系统路径。
+- `keyPath`：TLS 私钥文件的文件系统路径；保持权限限制。
+- `caPath`：用于客户端验证或自定义信任链的可选 CA 包路径。
+
+### `gateway.reload`
+
+```json5
+{
+  gateway: {
+    reload: {
+      mode: "hybrid", // off | restart | hot | hybrid
+      debounceMs: 500,
+      deferralTimeoutMs: 300000,
+    },
+  },
+}
+```
+
+- `mode`：控制如何在运行时应用配置编辑。
+  - `"off"`：忽略实时编辑；更改需要明确重启。
+  - `"restart"`：配置更改时始终重启 Gateway 进程。
+  - `"hot"`：在进程内应用更改，无需重启。
+  - `"hybrid"`（默认）：先尝试热重载；如需要则回退到重启。
+- `debounceMs`：应用配置更改前的防抖窗口（毫秒，非负整数）。
+- `deferralTimeoutMs`：强制重启前等待正在进行的操作的最长时间（默认：`300000` = 5 分钟）。
+
 ---
 
 ## Hooks
@@ -3024,8 +3099,22 @@ openclaw gateway --port 19001
 {
   diagnostics: {
     enabled: true,
-    sampleRate: 1.0,
-    redactPayloads: true,
+    flags: ["telegram.*"],
+    stuckSessionWarnMs: 30000,
+
+    otel: {
+      enabled: false,
+      endpoint: "https://otel-collector.example.com:4318",
+      protocol: "http/protobuf", // http/protobuf | grpc
+      headers: { "x-tenant-id": "my-org" },
+      serviceName: "openclaw-gateway",
+      traces: true,
+      metrics: true,
+      logs: false,
+      sampleRate: 1.0,
+      flushIntervalMs: 5000,
+    },
+
     cacheTrace: {
       enabled: false,
       filePath: "~/.openclaw/logs/cache-trace.jsonl",
@@ -3037,10 +3126,18 @@ openclaw gateway --port 19001
 }
 ```
 
-- `diagnostics.enabled`：启用诊断数据收集。
-- `diagnostics.sampleRate`：采样率（0.0–1.0）。
-- `diagnostics.redactPayloads`：在诊断输出中编辑敏感载荷。
-- `diagnostics.cacheTrace`：将 KV 缓存使用情况追踪记录到 JSONL 文件（仅供 Anthropic + 内部 OpenClaw Provider 使用）。启用后会记录 cache_read_input_tokens 和 cache_creation_input_tokens，并注解 Anthropic 提示标记。
+- `enabled`：仪表输出总开关（默认：`true`）。
+- `flags`：启用有针对性日志输出的标志字符串数组（支持通配符，如 `"telegram.*"` 或 `"*"`）。
+- `stuckSessionWarnMs`：Session 停留在处理状态时发出卡住警告的年龄阈值（毫秒）。
+- `otel.enabled`：启用 OpenTelemetry 导出管道（默认：`false`）。
+- `otel.endpoint`：OTel 导出的收集器 URL。
+- `otel.protocol`：`"http/protobuf"`（默认）或 `"grpc"`。
+- `otel.headers`：随 OTel 导出请求发送的额外 HTTP/gRPC 元数据标头。
+- `otel.serviceName`：资源属性的服务名称。
+- `otel.traces` / `otel.metrics` / `otel.logs`：启用 trace、metrics 或 log 导出。
+- `otel.sampleRate`：trace 采样率 `0`–`1`。
+- `otel.flushIntervalMs`：周期性遥测刷新间隔（毫秒）。
+- `cacheTrace.enabled`：记录嵌入式运行的缓存 trace 快照（默认：`false`）。
 - `cacheTrace.filePath`：缓存追踪 JSONL 的输出路径（默认：`$OPENCLAW_STATE_DIR/logs/cache-trace.jsonl`）。
 - `cacheTrace.includeMessages` / `includePrompt` / `includeSystem`：控制缓存追踪输出中包含的内容（默认全部为 `true`）。
 
@@ -3052,11 +3149,72 @@ openclaw gateway --port 19001
 {
   update: {
     channel: "stable", // stable | beta | dev
+    checkOnStart: true,
+
+    auto: {
+      enabled: false,
+      stableDelayHours: 6,
+      stableJitterHours: 12,
+      betaCheckIntervalHours: 1,
+    },
   },
 }
 ```
 
-- `update.channel`：自动更新检查的发布渠道。`stable`（默认）、`beta` 或 `dev`。
+- `channel`：npm/git 安装的发布渠道 — `"stable"`、`"beta"` 或 `"dev"`。
+- `checkOnStart`：Gateway 启动时检查 npm 更新（默认：`true`）。
+- `auto.enabled`：为包安装启用后台自动更新（默认：`false`）。
+- `auto.stableDelayHours`：stable 渠道自动应用前的最短延迟时间（默认：`6`；最大：`168`）。
+- `auto.stableJitterHours`：stable 渠道额外推出展开窗口（默认：`12`；最大：`168`）。
+- `auto.betaCheckIntervalHours`：beta 渠道检查的运行频率（默认：`1`；最大：`24`）。
+
+---
+
+## ACP
+
+```json5
+{
+  acp: {
+    enabled: false,
+    dispatch: { enabled: true },
+    backend: "acpx",
+    defaultAgent: "main",
+    allowedAgents: ["main", "ops"],
+    maxConcurrentSessions: 10,
+
+    stream: {
+      coalesceIdleMs: 50,
+      maxChunkChars: 1000,
+      repeatSuppression: true,
+      deliveryMode: "live", // live | final_only
+      hiddenBoundarySeparator: "paragraph", // none | space | newline | paragraph
+      maxOutputChars: 50000,
+      maxSessionUpdateChars: 500,
+    },
+
+    runtime: {
+      ttlMinutes: 30,
+    },
+  },
+}
+```
+
+- `enabled`：ACP 功能全局开关（默认：`false`）。
+- `dispatch.enabled`：ACP Session 轮次派发的独立开关（默认：`true`）。设置 `false` 可在保持 ACP 命令可用的同时阻止执行。
+- `backend`：默认 ACP 运行时后端 ID（必须匹配已注册的 ACP 运行时插件）。
+- `defaultAgent`：当 spawn 未指定明确目标时的回退 ACP 目标 Agent ID。
+- `allowedAgents`：允许 ACP 运行时 Session 的 Agent ID 白名单；为空表示无额外限制。
+- `maxConcurrentSessions`：最大并发 ACP Session 数。
+- `stream.coalesceIdleMs`：流式文本的空闲刷新窗口（毫秒）。
+- `stream.maxChunkChars`：分割流式块投影前的最大块大小。
+- `stream.repeatSuppression`：抑制每轮次重复的状态/工具行（默认：`true`）。
+- `stream.deliveryMode`：`"live"` 增量流式；`"final_only"` 缓冲至轮次终止事件。
+- `stream.hiddenBoundarySeparator`：隐藏工具事件后可见文本前的分隔符（默认：`"paragraph"`）。
+- `stream.maxOutputChars`：每个 ACP 轮次投影的最大助手输出字符数。
+- `stream.maxSessionUpdateChars`：投影 ACP 状态/更新行的最大字符数。
+- `stream.tagVisibility`：标签名到布尔可见性覆盖的记录，用于流式事件。
+- `runtime.ttlMinutes`：ACP Session 工作进程在符合清理条件之前的空闲 TTL（分钟）。
+- `runtime.installCommand`：引导 ACP 运行时环境时可选运行的安装命令。
 
 ---
 

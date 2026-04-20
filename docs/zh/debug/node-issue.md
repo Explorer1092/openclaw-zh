@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5cf5fa7ed391ce7777b8ad013cb094b7"
+mmh3_hash: "7686570ca443008d796d0c3a0030a0e9"
 summary: Node + tsx "__name is not a function" 崩溃说明和解决方法
 read_when:
   - 调试仅 Node 的开发脚本或监视模式故障
@@ -62,15 +62,15 @@ node --import tsx scripts/repro/tsx-name-repro.ts
 ## 解决方法
 
 - 对开发脚本使用 Bun (当前临时回退)。
-- 使用 Node + tsc watch, 然后运行编译输出:
+- 使用 `tsgo` 进行仓库类型检查,然后运行编译输出:
 
   ```bash
-  pnpm exec tsc --watch --preserveWatchOutput
-  node --watch openclaw.mjs status
+  pnpm tsgo
+  node openclaw.mjs status
   ```
 
-- 本地确认: `pnpm exec tsc -p tsconfig.json` + `node openclaw.mjs status` 在 Node 25 上正常工作。
-- 如果可能, 在 TS 加载器中禁用 esbuild keepNames (防止插入 `__name` 辅助函数); tsx 目前不公开此选项。
+- 历史说明:在调试此 Node/tsx 问题时曾使用 `tsc`,但仓库类型检查通道现在使用 `tsgo`。
+- 如果可能,在 TS 加载器中禁用 esbuild keepNames (防止插入 `__name` 辅助函数); tsx 目前不公开此选项。
 - 使用 `tsx` 测试 Node LTS (22/24) 以查看问题是否特定于 Node 25。
 
 ## 参考

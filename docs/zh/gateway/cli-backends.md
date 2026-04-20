@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2654df3e3db557757292c8034a0e5e92"
+mmh3_hash: "04b878ed3e04ac4d6e5b85217fb2d522"
 summary: "CLI backend：通过本地 AI CLI 的纯文本回退，以及可选的 MCP 工具桥接"
 read_when:
   - 您希望在 API 提供商失败时有一个可靠的回退
@@ -188,7 +188,7 @@ OpenClaw 将 base64 图像写入临时文件。如果设置了 `imageArg`，这�
 
 - `command: "codex"`
 - `args: ["exec","--json","--color","never","--sandbox","workspace-write","--skip-git-repo-check"]`
-- `resumeArgs: ["exec","resume","{sessionId}","--color","never","--sandbox","workspace-write","--skip-git-repo-check"]`
+- `resumeArgs: ["exec","resume","{sessionId}","-c","sandbox_mode=\"workspace-write\"","--skip-git-repo-check"]`
 - `output: "jsonl"`
 - `resumeOutput: "text"`
 - `modelArg: "--model"`

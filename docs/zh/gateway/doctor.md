@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "55a41c565da06672748b7d528c415a57"
+mmh3_hash: "8e1aa767fd247e2a381e3a80243d6c26"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
 read_when:
   - 添加或修改 doctor 迁移
@@ -65,6 +65,7 @@ cat ~/.openclaw/openclaw.json
 - Talk 配置迁移：从旧版平铺 `talk.*` 字段迁移到 `talk.provider` + `talk.providers.<provider>`。
 - 旧版 Chrome 扩展配置和 Chrome MCP 就绪状态的 Browser 迁移检查。
 - OpenCode provider 覆盖警告（`models.providers.opencode` / `models.providers.opencode-go`）。
+- Codex OAuth 遮蔽警告（`models.providers.openai-codex`）。
 - OpenAI Codex OAuth 配置文件的 OAuth TLS 先决条件检查。
 - 旧版磁盘状态迁移（sessions/agent dir/WhatsApp 认证）。
 - 旧版插件清单合同键迁移（`speechProviders`、`realtimeTranscriptionProviders`、`realtimeVoiceProviders`、`mediaUnderstandingProviders`、`imageGenerationProviders`、`videoGenerationProviders`、`webFetchProviders`、`webSearchProviders` → `contracts`）。
@@ -84,12 +85,37 @@ cat ~/.openclaw/openclaw.json
 - Gateway 端口冲突诊断（默认 `18789`）。
 - 开放 DM 策略的安全警告。
 - 本地令牌模式的 Gateway 认证检查（当没有令牌来源存在时提供令牌生成；不覆盖令牌 SecretRef 配置）。
+- 设备配对问题检测（待处理的首次配对请求、待处理的角色/范围升级、本地设备令牌缓存漂移以及已配对记录认证漂移）。
 - Linux 上的 systemd linger 检查。
 - workspace bootstrap 文件大小检查（截断/接近限制的上下文文件警告）。
 - Shell 补全状态检查和自动安装/升级。
 - 内存搜索嵌入 Provider 就绪检查（本地模型、远程 API key 或 QMD 二进制文件）。
 - 源安装检查（pnpm workspace 不匹配，缺少 UI 资产，缺少 tsx 二进制文件）。
 - 写入更新的配置 + 向导元数据。
+
+## Dreams UI 回填和重置
+
+Control UI 的 Dreams 场景包含用于接地梦境工作流的**回填**、**重置**和**清除接地**操作。这些操作使用 Gateway doctor 风格的 RPC 方法，但它们**不是** `openclaw doctor` CLI 修复/迁移的一部分。
+
+它们的功能：
+
+- **回填** 扫描活跃 workspace 中历史的 `memory/YYYY-MM-DD.md` 文件，运行接地 REM 日记过程，并将可逆的回填条目写入 `DREAMS.md`。
+- **重置** 仅从 `DREAMS.md` 中删除那些标记的回填日记条目。
+- **清除接地** 仅删除来自历史回放的暂存接地专用短期条目，这些条目尚未积累实时记忆或每日支持。
+
+它们本身**不**执行的操作：
+
+- 不编辑 `MEMORY.md`
+- 不运行完整的 doctor 迁移
+- 不自动将接地候选项暂存到实时短期提升存储中，除非您先明确运行暂存 CLI 路径
+
+如果您希望接地历史回放影响正常的深度提升通道，请改用 CLI 流程：
+
+```bash
+openclaw memory rem-backfill --path ./memory --stage-short-term
+```
+
+这会将接地持久候选项暂存到短期梦境存储中，同时保留 `DREAMS.md` 作为审查界面。
 
 ## 详细行为和理由
 
@@ -129,12 +155,13 @@ Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁�
 - `routing.transcribeAudio` → `tools.media.audio.models`
 - `messages.tts.<provider>`（`openai`/`elevenlabs`/`microsoft`/`edge`）→ `messages.tts.providers.<provider>`
 - `channels.discord.voice.tts.<provider>`（`openai`/`elevenlabs`/`microsoft`/`edge`）→ `channels.discord.voice.tts.providers.<provider>`
-- `channels.discord.accounts.<id>.voice.tts.<provider>` → `channels.discord.accounts.<id>.voice.tts.providers.<provider>`
-- `plugins.entries.voice-call.config.tts.<provider>` → `plugins.entries.voice-call.config.tts.providers.<provider>`
+- `channels.discord.accounts.<id>.voice.tts.<provider>` （`openai`/`elevenlabs`/`microsoft`/`edge`）→ `channels.discord.accounts.<id>.voice.tts.providers.<provider>`
+- `plugins.entries.voice-call.config.tts.<provider>`（`openai`/`elevenlabs`/`microsoft`/`edge`）→ `plugins.entries.voice-call.config.tts.providers.<provider>`
 - `plugins.entries.voice-call.config.provider: "log"` → `"mock"`
 - `plugins.entries.voice-call.config.twilio.from` → `plugins.entries.voice-call.config.fromNumber`
 - `plugins.entries.voice-call.config.streaming.sttProvider` → `plugins.entries.voice-call.config.streaming.provider`
-- `plugins.entries.voice-call.config.streaming.openaiApiKey|sttModel|silenceDurationMs|vadThreshold` → `plugins.entries.voice-call.config.streaming.providers.openai.*`
+- `plugins.entries.voice-call.config.streaming.openaiApiKey|sttModel|silenceDurationMs|vadThreshold`
+  → `plugins.entries.voice-call.config.streaming.providers.openai.*`
 - `bindings[].match.accountID` → `bindings[].match.accountId`
 - 对于具有命名 `accounts` 但存在遗留单账户顶级 Channel 值的 Channel，将这些账户范围的值移入该 Channel 选择的提升账户中（大多数 Channel 为 `accounts.default`；Matrix 可以保留现有的匹配命名/默认目标）
 - `identity` → `agents.list[].identity`
@@ -165,20 +192,26 @@ Doctor 警告还包括多账户 Channel 的账户默认指导:
 
 - 检查同一主机上是否安装了 Google Chrome
 - 检查检测到的 Chrome 版本,并在低于 Chrome 144 时发出警告
-- 提醒您在 Chrome 的 `chrome://inspect/#remote-debugging` 中启用远程调试
+- 提醒您在浏览器检查页面中启用远程调试（例如 `chrome://inspect/#remote-debugging`、`brave://inspect/#remote-debugging` 或 `edge://inspect/#remote-debugging`）
 
 Doctor 无法为您启用 Chrome 端设置。主机本地 Chrome MCP 仍然需要:
 
-- 同一 Gateway/节点主机上的 Google Chrome 144+
-- Chrome 在本地运行
-- 在 Chrome 中启用远程调试
-- 在 Chrome 中批准首次附加同意提示
+- Gateway/节点主机上的基于 Chromium 的浏览器 144+
+- 浏览器在本地运行
+- 在该浏览器中启用远程调试
+- 在浏览器中批准首次附加同意提示
+
+此处的就绪性仅涉及本地附加先决条件。现有 Session 保持当前的 Chrome MCP 路由限制；高级路由（如 `responsebody`、PDF 导出、下载拦截和批量操作）仍然需要托管浏览器或原始 CDP 配置文件。
 
 此检查**不适用于** Docker、沙箱、远程浏览器或其他无头流程。这些继续使用原始 CDP。
 
 ### 2d) OAuth TLS 先决条件
 
 当配置了 OpenAI Codex OAuth 配置文件时，doctor 探测 OpenAI 授权端点以验证本地 Node/OpenSSL TLS 栈是否可以验证证书链。如果探测因证书错误失败（例如 `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`、过期证书或自签名证书），doctor 打印平台特定的修复指南。在 macOS 上使用 Homebrew Node 时，修复通常是 `brew postinstall ca-certificates`。使用 `--deep` 时，即使 Gateway 健康，探测也会运行。
+
+### 2c) Codex OAuth provider 覆盖
+
+如果您之前在 `models.providers.openai-codex` 下手动添加了旧版 OpenAI 传输设置，它们可能会遮蔽较新版本自动使用的内置 Codex OAuth provider 路径。当 doctor 看到这些旧版传输设置与 Codex OAuth 并存时，会发出警告，以便您可以删除或重写陈旧的传输覆盖并恢复内置路由/回退行为。自定义代理和仅标头覆盖仍受支持，不会触发此警告。
 
 ### 3) 旧版状态迁移（磁盘布局）
 
@@ -192,7 +225,7 @@ Doctor 可以将较旧的磁盘布局迁移到当前结构:
   - 从旧版 `~/.openclaw/credentials/*.json`(除了 `oauth.json`)
   - 到 `~/.openclaw/credentials/whatsapp/<accountId>/...`(默认 account id:`default`)
 
-这些迁移是尽力而为且幂等的;当它将任何旧版文件夹作为备份留下时,doctor 将发出警告。Gateway/CLI 也会在启动时自动迁移旧版 sessions + agent dir,因此历史/认证/模型会进入每个 Agent 的路径,而无需手动运行 doctor。WhatsApp 认证仅通过 `openclaw doctor` 迁移。
+这些迁移是尽力而为且幂等的;当它将任何旧版文件夹作为备份留下时,doctor 将发出警告。Gateway/CLI 也会在启动时自动迁移旧版 sessions + agent dir,因此历史/认证/模型会进入每个 Agent 的路径,而无需手动运行 doctor。WhatsApp 认证仅通过 `openclaw doctor` 迁移。Talk provider/provider-map 规范化现在通过结构相等性进行比较，因此仅键顺序差异不再触发重复的无操作 `doctor --fix` 更改。
 
 ### 3a) 旧版插件清单迁移
 
@@ -206,8 +239,8 @@ Doctor 还检查 cron 作业存储(`~/.openclaw/cron/jobs.json`,或 `cron.store`
 
 - `jobId` → `id`
 - `schedule.cron` → `schedule.expr`
-- 顶级 payload 字段(`message`、`model`、`thinking`...)`→ `payload`
-- 顶级 delivery 字段(`deliver`、`channel`、`to`、`provider`...)`→ `delivery`
+- 顶级 payload 字段(`message`、`model`、`thinking`...)→ `payload`
+- 顶级 delivery 字段(`deliver`、`channel`、`to`、`provider`...)→ `delivery`
 - payload `provider` delivery 别名 → 明确的 `delivery.channel`
 - 简单旧版 `notify: true` webhook 回退作业 → 明确的 `delivery.mode="webhook"` 和 `delivery.to=cron.webhook`
 
@@ -264,6 +297,29 @@ Doctor 检测旧版 Gateway 服务（launchd/systemd/schtasks）并提供删除�
 ### 8b) 启动 Matrix 迁移
 
 当 Matrix Channel 账户有待处理或可操作的旧版状态迁移时，doctor（在 `--fix` / `--repair` 模式下）创建预迁移快照，然后运行尽力而为的迁移步骤：旧版 Matrix 状态迁移和旧版加密状态准备。两个步骤都是非致命的；错误会被记录，启动继续。在只读模式（不带 `--fix` 的 `openclaw doctor`）下，此检查完全跳过。
+
+### 8c) 设备配对和认证漂移
+
+Doctor 现在将设备配对状态检查作为正常健康检查的一部分。
+
+它报告的内容：
+
+- 待处理的首次配对请求
+- 已配对设备的待处理角色升级
+- 已配对设备的待处理范围升级
+- 设备 ID 仍匹配但设备身份不再与已批准记录匹配的公钥不匹配修复
+- 已批准角色缺少活跃令牌的已配对记录
+- 范围漂移超出已批准配对基线的已配对令牌
+- 当前机器上的本地缓存设备令牌条目早于 Gateway 端令牌轮换或携带陈旧范围元数据
+
+Doctor 不自动批准配对请求或自动轮换设备令牌。它打印确切的后续步骤：
+
+- 使用 `openclaw devices list` 检查待处理请求
+- 使用 `openclaw devices approve <requestId>` 批准确切请求
+- 使用 `openclaw devices rotate --device <deviceId> --role <role>` 轮换新令牌
+- 使用 `openclaw devices remove <deviceId>` 删除并重新批准陈旧记录
+
+这解决了常见的"已配对但仍然收到需要配对"的问题：doctor 现在区分首次配对、待处理的角色/范围升级和陈旧的令牌/设备身份漂移。
 
 ### 9) 安全警告
 

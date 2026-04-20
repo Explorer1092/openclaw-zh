@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "14f9b19cb50b281128a3f87e3c45e40c"
+mmh3_hash: "b397ecb332e08af6168f185206569f75"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 Gateway WS 客户端
@@ -71,11 +71,35 @@ Gateway → 客户端:
   "type": "res",
   "id": "…",
   "ok": true,
-  "payload": { "type": "hello-ok", "protocol": 3, "policy": { "tickIntervalMs": 15000 } }
+  "payload": {
+    "type": "hello-ok",
+    "protocol": 3,
+    "server": { "version": "…", "connId": "…" },
+    "features": { "methods": ["…"], "events": ["…"] },
+    "snapshot": { "…": "…" },
+    "policy": {
+      "maxPayload": 26214400,
+      "maxBufferedBytes": 52428800,
+      "tickIntervalMs": 15000
+    }
+  }
 }
 ```
 
-当发出设备令牌时,`hello-ok` 还包含:
+`server`、`features`、`snapshot` 和 `policy` 均为 schema 必填字段（`src/gateway/protocol/schema/frames.ts`）。`canvasHostUrl` 为可选。`auth` 在可用时报告已协商的角色/范围，并在 Gateway 发出设备令牌时包含 `deviceToken`。
+
+未发出设备令牌时，`hello-ok.auth` 仍可报告已协商的权限：
+
+```json
+{
+  "auth": {
+    "role": "operator",
+    "scopes": ["operator.read", "operator.write"]
+  }
+}
+```
+
+发出设备令牌时，`hello-ok` 还包含：
 
 ```json
 {
@@ -86,6 +110,27 @@ Gateway → 客户端:
   }
 }
 ```
+
+在受信任的引导切换期间，`hello-ok.auth` 也可能在 `deviceTokens` 中包含额外的有界角色条目：
+
+```json
+{
+  "auth": {
+    "deviceToken": "…",
+    "role": "node",
+    "scopes": [],
+    "deviceTokens": [
+      {
+        "deviceToken": "…",
+        "role": "operator",
+        "scopes": ["operator.approvals", "operator.read", "operator.talk.secrets", "operator.write"]
+      }
+    ]
+  }
+}
+```
+
+对于内置节点/操作员引导流程，主节点令牌保持 `scopes: []`，任何切换的操作员令牌保持在引导操作员允许列表范围内（`operator.approvals`、`operator.read`、`operator.talk.secrets`、`operator.write`）。引导范围检查保持角色前缀：操作员条目仅满足操作员请求，非操作员角色仍需要其自己角色前缀下的范围。
 
 ### 节点示例
 
@@ -236,8 +281,10 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 - `config.set` 写入经过验证的配置负载。
 - `config.patch` 合并部分配置更新。
 - `config.apply` 验证 + 替换完整配置负载。
-- `config.schema` 返回 Control UI 和 CLI 工具使用的实时配置 schema 负载。
-- `config.schema.lookup` 返回一个配置路径的路径范围查找负载。
+- `config.schema` 返回 Control UI 和 CLI 工具使用的实时配置 schema 负载：schema、`uiHints`、版本和生成元数据，在运行时可加载时包含插件 + Channel schema 元数据。schema 包含字段 `title` / `description` 元数据，来源于 UI 使用的相同标签和帮助文本，包括嵌套对象、通配符、数组项和 `anyOf` / `oneOf` / `allOf` 组合分支（当匹配的字段文档存在时）。
+- `config.schema.lookup` 返回一个配置路径的路径范围查找负载：规范化路径、浅层 schema 节点、匹配的 hint + `hintPath` 以及用于 UI/CLI 深入的直接子节点摘要。
+  - 查找 schema 节点保留面向用户的文档和常见验证字段：`title`、`description`、`type`、`enum`、`const`、`format`、`pattern`、数字/字符串/数组/对象边界，以及 `additionalProperties`、`deprecated`、`readOnly`、`writeOnly` 等布尔标志。
+  - 子节点摘要公开 `key`、规范化 `path`、`type`、`required`、`hasChildren`，加上匹配的 `hint` / `hintPath`。
 - `update.run` 运行 Gateway 更新流程，仅在更新本身成功时安排重启。
 - `wizard.start`、`wizard.next`、`wizard.status` 和 `wizard.cancel` 通过 WS RPC 公开入门向导。
 
@@ -266,7 +313,7 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 - `sessions.reset`、`sessions.delete` 和 `sessions.compact` 执行 Session 维护。
 - `sessions.get` 返回完整存储的 Session 行。
 - Chat 执行仍使用 `chat.history`、`chat.send`、`chat.abort` 和 `chat.inject`。
-- `chat.history` 为 UI 客户端进行显示规范化：内联指令标记从可见文本中剥离，纯文本工具调用 XML 负载和泄露的 ASCII/全角模型控制令牌被剥离，纯静默令牌助手行（如精确的 `NO_REPLY` / `no_reply`）被省略，超大行可以用占位符替换。
+- `chat.history` 为 UI 客户端进行显示规范化：内联指令标记从可见文本中剥离，纯文本工具调用 XML 负载（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>`、`<function_calls>...</function_calls>` 和截断的工具调用块）以及泄露的 ASCII/全角模型控制令牌被剥离，纯静默令牌助手行（如精确的 `NO_REPLY` / `no_reply`）被省略，超大行可以用占位符替换。
 
 #### 设备配对和设备令牌
 
@@ -370,12 +417,32 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 
 ## 版本控制
 
-- `PROTOCOL_VERSION` 位于 `src/gateway/protocol/schema.ts` 中。
+- `PROTOCOL_VERSION` 位于 `src/gateway/protocol/schema/protocol-schemas.ts` 中。
 - 客户端发送 `minProtocol` + `maxProtocol`;服务器拒绝不匹配。
 - Schema + models 从 TypeBox 定义生成:
   - `pnpm protocol:gen`
   - `pnpm protocol:gen:swift`
   - `pnpm protocol:check`
+
+### 客户端常量
+
+`src/gateway/client.ts` 中的参考客户端使用这些默认值。这些值在协议 v3 中保持稳定，是第三方客户端的预期基线。
+
+| 常量                                    | 默认值                                                | 来源                                                         |
+| ----------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------------- |
+| `PROTOCOL_VERSION`                        | `3`                                                   | `src/gateway/protocol/schema/protocol-schemas.ts`          |
+| 请求超时（每个 RPC）                      | `30_000` ms                                           | `src/gateway/client.ts`（`requestTimeoutMs`）              |
+| 预认证/连接挑战超时                       | `10_000` ms                                           | `src/gateway/handshake-timeouts.ts`（限制 `250`–`10_000`） |
+| 初始重连退避                              | `1_000` ms                                            | `src/gateway/client.ts`（`backoffMs`）                     |
+| 最大重连退避                              | `30_000` ms                                           | `src/gateway/client.ts`（`scheduleReconnect`）             |
+| 设备令牌关闭后的快速重试限制              | `250` ms                                              | `src/gateway/client.ts`                                    |
+| `terminate()` 前强制停止宽限              | `250` ms                                              | `FORCE_STOP_TERMINATE_GRACE_MS`                            |
+| `stopAndWait()` 默认超时                  | `1_000` ms                                            | `STOP_AND_WAIT_TIMEOUT_MS`                                 |
+| 默认 tick 间隔（`hello-ok` 前）           | `30_000` ms                                           | `src/gateway/client.ts`                                    |
+| Tick 超时关闭                             | 静默超过 `tickIntervalMs * 2` 时代码 `4000`           | `src/gateway/client.ts`                                    |
+| `MAX_PAYLOAD_BYTES`                       | `25 * 1024 * 1024`（25 MB）                           | `src/gateway/server-constants.ts`                          |
+
+服务器在 `hello-ok` 中通告有效的 `policy.tickIntervalMs`、`policy.maxPayload` 和 `policy.maxBufferedBytes`；客户端应遵循这些值而不是握手前的默认值。
 
 ## 认证
 
@@ -385,8 +452,12 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 - 配对后，Gateway 发出范围为连接角色 + 范围的**设备令牌**。它在 `hello-ok.auth.deviceToken` 中返回，客户端应持久化以供将来连接使用。
 - 客户端应在任何成功 connect 后持久化主要的 `hello-ok.auth.deviceToken`。
 - 使用该**存储的**设备令牌重新连接还应重用为该令牌存储的已批准范围集。这保留了已授予的读取/探测/状态访问权限，并避免无声地将重连折叠为更窄的隐式仅管理员范围。
-- 正常 connect 认证优先级是：明确的共享 token/password 优先，然后明确的 `deviceToken`，然后存储的每设备令牌，然后引导令牌。
-- 额外的 `hello-ok.auth.deviceTokens` 条目是引导切换令牌。只有当 connect 在受信任的传输（如 `wss://` 或回环/本地配对）上使用引导认证时才持久化它们。
+- 客户端端 connect 认证组装（`src/gateway/client.ts` 中的 `selectConnectAuth`）：
+  - `auth.password` 是正交的，始终在设置时转发。
+  - `auth.token` 按优先级顺序填充：首先是明确的共享令牌，然后是明确的 `deviceToken`，然后是存储的每设备令牌（按 `deviceId` + `role` 键控）。
+  - `auth.bootstrapToken` 仅在上述均未解析 `auth.token` 时发送。共享令牌或任何已解析的设备令牌会抑制它。
+  - 在一次性 `AUTH_TOKEN_MISMATCH` 重试中自动提升存储的设备令牌仅限于**受信任端点**——回环，或带有固定 `tlsFingerprint` 的 `wss://`。未固定的公共 `wss://` 不符合条件。
+- 额外的 `hello-ok.auth.deviceTokens` 条目是引导切换令牌。仅在 connect 在受信任传输（如 `wss://` 或回环/本地配对）上使用引导认证时持久化它们。
 - 如果客户端提供了**明确的** `deviceToken` 或明确的 `scopes`，该调用者请求的范围集保持权威；缓存范围仅在客户端重用存储的每设备令牌时才重用。
 - 设备令牌可以通过 `device.token.rotate` 和 `device.token.revoke` 轮换/撤销（需要 `operator.pairing` 范围）。
 - 令牌颁发/轮换保持在该设备配对条目中记录的已批准角色集的范围内；轮换令牌不能将设备扩展到配对批准从未授予的角色。
@@ -419,14 +490,14 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 
 常见迁移失败:
 
-| 消息                     | details.code                     | details.reason           | 含义                                            |
-| --------------------------- | -------------------------------- | ------------------------ | -------------------------------------------------- |
-| `device nonce required`     | `DEVICE_AUTH_NONCE_REQUIRED`     | `device-nonce-missing`   | 客户端省略了 `device.nonce`(或发送为空)。     |
-| `device nonce mismatch`     | `DEVICE_AUTH_NONCE_MISMATCH`     | `device-nonce-mismatch`  | 客户端使用陈旧/错误的 nonce 签名。            |
-| `device signature invalid`  | `DEVICE_AUTH_SIGNATURE_INVALID`  | `device-signature`       | 签名负载与 v2 负载不匹配。       |
-| `device signature expired`  | `DEVICE_AUTH_SIGNATURE_EXPIRED`  | `device-signature-stale` | 签名时间戳超出允许的偏差。          |
-| `device identity mismatch`  | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch`     | `device.id` 与公钥指纹不匹配。 |
-| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key`      | 公钥格式/规范化失败。         |
+| 消息                        | details.code                     | details.reason           | 含义                                              |
+| --------------------------- | -------------------------------- | ------------------------ | ------------------------------------------------- |
+| `device nonce required`     | `DEVICE_AUTH_NONCE_REQUIRED`     | `device-nonce-missing`   | 客户端省略了 `device.nonce`(或发送为空)。        |
+| `device nonce mismatch`     | `DEVICE_AUTH_NONCE_MISMATCH`     | `device-nonce-mismatch`  | 客户端使用陈旧/错误的 nonce 签名。               |
+| `device signature invalid`  | `DEVICE_AUTH_SIGNATURE_INVALID`  | `device-signature`       | 签名负载与 v2 负载不匹配。                       |
+| `device signature expired`  | `DEVICE_AUTH_SIGNATURE_EXPIRED`  | `device-signature-stale` | 签名时间戳超出允许的偏差。                       |
+| `device identity mismatch`  | `DEVICE_AUTH_DEVICE_ID_MISMATCH` | `device-id-mismatch`     | `device.id` 与公钥指纹不匹配。                   |
+| `device public key invalid` | `DEVICE_AUTH_PUBLIC_KEY_INVALID` | `device-public-key`      | 公钥格式/规范化失败。                            |
 
 迁移目标:
 

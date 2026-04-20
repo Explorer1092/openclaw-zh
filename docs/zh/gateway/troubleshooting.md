@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "66d0c19735b9475b8fe604ace81d1a43"
+mmh3_hash: "302354d9fc73f9b8b7b8e145d4f68f7d"
 summary: "Gateway、Channel、自动化、节点和 Browser 的深度故障排除运行手册"
 read_when:
   - 故障排除中心将您引导到这里进行更深入的诊断
@@ -26,7 +26,7 @@ openclaw channels status --probe
 
 预期的健康信号:
 
-- `openclaw gateway status` 显示 `Runtime: running` 和 `RPC probe: ok`。
+- `openclaw gateway status` 显示 `Runtime: running`、`Connectivity probe: ok` 和一行 `Capability: ...`。
 - `openclaw doctor` 报告没有阻塞的配置/服务问题。
 - `openclaw channels status --probe` 显示实时每账户传输状态，以及在支持的情况下探测/审计结果（如 `works` 或 `audit ok`）。
 
@@ -171,7 +171,7 @@ openclaw gateway status --json
 | `AUTH_TOKEN_MISSING`         | 客户端未发送所需的共享令牌。             | 在客户端粘贴/设置令牌并重试。对于 dashboard 路径:`openclaw config get gateway.auth.token` 然后粘贴到 Control UI 设置中。                          |
 | `AUTH_TOKEN_MISMATCH`        | 共享令牌与 Gateway 认证令牌不匹配。           | 如果 `canRetryWithDeviceToken=true`，允许一次受信任的重试。缓存令牌重试复用已存储的批准范围；明确 `deviceToken` / `scopes` 的调用者保留请求的范围。如果仍然失败，运行[令牌漂移恢复清单](/cli/devices#token-drift-recovery-checklist)。 |
 | `AUTH_DEVICE_TOKEN_MISMATCH` | 缓存的每设备令牌过时或已撤销。             | 使用[设备 CLI](/cli/devices) 轮换/重新批准设备令牌,然后重新连接。                                                                                    |
-| `PAIRING_REQUIRED`           | 设备身份已知但未批准此角色。 | 批准待处理请求:`openclaw devices list` 然后 `openclaw devices approve <requestId>`。                                                                        |
+| `PAIRING_REQUIRED`           | 设备身份需要批准。检查 `error.details.reason` 中的 `not-paired`、`scope-upgrade`、`role-upgrade` 或 `metadata-upgrade`，并在存在时使用 `requestId` / `remediationHint`。 | 批准待处理请求:`openclaw devices list` 然后 `openclaw devices approve <requestId>`。范围/角色升级在您审查请求的访问权限后使用相同的流程。 |
 
 设备认证 v2 迁移检查:
 
@@ -186,6 +186,11 @@ openclaw gateway status
 1. 等待 `connect.challenge`
 2. 签署挑战绑定的负载
 3. 发送与挑战 nonce 相同的 `connect.params.device.nonce`
+
+如果 `openclaw devices rotate` / `revoke` / `remove` 意外被拒绝:
+
+- 除非调用者也有 `operator.admin`,否则配对设备令牌 Session 只能管理**自己的**设备
+- `openclaw devices rotate --scope ...` 只能请求调用者 Session 已持有的操作员范围
 
 相关：
 
@@ -247,7 +252,7 @@ openclaw gateway probe --ssh user@gateway-host
 
 - `SSH tunnel failed to start; falling back to direct probes.` → SSH 设置失败，但命令仍然尝试直接配置/回环目标。
 - `multiple reachable gateways detected` → 多个目标响应。通常意味着有意的多 Gateway 设置或过时/重复的监听器。
-- `Probe diagnostics are limited by gateway scopes (missing operator.read)` → 连接成功，但详细 RPC 受范围限制；配对设备身份或使用具有 `operator.read` 的凭证。
+- `Read-probe diagnostics are limited by gateway scopes (missing operator.read)` → 连接成功，但详细读取探测受范围限制；配对设备身份或使用具有 `operator.read` 的凭证。
 - 未解析的 `gateway.auth.*` / `gateway.remote.*` SecretRef 警告文本 → 认证材料在失败目标的此命令路径中不可用。
 
 相关：
@@ -437,7 +442,7 @@ openclaw logs --follow
 常见特征:
 
 - `refusing to bind gateway ... without auth` → 绑定+认证不匹配。
-- `RPC probe: failed` 而运行时正在运行 → Gateway 活跃但当前认证/URL 无法访问。
+- `Connectivity probe: failed` 而运行时正在运行 → Gateway 活跃但当前认证/URL 无法访问。
 
 ### 3) 配对和设备身份状态已更改
 

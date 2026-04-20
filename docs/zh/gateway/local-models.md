@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4774ef275834c5bc196c292dc88025a2"
+mmh3_hash: "1935163d41e03e89f9f3ca27c7010aca"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
 read_when:
   - 您想从自己的 GPU 机器提供模型
@@ -155,13 +155,14 @@ vLLM、LiteLLM、OAI-proxy 或自定义网关在它们公开 OpenAI 风格的 `/
 兼容性说明(针对较严格的 OpenAI 兼容后端):
 
 - 某些服务器在 Chat Completions 上只接受字符串 `messages[].content`,而不是结构化内容部分数组。对于这些端点,设置 `models.providers.<provider>.models[].compat.requiresStringContent: true`。
-- 某些较小或较严格的本地后端在 OpenClaw 的完整 Agent 运行时提示形状下不稳定,尤其是当包含工具 schema 时。如果后端对小型直接 `/v1/chat/completions` 调用有效,但在正常 OpenClaw Agent 轮次上失败,请先尝试 `models.providers.<provider>.models[].compat.supportsTools: false`。
+- 某些较小或较严格的本地后端在 OpenClaw 的完整 Agent 运行时提示形状下不稳定,尤其是当包含工具 schema 时。如果后端对小型直接 `/v1/chat/completions` 调用有效,但在正常 OpenClaw Agent 轮次上失败,请先尝试 `agents.defaults.experimental.localModelLean: true` 以去除重量级默认工具（如 `browser`、`cron` 和 `message`）；这是一个实验性标志,不是稳定的默认模式设置。请参阅[实验性功能](/concepts/experimental-features)。如果仍然失败,请尝试 `models.providers.<provider>.models[].compat.supportsTools: false`。
 - 如果后端仅在较大的 OpenClaw 运行上仍然失败,剩余问题通常是上游模型/服务器容量或后端 bug,而不是 OpenClaw 的传输层。
 
 ## 故障排除
 
 - Gateway 能够访问代理?`curl http://127.0.0.1:1234/v1/models`。
 - LM Studio 模型已卸载?重新加载;冷启动是常见的"挂起"原因。
+- OpenClaw 在检测到上下文窗口低于 **32k** 时发出警告,低于 **16k** 时阻止。如果触发此预检,请提高服务器/模型上下文限制或选择更大的模型。
 - 上下文错误?降低 `contextWindow` 或提高服务器限制。
 - OpenAI 兼容服务器返回 `messages[].content ... expected a string`?在该模型条目上添加 `compat.requiresStringContent: true`。
 - 直接小型 `/v1/chat/completions` 调用有效,但 `openclaw infer model run` 在 Gemma 或其他本地模型上失败?先用 `compat.supportsTools: false` 禁用工具 schema,然后重新测试。如果服务器仍然只在较大的 OpenClaw 提示上崩溃,将其视为上游服务器/模型限制。
