@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "517e238c73bd1f1b256fc3639f4f908a"
+mmh3_hash: "15c62201a2c8c33cd5fa580d8490abea"
 summary: "在 Linux 服务器或云 VPS 上运行 OpenClaw — 提供商选择、架构和调优"
 read_when:
   - 您想在 Linux 服务器或云 VPS 上运行 Gateway
@@ -23,6 +23,7 @@ sidebarTitle: "Linux 服务器"
   <Card title="Oracle Cloud" href="/install/oracle">Always Free ARM 层</Card>
   <Card title="Fly.io" href="/install/fly">Fly Machines</Card>
   <Card title="Hetzner" href="/install/hetzner">Hetzner VPS 上的 Docker</Card>
+  <Card title="Hostinger" href="/install/hostinger">VPS 一键设置</Card>
   <Card title="GCP" href="/install/gcp">Compute Engine</Card>
   <Card title="Azure" href="/install/azure">Linux VM</Card>
   <Card title="exe.dev" href="/install/exe-dev">带 HTTPS 代理的 VM</Card>

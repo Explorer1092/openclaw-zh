@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ed8ec778766e49e56261e8af54e180ba"
+mmh3_hash: "d342df06f56d8980201088bec98d2dee"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器
@@ -11,7 +11,7 @@ title: "设置"
 
 <Note>
 如果您是首次设置，请从[入门指南](/start/getting-started)开始。
-有关向导详情，请参阅[引导向导（CLI）](/start/wizard)。
+有关引导向导详情，请参阅[引导向导（CLI）](/start/wizard)。
 </Note>
 
 ## 摘要（TL;DR）
@@ -92,15 +92,21 @@ openclaw health
 
 ```bash
 pnpm install
+# 仅限首次运行（或重置本地 OpenClaw 配置/工作区后）
+pnpm openclaw setup
 pnpm gateway:watch
 ```
 
 `gateway:watch` 在监视模式下运行 Gateway，并在相关源码、配置和捆绑插件元数据变更时重新加载。
+`pnpm openclaw setup` 是全新检出时一次性的本地配置/工作区初始化步骤。
+`pnpm gateway:watch` 不会重建 `dist/control-ui`，因此在 `ui/` 变更后需重新运行 `pnpm ui:build`，或在开发 Control UI 时使用 `pnpm ui:dev`。
 
 如果你有意使用 Bun 工作流，等效命令为：
 
 ```bash
 bun install
+# 仅限首次运行（或重置本地 OpenClaw 配置/工作区后）
+bun run openclaw setup
 bun run gateway:watch
 ```
 

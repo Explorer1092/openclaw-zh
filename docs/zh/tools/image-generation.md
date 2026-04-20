@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a102f4f98493f3b84caf15a61ea5f98f"
+mmh3_hash: "9632c0a49a8dda4a8c3951956f74bcd5"
 summary: "使用已配置的提供商（OpenAI、Google Gemini、fal、MiniMax、ComfyUI、Vydra）生成和编辑图像"
 read_when:
   - 通过 Agent 生成图像

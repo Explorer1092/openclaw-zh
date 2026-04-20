@@ -1,6 +1,6 @@
 ---
 title: "Exec 批准"
-mmh3_hash: "8d2232962a2096cf0e629a8ad4698f38"
+mmh3_hash: "5254772ed015930fe6b18d4e3d1c49f5"
 summary: "Exec 批准、允许列表和沙盒逃逸提示"
 read_when:
   - 配置 exec 批准或允许列表
@@ -344,6 +344,13 @@ CLI：`openclaw approvals` 支持 Gateway 或节点编辑（参阅 [Approvals CL
 
 对于 `host=node`，批准请求包含规范的 `systemRunPlan` 载荷。Gateway 使用该计划作为在转发已批准的 `system.run` 请求时的权威命令/cwd/Session 上下文。
 
+这对异步批准延迟很重要：
+
+- 节点 exec 路径预先准备一个规范计划
+- 批准记录存储该计划及其绑定元数据
+- 一旦批准，最终转发的 `system.run` 调用复用存储的计划而非信任后续调用方编辑
+- 如果调用方在批准请求创建后更改了 `command`、`rawCommand`、`cwd`、`agentId` 或 `sessionKey`，Gateway 会拒绝转发的运行，视为批准不匹配
+
 ## 解释器/运行时命令
 
 基于批准的解释器/运行时运行是故意保守的：
@@ -355,6 +362,15 @@ CLI：`openclaw approvals` 支持 Gateway 或节点编辑（参阅 [Approvals CL
 - 对于这些工作流，优先使用沙盒、单独的主机边界，或者操作者接受更广泛运行时语义的显式受信任允许列表/full 工作流。
 
 当需要批准时，exec 工具立即返回一个批准 id。使用该 id 关联后续系统事件（`Exec finished` / `Exec denied`）。如果在超时前没有做出决定，请求被视为批准超时并作为拒绝原因呈现。
+
+### 跟进交付行为
+
+已批准的异步 exec 完成后，OpenClaw 向同一 Session 发送跟进 `agent` 轮次。
+
+- 如果存在有效的外部交付目标（可交付 Channel 加目标 `to`），跟进交付使用该 Channel。
+- 在无外部目标的仅 webchat 或内部 Session 流程中，跟进交付保持仅 Session（`deliver: false`）。
+- 如果调用者明确请求严格外部交付但没有可解析的外部 Channel，请求以 `INVALID_REQUEST` 失败。
+- 如果启用了 `bestEffortDeliver` 且无法解析外部 Channel，交付降级为仅 Session 而非失败。
 
 确认对话框包含：
 
@@ -369,15 +385,6 @@ CLI：`openclaw approvals` 支持 Gateway 或节点编辑（参阅 [Approvals CL
 - **Allow once** → 立即运行
 - **Always allow** → 添加到允许列表 + 运行
 - **Deny** → 阻止
-
-### 跟进交付行为
-
-已批准的异步 exec 完成后，OpenClaw 向同一 Session 发送跟进 `agent` 轮次。
-
-- 如果存在有效的外部交付目标（可交付 Channel 加目标 `to`），跟进交付使用该 Channel。
-- 在无外部目标的仅 webchat 或内部 Session 流程中，跟进交付保持仅 Session（`deliver: false`）。
-- 如果调用者明确请求严格外部交付但没有可解析的外部 Channel，请求以 `INVALID_REQUEST` 失败。
-- 如果启用了 `bestEffortDeliver` 且无法解析外部 Channel，交付降级为仅 Session 而非失败。
 
 ## 将批准转发到聊天 Channel
 
@@ -409,6 +416,8 @@ CLI：`openclaw approvals` 支持 Gateway 或节点编辑（参阅 [Approvals CL
 /approve <id> allow-always
 /approve <id> deny
 ```
+
+`/approve` 命令同时处理 exec 批准和 plugin 批准。如果 ID 与待处理的 exec 批准不匹配，它会自动检查 plugin 批准。
 
 ### Plugin 批准转发
 
@@ -442,11 +451,19 @@ Plugin 批准转发使用与 exec 批准相同的交付流水线，但在 `appro
 
 Discord 和 Telegram 也支持同聊天 `/approve`，但这些 Channel 即使在禁用原生批准交付时仍使用其已解析的审批者列表进行授权。
 
+对于直接调用 Gateway 的 Telegram 和其他原生批准客户端，此回退有意限定为"未找到批准"失败。真实的 exec 批准拒绝/错误不会静默地重试为 plugin 批准。
+
 ### 原生批准交付
 
 某些 Channel 也可以作为原生批准客户端。原生客户端在共享的同聊天 `/approve` 流程之上添加审批者私信、原始聊天扇出和 Channel 特定的交互式批准 UX。
 
 当原生批准卡片/按钮可用时，该原生 UI 是主要的面向 Agent 的路径。Agent 不应额外回显重复的纯聊天 `/approve` 命令，除非工具结果表明聊天批准不可用或手动批准是唯一剩余路径。
+
+通用模型：
+
+- 主机 exec 策略仍然决定是否需要 exec 批准
+- `approvals.exec` 控制向其他聊天目的地转发批准提示
+- `channels.<channel>.execApprovals` 控制该 Channel 是否作为原生批准客户端
 
 原生批准客户端在以下所有条件为真时自动启用私信优先交付：
 

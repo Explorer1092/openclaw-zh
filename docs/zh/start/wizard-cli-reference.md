@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "439cde9014ac2a2ee58db70f0e8bed36"
+mmh3_hash: "e17d4dd09185898cd192fe3d3fef5c63"
 summary: "CLI 引导流程、认证/模型设置、输出和内部的完整参考"
 read_when:
   - 您需要 openclaw onboard 的详细行为
@@ -178,8 +178,10 @@ sidebarTitle: "CLI 参考"
     更多详情：[Synthetic](/providers/synthetic)。
   </Accordion>
   <Accordion title="Ollama（云端和本地开源模型）">
-    提示输入 Base URL（默认 `http://127.0.0.1:11434`），然后提供云端 + 本地或仅本地模式。
-    发现可用模型并建议默认值。
+    首先提示选择 `Cloud + Local`（云端 + 本地）、`Cloud only`（仅云端）或 `Local only`（仅本地）。
+    `Cloud only` 使用 `OLLAMA_API_KEY` 配合 `https://ollama.com`。
+    主机支持的模式会提示输入 Base URL（默认 `http://127.0.0.1:11434`），发现可用模型并建议默认值。
+    `Cloud + Local` 还会检查该 Ollama 主机是否已登录以获取云端访问权限。
     更多详情：[Ollama](/providers/ollama)。
   </Accordion>
   <Accordion title="Moonshot 和 Kimi Coding">

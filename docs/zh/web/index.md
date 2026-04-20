@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bf5a14d62a86df1807ccc2beb19cf0f7"
+mmh3_hash: "d59483034942ef9dc639c05cb6abfdfe"
 summary: "Gateway web surfaces: Control UI, 绑定模式和安全性"
 read_when:
   - 您想通过 Tailscale 访问 Gateway
@@ -71,7 +71,7 @@ openclaw gateway
 }
 ```
 
-然后启动 Gateway(非环回绑定需要令牌):
+然后启动 Gateway（此非环回示例使用共享密钥令牌认证）：
 
 ```bash
 openclaw gateway
@@ -110,5 +110,5 @@ openclaw gateway
 Gateway 从 `dist/control-ui` 提供静态文件。使用以下命令构建它们:
 
 ```bash
-pnpm ui:build # 首次运行时自动安装 UI 依赖项
+pnpm ui:build
 ```

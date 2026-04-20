@@ -1,7 +1,7 @@
 ---
 title: "思考级别（/think 指令）"
 sidebarTitle: "思考级别"
-mmh3_hash: "ad3ab6ca57660d827d028a9549b400c4"
+mmh3_hash: "c7cd234ff96364c0d79c9ca92244861a"
 summary: "/think、/fast、/verbose、/trace 和推理可见性的指令语法"
 read_when:
   - 调整 thinking、fast 模式或 verbose 指令解析或默认值
@@ -17,12 +17,14 @@ read_when:
   - low → "think hard"
   - medium → "think harder"
   - high → "ultrathink"（最大预算）
-  - xhigh → "ultrathink+"（仅 GPT-5.2 + Codex 模型）
-  - adaptive → Provider 管理的自适应推理预算（支持 Anthropic Claude 4.6 模型系列）
+  - xhigh → "ultrathink+"（GPT-5.2 + Codex 模型以及 Anthropic Claude Opus 4.7 effort）
+  - adaptive → Provider 管理的自适应推理（支持 Anthropic Claude 4.6 和 Opus 4.7）
   - `x-high`、`x_high`、`extra-high`、`extra high` 和 `extra_high` 映射到 `xhigh`。
   - `highest`、`max` 映射到 `high`。
 - Provider 注意事项：
   - Anthropic Claude 4.6 模型在未设置显式 thinking 级别时默认为 `adaptive`。
+  - Anthropic Claude Opus 4.7 不默认为自适应 thinking。其 API effort 默认值由 Provider 所有，除非您显式设置 thinking 级别。
+  - Anthropic Claude Opus 4.7 将 `/think xhigh` 映射到自适应 thinking 加 `output_config.effort: "xhigh"`，因为 `/think` 是 thinking 指令，而 `xhigh` 是 Opus 4.7 的 effort 设置。
   - MiniMax（`minimax/*`）在 Anthropic 兼容流式路径上默认为 `thinking: { type: "disabled" }`，除非您在模型参数或请求参数中显式设置 thinking。这避免了 MiniMax 非原生 Anthropic 流格式的 `reasoning_content` 增量泄漏。
   - Z.AI（`zai/*`）仅支持二进制 thinking（`on`/`off`）。任何非 `off` 级别都被视为 `on`（映射到 `low`）。
   - Moonshot（`moonshot/*`）将 `/think off` 映射到 `thinking: { type: "disabled" }`，将任何非 `off` 级别映射到 `thinking: { type: "enabled" }`。当 thinking 启用时，Moonshot 只接受 `tool_choice` 为 `auto|none`；OpenClaw 会将不兼容的值标准化为 `auto`。
@@ -33,7 +35,7 @@ read_when:
 2. Session 覆盖（通过发送仅指令消息设置）。
 3. 每 Agent 默认值（配置中的 `agents.list[].thinkingDefault`）。
 4. 全局默认值（配置中的 `agents.defaults.thinkingDefault`）。
-5. 回退：Anthropic Claude 4.6 模型为 `adaptive`，其他推理能力模型为 `low`，否则为 `off`。
+5. 回退：Anthropic Claude 4.6 模型为 `adaptive`，Anthropic Claude Opus 4.7 在未显式配置时为 `off`，其他推理能力模型为 `low`，否则为 `off`。
 
 ## 设置 Session 默认值
 
@@ -106,8 +108,9 @@ read_when:
 
 - 网络聊天思考选择器在页面加载时从入站 Session 存储/配置中镜像 Session 的存储级别。
 - 选择另一个级别通过 `sessions.patch` 立即写入 Session 覆盖；它不等待下次发送，也不是一次性的 `thinkingOnce` 覆盖。
-- 第一个选项始终是 `Default (<resolved level>)`，其中解析的默认值来自活动 Session 模型：Anthropic/Bedrock 上的 Claude 4.6 为 `adaptive`，其他推理能力模型为 `low`，否则为 `off`。
+- 第一个选项始终是 `Default (<resolved level>)`，其中解析的默认值来自活动 Session 模型：Anthropic 上的 Claude 4.6 为 `adaptive`，Anthropic Claude Opus 4.7 在未配置时为 `off`，其他推理能力模型为 `low`，否则为 `off`。
 - 选择器保持 Provider 感知：
   - 大多数 Provider 显示 `off | minimal | low | medium | high | adaptive`
+  - Anthropic Claude Opus 4.7 显示 `off | minimal | low | medium | high | xhigh | adaptive`
   - Z.AI 显示二进制 `off | on`
 - `/think:<level>` 仍然有效并更新相同的存储 Session 级别，因此聊天指令和选择器保持同步。

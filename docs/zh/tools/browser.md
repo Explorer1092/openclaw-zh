@@ -1,7 +1,7 @@
 ---
 title: "浏览器 (OpenClaw 管理)"
 sidebarTitle: "浏览器"
-mmh3_hash: "093ed0a2c86512afe87d7b718015d0f7"
+mmh3_hash: "e05a719df20f46835b3940b9291a81c5"
 summary: "集成浏览器控制服务 + 操作命令"
 read_when:
   - 添加 Agent 控制的浏览器自动化
@@ -763,6 +763,63 @@ JSON 中的 role 快照包含 `refs` 以及一个小型 `stats` 块（lines/char
 
 有关 WSL2 Gateway + Windows Chrome 分离主机设置，参见
 [WSL2 + Windows + 远程 Chrome CDP 故障排除](/tools/browser-wsl2-windows-remote-cdp-troubleshooting)。
+
+### CDP 启动失败 vs 导航 SSRF 阻止
+
+这是两类不同的故障，指向不同的代码路径。
+
+- **CDP 启动或就绪失败**意味着 OpenClaw 无法确认浏览器控制平面是否正常。
+- **导航 SSRF 阻止**意味着浏览器控制平面正常，但页面导航目标被策略拒绝。
+
+常见示例：
+
+- CDP 启动或就绪失败：
+  - `Chrome CDP websocket for profile "openclaw" is not reachable after start`
+  - `Remote CDP for profile "<name>" is not reachable at <cdpUrl>`
+- 导航 SSRF 阻止：
+  - `open`、`navigate`、快照或标签页打开流程以浏览器/网络策略错误失败，而 `start` 和 `tabs` 仍然正常工作
+
+使用此最小序列来区分两者：
+
+```bash
+openclaw browser --browser-profile openclaw start
+openclaw browser --browser-profile openclaw tabs
+openclaw browser --browser-profile openclaw open https://example.com
+```
+
+如何解读结果：
+
+- 如果 `start` 以 `not reachable after start` 失败，首先排查 CDP 可达性。
+- 如果 `start` 成功但 `tabs` 失败，控制平面仍然不健康。将其视为 CDP 可达性问题，而非页面导航问题。
+- 如果 `start` 和 `tabs` 成功但 `open` 或 `navigate` 失败，浏览器控制平面正常，故障在于导航策略或目标页面。
+- 如果 `start`、`tabs` 和 `open` 都成功，基本的受管浏览器控制路径是健康的。
+
+重要行为细节：
+
+- 即使你没有配置 `browser.ssrfPolicy`，浏览器配置也默认为失败关闭的 SSRF 策略对象。
+- 对于本地环回 `openclaw` 受管配置文件，CDP 健康检查有意跳过对 OpenClaw 自己本地控制平面的浏览器 SSRF 可达性强制执行。
+- 导航保护是独立的。成功的 `start` 或 `tabs` 结果并不意味着后续的 `open` 或 `navigate` 目标是允许的。
+
+安全指南：
+
+- 默认情况下**不要**放宽浏览器 SSRF 策略。
+- 优先使用窄主机例外（如 `hostnameAllowlist` 或 `allowedHostnames`），而不是宽泛的私有网络访问。
+- 仅在有意信任的环境中使用 `dangerouslyAllowPrivateNetwork: true`，其中需要私有网络浏览器访问并经过审查。
+
+示例：导航被阻止，控制平面健康
+
+- `start` 成功
+- `tabs` 成功
+- `open http://internal.example` 失败
+
+这通常意味着浏览器启动正常，导航目标需要策略审查。
+
+示例：启动在导航之前就被阻止
+
+- `start` 以 `not reachable after start` 失败
+- `tabs` 也失败或无法运行
+
+这指向浏览器启动或 CDP 可达性问题，而非页面 URL 允许列表问题。
 
 ## Agent 工具 + 控制原理
 

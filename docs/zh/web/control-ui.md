@@ -1,7 +1,7 @@
 ---
 title: "Control UI (浏览器)"
 sidebarTitle: "Control UI"
-mmh3_hash: "d617ad935213e1f618b583ca7bc2080c"
+mmh3_hash: "768bc3c0a876f157e036e39b55f5caca"
 summary: "Gateway 的基于浏览器的 Control UI（聊天、Node、配置）"
 read_when:
   - 您想从浏览器操作 Gateway
@@ -63,8 +63,8 @@ openclaw devices approve <requestId>
 
 **注意：**
 
-- 本地连接（`127.0.0.1`）会自动批准。
-- 远程连接（LAN、Tailnet 等）需要明确批准。
+- 本地环回浏览器连接（`127.0.0.1` / `localhost`）会自动批准。
+- Tailnet 和 LAN 浏览器连接仍然需要明确批准，即使它们来自同一台机器。
 - 每个浏览器配置文件生成唯一的设备 ID，因此切换浏览器或
   清除浏览器数据将需要重新配对。
 
@@ -180,7 +180,7 @@ openclaw gateway --bind tailnet --token "$(openssl rand -hex 32)"
 
 - `http://<tailscale-ip>:18789/`（或您配置的 `gateway.controlUi.basePath`）
 
-将令牌粘贴到 UI 设置中（作为 `connect.params.auth.token` 发送）。
+将匹配的共享密钥粘贴到 UI 设置中（作为 `connect.params.auth.token` 或 `connect.params.auth.password` 发送）。
 
 ## 不安全的 HTTP
 
@@ -245,7 +245,7 @@ openclaw gateway --bind tailnet --token "$(openssl rand -hex 32)"
 Gateway 从 `dist/control-ui` 提供静态文件。使用以下命令构建它们：
 
 ```bash
-pnpm ui:build # 首次运行时自动安装 UI 依赖项
+pnpm ui:build
 ```
 
 可选绝对基础（当您想要固定资产 URL 时）：
@@ -257,7 +257,7 @@ OPENCLAW_CONTROL_UI_BASE_PATH=/openclaw/ pnpm ui:build
 对于本地开发（单独的开发服务器）：
 
 ```bash
-pnpm ui:dev # 首次运行时自动安装 UI 依赖项
+pnpm ui:dev
 ```
 
 然后将 UI 指向您的 Gateway WS URL（例如 `ws://127.0.0.1:18789`）。

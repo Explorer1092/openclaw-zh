@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dde173a678bfb56d05b14f9db0d73737"
+mmh3_hash: "327a6dbeeb3220b27f7a2e803a3d90c2"
 summary: "用于出站回复的文本转语音（TTS）"
 read_when:
   - 为回复启用文本转语音
@@ -10,12 +10,13 @@ title: "文本转语音"
 
 # 文本转语音（TTS）
 
-OpenClaw 可使用 ElevenLabs、Microsoft、MiniMax 或 OpenAI 将出站回复转换为音频。
+OpenClaw 可使用 ElevenLabs、Google Gemini、Microsoft、MiniMax 或 OpenAI 将出站回复转换为音频。
 它可在 OpenClaw 能发送音频的任何地方工作。
 
 ## 支持的服务
 
 - **ElevenLabs**（主要或回退提供商）
+- **Google Gemini**（主要或回退提供商；使用 Gemini API TTS）
 - **Microsoft**（主要或回退提供商；当前捆绑实现使用 `node-edge-tts`）
 - **MiniMax**（主要或回退提供商；使用 T2A v2 API）
 - **OpenAI**（主要或回退提供商；也用于摘要）
@@ -28,9 +29,10 @@ OpenClaw 可使用 ElevenLabs、Microsoft、MiniMax 或 OpenAI 将出站回复�
 
 ## 可选密钥
 
-如果需要 OpenAI、ElevenLabs 或 MiniMax：
+如果需要 OpenAI、ElevenLabs、Google Gemini 或 MiniMax：
 
 - `ELEVENLABS_API_KEY`（或 `XI_API_KEY`）
+- `GEMINI_API_KEY`（或 `GOOGLE_API_KEY`）
 - `MINIMAX_API_KEY`
 - `OPENAI_API_KEY`
 
@@ -160,6 +162,28 @@ TTS 配置位于 `openclaw.json` 中的 `messages.tts` 下。
 }
 ```
 
+### Google Gemini 主要
+
+```json5
+{
+  messages: {
+    tts: {
+      auto: "always",
+      provider: "google",
+      providers: {
+        google: {
+          apiKey: "gemini_api_key",
+          model: "gemini-3.1-flash-tts-preview",
+          voiceName: "Kore",
+        },
+      },
+    },
+  },
+}
+```
+
+Google Gemini TTS 使用 Gemini API 密钥路径。限制到 Gemini API 的 Google Cloud Console API 密钥在此有效，与捆绑的 Google 图像生成提供商使用相同类型的密钥。解析顺序为 `messages.tts.providers.google.apiKey` -> `models.providers.google.apiKey` -> `GEMINI_API_KEY` -> `GOOGLE_API_KEY`。
+
 ### 禁用 Microsoft 语音
 
 ```json5
@@ -228,7 +252,7 @@ TTS 配置位于 `openclaw.json` 中的 `messages.tts` 下。
   - `tagged` 仅在回复包含 `[[tts:key=value]]` 指令或 `[[tts:text]]...[[/tts:text]]` 块时发送音频。
 - `enabled`：旧版开关（doctor 会将其迁移到 `auto`）。
 - `mode`：`"final"`（默认）或 `"all"`（包含工具/块回复）。
-- `provider`：语音提供商 ID，如 `"elevenlabs"`、`"microsoft"`、`"minimax"` 或 `"openai"`（自动回退）。
+- `provider`：语音提供商 ID，如 `"elevenlabs"`、`"google"`、`"microsoft"`、`"minimax"` 或 `"openai"`（自动回退）。
 - 如果**未设置** `provider`，OpenClaw 按注册表自动选择顺序使用第一个已配置的语音提供商。
 - 旧版 `provider: "edge"` 仍然有效，并会被归一化为 `microsoft`。
 - `summaryModel`：用于自动摘要的可选低成本模型；默认为 `agents.defaults.model.primary`。
@@ -240,7 +264,7 @@ TTS 配置位于 `openclaw.json` 中的 `messages.tts` 下。
 - `maxTextLength`：TTS 输入的硬性字符上限。超出时 `/tts audio` 会失败。
 - `timeoutMs`：请求超时（毫秒）。
 - `prefsPath`：覆盖本地偏好 JSON 路径（提供商/限制/摘要）。
-- `apiKey` 值回退到环境变量（`ELEVENLABS_API_KEY`/`XI_API_KEY`、`MINIMAX_API_KEY`、`OPENAI_API_KEY`）。
+- `apiKey` 值回退到环境变量（`ELEVENLABS_API_KEY`/`XI_API_KEY`、`GEMINI_API_KEY`/`GOOGLE_API_KEY`、`MINIMAX_API_KEY`、`OPENAI_API_KEY`）。
 - `providers.elevenlabs.baseUrl`：覆盖 ElevenLabs API 基础 URL。
 - `providers.openai.baseUrl`：覆盖 OpenAI TTS 端点。
   - 解析顺序：`messages.tts.providers.openai.baseUrl` -> `OPENAI_TTS_BASE_URL` -> `https://api.openai.com/v1`
@@ -258,6 +282,10 @@ TTS 配置位于 `openclaw.json` 中的 `messages.tts` 下。
 - `providers.minimax.speed`：播放速度 `0.5..2.0`（默认 1.0）。
 - `providers.minimax.vol`：音量 `(0, 10]`（默认 1.0；必须大于 0）。
 - `providers.minimax.pitch`：音调偏移 `-12..12`（默认 0）。
+- `providers.google.model`：Gemini TTS 模型（默认 `gemini-3.1-flash-tts-preview`）。
+- `providers.google.voiceName`：Gemini 预置语音名称（默认 `Kore`；`voice` 也被接受）。
+- `providers.google.baseUrl`：覆盖 Gemini API 基础 URL。仅接受 `https://generativelanguage.googleapis.com`。
+  - 如果省略 `messages.tts.providers.google.apiKey`，TTS 可以在回退到环境变量之前复用 `models.providers.google.apiKey`。
 - `providers.microsoft.enabled`：允许使用 Microsoft 语音（默认 `true`；无需 API 密钥）。
 - `providers.microsoft.voice`：Microsoft 神经语音名称（如 `en-US-MichelleNeural`）。
 - `providers.microsoft.lang`：语言代码（如 `en-US`）。
@@ -289,9 +317,9 @@ Here you go.
 
 启用后可用的指令键：
 
-- `provider`（已注册的语音提供商 ID，例如 `openai`、`elevenlabs`、`minimax` 或 `microsoft`；需要 `allowProvider: true`）
-- `voice`（OpenAI 语音）或 `voiceId`（ElevenLabs / MiniMax）
-- `model`（OpenAI TTS 模型、ElevenLabs 模型 ID 或 MiniMax 模型）
+- `provider`（已注册的语音提供商 ID，例如 `openai`、`elevenlabs`、`google`、`minimax` 或 `microsoft`；需要 `allowProvider: true`）
+- `voice`（OpenAI 语音）、`voiceName` / `voice_name` / `google_voice`（Google 语音）或 `voiceId`（ElevenLabs / MiniMax）
+- `model`（OpenAI TTS 模型、ElevenLabs 模型 ID 或 MiniMax 模型）或 `google_model`（Google TTS 模型）
 - `stability`、`similarityBoost`、`style`、`speed`、`useSpeakerBoost`
 - `vol` / `volume`（MiniMax 音量，0-10）
 - `pitch`（MiniMax 音调，-12 到 12）
@@ -349,6 +377,7 @@ Slash Command 将本地覆盖写入 `prefsPath`（默认：`~/.openclaw/settings
 - **其他 Channel**：MP3（ElevenLabs 的 `mp3_44100_128`，OpenAI 的 `mp3`）。
   - 44.1kHz / 128kbps 是语音清晰度的默认平衡点。
 - **MiniMax**：MP3（`speech-2.8-hd` 模型，32kHz 采样率）。不原生支持语音消息格式；如需保证 Opus 语音消息，请使用 OpenAI 或 ElevenLabs。
+- **Google Gemini**：Gemini API TTS 返回原始 24kHz PCM。OpenClaw 将其作为 WAV 封装用于音频附件，并直接返回 PCM 用于 Talk/电话。此路径不支持原生 Opus 语音消息格式。
 - **Microsoft**：使用 `microsoft.outputFormat`（默认 `audio-24khz-48kbitrate-mono-mp3`）。
   - 捆绑的传输层接受 `outputFormat`，但并非所有格式都可从服务获得。
   - 输出格式值遵循 Microsoft 语音输出格式（包括 Ogg/WebM Opus）。

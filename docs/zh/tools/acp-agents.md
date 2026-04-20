@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "301e39eb6ea0345a625f46699a94bb3a"
+mmh3_hash: "e2c8bca81da83221d887d794093cf7e4"
 summary: "使用 ACP 运行时 Session 运行 Codex、Claude Code、Cursor、Gemini CLI、OpenClaw ACP 及其他 harness Agent"
 read_when:
   - 通过 ACP 运行编程 harness
@@ -319,6 +319,8 @@ ACP 绑定 Session 的覆盖优先级：
 - 该 Channel 或话题中的消息路由到已配置的 ACP Session。
 - 在绑定对话中，`/new` 和 `/reset` 原地重置同一 ACP Session key。
 - 临时运行时绑定（例如由 thread 焦点流程创建的）在存在时仍然适用。
+- 对于没有显式 `cwd` 的跨 Agent ACP 启动，OpenClaw 从 Agent 配置中继承目标 Agent 工作区。
+- 缺失的继承工作区路径回退到后端默认 cwd；非缺失的访问失败会以启动错误的形式显示。
 
 当前对话绑定不需要创建子 thread。它们需要活跃的对话上下文和暴露了 ACP 对话绑定的 Channel 适配器。
 
@@ -754,6 +756,16 @@ openclaw config set plugins.entries.acpx.config.pluginToolsMcpBridge true
 - 启用前请检查已安装的 Plugin。
 
 自定义 `mcpServers` 仍像以前一样工作。内置 Plugin 工具桥接是额外的可选便捷功能，而非通用 MCP 服务器配置的替代品。
+
+### 运行时超时配置
+
+捆绑的 `acpx` Plugin 将嵌入式运行时 turn 的超时默认为 120 秒。这给了 Gemini CLI 等较慢的 harness 足够时间完成 ACP 启动和初始化。如果你的主机需要不同的运行时限制，可以覆盖它：
+
+```bash
+openclaw config set plugins.entries.acpx.config.timeoutSeconds 180
+```
+
+更改此值后重启 Gateway。
 
 ## 权限配置
 

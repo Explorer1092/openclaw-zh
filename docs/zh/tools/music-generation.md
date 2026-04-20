@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a7dcb94ebf6dfc1a7551fcd61124d5c4"
+mmh3_hash: "3beff8e2d61e4487e7f802ccc9dadd4d"
 summary: "使用共享提供商（包括工作流驱动的插件）生成音乐"
 read_when:
   - 通过 Agent 生成音乐或音频

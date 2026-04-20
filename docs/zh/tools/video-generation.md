@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e65d0c0407305401151d5775bbbf4ae3"
+mmh3_hash: "34cf527497c63d011d0dda61a50a3fbc"
 summary: "使用 14 个提供商后端从文本、图像或现有视频生成视频"
 read_when:
   - 通过 Agent 生成视频
@@ -280,9 +280,20 @@ OPENCLAW_LIVE_TEST=1 pnpm test:live -- extensions/video-generation-providers.liv
 pnpm test:live:media video
 ```
 
-该实时文件从 `~/.profile` 加载缺失的提供商环境变量，默认优先使用实时/环境 API 密钥而非存储的认证配置文件，并运行可以使用本地媒体安全执行的已声明模式：
+该实时文件从 `~/.profile` 加载缺失的提供商环境变量，默认优先使用实时/环境 API 密钥而非存储的认证配置文件，并默认运行发布安全冒烟测试：
 
-- 扫描中每个提供商的 `generate`
+- 扫描中每个非 FAL 提供商的 `generate`
+- 一秒 lobster 提示
+- 来自 `OPENCLAW_LIVE_VIDEO_GENERATION_TIMEOUT_MS` 的每提供商操作上限（默认 `180000`）
+
+FAL 是可选的，因为提供商端队列延迟可能主导发布时间：
+
+```bash
+pnpm test:live:media video --video-providers fal
+```
+
+设置 `OPENCLAW_LIVE_VIDEO_GENERATION_FULL_MODES=1` 以同时运行共享扫描可以使用本地媒体安全执行的已声明转换模式：
+
 - 当 `capabilities.imageToVideo.enabled` 时运行 `imageToVideo`
 - 当 `capabilities.videoToVideo.enabled` 且提供商/模型在共享扫描中接受缓冲区支持的本地视频输入时运行 `videoToVideo`
 

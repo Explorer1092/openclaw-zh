@@ -1,91 +1,117 @@
 ---
-mmh3_hash: "4d75ad6d41690ff04e3fd63392b9a012"
+mmh3_hash: "e801f2e3866d2c2c39b7344214b2b850"
 title: "展示"
+description: "来自社区的真实 OpenClaw 项目"
 summary: "社区构建的项目和由 OpenClaw 驱动的集成"
 read_when:
   - 寻找真实的 OpenClaw 使用示例
   - 更新社区项目亮点
 ---
 
+<!-- markdownlint-disable MD033 -->
+
 # 展示
 
-来自社区的真实项目。看看人们用 OpenClaw 构建了什么。
+<div className="showcase-hero">
+  <p className="showcase-kicker">在聊天、终端、浏览器和客厅中构建</p>
+  <p className="showcase-lead">
+    OpenClaw 项目不是玩具演示。人们正在通过他们日常使用的 Channel 发布 PR 审查循环、移动应用、家庭自动化、语音系统、开发工具和大量记忆工作流。
+  </p>
+  <div className="showcase-actions">
+    <a href="#videos">观看演示</a>
+    <a href="#fresh-from-discord">浏览项目</a>
+    <a href="https://discord.gg/clawd">分享你的项目</a>
+  </div>
+  <div className="showcase-highlights">
+    <div className="showcase-highlight">
+      <strong>聊天原生构建</strong>
+      <span>Telegram、WhatsApp、Discord、Beeper、Web 聊天和终端优先工作流。</span>
+    </div>
+    <div className="showcase-highlight">
+      <strong>真正的自动化</strong>
+      <span>预订、购物、支持、报告和浏览器控制，无需等待 API。</span>
+    </div>
+    <div className="showcase-highlight">
+      <strong>本地 + 物理世界</strong>
+      <span>打印机、吸尘器、摄像头、健康数据、家庭系统和个人知识库。</span>
+    </div>
+  </div>
+</div>
 
 <Info>
 **想要被展示？** 在 [Discord 的 #self-promotion](https://discord.gg/clawd) 分享您的项目，或[在 X 上标记 @openclaw](https://x.com/openclaw)。
 </Info>
 
-## 🎥 OpenClaw 实战
-
-VelvetShark 的完整设置演练（28 分钟）。
-
-<div
-  style={{
-    position: "relative",
-    paddingBottom: "56.25%",
-    height: 0,
-    overflow: "hidden",
-    borderRadius: 16,
-  }}
->
-  <iframe
-    src="https://www.youtube-nocookie.com/embed/SaWSPZoPX34"
-    title="OpenClaw: The self-hosted AI that Siri should have been (Full setup)"
-    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-    frameBorder="0"
-    loading="lazy"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowFullScreen
-  />
+<div className="showcase-jump-links">
+  <a href="#videos">视频</a>
+  <a href="#fresh-from-discord">来自 Discord 的新鲜内容</a>
+  <a href="#automation-workflows">自动化</a>
+  <a href="#knowledge-memory">记忆</a>
+  <a href="#voice-phone">语音与电话</a>
+  <a href="#infrastructure-deployment">基础设施</a>
+  <a href="#home-hardware">家居与硬件</a>
+  <a href="#community-projects">社区</a>
+  <a href="#submit-your-project">提交项目</a>
 </div>
 
-[在 YouTube 上观看](https://www.youtube.com/watch?v=SaWSPZoPX34)
+<h2 id="videos">视频</h2>
 
-<div
-  style={{
-    position: "relative",
-    paddingBottom: "56.25%",
-    height: 0,
-    overflow: "hidden",
-    borderRadius: 16,
-  }}
->
-  <iframe
-    src="https://www.youtube-nocookie.com/embed/mMSKQvlmFuQ"
-    title="OpenClaw showcase video"
-    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-    frameBorder="0"
-    loading="lazy"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowFullScreen
-  />
+<p className="showcase-section-intro">
+  如果你想以最短的路径从"这是什么？"到"好的，我明白了"，从这里开始。
+</p>
+
+<div className="showcase-video-grid">
+  <div className="showcase-video-card">
+    <div className="showcase-video-shell">
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/SaWSPZoPX34"
+        title="OpenClaw: The self-hosted AI that Siri should have been (Full setup)"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    </div>
+    <h3>完整设置演练</h3>
+    <p>VelvetShark，28 分钟。端到端安装、引导并完成第一个可用助手。</p>
+    <a href="https://www.youtube.com/watch?v=SaWSPZoPX34">在 YouTube 上观看</a>
+  </div>
+
+  <div className="showcase-video-card">
+    <div className="showcase-video-shell">
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/mMSKQvlmFuQ"
+        title="OpenClaw showcase video"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    </div>
+    <h3>社区展示精选</h3>
+    <p>快速浏览围绕 OpenClaw 构建的真实项目、界面和工作流。</p>
+    <a href="https://www.youtube.com/watch?v=mMSKQvlmFuQ">在 YouTube 上观看</a>
+  </div>
+
+  <div className="showcase-video-card">
+    <div className="showcase-video-shell">
+      <iframe
+        src="https://www.youtube-nocookie.com/embed/5kkIJNUGFho"
+        title="OpenClaw community showcase"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    </div>
+    <h3>野外的项目</h3>
+    <p>来自社区的示例，从聊天原生编码循环到硬件和个人自动化。</p>
+    <a href="https://www.youtube.com/watch?v=5kkIJNUGFho">在 YouTube 上观看</a>
+  </div>
 </div>
 
-[在 YouTube 上观看](https://www.youtube.com/watch?v=mMSKQvlmFuQ)
+<h2 id="fresh-from-discord">来自 Discord 的新鲜内容</h2>
 
-<div
-  style={{
-    position: "relative",
-    paddingBottom: "56.25%",
-    height: 0,
-    overflow: "hidden",
-    borderRadius: 16,
-  }}
->
-  <iframe
-    src="https://www.youtube-nocookie.com/embed/5kkIJNUGFho"
-    title="OpenClaw community showcase"
-    style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-    frameBorder="0"
-    loading="lazy"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowFullScreen
-  />
-</div>
-
-[在 YouTube 上观看](https://www.youtube.com/watch?v=5kkIJNUGFho)
-
-## 🆕 来自 Discord 的新鲜内容
+<p className="showcase-section-intro">
+  编码、开发工具、移动端和聊天原生产品构建方面的近期佳作。
+</p>
 
 <CardGroup cols={2}>
 
@@ -161,7 +187,7 @@ Homebrew 安装的帮助程序，用于列出/检查/观察本地 OpenAI Codex S
   <img src="/assets/showcase/wienerlinien.png" alt="ClawHub 上的 Wiener Linien Skill" />
 </Card>
 
-<Card title="ParentPay 学校餐" icon="utensils" href="#">
+<Card title="ParentPay 学校餐" icon="utensils">
   **@George5562** • `automation` `browser` `parenting`
 
 通过 ParentPay 自动化英国学校餐预订。使用鼠标坐标进行可靠的表格单元格点击。
@@ -173,7 +199,7 @@ Homebrew 安装的帮助程序，用于列出/检查/观察本地 OpenAI Codex S
 上传到 Cloudflare R2/S3 并生成安全的预签名下载链接。非常适合远程 OpenClaw 实例。
 </Card>
 
-<Card title="通过 Telegram 开发 iOS 应用" icon="mobile" href="#">
+<Card title="通过 Telegram 开发 iOS 应用" icon="mobile">
   **@coard** • `ios` `xcode` `testflight`
 
 完全通过 Telegram 聊天构建了一个具有地图和语音录制功能的完整 iOS 应用，部署到 TestFlight。
@@ -181,7 +207,7 @@ Homebrew 安装的帮助程序，用于列出/检查/观察本地 OpenAI Codex S
   <img src="/assets/showcase/ios-testflight.jpg" alt="TestFlight 上的 iOS 应用" />
 </Card>
 
-<Card title="Oura 戒指健康助手" icon="heart-pulse" href="#">
+<Card title="Oura 戒指健康助手" icon="heart-pulse">
   **@AS** • `health` `oura` `calendar`
 
 个人 AI 健康助手，将 Oura 戒指数据与日历、预约和健身房时间表集成。
@@ -208,7 +234,11 @@ Homebrew 安装的帮助程序，用于列出/检查/观察本地 OpenAI Codex S
 
 </CardGroup>
 
-## 🤖 自动化与工作流程
+<h2 id="automation-workflows">自动化与工作流程</h2>
+
+<p className="showcase-section-intro">
+  调度、浏览器控制、支持循环和产品"帮我完成这项任务"的一面。
+</p>
 
 <CardGroup cols={2}>
 
@@ -286,7 +316,11 @@ OpenClaw 连接到 Jira，然后即时生成一个新 Skill（在它存在于 Cl
 
 </CardGroup>
 
-## 🧠 知识与记忆
+<h2 id="knowledge-memory">知识与记忆</h2>
+
+<p className="showcase-section-intro">
+  对个人或团队知识进行索引、搜索、记忆和推理的系统。
+</p>
 
 <CardGroup cols={2}>
 
@@ -318,7 +352,11 @@ OpenClaw 连接到 Jira，然后即时生成一个新 Skill（在它存在于 Cl
 
 </CardGroup>
 
-## 🎙️ 语音与电话
+<h2 id="voice-phone">语音与电话</h2>
+
+<p className="showcase-section-intro">
+  语音优先入口点、电话桥接和转录密集型工作流。
+</p>
 
 <CardGroup cols={2}>
 
@@ -336,7 +374,11 @@ OpenClaw 连接到 Jira，然后即时生成一个新 Skill（在它存在于 Cl
 
 </CardGroup>
 
-## 🏗️ 基础设施与部署
+<h2 id="infrastructure-deployment">基础设施与部署</h2>
+
+<p className="showcase-section-intro">
+  使 OpenClaw 更易于运行和扩展的打包、部署和集成。
+</p>
 
 <CardGroup cols={2}>
 
@@ -366,7 +408,11 @@ OpenClaw 连接到 Jira，然后即时生成一个新 Skill（在它存在于 Cl
 
 </CardGroup>
 
-## 🏠 家居与硬件
+<h2 id="home-hardware">家居与硬件</h2>
+
+<p className="showcase-section-intro">
+  OpenClaw 的物理世界：家庭、传感器、摄像头、吸尘器和其他设备。
+</p>
 
 <CardGroup cols={2}>
 
@@ -388,7 +434,11 @@ OpenClaw 连接到 Jira，然后即时生成一个新 Skill（在它存在于 Cl
 
 </CardGroup>
 
-## 🌟 社区项目
+<h2 id="community-projects">社区项目</h2>
+
+<p className="showcase-section-intro">
+  那些超越单一工作流发展成更广泛产品或生态系统的事物。
+</p>
 
 <CardGroup cols={2}>
 
@@ -402,7 +452,11 @@ OpenClaw 连接到 Jira，然后即时生成一个新 Skill（在它存在于 Cl
 
 ---
 
-## 提交您的项目
+<h2 id="submit-your-project">提交您的项目</h2>
+
+<p className="showcase-section-intro">
+  如果您正在用 OpenClaw 构建有趣的东西，请发送给我们。强有力的截图和具体成果很有帮助。
+</p>
 
 有东西要分享？我们很乐意展示它！
 
