@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "286fd61e9b491da8749b01683dcf2f41"
+mmh3_hash: "8b1292083ac673d84c114c4ae1891b9d"
+title: "测试"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
   - 在本地或 CI 中运行测试
   - 为 model/provider 错误添加回归测试
   - 调试 gateway + agent 行为
-title: "测试"
 ---
 
 # 测试
@@ -24,6 +24,12 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 大多数时候：
 
 - 完整门控（推送前预期）：`pnpm build && pnpm check && pnpm test`
+- 在较宽裕机器上更快的本地完整套件运行：`pnpm test:max`
+- 直接 Vitest 监视循环：`pnpm test:watch`
+- 直接文件定向现在也路由扩展/channel 路径：`pnpm test extensions/discord/src/monitor/message-handler.preflight.test.ts`
+- 在针对单个失败进行迭代时，优先使用目标化运行。
+- Docker 支持的 QA 站点：`pnpm qa:lab:up`
+- Linux VM 支持的 QA 通道：`pnpm openclaw qa suite --runner multipass --scenario channel-chat-baseline`
 
 当你修改测试或想要额外信心时：
 
@@ -33,8 +39,198 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 调试真实 providers/models 时（需要真实凭据）：
 
 - 实时套件（models + gateway 工具/图像探测）：`pnpm test:live`
+- 安静地针对一个实时文件：`pnpm test:live -- src/agents/models.profiles.live.test.ts`
 
 提示：当你只需要一个失败案例时，优先通过下面描述的允许列表 env vars 缩小实时测试范围。
+
+## QA 专用运行器
+
+当你需要 QA 实验室真实感时，这些命令位于主测试套件旁边：
+
+- `pnpm openclaw qa suite`
+  - 直接在主机上运行仓库支持的 QA 场景。
+  - 默认使用隔离的 gateway 工作器并行运行多个选定场景。`qa-channel` 默认并发数为 4（受选定场景数量限制）。使用 `--concurrency <count>` 调整工作器数量，或 `--concurrency 1` 使用旧的串行通道。
+  - 当任何场景失败时以非零退出。当你想要工件而不希望失败退出代码时使用 `--allow-failures`。
+  - 支持 provider 模式 `live-frontier`、`mock-openai` 和 `aimock`。`aimock` 启动本地 AIMock 支持的 provider 服务器，用于实验性 fixture 和协议 mock 覆盖，而不替换场景感知的 `mock-openai` 通道。
+- `pnpm openclaw qa suite --runner multipass`
+  - 在一次性 Multipass Linux VM 内运行相同的 QA 套件。
+  - 与主机上的 `qa suite` 保持相同的场景选择行为。
+  - 重用与 `qa suite` 相同的 provider/model 选择标志。
+  - 实时运行转发对客户机实用的支持 QA auth 输入：基于 env 的 provider 密钥、QA 实时 provider 配置路径，以及存在时的 `CODEX_HOME`。
+  - 输出目录必须保持在仓库根目录下，以便客户机可以通过挂载的工作区写回。
+  - 在 `.artifacts/qa-e2e/...` 下写入正常的 QA 报告 + 摘要以及 Multipass 日志。
+- `pnpm qa:lab:up`
+  - 启动 Docker 支持的 QA 站点用于运营式 QA 工作。
+- `pnpm openclaw qa aimock`
+  - 仅启动本地 AIMock provider 服务器用于直接协议烟雾测试。
+- `pnpm openclaw qa matrix`
+  - 针对一次性 Docker 支持的 Tuwunel 主服务器运行 Matrix 实时 QA 通道。
+  - 此 QA 主机今天仅用于仓库/开发。打包的 OpenClaw 安装不附带 `qa-lab`，因此不暴露 `openclaw qa`。
+  - 仓库 checkout 直接加载捆绑的运行器；不需要单独的插件安装步骤。
+  - 配置三个临时 Matrix 用户（`driver`、`sut`、`observer`）加一个私人房间，然后以真实 Matrix 插件作为 SUT 传输启动 QA gateway 子进程。
+  - 默认使用固定的稳定 Tuwunel 镜像 `ghcr.io/matrix-construct/tuwunel:v1.5.1`。当你需要测试不同镜像时使用 `OPENCLAW_QA_MATRIX_TUWUNEL_IMAGE` 覆盖。
+  - Matrix 不暴露共享凭据来源标志，因为该通道在本地配置一次性用户。
+  - 在 `.artifacts/qa-e2e/...` 下写入 Matrix QA 报告、摘要、观察到的事件工件和合并的 stdout/stderr 输出日志。
+- `pnpm openclaw qa telegram`
+  - 针对使用驱动器和 SUT bot token 的真实私人群组运行 Telegram 实时 QA 通道。
+  - 需要 `OPENCLAW_QA_TELEGRAM_GROUP_ID`、`OPENCLAW_QA_TELEGRAM_DRIVER_BOT_TOKEN` 和 `OPENCLAW_QA_TELEGRAM_SUT_BOT_TOKEN`。群组 id 必须是数字 Telegram 聊天 id。
+  - 支持 `--credential-source convex` 用于共享的池化凭据。默认使用 env 模式，或设置 `OPENCLAW_QA_CREDENTIAL_SOURCE=convex` 选择池化租约。
+  - 当任何场景失败时以非零退出。当你想要工件而不希望失败退出代码时使用 `--allow-failures`。
+  - 需要同一私人群组中的两个不同 bot，SUT bot 暴露 Telegram 用户名。
+  - 为了稳定的 bot 间观察，在 `@BotFather` 中为两个 bot 启用 Bot 间通信模式，并确保驱动器 bot 可以观察群组 bot 流量。
+  - 在 `.artifacts/qa-e2e/...` 下写入 Telegram QA 报告、摘要和观察到的消息工件。
+
+实时传输通道共享一个标准契约，以便新传输不会偏离：
+
+`qa-channel` 仍然是广泛的合成 QA 套件，不是实时传输覆盖矩阵的一部分。
+
+| 通道     | 金丝雀 | 提及门控 | 允许列表阻止 | 顶级回复 | 重启恢复 | 线程跟进 | 线程隔离 | 反应观察 | 帮助命令 |
+| -------- | ------ | -------- | ------------ | -------- | -------- | -------- | -------- | -------- | -------- |
+| Matrix   | x      | x        | x            | x        | x        | x        | x        | x        |          |
+| Telegram | x      |          |              |          |          |          |          |          | x        |
+
+### 通过 Convex 共享 Telegram 凭据（v1）
+
+当为 `openclaw qa telegram` 启用 `--credential-source convex`（或 `OPENCLAW_QA_CREDENTIAL_SOURCE=convex`）时，QA 实验室从 Convex 支持的池获取独占租约，在通道运行期间对该租约进行心跳，并在关闭时释放租约。
+
+参考 Convex 项目脚手架：
+
+- `qa/convex-credential-broker/`
+
+必需的 env 变量：
+
+- `OPENCLAW_QA_CONVEX_SITE_URL`（例如 `https://your-deployment.convex.site`）
+- 所选角色的一个 secret：
+  - `OPENCLAW_QA_CONVEX_SECRET_MAINTAINER` 用于 `maintainer`
+  - `OPENCLAW_QA_CONVEX_SECRET_CI` 用于 `ci`
+- 凭据角色选择：
+  - CLI：`--credential-role maintainer|ci`
+  - Env 默认：`OPENCLAW_QA_CREDENTIAL_ROLE`（在 CI 中默认为 `ci`，否则默认为 `maintainer`）
+
+可选 env 变量：
+
+- `OPENCLAW_QA_CREDENTIAL_LEASE_TTL_MS`（默认 `1200000`）
+- `OPENCLAW_QA_CREDENTIAL_HEARTBEAT_INTERVAL_MS`（默认 `30000`）
+- `OPENCLAW_QA_CREDENTIAL_ACQUIRE_TIMEOUT_MS`（默认 `90000`）
+- `OPENCLAW_QA_CREDENTIAL_HTTP_TIMEOUT_MS`（默认 `15000`）
+- `OPENCLAW_QA_CONVEX_ENDPOINT_PREFIX`（默认 `/qa-credentials/v1`）
+- `OPENCLAW_QA_CREDENTIAL_OWNER_ID`（可选的跟踪 id）
+- `OPENCLAW_QA_ALLOW_INSECURE_HTTP=1` 允许仅本地开发使用 loopback `http://` Convex URL。
+
+`OPENCLAW_QA_CONVEX_SITE_URL` 在正常操作中应使用 `https://`。
+
+维护者管理命令（池添加/删除/列出）需要专门的 `OPENCLAW_QA_CONVEX_SECRET_MAINTAINER`。
+
+维护者 CLI 助手：
+
+```bash
+pnpm openclaw qa credentials add --kind telegram --payload-file qa/telegram-credential.json
+pnpm openclaw qa credentials list --kind telegram
+pnpm openclaw qa credentials remove --credential-id <credential-id>
+```
+
+在脚本和 CI 工具中使用 `--json` 获取机器可读输出。
+
+默认端点契约（`OPENCLAW_QA_CONVEX_SITE_URL` + `/qa-credentials/v1`）：
+
+- `POST /acquire`
+  - 请求：`{ kind, ownerId, actorRole, leaseTtlMs, heartbeatIntervalMs }`
+  - 成功：`{ status: "ok", credentialId, leaseToken, payload, leaseTtlMs?, heartbeatIntervalMs? }`
+  - 耗尽/可重试：`{ status: "error", code: "POOL_EXHAUSTED" | "NO_CREDENTIAL_AVAILABLE", ... }`
+- `POST /heartbeat`
+  - 请求：`{ kind, ownerId, actorRole, credentialId, leaseToken, leaseTtlMs }`
+  - 成功：`{ status: "ok" }`（或空 `2xx`）
+- `POST /release`
+  - 请求：`{ kind, ownerId, actorRole, credentialId, leaseToken }`
+  - 成功：`{ status: "ok" }`（或空 `2xx`）
+- `POST /admin/add`（仅维护者 secret）
+  - 请求：`{ kind, actorId, payload, note?, status? }`
+  - 成功：`{ status: "ok", credential }`
+- `POST /admin/remove`（仅维护者 secret）
+  - 请求：`{ credentialId, actorId }`
+  - 成功：`{ status: "ok", changed, credential }`
+  - 活跃租约守卫：`{ status: "error", code: "LEASE_ACTIVE", ... }`
+- `POST /admin/list`（仅维护者 secret）
+  - 请求：`{ kind?, status?, includePayload?, limit? }`
+  - 成功：`{ status: "ok", credentials, count }`
+
+Telegram kind 的载荷格式：
+
+- `{ groupId: string, driverToken: string, sutToken: string }`
+- `groupId` 必须是数字 Telegram 聊天 id 字符串。
+- `admin/add` 为 `kind: "telegram"` 验证此格式并拒绝格式错误的载荷。
+
+### 向 QA 添加 channel
+
+向 markdown QA 系统添加 channel 恰好需要两件事：
+
+1. 该 channel 的传输适配器。
+2. 练习 channel 契约的场景包。
+
+当共享的 `qa-lab` 主机可以拥有流程时，不要添加新的顶级 QA 命令根。
+
+`qa-lab` 拥有共享主机机制：
+
+- `openclaw qa` 命令根
+- 套件启动和拆卸
+- 工作器并发
+- 工件写入
+- 报告生成
+- 场景执行
+- 旧版 `qa-channel` 场景的兼容别名
+
+运行器插件拥有传输契约：
+
+- `openclaw qa <runner>` 如何挂载在共享 `qa` 根下
+- 如何为该传输配置 gateway
+- 如何检查就绪状态
+- 如何注入入站事件
+- 如何观察出站消息
+- 如何暴露转录和规范化的传输状态
+- 如何执行传输支持的操作
+- 如何处理传输特定的重置或清理
+
+新 channel 的最低采用门槛：
+
+1. 保持 `qa-lab` 作为共享 `qa` 根的所有者。
+2. 在共享 `qa-lab` 主机接缝上实现传输运行器。
+3. 将传输特定的机制保留在运行器插件或 channel 测试套件内。
+4. 将运行器挂载为 `openclaw qa <runner>` 而不是注册竞争的根命令。运行器插件应在 `openclaw.plugin.json` 中声明 `qaRunners` 并从 `runtime-api.ts` 导出匹配的 `qaRunnerCliRegistrations` 数组。保持 `runtime-api.ts` 轻量；延迟 CLI 和运行器执行应保留在单独的入口点后面。
+5. 在主题化的 `qa/scenarios/` 目录下编写或改编 markdown 场景。
+6. 为新场景使用通用场景助手。
+7. 保持现有的兼容别名工作，除非仓库正在进行有意的迁移。
+
+决策规则是严格的：
+
+- 如果行为可以在 `qa-lab` 中表达一次，将其放在 `qa-lab` 中。
+- 如果行为依赖于一个 channel 传输，将其保留在该运行器插件或插件测试套件中。
+- 如果场景需要多个 channel 都可以使用的新功能，添加通用助手而不是 `suite.ts` 中的 channel 特定分支。
+- 如果行为只对一个传输有意义，将场景保持传输特定并在场景契约中明确说明。
+
+新场景首选的通用助手名称：
+
+- `waitForTransportReady`
+- `waitForChannelReady`
+- `injectInboundMessage`
+- `injectOutboundMessage`
+- `waitForTransportOutboundMessage`
+- `waitForChannelOutboundMessage`
+- `waitForNoTransportOutbound`
+- `getTransportSnapshot`
+- `readTransportMessage`
+- `readTransportTranscript`
+- `formatTransportTranscript`
+- `resetTransport`
+
+兼容别名仍可用于现有场景，包括：
+
+- `waitForQaChannelReady`
+- `waitForOutboundMessage`
+- `waitForNoOutbound`
+- `formatConversationTranscript`
+- `resetBus`
+
+新 channel 工作应使用通用助手名称。兼容别名的存在是为了避免一次性迁移，而不是新场景编写的模型。
 
 ## 测试套件（什么在哪里运行）
 
@@ -43,8 +239,8 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 ### 单元 / 集成（默认）
 
 - 命令：`pnpm test`
-- 配置：`scripts/test-parallel.mjs`（运行 `vitest.unit.config.ts`、`vitest.extensions.config.ts`、`vitest.gateway.config.ts`）
-- 文件：`src/**/*.test.ts`、`extensions/**/*.test.ts`
+- 配置：十个顺序分片运行（`vitest.full-*.config.ts`），覆盖现有的有范围 Vitest 项目
+- 文件：`src/**/*.test.ts`、`packages/**/*.test.ts`、`test/**/*.test.ts` 下的核心/单元清单，以及 `vitest.unit.config.ts` 涵盖的白名单 `ui` 节点测试
 - 范围：
   - 纯单元测试
   - 进程内集成测试（gateway auth、路由、工具、解析、配置）
@@ -53,35 +249,36 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - 在 CI 中运行
   - 不需要真实密钥
   - 应该快速且稳定
-- 调度器注意事项：
-  - `pnpm test` 现在保存一个小型签入行为清单，用于真实的 pool/隔离覆盖，以及最慢单元文件的独立时序快照。
-  - 共享单元覆盖现在默认为 `threads`，而清单保持已测量的仅 fork 异常和重型单例通道明确。
-  - 共享扩展通道仍默认为 `threads`；当文件无法安全共享非隔离 worker 时，wrapper 在 `test/fixtures/test-parallel.behavior.json` 中保持明确的仅 fork 异常。
-  - channel 套件（`vitest.channels.config.ts`）现在也默认为 `threads`；2026 年 3 月 22 日的直接完整套件控制运行通过，没有 channel 特定的 fork 异常。
-  - wrapper 将最重的已测量文件分离到专用通道中，而不是依赖不断增长的手动维护排除列表。
-  - 在主要套件形状更改后，使用 `pnpm test:perf:update-timings` 刷新时序快照。
+- 项目注意事项：
+  - 无目标的 `pnpm test` 现在运行十一个较小的分片配置（`core-unit-src`、`core-unit-security`、`core-unit-ui`、`core-unit-support`、`core-support-boundary`、`core-contracts`、`core-bundled`、`core-runtime`、`agentic`、`auto-reply`、`extensions`），而不是一个巨大的原生根项目进程。这在负载机器上减少了峰值 RSS 并避免 auto-reply/extension 工作占用无关套件。
+  - `pnpm test --watch` 仍然使用原生根 `vitest.config.ts` 项目图，因为多分片监视循环不实用。
+  - `pnpm test`、`pnpm test:watch` 和 `pnpm test:perf:imports` 首先通过有范围通道路由显式文件/目录目标，因此 `pnpm test extensions/discord/src/monitor/message-handler.preflight.test.ts` 避免支付完整根项目启动税。
+  - `pnpm test:changed` 当差异仅涉及可路由的源/测试文件时，将更改的 git 路径展开到相同的有范围通道；配置/设置编辑仍然回退到广泛的根项目重新运行。
+  - 来自 agents、commands、plugins、auto-reply 助手、`plugin-sdk` 和类似纯工具区域的导入轻量单元测试通过 `unit-fast` 通道路由，该通道跳过 `test/setup-openclaw-runtime.ts`；有状态/运行时重量文件保留在现有通道上。
+  - 选定的 `plugin-sdk` 和 `commands` 助手源文件还将 changed 模式运行映射到这些轻量通道中的显式兄弟测试，因此助手编辑避免为该目录重新运行完整的重量套件。
+  - `auto-reply` 现在有三个专用桶：顶级核心助手、顶级 `reply.*` 集成测试和 `src/auto-reply/reply/**` 子树。这使最重的 reply 测试套件工作远离廉价的 status/chunk/token 测试。
 - 嵌入式运行器注意事项：
   - 当你更改 message-tool 发现输入或 compaction 运行时上下文时，保持两层覆盖。
   - 为纯路由/规范化边界添加专注的辅助回归测试。
   - 同时保持嵌入式运行器集成套件健康：`src/agents/pi-embedded-runner/compact.hooks.test.ts`、`src/agents/pi-embedded-runner/run.overflow-compaction.test.ts` 和 `src/agents/pi-embedded-runner/run.overflow-compaction.loop.test.ts`。
   - 这些套件验证作用域 id 和 compaction 行为是否仍通过真实的 `run.ts` / `compact.ts` 路径流动；仅辅助测试不能替代这些集成路径。
 - Pool 注意事项：
-  - 基础 Vitest 配置仍默认为 `forks`。
-  - 单元 wrapper 通道默认为 `threads`，带有明确的清单仅 fork 异常。
-  - 扩展范围配置默认为 `threads`。
-  - channel 范围配置默认为 `threads`。
-  - 单元、channel 和扩展配置默认为 `isolate: false` 以加快文件启动。
-  - `pnpm test` 还在 wrapper 级别传递 `--isolate=false`。
-  - 使用 `OPENCLAW_TEST_ISOLATE=1 pnpm test` 选择回到 Vitest 文件隔离。
-  - `OPENCLAW_TEST_NO_ISOLATE=0` 或 `OPENCLAW_TEST_NO_ISOLATE=false` 也强制隔离运行。
+  - 基础 Vitest 配置现在默认为 `threads`。
+  - 共享 Vitest 配置还固定了 `isolate: false`，并在根项目、e2e 和实时配置中使用非隔离运行器。
+  - 根 UI 通道保留其 `jsdom` 设置和优化器，但现在也在共享非隔离运行器上运行。
+  - 每个 `pnpm test` 分片从共享 Vitest 配置继承相同的 `threads` + `isolate: false` 默认值。
+  - 共享的 `scripts/run-vitest.mjs` 启动器现在还默认为 Vitest 子 Node 进程添加 `--no-maglev`，以减少大型本地运行期间的 V8 编译抖动。如果你需要与标准 V8 行为进行比较，设置 `OPENCLAW_VITEST_ENABLE_MAGLEV=1`。
 - 快速本地迭代注意事项：
-  - `pnpm test:changed` 使用 `--changed origin/main` 运行 wrapper。
-  - 基础 Vitest 配置将 wrapper 清单/配置文件标记为 `forceRerunTriggers`，以便在调度器输入更改时 changed 模式重运行保持正确。
-  - Vitest 的文件系统模块缓存现在默认为 Node 端测试重运行启用。
-  - 如果怀疑有陈旧的转换缓存行为，使用 `OPENCLAW_VITEST_FS_MODULE_CACHE=0` 或 `OPENCLAW_VITEST_FS_MODULE_CACHE=false` 选择退出。
+  - `pnpm test:changed` 当更改路径清晰映射到较小套件时通过有范围通道路由。
+  - `pnpm test:max` 和 `pnpm test:changed:max` 保持相同的路由行为，只是工作器上限更高。
+  - 本地工作器自动缩放现在故意保守，当主机负载平均值已经很高时也会退缩，因此多个并发 Vitest 运行默认情况下损害较小。
+  - 基础 Vitest 配置将 projects/config 文件标记为 `forceRerunTriggers`，以便在测试连线更改时 changed 模式重新运行保持正确。
+  - 配置在支持的主机上保持 `OPENCLAW_VITEST_FS_MODULE_CACHE` 启用；如果你想要一个显式的缓存位置用于直接分析，设置 `OPENCLAW_VITEST_FS_MODULE_CACHE_PATH=/abs/path`。
 - 性能调试注意事项：
   - `pnpm test:perf:imports` 启用 Vitest 导入时长报告加上导入分解输出。
   - `pnpm test:perf:imports:changed` 将相同的分析视图范围限制为自 `origin/main` 以来更改的文件。
+- `pnpm test:perf:changed:bench -- --ref <git-ref>` 将路由的 `test:changed` 与该提交差异的原生根项目路径进行比较，并打印墙时间加 macOS 最大 RSS。
+- `pnpm test:perf:changed:bench -- --worktree` 通过 `scripts/test-projects.mjs` 和根 Vitest 配置路由更改的文件列表来对当前脏树进行基准测试。
   - `pnpm test:perf:profile:main` 为 Vitest/Vite 启动和转换开销写入主线程 CPU profile。
   - `pnpm test:perf:profile:runner` 为禁用文件并行的单元套件写入运行器 CPU+堆 profile。
 
@@ -91,7 +288,7 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 - 配置：`vitest.e2e.config.ts`
 - 文件：`src/**/*.e2e.test.ts`、`test/**/*.e2e.test.ts`
 - 运行时默认值：
-  - 使用 Vitest `forks` 以确保确定性的跨文件隔离。
+  - 使用 Vitest `threads` 配合 `isolate: false`，与仓库其余部分匹配。
   - 使用自适应 workers（CI：最多 2 个，本地：默认 1 个）。
   - 默认以静默模式运行以减少控制台 I/O 开销。
 - 有用的覆盖：
@@ -135,7 +332,10 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - 设计上不稳定 CI（真实网络、真实 provider 策略、配额、中断）
   - 花钱 / 使用速率限制
   - 优先运行缩小的子集而不是"所有内容"
-  - 实时运行将获取 `~/.profile` 以获取缺失的 API keys
+- 实时运行将获取 `~/.profile` 以获取缺失的 API keys。
+- 默认情况下，实时运行仍然隔离 `HOME` 并将配置/auth 材料复制到临时测试 home 中，因此单元 fixtures 不会修改你真实的 `~/.openclaw`。
+- 仅当你有意需要实时测试使用你真实的主目录时，才设置 `OPENCLAW_LIVE_USE_REAL_HOME=1`。
+- `pnpm test:live` 现在默认为更安静的模式：它保留 `[live] ...` 进度输出，但抑制额外的 `~/.profile` 通知并静音 gateway 引导日志/Bonjour 聊天。如果你想要完整的启动日志，设置 `OPENCLAW_LIVE_TEST_QUIET=0`。
 - API key 轮换（provider 特定）：用逗号/分号格式设置 `*_API_KEYS` 或 `*_API_KEY_1`、`*_API_KEY_2`（例如 `OPENAI_API_KEYS`、`ANTHROPIC_API_KEYS`、`GEMINI_API_KEYS`）或通过 `OPENCLAW_LIVE_*_KEY` 按实时覆盖；测试在速率限制响应时重试。
 - 进度/心跳输出：
   - 实时套件现在将进度行发送到 stderr，以便即使在 Vitest 控制台捕获安静时，长时间的 provider 调用也可见活跃状态。
@@ -186,9 +386,10 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
   - `pnpm test:live`（或直接调用 Vitest 时设置 `OPENCLAW_LIVE_TEST=1`）
 - 设置 `OPENCLAW_LIVE_MODELS=modern`（或 `all`，是 modern 的别名）以实际运行此套件；否则它会跳过以使 `pnpm test:live` 专注于 gateway 冒烟
 - 如何选择 models：
-  - `OPENCLAW_LIVE_MODELS=modern` 运行现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.7、Grok 4）
+  - `OPENCLAW_LIVE_MODELS=modern` 运行现代允许列表（Opus/Sonnet 4.6+、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.7、Grok 4）
   - `OPENCLAW_LIVE_MODELS=all` 是现代允许列表的别名
-  - 或 `OPENCLAW_LIVE_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,..."` （逗号允许列表）
+  - 或 `OPENCLAW_LIVE_MODELS="openai/gpt-5.4,anthropic/claude-opus-4-6,..."` （逗号允许列表）
+  - 现代/全量扫描默认为精心策划的高信号上限；设置 `OPENCLAW_LIVE_MAX_MODELS=0` 进行详尽的现代扫描，或设置正数以获得更小的上限。
 - 如何选择 providers：
   - `OPENCLAW_LIVE_PROVIDERS="google,google-antigravity,google-gemini-cli"` （逗号允许列表）
 - keys 来自哪里：
@@ -217,9 +418,10 @@ OpenClaw 有三个 Vitest 套件（单元/集成、e2e、实时）和一小组 D
 - 如何启用：
   - `pnpm test:live`（或直接调用 Vitest 时设置 `OPENCLAW_LIVE_TEST=1`）
 - 如何选择 models：
-  - 默认：现代允许列表（Opus/Sonnet/Haiku 4.5、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.7、Grok 4）
+  - 默认：现代允许列表（Opus/Sonnet 4.6+、GPT-5.x + Codex、Gemini 3、GLM 4.7、MiniMax M2.7、Grok 4）
   - `OPENCLAW_LIVE_GATEWAY_MODELS=all` 是现代允许列表的别名
   - 或设置 `OPENCLAW_LIVE_GATEWAY_MODELS="provider/model"`（或逗号列表）来缩小
+  - 现代/全量 gateway 扫描默认为精心策划的高信号上限；设置 `OPENCLAW_LIVE_GATEWAY_MAX_MODELS=0` 进行详尽的现代扫描，或设置正数以获得更小的上限。
 - 如何选择 providers（避免"OpenRouter 所有"）：
   - `OPENCLAW_LIVE_GATEWAY_PROVIDERS="google,google-antigravity,google-gemini-cli,openai,anthropic,zai,minimax"` （逗号允许列表）
 - 工具 + 图像探测在此实时测试中始终开启：
@@ -239,69 +441,168 @@ openclaw models list
 openclaw models list --json
 ```
 
-## 实时测试：Anthropic setup-token 冒烟
-
-- 测试：`src/agents/anthropic.setup-token.live.test.ts`
-- 目标：验证 Claude Code CLI setup-token（或粘贴的 setup-token profile）可以完成 Anthropic prompt。
-- 启用：
-  - `pnpm test:live`（或直接调用 Vitest 时设置 `OPENCLAW_LIVE_TEST=1`）
-  - `OPENCLAW_LIVE_SETUP_TOKEN=1`
-- Token 来源（选一）：
-  - Profile：`OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-token-test`
-  - 原始 token：`OPENCLAW_LIVE_SETUP_TOKEN_VALUE=sk-ant-oat01-...`
-- Model 覆盖（可选）：
-  - `OPENCLAW_LIVE_SETUP_TOKEN_MODEL=anthropic/claude-opus-4-6`
-
-设置示例：
-
-```bash
-openclaw models auth paste-token --provider anthropic --profile-id anthropic:setup-token-test
-OPENCLAW_LIVE_SETUP_TOKEN=1 OPENCLAW_LIVE_SETUP_TOKEN_PROFILE=anthropic:setup-token-test pnpm test:live src/agents/anthropic.setup-token.live.test.ts
-```
-
-## 实时测试：CLI 后端冒烟（Claude Code CLI 或其他本地 CLIs）
+## 实时测试：CLI 后端冒烟（Claude、Codex、Gemini 或其他本地 CLIs）
 
 - 测试：`src/gateway/gateway-cli-backend.live.test.ts`
 - 目标：使用本地 CLI 后端验证 Gateway + agent 管道，而不触及你的默认配置。
+- 后端特定的冒烟默认值与拥有的扩展的 `cli-backend.ts` 定义一起存在。
 - 启用：
   - `pnpm test:live`（或直接调用 Vitest 时设置 `OPENCLAW_LIVE_TEST=1`）
   - `OPENCLAW_LIVE_CLI_BACKEND=1`
 - 默认：
-  - Model：`claude-cli/claude-sonnet-4-6`
-  - 命令：`claude`
-  - 参数：`["-p","--output-format","json","--permission-mode","bypassPermissions"]`
+  - 默认 provider/model：`claude-cli/claude-sonnet-4-6`
+  - 命令/参数/图像行为来自拥有的 CLI 后端插件元数据。
 - 覆盖（可选）：
-  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-opus-4-6"`
   - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.4"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_COMMAND="/full/path/to/claude"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_ARGS='["-p","--output-format","json","--permission-mode","bypassPermissions"]'`
-  - `OPENCLAW_LIVE_CLI_BACKEND_CLEAR_ENV='["ANTHROPIC_API_KEY","ANTHROPIC_API_KEY_OLD"]'`
+  - `OPENCLAW_LIVE_CLI_BACKEND_COMMAND="/full/path/to/codex"`
+  - `OPENCLAW_LIVE_CLI_BACKEND_ARGS='["exec","--json","--color","never","--sandbox","read-only","--skip-git-repo-check"]'`
   - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_PROBE=1` 发送真实图像附件（路径注入到 prompt 中）。
   - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_ARG="--image"` 将图像文件路径作为 CLI 参数传递而不是 prompt 注入。
   - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_MODE="repeat"`（或 `"list"`）控制设置 `IMAGE_ARG` 时图像参数如何传递。
   - `OPENCLAW_LIVE_CLI_BACKEND_RESUME_PROBE=1` 发送第二轮并验证 resume 流程。
-- `OPENCLAW_LIVE_CLI_BACKEND_DISABLE_MCP_CONFIG=0` 保持 Claude Code CLI MCP 配置启用（默认使用临时空文件禁用 MCP 配置）。
+  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL_SWITCH_PROBE=0` 禁用默认的 Claude Sonnet -> Opus 同 session 连续性探测（设置为 `1` 可在所选 model 支持切换目标时强制开启）。
 
 示例：
 
 ```bash
 OPENCLAW_LIVE_CLI_BACKEND=1 \
-  OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-sonnet-4-6" \
+  OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.4" \
   pnpm test:live src/gateway/gateway-cli-backend.live.test.ts
 ```
+
+Docker 配方：
+
+```bash
+pnpm test:docker:live-cli-backend
+```
+
+单 provider Docker 配方：
+
+```bash
+pnpm test:docker:live-cli-backend:claude
+pnpm test:docker:live-cli-backend:claude-subscription
+pnpm test:docker:live-cli-backend:codex
+pnpm test:docker:live-cli-backend:gemini
+```
+
+注意：
+
+- Docker 运行器位于 `scripts/test-live-cli-backend-docker.sh`。
+- 它以非 root `node` 用户在仓库 Docker 镜像内运行实时 CLI 后端冒烟。
+- 它从拥有的扩展解析 CLI 冒烟元数据，然后将匹配的 Linux CLI 包（`@anthropic-ai/claude-code`、`@openai/codex` 或 `@google/gemini-cli`）安装到 `OPENCLAW_DOCKER_CLI_TOOLS_DIR` 的可写缓存前缀（默认：`~/.cache/openclaw/docker-cli-tools`）。
+- `pnpm test:docker:live-cli-backend:claude-subscription` 需要通过 `~/.claude/.credentials.json` 中的 `claudeAiOauth.subscriptionType` 或来自 `claude setup-token` 的 `CLAUDE_CODE_OAUTH_TOKEN` 的可移植 Claude Code 订阅 OAuth。它首先在 Docker 中证明直接的 `claude -p`，然后在不保留 Anthropic API key env vars 的情况下运行两个 Gateway CLI 后端轮次。此订阅通道默认禁用 Claude MCP/工具和图像探测，因为 Claude 目前通过额外使用计费而不是正常的订阅计划限制路由第三方应用使用。
+- 实时 CLI 后端冒烟现在为 Claude、Codex 和 Gemini 练习相同的端到端流程：文本轮次、图像分类轮次，然后通过 gateway CLI 验证的 MCP `cron` 工具调用。
+- Claude 的默认冒烟还将 session 从 Sonnet 补丁到 Opus，并验证恢复的 session 仍然记得之前的注释。
+
+## 实时测试：ACP bind 冒烟（`/acp spawn ... --bind here`）
+
+- 测试：`src/gateway/gateway-acp-bind.live.test.ts`
+- 目标：使用实时 ACP agent 验证真实的 ACP 对话绑定流程：
+  - 发送 `/acp spawn <agent> --bind here`
+  - 绑定一个合成的消息 channel 对话
+  - 在同一对话上发送正常的后续消息
+  - 验证后续消息落在绑定的 ACP session 转录中
+- 启用：
+  - `pnpm test:live src/gateway/gateway-acp-bind.live.test.ts`
+  - `OPENCLAW_LIVE_ACP_BIND=1`
+- 默认：
+  - Docker 中的 ACP agents：`claude,codex,gemini`
+  - 直接 `pnpm test:live ...` 的 ACP agent：`claude`
+  - 合成 channel：Slack DM 风格对话上下文
+  - ACP 后端：`acpx`
+- 覆盖：
+  - `OPENCLAW_LIVE_ACP_BIND_AGENT=claude`
+  - `OPENCLAW_LIVE_ACP_BIND_AGENT=codex`
+  - `OPENCLAW_LIVE_ACP_BIND_AGENT=gemini`
+  - `OPENCLAW_LIVE_ACP_BIND_AGENTS=claude,codex,gemini`
+  - `OPENCLAW_LIVE_ACP_BIND_AGENT_COMMAND='npx -y @agentclientprotocol/claude-agent-acp@<version>'`
+- 注意：
+  - 此通道使用带管理员专用合成起源路由字段的 gateway `chat.send` 接口，以便测试可以附加消息 channel 上下文而无需假装外部投递。
+  - 当 `OPENCLAW_LIVE_ACP_BIND_AGENT_COMMAND` 未设置时，测试使用嵌入式 `acpx` 插件的内置 agent 注册表用于所选 ACP 测试套件 agent。
+
+示例：
+
+```bash
+OPENCLAW_LIVE_ACP_BIND=1 \
+  OPENCLAW_LIVE_ACP_BIND_AGENT=claude \
+  pnpm test:live src/gateway/gateway-acp-bind.live.test.ts
+```
+
+Docker 配方：
+
+```bash
+pnpm test:docker:live-acp-bind
+```
+
+单 agent Docker 配方：
+
+```bash
+pnpm test:docker:live-acp-bind:claude
+pnpm test:docker:live-acp-bind:codex
+pnpm test:docker:live-acp-bind:gemini
+```
+
+Docker 注意：
+
+- Docker 运行器位于 `scripts/test-live-acp-bind-docker.sh`。
+- 默认情况下，它依次针对所有支持的实时 CLI agents 运行 ACP bind 冒烟：`claude`、`codex`，然后是 `gemini`。
+- 使用 `OPENCLAW_LIVE_ACP_BIND_AGENTS=claude`、`OPENCLAW_LIVE_ACP_BIND_AGENTS=codex` 或 `OPENCLAW_LIVE_ACP_BIND_AGENTS=gemini` 缩小矩阵。
+- 它获取 `~/.profile`，将匹配的 CLI auth 材料暂存到容器中，将 `acpx` 安装到可写的 npm 前缀，然后在缺少时安装请求的实时 CLI（`@anthropic-ai/claude-code`、`@openai/codex` 或 `@google/gemini-cli`）。
+- 在 Docker 内，运行器设置 `OPENCLAW_LIVE_ACP_BIND_ACPX_COMMAND=$HOME/.npm-global/bin/acpx`，以便 acpx 将来自获取的 profile 的 provider env vars 保持对子测试套件 CLI 可用。
+
+## 实时测试：Codex app-server 测试套件冒烟
+
+- 目标：通过正常的 gateway `agent` 方法验证插件拥有的 Codex 测试套件：
+  - 加载捆绑的 `codex` 插件
+  - 选择 `OPENCLAW_AGENT_RUNTIME=codex`
+  - 向 `codex/gpt-5.4` 发送第一个 gateway agent 轮次
+  - 向同一个 OpenClaw session 发送第二轮并验证 app-server 线程可以恢复
+  - 通过同一个 gateway 命令路径运行 `/codex status` 和 `/codex models`
+- 测试：`src/gateway/gateway-codex-harness.live.test.ts`
+- 启用：`OPENCLAW_LIVE_CODEX_HARNESS=1`
+- 默认 model：`codex/gpt-5.4`
+- 可选图像探测：`OPENCLAW_LIVE_CODEX_HARNESS_IMAGE_PROBE=1`
+- 可选 MCP/工具探测：`OPENCLAW_LIVE_CODEX_HARNESS_MCP_PROBE=1`
+- 冒烟设置 `OPENCLAW_AGENT_HARNESS_FALLBACK=none`，以便损坏的 Codex 测试套件不能通过静默回退到 PI 而通过。
+- Auth：来自 shell/profile 的 `OPENAI_API_KEY`，加上可选的复制 `~/.codex/auth.json` 和 `~/.codex/config.toml`
+
+本地配方：
+
+```bash
+source ~/.profile
+OPENCLAW_LIVE_CODEX_HARNESS=1 \
+  OPENCLAW_LIVE_CODEX_HARNESS_IMAGE_PROBE=1 \
+  OPENCLAW_LIVE_CODEX_HARNESS_MCP_PROBE=1 \
+  OPENCLAW_LIVE_CODEX_HARNESS_MODEL=codex/gpt-5.4 \
+  pnpm test:live -- src/gateway/gateway-codex-harness.live.test.ts
+```
+
+Docker 配方：
+
+```bash
+source ~/.profile
+pnpm test:docker:live-codex-harness
+```
+
+Docker 注意：
+
+- Docker 运行器位于 `scripts/test-live-codex-harness-docker.sh`。
+- 它获取挂载的 `~/.profile`，传递 `OPENAI_API_KEY`，在存在时复制 Codex CLI auth 文件，将 `@openai/codex` 安装到可写的挂载 npm 前缀，暂存源树，然后只运行 Codex 测试套件实时测试。
+- Docker 默认启用图像和 MCP/工具探测。当你需要更窄的调试运行时，设置 `OPENCLAW_LIVE_CODEX_HARNESS_IMAGE_PROBE=0` 或 `OPENCLAW_LIVE_CODEX_HARNESS_MCP_PROBE=0`。
+- Docker 还导出 `OPENCLAW_AGENT_HARNESS_FALLBACK=none`，与实时测试配置匹配，以便 `openai-codex/*` 或 PI 回退不能隐藏 Codex 测试套件回归。
 
 ### 推荐的实时测试配方
 
 缩窄、明确的允许列表最快且最不不稳定：
 
 - 单个 model，直接（无 gateway）：
-  - `OPENCLAW_LIVE_MODELS="openai/gpt-5.2" pnpm test:live src/agents/models.profiles.live.test.ts`
+  - `OPENCLAW_LIVE_MODELS="openai/gpt-5.4" pnpm test:live src/agents/models.profiles.live.test.ts`
 
 - 单个 model，gateway 冒烟：
-  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.4" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 - 跨多个 providers 的工具调用：
-  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,anthropic/claude-opus-4-6,google/gemini-3-flash-preview,zai/glm-4.7,minimax/MiniMax-M2.7" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+  - `OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.4,anthropic/claude-opus-4-6,google/gemini-3-flash-preview,zai/glm-4.7,minimax/MiniMax-M2.7" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 - Google 重点（Gemini API key + Antigravity）：
   - Gemini（API key）：`OPENCLAW_LIVE_GATEWAY_MODELS="google/gemini-3-flash-preview" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
@@ -324,7 +625,7 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 
 这是我们期望保持有效的"常见 models"运行：
 
-- OpenAI（非 Codex）：`openai/gpt-5.2`（可选：`openai/gpt-5.1`）
+- OpenAI（非 Codex）：`openai/gpt-5.4`（可选：`openai/gpt-5.4-mini`）
 - OpenAI Codex：`openai-codex/gpt-5.4`
 - Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-6`）
 - Google（Gemini API）：`google/gemini-3.1-pro-preview` 和 `google/gemini-3-flash-preview`（避免旧的 Gemini 2.x models）
@@ -333,13 +634,13 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - MiniMax：`minimax/MiniMax-M2.7`
 
 用工具 + 图像运行 gateway 冒烟：
-`OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.2,openai-codex/gpt-5.4,anthropic/claude-opus-4-6,google/gemini-3.1-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/MiniMax-M2.7" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
+`OPENCLAW_LIVE_GATEWAY_MODELS="openai/gpt-5.4,openai-codex/gpt-5.4,anthropic/claude-opus-4-6,google/gemini-3.1-pro-preview,google/gemini-3-flash-preview,google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-flash,zai/glm-4.7,minimax/MiniMax-M2.7" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 ### 基准：工具调用（Read + 可选 Exec）
 
 每个 provider 系列至少选一个：
 
-- OpenAI：`openai/gpt-5.2`（或 `openai/gpt-5-mini`）
+- OpenAI：`openai/gpt-5.4`（或 `openai/gpt-5.4-mini`）
 - Anthropic：`anthropic/claude-opus-4-6`（或 `anthropic/claude-sonnet-4-6`）
 - Google：`google/gemini-3-flash-preview`（或 `google/gemini-3.1-pro-preview`）
 - Z.AI（GLM）：`zai/glm-4.7`
@@ -377,8 +678,10 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - 如果 CLI 有效，实时测试应该找到相同的 keys。
 - 如果实时测试说"无凭据"，用与调试 `openclaw models list` / model 选择相同的方式调试。
 
-- Profile 存储：`~/.openclaw/credentials/`（首选；测试中"profile keys"的含义）
+- 每个 agent 的 auth profiles：`~/.openclaw/agents/<agentId>/agent/auth-profiles.json`（这是实时测试中"profile keys"的含义）
 - 配置：`~/.openclaw/openclaw.json`（或 `OPENCLAW_CONFIG_PATH`）
+- 旧版状态目录：`~/.openclaw/credentials/`（在存在时复制到暂存的实时 home 中，但不是主要的 profile key 存储）
+- 实时本地运行默认将活跃配置、每个 agent 的 `auth-profiles.json` 文件、旧版 `credentials/` 和支持的外部 CLI auth 目录复制到临时测试 home；暂存的实时 home 跳过 `workspace/` 和 `sandboxes/`，`agents.*.workspace` / `agentDir` 路径覆盖被剥离，以便探测远离你真实的主机工作区。
 
 如果你想依赖 env keys（例如在 `~/.profile` 中导出的），在 `source ~/.profile` 后运行本地测试，或使用下面的 Docker 运行器（它们可以将 `~/.profile` 挂载到容器中）。
 
@@ -393,10 +696,20 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - 启用：`BYTEPLUS_API_KEY=... BYTEPLUS_LIVE_TEST=1 pnpm test:live src/agents/byteplus.live.test.ts`
 - 可选 model 覆盖：`BYTEPLUS_CODING_MODEL=ark-code-latest`
 
+## ComfyUI 工作流媒体实时测试
+
+- 测试：`extensions/comfy/comfy.live.test.ts`
+- 启用：`OPENCLAW_LIVE_TEST=1 COMFY_LIVE_TEST=1 pnpm test:live -- extensions/comfy/comfy.live.test.ts`
+- 范围：
+  - 练习捆绑的 comfy 图像、视频和 `music_generate` 路径
+  - 除非配置了 `models.providers.comfy.<capability>`，否则跳过每个功能
+  - 在更改 comfy 工作流提交、轮询、下载或插件注册后很有用
+
 ## 图像生成实时测试
 
 - 测试：`src/image-generation/runtime.live.test.ts`
 - 命令：`pnpm test:live src/image-generation/runtime.live.test.ts`
+- 测试套件：`pnpm test:live:media image`
 - 范围：
   - 枚举每个已注册的图像生成 provider 插件
   - 在探测前从登录 Shell（`~/.profile`）加载缺失的 provider env vars
@@ -407,7 +720,7 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
     - `google:pro-generate`
     - `google:pro-edit`
     - `openai:default-generate`
-- 当前包含的 providers：
+- 当前捆绑的 providers 覆盖：
   - `openai`
   - `google`
 - 可选缩窄：
@@ -417,17 +730,102 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - 可选 auth 行为：
   - `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 强制 profile 存储 auth 并忽略仅 env 覆盖
 
+## 音乐生成实时测试
+
+- 测试：`extensions/music-generation-providers.live.test.ts`
+- 启用：`OPENCLAW_LIVE_TEST=1 pnpm test:live -- extensions/music-generation-providers.live.test.ts`
+- 测试套件：`pnpm test:live:media music`
+- 范围：
+  - 练习共享捆绑的音乐生成 provider 路径
+  - 目前覆盖 Google 和 MiniMax
+  - 在探测前从登录 Shell（`~/.profile`）加载 provider env vars
+  - 默认使用实时/env API keys 优于存储的 auth profiles，以便 `auth-profiles.json` 中的陈旧测试 keys 不会遮蔽真实的 Shell 凭据
+  - 跳过没有可用 auth/profile/model 的 providers
+  - 在可用时运行两种声明的运行时模式：
+    - `generate`，带仅 prompt 输入
+    - `edit`，当 provider 声明 `capabilities.edit.enabled` 时
+  - 当前共享通道覆盖：
+    - `google`：`generate`、`edit`
+    - `minimax`：`generate`
+    - `comfy`：单独的 Comfy 实时文件，不在此共享扫描中
+- 可选缩窄：
+  - `OPENCLAW_LIVE_MUSIC_GENERATION_PROVIDERS="google,minimax"`
+  - `OPENCLAW_LIVE_MUSIC_GENERATION_MODELS="google/lyria-3-clip-preview,minimax/music-2.5+"`
+- 可选 auth 行为：
+  - `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 强制 profile 存储 auth 并忽略仅 env 覆盖
+
+## 视频生成实时测试
+
+- 测试：`extensions/video-generation-providers.live.test.ts`
+- 启用：`OPENCLAW_LIVE_TEST=1 pnpm test:live -- extensions/video-generation-providers.live.test.ts`
+- 测试套件：`pnpm test:live:media video`
+- 范围：
+  - 练习共享捆绑的视频生成 provider 路径
+  - 默认为发布安全的冒烟路径：非 FAL providers、每个 provider 一个文本到视频请求、一秒 lobster prompt，以及来自 `OPENCLAW_LIVE_VIDEO_GENERATION_TIMEOUT_MS`（默认 `180000`）的每个 provider 操作上限
+  - 默认跳过 FAL，因为 provider 端队列延迟可能主导发布时间；传递 `--video-providers fal` 或 `OPENCLAW_LIVE_VIDEO_GENERATION_PROVIDERS="fal"` 以显式运行它
+  - 在探测前从登录 Shell（`~/.profile`）加载 provider env vars
+  - 默认使用实时/env API keys 优于存储的 auth profiles，以便 `auth-profiles.json` 中的陈旧测试 keys 不会遮蔽真实的 Shell 凭据
+  - 跳过没有可用 auth/profile/model 的 providers
+  - 默认只运行 `generate`
+  - 设置 `OPENCLAW_LIVE_VIDEO_GENERATION_FULL_MODES=1` 还可以在可用时运行声明的转换模式：
+    - `imageToVideo`，当 provider 声明 `capabilities.imageToVideo.enabled` 且所选 provider/model 在共享扫描中接受缓冲支持的本地图像输入时
+    - `videoToVideo`，当 provider 声明 `capabilities.videoToVideo.enabled` 且所选 provider/model 在共享扫描中接受缓冲支持的本地视频输入时
+  - 当前共享扫描中声明但跳过的 `imageToVideo` providers：
+    - `vydra`，因为捆绑的 `veo3` 仅支持文本，捆绑的 `kling` 需要远程图像 URL
+  - Vydra 特定的 provider 覆盖：
+    - `OPENCLAW_LIVE_TEST=1 OPENCLAW_LIVE_VYDRA_VIDEO=1 pnpm test:live -- extensions/vydra/vydra.live.test.ts`
+    - 该文件运行 `veo3` 文本到视频加上默认使用远程图像 URL fixture 的 `kling` 通道
+  - 当前 `videoToVideo` 实时覆盖：
+    - 仅当所选 model 为 `runway/gen4_aleph` 时才有 `runway`
+  - 当前共享扫描中声明但跳过的 `videoToVideo` providers：
+    - `alibaba`、`qwen`、`xai`，因为这些路径目前需要远程 `http(s)` / MP4 参考 URL
+    - `google`，因为当前共享的 Gemini/Veo 通道使用本地缓冲支持的输入，而该路径在共享扫描中不被接受
+    - `openai`，因为当前共享通道缺乏特定组织的视频修复/重混访问保证
+- 可选缩窄：
+  - `OPENCLAW_LIVE_VIDEO_GENERATION_PROVIDERS="google,openai,runway"`
+  - `OPENCLAW_LIVE_VIDEO_GENERATION_MODELS="google/veo-3.1-fast-generate-preview,openai/sora-2,runway/gen4_aleph"`
+  - `OPENCLAW_LIVE_VIDEO_GENERATION_SKIP_PROVIDERS=""` 在默认扫描中包含每个 provider，包括 FAL
+  - `OPENCLAW_LIVE_VIDEO_GENERATION_TIMEOUT_MS=60000` 减少每个 provider 操作上限以进行积极的冒烟运行
+- 可选 auth 行为：
+  - `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 强制 profile 存储 auth 并忽略仅 env 覆盖
+
+## 媒体实时测试套件
+
+- 命令：`pnpm test:live:media`
+- 目的：
+  - 通过一个仓库原生入口点运行共享的图像、音乐和视频实时套件
+  - 自动从 `~/.profile` 加载缺失的 provider env vars
+  - 默认自动将每个套件缩窄到当前具有可用 auth 的 providers
+  - 重用 `scripts/test-live.mjs`，以便心跳和安静模式行为保持一致
+- 示例：
+  - `pnpm test:live:media`
+  - `pnpm test:live:media image video --providers openai,google,minimax`
+  - `pnpm test:live:media video --video-providers openai,runway --all-providers`
+  - `pnpm test:live:media music --quiet`
+
 ## Docker 运行器（可选的"在 Linux 上有效"检查）
 
-这些在 repo Docker 镜像内运行 `pnpm test:live`，挂载你的本地配置目录和 workspace（以及在挂载时获取 `~/.profile`）。它们还将需要的 CLI auth 主目录（或运行未缩窄时所有支持的目录）绑定挂载，然后在运行前将其复制到容器 home 中，以便外部 CLI OAuth 可以刷新 token 而不会修改主机 auth 存储：
+这些 Docker 运行器分为两个桶：
+
+- 实时 model 运行器：`test:docker:live-models` 和 `test:docker:live-gateway` 仅在仓库 Docker 镜像内运行各自匹配的 profile key 实时文件（`src/agents/models.profiles.live.test.ts` 和 `src/gateway/gateway-models.profiles.live.test.ts`），挂载你的本地配置目录和 workspace（以及在挂载时获取 `~/.profile`）。匹配的本地入口点是 `test:live:models-profiles` 和 `test:live:gateway-profiles`。
+- Docker 实时运行器默认为较小的冒烟上限，以便完整的 Docker 扫描保持实用：`test:docker:live-models` 默认为 `OPENCLAW_LIVE_MAX_MODELS=12`，`test:docker:live-gateway` 默认为 `OPENCLAW_LIVE_GATEWAY_SMOKE=1`、`OPENCLAW_LIVE_GATEWAY_MAX_MODELS=8`、`OPENCLAW_LIVE_GATEWAY_STEP_TIMEOUT_MS=45000` 和 `OPENCLAW_LIVE_GATEWAY_MODEL_TIMEOUT_MS=90000`。当你明确想要更大的详尽扫描时，覆盖这些 env vars。
+- `test:docker:all` 通过 `test:docker:live-build` 构建一次实时 Docker 镜像，然后为两个实时 Docker 通道重用它。
+- 容器冒烟运行器：`test:docker:openwebui`、`test:docker:onboard`、`test:docker:gateway-network`、`test:docker:mcp-channels` 和 `test:docker:plugins` 启动一个或多个真实容器并验证更高级别的集成路径。
+
+实时 model Docker 运行器还仅绑定挂载所需的 CLI auth home（或运行未缩窄时所有支持的），然后在运行前将其复制到容器 home 中，以便外部 CLI OAuth 可以刷新 token 而不会修改主机 auth 存储：
 
 - 直接 models：`pnpm test:docker:live-models`（脚本：`scripts/test-live-models-docker.sh`）
+- ACP bind 冒烟：`pnpm test:docker:live-acp-bind`（脚本：`scripts/test-live-acp-bind-docker.sh`）
+- CLI 后端冒烟：`pnpm test:docker:live-cli-backend`（脚本：`scripts/test-live-cli-backend-docker.sh`）
+- Codex app-server 测试套件冒烟：`pnpm test:docker:live-codex-harness`（脚本：`scripts/test-live-codex-harness-docker.sh`）
 - Gateway + dev agent：`pnpm test:docker:live-gateway`（脚本：`scripts/test-live-gateway-models-docker.sh`）
+- Open WebUI 实时冒烟：`pnpm test:docker:openwebui`（脚本：`scripts/e2e/openwebui-docker.sh`）
 - 引导向导（TTY，完整脚手架）：`pnpm test:docker:onboard`（脚本：`scripts/e2e/onboard-docker.sh`）
 - Gateway 网络（两个容器，WS auth + 健康检查）：`pnpm test:docker:gateway-network`（脚本：`scripts/e2e/gateway-network-docker.sh`）
+- MCP channel 桥（有种子的 Gateway + stdio 桥 + 原始 Claude 通知帧冒烟）：`pnpm test:docker:mcp-channels`（脚本：`scripts/e2e/mcp-channels-docker.sh`）
 - Plugins（安装冒烟 + `/plugin` 别名 + Claude-bundle 重启语义）：`pnpm test:docker:plugins`（脚本：`scripts/e2e/plugins-docker.sh`）
 
-实时 model Docker 运行器还将当前 checkout 只读绑定挂载并将其暂存到容器内的临时工作目录中。这保持运行时镜像精简，同时仍然针对你的确切本地源/配置运行 Vitest。它们还设置 `OPENCLAW_SKIP_CHANNELS=1`，以便 gateway 实时探测不会在容器内启动真实的 Telegram/Discord 等 channel workers。`test:docker:live-models` 仍然运行 `pnpm test:live`，因此当你需要缩窄或排除该 Docker 通道的 gateway 实时覆盖时，也需要传递 `OPENCLAW_LIVE_GATEWAY_*`。
+实时 model Docker 运行器还将当前 checkout 只读绑定挂载并将其暂存到容器内的临时工作目录中。这保持运行时镜像精简，同时仍然针对你的确切本地源/配置运行 Vitest。暂存步骤跳过大型仅本地缓存和应用构建输出，例如 `.pnpm-store`、`.worktrees`、`__openclaw_vitest__` 和应用本地 `.build` 或 Gradle 输出目录，以便 Docker 实时运行不会花费数分钟复制机器特定工件。它们还设置 `OPENCLAW_SKIP_CHANNELS=1`，以便 gateway 实时探测不会在容器内启动真实的 Telegram/Discord 等 channel workers。`test:docker:live-models` 仍然运行 `pnpm test:live`，因此当你需要缩窄或排除该 Docker 通道的 gateway 实时覆盖时，也需要传递 `OPENCLAW_LIVE_GATEWAY_*`。`test:docker:openwebui` 是更高级别的兼容性冒烟：它启动一个启用了 OpenAI 兼容 HTTP 端点的 OpenClaw gateway 容器，针对该 gateway 启动一个固定的 Open WebUI 容器，通过 Open WebUI 登录，验证 `/api/models` 暴露 `openclaw/default`，然后通过 Open WebUI 的 `/api/chat/completions` 代理发送真实的聊天请求。第一次运行可能明显较慢，因为 Docker 可能需要拉取 Open WebUI 镜像，Open WebUI 可能需要完成自己的冷启动设置。此通道需要可用的实时 model key，`OPENCLAW_PROFILE_FILE`（默认 `~/.profile`）是在 Dockerized 运行中提供它的主要方式。成功运行会打印一个小的 JSON 载荷，如 `{ "ok": true, "model": "openclaw/default", ... }`。`test:docker:mcp-channels` 是故意确定性的，不需要真实的 Telegram、Discord 或 iMessage 账户。它启动一个有种子的 Gateway 容器，启动第二个生成 `openclaw mcp serve` 的容器，然后通过真实的 stdio MCP 桥验证路由的对话发现、转录读取、附件元数据、实时事件队列行为、出站发送路由和 Claude 风格的 channel + 权限通知。通知检查直接检查原始 stdio MCP 帧，以便冒烟验证桥实际发出的内容，而不仅仅是特定客户端 SDK 碰巧暴露的内容。
 
 手动 ACP 自然语言线程冒烟（不是 CI）：
 
@@ -439,17 +837,25 @@ OPENCLAW_LIVE_CLI_BACKEND=1 \
 - `OPENCLAW_CONFIG_DIR=...`（默认：`~/.openclaw`）挂载到 `/home/node/.openclaw`
 - `OPENCLAW_WORKSPACE_DIR=...`（默认：`~/.openclaw/workspace`）挂载到 `/home/node/.openclaw/workspace`
 - `OPENCLAW_PROFILE_FILE=...`（默认：`~/.profile`）挂载到 `/home/node/.profile` 并在运行测试前获取
-- `$HOME` 下的外部 CLI auth 目录只读挂载到 `/host-auth/...`，然后在测试开始前复制到 `/home/node/...`
-  - 默认：挂载所有支持的目录（`.codex`、`.claude`、`.qwen`、`.minimax`）
-  - 缩窄的 provider 运行仅挂载从 `OPENCLAW_LIVE_PROVIDERS` / `OPENCLAW_LIVE_GATEWAY_PROVIDERS` 推断需要的目录
+- `OPENCLAW_DOCKER_PROFILE_ENV_ONLY=1` 仅验证从 `OPENCLAW_PROFILE_FILE` 获取的 env vars，使用临时配置/workspace 目录且不进行外部 CLI auth 挂载
+- `OPENCLAW_DOCKER_CLI_TOOLS_DIR=...`（默认：`~/.cache/openclaw/docker-cli-tools`）挂载到 `/home/node/.npm-global` 用于 Docker 内的缓存 CLI 安装
+- `$HOME` 下的外部 CLI auth 目录/文件只读挂载到 `/host-auth...`，然后在测试开始前复制到 `/home/node/...`
+  - 默认目录：`.minimax`
+  - 默认文件：`~/.codex/auth.json`、`~/.codex/config.toml`、`.claude.json`、`~/.claude/.credentials.json`、`~/.claude/settings.json`、`~/.claude/settings.local.json`
+  - 缩窄的 provider 运行仅挂载从 `OPENCLAW_LIVE_PROVIDERS` / `OPENCLAW_LIVE_GATEWAY_PROVIDERS` 推断需要的目录/文件
   - 使用 `OPENCLAW_DOCKER_AUTH_DIRS=all`、`OPENCLAW_DOCKER_AUTH_DIRS=none` 或逗号列表如 `OPENCLAW_DOCKER_AUTH_DIRS=.claude,.codex` 手动覆盖
 - `OPENCLAW_LIVE_GATEWAY_MODELS=...` / `OPENCLAW_LIVE_MODELS=...` 缩小运行范围
 - `OPENCLAW_LIVE_GATEWAY_PROVIDERS=...` / `OPENCLAW_LIVE_PROVIDERS=...` 在容器内过滤 providers
+- `OPENCLAW_SKIP_DOCKER_BUILD=1` 为不需要重建的重新运行重用现有的 `openclaw:local-live` 镜像
 - `OPENCLAW_LIVE_REQUIRE_PROFILE_KEYS=1` 确保凭据来自 profile 存储（不是 env）
+- `OPENCLAW_OPENWEBUI_MODEL=...` 选择 gateway 为 Open WebUI 冒烟暴露的 model
+- `OPENCLAW_OPENWEBUI_PROMPT=...` 覆盖 Open WebUI 冒烟使用的 nonce 检查 prompt
+- `OPENWEBUI_IMAGE=...` 覆盖固定的 Open WebUI 镜像标签
 
 ## 文档健全性检查
 
-在编辑文档后运行文档检查：`pnpm docs:list`。
+在编辑文档后运行文档检查：`pnpm check:docs`。
+当你还需要页面内标题检查时，运行完整的 Mintlify 锚点验证：`pnpm docs:check-links:anchors`。
 
 ## 离线回归（CI 安全）
 
@@ -477,22 +883,9 @@ Skills 仍然缺少什么（参见 [Skills](/tools/skills)）：
 - 一小套以 skill 为重点的场景（使用 vs 避免、门控、prompt injection）。
 - 可选的实时评估（选择性加入，env 门控），仅在 CI 安全套件就位后。
 
-## 添加回归测试（指导）
-
-当你修复在实时测试中发现的 provider/model 问题时：
-
-- 如果可能，添加 CI 安全回归测试（mock/stub provider，或捕获确切的请求形状转换）
-- 如果它本质上是仅实时的（速率限制、auth 策略），保持实时测试缩窄并通过 env vars 选择性加入
-- 优先针对能捕获错误的最小层：
-  - provider 请求转换/重播错误 → 直接 models 测试
-  - gateway session/历史/工具管道错误 → gateway 实时冒烟或 CI 安全 gateway mock 测试
-- SecretRef 遍历护栏：
-  - `src/secrets/exec-secret-ref-id-parity.test.ts` 从注册表元数据（`listSecretTargetRegistryEntries()`）为每个 SecretRef 类派生一个采样目标，然后断言遍历段 exec ids 被拒绝。
-  - 如果你在 `src/secrets/target-registry-data.ts` 中添加新的 `includeInPlan` SecretRef 目标系列，更新该测试中的 `classifyTargetClass`。测试在未分类目标 ids 上故意失败，这样新类就不能被静默跳过。
-
 ## 契约测试（plugin 和 channel 形态）
 
-契约测试验证每个已注册的 plugin 和 channel 是否符合其接口契约。它们遍历所有发现的 plugin 并运行一套形态和行为断言。
+契约测试验证每个已注册的 plugin 和 channel 是否符合其接口契约。它们遍历所有发现的 plugin 并运行一套形态和行为断言。默认 `pnpm test` 单元通道故意跳过这些共享接缝和冒烟文件；在你触及共享 channel 或 provider 接口时显式运行契约命令。
 
 ### 命令
 
@@ -513,6 +906,11 @@ Skills 仍然缺少什么（参见 [Skills](/tools/skills)）：
 - **threading** - 线程 ID 处理
 - **directory** - 目录/名册 API
 - **group-policy** - 群组策略执行
+
+### Provider 状态契约
+
+位于 `src/plugins/contracts/*.contract.test.ts`：
+
 - **status** - Channel 状态探测
 - **registry** - Plugin 注册表形态
 
@@ -536,3 +934,16 @@ Skills 仍然缺少什么（参见 [Skills](/tools/skills)）：
 - 重构 plugin 注册或发现后
 
 契约测试在 CI 中运行，不需要真实的 API key。
+
+## 添加回归测试（指导）
+
+当你修复在实时测试中发现的 provider/model 问题时：
+
+- 如果可能，添加 CI 安全回归测试（mock/stub provider，或捕获确切的请求形状转换）
+- 如果它本质上是仅实时的（速率限制、auth 策略），保持实时测试缩窄并通过 env vars 选择性加入
+- 优先针对能捕获错误的最小层：
+  - provider 请求转换/重播错误 → 直接 models 测试
+  - gateway session/历史/工具管道错误 → gateway 实时冒烟或 CI 安全 gateway mock 测试
+- SecretRef 遍历护栏：
+  - `src/secrets/exec-secret-ref-id-parity.test.ts` 从注册表元数据（`listSecretTargetRegistryEntries()`）为每个 SecretRef 类派生一个采样目标，然后断言遍历段 exec ids 被拒绝。
+  - 如果你在 `src/secrets/target-registry-data.ts` 中添加新的 `includeInPlan` SecretRef 目标系列，更新该测试中的 `classifyTargetClass`。测试在未分类目标 ids 上故意失败，这样新类就不能被静默跳过。

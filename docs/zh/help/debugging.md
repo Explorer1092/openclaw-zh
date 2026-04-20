@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eee0495eec14004ff226dc82ec423273"
+mmh3_hash: "8e2b80224f3ddacc5dd9f5c9e5fb00c6"
 title: "调试"
 summary: "调试工具：监视模式、原始模型流和追踪推理泄漏"
 read_when:
@@ -26,6 +26,20 @@ read_when:
 ```
 
 `/debug reset` 清除所有覆盖并返回到磁盘上的配置。
+
+## Session 追踪输出
+
+当你想在一个 Session 中查看插件拥有的追踪/调试行而不开启完整的详细模式时，使用 `/trace`。
+
+示例：
+
+```text
+/trace
+/trace on
+/trace off
+```
+
+使用 `/trace` 进行插件诊断，例如 Active Memory 调试摘要。继续使用 `/verbose` 查看普通的详细状态/工具输出，继续使用 `/debug` 进行仅运行时的配置覆盖。
 
 ## Gateway 监视模式
 

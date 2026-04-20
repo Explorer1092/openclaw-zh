@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cb592b8c96b133acdff8fb891eb370d8"
+mmh3_hash: "dc54f6191bc91cd2be1ece1a403ff0d3"
 summary: "在廉价的 Hetzner VPS（Docker）上全天候运行 OpenClaw Gateway，具有持久状态和嵌入的二进制文件"
 read_when:
   - 您希望 OpenClaw 在云 VPS 上全天候运行（不是您的笔记本电脑）
@@ -19,7 +19,7 @@ title: "Hetzner"
 
 安全模型提醒：
 
-- 当所有人处于同一信任边界且运行时仅用于业务时，公司共享智能体是可以的。
+- 当所有人处于同一信任边界且运行时仅用于业务时，公司共享 Agent 是可以的。
 - 保持严格隔离：专用 VPS/运行时 + 专用账户；该主机上不要有个人 Apple/Google/浏览器/密码管理器配置文件。
 - 如果用户对彼此具有对抗性，按 Gateway/主机/OS 用户拆分。
 
@@ -32,6 +32,8 @@ title: "Hetzner"
 - 在 Docker 中启动 OpenClaw Gateway
 - 在主机上持久化 `~/.openclaw` + `~/.openclaw/workspace`（在重启/重建后保留）
 - 通过 SSH 隧道从笔记本电脑访问 Control UI
+
+挂载的 `~/.openclaw` 状态包括 `openclaw.json`、每个 Agent 的 `agents/<agentId>/agent/auth-profiles.json` 和 `.env`。
 
 Gateway 可以通过以下方式访问：
 
@@ -70,160 +72,156 @@ Gateway 可以通过以下方式访问：
 
 ---
 
-## 1) 配置 VPS
+<Steps>
+  <Step title="配置 VPS">
+    在 Hetzner 中创建 Ubuntu 或 Debian VPS。
 
-在 Hetzner 中创建 Ubuntu 或 Debian VPS。
+    以 root 身份连接：
 
-以 root 身份连接：
+    ```bash
+    ssh root@YOUR_VPS_IP
+    ```
 
-```bash
-ssh root@YOUR_VPS_IP
-```
+    本指南假设 VPS 是有状态的。不要将其视为可丢弃的基础设施。
 
-本指南假设 VPS 是有状态的。不要将其视为可丢弃的基础设施。
+  </Step>
 
----
+  <Step title="安装 Docker（在 VPS 上）">
+    ```bash
+    apt-get update
+    apt-get install -y git curl ca-certificates
+    curl -fsSL https://get.docker.com | sh
+    ```
 
-## 2) 安装 Docker（在 VPS 上）
+    验证：
 
-```bash
-apt-get update
-apt-get install -y git curl ca-certificates
-curl -fsSL https://get.docker.com | sh
-```
+    ```bash
+    docker --version
+    docker compose version
+    ```
 
-验证：
+  </Step>
 
-```bash
-docker --version
-docker compose version
-```
+  <Step title="克隆 OpenClaw 仓库">
+    ```bash
+    git clone https://github.com/openclaw/openclaw.git
+    cd openclaw
+    ```
 
----
+    本指南假设您将构建自定义镜像以保证二进制持久性。
 
-## 3) 克隆 OpenClaw 仓库
+  </Step>
 
-```bash
-git clone https://github.com/openclaw/openclaw.git
-cd openclaw
-```
+  <Step title="创建持久主机目录">
+    Docker 容器是短暂的。所有长期状态必须位于主机上。
 
-本指南假设您将构建自定义镜像以保证二进制持久性。
+    ```bash
+    mkdir -p /root/.openclaw/workspace
 
----
+    # 将所有权设置为容器用户（uid 1000）：
+    chown -R 1000:1000 /root/.openclaw
+    ```
 
-## 4) 创建持久主机目录
+  </Step>
 
-Docker 容器是短暂的。所有长期状态必须位于主机上。
+  <Step title="配置环境变量">
+    在仓库根目录创建 `.env`。
 
-```bash
-mkdir -p /root/.openclaw/workspace
+    ```bash
+    OPENCLAW_IMAGE=openclaw:latest
+    OPENCLAW_GATEWAY_TOKEN=
+    OPENCLAW_GATEWAY_BIND=lan
+    OPENCLAW_GATEWAY_PORT=18789
 
-# 将所有权设置为容器用户（uid 1000）：
-chown -R 1000:1000 /root/.openclaw
-```
+    OPENCLAW_CONFIG_DIR=/root/.openclaw
+    OPENCLAW_WORKSPACE_DIR=/root/.openclaw/workspace
 
----
+    GOG_KEYRING_PASSWORD=
+    XDG_CONFIG_HOME=/home/node/.openclaw
+    ```
 
-## 5) 配置环境变量
+    除非您明确希望通过 `.env` 管理，否则将 `OPENCLAW_GATEWAY_TOKEN` 留空；OpenClaw 在首次启动时会将随机 Gateway 令牌写入配置。生成 keyring 密码并粘贴到 `GOG_KEYRING_PASSWORD`：
 
-在仓库根目录创建 `.env`。
+    ```bash
+    openssl rand -hex 32
+    ```
 
-```bash
-OPENCLAW_IMAGE=openclaw:latest
-OPENCLAW_GATEWAY_TOKEN=change-me-now
-OPENCLAW_GATEWAY_BIND=lan
-OPENCLAW_GATEWAY_PORT=18789
+    **不要提交此文件。**
 
-OPENCLAW_CONFIG_DIR=/root/.openclaw
-OPENCLAW_WORKSPACE_DIR=/root/.openclaw/workspace
+    此 `.env` 文件用于容器/运行时环境变量（如 `OPENCLAW_GATEWAY_TOKEN`）。已存储的 Provider OAuth/API 密钥身份验证保存在挂载的 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` 中。
 
-GOG_KEYRING_PASSWORD=change-me-now
-XDG_CONFIG_HOME=/home/node/.openclaw
-```
+  </Step>
 
-生成强密钥：
+  <Step title="Docker Compose 配置">
+    创建或更新 `docker-compose.yml`。
 
-```bash
-openssl rand -hex 32
-```
+    ```yaml
+    services:
+      openclaw-gateway:
+        image: ${OPENCLAW_IMAGE}
+        build: .
+        restart: unless-stopped
+        env_file:
+          - .env
+        environment:
+          - HOME=/home/node
+          - NODE_ENV=production
+          - TERM=xterm-256color
+          - OPENCLAW_GATEWAY_BIND=${OPENCLAW_GATEWAY_BIND}
+          - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT}
+          - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+          - GOG_KEYRING_PASSWORD=${GOG_KEYRING_PASSWORD}
+          - XDG_CONFIG_HOME=${XDG_CONFIG_HOME}
+          - PATH=/home/linuxbrew/.linuxbrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        volumes:
+          - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
+          - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+        ports:
+          # 推荐：将 Gateway 保持为 VPS 上的仅回环；通过 SSH 隧道访问。
+          # 要公开暴露，请删除 `127.0.0.1:` 前缀并相应地配置防火墙。
+          - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:18789"
+        command:
+          [
+            "node",
+            "dist/index.js",
+            "gateway",
+            "--bind",
+            "${OPENCLAW_GATEWAY_BIND}",
+            "--port",
+            "${OPENCLAW_GATEWAY_PORT}",
+            "--allow-unconfigured",
+          ]
+    ```
 
-**不要提交此文件。**
+    `--allow-unconfigured` 仅用于引导便利，它不能替代正确的 Gateway 配置。仍然为您的部署设置身份验证（`gateway.auth.token` 或密码）并使用安全的绑定设置。
 
----
+  </Step>
 
-## 6) Docker Compose 配置
+  <Step title="共享 Docker VM 运行时步骤">
+    使用共享运行时指南执行常见 Docker 主机流程：
 
-创建或更新 `docker-compose.yml`。
+    - [将所需的二进制文件烘焙到镜像中](/install/docker-vm-runtime#bake-required-binaries-into-the-image)
+    - [构建并启动](/install/docker-vm-runtime#build-and-launch)
+    - [什么在哪里持久化](/install/docker-vm-runtime#what-persists-where)
+    - [更新](/install/docker-vm-runtime#updates)
 
-```yaml
-services:
-  openclaw-gateway:
-    image: ${OPENCLAW_IMAGE}
-    build: .
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-      - HOME=/home/node
-      - NODE_ENV=production
-      - TERM=xterm-256color
-      - OPENCLAW_GATEWAY_BIND=${OPENCLAW_GATEWAY_BIND}
-      - OPENCLAW_GATEWAY_PORT=${OPENCLAW_GATEWAY_PORT}
-      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
-      - GOG_KEYRING_PASSWORD=${GOG_KEYRING_PASSWORD}
-      - XDG_CONFIG_HOME=${XDG_CONFIG_HOME}
-      - PATH=/home/linuxbrew/.linuxbrew/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-    volumes:
-      - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
-      - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
-    ports:
-      # 推荐：将 Gateway 保持为 VPS 上的仅回环；通过 SSH 隧道访问。
-      # 要公开暴露，请删除 `127.0.0.1:` 前缀并相应地配置防火墙。
-      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT}:18789"
-    command:
-      [
-        "node",
-        "dist/index.js",
-        "gateway",
-        "--bind",
-        "${OPENCLAW_GATEWAY_BIND}",
-        "--port",
-        "${OPENCLAW_GATEWAY_PORT}",
-        "--allow-unconfigured",
-      ]
-```
+  </Step>
 
-`--allow-unconfigured` 仅用于引导便利，它不能替代正确的 Gateway 配置。仍然为您的部署设置身份验证（`gateway.auth.token` 或密码）并使用安全的绑定设置。
+  <Step title="Hetzner 特定访问">
+    完成共享构建和启动步骤后，从笔记本电脑建立隧道：
 
----
+    ```bash
+    ssh -N -L 18789:127.0.0.1:18789 root@YOUR_VPS_IP
+    ```
 
-## 7) 共享 Docker VM 运行时步骤
+    打开：
 
-使用共享运行时指南执行常见 Docker 主机流程：
+    `http://127.0.0.1:18789/`
 
-- [将所需的二进制文件烘焙到镜像中](/install/docker-vm-runtime#bake-required-binaries-into-the-image)
-- [构建并启动](/install/docker-vm-runtime#build-and-launch)
-- [什么在哪里持久化](/install/docker-vm-runtime#what-persists-where)
-- [更新](/install/docker-vm-runtime#updates)
+    粘贴配置的共享密钥。本指南默认使用 Gateway 令牌；如果您切换到密码身份验证，请改用该密码。
 
----
-
-## 8) Hetzner 特定访问
-
-完成共享构建和启动步骤后，从笔记本电脑建立隧道：
-
-```bash
-ssh -N -L 18789:127.0.0.1:18789 root@YOUR_VPS_IP
-```
-
-打开：
-
-`http://127.0.0.1:18789/`
-
-粘贴您的 Gateway 令牌。
-
----
+  </Step>
+</Steps>
 
 共享持久性映射位于 [Docker VM Runtime](/install/docker-vm-runtime#what-persists-where)。
 
@@ -245,3 +243,9 @@ ssh -N -L 18789:127.0.0.1:18789 root@YOUR_VPS_IP
 这种方法通过可重现的部署、版本控制的基础设施和自动灾难恢复来补充上述 Docker 设置。
 
 > **注意：** 社区维护。有关问题或贡献，请参阅上面的仓库链接。
+
+## 后续步骤
+
+- 设置消息 Channel：[Channels](/channels)
+- 配置 Gateway：[Gateway 配置](/gateway/configuration)
+- 保持 OpenClaw 最新：[更新](/install/updating)

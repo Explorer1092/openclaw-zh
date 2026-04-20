@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7327c54bac67ec4eaac74f76b0954ee6"
+mmh3_hash: "d3143668002f8d2994c2689a5c5d63cd"
 summary: "安装 OpenClaw — 安装程序脚本、npm/pnpm、从源码、Docker 等"
 read_when:
   - 你需要入门快速入门之外的安装方法
