@@ -1,14 +1,14 @@
 ---
-mmh3_hash: "73b513ce3a48f2cd81e29cf00c8a26c2"
-title: "Dreaming (experimental)"
+mmh3_hash: "900e5d30fe9f085e873a744e1adeea2d"
+title: "Dreaming"
 summary: "后台内存整合系统，包含轻度、深度和 REM 阶段以及梦境日记"
 read_when:
-  - 你希望内存升级自动运行
-  - 你想了解每个 dreaming 阶段的作用
-  - 你希望在不污染 MEMORY.md 的情况下调整整合频率
+  - 您希望内存升级自动运行
+  - 您想了解每个 dreaming 阶段的作用
+  - 您希望在不污染 MEMORY.md 的情况下调整整合频率
 ---
 
-# Dreaming（实验性功能）
+# Dreaming
 
 Dreaming 是 `memory-core` 中的后台内存整合系统。它帮助 OpenClaw 将强短期信号转移到持久内存中，同时保持过程的可解释性和可审查性。
 
@@ -72,6 +72,7 @@ Dreaming 可以将已脱敏的 Session 记录摄取到 dreaming 语料库中。�
 Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶段积累足够材料后，`memory-core` 会运行一个尽力而为的后台子 Agent 回合（使用默认运行时模型）并追加一条简短的日记条目。
 
 此日记供人类在 Dreams UI 中阅读，不作为升级来源。
+Dreaming 生成的日记/报告工件被排除在短期升级之外。只有有依据的内存片段才有资格升级到 `MEMORY.md`。
 
 还有一个用于审阅和恢复工作的有依据的历史回填通道：
 
@@ -80,7 +81,7 @@ Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶
 - `memory rem-backfill --path ... --stage-short-term` 将有依据的持久候选项暂存到正常深度阶段已使用的同一短期证据存储中。
 - `memory rem-backfill --rollback` 和 `--rollback-short-term` 删除这些暂存的回填工件，不影响普通日记条目或实时短期召回。
 
-控制 UI 提供相同的日记回填/重置流程，你可以在决定有依据的候选项是否值得升级之前，在 Dreams 场景中检查结果。该场景还显示一个独特的有依据通道，让你能看到哪些暂存的短期条目来自历史重放，哪些升级项目是有依据引导的，并仅清除有依据的暂存条目而不影响普通实时短期状态。
+控制 UI 提供相同的日记回填/重置流程，您可以在决定有依据的候选项是否值得升级之前，在 Dreams 场景中检查结果。该场景还显示一个独特的有依据通道，让您能看到哪些暂存的短期条目来自历史重放，哪些升级项目是有依据引导的，并仅清除有依据的暂存条目而不影响普通实时短期状态。
 
 ## 深度排名信号
 
@@ -194,7 +195,7 @@ openclaw memory rem-harness --json
 
 阶段策略、阈值和存储行为是内部实现细节（非用户可配置项）。
 
-参见[内存配置参考](/reference/memory-config#dreaming-experimental)了解完整键列表。
+参见 [Memory 配置参考](/reference/memory-config#dreaming) 了解完整键列表。
 
 ## Dreams UI
 
@@ -212,4 +213,4 @@ openclaw memory rem-harness --json
 - [Memory](/concepts/memory)
 - [Memory Search](/concepts/memory-search)
 - [memory CLI](/cli/memory)
-- [内存配置参考](/reference/memory-config)
+- [Memory 配置参考](/reference/memory-config)
