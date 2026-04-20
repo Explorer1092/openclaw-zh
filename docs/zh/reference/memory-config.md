@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f34581724153423ac5d711258028602a"
+mmh3_hash: "6335aa0ae0868e25a96c0149ebf83e29"
 title: "记忆配置参考"
 summary: "记忆搜索、嵌入 Provider、QMD、混合搜索和多模态索引的所有配置选项"
 read_when:
@@ -17,45 +17,58 @@ read_when:
 - [内置引擎](/concepts/memory-builtin) -- 默认 SQLite 后端
 - [QMD 引擎](/concepts/memory-qmd) -- 本地优先辅助程序
 - [记忆搜索](/concepts/memory-search) -- 搜索管道和调优
+- [主动记忆](/concepts/active-memory) -- 为交互式 Session 启用记忆子 Agent
 
 所有记忆搜索设置都位于 `openclaw.json` 中 `agents.defaults.memorySearch` 下（除非另有说明）。
+
+如果您在寻找**主动记忆**功能开关和子 Agent 配置，
+它位于 `plugins.entries.active-memory` 下，而非 `memorySearch`。
+
+主动记忆使用双门控模型：
+
+1. Plugin 必须已启用并以当前 Agent id 为目标
+2. 请求必须是符合条件的交互式持久聊天 Session
+
+有关激活模型、Plugin 拥有的配置、转录持久化和安全推出模式，请参见[主动记忆](/concepts/active-memory)。
 
 ---
 
 ## Provider 选择
 
-| 键         | 类型      | 默认值       | 说明                                                                                        |
-| ---------- | --------- | ------------ | ------------------------------------------------------------------------------------------- |
-| `provider` | `string`  | 自动检测     | 嵌入适配器 ID：`openai`、`gemini`、`voyage`、`mistral`、`bedrock`、`ollama`、`local`        |
-| `model`    | `string`  | Provider 默认 | 嵌入模型名称                                                                                 |
-| `fallback` | `string`  | `"none"`     | 主 Provider 失败时的回退适配器 ID                                                             |
-| `enabled`  | `boolean` | `true`       | 启用或禁用记忆搜索                                                                            |
+| 键         | 类型      | 默认值       | 说明                                                                                                             |
+| ---------- | --------- | ------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `provider` | `string`  | 自动检测     | 嵌入适配器 ID：`bedrock`、`gemini`、`github-copilot`、`local`、`mistral`、`ollama`、`openai`、`voyage` |
+| `model`    | `string`  | Provider 默认 | 嵌入模型名称                                                                                                      |
+| `fallback` | `string`  | `"none"`     | 主 Provider 失败时的回退适配器 ID                                                                                  |
+| `enabled`  | `boolean` | `true`       | 启用或禁用记忆搜索                                                                                                 |
 
 ### 自动检测顺序
 
 当未设置 `provider` 时，OpenClaw 选择第一个可用的：
 
 1. `local` -- 如果配置了 `memorySearch.local.modelPath` 且文件存在。
-2. `openai` -- 如果可以解析 OpenAI 密钥。
-3. `gemini` -- 如果可以解析 Gemini 密钥。
-4. `voyage` -- 如果可以解析 Voyage 密钥。
-5. `mistral` -- 如果可以解析 Mistral 密钥。
-6. `bedrock` -- 如果 AWS SDK 凭据链解析成功（实例角色、访问密钥、Profile、SSO、Web Identity 或共享配置）。
+2. `github-copilot` -- 如果可以解析 GitHub Copilot token（环境变量或身份验证配置文件）。
+3. `openai` -- 如果可以解析 OpenAI 密钥。
+4. `gemini` -- 如果可以解析 Gemini 密钥。
+5. `voyage` -- 如果可以解析 Voyage 密钥。
+6. `mistral` -- 如果可以解析 Mistral 密钥。
+7. `bedrock` -- 如果 AWS SDK 凭据链解析成功（实例角色、访问密钥、Profile、SSO、Web Identity 或共享配置）。
 
 `ollama` 受支持但不会自动检测（需要明确设置）。
 
 ### API 密钥解析
 
-远程嵌入需要 API 密钥。Bedrock 使用 AWS SDK 默认凭据链（无需 API 密钥）。
+远程嵌入需要 API 密钥。Bedrock 使用 AWS SDK 默认凭据链代替（实例角色、SSO、访问密钥）。
 
-| Provider | 环境变量                       | 配置键                            |
-| -------- | ------------------------------ | --------------------------------- |
-| OpenAI   | `OPENAI_API_KEY`               | `models.providers.openai.apiKey`  |
-| Gemini   | `GEMINI_API_KEY`               | `models.providers.google.apiKey`  |
-| Voyage   | `VOYAGE_API_KEY`               | `models.providers.voyage.apiKey`  |
-| Mistral  | `MISTRAL_API_KEY`              | `models.providers.mistral.apiKey` |
-| Bedrock  | AWS 凭据链                     | 无需 API 密钥                     |
-| Ollama   | `OLLAMA_API_KEY`（占位符）     | --                                |
+| Provider       | 环境变量                                           | 配置键                            |
+| -------------- | -------------------------------------------------- | --------------------------------- |
+| Bedrock        | AWS 凭据链                                         | 无需 API 密钥                     |
+| Gemini         | `GEMINI_API_KEY`                                   | `models.providers.google.apiKey`  |
+| GitHub Copilot | `COPILOT_GITHUB_TOKEN`、`GH_TOKEN`、`GITHUB_TOKEN` | 通过设备登录的身份验证配置文件    |
+| Mistral        | `MISTRAL_API_KEY`                                  | `models.providers.mistral.apiKey` |
+| Ollama         | `OLLAMA_API_KEY`（占位符）                         | --                                |
+| OpenAI         | `OPENAI_API_KEY`                                   | `models.providers.openai.apiKey`  |
+| Voyage         | `VOYAGE_API_KEY`                                   | `models.providers.voyage.apiKey`  |
 
 Codex OAuth 仅涵盖 chat/completions，不满足嵌入请求。
 
@@ -361,16 +374,16 @@ QMD 模型覆盖保持在 QMD 侧，而非 OpenClaw 配置。如果需要全局�
 
 ### 更新计划
 
-| 键                        | 类型      | 默认值 | 说明                              |
-| ------------------------- | --------- | ------ | --------------------------------- |
-| `update.interval`         | `string`  | `5m`   | 刷新间隔                          |
-| `update.debounceMs`       | `number`  | `15000`| 防抖文件更改                      |
-| `update.onBoot`           | `boolean` | `true` | 启动时刷新                        |
-| `update.waitForBootSync`  | `boolean` | `false`| 阻塞启动直到刷新完成              |
-| `update.embedInterval`    | `string`  | --     | 单独的嵌入节奏                    |
-| `update.commandTimeoutMs` | `number`  | --     | QMD 命令超时                      |
-| `update.updateTimeoutMs`  | `number`  | --     | QMD 更新操作超时                  |
-| `update.embedTimeoutMs`   | `number`  | --     | QMD 嵌入操作超时                  |
+| 键                        | 类型      | 默认值  | 说明                              |
+| ------------------------- | --------- | ------- | --------------------------------- |
+| `update.interval`         | `string`  | `5m`    | 刷新间隔                          |
+| `update.debounceMs`       | `number`  | `15000` | 防抖文件更改                      |
+| `update.onBoot`           | `boolean` | `true`  | 启动时刷新                        |
+| `update.waitForBootSync`  | `boolean` | `false` | 阻塞启动直到刷新完成              |
+| `update.embedInterval`    | `string`  | --      | 单独的嵌入节奏                    |
+| `update.commandTimeoutMs` | `number`  | --      | QMD 命令超时                      |
+| `update.updateTimeoutMs`  | `number`  | --      | QMD 更新操作超时                  |
+| `update.embedTimeoutMs`   | `number`  | --      | QMD 嵌入操作超时                  |
 
 ### 限制
 
@@ -397,6 +410,8 @@ QMD 模型覆盖保持在 QMD 侧，而非 OpenClaw 配置。如果需要全局�
   },
 }
 ```
+
+默认允许直接和 Channel Session，同时仍然拒绝群组。
 
 默认仅 DM。`match.keyPrefix` 匹配规范化的 Session 键；`match.rawKeyPrefix` 匹配包含 `agent:<id>:` 的原始键。
 
@@ -433,7 +448,7 @@ QMD 模型覆盖保持在 QMD 侧，而非 OpenClaw 配置。如果需要全局�
 
 ---
 
-## 梦境（实验性）
+## 梦境
 
 梦境在 `plugins.entries.memory-core.config.dreaming` 下配置，而非 `agents.defaults.memorySearch`。
 

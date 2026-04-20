@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e09b9b342e692a3d78da52d430f705a2"
+mmh3_hash: "37a00de0cbb9653bb6cfba4ab82ae3b3"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志
@@ -23,13 +23,13 @@ sidebarTitle: "向导参考"
     - 如果配置无效或包含旧密钥，向导会停止并要求您在继续之前运行 `openclaw doctor`。
     - Reset 使用 `trash`（从不使用 `rm`）并提供范围：
       - 仅配置
-      - 配置 + 凭据 + 会话
+      - 配置 + 凭据 + Session
       - 完全重置（还删除工作空间）
   </Step>
   <Step title="模型/身份验证">
     - **Anthropic API 密钥**：如果存在则使用 `ANTHROPIC_API_KEY`，或提示输入密钥，然后保存以供守护程序使用。
     - **Anthropic API 密钥**：引导/配置中首选的 Anthropic 助手选项。
-    - **Anthropic 安装令牌（旧版/手动）**：在引导/配置中再次可用，但 Anthropic 告知 OpenClaw 用户，OpenClaw Claude 登录路径算作第三方工具使用，需要 Claude 账户的 **Extra Usage**。
+    - **Anthropic 安装令牌**：在引导/配置中仍然可用，但 OpenClaw 现在更倾向于在可用时重用 Claude CLI。
     - **OpenAI Code（Codex）订阅（Codex CLI）**：如果 `~/.codex/auth.json` 存在，向导可以重用它。重用的 Codex CLI 凭据继续由 Codex CLI 管理；到期时 OpenClaw 首先重新读取该来源，当 Provider 可以刷新时，将刷新的凭据写回 Codex 存储，而不是自行接管。
     - **OpenAI Code（Codex）订阅（OAuth）**：浏览器流程；粘贴 `code#state`。
       - 当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.4`。
@@ -37,12 +37,15 @@ sidebarTitle: "向导参考"
       - 当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.4`。
     - **xAI（Grok）API 密钥**：提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。
     - **OpenCode**：提示输入 `OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`，在 https://opencode.ai/auth 获取），并让您选择 Zen 或 Go 目录。
+    - **Ollama**：首先提供 **Cloud + Local**、**Cloud only** 或 **Local only** 选项。`Cloud only` 提示输入 `OLLAMA_API_KEY` 并使用 `https://ollama.com`；主机支持的模式提示输入 Ollama base URL，发现可用模型，并在需要时自动拉取所选本地模型；`Cloud + Local` 还检查该 Ollama 主机是否已登录以进行云访问。
+    - 更多详情：[Ollama](/providers/ollama)
     - **API 密钥**：为您存储密钥。
     - **Vercel AI Gateway（多模型代理）**：提示输入 `AI_GATEWAY_API_KEY`。
     - 更多详情：[Vercel AI Gateway](/providers/vercel-ai-gateway)
     - **Cloudflare AI Gateway**：提示输入帐户 ID、Gateway ID 和 `CLOUDFLARE_AI_GATEWAY_API_KEY`。
     - 更多详情：[Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
-    - **MiniMax**：配置自动写入；托管默认为 `MiniMax-M2.7`，API 密钥使用 `minimax/...`，OAuth 使用 `minimax-portal/...`。
+    - **MiniMax**：配置自动写入；托管默认为 `MiniMax-M2.7`。
+      API 密钥设置使用 `minimax/...`，OAuth 设置使用 `minimax-portal/...`。
     - 更多详情：[MiniMax](/providers/minimax)
     - **StepFun**：为 StepFun 标准版或 Step Plan（中国或全球端点）自动写入配置。
     - 标准版目前包含 `step-3.5-flash`，Step Plan 还包含 `step-3.5-flash-2603`。
@@ -52,8 +55,6 @@ sidebarTitle: "向导参考"
     - **Moonshot（Kimi K2）**：配置自动写入。
     - **Kimi Coding**：配置自动写入。
     - 更多详情：[Moonshot AI（Kimi + Kimi Coding）](/providers/moonshot)
-    - **Ollama**：提示输入 Ollama base URL，提供 **Cloud + Local** 或 **Local** 模式，发现可用模型，并在需要时自动拉取所选本地模型。
-    - 更多详情：[Ollama](/providers/ollama)
     - **Skip**：尚未配置身份验证。
     - 从检测到的选项中选择默认模型（或手动输入 Provider/模型）。为了获得最佳质量和降低提示注入风险，请选择您 Provider 堆栈中可用的最强最新一代模型。
     - 向导运行模型检查，如果配置的模型未知或缺少身份验证，则发出警告。
@@ -103,18 +104,18 @@ sidebarTitle: "向导参考"
   </Step>
   <Step title="守护程序安装">
     - macOS：LaunchAgent
-      - 需要已登录的用户会话；对于无头，使用自定义 LaunchDaemon（未提供）。
+      - 需要已登录的用户 Session；对于无头，使用自定义 LaunchDaemon（未提供）。
     - Linux（和 Windows 通过 WSL2）：systemd 用户单元
       - 向导尝试通过 `loginctl enable-linger <user>` 启用 lingering，以便 Gateway 在注销后保持运行。
       - 可能提示输入 sudo（写入 `/var/lib/systemd/linger`）；它首先尝试不使用 sudo。
-    - **运行时选择：**Node（推荐；WhatsApp/Telegram 需要）。**不推荐** Bun。
+    - **运行时选择：** Node（推荐；WhatsApp/Telegram 需要）。**不推荐** Bun。
     - 如果 Token 身份验证需要 Token 且 `gateway.auth.token` 由 SecretRef 管理，守护程序安装会验证它，但不会将解析的明文 Token 值持久化到守护进程服务环境元数据中。
     - 如果 Token 身份验证需要 Token 且配置的 Token SecretRef 未解析，守护程序安装将被阻止，并提供可操作的指导。
     - 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置，守护程序安装将被阻止，直到明确设置模式。
   </Step>
   <Step title="健康检查">
     - 启动 Gateway（如果需要）并运行 `openclaw health`。
-    - 提示：`openclaw status --deep` 将 Gateway 健康探测添加到状态输出（需要可访问的 Gateway）。
+    - 提示：`openclaw status --deep` 将实时 Gateway 健康探测添加到状态输出，包括在支持时的 Channel 探测（需要可访问的 Gateway）。
   </Step>
   <Step title="Skills（推荐）">
     - 读取可用的 Skills 并检查要求。
@@ -219,7 +220,7 @@ Gateway 通过 RPC 暴露向导流程（`wizard.start`、`wizard.next`、`wizard
 
 `openclaw agents add` 写入 `agents.list[]` 和可选的 `bindings`。
 
-WhatsApp 凭据位于 `~/.openclaw/credentials/whatsapp/<accountId>/` 下。会话存储在 `~/.openclaw/agents/<agentId>/sessions/` 下。
+WhatsApp 凭据位于 `~/.openclaw/credentials/whatsapp/<accountId>/` 下。Session 存储在 `~/.openclaw/agents/<agentId>/sessions/` 下。
 
 某些 Channels 作为 Plugins 交付。当您在引导期间选择一个时，向导会提示安装它（npm 或本地路径），然后才能配置它。
 

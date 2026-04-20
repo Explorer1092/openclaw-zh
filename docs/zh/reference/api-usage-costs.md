@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "78415ade987eca840e57d1071c068c66"
+mmh3_hash: "485fca0e16f02ab75bd5b0abade9ad21"
 summary: "审计哪些功能可能花费资金、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API
@@ -26,7 +26,7 @@ title: "API 使用量与费用"
 - `/usage tokens` 仅显示 token；订阅式 OAuth/token 和 CLI 流程隐藏美元费用。
 - Gemini CLI 注意：当 CLI 返回 JSON 输出时，OpenClaw 从 `stats` 读取使用情况，将 `stats.cached` 规范化为 `cacheRead`，并在需要时从 `stats.input_tokens - stats.cached` 推导输入 token。
 
-Anthropic 注意：Anthropic 的公开 Claude Code 文档仍然将直接 Claude Code 终端使用量计入 Claude 计划限制。另外，Anthropic 告知 OpenClaw 用户，从 **2026 年 4 月 4 日太平洋时间下午 12:00 / 英国夏令时间晚上 8:00** 起，**OpenClaw** 的 Claude 登录路径作为第三方工具使用量，需要独立于订阅的**额外使用量**计费。Anthropic 不会公开 OpenClaw 可以在 `/usage full` 中显示的每消息美元估算。
+Anthropic 注意：Anthropic 工作人员告知我们，OpenClaw 风格的 Claude CLI 使用方式再次获得许可，因此 OpenClaw 将 Claude CLI 重用和 `claude -p` 使用视为此集成的被认可方式，除非 Anthropic 发布新策略。Anthropic 仍然不公开 OpenClaw 可以在 `/usage full` 中显示的每消息美元估算。
 
 **CLI 使用窗口（提供商配额）**
 
@@ -86,6 +86,7 @@ OpenClaw 可以从以下位置获取凭据：
 - `memorySearch.provider = "gemini"` → Gemini 嵌入
 - `memorySearch.provider = "voyage"` → Voyage 嵌入
 - `memorySearch.provider = "mistral"` → Mistral 嵌入
+- `memorySearch.provider = "lmstudio"` → LM Studio 嵌入（本地/自托管）
 - `memorySearch.provider = "ollama"` → Ollama 嵌入（本地/自托管；通常无托管 API 计费）
 - 可选回退到远程提供商（如果本地嵌入失败）
 

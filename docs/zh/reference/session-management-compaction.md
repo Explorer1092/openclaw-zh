@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c7431e36955cdeca2d56b8901d42183d"
+mmh3_hash: "02d620890bd5cbca8c80cb404ffee767"
 summary: "深入研究：Session 存储 + 转录、生命周期和（自动）压缩内部"
 read_when:
   - 您需要调试 Session id、转录 JSONL 或 sessions.json 字段
@@ -266,6 +266,21 @@ OpenClaw 还为嵌入式运行强制执行安全底限：
 
 ---
 
+## 可插拔压缩 Provider
+
+Plugin 可以通过 Plugin API 上的 `registerCompactionProvider()` 注册压缩 Provider。当 `agents.defaults.compaction.provider` 设置为已注册的 Provider id 时，保障扩展将摘要委托给该 Provider，而非内置的 `summarizeInStages` 管道。
+
+- `provider`：已注册的压缩 Provider Plugin 的 id。不设置则使用默认 LLM 摘要。
+- 设置 `provider` 会强制 `mode: "safeguard"`。
+- Provider 接收与内置路径相同的压缩指令和标识符保留策略。
+- 保障在 Provider 输出后仍保留最近轮次和分割轮次的后缀上下文。
+- 如果 Provider 失败或返回空结果，OpenClaw 自动回退到内置 LLM 摘要。
+- 中止/超时信号会被重新抛出（不会被吞没）以尊重调用方的取消。
+
+来源：`src/plugins/compaction-provider.ts`、`src/agents/pi-hooks/compaction-safeguard.ts`。
+
+---
+
 ## 用户可见界面
 
 您可以通过以下方式观察压缩和 Session 状态：
@@ -313,7 +328,7 @@ OpenClaw 使用**预阈值刷新**方法：
 
 - 默认提示/系统提示包含 `NO_REPLY` 提示以抑制传递。
 - 刷新每个压缩周期运行一次（在 `sessions.json` 中跟踪）。
-- 刷新仅针对嵌入式 Pi Session 运行。
+- 刷新仅针对嵌入式 Pi Session 运行（CLI 后端跳过）。
 - 当 Session 工作区为只读（`workspaceAccess: "ro"` 或 `"none"`）时，刷新被跳过。
 - 有关工作区文件布局和写入模式，请参见[记忆](/concepts/memory)。
 

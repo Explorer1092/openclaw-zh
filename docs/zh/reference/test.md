@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2a101d0181241cc7dc2cb8e95d2615bd"
+mmh3_hash: "57124a804349f7343bdbb3ac8ff16a5d"
 summary: "如何在本地运行测试（vitest）以及何时使用 force/coverage 模式"
 read_when:
   - 运行或修复测试
@@ -13,14 +13,19 @@ title: "测试"
 - `pnpm test:force`：杀死任何占用默认控制端口的遗留 Gateway 进程，然后使用隔离的 Gateway 端口运行完整的 Vitest 套件，以便服务器测试不会与运行的实例冲突。当先前的 Gateway 运行占用端口 18789 时使用此选项。
 - `pnpm test:coverage`：使用 V8 覆盖率运行单元套件（通过 `vitest.unit.config.ts`）。全局阈值为 70% 行/分支/函数/语句。覆盖率排除集成繁重的入口点（CLI 布线、Gateway/Telegram 桥、webchat 静态服务器），以保持目标专注于可单元测试的逻辑。
 - `pnpm test:coverage:changed`：仅对自 `origin/main` 以来变更的文件运行单元覆盖率。
-- `pnpm test:changed`：使用 `--changed origin/main` 运行原生 Vitest 项目配置。基础配置将项目/配置文件视为 `forceRerunTriggers`，以便在需要时布线变更仍会广泛重新运行。
-- `pnpm test`：直接运行原生 Vitest 根项目配置。文件过滤器在配置的项目间原生工作。
+- `pnpm test:changed`：将变更的 git 路径扩展到有作用域的 Vitest 通道，当差异仅涉及可路由的源/测试文件时。配置/设置变更仍然回退到原生根项目运行，以便在需要时布线编辑能够广泛重新运行。
+- `pnpm test`：通过有作用域的 Vitest 通道路由显式文件/目录目标。无目标运行现在执行十一个顺序分片配置（`vitest.full-core-unit-src.config.ts`、`vitest.full-core-unit-security.config.ts`、`vitest.full-core-unit-ui.config.ts`、`vitest.full-core-unit-support.config.ts`、`vitest.full-core-support-boundary.config.ts`、`vitest.full-core-contracts.config.ts`、`vitest.full-core-bundled.config.ts`、`vitest.full-core-runtime.config.ts`、`vitest.full-agentic.config.ts`、`vitest.full-auto-reply.config.ts`、`vitest.full-extensions.config.ts`），而非一个大型根项目进程。
+- 选定的 `plugin-sdk` 和 `commands` 测试文件现在通过只保留 `test/setup.ts` 的专用轻量通道路由，将运行时密集型用例保留在其现有通道上。
+- 选定的 `plugin-sdk` 和 `commands` 辅助源文件也将 `pnpm test:changed` 映射到这些轻量通道中的明确兄弟测试，以便小型辅助编辑避免重新运行繁重的运行时支持套件。
+- `auto-reply` 现在还拆分为三个专用配置（`core`、`top-level`、`reply`），以便回复测试套件不会主导较轻量的顶层状态/token/辅助测试。
 - 基础 Vitest 配置现在默认使用 `pool: "threads"` 和 `isolate: false`，并在仓库配置中启用共享的非隔离运行器。
 - `pnpm test:channels` 运行 `vitest.channels.config.ts`。
 - `pnpm test:extensions` 运行 `vitest.extensions.config.ts`。
-- `pnpm test:extensions`：运行扩展/插件套件。
-- `pnpm test:perf:imports`：为原生根项目运行启用 Vitest 导入时长 + 导入分解报告。
-- `pnpm test:perf:imports:changed`：与导入分析相同，但仅针对自 `origin/main` 以来变更的文件。
+- `pnpm test:extensions`：运行扩展/Plugin 套件。
+- `pnpm test:perf:imports`：启用 Vitest 导入时长 + 导入分解报告，同时对显式文件/目录目标仍使用有作用域的通道路由。
+- `pnpm test:perf:imports:changed`：同样的导入分析，但仅针对自 `origin/main` 以来变更的文件。
+- `pnpm test:perf:changed:bench -- --ref <git-ref>` 将已路由的变更模式路径与相同提交 git 差异的原生根项目运行进行基准测试。
+- `pnpm test:perf:changed:bench -- --worktree` 在不先提交的情况下对当前工作树变更集进行基准测试。
 - `pnpm test:perf:profile:main`：为 Vitest 主线程写入 CPU 性能文件（`.artifacts/vitest-main-profile`）。
 - `pnpm test:perf:profile:runner`：为单元运行器写入 CPU + 堆内存性能文件（`.artifacts/vitest-runner-profile`）。
 - Gateway 集成：通过 `OPENCLAW_TEST_INCLUDE_GATEWAY=1 pnpm test` 或 `pnpm test:gateway` 选择加入。

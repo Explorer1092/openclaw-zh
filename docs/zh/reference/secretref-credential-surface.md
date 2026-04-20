@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9c82fc9b08f12c1ebf1702221ce8f360"
+mmh3_hash: "5ff341527850bf4c90677f1c902fa5d0"
 summary: "SecretRef 凭据界面的规范支持与不支持范围"
 read_when:
   - 验证 SecretRef 凭据覆盖范围
@@ -42,8 +42,8 @@ title: "SecretRef 凭据界面"
 - `talk.providers.*.apiKey`
 - `messages.tts.providers.*.apiKey`
 - `tools.web.fetch.firecrawl.apiKey`
-- `plugins.entries.firecrawl.config.webFetch.apiKey`
 - `plugins.entries.brave.config.webSearch.apiKey`
+- `plugins.entries.exa.config.webSearch.apiKey`
 - `plugins.entries.google.config.webSearch.apiKey`
 - `plugins.entries.xai.config.webSearch.apiKey`
 - `plugins.entries.moonshot.config.webSearch.apiKey`
