@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5a387ffbf25c14cfdfe4159afc91debd"
+mmh3_hash: "c2847327ddbe3459e4a4c3ecfcea616b"
 title: "clawbot"
 summary: "`openclaw clawbot` 的 CLI 参考（旧版别名命名空间）"
 read_when:

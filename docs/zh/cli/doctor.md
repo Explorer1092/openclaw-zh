@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3278d1d7ef7913249918eb09967a6e5c"
+mmh3_hash: "dc977c3398df42ba3fc553b8ad88f2b7"
 title: "`openclaw doctor`"
 sidebarTitle: "openclaw doctor"
 summary: "`openclaw doctor` 的 CLI 参考(健康检查 + 指导性修复)"

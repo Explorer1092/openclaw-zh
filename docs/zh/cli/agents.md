@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "70c39440c13d5b6e73f9452887506265"
+mmh3_hash: "5a608a49958519a0e04980d912322ab4"
 title: "`openclaw agents`"
 sidebarTitle: "openclaw agents"
 summary: "`openclaw agents` 的 CLI 参考(列出/添加/删除/绑定/解绑/设置身份)"

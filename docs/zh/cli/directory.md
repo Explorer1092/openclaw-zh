@@ -1,7 +1,7 @@
 ---
 title: "`openclaw directory`"
 sidebarTitle: "openclaw directory"
-mmh3_hash: "9cfc810d8138213e59ad42b2df5bba6b"
+mmh3_hash: "3d474a9d38c296272465d87960c3fd10"
 summary: "`openclaw directory` 的 CLI 参考(自己、对等方、组)"
 read_when:
   - 您想查找Channel的联系人/组/自己 ID

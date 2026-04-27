@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2f8738fc5708aecfabc6dc3fc43e0b3d"
+mmh3_hash: "cefc200a65addad3d059baf5c0c5f262"
 title: "`openclaw approvals`"
 sidebarTitle: "openclaw approvals"
 summary: "`openclaw approvals` 和 `openclaw exec-policy` 的 CLI 参考"

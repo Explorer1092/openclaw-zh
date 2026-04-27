@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f839ba2ff4aaec1a7b90d122ea6bffa"
+mmh3_hash: "a72475ca3d6bb80c4d84d4e19a98f7d6"
 title: "`openclaw health`"
 sidebarTitle: "openclaw health"
 summary: "`openclaw health` 的 CLI 参考(通过 RPC 获取 Gateway 健康快照)"

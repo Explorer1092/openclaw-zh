@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f42ba0d5cab0f6477981a0d2d91fa613"
+mmh3_hash: "49d7d30c0c97660452b3659b96fdcd4a"
 title: "completion"
 summary: "`openclaw completion` 的 CLI 参考（生成/安装 Shell 补全脚本）"
 read_when:

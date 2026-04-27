@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a97efd32dda3dab8a053ce4b1eb18beb"
+mmh3_hash: "6c22efe0fa731d50e563c25a70ab4f8a"
 title: "`openclaw dns`"
 sidebarTitle: "openclaw dns"
 summary: "`openclaw dns` 的 CLI 参考(广域发现助手)"

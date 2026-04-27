@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3669fe5443c4f33c6388dfdca66cb26d"
+mmh3_hash: "f9aeeb6d22943ce6437dbbeb5a808b98"
 title: "`openclaw docs`"
 sidebarTitle: "openclaw docs"
 summary: "`openclaw docs` 的 CLI 参考(搜索实时文档索引)"

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "de96481ea69273dde431f5ab331603f0"
+mmh3_hash: "ffcecd5d5b2fc861948a7f955326077c"
 title: "`openclaw dashboard`"
 sidebarTitle: "openclaw dashboard"
 summary: "`openclaw dashboard` 的 CLI 参考(打开控制 UI)"

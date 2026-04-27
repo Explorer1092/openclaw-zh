@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "13aae55d37c358a4904be19d3b492fdb"
+mmh3_hash: "001134ea7ef2b240365c75e68d96dc3e"
 title: "`openclaw configure`"
 sidebarTitle: "openclaw configure"
 summary: "`openclaw configure` 的 CLI 参考(交互式配置提示)"

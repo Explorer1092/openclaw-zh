@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "43f24cc6a8b2bfcc0dbee97e3b09d70f"
+mmh3_hash: "6836cea7052ef01ef8caa3f1edd4b331"
 summary: "用于 Provider 支持的模型、图像、音频、TTS、视频、网络和嵌入工作流的推理优先 CLI"
 read_when:
   - 添加或修改 `openclaw infer` 命令
@@ -49,6 +49,8 @@ Focus on model runs, image generation, video generation, audio transcription, TT
 - 使用稳定的 `--json` 输出格式，适用于脚本、自动化和 Agent 驱动的工作流。
 - 当任务本质上是"运行推理"时，优先使用 OpenClaw 原生接口。
 - 对于大多数 infer 命令，使用普通本地路径，无需运行 Gateway。
+
+对于端到端 Provider 检查，在较低层级 Provider 测试通过后，优先使用 `openclaw infer ...`。它会在发出 Provider 请求之前，依次执行已发布的 CLI、配置加载、默认 Agent 解析、捆绑插件激活、运行时依赖修复以及共享能力运行时。
 
 ## 命令树
 

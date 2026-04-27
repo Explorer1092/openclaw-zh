@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f5ad39a3f79d944f9aca84f41b7a2a12"
+mmh3_hash: "9cbb5db87843ce161d97fc5b0187ccb9"
 title: "CLI 参考"
 sidebarTitle: "CLI 参考"
 summary: "OpenClaw CLI 索引：命令列表、全局标志和各命令页面链接"

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ade8db05e80915ac27ae29c25cd1b0b1"
+mmh3_hash: "629f6f91c8355fb1d0396333d8835f4a"
 title: "`openclaw devices`"
 summary: "`openclaw devices` 的 CLI 参考(设备配对 + 令牌轮换/撤销)"
 read_when:
