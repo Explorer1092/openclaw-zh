@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ed621b358593e50fabb3d4c29e4e80d5"
+mmh3_hash: "0d6be7f6952f7cce6fbdca18529c09ce"
 title: 沙盒 CLI
 sidebarTitle: "沙盒 CLI"
 summary: "管理沙盒运行时并检查有效的沙盒策略"
@@ -79,7 +79,9 @@ openclaw sandbox recreate --all --force        # 跳过确认
 - `--browser`:仅重新创建浏览器容器
 - `--force`:跳过确认提示
 
-**重要提示:** 运行时在下次使用 Agent 时会自动重新创建。
+<Note>
+运行时在下次使用 Agent 时会自动重新创建。
+</Note>
 
 ## 用例
 
@@ -150,17 +152,19 @@ openclaw sandbox recreate --agent family
 openclaw sandbox recreate --agent alfred
 ```
 
-## 为什么需要这个?
+## 为什么需要这个
 
-**问题:** 当您更新沙盒配置时:
+当您更新沙盒配置时:
 
-- 现有运行时继续使用旧设置运行
-- 运行时仅在 24 小时不活动后才被修剪
-- 定期使用的 Agent 会无限期地保持旧运行时运行
+- 现有运行时继续使用旧设置运行。
+- 运行时仅在 24 小时不活动后才被修剪。
+- 定期使用的 Agent 会无限期地保持旧运行时运行。
 
-**解决方案:** 使用 `openclaw sandbox recreate` 强制删除旧运行时。它们将在下次需要时自动使用当前设置重新创建。
+使用 `openclaw sandbox recreate` 强制删除旧运行时。它们将在下次需要时自动使用当前设置重新创建。
 
-提示:优先使用 `openclaw sandbox recreate` 而不是手动后端特定清理。它使用 Gateway 的运行时注册表,并在范围/Session 键更改时避免不匹配。
+<Tip>
+优先使用 `openclaw sandbox recreate` 而不是手动后端特定清理。它使用 Gateway 的运行时注册表,并在范围/Session 键更改时避免不匹配。
+</Tip>
 
 ## 配置
 
@@ -189,8 +193,9 @@ openclaw sandbox recreate --agent alfred
 }
 ```
 
-## 另请参阅
+## 相关
 
-- [沙盒文档](/gateway/sandboxing)
-- [Agent 配置](/concepts/agent-workspace)
-- [Doctor 命令](/gateway/doctor) - 检查沙盒设置
+- [CLI 参考](/cli)
+- [沙盒](/gateway/sandboxing)
+- [Agent 工作区](/concepts/agent-workspace)
+- [Doctor](/gateway/doctor):检查沙盒设置。

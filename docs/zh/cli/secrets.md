@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e52b673edab52c26d4d1a95374abbc11"
+mmh3_hash: "26a1ea3e6dcbb00e16009d9220a4e905"
 summary: "`openclaw secrets` 的 CLI 参考(reload、audit、configure、apply)"
 read_when:
   - 在运行时重新解析 secret ref
@@ -49,6 +49,7 @@ CI/门控的退出码说明:
 ```bash
 openclaw secrets reload
 openclaw secrets reload --json
+openclaw secrets reload --url ws://127.0.0.1:18789 --token <token>
 ```
 
 说明:
@@ -193,3 +194,8 @@ openclaw secrets audit --check
 ```
 
 如果 `audit --check` 仍报告明文发现，请更新剩余报告的目标路径并重新运行审计。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Secrets 管理](/gateway/secrets)

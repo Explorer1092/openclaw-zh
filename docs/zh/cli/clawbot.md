@@ -20,3 +20,7 @@ read_when:
 推荐直接使用现代顶级命令：
 
 - `openclaw clawbot qr` -> `openclaw qr`
+
+## 相关
+
+- [CLI 参考](/cli)

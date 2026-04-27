@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3dd2cc9666ccc38d3073eaaee1d7ea2a"
+mmh3_hash: "cc92f433282b38324cdb754f4d0134fc"
 title: "`openclaw models`"
 sidebarTitle: "openclaw models"
 summary: "`openclaw models` 的 CLI 参考(状态/列表/设置/扫描、别名、回退、身份验证)"
@@ -15,6 +15,7 @@ read_when:
 相关:
 
 - 提供商 + 模型:[模型](/providers/models)
+- 模型选择概念 + `/models` 斜杠命令:[Models 概念](/concepts/models)
 - 提供商身份验证设置:[入门](/start/getting-started)
 
 ## 常用命令
@@ -43,9 +44,38 @@ Codex、MiniMax、Xiaomi 和 z.ai。使用身份验证在可用时来自提供�
 注意:
 
 - `models set <model-or-alias>` 接受 `provider/model` 或别名。
+- `models list` 是只读的:它读取配置、身份验证配置文件、现有目录状态和提供商拥有的目录行,但不重写 `models.json`。
+- `models list --all --provider <id>` 可以包含插件清单或捆绑的提供商目录元数据中的提供商拥有的静态目录行,即使您尚未与该提供商进行身份验证。这些行仍然显示为不可用,直到配置了匹配的身份验证。
+- `models list` 保持原生模型元数据和运行时上限区分。在表格输出中,当有效运行时上限与原生上下文窗口不同时,`Ctx` 显示 `contextTokens/contextWindow`;JSON 行在提供商公开该上限时包含 `contextTokens`。
+- `models list --provider <id>` 按提供商 ID 过滤,例如 `moonshot` 或 `openai-codex`。它不接受交互式提供商选择器中的显示标签,例如 `Moonshot AI`。
 - 模型引用通过在**第一个** `/` 上拆分来解析。如果模型 ID 包含 `/`(OpenRouter 风格),请包含提供商前缀(示例:`openrouter/moonshotai/kimi-k2`)。
 - 如果省略提供商,OpenClaw 将输入首先解析为别名,然后解析为该确切模型 ID 的唯一已配置提供商匹配,最后才回退到配置的默认提供商并显示弃用警告。如果该提供商不再公开配置的默认模型,OpenClaw 回退到第一个配置的提供商/模型,而不是呈现过时的已删除提供商默认值。
 - `models status` 可能在身份验证输出中为非密钥占位符显示 `marker(<value>)`(例如 `OPENAI_API_KEY`、`secretref-managed`、`minimax-oauth`、`oauth:chutes`、`ollama-local`),而不是将其屏蔽为密钥。
+
+### Models scan
+
+`models scan` 读取 OpenRouter 的公开 `:free` 目录并对候选回退进行排名。
+目录本身是公开的,因此纯元数据扫描不需要 OpenRouter 密钥。
+
+默认情况下,OpenClaw 会尝试通过实时模型调用探测工具和图像支持。
+如果未配置 OpenRouter 密钥,命令回退到仅元数据输出并解释 `:free` 模型仍需要 `OPENROUTER_API_KEY` 进行探测和推断。
+
+选项:
+
+- `--no-probe`(仅元数据;无配置/密钥查找)
+- `--min-params <b>`
+- `--max-age-days <days>`
+- `--provider <name>`
+- `--max-candidates <n>`
+- `--timeout <ms>`(目录请求和每次探测超时)
+- `--concurrency <n>`
+- `--yes`
+- `--no-input`
+- `--set-default`
+- `--set-image`
+- `--json`
+
+`--set-default` 和 `--set-image` 需要实时探测;仅元数据扫描结果是参考性的,不会应用到配置。
 
 ### `models status`
 
@@ -100,6 +130,7 @@ openclaw models auth paste-token
 
 `models auth login` 运行提供商插件的身份验证流程(OAuth/API 密钥)。使用
 `openclaw plugins list` 查看已安装的提供商。
+使用 `openclaw models auth --agent <id> <subcommand>` 将身份验证结果写入特定已配置的 Agent 存储。父 `--agent` 标志由 `add`、`login`、`setup-token`、`paste-token` 和 `login-github-copilot` 支持。
 
 示例:
 
@@ -114,5 +145,11 @@ openclaw models auth login --provider openai-codex --set-default
 - `paste-token` 接受从其他地方生成的令牌字符串或来自自动化的令牌字符串。
 - `paste-token` 需要 `--provider`,提示输入令牌值,并将其写入默认配置文件 ID `<provider>:manual`,除非您传递 `--profile-id`。
 - `paste-token --expires-in <duration>` 从相对持续时间(如 `365d` 或 `12h`)存储绝对令牌到期时间。
-- Anthropic 说明：Anthropic 员工告诉我们 OpenClaw 风格的 Claude CLI 使用再次被允许，因此 OpenClaw 将 Claude CLI 重用和 `claude -p` 使用视为此集成的授权使用，除非 Anthropic 发布新政策。
+- Anthropic 说明:Anthropic 员工告诉我们 OpenClaw 风格的 Claude CLI 使用再次被允许,因此 OpenClaw 将 Claude CLI 重用和 `claude -p` 使用视为此集成的授权使用,除非 Anthropic 发布新政策。
 - Anthropic `setup-token` / `paste-token` 仍然作为受支持的 OpenClaw 令牌路径提供。但在可用时 OpenClaw 现在优先使用 Claude CLI 重用和 `claude -p`。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [模型选择](/concepts/model-providers)
+- [模型故障转移](/concepts/model-failover)

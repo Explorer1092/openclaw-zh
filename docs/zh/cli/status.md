@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dfcaf698979fb875a8740ade10523adb"
+mmh3_hash: "dd6320c58f2128f267f7266d34b4ee8e"
 title: "`openclaw status`"
 sidebarTitle: "openclaw status"
 summary: "`openclaw status` 的 CLI 参考(诊断、探测、使用快照)"
@@ -35,3 +35,8 @@ openclaw status --usage
 - 如果支持的 Channel SecretRef 已配置但在当前命令路径中不可用,status 保持只读并报告降级输出而不是崩溃。人类可读输出显示警告(例如"configured token unavailable in this command path"),JSON 输出包含 `secretDiagnostics`。
 - 当命令本地 SecretRef 解析成功时,status 优先使用已解析的快照,并从最终输出中清除瞬时的"secret unavailable" Channel 标记。
 - `status --all` 包含 Secrets 概述行和诊断部分,该部分汇总 secret 诊断信息(为可读性截断),而不会停止报告生成。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Doctor](/gateway/doctor)

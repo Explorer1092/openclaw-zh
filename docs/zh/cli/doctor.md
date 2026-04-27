@@ -41,9 +41,12 @@ openclaw doctor --generate-gateway-token
 说明:
 
 - 交互式提示(如钥匙串/OAuth 修复)仅在 stdin 是 TTY 且**未**设置 `--non-interactive` 时运行。无头运行(cron、Telegram、无终端)将跳过提示。
+- 性能：非交互式 `doctor` 运行会跳过提前加载插件，使无头健康检查保持快速。交互式 Session 仍会在检查需要插件贡献时完整加载插件。
 - `--fix`(`--repair` 的别名)将备份写入 `~/.openclaw/openclaw.json.bak` 并删除未知的配置键,列出每个删除。
 - 状态完整性检查现在可以检测 Session 目录中的孤立记录文件,并可以将其归档为 `.deleted.<timestamp>` 以安全回收空间。
 - Doctor 扫描 `~/.openclaw/cron/jobs.json`(或 `cron.store`)中的旧版 cron 作业形状,并可以在调度器在运行时自动规范化之前原地重写它们。
+- Doctor 在不写入打包的全局安装的情况下修复缺失的捆绑插件运行时依赖。对于 root 拥有的 npm 安装或强化的 systemd 单元，请将 `OPENCLAW_PLUGIN_STAGE_DIR` 设置为可写目录，如 `/var/lib/openclaw/plugin-runtime-deps`；也可以是路径列表，如 `/opt/openclaw/plugin-runtime-deps:/var/lib/openclaw/plugin-runtime-deps`，其中较早的根是只读查找层，最后的根是修复目标。
+- 当另一个 supervisor 拥有 Gateway 生命周期时，设置 `OPENCLAW_SERVICE_REPAIR_POLICY=external`。Doctor 仍会报告 Gateway/服务健康状况并应用非服务修复，但会跳过服务安装/启动/重启/引导和旧版服务清理。
 - Doctor 自动迁移旧版平面 Talk 配置(`talk.voiceId`、`talk.modelId` 等)到 `talk.provider` + `talk.providers.<provider>`。
 - 当唯一差异是对象键顺序时,重复的 `doctor --fix` 运行不再报告/应用 Talk 规范化。
 - Doctor 包括内存搜索就绪检查,当缺少嵌入凭据时可以推荐 `openclaw configure --section model`。
@@ -63,3 +66,8 @@ launchctl getenv OPENCLAW_GATEWAY_PASSWORD
 launchctl unsetenv OPENCLAW_GATEWAY_TOKEN
 launchctl unsetenv OPENCLAW_GATEWAY_PASSWORD
 ```
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Gateway doctor](/gateway/doctor)

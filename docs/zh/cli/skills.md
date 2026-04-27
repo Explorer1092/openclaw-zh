@@ -1,7 +1,7 @@
 ---
 title: "`openclaw skills`"
 sidebarTitle: "openclaw skills"
-mmh3_hash: "36eca797121544ca0ee67a26dac572c2"
+mmh3_hash: "e9e00d691d2fe2ef1ba2bb804c318345"
 summary: "`openclaw skills` 的 CLI 参考(搜索/安装/更新/列表/信息/检查)"
 read_when:
   - 您想查看哪些 Skill 可用并准备运行
@@ -51,3 +51,8 @@ openclaw skills check --json
 - `update --all` 仅更新活动工作区中跟踪的 ClawHub 安装。
 - `list` 是未提供子命令时的默认操作。
 - `list`、`info` 和 `check` 将渲染的输出写入 stdout。使用 `--json` 时,这意味着机器可读的有效载荷保留在 stdout 上供管道和脚本使用。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Skills](/tools/skills)

@@ -16,4 +16,9 @@ openclaw tasks flow show <lookup>
 openclaw tasks flow cancel <lookup>
 ```
 
-完整文档请参见 [Task Flow](/automation/taskflow) 和 [tasks CLI 参考](/cli/index#tasks)。
+完整文档请参见 [Task Flow](/automation/taskflow) 和 [tasks CLI 参考](/cli/tasks)。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Automation](/automation)

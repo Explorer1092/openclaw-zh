@@ -9,7 +9,7 @@ title: "backup"
 
 # `openclaw backup`
 
-为 OpenClaw 的状态、配置、凭据、Session 以及可选的工作区创建本地备份归档。
+为 OpenClaw 的状态、配置、auth profiles、Channel/Provider 凭据、Session 以及可选的工作区创建本地备份归档。
 
 ```bash
 openclaw backup create
@@ -38,10 +38,12 @@ openclaw backup verify ./2026-03-09T00-00-00.000Z-openclaw-backup.tar.gz
 
 - OpenClaw 本地状态解析器返回的状态目录，通常为 `~/.openclaw`
 - 当前活跃的配置文件路径
-- OAuth / 凭据目录
+- 存在于状态目录外时的已解析 `credentials/` 目录
 - 从当前配置中发现的工作区目录，除非您传递 `--no-include-workspace`
 
-如果您使用 `--only-config`，OpenClaw 将跳过状态、凭据和工作区发现，仅归档活跃配置文件路径。
+Model auth profiles 已是状态目录的一部分，位于 `agents/<agentId>/agent/auth-profiles.json`，因此通常已被状态备份条目覆盖。
+
+如果您使用 `--only-config`，OpenClaw 将跳过状态、凭据目录和工作区发现，仅归档活跃配置文件路径。
 
 OpenClaw 在构建归档前会对路径进行规范化。如果配置、凭据或工作区已在状态目录内，则不会作为单独的顶层备份来源重复添加。缺失的路径会被跳过。
 
@@ -75,3 +77,7 @@ OpenClaw 不强制执行内置的最大备份大小或单文件大小限制。
 大型工作区通常是归档大小的主要驱动因素。如果您想要更小或更快的备份，请使用 `--no-include-workspace`。
 
 要获得最小的归档，请使用 `--only-config`。
+
+## 相关
+
+- [CLI 参考](/cli)

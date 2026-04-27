@@ -1,10 +1,10 @@
 ---
-mmh3_hash: "92e1d62d8a83fd7c5ed099e3a6ce7e26"
+mmh3_hash: "677d3a059b05d3e7da4c5efbc7be3adb"
 summary: "`openclaw wiki` 的 CLI 参考（memory-wiki 库状态、搜索、编译、lint、应用、桥接和 Obsidian 助手）"
 read_when:
   - 您想使用 memory-wiki CLI
   - 您正在记录或更改 `openclaw wiki`
-title: "wiki"
+title: "Wiki"
 ---
 
 # `openclaw wiki`
@@ -204,3 +204,8 @@ openclaw wiki get syntheses/alpha-summary.md --from 1 --lines 80
 - `plugins.entries.memory-wiki.config.context.includeCompiledDigestPrompt`
 
 有关完整配置模型，请参见 [Memory Wiki plugin](/plugins/memory-wiki)。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Memory Wiki](/plugins/memory-wiki)

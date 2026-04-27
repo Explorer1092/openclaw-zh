@@ -181,3 +181,8 @@ openclaw approvals allowlist remove "~/Projects/**/bin/rg"
 - `--agent` 默认为 `"*"`，适用于所有 Agent。
 - 节点主机必须公布 `system.execApprovals.get/set`（macOS 应用或无头节点主机）。
 - 批准文件按主机存储在 `~/.openclaw/exec-approvals.json`。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Exec approvals](/tools/exec-approvals)

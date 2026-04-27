@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "494f0f18e380d283806aed45afebdabf"
+mmh3_hash: "4f07e7b6ca3861f6747d99c5747daa98"
 title: "`openclaw reset`"
 sidebarTitle: "openclaw reset"
 summary: "`openclaw reset` 的 CLI 参考(重置本地状态/配置)"
@@ -35,3 +35,7 @@ openclaw reset --scope full --yes --non-interactive
 - 如果您想在删除本地状态之前进行可恢复的快照,请先运行 `openclaw backup create`。
 - 如果省略 `--scope`,`openclaw reset` 使用交互式提示选择要删除的内容。
 - `--non-interactive` 仅在同时设置 `--scope` 和 `--yes` 时有效。
+
+## 相关
+
+- [CLI 参考](/cli)

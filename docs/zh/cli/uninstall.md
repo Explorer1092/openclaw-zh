@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2b6e3f1fab60eee0925c524713650976"
+mmh3_hash: "1eb179c3e82c43a045ea34207df4c6fd"
 title: "`openclaw uninstall`"
 sidebarTitle: "openclaw uninstall"
 summary: "`openclaw uninstall` 的 CLI 参考(删除 Gateway 服务 + 本地数据)"
@@ -39,3 +39,8 @@ openclaw uninstall --dry-run
 - 如果您想在删除状态或工作区之前进行可恢复的快照,请先运行 `openclaw backup create`。
 - `--all` 是同时删除服务、状态、工作区和应用的简写。
 - `--non-interactive` 需要 `--yes`。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [卸载](/install/uninstall)

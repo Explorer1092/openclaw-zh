@@ -49,7 +49,9 @@ openclaw devices clear --yes --pending --json
 
 通过精确的 `requestId` 批准待处理的设备配对请求。如果省略 `requestId` 或传递 `--latest`，OpenClaw 仅打印选定的待处理请求并退出；验证详情后请使用精确的请求 ID 重新运行批准。
 
-注意:如果设备以更改的身份验证详情(角色/范围/公钥)重试配对,OpenClaw 会覆盖之前的待处理条目并发出新的 `requestId`。批准前请运行 `openclaw devices list` 以使用当前 ID。
+<Note>
+如果设备以更改的身份验证详情(角色/范围/公钥)重试配对,OpenClaw 会覆盖之前的待处理条目并发出新的 `requestId`。批准前请运行 `openclaw devices list` 以使用当前 ID。
+</Note>
 
 如果设备已配对并请求更广泛的范围或角色,OpenClaw 会保留现有批准并创建新的待处理升级请求。在批准前,请查看 `openclaw devices list` 中的 `Requested` 与 `Approved` 列,或使用 `openclaw devices approve --latest` 预览确切的升级内容。
 
@@ -97,14 +99,18 @@ openclaw devices revoke --device <deviceId> --role node
 - `--timeout <ms>`:RPC 超时。
 - `--json`:JSON 输出(推荐用于脚本)。
 
-注意:当您设置 `--url` 时,CLI 不会回退到配置或环境凭据。显式传递 `--token` 或 `--password`。缺少显式凭据会导致错误。
+<Warning>
+当您设置 `--url` 时,CLI 不会回退到配置或环境凭据。请显式传递 `--token` 或 `--password`。缺少显式凭据会导致错误。
+</Warning>
 
 ## 注意
 
 - 令牌轮换返回新令牌(敏感)。将其视为机密。
 - 这些命令需要 `operator.pairing`(或 `operator.admin`)范围。
-- 令牌轮换保持在批准的配对角色集和该设备批准的范围基线内。无关的缓存令牌条目不会授予新的轮换目标。
+- `gateway.nodes.pairing.autoApproveCidrs` 是仅用于首次节点设备配对的可选 Gateway 策略；它不改变 CLI 批准权限。
+- 令牌轮换和撤销保持在批准的配对角色集和该设备批准的范围基线内。无关的缓存令牌条目不授予令牌管理目标。
 - 对于配对设备令牌 Session,跨设备管理仅限管理员:`remove`、`rotate` 和 `revoke` 仅限自己操作,除非调用者具有 `operator.admin`。
+- 令牌变更也受调用者范围约束：仅配对 Session 无法轮换或撤销当前持有 `operator.admin` 或 `operator.write` 的令牌。
 - `devices clear` 有意通过 `--yes` 进行门控。
 - 如果本地回环上的配对范围不可用(且未传递显式 `--url`),list/approve 可以使用本地配对回退。
 - `devices approve` 在铸造令牌前需要显式的请求 ID；省略 `requestId` 或传递 `--latest` 仅预览最新的待处理请求。
@@ -150,3 +156,8 @@ openclaw devices approve <requestId>
 
 - [Dashboard 身份验证故障排除](/web/dashboard#if-you-see-unauthorized-1008)
 - [Gateway 故障排除](/gateway/troubleshooting#dashboard-control-ui-connectivity)
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Nodes](/nodes)

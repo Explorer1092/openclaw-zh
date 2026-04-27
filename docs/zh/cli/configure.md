@@ -11,11 +11,15 @@ read_when:
 
 交互式提示以设置凭据、设备和 Agent 默认值。
 
-注意:**Model** 部分现在包括一个多选项,用于 `agents.defaults.models` 允许列表(在 `/model` 和模型选择器中显示的内容)。
+<Note>
+**Model** 部分包括一个多选项,用于 `agents.defaults.models` 允许列表(在 `/model` 和模型选择器中显示的内容)。Provider 范围的设置选项将其所选模型合并到现有允许列表中，而非替换配置中已有的其他 Provider。从 configure 重新运行 Provider 认证会保留现有的 `agents.defaults.model.primary`。若要有意更改默认模型，请使用 `openclaw models auth login --provider <id> --set-default` 或 `openclaw models set <model>`。
+</Note>
 
-当 configure 从提供商认证选择启动时,默认模型和允许列表选择器会自动优先选择该提供商。对于配对的提供商(如 Volcengine/BytePlus),同样的优先选择也匹配其编码计划变体(`volcengine-plan/*`、`byteplus-plan/*`)。如果优先提供商过滤器会产生空列表,configure 会回退到未过滤的目录,而不是显示空白选择器。
+当 configure 从 Provider 认证选择启动时,默认模型和允许列表选择器会自动优先选择该 Provider。对于配对的 Provider（如 Volcengine 和 BytePlus），同样的优先选择也匹配其编码计划变体(`volcengine-plan/*`、`byteplus-plan/*`)。如果优先 Provider 过滤器会产生空列表,configure 会回退到未过滤的目录,而不是显示空白选择器。
 
-提示:不带子命令的 `openclaw config` 打开相同的向导。使用 `openclaw config get|set|unset` 进行非交互式编辑。
+<Tip>
+不带子命令的 `openclaw config` 打开相同的向导。使用 `openclaw config get|set|unset` 进行非交互式编辑。
+</Tip>
 
 对于网络搜索,`openclaw configure --section web` 允许您选择提供商并配置其凭据。某些提供商还会显示提供商特定的后续提示:
 
@@ -59,3 +63,8 @@ openclaw configure --section web
 openclaw configure --section model --section channels
 openclaw configure --section gateway --section daemon
 ```
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Configuration](/gateway/configuration)

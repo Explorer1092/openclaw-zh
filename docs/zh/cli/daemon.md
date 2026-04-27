@@ -44,11 +44,20 @@ openclaw daemon uninstall
 - `status` 在可能的情况下解析已配置的身份验证 SecretRef 用于探测身份验证。
 - 如果所需的身份验证 SecretRef 在此命令路径中未解析,当探测连接/身份验证失败时 `daemon status --json` 报告 `rpc.authWarning`;请显式传递 `--token`/`--password` 或先解析密钥源。
 - 如果探测成功,未解析的身份验证引用警告将被抑制,以避免误报。
+- `status --deep` 添加尽力而为的系统级服务扫描。当发现其他类似 Gateway 的服务时，人类可读输出会打印清理提示，并警告每台机器一个 Gateway 仍是正常推荐做法。
 - 在 Linux systemd 安装中,`status` 令牌漂移检查包括 `Environment=` 和 `EnvironmentFile=` 单元来源。
+- 漂移检查使用合并的运行时环境（服务命令环境优先，然后是进程环境回退）解析 `gateway.auth.token` SecretRef。
+- 如果令牌身份验证未有效激活（显式的 `gateway.auth.mode` 为 `password`/`none`/`trusted-proxy`，或模式未设置且密码可以胜出且没有令牌候选可以胜出），令牌漂移检查会跳过配置令牌解析。
 - 当令牌身份验证需要令牌且 `gateway.auth.token` 由 SecretRef 管理时,`install` 会验证 SecretRef 是否可解析,但不会将已解析的令牌持久化到服务环境元数据中。
 - 如果令牌身份验证需要令牌且配置的令牌 SecretRef 未解析,安装将失败关闭。
 - 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置,安装将被阻止直到明确设置模式。
+- 如果您有意在一台主机上运行多个 Gateway，请隔离端口、配置/状态和工作区；参见 [/gateway#multiple-gateways-same-host](/gateway#multiple-gateways-same-host)。
 
 ## 推荐
 
 请使用 [`openclaw gateway`](/cli/gateway) 查看当前文档和示例。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Gateway 运行手册](/gateway)

@@ -1,7 +1,7 @@
 ---
 title: "`openclaw message`"
 sidebarTitle: "openclaw message"
-mmh3_hash: "e93249fc7741f56e709103942f800f8e"
+mmh3_hash: "d8fd31436c2e989792987af3f8305f0e"
 summary: "`openclaw message` 的 CLI 参考(发送 + Channel 操作)"
 read_when:
   - 添加或修改消息 CLI 操作
@@ -11,7 +11,7 @@ read_when:
 # `openclaw message`
 
 用于发送消息和 Channel 操作的单一出站命令
-(Discord/Google Chat/Slack/Mattermost(插件)/Telegram/WhatsApp/Signal/iMessage/MS Teams)。
+(Discord/Google Chat/iMessage/Matrix/Mattermost(插件)/Microsoft Teams/Signal/Slack/Telegram/WhatsApp)。
 
 ## 用法
 
@@ -23,7 +23,7 @@ Channel 选择:
 
 - 如果配置了多个 Channel,则需要 `--channel`。
 - 如果恰好配置了一个 Channel,它将成为默认值。
-- 值:`whatsapp|telegram|discord|googlechat|slack|mattermost|signal|imessage|msteams`(Mattermost 需要插件)
+- 值:`discord|googlechat|imessage|matrix|mattermost|msteams|signal|slack|telegram|whatsapp`(Mattermost 需要插件)
 
 目标格式(`--target`):
 
@@ -35,7 +35,8 @@ Channel 选择:
 - Mattermost(插件):`channel:<id>`、`user:<id>` 或 `@username`(裸 ID 被视为 Channel)
 - Signal:`+E.164`、`group:<id>`、`signal:+E.164`、`signal:group:<id>` 或 `username:<name>`/`u:<name>`
 - iMessage:句柄、`chat_id:<id>`、`chat_guid:<guid>` 或 `chat_identifier:<id>`
-- MS Teams:对话 ID(`19:...@thread.tacv2`)或 `conversation:<id>` 或 `user:<aad-object-id>`
+- Matrix:`@user:server`、`!room:server` 或 `#alias:server`
+- Microsoft Teams:对话 ID(`19:...@thread.tacv2`)或 `conversation:<id>` 或 `user:<aad-object-id>`
 
 名称查找:
 
@@ -67,24 +68,26 @@ Channel 选择:
 ### 核心
 
 - `send`
-  - Channel:WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost(插件)/Signal/iMessage/MS Teams
-  - 必需:`--target`,加上 `--message` 或 `--media`
-  - 可选:`--media`、`--reply-to`、`--thread-id`、`--gif-playback`
-  - 仅限 Telegram:`--buttons`(需要 `channels.telegram.capabilities.inlineButtons` 允许它)
+  - Channel:WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost(插件)/Signal/iMessage/Matrix/Microsoft Teams
+  - 必需:`--target`,加上 `--message`、`--media` 或 `--presentation`
+  - 可选:`--media`、`--presentation`、`--delivery`、`--pin`、`--reply-to`、`--thread-id`、`--gif-playback`、`--force-document`、`--silent`
+  - 共享 presentation 负载:`--presentation` 发送语义块(`text`、`context`、`divider`、`buttons`、`select`),核心通过所选 Channel 的声明能力渲染。参见 [Message Presentation](/plugins/message-presentation)。
+  - 通用交付偏好:`--delivery` 接受交付提示如 `{ "pin": true }`;`--pin` 是当 Channel 支持时的固定交付快捷方式。
   - 仅限 Telegram:`--force-document`(将图像和 GIF 作为文档发送以避免 Telegram 压缩)
   - 仅限 Telegram:`--thread-id`(论坛主题 ID)
   - 仅限 Slack:`--thread-id`(线程时间戳;`--reply-to` 使用相同字段)
+  - 仅限 Telegram + Discord:`--silent`
   - 仅限 WhatsApp:`--gif-playback`
 
 - `poll`
-  - Channel:WhatsApp/Telegram/Discord/Matrix/MS Teams
+  - Channel:WhatsApp/Telegram/Discord/Matrix/Microsoft Teams
   - 必需:`--target`、`--poll-question`、`--poll-option`(重复)
   - 可选:`--poll-multi`
   - 仅限 Discord:`--poll-duration-hours`、`--silent`、`--message`
   - 仅限 Telegram:`--poll-duration-seconds`(5-600)、`--silent`、`--poll-anonymous` / `--poll-public`、`--thread-id`
 
 - `react`
-  - Channel:Discord/Google Chat/Slack/Telegram/WhatsApp/Signal
+  - Channel:Discord/Google Chat/Slack/Telegram/WhatsApp/Signal/Matrix
   - 必需:`--message-id`、`--target`
   - 可选:`--emoji`、`--remove`、`--participant`、`--from-me`、`--target-author`、`--target-author-uuid`
   - 注意:`--remove` 需要 `--emoji`(省略 `--emoji` 以在支持的地方清除自己的反应;参见 /tools/reactions)
@@ -92,35 +95,36 @@ Channel 选择:
   - Signal 组反应:需要 `--target-author` 或 `--target-author-uuid`
 
 - `reactions`
-  - Channel:Discord/Google Chat/Slack
+  - Channel:Discord/Google Chat/Slack/Matrix
   - 必需:`--message-id`、`--target`
   - 可选:`--limit`
 
 - `read`
-  - Channel:Discord/Slack
+  - Channel:Discord/Slack/Matrix
   - 必需:`--target`
   - 可选:`--limit`、`--before`、`--after`
   - 仅限 Discord:`--around`
 
 - `edit`
-  - Channel:Discord/Slack
+  - Channel:Discord/Slack/Matrix
   - 必需:`--message-id`、`--message`、`--target`
 
 - `delete`
-  - Channel:Discord/Slack/Telegram
+  - Channel:Discord/Slack/Telegram/Matrix
   - 必需:`--message-id`、`--target`
 
 - `pin` / `unpin`
-  - Channel:Discord/Slack
+  - Channel:Discord/Slack/Matrix
   - 必需:`--message-id`、`--target`
 
 - `pins`(列表)
-  - Channel:Discord/Slack
+  - Channel:Discord/Slack/Matrix
   - 必需:`--target`
 
 - `permissions`
-  - Channel:Discord
+  - Channel:Discord/Matrix
   - 必需:`--target`
+  - 仅限 Matrix:当 Matrix 加密启用且允许验证操作时可用
 
 - `search`
   - Channel:Discord
@@ -192,7 +196,7 @@ Channel 选择:
 
 - `broadcast`
   - Channel:任何配置的 Channel;使用 `--channel all` 定位所有提供商
-  - 必需:`--targets`(重复)
+  - 必需:`--targets <target...>`
   - 可选:`--message`、`--media`、`--dry-run`
 
 ## 示例
@@ -204,15 +208,23 @@ openclaw message send --channel discord \
   --target channel:123 --message "hi" --reply-to 456
 ```
 
-发送带组件的 Discord 消息:
+发送带语义按钮的消息:
 
 ```
 openclaw message send --channel discord \
   --target channel:123 --message "Choose:" \
-  --components '{"text":"Choose a path","blocks":[{"type":"actions","buttons":[{"label":"Approve","style":"success"},{"label":"Decline","style":"danger"}]}]}'
+  --presentation '{"blocks":[{"type":"buttons","buttons":[{"label":"Approve","value":"approve","style":"success"},{"label":"Decline","value":"decline","style":"danger"}]}]}'
 ```
 
-完整 schema 请参见 [Discord 组件](/channels/discord#interactive-components)。
+核心将相同的 `presentation` 负载渲染为 Discord 组件、Slack 块、Telegram 内联按钮、Mattermost props 或 Teams/Feishu 卡片,具体取决于 Channel 能力。完整合约和回退规则请参见 [Message Presentation](/plugins/message-presentation)。
+
+发送更丰富的 presentation 负载:
+
+```bash
+openclaw message send --channel googlechat --target spaces/AAA... \
+  --message "Choose:" \
+  --presentation '{"title":"Deploy approval","tone":"warning","blocks":[{"type":"text","text":"Choose a path"},{"type":"buttons","buttons":[{"label":"Approve","value":"approve"},{"label":"Decline","value":"decline"}]}]}'
+```
 
 创建 Discord 投票:
 
@@ -265,11 +277,19 @@ openclaw message react --channel signal \
   --emoji "✅" --target-author-uuid 123e4567-e89b-12d3-a456-426614174000
 ```
 
-发送 Telegram 内联按钮:
+通过通用 presentation 发送 Telegram 内联按钮:
 
 ```
 openclaw message send --channel telegram --target @mychat --message "Choose:" \
-  --buttons '[ [{"text":"Yes","callback_data":"cmd:yes"}], [{"text":"No","callback_data":"cmd:no"}] ]'
+  --presentation '{"blocks":[{"type":"buttons","buttons":[{"label":"Yes","value":"cmd:yes"},{"label":"No","value":"cmd:no"}]}]}'
+```
+
+通过通用 presentation 发送 Teams 卡片:
+
+```bash
+openclaw message send --channel msteams \
+  --target conversation:19:abc@thread.tacv2 \
+  --presentation '{"title":"Status update","blocks":[{"type":"text","text":"Build completed"}]}'
 ```
 
 将 Telegram 图像作为文档发送以避免压缩:
@@ -278,3 +298,8 @@ openclaw message send --channel telegram --target @mychat --message "Choose:" \
 openclaw message send --channel telegram --target @mychat \
   --media ./diagram.png --force-document
 ```
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Agent send](/tools/agent-send)

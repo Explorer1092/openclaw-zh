@@ -142,7 +142,7 @@ openclaw acp --session agent:qa:bug-123
 
 每 Session 的 `mcpServers` 在桥接模式下不受支持。如果 ACP 客户端在 `newSession` 或 `loadSession` 期间发送它们,桥接会返回明确的错误而非静默忽略。
 
-如果您希望 ACPX 支持的 Session 能够使用 OpenClaw 插件工具,请启用 Gateway 侧的 ACPX 插件桥接,而不是尝试传递每 Session 的 `mcpServers`。参见 [ACP Agents](/tools/acp-agents#plugin-tools-mcp-bridge)。
+如果您希望 ACPX 支持的 Session 能够使用 OpenClaw 插件工具或所选内置工具(如 `cron`),请启用 Gateway 侧的 ACPX MCP 桥接,而不是尝试传递每 Session 的 `mcpServers`。参见 [ACP Agents](/tools/acp-agents-setup#plugin-tools-mcp-bridge) 和 [OpenClaw tools MCP bridge](/tools/acp-agents-setup#openclaw-tools-mcp-bridge)。
 
 ## 从 `acpx` 使用(Codex、Claude 及其他 ACP 客户端)
 
@@ -284,3 +284,8 @@ env OPENCLAW_HIDE_BANNER=1 OPENCLAW_SUPPRESS_NOTES=1 node openclaw.mjs acp ...
 - `--server-args <args...>`:传递给 ACP 服务器的额外参数。
 - `--server-verbose`:在 ACP 服务器上启用详细日志。
 - `--verbose, -v`:详细客户端日志。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [ACP agents](/tools/acp-agents)

@@ -33,3 +33,8 @@ openclaw health --debug
 - 默认 `openclaw health` 向正在运行的 Gateway 请求其健康快照。当 Gateway 已有新鲜的缓存快照时,它可以返回该缓存载荷并在后台刷新。
 - `--verbose` 强制进行实时探测,打印 Gateway 连接详情,并在所有已配置的账户和 Agent 中扩展人类可读输出。
 - 配置多个 Agent 时,输出包括每个 Agent 的 Session 存储。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Gateway health](/gateway/health)

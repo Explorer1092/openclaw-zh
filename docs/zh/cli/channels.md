@@ -14,7 +14,7 @@ read_when:
 
 相关文档:
 
-- Channel 指南:[Channels](/channels/index)
+- Channel 指南:[Channels](/channels)
 - Gateway 配置:[Configuration](/gateway/configuration)
 
 ## 常用命令
@@ -48,7 +48,9 @@ openclaw channels add --channel nostr --private-key "$NOSTR_PRIVATE_KEY"
 openclaw channels remove --channel telegram --delete
 ```
 
-提示:`openclaw channels add --help` 显示每个 Channel 的标志(令牌、私钥、应用令牌、signal-cli 路径等)。
+<Tip>
+`openclaw channels add --help` 显示每个 Channel 的标志(令牌、私钥、应用令牌、signal-cli 路径等)。
+</Tip>
 
 常见的非交互式添加界面包括:
 
@@ -59,6 +61,8 @@ openclaw channels remove --channel telegram --delete
 - Nostr 字段:`--private-key`、`--relay-urls`
 - Tlon 字段:`--ship`、`--url`、`--code`、`--group-channels`、`--dm-allowlist`、`--auto-discover-channels`
 - `--use-env` 用于支持默认账户环境变量认证的情况
+
+如果标志驱动的添加命令期间需要安装 Channel 插件,OpenClaw 使用 Channel 的默认安装源，而不会打开交互式插件安装提示。
 
 不带标志运行 `openclaw channels add` 时,交互式向导可以提示:
 
@@ -130,3 +134,8 @@ openclaw channels resolve --channel matrix "Project Room"
 - 使用 `--kind user|group|auto` 强制目标类型。
 - 当多个条目共享相同名称时,解析优先选择活动匹配项。
 - `channels resolve` 是只读的。如果所选账户通过 SecretRef 配置但该凭据在当前命令路径中不可用,命令将返回降级的未解析结果并附带说明,而不是中止整个运行。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Channels 概览](/channels)

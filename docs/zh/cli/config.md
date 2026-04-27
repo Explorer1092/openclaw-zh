@@ -35,8 +35,10 @@ openclaw config --section gateway --section daemon
 openclaw config schema
 openclaw config get browser.executablePath
 openclaw config set browser.executablePath "/usr/bin/google-chrome"
+openclaw config set browser.profiles.work.executablePath "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 openclaw config set agents.defaults.heartbeat.every "2h"
 openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
+openclaw config set agents.defaults.models '{"openai/gpt-5.4":{}}' --strict-json --merge
 openclaw config set channels.discord.token --ref-provider default --ref-source env --ref-id DISCORD_BOT_TOKEN
 openclaw config set secrets.providers.vaultfile --provider-source file --provider-path /etc/openclaw/secrets.json --provider-mode json
 openclaw config unset plugins.entries.brave.config.webSearch.apiKey
@@ -100,6 +102,19 @@ openclaw config set channels.whatsapp.groups '["*"]' --strict-json
 ```
 
 `config get <path> --json` 将原始值打印为 JSON,而非终端格式化文本。
+
+<Note>
+对象赋值默认替换目标路径。通常包含用户添加条目的受保护 map/list 路径（例如 `agents.defaults.models`、`models.providers`、`models.providers.<id>.models`、`plugins.entries` 和 `auth.profiles`），除非您传递 `--replace`，否则会拒绝会删除现有条目的替换操作。
+</Note>
+
+向这些 map 添加条目时使用 `--merge`:
+
+```bash
+openclaw config set agents.defaults.models '{"openai/gpt-5.4":{}}' --strict-json --merge
+openclaw config set models.providers.ollama.models '[{"id":"llama3.2","name":"Llama 3.2"}]' --strict-json --merge
+```
+
+仅当您有意希望提供的值成为完整目标值时，才使用 `--replace`。
 
 ## `config set` 模式
 
@@ -334,7 +349,7 @@ openclaw config set channels.discord.token \
 
 ## 子命令
 
-- `config file`:打印活动配置文件路径(从 `OPENCLAW_CONFIG_PATH` 或默认位置解析)。
+- `config file`:打印活动配置文件路径(从 `OPENCLAW_CONFIG_PATH` 或默认位置解析)。路径应指向一个常规文件，而非符号链接。
 
 编辑后重新启动 Gateway。
 
@@ -346,3 +361,34 @@ openclaw config set channels.discord.token \
 openclaw config validate
 openclaw config validate --json
 ```
+
+`openclaw config validate` 通过后，您可以使用本地 TUI 让嵌入式 Agent 将活动配置与文档对比，同时在同一终端验证每次更改：
+
+<Note>
+如果验证已经失败，请从 `openclaw configure` 或 `openclaw doctor --fix` 开始。`openclaw chat` 不会绕过无效配置守卫。
+</Note>
+
+```bash
+openclaw chat
+```
+
+然后在 TUI 中：
+
+```text
+!openclaw config file
+!openclaw docs gateway auth token secretref
+!openclaw config validate
+!openclaw doctor
+```
+
+典型修复循环：
+
+1. 让 Agent 将当前配置与相关文档页面对比并建议最小修复方案。
+2. 使用 `openclaw config set` 或 `openclaw configure` 应用针对性修改。
+3. 每次修改后重新运行 `openclaw config validate`。
+4. 如果验证通过但运行时仍不正常，运行 `openclaw doctor` 或 `openclaw doctor --fix` 获取迁移和修复帮助。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Configuration](/gateway/configuration)

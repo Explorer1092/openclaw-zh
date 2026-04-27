@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b1c3e37d56a85e6c7fca4def45714c49"
+mmh3_hash: "1a4a155183799c9db790055bb26bb59b"
 title: "`openclaw node`"
 summary: "`openclaw node` 的 CLI 参考(无头 Node 主机)"
 read_when:
@@ -68,6 +68,10 @@ openclaw node run --host <gateway-host> --port 18789
 - 在 `gateway.mode=remote` 模式下,远程客户端字段(`gateway.remote.token` / `gateway.remote.password`)也按远程优先规则可用。
 - Node 主机身份验证解析仅支持 `OPENCLAW_GATEWAY_*` 环境变量。
 
+对于在受信任的私有网络上连接到非回环 `ws://` Gateway 的 Node,请设置 `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`。没有它,Node 启动会失败关闭并要求您使用 `wss://`、SSH 隧道或 Tailscale。
+这是进程环境选择加入,不是 `openclaw.json` 配置键。
+`openclaw node install` 在安装命令环境中存在时,会将其持久化到受监督的 Node 服务中。
+
 ## 服务(后台)
 
 将无头 Node 主机安装为用户服务。
@@ -91,6 +95,7 @@ openclaw node install --host <gateway-host> --port 18789
 
 ```bash
 openclaw node status
+openclaw node start
 openclaw node stop
 openclaw node restart
 openclaw node uninstall
@@ -99,6 +104,8 @@ openclaw node uninstall
 使用 `openclaw node run` 进行前台 Node 主机(无服务)。
 
 服务命令接受 `--json` 用于机器可读输出。
+
+Node 主机在进程内重试 Gateway 重启和网络关闭。如果 Gateway 报告终端令牌/密码/引导身份验证暂停,Node 主机会记录关闭详情并以非零退出,以便 launchd/systemd 可以用新的配置和凭据重启它。配对所需的暂停保留在前台流程中,以便待处理的请求可以被批准。
 
 ## 配对
 
@@ -109,6 +116,22 @@ openclaw node uninstall
 openclaw devices list
 openclaw devices approve <requestId>
 ```
+
+在严格控制的 Node 网络上,Gateway 操作员可以明确选择从受信任的 CIDR 自动批准首次 Node 配对:
+
+```json5
+{
+  gateway: {
+    nodes: {
+      pairing: {
+        autoApproveCidrs: ["192.168.1.0/24"],
+      },
+    },
+  },
+}
+```
+
+此功能默认禁用。它仅适用于没有请求范围的全新 `role: node` 配对。操作员/浏览器客户端、Control UI、WebChat 以及角色、范围、元数据或公钥升级仍需手动批准。
 
 如果 Node 使用更改的身份验证详细信息(角色/范围/公钥)重试配对,
 之前的待处理请求将被取代并创建新的 `requestId`。
@@ -128,3 +151,8 @@ Node 主机将其 Node ID、令牌、显示名称和 Gateway 连接信息存储�
 对于已批准的异步 Node exec,OpenClaw 在提示前准备一个规范的 `systemRunPlan`。
 之后批准的 `system.run` 转发重用该存储的计划,因此在批准请求创建后
 对命令/cwd/会话字段的编辑将被拒绝,而不是更改 Node 执行的内容。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Nodes](/nodes)

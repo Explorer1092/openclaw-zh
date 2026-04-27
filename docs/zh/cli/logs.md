@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a259abe53f228205ea5dc102a29d4bff"
+mmh3_hash: "e3c4f77789a88d8930f2f9eb0e4b8acb"
 title: "`openclaw logs`"
 sidebarTitle: "openclaw logs"
 summary: "`openclaw logs` 的 CLI 参考(通过 RPC 尾随 Gateway 日志)"
@@ -59,3 +59,8 @@ openclaw logs --url ws://127.0.0.1:18789 --token "$OPENCLAW_GATEWAY_TOKEN"
 
 - 使用 `--local-time` 以您的本地时区渲染时间戳。
 - 如果本地回环 Gateway 要求配对,`openclaw logs` 会自动回退到已配置的本地日志文件。显式 `--url` 目标不使用此回退。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Gateway 日志](/gateway/logging)

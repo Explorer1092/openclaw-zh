@@ -35,6 +35,8 @@ openclaw browser --browser-profile openclaw open https://example.com
 openclaw browser --browser-profile openclaw snapshot
 ```
 
+Agent 可以使用 `browser({ action: "doctor" })` 运行相同的就绪性检查。
+
 ## 快速故障排除
 
 如果 `start` 失败并提示 `not reachable after start`，请先排查 CDP 就绪性问题。如果 `start` 和 `tabs` 成功但 `open` 或 `navigate` 失败，说明浏览器控制平面正常，故障通常是导航 SSRF 策略问题。
@@ -42,6 +44,7 @@ openclaw browser --browser-profile openclaw snapshot
 最小操作序列:
 
 ```bash
+openclaw browser --browser-profile openclaw doctor
 openclaw browser --browser-profile openclaw start
 openclaw browser --browser-profile openclaw tabs
 openclaw browser --browser-profile openclaw open https://example.com
@@ -53,23 +56,29 @@ openclaw browser --browser-profile openclaw open https://example.com
 
 ```bash
 openclaw browser status
+openclaw browser doctor
+openclaw browser doctor --deep
 openclaw browser start
+openclaw browser start --headless
 openclaw browser stop
 openclaw browser --browser-profile openclaw reset-profile
 ```
 
 说明:
 
+- `doctor --deep` 添加实时快照探测。当基本 CDP 就绪性正常但您想确认当前标签可被检查时，此选项很有用。
 - 对于 `attachOnly` 和远程 CDP 配置文件,`openclaw browser stop` 关闭
   活动控制 Session 并清除临时模拟覆盖,即使 OpenClaw 未自行启动浏览器进程。
 - 对于本地托管配置文件,`openclaw browser stop` 停止生成的浏览器进程。
+- `openclaw browser start --headless` 仅适用于该启动请求，且仅当 OpenClaw 启动本地托管浏览器时有效。它不会重写 `browser.headless` 或配置文件配置，对已运行的浏览器也不起作用。
+- 在没有 `DISPLAY` 或 `WAYLAND_DISPLAY` 的 Linux 主机上，本地托管配置文件会自动以无头模式运行，除非 `OPENCLAW_BROWSER_HEADLESS=0`、`browser.headless=false` 或 `browser.profiles.<name>.headless=false` 显式请求可见浏览器。
 
 ## 如果命令缺失
 
 如果 `openclaw browser` 是未知命令,请检查
 `~/.openclaw/openclaw.json` 中的 `plugins.allow`。
 
-当 `plugins.allow` 存在时,必须显式列出捆绑的浏览器插件:
+当 `plugins.allow` 存在时,必须显式列出捆绑的浏览器插件，除非配置中已有根 `browser` 块:
 
 ```json5
 {
@@ -79,7 +88,7 @@ openclaw browser --browser-profile openclaw reset-profile
 }
 ```
 
-当插件允许列表排除 `browser` 时,`browser.enabled=true` 不会恢复 CLI 子命令。
+显式的根 `browser` 块（例如 `browser.enabled=true` 或 `browser.profiles.<name>`）也会在限制性插件允许列表下激活捆绑的浏览器插件。
 
 相关:[Browser tool](/tools/browser#missing-browser-command-or-tool)
 
@@ -109,13 +118,17 @@ openclaw browser --browser-profile work tabs
 
 ```bash
 openclaw browser tabs
-openclaw browser tab new
+openclaw browser tab new --label docs
+openclaw browser tab label t1 docs
 openclaw browser tab select 2
 openclaw browser tab close 2
-openclaw browser open https://docs.openclaw.ai
-openclaw browser focus <targetId>
-openclaw browser close <targetId>
+openclaw browser open https://docs.openclaw.ai --label docs
+openclaw browser focus docs
+openclaw browser close t1
 ```
+
+`tabs` 首先返回 `suggestedTargetId`，然后是稳定的 `tabId`（如 `t1`）、可选标签和原始 `targetId`。Agent 应将 `suggestedTargetId` 传回 `focus`、`close`、快照和操作中。您可以使用 `open --label`、`tab new --label` 或 `tab label` 分配标签；标签、标签 ID、原始目标 ID 和唯一目标 ID 前缀均被接受。
+当 Chromium 在导航或表单提交期间替换底层原始目标时，OpenClaw 会在能够证明匹配的情况下将稳定的 `tabId`/标签附加到替换标签。原始目标 ID 仍然是不稳定的；建议使用 `suggestedTargetId`。
 
 ## 快照/截图/操作
 
@@ -123,6 +136,7 @@ openclaw browser close <targetId>
 
 ```bash
 openclaw browser snapshot
+openclaw browser snapshot --urls
 ```
 
 截图:
@@ -131,18 +145,22 @@ openclaw browser snapshot
 openclaw browser screenshot
 openclaw browser screenshot --full-page
 openclaw browser screenshot --ref e12
+openclaw browser screenshot --labels
 ```
 
 说明:
 
 - `--full-page` 仅用于页面截图;不能与 `--ref` 或 `--element` 组合。
 - `existing-session` / `user` 配置文件支持页面截图和快照输出中的 `--ref` 截图,但不支持 CSS `--element` 截图。
+- `--labels` 在截图上叠加当前快照引用。
+- `snapshot --urls` 在 AI 快照中追加发现的链接目标，使 Agent 可以选择直接导航目标，而无需仅凭链接文本猜测。
 
 导航/点击/输入(基于引用的 UI 自动化):
 
 ```bash
 openclaw browser navigate https://example.com
 openclaw browser click <ref>
+openclaw browser click-coords 120 340
 openclaw browser type <ref> "hello"
 openclaw browser press Enter
 openclaw browser hover <ref>
@@ -153,6 +171,8 @@ openclaw browser fill --fields '[{"ref":"1","value":"Ada"}]'
 openclaw browser wait --text "Done"
 openclaw browser evaluate --fn '(el) => el.textContent' --ref <ref>
 ```
+
+操作响应在 OpenClaw 能够证明替换标签时，返回操作触发页面替换后当前的原始 `targetId`。脚本应仍然存储并传递 `suggestedTargetId`/标签以用于长期工作流。
 
 文件 + 对话框助手:
 
@@ -220,6 +240,7 @@ openclaw browser --browser-profile chrome-live tabs
 当前 existing-session 限制:
 
 - 基于快照的操作使用引用,而非 CSS 选择器
+- `browser.actionTimeoutMs` 在调用方省略 `timeoutMs` 时将支持的 `act` 请求默认超时设为 60000 毫秒；每次调用的 `timeoutMs` 仍优先生效
 - `click` 仅支持左键点击
 - `type` 不支持 `slowly=true`
 - `press` 不支持 `delayMs`
@@ -238,3 +259,8 @@ openclaw browser --browser-profile chrome-live tabs
 使用 `gateway.nodes.browser.mode` 控制自动路由,使用 `gateway.nodes.browser.node` 在连接多个节点时固定特定节点。
 
 安全 + 远程设置:[Browser tool](/tools/browser)、[Remote access](/gateway/remote)、[Tailscale](/gateway/tailscale)、[Security](/gateway/security)
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Browser](/tools/browser)

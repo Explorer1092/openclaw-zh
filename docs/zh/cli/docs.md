@@ -28,3 +28,7 @@ openclaw docs gateway token secretref
 
 - 不带查询词时,`openclaw docs` 打开实时文档搜索入口。
 - 多词查询作为一个搜索请求传递。
+
+## 相关
+
+- [CLI 参考](/cli)

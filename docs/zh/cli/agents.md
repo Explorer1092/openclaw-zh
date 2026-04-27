@@ -39,7 +39,7 @@ openclaw agents delete work
 如果您还希望每个 Agent 有不同的可见 Skill,请在 `openclaw.json` 中配置
 `agents.defaults.skills` 和 `agents.list[].skills`。参见
 [Skills config](/tools/skills-config) 和
-[Configuration Reference](/gateway/configuration-reference#agents-defaults-skills)。
+[Configuration reference](/gateway/config-agents#agents-defaults-skills)。
 
 列出绑定:
 
@@ -152,6 +152,7 @@ openclaw agents unbind --agent work --all
 - 不能删除 `main`。
 - 不带 `--force` 时,需要交互式确认。
 - 工作区、Agent 状态和 Session 记录目录会被移至回收站,而非直接删除。
+- 如果另一个 Agent 的工作区与此工作区路径相同、在此工作区内部或包含此工作区,则工作区会被保留,且 `--json` 报告 `workspaceRetained`、`workspaceRetainedReason` 和 `workspaceSharedWith`。
 
 ## 身份文件
 
@@ -220,3 +221,9 @@ openclaw agents set-identity --agent main --name "OpenClaw" --emoji "🦞" --ava
   },
 }
 ```
+
+## 相关
+
+- [CLI 参考](/cli)
+- [多 Agent 路由](/concepts/multi-agent)
+- [Agent 工作区](/concepts/agent-workspace)

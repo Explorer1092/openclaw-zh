@@ -34,3 +34,7 @@ openclaw completion --shell bash --write-state
 - `--install` 会在你的 Shell 配置文件中写入一个小型 "OpenClaw Completion" 代码块，并将其指向缓存的脚本。
 - 不使用 `--install` 或 `--write-state` 时，命令会将脚本打印到 stdout。
 - 补全生成会提前加载命令树，以便包含嵌套子命令。
+
+## 相关
+
+- [CLI 参考](/cli)

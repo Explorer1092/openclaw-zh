@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4ba8d749bd86443a3651da4cd6b1d76b"
+mmh3_hash: "bec6b0e571d225a24b52c6592945a996"
 title: "`openclaw qr`"
 sidebarTitle: "openclaw qr"
 summary: "`openclaw qr` 的 CLI 参考(生成移动端配对二维码和设置码)"
@@ -51,3 +51,8 @@ openclaw qr --url wss://gateway.example/ws
 - 扫码后,使用以下命令批准设备配对:
   - `openclaw devices list`
   - `openclaw devices approve <requestId>`
+
+## 相关
+
+- [CLI 参考](/cli)
+- [配对](/cli/pairing)

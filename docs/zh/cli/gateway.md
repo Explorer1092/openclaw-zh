@@ -65,6 +65,11 @@ openclaw gateway run
 - `--raw-stream`:将原始模型流事件记录到 jsonl。
 - `--raw-stream-path <path>`:原始流 jsonl 路径。
 
+### 启动分析
+
+- 设置 `OPENCLAW_GATEWAY_STARTUP_TRACE=1` 可在 Gateway 启动期间记录阶段计时，包括每阶段的 `eventLoopMax` 延迟以及已安装索引、清单注册表、启动规划和所有者映射工作的插件查找表计时。
+- 运行 `pnpm test:startup:gateway -- --runs 5 --warmup 1` 可对 Gateway 启动进行基准测试。
+
 ## 查询正在运行的 Gateway
 
 所有查询命令使用 WebSocket RPC。
@@ -104,6 +109,53 @@ openclaw gateway usage-cost --json
 选项:
 
 - `--days <days>`:包含的天数(默认 `30`)。
+
+### `gateway stability`
+
+从正在运行的 Gateway 获取最近的诊断稳定性记录。
+
+```bash
+openclaw gateway stability
+openclaw gateway stability --type payload.large
+openclaw gateway stability --bundle latest
+openclaw gateway stability --bundle latest --export
+openclaw gateway stability --json
+```
+
+选项:
+
+- `--limit <limit>`:包含的最近事件的最大数量(默认 `25`，最大 `1000`)。
+- `--type <type>`:按诊断事件类型过滤，如 `payload.large` 或 `diagnostic.memory.pressure`。
+- `--since-seq <seq>`:仅包含诊断序列号之后的事件。
+- `--bundle [path]`:读取持久化的稳定性包，而非调用正在运行的 Gateway。使用 `--bundle latest`（或仅 `--bundle`）获取状态目录下的最新包，或直接传递包 JSON 路径。
+- `--export`:写入可共享的支持诊断 zip，而非打印稳定性详情。
+- `--output <path>`:用于 `--export` 的输出路径。
+
+记录保留操作元数据：事件名称、计数、字节大小、内存读数、队列/Session 状态、Channel/插件名称和已编辑的 Session 摘要。不保留聊天文本、webhook 正文、工具输出、原始请求或响应正文、令牌、cookie、密钥值、主机名或原始 Session ID。设置 `diagnostics.enabled: false` 可完全禁用记录器。
+
+### `gateway diagnostics export`
+
+写入本地诊断 zip 文件，设计用于附加到错误报告。有关隐私模型和包内容，请参见 [Diagnostics Export](/gateway/diagnostics)。
+
+```bash
+openclaw gateway diagnostics export
+openclaw gateway diagnostics export --output openclaw-diagnostics.zip
+openclaw gateway diagnostics export --json
+```
+
+选项:
+
+- `--output <path>`:输出 zip 路径。默认为状态目录下的支持导出文件。
+- `--log-lines <count>`:包含的最大清理后日志行数（默认 `5000`）。
+- `--log-bytes <bytes>`:要检查的最大日志字节数（默认 `1000000`）。
+- `--url <url>`:用于健康快照的 Gateway WebSocket URL。
+- `--token <token>`:用于健康快照的 Gateway 令牌。
+- `--password <password>`:用于健康快照的 Gateway 密码。
+- `--timeout <ms>`:状态/健康快照超时（默认 `3000`）。
+- `--no-stability-bundle`:跳过持久化稳定性包查找。
+- `--json`:将写入的路径、大小和清单打印为 JSON。
+
+该导出包含清单、Markdown 摘要、配置形状、清理后的配置详情、清理后的日志摘要、清理后的 Gateway 状态/健康快照，以及存在时的最新稳定性包。它旨在共享，保留有助于调试的操作详情，同时省略或编辑聊天文本、webhook 正文、工具输出、凭据、cookie、账户/消息标识符、提示/指令文本、主机名和密钥值。
 
 ### `gateway status`
 
@@ -248,15 +300,45 @@ openclaw gateway restart
 openclaw gateway uninstall
 ```
 
+### 使用 wrapper 安装
+
+当托管服务必须通过另一个可执行文件启动时（例如密钥管理器 shim 或 run-as 助手），请使用 `--wrapper`。wrapper 接收正常的 Gateway 参数，并负责最终使用这些参数 exec'ing `openclaw` 或 Node。
+
+```bash
+cat > ~/.local/bin/openclaw-doppler <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+exec doppler run --project my-project --config production -- openclaw "$@"
+EOF
+chmod +x ~/.local/bin/openclaw-doppler
+
+openclaw gateway install --wrapper ~/.local/bin/openclaw-doppler --force
+openclaw gateway restart
+```
+
+您也可以通过环境变量设置 wrapper。`gateway install` 会验证路径是否为可执行文件，将 wrapper 写入服务 `ProgramArguments`，并在服务环境中持久化 `OPENCLAW_WRAPPER` 供后续强制重新安装、更新和 doctor 修复使用。
+
+```bash
+OPENCLAW_WRAPPER="$HOME/.local/bin/openclaw-doppler" openclaw gateway install --force
+openclaw doctor
+```
+
+要删除持久化的 wrapper，在重新安装时清除 `OPENCLAW_WRAPPER`：
+
+```bash
+OPENCLAW_WRAPPER= openclaw gateway install --force
+openclaw gateway restart
+```
+
 命令选项:
 
 - `gateway status`:`--url`、`--token`、`--password`、`--timeout`、`--no-probe`、`--require-rpc`、`--deep`、`--json`
-- `gateway install`:`--port`、`--runtime <node|bun>`、`--token`、`--force`、`--json`
+- `gateway install`:`--port`、`--runtime <node|bun>`、`--token`、`--wrapper <path>`、`--force`、`--json`
 - `gateway uninstall|start|stop|restart`:`--json`
 
 说明:
 
-- `gateway install` 支持 `--port`、`--runtime`、`--token`、`--force`、`--json`。
+- 使用 `gateway restart` 重启托管服务。不要将 `gateway stop` 和 `gateway start` 链接作为重启替代；在 macOS 上，`gateway stop` 在停止前会有意禁用 LaunchAgent。
 - 当令牌身份验证需要令牌且 `gateway.auth.token` 由 SecretRef 管理时,`gateway install` 会验证 SecretRef 是否可解析,但不会将已解析的令牌持久化到服务环境元数据中。
 - 如果令牌身份验证需要令牌且配置的令牌 SecretRef 未解析,安装将失败关闭而不是持久化回退的明文。
 - 对于 `gateway run` 的密码身份验证,优先使用 `OPENCLAW_GATEWAY_PASSWORD`、`--password-file` 或 SecretRef 支持的 `gateway.auth.password`,而非内联 `--password`。
@@ -306,3 +388,8 @@ openclaw gateway discover --json | jq '.beacons[].wsUrl'
 - CLI 扫描 `local.` 以及启用时配置的广域域。
 - JSON 输出中的 `wsUrl` 从解析的服务端点派生,而非从仅 TXT 的提示(如 `lanHost` 或 `tailnetDns`)。
 - 在 `local.` mDNS 上,`sshPort` 和 `cliPath` 仅在 `discovery.mdns.mode` 为 `full` 时广播。广域 DNS-SD 仍会写入 `cliPath`;`sshPort` 在那里也是可选的。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Gateway 运行手册](/gateway)

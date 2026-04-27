@@ -1,7 +1,7 @@
 ---
 title: "`openclaw sessions`"
 sidebarTitle: "openclaw sessions"
-mmh3_hash: "cc3d5a70d4cdf1fc9f1a438a02ef44da"
+mmh3_hash: "9d935ebb128f0b7c341df6217e6fd2a8"
 summary: "`openclaw sessions` 的 CLI 参考(列出存储的 Session + 使用情况)"
 read_when:
   - 您想列出存储的 Session 并查看最近的活动
@@ -108,4 +108,9 @@ openclaw sessions cleanup --json
 
 相关:
 
-- Session 配置:[配置参考](/gateway/configuration-reference#session)
+- Session 配置:[配置参考](/gateway/config-agents#session)
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Session 管理](/concepts/session)

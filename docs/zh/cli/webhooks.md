@@ -1,7 +1,7 @@
 ---
 title: "`openclaw webhooks`"
 sidebarTitle: "openclaw webhooks"
-mmh3_hash: "cc55eb5e626c43173190e3b1090b889c"
+mmh3_hash: "4e78d726b8140d11d8df2898e92eb70b"
 summary: "`openclaw webhooks` 的 CLI 参考(webhook 助手 + Gmail Pub/Sub)"
 read_when:
   - 您想将 Gmail Pub/Sub 事件连接到 OpenClaw
@@ -91,3 +91,8 @@ openclaw webhooks gmail run --account you@example.com
 ```
 
 有关端到端设置流程和操作详情,请参见 [Gmail Pub/Sub 文档](/automation/cron-jobs#gmail-pubsub-integration)。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Webhook 自动化](/automation/webhook)

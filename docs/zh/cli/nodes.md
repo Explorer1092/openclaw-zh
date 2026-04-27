@@ -1,7 +1,7 @@
 ---
 title: "`openclaw nodes`"
 sidebarTitle: "openclaw nodes"
-mmh3_hash: "242e51d292b1092a19b82bccc845bf1f"
+mmh3_hash: "8812de841948e67aa9795a5f3ee616cf"
 summary: "`openclaw nodes` 的 CLI 参考(列表/状态/批准/调用、相机/画布/屏幕)"
 read_when:
   - 您正在管理配对的 Node(相机、屏幕、画布)
@@ -44,6 +44,7 @@ openclaw nodes status --last-connected 24h
 批准说明:
 
 - `openclaw nodes pending` 只需要配对范围。
+- `gateway.nodes.pairing.autoApproveCidrs` 只能为明确受信任的首次 `role: node` 设备配对跳过待处理步骤。此功能默认关闭且不批准升级。
 - `openclaw nodes approve <requestId>` 继承待处理请求的额外范围要求:
   - 无命令请求:仅配对
   - 非 exec Node 命令:配对 + 写入
@@ -65,3 +66,8 @@ openclaw nodes invoke --node <id|name|ip> --command <command> --params <json>
 对于 Node 上的 shell 执行,请使用带 `host=node` 的 `exec` 工具,而不是 `openclaw nodes run`。
 `nodes` CLI 现在以功能为中心:通过 `nodes invoke` 进行直接 RPC,以及配对、相机、
 屏幕、位置、画布和通知。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Nodes](/nodes)

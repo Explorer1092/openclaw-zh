@@ -1,7 +1,7 @@
 ---
 title: "`openclaw system`"
 sidebarTitle: "openclaw system"
-mmh3_hash: "87fefed7e01ee79582c1d4a6a22f9a4f"
+mmh3_hash: "a7ff18045f9d3b24203be78069f75cea"
 summary: "`openclaw system` 的 CLI 参考(系统事件、心跳、存在)"
 read_when:
   - 您想在不创建 Cron 作业的情况下将系统事件排队
@@ -67,3 +67,7 @@ openclaw system presence
 
 - 需要通过当前配置(本地或远程)可访问的正在运行的 Gateway。
 - 系统事件是短暂的,不会在重启之间持久化。
+
+## 相关
+
+- [CLI 参考](/cli)

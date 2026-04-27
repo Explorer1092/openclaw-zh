@@ -48,3 +48,8 @@ openclaw dns setup --apply
 - 如果省略 `--domain`,OpenClaw 使用配置中的 `discovery.wideArea.domain`。
 - `--apply` 目前仅支持 macOS 且需要 Homebrew CoreDNS。
 - `--apply` 在需要时引导区域文件,确保 CoreDNS 导入节存在,并重启 `coredns` brew 服务。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Discovery](/gateway/discovery)

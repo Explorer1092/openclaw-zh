@@ -28,7 +28,7 @@ read_when:
 - `-t, --to <dest>`:用于派生 Session 密钥的收件人
 - `--session-id <id>`:显式 Session ID
 - `--agent <id>`:Agent ID;覆盖路由绑定
-- `--thinking <off|minimal|low|medium|high|xhigh>`:Agent 思考级别
+- `--thinking <level>`:Agent 思考级别(`off`、`minimal`、`low`、`medium`、`high`,以及 Provider 支持的自定义级别,如 `xhigh`、`adaptive` 或 `max`)
 - `--verbose <on|off>`:为 Session 持久化详细级别
 - `--channel <channel>`:传递 Channel;省略以使用主 Session Channel
 - `--reply-to <target>`:传递目标覆盖
@@ -54,6 +54,13 @@ openclaw agent --agent ops --message "Run locally" --local
 
 - Gateway 模式在 Gateway 请求失败时回退到嵌入式 Agent。使用 `--local` 可预先强制嵌入式执行。
 - `--local` 仍然会首先预加载插件注册表,以便插件提供的 Provider、工具和 Channel 在嵌入式运行中保持可用。
+- 每次 `openclaw agent` 调用被视为一次性运行。为该次运行打开的捆绑或用户配置 MCP 服务器在回复后退出,即使命令使用 Gateway 路径,stdio MCP 子进程也不会在脚本调用之间保持存活。
 - `--channel`、`--reply-channel` 和 `--reply-account` 影响回复传递,而非 Session 路由。
+- `--json` 将 stdout 保留用于 JSON 响应。Gateway、插件和嵌入式回退诊断信息被路由到 stderr,以便脚本直接解析 stdout。
 - 当此命令触发 `models.json` 重新生成时,SecretRef 管理的 Provider 凭据将以非密钥标记形式保留(例如环境变量名称、`secretref-env:ENV_VAR_NAME` 或 `secretref-managed`),而不是解析后的明文密钥。
 - 标记写入具有来源权威性:OpenClaw 从活动来源配置快照持久化标记,而非从已解析的运行时密钥值。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Agent 运行时](/concepts/agent)

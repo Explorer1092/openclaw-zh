@@ -15,7 +15,7 @@ read_when:
 相关:
 
 - Hook:[Hook](/automation/hooks)
-- Plugin Hook:[Plugin 架构](/plugins/architecture#provider-runtime-hooks)
+- Plugin Hook:[Plugin hooks](/plugins/hooks)
 
 ## 列出所有 Hook
 
@@ -23,7 +23,7 @@ read_when:
 openclaw hooks list
 ```
 
-列出从工作区、管理、扩展和捆绑目录发现的所有 Hook。
+列出从工作区、管理、扩展和捆绑目录发现的所有 Hook。Gateway 启动在至少配置了一个内部 Hook 之前不会加载内部 Hook 处理程序。
 
 **选项:**
 
@@ -127,7 +127,7 @@ Not ready: 0
 openclaw hooks enable <name>
 ```
 
-通过将特定 Hook 添加到您的配置(`~/.openclaw/config.json`)来启用它。
+通过将特定 Hook 添加到您的配置(`~/.openclaw/openclaw.json`)来启用它。
 
 **注意:** 工作区 Hook 默认禁用,需要在此处启用或在配置中启用。由 Plugin 管理的 Hook 在 `openclaw hooks list` 中显示 `plugin:<id>`,不能在此处启用/禁用。请改为启用/禁用 Plugin。
 
@@ -191,6 +191,7 @@ openclaw hooks disable command-logger
 
 ```bash
 openclaw plugins install <package>        # ClawHub 优先,然后 npm
+openclaw plugins install npm:<package>    # 仅 npm
 openclaw plugins install <package> --pin  # 固定版本
 openclaw plugins install <path>           # 本地路径
 ```
@@ -320,3 +321,13 @@ openclaw hooks enable boot-md
 ```
 
 **参见:** [boot-md 文档](/automation/hooks#boot-md)
+
+## 说明
+
+- `openclaw hooks list --json`、`info --json` 和 `check --json` 将结构化 JSON 直接写入 stdout。
+- Plugin 管理的 Hook 不能在此处启用或禁用；请改为启用或禁用拥有该 Hook 的 Plugin。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Automation hooks](/automation/hooks)

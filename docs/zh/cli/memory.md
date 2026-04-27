@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e75ed19ba71b21bca0c53c6692c1f649"
+mmh3_hash: "06cd87a6dd7234d7f3c4549d15128a86"
 title: "`openclaw memory`"
 sidebarTitle: "openclaw memory"
 summary: "`openclaw memory` 的 CLI 参考(状态/索引/搜索/提升/提升解释/REM 运行环境)"
@@ -57,6 +57,8 @@ openclaw memory index --agent main --verbose
 - `--index`:如果存储脏了则运行重新索引(隐含 `--deep`)。
 - `--fix`:修复过期的召回锁并规范化提升元数据。
 - `--json`:打印 JSON 输出。
+
+如果 `memory status` 显示 `Dreaming status: blocked`,则已启用托管梦境 cron,但驱动它的心跳未对默认 Agent 触发。有关两个常见原因,请参见[梦境永不运行](/concepts/dreaming#dreaming-never-runs-status-shows-blocked)。
 
 `memory index`:
 
@@ -172,3 +174,8 @@ openclaw memory rem-harness [--agent <id>] [--include-promoted] [--json]
 - `memory rem-backfill --path <file-or-dir> --stage-short-term` 同时将有根据的持久候选植入到实时短期提升存储中,以便正常的 deep 阶段可以对其排名。
 - `memory rem-backfill --rollback` 删除之前写入的有根据的日记条目,`memory rem-backfill --rollback-short-term` 删除之前暂存的有根据的短期候选。
 - 有关完整的阶段描述和配置参考,请参见 [Dreaming](/concepts/dreaming)。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Memory 概述](/concepts/memory)

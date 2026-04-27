@@ -1,7 +1,7 @@
 ---
 title: "`openclaw pairing`"
 sidebarTitle: "openclaw pairing"
-mmh3_hash: "f800259895320bd31da9f52cd5af223d"
+mmh3_hash: "1848d49c3bb4775677fcf69a71ae8ccf"
 summary: "`openclaw pairing` 的 CLI 参考(批准/列出配对请求)"
 read_when:
   - 您正在使用配对模式的 DM 并需要批准发件人
@@ -65,3 +65,8 @@ openclaw pairing approve --channel telegram --account work <code> --notify
 - `pairing list` 支持多账户 Channel 的 `--account <accountId>`。
 - `pairing approve` 支持 `--account <accountId>` 和 `--notify`。
 - 如果只配置了一个支持配对的 Channel,则允许使用 `pairing approve <code>`。
+
+## 相关
+
+- [CLI 参考](/cli)
+- [Channel 配对](/channels/pairing)

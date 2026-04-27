@@ -1,7 +1,7 @@
 ---
 title: "`openclaw security`"
 sidebarTitle: "openclaw security"
-mmh3_hash: "04d6f028bbcb0d48a1ae8a1006afcde0"
+mmh3_hash: "01b83960caa6d2565d2b320790904614"
 summary: "`openclaw security` 的 CLI 参考(审计和修复常见的安全陷阱)"
 read_when:
   - 您想对配置/状态运行快速安全审计
@@ -30,7 +30,7 @@ openclaw security audit --json
 当多个 DM 发件人共享主 Session 时,审计会发出警告,并建议**安全 DM 模式**:对共享收件箱使用 `session.dmScope="per-channel-peer"`(或对多账户 Channel 使用 `per-account-channel-peer`)。这适用于协作/共享收件箱加固。单个由相互不信任/对抗性运营者共享的 Gateway 不是推荐的设置;请使用单独的 Gateway(或单独的 OS 用户/主机)分割信任边界。
 当配置表明可能存在共享用户入口时(例如开放的 DM/群组策略、已配置的群组目标或通配符发件人规则),它还会发出 `security.trust_model.multi_user_heuristic`,并提醒您 OpenClaw 默认是个人助手信任模型。对于有意的共享用户设置,审计建议对所有 Session 进行沙盒化,保持文件系统访问在工作区范围内,并将个人/私人身份或凭据保存在该运行时之外。
 当使用小型模型(`<=300B`)而没有沙盒并启用 web/浏览器工具时,它也会发出警告。
-对于 webhook 入口,当 `hooks.token` 重用 Gateway 令牌、`hooks.defaultSessionKey` 未设置、`hooks.allowedAgentIds` 不受限制、启用请求 `sessionKey` 覆盖以及在没有 `hooks.allowedSessionKeyPrefixes` 的情况下启用覆盖时,它会发出警告。
+对于 webhook 入口,当 `hooks.token` 重用 Gateway 令牌、`hooks.token` 过短、`hooks.path="/"`、`hooks.defaultSessionKey` 未设置、`hooks.allowedAgentIds` 不受限制、启用请求 `sessionKey` 覆盖以及在没有 `hooks.allowedSessionKeyPrefixes` 的情况下启用覆盖时,它会发出警告。
 当沙盒模式关闭时配置了沙盒 Docker 设置、当 `gateway.nodes.denyCommands` 使用无效的模式类/未知条目(仅精确 Node 命令名称匹配,不进行 shell 文本过滤)、当 `gateway.nodes.allowCommands` 显式启用危险的 Node 命令、当全局 `tools.profile="minimal"` 被 Agent 工具配置文件覆盖、当开放组在没有沙盒/工作区保护的情况下暴露运行时/文件系统工具,以及当安装的扩展插件工具可能在宽松的工具策略下可达时,它也会发出警告。
 它还标记 `gateway.allowRealIpFallback=true`(如果代理配置错误,存在 header 欺骗风险)和 `discovery.mdns.mode="full"`(通过 mDNS TXT 记录泄露元数据)。
 当沙盒浏览器使用 Docker `bridge` 网络而没有 `sandbox.browser.cdpSourceRange` 时,它也会发出警告。
@@ -79,3 +79,8 @@ openclaw security audit --fix --json | jq '{fix: .fix.ok, summary: .report.summa
 - 禁用工具(`gateway`、`cron`、`exec` 等)
 - 更改 Gateway 绑定/身份验证/网络暴露选择
 - 删除或重写插件/Skill
+
+## 相关
+
+- [CLI 参考](/cli)
+- [安全审计](/gateway/security)
