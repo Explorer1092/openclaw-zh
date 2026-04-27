@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6a4c39a3d484d2ae7bdca3617bd6108d"
+mmh3_hash: "83ca23e5dccecfb8605e058f0b85fb72"
 title: "Plugin 入口点"
 sidebarTitle: "入口点"
 summary: "definePluginEntry、defineChannelPluginEntry 和 defineSetupPluginEntry 的参考文档"
@@ -12,6 +12,23 @@ read_when:
 # Plugin 入口点
 
 每个 Plugin 导出一个默认入口对象。SDK 提供三个辅助工具来创建它们。
+
+对于已安装的 Plugin，`package.json` 应在可用时将运行时加载指向构建好的 JavaScript：
+
+```json
+{
+  "openclaw": {
+    "extensions": ["./src/index.ts"],
+    "runtimeExtensions": ["./dist/index.js"],
+    "setupEntry": "./src/setup-entry.ts",
+    "runtimeSetupEntry": "./dist/setup-entry.js"
+  }
+}
+```
+
+`extensions` 和 `setupEntry` 对于工作区和 git checkout 开发仍然是有效的源入口。当 OpenClaw 加载已安装的包时，优先使用 `runtimeExtensions` 和 `runtimeSetupEntry`，让 npm 包避免运行时 TypeScript 编译。如果已安装的包仅声明了 TypeScript 源入口，OpenClaw 将在存在匹配的已构建 `dist/*.js` 对等文件时使用它，然后回退到 TypeScript 源。
+
+所有入口路径必须保留在 Plugin 包目录内。运行时入口和推断的已构建 JavaScript 对等文件不会使逸出的 `extensions` 或 `setupEntry` 源路径有效。
 
 <Tip>
   **正在寻找演练？** 请参见 [Channel Plugin](/plugins/sdk-channel-plugins) 或 [Provider Plugin](/plugins/sdk-provider-plugins) 获取分步指南。
@@ -91,7 +108,8 @@ export default defineChannelPluginEntry({
 | `registerFull`        | `(api: OpenClawPluginApi) => void`                               | 否   | —                   |
 
 - `setRuntime` 在注册期间被调用，以便您可以存储运行时引用（通常通过 `createPluginRuntimeStore`）。在 CLI 元数据捕获期间会被跳过。
-- `registerCliMetadata` 在 `api.registrationMode === "cli-metadata"` 和 `api.registrationMode === "full"` 期间都会运行。将其用作 Channel 自有 CLI 描述符的规范位置，使根帮助保持非激活状态，同时正常 CLI 命令注册与完整 Plugin 加载保持兼容。
+- `registerCliMetadata` 在 `api.registrationMode === "cli-metadata"`、`api.registrationMode === "discovery"` 和 `api.registrationMode === "full"` 期间都会运行。将其用作 Channel 自有 CLI 描述符的规范位置，使根帮助保持非激活状态，发现快照包含静态命令元数据，同时正常 CLI 命令注册与完整 Plugin 加载保持兼容。
+- 发现注册是非激活的，但不是无导入的。OpenClaw 可以评估受信任的 Plugin 入口和 Channel Plugin 模块来构建快照，因此保持顶级导入无副作用，并将 Socket、客户端、工作器和服务放在仅 `"full"` 路径之后。
 - `registerFull` 仅在 `api.registrationMode === "full"` 时运行。在仅设置加载期间会被跳过。
 - 与 `definePluginEntry` 一样，`configSchema` 可以是延迟工厂函数，OpenClaw 在第一次访问时记忆解析后的 Schema。
 - 对于 Plugin 自有的根 CLI 命令，当您希望命令保持延迟加载而不从根 CLI 解析树中消失时，优先使用 `api.registerCli(..., { descriptors: [...] })`。对于 Channel Plugin，优先从 `registerCliMetadata(...)` 注册这些描述符，并让 `registerFull(...)` 专注于仅运行时的工作。
@@ -146,6 +164,7 @@ export default defineBundledChannelSetupEntry({
 | 模式              | 时机                          | 注册内容                                                                                  |
 | ----------------- | ----------------------------- | ----------------------------------------------------------------------------------------- |
 | `"full"`          | 正常 Gateway 启动             | 所有内容                                                                                  |
+| `"discovery"`     | 只读能力发现                  | Channel 注册加上静态 CLI 描述符；入口代码可能加载，但跳过 Socket、工作器、客户端和服务   |
 | `"setup-only"`    | 禁用/未配置的 Channel         | 仅 Channel 注册                                                                           |
 | `"setup-runtime"` | 具有可用运行时的设置流程      | Channel 注册加上完整入口加载前所需的轻量运行时                                            |
 | `"cli-metadata"`  | 根帮助 / CLI 元数据捕获       | 仅 CLI 描述符                                                                             |
@@ -154,7 +173,11 @@ export default defineBundledChannelSetupEntry({
 
 ```typescript
 register(api) {
-  if (api.registrationMode === "cli-metadata" || api.registrationMode === "full") {
+  if (
+    api.registrationMode === "cli-metadata" ||
+    api.registrationMode === "discovery" ||
+    api.registrationMode === "full"
+  ) {
     api.registerCli(/* ... */);
     if (api.registrationMode === "cli-metadata") return;
   }
@@ -167,12 +190,15 @@ register(api) {
 }
 ```
 
+发现模式构建非激活的注册表快照。它仍然可以评估 Plugin 入口和 Channel Plugin 对象，以便 OpenClaw 可以注册 Channel 能力和静态 CLI 描述符。在发现中将模块评估视为受信任但轻量级的：顶级不进行网络客户端、子进程、监听器、数据库连接、后台工作器、凭据读取或其他实时运行时副作用。
+
 将 `"setup-runtime"` 视为设置专用启动界面必须存在而无需重新进入完整捆绑 Channel 运行时的窗口。适合的场景是：Channel 注册、设置安全的 HTTP 路由、设置安全的 Gateway 方法以及委托设置辅助工具。重型后台服务、CLI 注册器和 Provider/客户端 SDK 引导仍然属于 `"full"`。
 
 对于 CLI 注册器：
 
 - 当注册器拥有一个或多个根命令且您希望 OpenClaw 在首次调用时延迟加载真实 CLI 模块时，使用 `descriptors`
 - 确保这些描述符覆盖注册器暴露的每个顶级命令根
+- 描述符命令名称仅限字母、数字、连字符和下划线，以字母或数字开头；OpenClaw 拒绝不符合该形状的描述符名称，并在渲染帮助前从描述中去除终端控制序列
 - 仅对急切兼容路径单独使用 `commands`
 
 ## Plugin 形态

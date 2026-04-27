@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4e2123f11da75af1727911779845dc77"
+mmh3_hash: "af584f763f0e4601fbb1cbdbc56b16cb"
 title: "Plugin 测试"
 sidebarTitle: "测试"
 summary: "OpenClaw Plugin 的测试工具和模式"
@@ -78,6 +78,12 @@ describe("my-channel target resolution", () => {
 ```
 
 ## 测试模式
+
+### 测试注册契约
+
+将手写的 `api` mock 传递给 `register(api)` 的单元测试不会执行 OpenClaw 的加载器验收门控。为您的 Plugin 依赖的每个注册界面（尤其是 Hook 和内存等独占能力）添加至少一个加载器支持的冒烟测试。
+
+真实加载器在缺少必需元数据或 Plugin 调用其不拥有的能力 API 时会使 Plugin 注册失败。例如，`api.registerHook(...)` 需要 Hook 名称，`api.registerMemoryCapability(...)` 需要 Plugin 清单或导出的入口声明 `kind: "memory"`。
 
 ### 单元测试 Channel Plugin
 

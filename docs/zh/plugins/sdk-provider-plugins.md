@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dc7076ba4946138ff2a43292b14c3fe8"
+mmh3_hash: "10e5c493ac1d3d7d0e5a222d2bf006d4"
 title: "构建 Provider Plugin"
 sidebarTitle: "Provider Plugin"
 summary: "构建 OpenClaw 模型 Provider Plugin 的分步指南"
@@ -25,7 +25,6 @@ read_when:
 ## 演练
 
 <Steps>
-  <a id="step-1-package-and-manifest"></a>
   <Step title="包和清单">
     <CodeGroup>
     ```json package.json
@@ -211,10 +210,17 @@ read_when:
             baseUrl: "https://api.acme-ai.com/v1",
             models: [{ id: "acme-large", name: "Acme Large" }],
           }),
+          buildStaticProvider: () => ({
+            api: "openai-completions",
+            baseUrl: "https://api.acme-ai.com/v1",
+            models: [{ id: "acme-large", name: "Acme Large" }],
+          }),
         },
       },
     });
     ```
+
+    `buildProvider` 是当 OpenClaw 可以解析真实 Provider 认证时使用的实时目录路径。它可以执行 Provider 特定的发现。仅对在认证配置之前可以安全显示的离线行使用 `buildStaticProvider`；它不能需要凭证或发起网络请求。OpenClaw 的 `models list --all` 显示目前仅对捆绑 Provider Plugin 执行静态目录，使用空配置、空环境，并且没有 Agent/工作区路径。
 
     如果您的认证流程还需要在入门期间修补 `models.providers.*`、别名和 Agent 默认模型，请使用来自 `openclaw/plugin-sdk/provider-onboard` 的预设辅助工具。最窄的辅助工具是 `createDefaultModelPresetAppliers(...)`、`createDefaultModelsPresetAppliers(...)` 和 `createModelCatalogPresetAppliers(...)`。
 
@@ -273,78 +279,37 @@ read_when:
 
     当前可用的重播家族：
 
-    | 家族 | 连接内容 |
-    | --- | --- |
-    | `openai-compatible` | 共享 OpenAI 风格重播策略，用于 OpenAI 兼容传输，包括 Tool 调用 ID 消毒、助手优先排序修复，以及传输需要时的通用 Gemini 轮次验证 |
-    | `anthropic-by-model` | 由 `modelId` 选择的 Claude 感知重播策略，因此仅当解析的模型确实是 Claude id 时，Anthropic 消息传输才会进行 Claude 特定的思维块清理 |
-    | `google-gemini` | 原生 Gemini 重播策略加上引导重播消毒和标记推理输出模式 |
-    | `passthrough-gemini` | 通过 OpenAI 兼容代理传输运行的 Gemini 模型的 Gemini 思想签名消毒；不启用原生 Gemini 重播验证或引导重写 |
-    | `hybrid-anthropic-openai` | 用于在一个 Plugin 中混合 Anthropic 消息和 OpenAI 兼容模型界面的 Provider 的混合策略；可选的仅 Claude 思维块删除范围限定在 Anthropic 侧 |
-
-    真实捆绑示例：
-
-    - `google` 和 `google-gemini-cli`：`google-gemini`
-    - `openrouter`、`kilocode`、`opencode` 和 `opencode-go`：`passthrough-gemini`
-    - `amazon-bedrock` 和 `anthropic-vertex`：`anthropic-by-model`
-    - `minimax`：`hybrid-anthropic-openai`
-    - `moonshot`、`ollama`、`xai` 和 `zai`：`openai-compatible`
+    | 家族 | 连接内容 | 捆绑示例 |
+    | --- | --- | --- |
+    | `openai-compatible` | 共享 OpenAI 风格重播策略，用于 OpenAI 兼容传输，包括 Tool 调用 ID 消毒、助手优先排序修复，以及传输需要时的通用 Gemini 轮次验证 | `moonshot`、`ollama`、`xai`、`zai` |
+    | `anthropic-by-model` | 由 `modelId` 选择的 Claude 感知重播策略，因此仅当解析的模型确实是 Claude id 时，Anthropic 消息传输才会进行 Claude 特定的思维块清理 | `amazon-bedrock`、`anthropic-vertex` |
+    | `google-gemini` | 原生 Gemini 重播策略加上引导重播消毒和标记推理输出模式 | `google`、`google-gemini-cli` |
+    | `passthrough-gemini` | 通过 OpenAI 兼容代理传输运行的 Gemini 模型的 Gemini 思想签名消毒；不启用原生 Gemini 重播验证或引导重写 | `openrouter`、`kilocode`、`opencode`、`opencode-go` |
+    | `hybrid-anthropic-openai` | 用于在一个 Plugin 中混合 Anthropic 消息和 OpenAI 兼容模型界面的 Provider 的混合策略；可选的仅 Claude 思维块删除范围限定在 Anthropic 侧 | `minimax` |
 
     当前可用的流家族：
 
-    | 家族 | 连接内容 |
-    | --- | --- |
-    | `google-thinking` | 共享流路径上的 Gemini 思维有效载荷规范化 |
-    | `kilocode-thinking` | 共享代理流路径上的 Kilo 推理包装器，`kilo/auto` 和不支持的代理推理 id 跳过注入的思维 |
-    | `moonshot-thinking` | 来自配置 + `/think` 级别的 Moonshot 二进制原生思维有效载荷映射 |
-    | `minimax-fast-mode` | 共享流路径上的 MiniMax 快速模式模型重写 |
-    | `openai-responses-defaults` | 共享原生 OpenAI/Codex Responses 包装器：归因标头、`/fast`/`serviceTier`、文本详细度、原生 Codex Web 搜索、推理兼容有效载荷整形和 Responses 上下文管理 |
-    | `openrouter-thinking` | 代理路由的 OpenRouter 推理包装器，不支持的模型/`auto` 跳过在中央处理 |
-    | `tool-stream-default-on` | 用于 Z.AI 等希望工具流除非显式禁用否则默认开启的 Provider 的默认开启 `tool_stream` 包装器 |
+    | 家族 | 连接内容 | 捆绑示例 |
+    | --- | --- | --- |
+    | `google-thinking` | 共享流路径上的 Gemini 思维有效载荷规范化 | `google`、`google-gemini-cli` |
+    | `kilocode-thinking` | 共享代理流路径上的 Kilo 推理包装器，`kilo/auto` 和不支持的代理推理 id 跳过注入的思维 | `kilocode` |
+    | `moonshot-thinking` | 来自配置 + `/think` 级别的 Moonshot 二进制原生思维有效载荷映射 | `moonshot` |
+    | `minimax-fast-mode` | 共享流路径上的 MiniMax 快速模式模型重写 | `minimax`、`minimax-portal` |
+    | `openai-responses-defaults` | 共享原生 OpenAI/Codex Responses 包装器：归因标头、`/fast`/`serviceTier`、文本详细度、原生 Codex Web 搜索、推理兼容有效载荷整形和 Responses 上下文管理 | `openai`、`openai-codex` |
+    | `openrouter-thinking` | 代理路由的 OpenRouter 推理包装器，不支持的模型/`auto` 跳过在中央处理 | `openrouter` |
+    | `tool-stream-default-on` | 用于 Z.AI 等希望工具流除非显式禁用否则默认开启的 Provider 的默认开启 `tool_stream` 包装器 | `zai` |
 
-    真实捆绑示例：
+    <Accordion title="驱动家族构建器的 SDK 接缝">
+      每个家族构建器由来自同一个包的较低级别公共辅助工具组成，当 Provider 需要偏离通用模式时可以使用这些辅助工具：
 
-    - `google` 和 `google-gemini-cli`：`google-thinking`
-    - `kilocode`：`kilocode-thinking`
-    - `moonshot`：`moonshot-thinking`
-    - `minimax` 和 `minimax-portal`：`minimax-fast-mode`
-    - `openai` 和 `openai-codex`：`openai-responses-defaults`
-    - `openrouter`：`openrouter-thinking`
-    - `zai`：`tool-stream-default-on`
+      - `openclaw/plugin-sdk/provider-model-shared` — `ProviderReplayFamily`、`buildProviderReplayFamilyHooks(...)`，以及原始重播构建器（`buildOpenAICompatibleReplayPolicy`、`buildAnthropicReplayPolicyForModel`、`buildGoogleGeminiReplayPolicy`、`buildHybridAnthropicOrOpenAIReplayPolicy`）。还导出 Gemini 重播辅助工具（`sanitizeGoogleGeminiReplayHistory`、`resolveTaggedReasoningOutputMode`）和端点/模型辅助工具（`resolveProviderEndpoint`、`normalizeProviderId`、`normalizeGooglePreviewModelId`、`normalizeNativeXaiModelId`）。
+      - `openclaw/plugin-sdk/provider-stream` — `ProviderStreamFamily`、`buildProviderStreamFamilyHooks(...)`、`composeProviderStreamWrappers(...)`，以及共享 OpenAI/Codex 包装器（`createOpenAIAttributionHeadersWrapper`、`createOpenAIFastModeWrapper`、`createOpenAIServiceTierWrapper`、`createOpenAIResponsesContextManagementWrapper`、`createCodexNativeWebSearchWrapper`）、DeepSeek V4 OpenAI 兼容包装器（`createDeepSeekV4OpenAICompatibleThinkingWrapper`）以及共享代理/Provider 包装器（`createOpenRouterWrapper`、`createToolStreamWrapper`、`createMinimaxFastModeWrapper`）。
+      - `openclaw/plugin-sdk/provider-tools` — `ProviderToolCompatFamily`、`buildProviderToolCompatFamilyHooks("gemini")`、底层 Gemini Schema 辅助工具（`normalizeGeminiToolSchemas`、`inspectGeminiToolSchemas`）以及 xAI 兼容辅助工具（`resolveXaiModelCompatPatch()`、`applyXaiModelCompat(model)`）。捆绑的 xAI Plugin 使用 `normalizeResolvedModel` 加上 `contributeResolvedModelCompat` 来让 xAI 规则由 Provider 拥有。
 
-    `openclaw/plugin-sdk/provider-model-shared` 还导出重播家族枚举以及这些家族所基于的共享辅助工具。常用公共导出包括：
+      一些流辅助工具有意保留在 Provider 本地。`@openclaw/anthropic-provider` 在其自己的公共 `api.ts` / `contract-api.ts` 接缝中保留 `wrapAnthropicProviderStream`、`resolveAnthropicBetas`、`resolveAnthropicFastMode`、`resolveAnthropicServiceTier` 和底层 Anthropic 包装构建器，因为它们编码了 Claude OAuth beta 处理和 `context1m` 门控。xAI Plugin 类似地在其自己的 `wrapStreamFn` 中保留原生 xAI Responses 整形（`/fast` 别名、默认 `tool_stream`、不支持的严格工具清理、xAI 特定的推理有效载荷删除）。
 
-    - `ProviderReplayFamily`
-    - `buildProviderReplayFamilyHooks(...)`
-    - 共享重播构建器，如 `buildOpenAICompatibleReplayPolicy(...)`、`buildAnthropicReplayPolicyForModel(...)`、`buildGoogleGeminiReplayPolicy(...)` 和 `buildHybridAnthropicOrOpenAIReplayPolicy(...)`
-    - Gemini 重播辅助工具，如 `sanitizeGoogleGeminiReplayHistory(...)` 和 `resolveTaggedReasoningOutputMode()`
-    - 端点/模型辅助工具，如 `resolveProviderEndpoint(...)`、`normalizeProviderId(...)`、`normalizeGooglePreviewModelId(...)` 和 `normalizeNativeXaiModelId(...)`
-
-    `openclaw/plugin-sdk/provider-stream` 暴露了家族构建器以及这些家族复用的公共包装辅助工具。常用公共导出包括：
-
-    - `ProviderStreamFamily`
-    - `buildProviderStreamFamilyHooks(...)`
-    - `composeProviderStreamWrappers(...)`
-    - 共享 OpenAI/Codex 包装器，如 `createOpenAIAttributionHeadersWrapper(...)`、`createOpenAIFastModeWrapper(...)`、`createOpenAIServiceTierWrapper(...)`、`createOpenAIResponsesContextManagementWrapper(...)` 和 `createCodexNativeWebSearchWrapper(...)`
-    - 共享代理/Provider 包装器，如 `createOpenRouterWrapper(...)`、`createToolStreamWrapper(...)` 和 `createMinimaxFastModeWrapper(...)`
-
-    一些流辅助工具有意保留在 Provider 本地。当前捆绑示例：`@openclaw/anthropic-provider` 从其公共 `api.ts` / `contract-api.ts` 接缝导出 `wrapAnthropicProviderStream`、`resolveAnthropicBetas`、`resolveAnthropicFastMode`、`resolveAnthropicServiceTier` 和底层 Anthropic 包装构建器。这些辅助工具保持 Anthropic 特定，因为它们还编码了 Claude OAuth beta 处理和 `context1m` 门控。
-
-    其他捆绑 Provider 也在行为无法跨家族干净共享时将传输特定的包装器保留在本地。当前示例：捆绑的 xAI Plugin 在其自己的 `wrapStreamFn` 中保留原生 xAI Responses 整形，包括 `/fast` 别名重写、默认 `tool_stream`、不支持的严格工具清理和 xAI 特定的推理有效载荷删除。
-
-    `openclaw/plugin-sdk/provider-tools` 目前暴露一个共享工具 Schema 家族加上共享 Schema/兼容辅助工具：
-
-    - `ProviderToolCompatFamily` 记录当前的共享家族清单。
-    - `buildProviderToolCompatFamilyHooks("gemini")` 为需要 Gemini 安全工具 Schema 的 Provider 连接 Gemini Schema 清理 + 诊断。
-    - `normalizeGeminiToolSchemas(...)` 和 `inspectGeminiToolSchemas(...)` 是底层公共 Gemini Schema 辅助工具。
-    - `resolveXaiModelCompatPatch()` 返回捆绑的 xAI 兼容补丁：`toolSchemaProfile: "xai"`、不支持的 Schema 关键字、原生 `web_search` 支持和 HTML 实体工具调用参数解码。
-    - `applyXaiModelCompat(model)` 在解析的模型到达运行器之前应用相同的 xAI 兼容补丁。
-
-    真实捆绑示例：xAI Plugin 使用 `normalizeResolvedModel` 加上 `contributeResolvedModelCompat` 让该兼容元数据由 Provider 拥有，而不是在核心中硬编码 xAI 规则。
-
-    同样的包根模式也支持其他捆绑 Provider：
-
-    - `@openclaw/openai-provider`：`api.ts` 导出 Provider 构建器、默认模型辅助工具和实时 Provider 构建器
-    - `@openclaw/openrouter-provider`：`api.ts` 导出 Provider 构建器加上入门/配置辅助工具
+      同样的包根模式也支持 `@openclaw/openai-provider`（Provider 构建器、默认模型辅助工具和实时 Provider 构建器）和 `@openclaw/openrouter-provider`（Provider 构建器加上入门/配置辅助工具）。
+    </Accordion>
 
     <Tabs>
       <Tab title="令牌交换">
@@ -432,12 +397,6 @@ read_when:
       | 10 | `resolveDynamicModel` | 接受任意上游模型 ID |
       | 11 | `prepareDynamicModel` | 解析前的异步元数据获取 |
       | 12 | `normalizeResolvedModel` | 到达运行器前的传输重写 |
-
-      运行时回退说明：
-
-      - `normalizeConfig` 首先检查匹配的 Provider，然后检查其他支持 Hook 的 Provider Plugin，直到有一个实际更改了配置。如果没有 Provider Hook 重写受支持的 Google 家族配置条目，捆绑的 Google 配置规范化器仍然适用。
-      - `resolveConfigApiKey` 在暴露时使用 Provider Hook。捆绑的 `amazon-bedrock` 路径在此处还有内置的 AWS 环境标记解析器，即使 Bedrock 运行时认证本身仍使用 AWS SDK 默认链。
-
       | 13 | `contributeResolvedModelCompat` | 在另一个兼容传输后面的厂商模型的兼容标志 |
       | 14 | `capabilities` | 旧版静态能力包；仅用于兼容性 |
       | 15 | `normalizeToolSchemas` | 注册前 Provider 自有的工具 Schema 清理 |
@@ -457,148 +416,208 @@ read_when:
       | 29 | `buildMissingAuthMessage` | 自定义缺失认证提示 |
       | 30 | `suppressBuiltInModel` | 隐藏过时的上游行 |
       | 31 | `augmentModelCatalog` | 合成前向兼容行 |
-      | 32 | `isBinaryThinking` | 二进制思维开/关 |
-      | 33 | `supportsXHighThinking` | `xhigh` 推理支持 |
-      | 34 | `resolveDefaultThinkingLevel` | 默认 `/think` 策略 |
-      | 35 | `isModernModelRef` | 实时/冒烟模型匹配 |
-      | 36 | `prepareRuntimeAuth` | 推理前的令牌交换 |
-      | 37 | `resolveUsageAuth` | 自定义使用凭证解析 |
-      | 38 | `fetchUsageSnapshot` | 自定义使用端点 |
-      | 39 | `createEmbeddingProvider` | 用于内存/搜索的 Provider 自有嵌入适配器 |
-      | 40 | `buildReplayPolicy` | 自定义对话重播/压缩策略 |
-      | 41 | `sanitizeReplayHistory` | 通用清理后的 Provider 特定重播重写 |
-      | 42 | `validateReplayTurns` | 嵌入运行器前的严格重播轮次验证 |
-      | 43 | `onModelSelected` | 选择后回调（例如遥测） |
+      | 32 | `resolveThinkingProfile` | 模型特定的 `/think` 选项集 |
+      | 33 | `isBinaryThinking` | 二进制思维开/关兼容性 |
+      | 34 | `supportsXHighThinking` | `xhigh` 推理支持兼容性 |
+      | 35 | `resolveDefaultThinkingLevel` | 默认 `/think` 策略兼容性 |
+      | 36 | `isModernModelRef` | 实时/冒烟模型匹配 |
+      | 37 | `prepareRuntimeAuth` | 推理前的令牌交换 |
+      | 38 | `resolveUsageAuth` | 自定义使用凭证解析 |
+      | 39 | `fetchUsageSnapshot` | 自定义使用端点 |
+      | 40 | `createEmbeddingProvider` | 用于内存/搜索的 Provider 自有嵌入适配器 |
+      | 41 | `buildReplayPolicy` | 自定义对话重播/压缩策略 |
+      | 42 | `sanitizeReplayHistory` | 通用清理后的 Provider 特定重播重写 |
+      | 43 | `validateReplayTurns` | 嵌入运行器前的严格重播轮次验证 |
+      | 44 | `onModelSelected` | 选择后回调（例如遥测） |
 
-      Prompt 调整说明：
+      运行时回退说明：
 
+      - `normalizeConfig` 首先检查匹配的 Provider，然后检查其他支持 Hook 的 Provider Plugin，直到有一个实际更改了配置。如果没有 Provider Hook 重写受支持的 Google 家族配置条目，捆绑的 Google 配置规范化器仍然适用。
+      - `resolveConfigApiKey` 在暴露时使用 Provider Hook。捆绑的 `amazon-bedrock` 路径在此处还有内置的 AWS 环境标记解析器，即使 Bedrock 运行时认证本身仍使用 AWS SDK 默认链。
       - `resolveSystemPromptContribution` 让 Provider 为模型家族注入缓存感知的系统 Prompt 指导。当行为属于某个 Provider/模型家族并且应该保留稳定/动态缓存分割时，优先使用它而不是 `before_prompt_build`。
 
-      有关详细描述和真实示例，请参见 [内部架构：Provider 运行时 Hook](/plugins/architecture#provider-runtime-hooks)。
+      有关详细描述和真实示例，请参见 [内部架构：Provider 运行时 Hook](/plugins/architecture-internals#provider-runtime-hooks)。
     </Accordion>
 
   </Step>
 
   <Step title="添加额外能力（可选）">
-    <a id="step-5-add-extra-capabilities"></a>
-    Provider Plugin 可以在文本推理旁边注册语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取和 Web 搜索：
+    Provider Plugin 可以在文本推理旁边注册语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取和 Web 搜索。OpenClaw 将此分类为 **hybrid-capability** Plugin — 这是公司 Plugin 的推荐模式（每个厂商一个 Plugin）。请参见 [内部架构：能力所有权](/plugins/architecture#capability-ownership-model)。
 
-    ```typescript
-    register(api) {
-      api.registerProvider({ id: "acme-ai", /* ... */ });
+    在 `register(api)` 内与现有的 `api.registerProvider(...)` 调用一起注册每个能力。根据需要选择对应的标签：
 
-      api.registerSpeechProvider({
-        id: "acme-ai",
-        label: "Acme Speech",
-        isConfigured: ({ config }) => Boolean(config.messages?.tts),
-        synthesize: async (req) => ({
-          audioBuffer: Buffer.from(/* PCM data */),
-          outputFormat: "mp3",
-          fileExtension: ".mp3",
-          voiceCompatible: false,
-        }),
-      });
+    <Tabs>
+      <Tab title="语音 (TTS)">
+        ```typescript
+        import {
+          assertOkOrThrowProviderError,
+          postJsonRequest,
+        } from "openclaw/plugin-sdk/provider-http";
 
-      api.registerRealtimeTranscriptionProvider({
-        id: "acme-ai",
-        label: "Acme Realtime Transcription",
-        isConfigured: () => true,
-        createSession: (req) => ({
-          connect: async () => {},
-          sendAudio: () => {},
-          close: () => {},
-          isConnected: () => true,
-        }),
-      });
-
-      api.registerRealtimeVoiceProvider({
-        id: "acme-ai",
-        label: "Acme Realtime Voice",
-        isConfigured: ({ providerConfig }) => Boolean(providerConfig.apiKey),
-        createBridge: (req) => ({
-          connect: async () => {},
-          sendAudio: () => {},
-          setMediaTimestamp: () => {},
-          submitToolResult: () => {},
-          acknowledgeMark: () => {},
-          close: () => {},
-          isConnected: () => true,
-        }),
-      });
-
-      api.registerMediaUnderstandingProvider({
-        id: "acme-ai",
-        capabilities: ["image", "audio"],
-        describeImage: async (req) => ({ text: "A photo of..." }),
-        transcribeAudio: async (req) => ({ text: "Transcript..." }),
-      });
-
-      api.registerImageGenerationProvider({
-        id: "acme-ai",
-        label: "Acme Images",
-        generate: async (req) => ({ /* image result */ }),
-      });
-
-      api.registerVideoGenerationProvider({
-        id: "acme-ai",
-        label: "Acme Video",
-        capabilities: {
-          generate: {
-            maxVideos: 1,
-            maxDurationSeconds: 10,
-            supportsResolution: true,
+        api.registerSpeechProvider({
+          id: "acme-ai",
+          label: "Acme Speech",
+          isConfigured: ({ config }) => Boolean(config.messages?.tts),
+          synthesize: async (req) => {
+            const { response, release } = await postJsonRequest({
+              url: "https://api.example.com/v1/speech",
+              headers: new Headers({ "Content-Type": "application/json" }),
+              body: { text: req.text },
+              timeoutMs: req.timeoutMs,
+              fetchFn: fetch,
+              auditContext: "acme speech",
+            });
+            try {
+              await assertOkOrThrowProviderError(response, "Acme Speech API error");
+              return {
+                audioBuffer: Buffer.from(await response.arrayBuffer()),
+                outputFormat: "mp3",
+                fileExtension: ".mp3",
+                voiceCompatible: false,
+              };
+            } finally {
+              await release();
+            }
           },
-          imageToVideo: {
-            enabled: true,
-            maxVideos: 1,
-            maxInputImages: 1,
-            maxDurationSeconds: 5,
+        });
+        ```
+
+        使用 `assertOkOrThrowProviderError(...)` 处理 Provider HTTP 失败，使 Plugin 共享有限的错误正文读取、JSON 错误解析和请求 id 后缀。
+      </Tab>
+      <Tab title="实时转录">
+        优先使用 `createRealtimeTranscriptionWebSocketSession(...)` — 共享辅助工具处理代理捕获、重连退避、关闭刷新、就绪握手、音频排队和关闭事件诊断。您的 Plugin 只需映射上游事件。
+
+        ```typescript
+        api.registerRealtimeTranscriptionProvider({
+          id: "acme-ai",
+          label: "Acme Realtime Transcription",
+          isConfigured: () => true,
+          createSession: (req) => {
+            const apiKey = String(req.providerConfig.apiKey ?? "");
+            return createRealtimeTranscriptionWebSocketSession({
+              providerId: "acme-ai",
+              callbacks: req,
+              url: "wss://api.example.com/v1/realtime-transcription",
+              headers: { Authorization: `Bearer ${apiKey}` },
+              onMessage: (event, transport) => {
+                if (event.type === "session.created") {
+                  transport.sendJson({ type: "session.update" });
+                  transport.markReady();
+                  return;
+                }
+                if (event.type === "transcript.final") {
+                  req.onTranscript?.(event.text);
+                }
+              },
+              sendAudio: (audio, transport) => {
+                transport.sendJson({
+                  type: "audio.append",
+                  audio: audio.toString("base64"),
+                });
+              },
+              onClose: (transport) => {
+                transport.sendJson({ type: "audio.end" });
+              },
+            });
           },
-          videoToVideo: {
-            enabled: false,
+        });
+        ```
+
+        批量 STT Provider 通过 POST 发送多部分音频时，应使用来自 `openclaw/plugin-sdk/provider-http` 的 `buildAudioTranscriptionFormData(...)`。该辅助工具规范化上传文件名，包括需要 M4A 风格文件名以兼容转录 API 的 AAC 上传。
+      </Tab>
+      <Tab title="实时语音">
+        ```typescript
+        api.registerRealtimeVoiceProvider({
+          id: "acme-ai",
+          label: "Acme Realtime Voice",
+          isConfigured: ({ providerConfig }) => Boolean(providerConfig.apiKey),
+          createBridge: (req) => ({
+            // 仅当 Provider 接受一个调用的多个工具响应时才设置此项，
+            // 例如立即的"正在处理"响应后跟最终结果。
+            supportsToolResultContinuation: false,
+            connect: async () => {},
+            sendAudio: () => {},
+            setMediaTimestamp: () => {},
+            submitToolResult: () => {},
+            acknowledgeMark: () => {},
+            close: () => {},
+            isConnected: () => true,
+          }),
+        });
+        ```
+      </Tab>
+      <Tab title="媒体理解">
+        ```typescript
+        api.registerMediaUnderstandingProvider({
+          id: "acme-ai",
+          capabilities: ["image", "audio"],
+          describeImage: async (req) => ({ text: "A photo of..." }),
+          transcribeAudio: async (req) => ({ text: "Transcript..." }),
+        });
+        ```
+      </Tab>
+      <Tab title="图像和视频生成">
+        视频能力使用**模式感知**形状：`generate`、`imageToVideo` 和 `videoToVideo`。`maxInputImages` / `maxInputVideos` / `maxDurationSeconds` 等扁平聚合字段不足以干净地宣传变换模式支持或禁用的模式。音乐生成遵循相同的模式，带有显式的 `generate` / `edit` 块。
+
+        ```typescript
+        api.registerImageGenerationProvider({
+          id: "acme-ai",
+          label: "Acme Images",
+          generate: async (req) => ({ /* image result */ }),
+        });
+
+        api.registerVideoGenerationProvider({
+          id: "acme-ai",
+          label: "Acme Video",
+          capabilities: {
+            generate: { maxVideos: 1, maxDurationSeconds: 10, supportsResolution: true },
+            imageToVideo: {
+              enabled: true,
+              maxVideos: 1,
+              maxInputImages: 1,
+              maxInputImagesByModel: { "acme/reference-to-video": 9 },
+              maxDurationSeconds: 5,
+            },
+            videoToVideo: { enabled: false },
           },
-        },
-        generateVideo: async (req) => ({ videos: [] }),
-      });
+          generateVideo: async (req) => ({ videos: [] }),
+        });
+        ```
+      </Tab>
+      <Tab title="Web 抓取和搜索">
+        ```typescript
+        api.registerWebFetchProvider({
+          id: "acme-ai-fetch",
+          label: "Acme Fetch",
+          hint: "Fetch pages through Acme's rendering backend.",
+          envVars: ["ACME_FETCH_API_KEY"],
+          placeholder: "acme-...",
+          signupUrl: "https://acme.example.com/fetch",
+          credentialPath: "plugins.entries.acme.config.webFetch.apiKey",
+          getCredentialValue: (fetchConfig) => fetchConfig?.acme?.apiKey,
+          setCredentialValue: (fetchConfigTarget, value) => {
+            const acme = (fetchConfigTarget.acme ??= {});
+            acme.apiKey = value;
+          },
+          createTool: () => ({
+            description: "Fetch a page through Acme Fetch.",
+            parameters: {},
+            execute: async (args) => ({ content: [] }),
+          }),
+        });
 
-      api.registerWebFetchProvider({
-        id: "acme-ai-fetch",
-        label: "Acme Fetch",
-        hint: "Fetch pages through Acme's rendering backend.",
-        envVars: ["ACME_FETCH_API_KEY"],
-        placeholder: "acme-...",
-        signupUrl: "https://acme.example.com/fetch",
-        credentialPath: "plugins.entries.acme.config.webFetch.apiKey",
-        getCredentialValue: (fetchConfig) => fetchConfig?.acme?.apiKey,
-        setCredentialValue: (fetchConfigTarget, value) => {
-          const acme = (fetchConfigTarget.acme ??= {});
-          acme.apiKey = value;
-        },
-        createTool: () => ({
-          description: "Fetch a page through Acme Fetch.",
-          parameters: {},
-          execute: async (args) => ({ content: [] }),
-        }),
-      });
-
-      api.registerWebSearchProvider({
-        id: "acme-ai-search",
-        label: "Acme Search",
-        search: async (req) => ({ content: [] }),
-      });
-    }
-    ```
-
-    OpenClaw 将此分类为 **hybrid-capability** Plugin。这是公司 Plugin 的推荐模式（每个厂商一个 Plugin）。请参见 [内部架构：能力所有权](/plugins/architecture#capability-ownership-model)。
-
-    对于视频生成，优先使用上面展示的模式感知能力形状：`generate`、`imageToVideo` 和 `videoToVideo`。`maxInputImages`、`maxInputVideos` 和 `maxDurationSeconds` 等扁平聚合字段不足以干净地宣传变换模式支持或禁用的模式。
-
-    音乐生成 Provider 应遵循相同的模式：`generate` 用于仅 Prompt 的生成，`edit` 用于基于参考图像的生成。`maxInputImages`、`supportsLyrics` 和 `supportsFormat` 等扁平聚合字段不足以宣传编辑支持；显式的 `generate` / `edit` 块是预期的契约。
+        api.registerWebSearchProvider({
+          id: "acme-ai-search",
+          label: "Acme Search",
+          search: async (req) => ({ content: [] }),
+        });
+        ```
+      </Tab>
+    </Tabs>
 
   </Step>
 
   <Step title="测试">
-    <a id="step-6-test"></a>
     ```typescript src/provider.test.ts
     import { describe, it, expect } from "vitest";
     // 从 index.ts 或专用文件导出您的 Provider 配置对象
@@ -648,7 +667,7 @@ clawhub package publish your-org/your-plugin
 ```
 <bundled-plugin-root>/acme-ai/
 ├── package.json              # openclaw.providers 元数据
-├── openclaw.plugin.json      # 带 providerAuthEnvVars 的清单
+├── openclaw.plugin.json      # 带 Provider 认证元数据的清单
 ├── index.ts                  # definePluginEntry + registerProvider
 └── src/
     ├── provider.test.ts      # 测试
@@ -671,4 +690,10 @@ clawhub package publish your-org/your-plugin
 - [Channel Plugin](/plugins/sdk-channel-plugins) — 如果您的 Plugin 还提供 Channel
 - [SDK 运行时](/plugins/sdk-runtime) — `api.runtime` 辅助工具（TTS、搜索、子 Agent）
 - [SDK 概览](/plugins/sdk-overview) — 完整子路径导入参考
-- [Plugin 内部架构](/plugins/architecture#provider-runtime-hooks) — Hook 详情和内置示例
+- [Plugin 内部架构](/plugins/architecture-internals#provider-runtime-hooks) — Hook 详情和捆绑示例
+
+## 相关
+
+- [Plugin SDK 设置](/plugins/sdk-setup)
+- [构建 Plugin](/plugins/building-plugins)
+- [构建 Channel Plugin](/plugins/sdk-channel-plugins)

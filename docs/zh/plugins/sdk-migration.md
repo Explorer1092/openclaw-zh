@@ -1,11 +1,12 @@
 ---
-mmh3_hash: "476abe52a1f6a6bef7527e3452aca00e"
+mmh3_hash: "0ec2f13a9a0c1bd26fc281e302f6491d"
 title: "Plugin SDK 迁移"
 sidebarTitle: "迁移至 SDK"
 summary: "从旧版向后兼容层迁移到现代 Plugin SDK"
 read_when:
   - 您看到 OPENCLAW_PLUGIN_SDK_COMPAT_DEPRECATED 警告
   - 您看到 OPENCLAW_EXTENSION_API_DEPRECATED 警告
+  - 您在 OpenClaw 2026.4.25 之前使用了 api.registerEmbeddedExtensionFactory
   - 您正在将 Plugin 更新到现代 Plugin 架构
   - 您维护外部 OpenClaw Plugin
 ---
@@ -20,11 +21,14 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
 
 - **`openclaw/plugin-sdk/compat`** — 重新导出数十个辅助工具的单一导入。它被引入是为了在构建新 Plugin 架构期间保持基于 Hook 的旧版 Plugin 正常工作。
 - **`openclaw/extension-api`** — 给予 Plugin 直接访问宿主端辅助工具（如嵌入式 Agent 运行器）的桥接层。
+- **`api.registerEmbeddedExtensionFactory(...)`** — 已移除的仅 Pi 捆绑扩展 Hook，可观察嵌入式运行器事件，如 `tool_result`。
 
-这两个接口现在都**已弃用**。它们在运行时仍然可以工作，但新 Plugin 不得使用它们，现有 Plugin 应在下一个主要版本删除它们之前迁移。
+这些宽泛的导入接口现在都**已弃用**。它们在运行时仍然可以工作，但新 Plugin 不得使用它们，现有 Plugin 应在下一个主要版本删除它们之前迁移。仅 Pi 的嵌入式扩展工厂注册 API 已被移除；请改用工具结果中间件。
+
+OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释文档化的 Plugin 行为。重大契约变更必须首先经过兼容性适配器、诊断、文档和弃用窗口。这适用于 SDK 导入、清单字段、设置 API、Hook 和运行时注册行为。
 
 <Warning>
-  向后兼容层将在未来的主要版本中删除。仍然从这些接口导入的 Plugin 在那时将会失败。
+  向后兼容层将在未来的主要版本中删除。仍然从这些接口导入的 Plugin 在那时将会失败。仅 Pi 的嵌入式扩展工厂注册已不再加载。
 </Warning>
 
 ## 为什么改变
@@ -45,9 +49,48 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
 - OpenAI 在其自己的 `api.ts` 中保留 Provider 构建器、默认模型辅助工具和实时 Provider 构建器
 - OpenRouter 在其自己的 `api.ts` 中保留 Provider 构建器以及入门/配置辅助工具
 
+## 兼容性策略
+
+对于外部 Plugin，兼容性工作遵循以下顺序：
+
+1. 添加新契约
+2. 通过兼容性适配器保持旧行为
+3. 发出诊断或警告，指明旧路径和替代路径
+4. 在测试中涵盖两个路径
+5. 记录弃用和迁移路径
+6. 仅在宣布的迁移窗口之后删除，通常在主要版本中
+
+如果清单字段仍然被接受，Plugin 作者可以继续使用它，直到文档和诊断另有说明。新代码应优先使用文档化的替代方案，但现有 Plugin 在普通小版本发布期间不应中断。
+
 ## 如何迁移
 
 <Steps>
+  <Step title="将 Pi 工具结果扩展迁移到中间件">
+    捆绑 Plugin 必须将仅 Pi 的 `api.registerEmbeddedExtensionFactory(...)` 工具结果处理程序替换为运行时中立的中间件。
+
+    ```typescript
+    // Pi 和 Codex 运行时动态工具
+    api.registerAgentToolResultMiddleware(async (event) => {
+      return compactToolResult(event);
+    }, {
+      runtimes: ["pi", "codex"],
+    });
+    ```
+
+    同时更新 Plugin 清单：
+
+    ```json
+    {
+      "contracts": {
+        "agentToolResultMiddleware": ["pi", "codex"]
+      }
+    }
+    ```
+
+    外部 Plugin 无法注册工具结果中间件，因为它可以在模型看到之前重写高信任的工具输出。
+
+  </Step>
+
   <Step title="将批准原生处理程序迁移到能力事实">
     支持批准的 Channel Plugin 现在通过 `approvalCapability.nativeRuntime` 加上共享运行时上下文注册表暴露原生批准行为。
 
@@ -166,15 +209,16 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/channel-pairing` | DM 配对原语 | `createChannelPairingController` |
   | `plugin-sdk/channel-reply-pipeline` | 回复前缀 + 输入连接 | `createChannelReplyPipeline` |
   | `plugin-sdk/channel-config-helpers` | 配置适配器工厂 | `createHybridChannelConfigAdapter` |
-  | `plugin-sdk/channel-config-schema` | 配置 Schema 构建器 | Channel 配置 Schema 类型 |
+  | `plugin-sdk/channel-config-schema` | 配置 Schema 构建器 | 共享 Channel 配置 Schema 原语；捆绑 Channel 命名的 Schema 导出仅用于旧版兼容性 |
   | `plugin-sdk/telegram-command-config` | Telegram 命令配置辅助工具 | 命令名称规范化、描述截断、重复/冲突验证 |
   | `plugin-sdk/channel-policy` | 群组/DM 策略解析 | `resolveChannelGroupRequireMention` |
-  | `plugin-sdk/channel-lifecycle` | 账户状态跟踪 | `createAccountStatusSink` |
+  | `plugin-sdk/channel-lifecycle` | 账户状态和草稿流生命周期辅助工具 | `createAccountStatusSink`、草稿预览最终化辅助工具 |
   | `plugin-sdk/inbound-envelope` | 入站信封辅助工具 | 共享路由 + 信封构建器辅助工具 |
   | `plugin-sdk/inbound-reply-dispatch` | 入站回复辅助工具 | 共享记录和调度辅助工具 |
   | `plugin-sdk/messaging-targets` | 消息目标解析 | 目标解析/匹配辅助工具 |
   | `plugin-sdk/outbound-media` | 出站媒体辅助工具 | 共享出站媒体加载 |
-  | `plugin-sdk/outbound-runtime` | 出站运行时辅助工具 | 出站身份/发送委托辅助工具 |
+  | `plugin-sdk/outbound-send-deps` | 出站发送依赖辅助工具 | 不导入完整出站运行时的轻量级 `resolveOutboundSendDep` 查找 |
+  | `plugin-sdk/outbound-runtime` | 出站运行时辅助工具 | 出站投递、身份/发送委托、Session、格式化和有效载荷规划辅助工具 |
   | `plugin-sdk/thread-bindings-runtime` | 线程绑定辅助工具 | 线程绑定生命周期和适配器辅助工具 |
   | `plugin-sdk/agent-media-payload` | 旧版媒体有效载荷辅助工具 | 旧版字段布局的 Agent 媒体有效载荷构建器 |
   | `plugin-sdk/channel-runtime` | 已弃用的兼容性垫片 | 仅旧版 Channel 运行时工具 |
@@ -189,7 +233,8 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/cli-runtime` | CLI 运行时辅助工具 | 命令格式化、等待、版本辅助工具 |
   | `plugin-sdk/gateway-runtime` | Gateway 辅助工具 | Gateway 客户端和 Channel 状态补丁辅助工具 |
   | `plugin-sdk/config-runtime` | 配置辅助工具 | 配置加载/写入辅助工具 |
-  | `plugin-sdk/approval-runtime` | 批准提示辅助工具 | Exec/Plugin 批准有效载荷、批准能力/配置文件辅助工具、原生批准路由/运行时辅助工具 |
+  | `plugin-sdk/telegram-command-config` | Telegram 命令辅助工具 | 当捆绑 Telegram 契约界面不可用时的回退稳定 Telegram 命令验证辅助工具 |
+  | `plugin-sdk/approval-runtime` | 批准提示辅助工具 | Exec/Plugin 批准有效载荷、批准能力/配置文件辅助工具、原生批准路由/运行时辅助工具以及结构化批准显示路径格式化 |
   | `plugin-sdk/approval-auth-runtime` | 批准认证辅助工具 | 批准者解析、同聊天操作认证 |
   | `plugin-sdk/approval-client-runtime` | 批准客户端辅助工具 | 原生 Exec 批准配置文件/过滤器辅助工具 |
   | `plugin-sdk/approval-delivery-runtime` | 批准交付辅助工具 | 原生批准能力/交付适配器 |
@@ -210,16 +255,16 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/retry-runtime` | 重试辅助工具 | `RetryConfig`, `retryAsync`、策略运行器 |
   | `plugin-sdk/allow-from` | 允许列表格式化 | `formatAllowFromLowercase` |
   | `plugin-sdk/allowlist-resolution` | 允许列表输入映射 | `mapAllowlistResolutionInputs` |
-  | `plugin-sdk/command-auth` | 命令门控和命令界面辅助工具 | `resolveControlCommandGate`、发送者授权辅助工具、命令注册表辅助工具 |
+  | `plugin-sdk/command-auth` | 命令门控和命令界面辅助工具 | `resolveControlCommandGate`、发送者授权辅助工具、命令注册表辅助工具（包括动态参数菜单格式化） |
   | `plugin-sdk/command-status` | 命令状态/帮助渲染器 | `buildCommandsMessage`, `buildCommandsMessagePaginated`, `buildHelpMessage` |
   | `plugin-sdk/secret-input` | 密钥输入解析 | 密钥输入辅助工具 |
   | `plugin-sdk/webhook-ingress` | Webhook 请求辅助工具 | Webhook 目标工具 |
   | `plugin-sdk/webhook-request-guards` | Webhook 正文守卫辅助工具 | 请求正文读取/限制辅助工具 |
   | `plugin-sdk/reply-runtime` | 共享回复运行时 | 入站调度、心跳、回复规划器、分块 |
-  | `plugin-sdk/reply-dispatch-runtime` | 窄向回复调度辅助工具 | 最终化 + Provider 调度辅助工具 |
+  | `plugin-sdk/reply-dispatch-runtime` | 窄向回复调度辅助工具 | 最终化、Provider 调度和会话标签辅助工具 |
   | `plugin-sdk/reply-history` | 回复历史辅助工具 | `buildHistoryContext`, `buildPendingHistoryContextFromMap`, `recordPendingHistoryEntry`, `clearHistoryEntriesIfEnabled` |
   | `plugin-sdk/reply-reference` | 回复引用规划 | `createReplyReferencePlanner` |
-  | `plugin-sdk/reply-chunking` | 回复分块辅助工具 | 出站文本分块辅助工具 |
+  | `plugin-sdk/reply-chunking` | 回复分块辅助工具 | 文本/Markdown 分块辅助工具 |
   | `plugin-sdk/session-store-runtime` | Session 存储辅助工具 | 存储路径 + 更新时间辅助工具 |
   | `plugin-sdk/state-paths` | 状态路径辅助工具 | 状态和 OAuth 目录辅助工具 |
   | `plugin-sdk/routing` | 路由/Session 键辅助工具 | `resolveAgentRoute`, `buildAgentSessionKey`, `resolveDefaultAgentBoundAccountId`、Session 键规范化辅助工具 |
@@ -241,19 +286,20 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/provider-auth-api-key` | Provider API 密钥设置辅助工具 | API 密钥入门/配置文件写入辅助工具 |
   | `plugin-sdk/provider-auth-result` | Provider 认证结果辅助工具 | 标准 OAuth 认证结果构建器 |
   | `plugin-sdk/provider-auth-login` | Provider 交互式登录辅助工具 | 共享交互式登录辅助工具 |
+  | `plugin-sdk/provider-selection-runtime` | Provider 选择辅助工具 | 已配置或自动 Provider 选择以及原始 Provider 配置合并 |
   | `plugin-sdk/provider-env-vars` | Provider 环境变量辅助工具 | Provider 认证环境变量查找辅助工具 |
   | `plugin-sdk/provider-model-shared` | 共享 Provider 模型/重播辅助工具 | `ProviderReplayFamily`, `buildProviderReplayFamilyHooks`, `normalizeModelCompat`、共享重播策略构建器、Provider 端点辅助工具和模型 ID 规范化辅助工具 |
   | `plugin-sdk/provider-catalog-shared` | 共享 Provider 目录辅助工具 | `findCatalogTemplate`, `buildSingleProviderApiKeyCatalog`, `supportsNativeStreamingUsageCompat`, `applyProviderNativeStreamingUsageCompat` |
   | `plugin-sdk/provider-onboard` | Provider 入门补丁 | 入门配置辅助工具 |
-  | `plugin-sdk/provider-http` | Provider HTTP 辅助工具 | 通用 Provider HTTP/端点能力辅助工具 |
+  | `plugin-sdk/provider-http` | Provider HTTP 辅助工具 | 通用 Provider HTTP/端点能力辅助工具，包括音频转录多部分表单辅助工具 |
   | `plugin-sdk/provider-web-fetch` | Provider Web 抓取辅助工具 | Web 抓取 Provider 注册/缓存辅助工具 |
   | `plugin-sdk/provider-web-search-config-contract` | Provider Web 搜索配置辅助工具 | 不需要 Plugin 启用连接的 Provider 的窄向 Web 搜索配置/凭据辅助工具 |
   | `plugin-sdk/provider-web-search-contract` | Provider Web 搜索契约辅助工具 | 窄向 Web 搜索配置/凭据契约辅助工具，如 `createWebSearchProviderContractFields`、`enablePluginInConfig`、`resolveProviderWebSearchPluginConfig` 和范围化凭据设置器/获取器 |
   | `plugin-sdk/provider-web-search` | Provider Web 搜索辅助工具 | Web 搜索 Provider 注册/缓存/运行时辅助工具 |
-  | `plugin-sdk/provider-transport-runtime` | Provider 传输辅助工具 | 原生 Provider 传输辅助工具，如守卫获取、传输消息变换和可写传输事件流 |
   | `plugin-sdk/provider-tools` | Provider Tool/Schema 兼容辅助工具 | `ProviderToolCompatFamily`, `buildProviderToolCompatFamilyHooks`、Gemini Schema 清理 + 诊断，以及 xAI 兼容辅助工具（如 `resolveXaiModelCompatPatch` / `applyXaiModelCompat`） |
   | `plugin-sdk/provider-usage` | Provider 使用辅助工具 | `fetchClaudeUsage`, `fetchGeminiUsage`, `fetchGithubCopilotUsage` 及其他 Provider 使用辅助工具 |
-  | `plugin-sdk/provider-stream` | Provider 流包装辅助工具 | `ProviderStreamFamily`, `buildProviderStreamFamilyHooks`, `composeProviderStreamWrappers`、流包装类型，以及共享的 Anthropic/Bedrock/Google/Kilocode/Moonshot/OpenAI/OpenRouter/Z.A.I/MiniMax/Copilot 包装辅助工具 |
+  | `plugin-sdk/provider-stream` | Provider 流包装辅助工具 | `ProviderStreamFamily`, `buildProviderStreamFamilyHooks`, `composeProviderStreamWrappers`、流包装类型，以及共享的 Anthropic/Bedrock/DeepSeek V4/Google/Kilocode/Moonshot/OpenAI/OpenRouter/Z.A.I/MiniMax/Copilot 包装辅助工具 |
+  | `plugin-sdk/provider-transport-runtime` | Provider 传输辅助工具 | 原生 Provider 传输辅助工具，如守卫获取、传输消息变换和可写传输事件流 |
   | `plugin-sdk/keyed-async-queue` | 有序异步队列 | `KeyedAsyncQueue` |
   | `plugin-sdk/media-runtime` | 共享媒体辅助工具 | 媒体获取/变换/存储辅助工具以及媒体有效载荷构建器 |
   | `plugin-sdk/media-generation-runtime` | 共享媒体生成辅助工具 | 共享故障转移辅助工具、候选选择以及图像/视频/音乐生成的缺失模型消息 |
@@ -262,8 +308,8 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/text-chunking` | 文本分块辅助工具 | 出站文本分块辅助工具 |
   | `plugin-sdk/speech` | 语音辅助工具 | 语音 Provider 类型以及面向 Provider 的指令、注册表和验证辅助工具 |
   | `plugin-sdk/speech-core` | 共享语音核心 | 语音 Provider 类型、注册表、指令、规范化 |
-  | `plugin-sdk/realtime-transcription` | 实时转录辅助工具 | Provider 类型和注册表辅助工具 |
-  | `plugin-sdk/realtime-voice` | 实时语音辅助工具 | Provider 类型和注册表辅助工具 |
+  | `plugin-sdk/realtime-transcription` | 实时转录辅助工具 | Provider 类型、注册表辅助工具和共享 WebSocket Session 辅助工具 |
+  | `plugin-sdk/realtime-voice` | 实时语音辅助工具 | Provider 类型、注册表/解析辅助工具和桥接 Session 辅助工具 |
   | `plugin-sdk/image-generation-core` | 共享图像生成核心 | 图像生成类型、故障转移、认证和注册表辅助工具 |
   | `plugin-sdk/music-generation` | 音乐生成辅助工具 | 音乐生成 Provider/请求/结果类型 |
   | `plugin-sdk/music-generation-core` | 共享音乐生成核心 | 音乐生成类型、故障转移辅助工具、Provider 查找和模型引用解析 |
@@ -285,7 +331,7 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
   | `plugin-sdk/memory-core` | 捆绑的 memory-core 辅助工具 | 内存管理器/配置/文件/CLI 辅助工具界面 |
   | `plugin-sdk/memory-core-engine-runtime` | 内存引擎运行时外观 | 内存索引/搜索运行时外观 |
   | `plugin-sdk/memory-core-host-engine-foundation` | 内存宿主基础引擎 | 内存宿主基础引擎导出 |
-  | `plugin-sdk/memory-core-host-engine-embeddings` | 内存宿主嵌入引擎 | 内存宿主嵌入引擎导出 |
+  | `plugin-sdk/memory-core-host-engine-embeddings` | 内存宿主嵌入引擎 | 内存嵌入契约、注册表访问、本地 Provider 以及通用批处理/远程辅助工具；具体的远程 Provider 位于其拥有的 Plugin 中 |
   | `plugin-sdk/memory-core-host-engine-qmd` | 内存宿主 QMD 引擎 | 内存宿主 QMD 引擎导出 |
   | `plugin-sdk/memory-core-host-engine-storage` | 内存宿主存储引擎 | 内存宿主存储引擎导出 |
   | `plugin-sdk/memory-core-host-multimodal` | 内存宿主多模态辅助工具 | 内存宿主多模态辅助工具 |
@@ -316,11 +362,166 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
 - Matrix：`plugin-sdk/matrix*`
 - LINE：`plugin-sdk/line*`
 - IRC：`plugin-sdk/irc*`
-- 捆绑辅助工具/Plugin 界面：`plugin-sdk/googlechat`, `plugin-sdk/zalouser`, `plugin-sdk/bluebubbles*`, `plugin-sdk/mattermost*`, `plugin-sdk/msteams`, `plugin-sdk/nextcloud-talk`, `plugin-sdk/nostr`, `plugin-sdk/tlon`, `plugin-sdk/twitch`, `plugin-sdk/github-copilot-login`, `plugin-sdk/github-copilot-token`, `plugin-sdk/diagnostics-otel`, `plugin-sdk/diffs`, `plugin-sdk/llm-task`, `plugin-sdk/thread-ownership` 和 `plugin-sdk/voice-call`
+- 捆绑辅助工具/Plugin 界面：`plugin-sdk/googlechat`, `plugin-sdk/zalouser`, `plugin-sdk/bluebubbles*`, `plugin-sdk/mattermost*`, `plugin-sdk/msteams`, `plugin-sdk/nextcloud-talk`, `plugin-sdk/nostr`, `plugin-sdk/tlon`, `plugin-sdk/twitch`, `plugin-sdk/github-copilot-login`, `plugin-sdk/github-copilot-token`, `plugin-sdk/diagnostics-otel`, `plugin-sdk/diagnostics-prometheus`, `plugin-sdk/diffs`, `plugin-sdk/llm-task`, `plugin-sdk/thread-ownership` 和 `plugin-sdk/voice-call`
 
 `plugin-sdk/github-copilot-token` 目前暴露了窄向 Token 辅助工具界面：`DEFAULT_COPILOT_API_BASE_URL`、`deriveCopilotApiBaseUrlFromToken` 和 `resolveCopilotApiToken`。
 
 使用最窄的导入来匹配工作。如果找不到导出，请查看 `src/plugin-sdk/` 中的源代码或在 Discord 中提问。
+
+## 活跃的弃用项
+
+适用于整个 Plugin SDK、Provider 契约、运行时接口和清单的较窄弃用项。每项今天仍然可以工作，但将在未来的主要版本中删除。每项下面的条目将旧 API 映射到其规范替代。
+
+<AccordionGroup>
+  <Accordion title="command-auth 帮助构建器 → command-status">
+    **旧（`openclaw/plugin-sdk/command-auth`）**：`buildCommandsMessage`、`buildCommandsMessagePaginated`、`buildHelpMessage`。
+
+    **新（`openclaw/plugin-sdk/command-status`）**：相同的签名、相同的导出 — 只是从更窄的子路径导入。`command-auth` 将它们作为兼容性存根重新导出。
+
+    ```typescript
+    // 之前
+    import { buildHelpMessage } from "openclaw/plugin-sdk/command-auth";
+
+    // 之后
+    import { buildHelpMessage } from "openclaw/plugin-sdk/command-status";
+    ```
+
+  </Accordion>
+
+  <Accordion title="提及门控辅助工具 → resolveInboundMentionDecision">
+    **旧**：来自 `openclaw/plugin-sdk/channel-inbound` 或 `openclaw/plugin-sdk/channel-mention-gating` 的 `resolveInboundMentionRequirement({ facts, policy })` 和 `shouldDropInboundForMention(...)`。
+
+    **新**：`resolveInboundMentionDecision({ facts, policy })` — 返回单个决策对象，而不是两次分开调用。
+
+    下游 Channel Plugin（Slack、Discord、Matrix、MS Teams）已经切换。
+
+  </Accordion>
+
+  <Accordion title="Channel 运行时垫片和 Channel 操作辅助工具">
+    `openclaw/plugin-sdk/channel-runtime` 是旧版 Channel Plugin 的兼容性垫片。不要从新代码中导入它；使用 `openclaw/plugin-sdk/channel-runtime-context` 注册运行时对象。
+
+    `openclaw/plugin-sdk/channel-actions` 中的 `channelActions*` 辅助工具与原始"操作"Channel 导出一起被弃用。改为通过语义 `presentation` 界面暴露能力 — Channel Plugin 声明它们渲染什么（卡片、按钮、选择器），而不是接受哪些原始操作名称。
+
+  </Accordion>
+
+  <Accordion title="Web 搜索 Provider tool() 辅助工具 → Plugin 上的 createTool()">
+    **旧**：来自 `openclaw/plugin-sdk/provider-web-search` 的 `tool()` 工厂。
+
+    **新**：直接在 Provider Plugin 上实现 `createTool(...)`。OpenClaw 不再需要 SDK 辅助工具来注册工具包装器。
+
+  </Accordion>
+
+  <Accordion title="纯文本 Channel 信封 → BodyForAgent">
+    **旧**：`formatInboundEnvelope(...)（以及 `ChannelMessageForAgent.channelEnvelope`）用于从入站 Channel 消息构建平面纯文本提示信封。
+
+    **新**：`BodyForAgent` 加上结构化用户上下文块。Channel Plugin 将路由元数据（线程、主题、回复到、反应）作为类型化字段附加，而不是将它们连接成提示字符串。`formatAgentEnvelope(...)` 辅助工具对于合成的面向 Assistant 的信封仍然受支持，但入站纯文本信封正在淘汰中。
+
+    受影响的区域：`inbound_claim`、`message_received` 以及任何后处理 `channelEnvelope` 文本的自定义 Channel Plugin。
+
+  </Accordion>
+
+  <Accordion title="Provider 发现类型 → Provider 目录类型">
+    四个发现类型别名现在是目录时代类型的薄包装器：
+
+    | 旧别名                     | 新类型                    |
+    | -------------------------- | ------------------------- |
+    | `ProviderDiscoveryOrder`   | `ProviderCatalogOrder`    |
+    | `ProviderDiscoveryContext` | `ProviderCatalogContext`  |
+    | `ProviderDiscoveryResult`  | `ProviderCatalogResult`   |
+    | `ProviderPluginDiscovery`  | `ProviderPluginCatalog`   |
+
+    以及旧版 `ProviderCapabilities` 静态包 — Provider Plugin 应通过 Provider 运行时契约而不是静态对象附加能力事实。
+
+  </Accordion>
+
+  <Accordion title="思考策略 Hook → resolveThinkingProfile">
+    **旧**（`ProviderThinkingPolicy` 上的三个独立 Hook）：`isBinaryThinking(ctx)`、`supportsXHighThinking(ctx)` 和 `resolveDefaultThinkingLevel(ctx)`。
+
+    **新**：单个 `resolveThinkingProfile(ctx)`，返回带有规范 `id`、可选 `label` 和按排名的级别列表的 `ProviderThinkingProfile`。OpenClaw 自动按配置文件排名降级存储的旧值。
+
+    实现一个 Hook 而不是三个。旧版 Hook 在弃用窗口内继续工作，但不与配置文件结果组合。
+
+  </Accordion>
+
+  <Accordion title="外部 OAuth Provider 回退 → contracts.externalAuthProviders">
+    **旧**：实现 `resolveExternalOAuthProfiles(...)` 而不在 Plugin 清单中声明 Provider。
+
+    **新**：在 Plugin 清单中声明 `contracts.externalAuthProviders` **并**实现 `resolveExternalAuthProfiles(...)`。旧的"认证回退"路径在运行时发出警告，将会被删除。
+
+    ```json
+    {
+      "contracts": {
+        "externalAuthProviders": ["anthropic", "openai"]
+      }
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="Provider 环境变量查找 → setup.providers[].envVars">
+    **旧**清单字段：`providerAuthEnvVars: { anthropic: ["ANTHROPIC_API_KEY"] }`。
+
+    **新**：将相同的环境变量查找镜像到清单上的 `setup.providers[].envVars`。这将设置/状态环境元数据整合在一个地方，避免仅为回答环境变量查找而启动 Plugin 运行时。
+
+    `providerAuthEnvVars` 通过兼容性适配器在弃用窗口关闭之前仍然受支持。
+
+  </Accordion>
+
+  <Accordion title="内存 Plugin 注册 → registerMemoryCapability">
+    **旧**：三次独立调用 — `api.registerMemoryPromptSection(...)`、`api.registerMemoryFlushPlan(...)`、`api.registerMemoryRuntime(...)`。
+
+    **新**：在内存状态 API 上一次调用 — `registerMemoryCapability(pluginId, { promptBuilder, flushPlanResolver, runtime })`。
+
+    相同的槽，单次注册调用。附加的内存辅助工具（`registerMemoryPromptSupplement`、`registerMemoryCorpusSupplement`、`registerMemoryEmbeddingProvider`）不受影响。
+
+  </Accordion>
+
+  <Accordion title="子 Agent Session 消息类型已重命名">
+    仍从 `src/plugins/runtime/types.ts` 导出的两个旧版类型别名：
+
+    | 旧                            | 新                                 |
+    | ----------------------------- | ---------------------------------- |
+    | `SubagentReadSessionParams`   | `SubagentGetSessionMessagesParams` |
+    | `SubagentReadSessionResult`   | `SubagentGetSessionMessagesResult` |
+
+    运行时方法 `readSession` 已弃用，改用 `getSessionMessages`。签名相同；旧方法调用新方法。
+
+  </Accordion>
+
+  <Accordion title="runtime.tasks.flow → runtime.tasks.flows">
+    **旧**：`runtime.tasks.flow`（单数）返回实时任务流访问器。
+
+    **新**：`runtime.tasks.flows`（复数）返回基于 DTO 的 TaskFlow 访问，这是导入安全的，不需要加载完整的任务运行时。
+
+    ```typescript
+    // 之前
+    const flow = api.runtime.tasks.flow(ctx);
+    // 之后
+    const flows = api.runtime.tasks.flows(ctx);
+    ```
+
+  </Accordion>
+
+  <Accordion title="嵌入式扩展工厂 → Agent 工具结果中间件">
+    已在上面"如何迁移 → 将 Pi 工具结果扩展迁移到中间件"中介绍。此处包含以示完整：已移除的仅 Pi `api.registerEmbeddedExtensionFactory(...)` 路径被 `api.registerAgentToolResultMiddleware(...)` 替换，在 `contracts.agentToolResultMiddleware` 中有明确的运行时列表。
+  </Accordion>
+
+  <Accordion title="OpenClawSchemaType 别名 → OpenClawConfig">
+    从 `openclaw/plugin-sdk` 重导出的 `OpenClawSchemaType` 现在是 `OpenClawConfig` 的单行别名。优先使用规范名称。
+
+    ```typescript
+    // 之前
+    import type { OpenClawSchemaType } from "openclaw/plugin-sdk";
+    // 之后
+    import type { OpenClawConfig } from "openclaw/plugin-sdk/config-schema";
+    ```
+
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+扩展级别的弃用（在 `extensions/` 下的捆绑 Channel/Provider Plugin 内部）在其自己的 `api.ts` 和 `runtime-api.ts` 桶中跟踪。它们不影响第三方 Plugin 契约，不在此处列出。如果您直接使用捆绑 Plugin 的本地桶，请在升级之前阅读该桶中的弃用注释。
+</Note>
 
 ## 删除时间线
 

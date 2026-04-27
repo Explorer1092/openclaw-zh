@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6e674cac655242d0e27ec04c2a1b96d1"
+mmh3_hash: "a6e70a17afbe079a899b3a037ba2feeb"
 summary: "安装和使用 Codex、Claude 和 Cursor Bundle 作为 OpenClaw Plugin"
 read_when:
   - 您想安装 Codex、Claude 或 Cursor 兼容的 Bundle
@@ -92,6 +92,7 @@ OpenClaw 可以从三个外部生态系统安装 Plugin：**Codex**、**Claude**
 - 启用的 Bundle 可以贡献 MCP 服务器配置
 - OpenClaw 将 Bundle MCP 配置合并到有效的嵌入式 Pi 设置中作为 `mcpServers`
 - OpenClaw 通过启动 stdio 服务器或连接到 HTTP 服务器，在嵌入式 Pi Agent 轮次期间暴露支持的 Bundle MCP Tool
+- `coding` 和 `messaging` 工具配置文件默认包含 Bundle MCP Tool；使用 `tools.deny: ["bundle-mcp"]` 可为某个 Agent 或 Gateway 退出
 - 项目本地 Pi 设置在 Bundle 默认值之后仍然适用，因此工作区设置可以在需要时覆盖 Bundle MCP 条目
 - Bundle MCP Tool 目录在注册之前按确定性顺序排序，使上游 `listTools()` 顺序变化不会扰乱 Prompt 缓存 Tool 块
 
@@ -151,6 +152,7 @@ OpenClaw 以 `serverName__toolName` 格式使用 Provider 安全名称注册 Bun
 - 空服务器名称回退到 `mcp`
 - 冲突的清理后名称用数字后缀消歧
 - 最终暴露的 Tool 顺序按安全名称确定，以保持重复 Pi 轮次缓存稳定
+- 配置文件过滤将某个 Bundle MCP 服务器的所有 Tool 视为由 `bundle-mcp` 拥有，因此配置文件允许列表和拒绝列表可以包含单个暴露的 Tool 名称或 `bundle-mcp` Plugin 键
 
 #### 嵌入式 Pi 设置
 
@@ -225,6 +227,10 @@ OpenClaw 首先检查原生 Plugin 格式：
 2. Bundle 标记（`.codex-plugin/`、`.claude-plugin/` 或默认 Claude/Cursor 布局）— 被视为 **Bundle**
 
 如果目录同时包含两者，OpenClaw 使用原生路径。这防止双格式包被部分安装为 Bundle。
+
+## 运行时依赖和清理
+
+- 打包 Plugin 运行时依赖随 OpenClaw 包一起发布在 `dist/*` 下。OpenClaw 在启动时**不**为打包 Plugin 运行 `npm install`；发布管道负责提供完整的打包依赖有效载荷（参见 [发布](/reference/RELEASING) 中的发布后验证规则）。
 
 ## 安全性
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cd0bbba66b258685aac4a504bb77714a"
+mmh3_hash: "37c2d872080d434b206734d015d4788f"
 title: "构建 Plugin"
 sidebarTitle: "入门指南"
 summary: "几分钟内创建您的第一个 OpenClaw Plugin"
@@ -153,13 +153,17 @@ OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
 | 视频生成            | `api.registerVideoGenerationProvider(...)`               | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
 | Web 抓取            | `api.registerWebFetchProvider(...)`                      | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
 | Web 搜索            | `api.registerWebSearchProvider(...)`                     | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
+| Tool 结果中间件     | `api.registerAgentToolResultMiddleware(...)`              | [SDK 概览](/plugins/sdk-overview#registration-api)                                |
 | Agent Tool          | `api.registerTool(...)`                                  | 下方                                                                              |
 | 自定义命令          | `api.registerCommand(...)`                               | [入口点](/plugins/sdk-entrypoints)                                                |
-| 事件 Hook           | `api.registerHook(...)`                                  | [入口点](/plugins/sdk-entrypoints)                                                |
-| HTTP 路由           | `api.registerHttpRoute(...)`                             | [内部架构](/plugins/architecture#gateway-http-routes)                             |
+| Plugin Hook         | `api.on(...)`                                            | [Plugin Hook](/plugins/hooks)                                                     |
+| 内部事件 Hook       | `api.registerHook(...)`                                  | [入口点](/plugins/sdk-entrypoints)                                                |
+| HTTP 路由           | `api.registerHttpRoute(...)`                             | [内部架构](/plugins/architecture-internals#gateway-http-routes)                   |
 | CLI 子命令          | `api.registerCli(...)`                                   | [入口点](/plugins/sdk-entrypoints)                                                |
 
 完整注册 API 请参见 [SDK 概览](/plugins/sdk-overview#registration-api)。
+
+打包 Plugin 可以在需要在模型看到输出之前异步重写工具结果时使用 `api.registerAgentToolResultMiddleware(...)`。在 `contracts.agentToolResultMiddleware` 中声明目标运行时，例如 `["pi", "codex"]`。这是一个受信任的打包 Plugin 接缝；外部 Plugin 应优先使用常规 OpenClaw Plugin Hook，除非 OpenClaw 为此能力制定了明确的信任策略。
 
 如果您的 Plugin 注册自定义 Gateway RPC 方法，请保持它们在 Plugin 特定的前缀下。核心管理员命名空间（`config.*`、`exec.approvals.*`、`wizard.*`、`update.*`）保持保留状态，始终解析为 `operator.admin`，即使 Plugin 请求更窄的范围。
 
@@ -172,12 +176,14 @@ OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
 - `before_install`：`{ block: false }` 被视为无决策。
 - `message_sending`：`{ cancel: true }` 是终止的，停止较低优先级的处理程序。
 - `message_sending`：`{ cancel: false }` 被视为无决策。
+- `message_received`：当您需要入站线程/话题路由时，优先使用类型化的 `threadId` 字段。将 `metadata` 保留给 Channel 特定的额外内容。
+- `message_sending`：优先使用类型化的 `replyToId` / `threadId` 路由字段，而非 Channel 特定的元数据键。
 
 `/approve` 命令通过有限回退同时处理执行和 Plugin 批准：当找不到执行批准 id 时，OpenClaw 通过 Plugin 批准重试相同的 id。Plugin 批准转发可以通过配置中的 `approvals.plugin` 独立配置。
 
 如果自定义批准管道需要检测相同的有限回退情况，优先使用来自 `openclaw/plugin-sdk/error-runtime` 的 `isApprovalNotFoundError`，而不是手动匹配批准到期字符串。
 
-详见 [SDK 概览 Hook 决策语义](/plugins/sdk-overview#hook-decision-semantics)。
+详见 [Plugin Hook](/plugins/hooks) 的示例和 Hook 参考。
 
 ## 注册 Agent Tool
 

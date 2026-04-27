@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "754cae9bb14483db2eff2ea6ca338f21"
+mmh3_hash: "8b5ced3fff7e2288bb2cc70253dba5f9"
 summary: "memory-wiki：具有溯源、声明、仪表板和桥接模式的编译知识库"
 read_when:
   - 您需要超越普通 MEMORY.md 笔记的持久知识

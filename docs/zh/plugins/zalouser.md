@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4c4a1783f8876b3adb3162ad5f5272f1"
+mmh3_hash: "4fdf25cd2019138664df4f58f38a91d2"
 summary: "Zalo Personal Plugin: 通过原生 zca-js 的 QR 登录 + 消息(Plugin 安装 + channel 配置 + Tool)"
 read_when:
   - 您想要 OpenClaw 中的 Zalo Personal(非官方)支持
@@ -11,7 +11,9 @@ title: "Zalo Personal Plugin"
 
 通过 Plugin 为 OpenClaw 提供 Zalo Personal 支持,使用原生 `zca-js` 自动化正常的 Zalo 用户帐户。
 
-> **警告:** 非官方自动化可能导致帐户暂停/封禁。使用风险自负。
+<Warning>
+非官方自动化可能导致帐户暂停/封禁。使用风险自负。
+</Warning>
 
 ## 命名
 
@@ -77,3 +79,8 @@ Tool 名称: `zalouser`
 操作: `send`、`image`、`link`、`friends`、`groups`、`me`、`status`
 
 Channel 消息操作也支持 `react` 用于消息反应。
+
+## 相关
+
+- [构建 Plugin](/plugins/building-plugins)
+- [社区 Plugin](/plugins/community)

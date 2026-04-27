@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b7ee5ca717c49e3eaa514e73338f63d6"
+mmh3_hash: "6794beffabe92f6c4da4f969d9d220c3"
 summary: "Webhooks Plugin：用于受信任外部自动化的经过身份验证的 TaskFlow 入口"
 read_when:
   - 您想从外部系统触发或驱动 TaskFlow

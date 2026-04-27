@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d2f2b12064d7ea1ba2d723a6d48d2261"
+mmh3_hash: "b91c2a79c795c9e7d9d5b662c47c36d9"
 title: "Plugin 设置和配置"
 sidebarTitle: "设置和配置"
 summary: "设置向导、setup-entry.ts、配置模式和 package.json 元数据"
@@ -21,58 +21,71 @@ Plugin 打包（`package.json` 元数据）、清单（`openclaw.plugin.json`）
 
 您的 `package.json` 需要一个 `openclaw` 字段，告诉 Plugin 系统您的 Plugin 提供什么：
 
-**Channel Plugin：**
-
-```json
-{
-  "name": "@myorg/openclaw-my-channel",
-  "version": "1.0.0",
-  "type": "module",
-  "openclaw": {
-    "extensions": ["./index.ts"],
-    "setupEntry": "./setup-entry.ts",
-    "channel": {
-      "id": "my-channel",
-      "label": "My Channel",
-      "blurb": "Short description of the channel."
+<Tabs>
+  <Tab title="Channel Plugin">
+    ```json
+    {
+      "name": "@myorg/openclaw-my-channel",
+      "version": "1.0.0",
+      "type": "module",
+      "openclaw": {
+        "extensions": ["./index.ts"],
+        "setupEntry": "./setup-entry.ts",
+        "channel": {
+          "id": "my-channel",
+          "label": "My Channel",
+          "blurb": "Short description of the channel."
+        }
+      }
     }
-  }
-}
-```
-
-**Provider Plugin / ClawHub 发布基准：**
-
-```json openclaw-clawhub-package.json
-{
-  "name": "@myorg/openclaw-my-plugin",
-  "version": "1.0.0",
-  "type": "module",
-  "openclaw": {
-    "extensions": ["./index.ts"],
-    "compat": {
-      "pluginApi": ">=2026.3.24-beta.2",
-      "minGatewayVersion": "2026.3.24-beta.2"
-    },
-    "build": {
-      "openclawVersion": "2026.3.24-beta.2",
-      "pluginSdkVersion": "2026.3.24-beta.2"
+    ```
+  </Tab>
+  <Tab title="Provider Plugin / ClawHub 发布基准">
+    ```json openclaw-clawhub-package.json
+    {
+      "name": "@myorg/openclaw-my-plugin",
+      "version": "1.0.0",
+      "type": "module",
+      "openclaw": {
+        "extensions": ["./index.ts"],
+        "compat": {
+          "pluginApi": ">=2026.3.24-beta.2",
+          "minGatewayVersion": "2026.3.24-beta.2"
+        },
+        "build": {
+          "openclawVersion": "2026.3.24-beta.2",
+          "pluginSdkVersion": "2026.3.24-beta.2"
+        }
+      }
     }
-  }
-}
-```
+    ```
+  </Tab>
+</Tabs>
 
+<Note>
 如果您在 ClawHub 上外部发布 Plugin，这些 `compat` 和 `build` 字段是必需的。规范发布代码片段位于 `docs/snippets/plugin-publish/`。
+</Note>
 
 ### `openclaw` 字段
 
-| 字段         | 类型       | 描述                                                                                                     |
-| ------------ | ---------- | -------------------------------------------------------------------------------------------------------- |
-| `extensions` | `string[]` | 入口点文件（相对于包根目录）                                                                             |
-| `setupEntry` | `string`   | 轻量级仅设置入口（可选）                                                                                 |
-| `channel`    | `object`   | Channel 目录元数据，用于设置、选择器、快速入门和状态界面                                                 |
-| `providers`  | `string[]` | 此 Plugin 注册的 Provider id                                                                             |
-| `install`    | `object`   | 安装提示：`npmSpec`、`localPath`、`defaultChoice`、`minHostVersion`、`allowInvalidConfigRecovery`        |
-| `startup`    | `object`   | 启动行为标志                                                                                             |
+<ParamField path="extensions" type="string[]">
+  入口点文件（相对于包根目录）。
+</ParamField>
+<ParamField path="setupEntry" type="string">
+  轻量级仅设置入口（可选）。
+</ParamField>
+<ParamField path="channel" type="object">
+  Channel 目录元数据，用于设置、选择器、快速入门和状态界面。
+</ParamField>
+<ParamField path="providers" type="string[]">
+  此 Plugin 注册的 Provider id。
+</ParamField>
+<ParamField path="install" type="object">
+  安装提示：`npmSpec`、`localPath`、`defaultChoice`、`minHostVersion`、`expectedIntegrity`、`allowInvalidConfigRecovery`。
+</ParamField>
+<ParamField path="startup" type="object">
+  启动行为标志。
+</ParamField>
 
 ### `openclaw.channel`
 
@@ -136,7 +149,9 @@ Plugin 打包（`package.json` 元数据）、清单（`openclaw.plugin.json`）
 - `setup`：将 Channel 包含在交互式设置/配置选择器中
 - `docs`：在文档/导航界面中将 Channel 标记为面向公众
 
+<Note>
 `showConfigured` 和 `showInSetup` 作为旧版别名仍受支持。优先使用 `exposure`。
+</Note>
 
 ### `openclaw.install`
 
@@ -148,11 +163,36 @@ Plugin 打包（`package.json` 元数据）、清单（`openclaw.plugin.json`）
 | `localPath`                  | `string`             | 本地开发或捆绑安装路径。                                                         |
 | `defaultChoice`              | `"npm"` \| `"local"` | 两者都可用时的首选安装来源。                                                     |
 | `minHostVersion`             | `string`             | 支持的最低 OpenClaw 版本，格式为 `>=x.y.z`。                                     |
+| `expectedIntegrity`          | `string`             | 预期的 npm dist 完整性字符串，通常为 `sha512-...`，用于固定安装。               |
 | `allowInvalidConfigRecovery` | `boolean`            | 让捆绑 Plugin 的重安装流程能够从特定的旧配置失败中恢复。                         |
 
-如果设置了 `minHostVersion`，安装和清单注册表加载都会强制执行它。较旧的宿主会跳过该 Plugin；无效的版本字符串会被拒绝。
+<AccordionGroup>
+  <Accordion title="入门行为">
+    交互式入门也使用 `openclaw.install` 来支持按需安装界面。如果您的 Plugin 在运行时加载之前暴露了 Provider 认证选项或 Channel 设置/目录元数据，入门可以显示该选项、提示 npm 或本地安装、安装或启用 Plugin，然后继续所选流程。npm 入门选项需要带有注册表 `npmSpec` 的受信任目录元数据；确切版本和 `expectedIntegrity` 是可选固定。如果 `expectedIntegrity` 存在，安装/更新流程会强制执行它。将"显示什么"元数据放在 `openclaw.plugin.json` 中，将"如何安装"元数据放在 `package.json` 中。
+  </Accordion>
+  <Accordion title="minHostVersion 强制执行">
+    如果设置了 `minHostVersion`，安装和清单注册表加载都会强制执行它。较旧的宿主会跳过该 Plugin；无效的版本字符串会被拒绝。
+  </Accordion>
+  <Accordion title="固定 npm 安装">
+    对于固定 npm 安装，在 `npmSpec` 中保留确切版本并添加预期的工件完整性：
 
-`allowInvalidConfigRecovery` 不是损坏配置的通用旁路。它仅用于窄向的捆绑 Plugin 恢复，以便重安装/设置可以修复已知的升级遗留问题，如缺失的捆绑 Plugin 路径或同一 Plugin 的旧 `channels.<id>` 条目。如果配置因无关原因损坏，安装仍会失败关闭并告知操作员运行 `openclaw doctor --fix`。
+    ```json
+    {
+      "openclaw": {
+        "install": {
+          "npmSpec": "@wecom/wecom-openclaw-plugin@1.2.3",
+          "expectedIntegrity": "sha512-REPLACE_WITH_NPM_DIST_INTEGRITY",
+          "defaultChoice": "npm"
+        }
+      }
+    }
+    ```
+
+  </Accordion>
+  <Accordion title="allowInvalidConfigRecovery 范围">
+    `allowInvalidConfigRecovery` 不是损坏配置的通用旁路。它仅用于窄向的捆绑 Plugin 恢复，以便重安装/设置可以修复已知的升级遗留问题，如缺失的捆绑 Plugin 路径或同一 Plugin 的旧 `channels.<id>` 条目。如果配置因无关原因损坏，安装仍会失败关闭并告知操作员运行 `openclaw doctor --fix`。
+  </Accordion>
+</AccordionGroup>
 
 ### 延迟完整加载
 
@@ -238,7 +278,9 @@ clawhub package publish your-org/your-plugin --dry-run
 clawhub package publish your-org/your-plugin
 ```
 
+<Note>
 旧版仅 Skill 发布别名用于 Skill。Plugin 包应始终使用 `clawhub package publish`。
+</Note>
 
 ## 设置入口
 
@@ -256,26 +298,27 @@ export default defineSetupPluginEntry(myChannelPlugin);
 
 将设置安全导出保存在附属模块中的捆绑工作区 Channel 可以使用来自 `openclaw/plugin-sdk/channel-entry-contract` 的 `defineBundledChannelSetupEntry(...)` 代替 `defineSetupPluginEntry(...)`。该捆绑契约还支持可选的 `runtime` 导出，以便设置时的运行时连接保持轻量且显式。
 
-**OpenClaw 使用 `setupEntry` 而不是完整入口的时机：**
+<AccordionGroup>
+  <Accordion title="OpenClaw 使用 setupEntry 而不是完整入口的时机">
+    - Channel 被禁用但需要设置/入门界面。
+    - Channel 已启用但未配置。
+    - 启用了延迟加载（`deferConfiguredChannelFullLoadUntilAfterListen`）。
+  </Accordion>
+  <Accordion title="setupEntry 必须注册的内容">
+    - Channel Plugin 对象（通过 `defineSetupPluginEntry`）。
+    - Gateway 监听之前所需的任何 HTTP 路由。
+    - 启动期间所需的任何 Gateway 方法。
 
-- Channel 被禁用但需要设置/入门界面
-- Channel 已启用但未配置
-- 启用了延迟加载（`deferConfiguredChannelFullLoadUntilAfterListen`）
+    这些启动 Gateway 方法仍应避免保留的核心管理员命名空间，如 `config.*` 或 `update.*`。
 
-**`setupEntry` 必须注册的内容：**
-
-- Channel Plugin 对象（通过 `defineSetupPluginEntry`）
-- Gateway 监听之前所需的任何 HTTP 路由
-- 启动期间所需的任何 Gateway 方法
-
-这些启动 Gateway 方法仍应避免保留的核心管理员命名空间，如 `config.*` 或 `update.*`。
-
-**`setupEntry` 不应包含的内容：**
-
-- CLI 注册
-- 后台服务
-- 重量级运行时导入（加密、SDK）
-- 仅在启动后需要的 Gateway 方法
+  </Accordion>
+  <Accordion title="setupEntry 不应包含的内容">
+    - CLI 注册。
+    - 后台服务。
+    - 重量级运行时导入（加密、SDK）。
+    - 仅在启动后需要的 Gateway 方法。
+  </Accordion>
+</AccordionGroup>
 
 ### 窄向设置辅助工具导入
 
@@ -301,7 +344,9 @@ export default defineSetupPluginEntry(myChannelPlugin);
 - `namedAccountPromotionKeys`：当命名账户已存在时，只有这些键移入提升账户；共享的策略/交付键保留在 Channel 根目录
 - `resolveSingleAccountPromotionTarget(...)`：选择哪个现有账户接收提升的值
 
+<Note>
 Matrix 是当前的捆绑示例。如果恰好已经存在一个命名的 Matrix 账户，或者 `defaultAccount` 指向现有的非规范键（如 `Ops`），则提升会保留该账户而不是创建新的 `accounts.default` 条目。
+</Note>
 
 ## 配置模式
 
@@ -338,11 +383,11 @@ Plugin 配置针对清单中的 JSON Schema 进行验证。用户通过以下方
 
 ### 构建 Channel 配置模式
 
-使用来自 `openclaw/plugin-sdk/core` 的 `buildChannelConfigSchema` 将 Zod 模式转换为 OpenClaw 验证的 `ChannelConfigSchema` 包装器：
+使用 `buildChannelConfigSchema` 将 Zod 模式转换为 Plugin 自有配置工件使用的 `ChannelConfigSchema` 包装器：
 
 ```typescript
 import { z } from "zod";
-import { buildChannelConfigSchema } from "openclaw/plugin-sdk/core";
+import { buildChannelConfigSchema } from "openclaw/plugin-sdk/channel-config-schema";
 
 const accountSchema = z.object({
   token: z.string().optional(),
@@ -353,6 +398,8 @@ const accountSchema = z.object({
 
 const configSchema = buildChannelConfigSchema(accountSchema);
 ```
+
+对于第三方 Plugin，冷路径契约仍然是 Plugin 清单：将生成的 JSON Schema 镜像到 `openclaw.plugin.json#channelConfigs` 中，以便配置模式、设置和 UI 界面可以在不加载运行时代码的情况下检查 `channels.<id>`。
 
 ## 设置向导
 
@@ -391,54 +438,71 @@ const setupWizard: ChannelSetupWizard = {
 
 `ChannelSetupWizard` 类型支持 `credentials`、`textInputs`、`dmPolicy`、`allowFrom`、`groupAccess`、`prepare`、`finalize` 等。完整示例请参见捆绑 Plugin 包（例如 Discord Plugin 的 `src/channel.setup.ts`）。
 
-对于仅需要标准 `note -> prompt -> parse -> merge -> patch` 流程的 DM 允许列表提示，优先使用来自 `openclaw/plugin-sdk/setup` 的共享设置辅助工具：`createPromptParsedAllowFromForAccount(...)`、`createTopLevelChannelParsedAllowFromPrompt(...)` 和 `createNestedChannelParsedAllowFromPrompt(...)`。
+<AccordionGroup>
+  <Accordion title="共享 allowFrom 提示">
+    对于仅需要标准 `note -> prompt -> parse -> merge -> patch` 流程的 DM 允许列表提示，优先使用来自 `openclaw/plugin-sdk/setup` 的共享设置辅助工具：`createPromptParsedAllowFromForAccount(...)`、`createTopLevelChannelParsedAllowFromPrompt(...)` 和 `createNestedChannelParsedAllowFromPrompt(...)`。
+  </Accordion>
+  <Accordion title="标准 Channel 设置状态">
+    对于仅因标签、分数和可选额外行而变化的 Channel 设置状态块，优先使用来自 `openclaw/plugin-sdk/setup` 的 `createStandardChannelSetupStatus(...)` 而不是在每个 Plugin 中手工编写同样的 `status` 对象。
+  </Accordion>
+  <Accordion title="可选 Channel 设置界面">
+    对于仅在特定上下文中出现的可选设置界面，使用来自 `openclaw/plugin-sdk/channel-setup` 的 `createOptionalChannelSetupSurface`：
 
-对于仅因标签、分数和可选额外行而变化的 Channel 设置状态块，优先使用来自 `openclaw/plugin-sdk/setup` 的 `createStandardChannelSetupStatus(...)` 而不是在每个 Plugin 中手工编写同样的 `status` 对象。
+    ```typescript
+    import { createOptionalChannelSetupSurface } from "openclaw/plugin-sdk/channel-setup";
 
-对于仅在特定上下文中出现的可选设置界面，使用来自 `openclaw/plugin-sdk/channel-setup` 的 `createOptionalChannelSetupSurface`：
+    const setupSurface = createOptionalChannelSetupSurface({
+      channel: "my-channel",
+      label: "My Channel",
+      npmSpec: "@myorg/openclaw-my-channel",
+      docsPath: "/channels/my-channel",
+    });
+    // 返回 { setupAdapter, setupWizard }
+    ```
 
-```typescript
-import { createOptionalChannelSetupSurface } from "openclaw/plugin-sdk/channel-setup";
+    `plugin-sdk/channel-setup` 还暴露了更底层的 `createOptionalChannelSetupAdapter(...)` 和 `createOptionalChannelSetupWizard(...)` 构建器，当您只需要该可选安装界面的一半时使用。
 
-const setupSurface = createOptionalChannelSetupSurface({
-  channel: "my-channel",
-  label: "My Channel",
-  npmSpec: "@myorg/openclaw-my-channel",
-  docsPath: "/channels/my-channel",
-});
-// 返回 { setupAdapter, setupWizard }
-```
+    生成的可选适配器/向导在真实配置写入时会失败关闭。它们在 `validateInput`、`applyAccountConfig` 和 `finalize` 之间复用同一条需要安装的消息，并在设置了 `docsPath` 时附加文档链接。
 
-`plugin-sdk/channel-setup` 还暴露了更底层的 `createOptionalChannelSetupAdapter(...)` 和 `createOptionalChannelSetupWizard(...)` 构建器，当您只需要该可选安装界面的一半时使用。
+  </Accordion>
+  <Accordion title="二进制支持的设置辅助工具">
+    对于二进制支持的设置 UI，优先使用共享的委托辅助工具，而不是将相同的二进制/状态胶水复制到每个 Channel：
 
-生成的可选适配器/向导在真实配置写入时会失败关闭。它们在 `validateInput`、`applyAccountConfig` 和 `finalize` 之间复用同一条需要安装的消息，并在设置了 `docsPath` 时附加文档链接。
+    - `createDetectedBinaryStatus(...)` 用于仅因标签、提示、分数和二进制检测而变化的状态块
+    - `createCliPathTextInput(...)` 用于路径支持的文本输入
+    - `createDelegatedSetupWizardStatusResolvers(...)`、`createDelegatedPrepare(...)`、`createDelegatedFinalize(...)` 和 `createDelegatedResolveConfigured(...)`，当 `setupEntry` 需要懒加载地转发到更重量级的完整向导时
+    - `createDelegatedTextInputShouldPrompt(...)`，当 `setupEntry` 只需要委托 `textInputs[*].shouldPrompt` 决策时
 
-对于二进制支持的设置 UI，优先使用共享的委托辅助工具，而不是将相同的二进制/状态胶水复制到每个 Channel：
-
-- `createDetectedBinaryStatus(...)` 用于仅因标签、提示、分数和二进制检测而变化的状态块
-- `createCliPathTextInput(...)` 用于路径支持的文本输入
-- `createDelegatedSetupWizardStatusResolvers(...)`、`createDelegatedPrepare(...)`、`createDelegatedFinalize(...)` 和 `createDelegatedResolveConfigured(...)`，当 `setupEntry` 需要懒加载地转发到更重量级的完整向导时
-- `createDelegatedTextInputShouldPrompt(...)`，当 `setupEntry` 只需要委托 `textInputs[*].shouldPrompt` 决策时
+  </Accordion>
+</AccordionGroup>
 
 ## 发布和安装
 
 **外部 Plugin：** 发布到 [ClawHub](/tools/clawhub) 或 npm，然后安装：
 
-```bash
-openclaw plugins install @myorg/openclaw-my-plugin
-```
+<Tabs>
+  <Tab title="自动（先 ClawHub 后 npm）">
+    ```bash
+    openclaw plugins install @myorg/openclaw-my-plugin
+    ```
 
-OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。您也可以显式强制使用 ClawHub：
+    OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
 
-```bash
-openclaw plugins install clawhub:@myorg/openclaw-my-plugin   # 仅 ClawHub
-```
+  </Tab>
+  <Tab title="仅 ClawHub">
+    ```bash
+    openclaw plugins install clawhub:@myorg/openclaw-my-plugin
+    ```
+  </Tab>
+  <Tab title="npm 包规格">
+    没有匹配的 `npm:` 覆盖。当您希望在 ClawHub 回退后使用 npm 路径时，请使用普通的 npm 包规格：
 
-没有匹配的 `npm:` 覆盖。当您希望在 ClawHub 回退后使用 npm 路径时，请使用普通的 npm 包规格：
+    ```bash
+    openclaw plugins install @myorg/openclaw-my-plugin
+    ```
 
-```bash
-openclaw plugins install @myorg/openclaw-my-plugin
-```
+  </Tab>
+</Tabs>
 
 **仓库内 Plugin：** 放在捆绑 Plugin 工作区树下，在构建期间自动发现。
 
@@ -449,11 +513,15 @@ openclaw plugins install <package-name>
 ```
 
 <Info>
-  对于 npm 来源的安装，`openclaw plugins install` 运行 `npm install --ignore-scripts`（无生命周期脚本）。保持 Plugin 依赖树为纯 JS/TS，避免需要 `postinstall` 构建的包。
+对于 npm 来源的安装，`openclaw plugins install` 运行项目本地的 `npm install --ignore-scripts`（无生命周期脚本），忽略继承的全局 npm 安装设置。保持 Plugin 依赖树为纯 JS/TS，避免需要 `postinstall` 构建的包。
 </Info>
+
+<Note>
+捆绑的 OpenClaw 自有 Plugin 是唯一的启动修复例外：当打包安装看到由 Plugin 配置、旧版 Channel 配置或其捆绑的默认启用清单启用的 Plugin 时，启动会在导入之前安装该 Plugin 缺失的运行时依赖。第三方 Plugin 不应依赖启动安装；继续使用显式的 Plugin 安装程序。
+</Note>
 
 ## 相关
 
-- [SDK 入口点](/plugins/sdk-entrypoints) — `definePluginEntry` 和 `defineChannelPluginEntry`
-- [Plugin 清单](/plugins/manifest) — 完整清单模式参考
 - [构建 Plugin](/plugins/building-plugins) — 分步入门指南
+- [Plugin 清单](/plugins/manifest) — 完整清单模式参考
+- [SDK 入口点](/plugins/sdk-entrypoints) — `definePluginEntry` 和 `defineChannelPluginEntry`

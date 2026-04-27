@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9aa3f78d849ce762e3430250239304c6"
+mmh3_hash: "26921bbc2598765f7914bb731a8a3222"
 summary: "社区维护的 OpenClaw Plugin：浏览、安装和提交您自己的 Plugin"
 read_when:
   - 您想查找第三方 OpenClaw Plugin
@@ -20,6 +20,17 @@ openclaw plugins install <package-name>
 OpenClaw 首先检查 ClawHub，然后自动回退到 npm。
 
 ## 已收录 Plugin
+
+### Apify
+
+使用 20,000 多个现成的爬虫从任何网站抓取数据。让您的 Agent 仅通过提问就能从 Instagram、Facebook、TikTok、YouTube、Google Maps、Google Search、电商网站等提取数据。
+
+- **npm：** `@apify/apify-openclaw-plugin`
+- **仓库：** [github.com/apify/apify-openclaw-plugin](https://github.com/apify/apify-openclaw-plugin)
+
+```bash
+openclaw plugins install @apify/apify-openclaw-plugin
+```
 
 ### Codex App Server Bridge
 
@@ -65,9 +76,22 @@ openclaw plugins install @martian-engineering/lossless-claw
 openclaw plugins install @opik/opik-openclaw
 ```
 
+### Prometheus Avatar
+
+为您的 OpenClaw Agent 提供具有实时口型同步、情感表情和文字转语音功能的 Live2D 形象。包含用于 AI 资产生成的创作工具以及一键部署到 Prometheus Marketplace 的功能。目前处于 alpha 阶段。
+
+- **npm：** `@prometheusavatar/openclaw-plugin`
+- **仓库：** [github.com/myths-labs/prometheus-avatar](https://github.com/myths-labs/prometheus-avatar)
+
+```bash
+openclaw plugins install @prometheusavatar/openclaw-plugin
+```
+
 ### QQbot
 
 通过 QQ Bot API 将 OpenClaw 连接到 QQ。支持私聊、群组提及、频道消息以及包括语音、图像、视频和文件在内的丰富媒体。
+
+当前 OpenClaw 版本已捆绑 QQ Bot。对于正常安装，请使用 [QQ Bot](/channels/qqbot) 中的捆绑设置；仅当您有意需要腾讯维护的独立包时，才安装此外部 Plugin。
 
 - **npm：** `@tencent-connect/openclaw-qqbot`
 - **仓库：** [github.com/tencent-connect/openclaw-qqbot](https://github.com/tencent-connect/openclaw-qqbot)
