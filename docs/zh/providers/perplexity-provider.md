@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "38c03c34235febdbb248234db8f27245"
+mmh3_hash: "17e182340474acf7eaa8ce95dec7668c"
 title: "Perplexity"
 summary: "Perplexity Web 搜索 Provider 设置（API 密钥、搜索模式、过滤）"
 read_when:
   - 您想将 Perplexity 配置为 Web 搜索 Provider
   - 您需要 Perplexity API 密钥或 OpenRouter 代理设置
 ---
-
-# Perplexity（Web 搜索 Provider）
 
 Perplexity Plugin 通过 Perplexity Search API 或通过 OpenRouter 的 Perplexity Sonar 提供 Web 搜索功能。
 

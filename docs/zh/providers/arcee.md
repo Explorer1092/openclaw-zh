@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "a7ad2dc3adc630307eb4a69f2c55cfe2"
+mmh3_hash: "c2aaa326253396912329572c6e0d3a6f"
 title: "Arcee AI"
 summary: "Arcee AI 设置（认证 + 模型选择）"
 read_when:
   - 您想在 OpenClaw 中使用 Arcee AI
   - 您需要 API 密钥环境变量或 CLI 认证选择
 ---
-
-# Arcee AI
 
 [Arcee AI](https://arcee.ai) 通过 OpenAI 兼容 API 提供对 Trinity 混合专家模型系列的访问。所有 Trinity 模型均采用 Apache 2.0 许可证。
 

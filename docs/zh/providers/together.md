@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "88ca802fa6e3c628e78e0b94180c8219"
+mmh3_hash: "4e491879811ee3f040731339bc7b0a00"
 title: "Together AI"
 summary: "Together AI 设置（身份验证 + 模型选择）"
 read_when:
   - 您想要在 OpenClaw 中使用 Together AI
   - 您需要 API 密钥环境变量或 CLI 身份验证选项
 ---
-
-# Together AI
 
 [Together AI](https://together.ai) 通过统一的 API 提供对领先开源模型的访问，包括 Llama、DeepSeek、Kimi 等。
 

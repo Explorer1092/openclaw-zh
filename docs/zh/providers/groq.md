@@ -1,6 +1,6 @@
 ---
 title: "Groq"
-mmh3_hash: "bef2b9a952c8166ee7a2f463331d2de0"
+mmh3_hash: "5518886493dbabc61a16d86b4380df7a"
 summary: "Groq 设置（身份验证 + 模型选择）"
 read_when:
   - 您想在 OpenClaw 中使用 Groq
@@ -54,7 +54,7 @@ read_when:
 }
 ```
 
-## 可用模型
+## 内置目录
 
 Groq 的模型目录经常变化。运行 `openclaw models list | grep groq` 查看当前可用模型，或查看 [console.groq.com/docs/models](https://console.groq.com/docs/models)。
 

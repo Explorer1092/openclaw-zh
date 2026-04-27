@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2066ca0d0ad964c36bc5a8dab77de992"
+mmh3_hash: "ca916a853338b808c0c34cae0350d630"
 title: "OpenCode"
 summary: "将 OpenCode Zen 和 Go 目录与 OpenClaw 一起使用"
 read_when:
@@ -67,7 +67,7 @@ OpenCode 在 OpenClaw 中公开两个托管目录：
       </Step>
       <Step title="将 Go 模型设置为默认">
         ```bash
-        openclaw config set agents.defaults.model.primary "opencode-go/kimi-k2.5"
+        openclaw config set agents.defaults.model.primary "opencode-go/kimi-k2.6"
         ```
       </Step>
       <Step title="验证模型是否可用">
@@ -96,7 +96,7 @@ OpenCode 在 OpenClaw 中公开两个托管目录：
 | 属性             | 值                                                                      |
 | ---------------- | ----------------------------------------------------------------------- |
 | 运行时 Provider  | `opencode`                                                              |
-| 示例模型         | `opencode/claude-opus-4-6`、`opencode/gpt-5.4`、`opencode/gemini-3-pro` |
+| 示例模型         | `opencode/claude-opus-4-6`、`opencode/gpt-5.5`、`opencode/gemini-3-pro` |
 
 ### Go
 

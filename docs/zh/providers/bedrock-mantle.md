@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5dbd320e601f73facc9e4bf9556ad8d5"
+mmh3_hash: "f06a592f392d07c156a36d93c6d5bcf8"
 summary: "在 OpenClaw 中使用 Amazon Bedrock Mantle（OpenAI 兼容）模型"
 read_when:
   - 您想在 OpenClaw 中使用 Bedrock Mantle 托管的开源模型
@@ -14,7 +14,7 @@ OpenClaw 内置了 **Amazon Bedrock Mantle** Provider，连接到 Mantle OpenAI 
 | 属性             | 值                                                                                  |
 | ---------------- | ----------------------------------------------------------------------------------- |
 | Provider ID      | `amazon-bedrock-mantle`                                                             |
-| API              | `openai-completions`（OpenAI 兼容）                                                 |
+| API              | `openai-completions`（OpenAI 兼容）或 `anthropic-messages`（Anthropic Messages 路由） |
 | 身份验证         | 显式 `AWS_BEARER_TOKEN_BEDROCK` 或 IAM 凭据链 Bearer 令牌生成                       |
 | 默认区域         | `us-east-1`（通过 `AWS_REGION` 或 `AWS_DEFAULT_REGION` 覆盖）                       |
 
@@ -126,7 +126,7 @@ Bearer 令牌与标准 [Amazon Bedrock](/providers/bedrock) Provider 使用的 `
 }
 ```
 
-## 高级说明
+## 高级配置
 
 <AccordionGroup>
   <Accordion title="推理支持">
@@ -135,6 +135,35 @@ Bearer 令牌与标准 [Amazon Bedrock](/providers/bedrock) Provider 使用的 `
 
   <Accordion title="端点不可用">
     如果 Mantle 端点不可用或不返回任何模型，该 Provider 将被静默跳过。OpenClaw 不会报错；其他配置的 Provider 继续正常工作。
+  </Accordion>
+
+  <Accordion title="通过 Anthropic Messages 路由使用 Claude Opus 4.7">
+    Mantle 还提供了一个 Anthropic Messages 路由，通过相同的 Bearer 令牌认证流式传输路径承载 Claude 模型。Claude Opus 4.7（`amazon-bedrock-mantle/claude-opus-4.7`）可通过此路由调用，并使用 Provider 自有的流式传输，因此 AWS Bearer 令牌不会被当作 Anthropic API 密钥处理。
+
+    当您在 Mantle Provider 上固定 Anthropic Messages 模型时，OpenClaw 将为该模型使用 `anthropic-messages` API 接口而非 `openai-completions`。身份验证仍来自 `AWS_BEARER_TOKEN_BEDROCK`（或生成的 IAM Bearer 令牌）。
+
+    ```json5
+    {
+      models: {
+        providers: {
+          "amazon-bedrock-mantle": {
+            models: [
+              {
+                id: "claude-opus-4.7",
+                name: "Claude Opus 4.7",
+                api: "anthropic-messages",
+                reasoning: true,
+                input: ["text", "image"],
+                contextWindow: 1000000,
+                maxTokens: 32000,
+              },
+            ],
+          },
+        },
+      },
+    }
+    ```
+
   </Accordion>
 
   <Accordion title="与 Amazon Bedrock Provider 的关系">

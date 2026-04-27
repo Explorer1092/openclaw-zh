@@ -1,6 +1,6 @@
 ---
 title: "Google (Gemini)"
-mmh3_hash: "b0ebca4fb724b22d6e2f3d59a10c4c53"
+mmh3_hash: "f5986fea00618ff3a0c2e61afef0dcbe"
 summary: "Google Gemini 设置（API 密钥 + OAuth、图像生成、媒体理解、TTS、Web 搜索）"
 read_when:
   - 您想在 OpenClaw 中使用 Google Gemini 模型
@@ -14,7 +14,7 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
 - Provider：`google`
 - 身份验证：`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`
 - API：Google Gemini API
-- 备选 Provider：`google-gemini-cli`（OAuth）
+- 运行时选项：`agents.defaults.agentRuntime.id: "google-gemini-cli"` 复用 Gemini CLI OAuth，同时将模型引用保持为规范的 `google/*` 形式。
 
 ## 快速开始
 
@@ -91,12 +91,13 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
       </Step>
       <Step title="验证模型是否可用">
         ```bash
-        openclaw models list --provider google-gemini-cli
+        openclaw models list --provider google
         ```
       </Step>
     </Steps>
 
-    - 默认模型：`google-gemini-cli/gemini-3-flash-preview`
+    - 默认模型：`google/gemini-3.1-pro-preview`
+    - 运行时：`google-gemini-cli`
     - 别名：`gemini-cli`
 
     **环境变量：**
@@ -114,7 +115,7 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
     如果登录在浏览器流程启动前失败，请确保本地 `gemini` 命令已安装并在 `PATH` 中。
     </Note>
 
-    仅 OAuth 的 `google-gemini-cli` Provider 是独立的文本推理界面。图像生成、媒体理解和 Gemini Grounding 保留在 `google` Provider id 上。
+    `google-gemini-cli/*` 模型引用是旧版兼容别名。新配置应使用 `google/*` 模型引用，并在需要本地 Gemini CLI 执行时添加 `google-gemini-cli` 运行时。
 
   </Tab>
 </Tabs>
@@ -127,6 +128,7 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
 | 图像生成               | 是                            |
 | 音乐生成               | 是                            |
 | 文本转语音             | 是                            |
+| 实时语音               | 是（Google Live API）         |
 | 图像理解               | 是                            |
 | 音频转录               | 是                            |
 | 视频理解               | 是                            |
@@ -136,6 +138,8 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
 
 <Tip>
 Gemini 3 模型使用 `thinkingLevel` 而非 `thinkingBudget`。OpenClaw 将 Gemini 3、Gemini 3.1 及 `gemini-*-latest` 别名的推理控制映射到 `thinkingLevel`，以便默认/低延迟运行不发送已禁用的 `thinkingBudget` 值。
+
+`/think adaptive` 保留 Google 的动态思考语义，而不是选择固定的 OpenClaw 级别。Gemini 3 和 Gemini 3.1 省略固定的 `thinkingLevel`，让 Google 选择级别；Gemini 2.5 发送 Google 的动态哨兵值 `thinkingBudget: -1`。
 
 Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将 `thinkingBudget` 重写为 Gemma 4 支持的 Google `thinkingLevel`。将思考设置为 `off` 会保留禁用思考，而不是映射到 `MINIMAL`。
 </Tip>
@@ -229,8 +233,8 @@ Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将
 
 - 默认语音：`Kore`
 - 身份验证：`messages.tts.providers.google.apiKey`、`models.providers.google.apiKey`、`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`
-- 输出：常规 TTS 附件为 WAV，Talk/电话为 PCM
-- 原生语音消息输出：此 Gemini API 路径不支持，因为 API 返回 PCM 而非 Opus
+- 输出：常规 TTS 附件为 WAV，语音笔记目标为 Opus，Talk/电话为 PCM
+- 语音笔记输出：Google PCM 被封装为 WAV，并使用 `ffmpeg` 转码为 48 kHz Opus
 
 将 Google 设置为默认 TTS Provider：
 
@@ -244,12 +248,15 @@ Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将
         google: {
           model: "gemini-3.1-flash-tts-preview",
           voiceName: "Kore",
+          audioProfile: "Speak professionally with a calm tone.",
         },
       },
     },
   },
 }
 ```
+
+Gemini API TTS 使用自然语言提示进行风格控制。设置 `audioProfile` 可在朗读文本前添加可复用的风格提示。当提示文本引用命名讲话者时，请设置 `speakerName`。
 
 Gemini API TTS 接受文本中的表达性方括号音频标签，例如 `[whispers]` 或 `[laughs]`。若要在将标签发送到 TTS 的同时让其不出现在可见的聊天回复中，请将其放在 `[[tts:text]]...[[/tts:text]]` 块内：
 
@@ -261,6 +268,59 @@ Here is the clean reply text.
 
 <Note>
 限制为 Gemini API 的 Google Cloud Console API 密钥对此 Provider 有效。这不是单独的 Cloud Text-to-Speech API 路径。
+</Note>
+
+## 实时语音
+
+内置的 `google` 插件通过 Gemini Live API 注册实时语音 Provider，用于 Voice Call 和 Google Meet 等后端音频桥接。
+
+| 设置                | 配置路径                                                            | 默认值                                                                                |
+| ------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 模型                | `plugins.entries.voice-call.config.realtime.providers.google.model` | `gemini-2.5-flash-native-audio-preview-12-2025`                                       |
+| 语音                | `...google.voice`                                                   | `Kore`                                                                                |
+| 温度                | `...google.temperature`                                             | （未设置）                                                                            |
+| VAD 开始灵敏度      | `...google.startSensitivity`                                        | （未设置）                                                                            |
+| VAD 结束灵敏度      | `...google.endSensitivity`                                          | （未设置）                                                                            |
+| 静音时长            | `...google.silenceDurationMs`                                       | （未设置）                                                                            |
+| 活动处理            | `...google.activityHandling`                                        | Google 默认，`start-of-activity-interrupts`                                           |
+| 轮次覆盖            | `...google.turnCoverage`                                            | Google 默认，`only-activity`                                                          |
+| 禁用自动 VAD        | `...google.automaticActivityDetectionDisabled`                      | `false`                                                                               |
+| API 密钥            | `...google.apiKey`                                                  | 回退到 `models.providers.google.apiKey`、`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`        |
+
+Voice Call 实时配置示例：
+
+```json5
+{
+  plugins: {
+    entries: {
+      "voice-call": {
+        enabled: true,
+        config: {
+          realtime: {
+            enabled: true,
+            provider: "google",
+            providers: {
+              google: {
+                model: "gemini-2.5-flash-native-audio-preview-12-2025",
+                voice: "Kore",
+                activityHandling: "start-of-activity-interrupts",
+                turnCoverage: "only-activity",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+<Note>
+Google Live API 通过 WebSocket 使用双向音频和函数调用。OpenClaw 将电话/Meet 桥接音频适配到 Gemini 的 PCM Live API 流，并将工具调用保留在共享实时语音协议上。除非需要更改采样，否则请将 `temperature` 保持未设置状态；OpenClaw 会省略非正值，因为 Google Live 在 `temperature: 0` 时可能返回无音频的转录文本。Gemini API 转录在没有 `languageCodes` 的情况下启用；当前的 Google SDK 会拒绝此 API 路径上的语言代码提示。
+</Note>
+
+<Note>
+Control UI Talk 浏览器会话仍需要具有浏览器 WebRTC 会话实现的实时语音 Provider。目前该路径为 OpenAI Realtime；Google Provider 用于后端实时桥接。
 </Note>
 
 ## 高级配置

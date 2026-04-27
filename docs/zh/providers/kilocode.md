@@ -1,6 +1,6 @@
 ---
 title: "Kilocode"
-mmh3_hash: "84dad201b393f09f6c60d8fd3d9f08b0"
+mmh3_hash: "2de38422ae3efc59b57c77f8719c0216"
 summary: "在 OpenClaw 中使用 Kilo Gateway 的统一 API 访问多种模型"
 read_when:
   - 您希望用一个 API 密钥访问多种 LLM
@@ -51,7 +51,7 @@ Kilo Gateway 提供**统一 API**，通过单一端点和 API 密钥将请求路
 OpenClaw 将 `kilocode/kilo/auto` 视为稳定的默认引用，但不发布该路由的任务到上游模型的映射。`kilocode/kilo/auto` 背后的确切上游路由由 Kilo Gateway 拥有，未在 OpenClaw 中硬编码。
 </Note>
 
-## 可用模型
+## 内置目录
 
 OpenClaw 在启动时从 Kilo Gateway 动态发现可用模型。使用 `/models kilocode` 查看您账户可用的完整模型列表。
 
@@ -61,7 +61,7 @@ Gateway 上可用的任何模型都可以使用 `kilocode/` 前缀：
 | -------------------------------------- | ---------------------------------- |
 | `kilocode/kilo/auto`                   | 默认 — 智能路由                    |
 | `kilocode/anthropic/claude-sonnet-4`   | 通过 Kilo 的 Anthropic             |
-| `kilocode/openai/gpt-5.4`              | 通过 Kilo 的 OpenAI                |
+| `kilocode/openai/gpt-5.5`              | 通过 Kilo 的 OpenAI                |
 | `kilocode/google/gemini-3-pro-preview` | 通过 Kilo 的 Google                |
 | ...以及更多                            | 使用 `/models kilocode` 列出所有   |
 
@@ -113,7 +113,7 @@ Gateway 上可用的任何模型都可以使用 `kilocode/` 前缀：
   <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     选择 Provider、模型引用和故障转移行为。
   </Card>
-  <Card title="配置参考" href="/gateway/configuration" icon="gear">
+  <Card title="配置参考" href="/gateway/configuration-reference" icon="gear">
     完整的 OpenClaw 配置参考。
   </Card>
   <Card title="Kilo Gateway" href="https://app.kilo.ai" icon="arrow-up-right-from-square">

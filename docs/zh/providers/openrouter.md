@@ -1,13 +1,12 @@
 ---
-mmh3_hash: "4a08cc81ec87b7ac61b000dedcf34eb6"
+mmh3_hash: "7cde43332985d6dc5f821f98fd96d7be"
 title: "OpenRouter"
 summary: "在 OpenClaw 中使用 OpenRouter 的统一 API 访问多种模型"
 read_when:
   - 您想要用一个 API 密钥访问多种 LLM
   - 您想通过 OpenRouter 在 OpenClaw 中运行模型
+  - 您想使用 OpenRouter 进行图像生成
 ---
-
-# OpenRouter
 
 OpenRouter 提供**统一 API**，通过单一端点和 API 密钥将请求路由到多种模型。它与 OpenAI 兼容，因此大多数 OpenAI SDK 只需切换 Base URL 即可工作。
 
@@ -50,6 +49,59 @@ OpenRouter 提供**统一 API**，通过单一端点和 API 密钥将请求路�
 <Note>
 模型引用遵循 `openrouter/<provider>/<model>` 的格式。有关可用 Provider 和模型的完整列表，请参见 [/concepts/model-providers](/concepts/model-providers)。
 </Note>
+
+内置回退示例：
+
+| 模型引用                             | 备注                          |
+| ------------------------------------ | ----------------------------- |
+| `openrouter/auto`                    | OpenRouter 自动路由            |
+| `openrouter/moonshotai/kimi-k2.6`    | 通过 MoonshotAI 的 Kimi K2.6  |
+| `openrouter/openrouter/healer-alpha` | OpenRouter Healer Alpha 路由  |
+| `openrouter/openrouter/hunter-alpha` | OpenRouter Hunter Alpha 路由  |
+
+## 图像生成
+
+OpenRouter 也可以支持 `image_generate` 工具。在 `agents.defaults.imageGenerationModel` 下使用 OpenRouter 图像模型：
+
+```json5
+{
+  env: { OPENROUTER_API_KEY: "sk-or-..." },
+  agents: {
+    defaults: {
+      imageGenerationModel: {
+        primary: "openrouter/google/gemini-3.1-flash-image-preview",
+        timeoutMs: 180_000,
+      },
+    },
+  },
+}
+```
+
+OpenClaw 使用 `modalities: ["image", "text"]` 通过 OpenRouter 的聊天补全图像 API 发送图像请求。Gemini 图像模型通过 OpenRouter 的 `image_config` 接收支持的 `aspectRatio` 和 `resolution` 提示。对较慢的 OpenRouter 图像模型使用 `agents.defaults.imageGenerationModel.timeoutMs`；`image_generate` 工具的每次调用 `timeoutMs` 参数仍优先生效。
+
+## 文本转语音
+
+OpenRouter 也可以通过其 OpenAI 兼容的 `/audio/speech` 端点作为 TTS Provider 使用。
+
+```json5
+{
+  messages: {
+    tts: {
+      auto: "always",
+      provider: "openrouter",
+      providers: {
+        openrouter: {
+          model: "hexgrad/kokoro-82m",
+          voice: "af_alloy",
+          responseFormat: "mp3",
+        },
+      },
+    },
+  },
+}
+```
+
+如果省略 `messages.tts.providers.openrouter.apiKey`，TTS 会重用 `models.providers.openrouter.apiKey`，然后是 `OPENROUTER_API_KEY`。
 
 ## 身份验证和标头
 

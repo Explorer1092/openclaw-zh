@@ -1,15 +1,13 @@
 ---
 title: "Claude Max API Proxy"
 sidebarTitle: "Claude Max API Proxy"
-mmh3_hash: "4b62a5ca36d92e4da2e49b1eeef00b64"
+mmh3_hash: "51a95f8b87b960b106dca4bd2912f049"
 summary: "社区代理，将 Claude 订阅凭据公开为 OpenAI 兼容端点"
 read_when:
   - 您想将 Claude Max 订阅与 OpenAI 兼容工具一起使用
   - 您想要一个包装 Claude Code CLI 的本地 API 服务器
   - 您想评估基于订阅与基于 API 密钥的 Anthropic 访问
 ---
-
-# Claude Max API Proxy
 
 **claude-max-api-proxy** 是一个社区工具，它将您的 Claude Max/Pro 订阅公开为 OpenAI 兼容的 API 端点。这允许您将订阅与任何支持 OpenAI API 格式的工具一起使用。
 
@@ -97,7 +95,7 @@ read_when:
   </Step>
 </Steps>
 
-## 可用模型
+## 内置目录
 
 | Model ID          | 映射到          |
 | ----------------- | --------------- |

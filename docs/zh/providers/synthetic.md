@@ -1,14 +1,11 @@
 ---
 title: "Synthetic"
-sidebarTitle: "Synthetic"
-mmh3_hash: "92de6f23ad5bf02da137470492156958"
+mmh3_hash: "3b19aa3245f2e39c86214c9fa6f33a3f"
 summary: "在 OpenClaw 中使用 Synthetic 的 Anthropic 兼容 API"
 read_when:
   - 您想使用 Synthetic 作为模型 Provider
   - 您需要 Synthetic API 密钥或 Base URL 设置
 ---
-
-# Synthetic
 
 [Synthetic](https://synthetic.new) 公开 Anthropic 兼容的端点。
 OpenClaw 将其注册为 `synthetic` Provider，并使用 Anthropic Messages API。

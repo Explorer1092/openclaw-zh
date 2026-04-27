@@ -1,13 +1,11 @@
 ---
 title: "Fireworks"
-mmh3_hash: "977b38eaf7605e51829b250cf15d1bcc"
+mmh3_hash: "738d28ec52fed41f606831f9efdb6349"
 summary: "Fireworks 设置（身份验证 + 模型选择）"
 read_when:
   - 您想在 OpenClaw 中使用 Fireworks
   - 您需要 Fireworks API 密钥环境变量或默认模型 id
 ---
-
-# Fireworks
 
 [Fireworks](https://fireworks.ai) 通过 OpenAI 兼容的 API 公开开放权重和路由模型。OpenClaw 内置了 Fireworks Provider 插件。
 
@@ -52,9 +50,10 @@ openclaw onboard --non-interactive \
 
 ## 内置目录
 
-| 模型引用                                               | 名称                        | 输入       | 上下文  | 最大输出 | 备注                                       |
-| ------------------------------------------------------ | --------------------------- | ---------- | ------- | -------- | ------------------------------------------ |
-| `fireworks/accounts/fireworks/routers/kimi-k2p5-turbo` | Kimi K2.5 Turbo (Fire Pass) | text,image | 256,000 | 256,000  | Fireworks 上的默认内置入门模型             |
+| 模型引用                                               | 名称                        | 输入       | 上下文  | 最大输出 | 备注                                                                                         |
+| ------------------------------------------------------ | --------------------------- | ---------- | ------- | -------- | -------------------------------------------------------------------------------------------- |
+| `fireworks/accounts/fireworks/models/kimi-k2p6`        | Kimi K2.6                   | text,image | 262,144 | 262,144  | Fireworks 上最新的 Kimi 模型。Fireworks K2.6 请求的思考功能被禁用；如需 Kimi 思考输出，请直接通过 Moonshot 路由。 |
+| `fireworks/accounts/fireworks/routers/kimi-k2p5-turbo` | Kimi K2.5 Turbo (Fire Pass) | text,image | 256,000 | 256,000  | Fireworks 上的默认内置入门模型                                                               |
 
 <Tip>
 如果 Fireworks 发布了更新的模型（例如新的 Qwen 或 Gemma 版本），您可以直接使用其 Fireworks 模型 id 切换到该模型，无需等待内置目录更新。

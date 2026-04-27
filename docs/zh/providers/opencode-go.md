@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "4569b4412f0341229f2cdad25ed0bf88"
+mmh3_hash: "08e6b44cfb018d46595802adec454953"
 title: "OpenCode Go"
 summary: "将 OpenCode Go 目录与共享 OpenCode 设置一起使用"
 read_when:
   - 您想使用 OpenCode Go 目录
   - 您需要 Go 托管模型的运行时模型引用
 ---
-
-# OpenCode Go
 
 OpenCode Go 是 [OpenCode](/providers/opencode) 中的 Go 目录。
 它使用与 Zen 目录相同的 `OPENCODE_API_KEY`，但保留运行时
@@ -19,13 +17,26 @@ Provider ID `opencode-go`，以使上游的每模型路由保持正确。
 | 身份验证         | `OPENCODE_API_KEY`              |
 | 父级设置         | [OpenCode](/providers/opencode) |
 
-## 支持的模型
+## 内置目录
 
-| 模型引用                   | 名称         |
-| -------------------------- | ------------ |
-| `opencode-go/kimi-k2.5`    | Kimi K2.5    |
-| `opencode-go/glm-5`        | GLM 5        |
-| `opencode-go/minimax-m2.5` | MiniMax M2.5 |
+OpenClaw 从内置 pi 模型注册表中获取大部分 Go 目录行，并在注册表追赶进度时补充当前的上游行。运行 `openclaw models list --provider opencode-go` 获取当前模型列表。
+
+该 Provider 包含：
+
+| 模型引用                            | 名称                  |
+| ----------------------------------  | --------------------- |
+| `opencode-go/glm-5`                 | GLM-5                 |
+| `opencode-go/glm-5.1`               | GLM-5.1               |
+| `opencode-go/kimi-k2.5`             | Kimi K2.5             |
+| `opencode-go/kimi-k2.6`             | Kimi K2.6 (3x limits) |
+| `opencode-go/deepseek-v4-pro`       | DeepSeek V4 Pro       |
+| `opencode-go/deepseek-v4-flash`     | DeepSeek V4 Flash     |
+| `opencode-go/mimo-v2-omni`          | MiMo V2 Omni          |
+| `opencode-go/mimo-v2-pro`           | MiMo V2 Pro           |
+| `opencode-go/minimax-m2.5`          | MiniMax M2.5          |
+| `opencode-go/minimax-m2.7`          | MiniMax M2.7          |
+| `opencode-go/qwen3.5-plus`          | Qwen3.5 Plus          |
+| `opencode-go/qwen3.6-plus`          | Qwen3.6 Plus          |
 
 ## 快速开始
 
@@ -39,7 +50,7 @@ Provider ID `opencode-go`，以使上游的每模型路由保持正确。
       </Step>
       <Step title="将 Go 模型设置为默认">
         ```bash
-        openclaw config set agents.defaults.model.primary "opencode-go/kimi-k2.5"
+        openclaw config set agents.defaults.model.primary "opencode-go/kimi-k2.6"
         ```
       </Step>
       <Step title="验证模型是否可用">
@@ -71,7 +82,7 @@ Provider ID `opencode-go`，以使上游的每模型路由保持正确。
 ```json5
 {
   env: { OPENCODE_API_KEY: "YOUR_API_KEY_HERE" }, // pragma: allowlist secret
-  agents: { defaults: { model: { primary: "opencode-go/kimi-k2.5" } } },
+  agents: { defaults: { model: { primary: "opencode-go/kimi-k2.6" } } },
 }
 ```
 

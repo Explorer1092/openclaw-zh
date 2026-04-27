@@ -1,13 +1,11 @@
 ---
 title: "Xiaomi MiMo"
-mmh3_hash: "a33e9be7ffe9bfde3820301215d9f611"
+mmh3_hash: "91c4d2f1816e00ee652b62882231b931"
 summary: "将 Xiaomi MiMo 模型与 OpenClaw 一起使用"
 read_when:
   - 您想在 OpenClaw 中使用 Xiaomi MiMo 模型
   - 您需要 XIAOMI_API_KEY 设置
 ---
-
-# Xiaomi MiMo
 
 Xiaomi MiMo 是 **MiMo** 模型的 API 平台。OpenClaw 使用 Xiaomi
 OpenAI 兼容端点和 API 密钥身份验证。
@@ -44,7 +42,7 @@ OpenAI 兼容端点和 API 密钥身份验证。
   </Step>
 </Steps>
 
-## 可用模型
+## 内置目录
 
 | 模型引用               | 输入        | 上下文    | 最大输出 | 推理 | 说明     |
 | ---------------------- | ----------- | --------- | -------- | ---- | -------- |
@@ -55,6 +53,40 @@ OpenAI 兼容端点和 API 密钥身份验证。
 <Tip>
 默认模型引用为 `xiaomi/mimo-v2-flash`。当设置 `XIAOMI_API_KEY` 或存在身份验证配置文件时，Provider 会自动注入。
 </Tip>
+
+## 文本转语音
+
+内置的 `xiaomi` Plugin 还将 Xiaomi MiMo 注册为 `messages.tts` 的语音 Provider。它使用文本作为 `assistant` 消息，可选的风格指导作为 `user` 消息，调用 Xiaomi 的 chat-completions TTS 合约。
+
+| 属性     | 值                                       |
+| -------- | ---------------------------------------- |
+| TTS ID   | `xiaomi`（`mimo` 别名）                  |
+| 身份验证 | `XIAOMI_API_KEY`                         |
+| API      | `POST /v1/chat/completions` with `audio` |
+| 默认     | `mimo-v2.5-tts`，声音 `mimo_default`     |
+| 输出     | 默认 MP3；配置后输出 WAV                  |
+
+```json5
+{
+  messages: {
+    tts: {
+      auto: "always",
+      provider: "xiaomi",
+      providers: {
+        xiaomi: {
+          apiKey: "xiaomi_api_key",
+          model: "mimo-v2.5-tts",
+          voice: "mimo_default",
+          format: "mp3",
+          style: "Bright, natural, conversational tone.",
+        },
+      },
+    },
+  },
+}
+```
+
+内置支持的声音包括 `mimo_default`、`default_zh`、`default_en`、`Mia`、`Chloe`、`Milo` 和 `Dean`。旧版 MiMo TTS 账户仍支持 `mimo-v2-tts`；默认使用当前的 MiMo-V2.5 TTS 模型。对于 Feishu 和 Telegram 等语音备注目标，OpenClaw 在投递前使用 `ffmpeg` 将 Xiaomi 输出转码为 48kHz Opus。
 
 ## 配置示例
 
@@ -137,7 +169,7 @@ OpenAI 兼容端点和 API 密钥身份验证。
   <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     选择 Provider、模型引用和故障转移行为。
   </Card>
-  <Card title="配置参考" href="/gateway/configuration" icon="gear">
+  <Card title="配置参考" href="/gateway/configuration-reference" icon="gear">
     完整的 OpenClaw 配置参考。
   </Card>
   <Card title="Xiaomi MiMo 控制台" href="https://platform.xiaomimimo.com" icon="arrow-up-right-from-square">

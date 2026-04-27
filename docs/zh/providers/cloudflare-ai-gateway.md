@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d7e5e0416b528fa7d6df610bb92c39e0"
+mmh3_hash: "23bc559ca5c071c487ee2edcf2c49146"
 title: "Cloudflare AI Gateway"
 summary: "Cloudflare AI Gateway 设置（身份验证 + 模型选择）"
 read_when:
@@ -15,7 +15,7 @@ Cloudflare AI Gateway 位于 Provider API 前面，让您可以添加分析、�
 | -------- | ---------------------------------------------------------------------------------------- |
 | Provider | `cloudflare-ai-gateway`                                                                  |
 | Base URL | `https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_id>/anthropic`               |
-| 默认模型 | `cloudflare-ai-gateway/claude-sonnet-4-5`                                                |
+| 默认模型 | `cloudflare-ai-gateway/claude-sonnet-4-6`                                                |
 | API 密钥 | `CLOUDFLARE_AI_GATEWAY_API_KEY`（您通过 Gateway 发送请求的 Provider API 密钥）           |
 
 <Note>
@@ -42,7 +42,7 @@ Cloudflare AI Gateway 位于 Provider API 前面，让您可以添加分析、�
     {
       agents: {
         defaults: {
-          model: { primary: "cloudflare-ai-gateway/claude-sonnet-4-5" },
+          model: { primary: "cloudflare-ai-gateway/claude-sonnet-4-6" },
         },
       },
     }

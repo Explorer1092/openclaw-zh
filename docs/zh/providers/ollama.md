@@ -1,19 +1,42 @@
 ---
-mmh3_hash: "7d9ed5188bf6402e0b412fe44ed14625"
+mmh3_hash: "4d4a0a1531ee4db02b3dcc400ea61a6f"
 title: "Ollama"
 summary: "使用 Ollama 运行 OpenClaw（云端和本地模型）"
 read_when:
   - 您想通过 Ollama 使用云端或本地模型运行 OpenClaw
   - 您需要 Ollama 设置和配置指导
+  - 您想使用 Ollama 视觉模型进行图像理解
 ---
 
-# Ollama
-
-OpenClaw 与 Ollama 的原生 API（`/api/chat`）集成，支持托管的云端模型和本地/自托管的 Ollama 服务器。您可以通过三种模式使用 Ollama：通过可访问的 Ollama 主机同时使用 `Cloud + Local`，通过 `https://ollama.com` 仅使用 `Cloud`，或通过可访问的 Ollama 主机仅使用 `Local`。
+OpenClaw 与 Ollama 的原生 API（`/api/chat`）集成，支持托管的云端模型和本地/自托管的 Ollama 服务器。您可以通过三种模式使用 Ollama：通过可访问的 Ollama 主机同时使用 `Cloud + Local`，通过 `https://ollama.com` 仅使用 `Cloud only`，或通过可访问的 Ollama 主机仅使用 `Local only`。
 
 <Warning>
 **远程 Ollama 用户**：不要在 OpenClaw 中使用 `/v1` OpenAI 兼容 URL（`http://host:11434/v1`）。这会破坏工具调用，模型可能会将原始工具 JSON 输出为纯文本。请改用原生 Ollama API URL：`baseUrl: "http://host:11434"`（不带 `/v1`）。
 </Warning>
+
+Ollama Provider 配置使用 `baseUrl` 作为规范键。OpenClaw 也接受 `baseURL` 以兼容 OpenAI SDK 风格的示例，但新配置应优先使用 `baseUrl`。
+
+## 身份验证规则
+
+<AccordionGroup>
+  <Accordion title="本地和局域网主机">
+    本地和局域网 Ollama 主机不需要真实的 Bearer 令牌。OpenClaw 仅对回环地址、私有网络、`.local` 和裸主机名的 Ollama Base URL 使用本地 `ollama-local` 标记。
+  </Accordion>
+  <Accordion title="远程和 Ollama Cloud 主机">
+    远程公共主机和 Ollama Cloud（`https://ollama.com`）需要通过 `OLLAMA_API_KEY`、身份验证配置文件或 Provider 的 `apiKey` 提供真实凭据。
+  </Accordion>
+  <Accordion title="自定义 Provider ID">
+    设置 `api: "ollama"` 的自定义 Provider ID 遵循相同的规则。例如，指向私有局域网 Ollama 主机的 `ollama-remote` Provider 可以使用 `apiKey: "ollama-local"`，子 Agent 将通过 Ollama Provider 钩子解析该标记，而不会将其视为缺失的凭据。
+  </Accordion>
+  <Accordion title="Memory 嵌入范围">
+    当 Ollama 用于 Memory 嵌入时，Bearer 身份验证的范围限定在声明它的主机：
+
+    - Provider 级别的密钥仅发送到该 Provider 的 Ollama 主机。
+    - `agents.*.memorySearch.remote.apiKey` 仅发送到其远程嵌入主机。
+    - 纯 `OLLAMA_API_KEY` 环境值被视为 Ollama Cloud 惯例，默认不发送到本地或自托管主机。
+
+  </Accordion>
+</AccordionGroup>
 
 ## 快速开始
 
@@ -138,6 +161,8 @@ OpenClaw 与 Ollama 的原生 API（`/api/chat`）集成，支持托管的云端
 
     在设置期间选择 **Cloud only**。OpenClaw 会提示输入 `OLLAMA_API_KEY`，设置 `baseUrl: "https://ollama.com"`，并填充托管云端模型列表。此路径**不需要**本地 Ollama 服务器或 `ollama signin`。
 
+    设置期间 `openclaw onboard` 显示的云端模型列表从 `https://ollama.com/api/tags` 实时获取，上限 500 条，因此选择器反映当前托管目录而非静态种子。如果 `ollama.com` 在设置时不可访问或未返回模型，OpenClaw 会回退到之前的硬编码建议，以确保引导仍可完成。
+
   </Tab>
 
   <Tab title="Local only">
@@ -150,12 +175,12 @@ OpenClaw 与 Ollama 的原生 API（`/api/chat`）集成，支持托管的云端
 
 ## 模型发现（隐式 Provider）
 
-当您设置 `OLLAMA_API_KEY`（或身份验证配置文件）且**未**定义 `models.providers.ollama` 时，OpenClaw 从 `http://127.0.0.1:11434` 的本地 Ollama 实例发现模型。
+当您设置 `OLLAMA_API_KEY`（或身份验证配置文件）且**未**定义 `models.providers.ollama` 或其他带 `api: "ollama"` 的自定义远程 Provider 时，OpenClaw 从 `http://127.0.0.1:11434` 的本地 Ollama 实例发现模型。
 
 | 行为             | 详情                                                                                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 目录查询         | 查询 `/api/tags`                                                                                                                                                    |
-| 能力检测         | 使用尽力而为的 `/api/show` 查找来读取 `contextWindow` 并检测能力（包括视觉）                                                                                        |
+| 能力检测         | 使用尽力而为的 `/api/show` 查找来读取 `contextWindow`、扩展的 `num_ctx` Modelfile 参数以及包括视觉/工具在内的能力                                                   |
 | 视觉模型         | `/api/show` 报告 `vision` 能力的模型被标记为图像支持（`input: ["text", "image"]`），因此 OpenClaw 会自动将图像注入提示词                                             |
 | 推理检测         | 使用模型名称启发式（`r1`、`reasoning`、`think`）标记 `reasoning`                                                                                                   |
 | Token 限制       | 将 `maxTokens` 设置为 OpenClaw 使用的默认 Ollama 最大 Token 上限                                                                                                   |
@@ -178,8 +203,96 @@ ollama pull mistral
 新模型将被自动发现并可供使用。
 
 <Note>
-如果您显式设置 `models.providers.ollama`，则跳过自动发现，您必须手动定义模型。请参阅下方显式配置部分。
+如果您显式设置 `models.providers.ollama`，或配置了带 `api: "ollama"` 的自定义远程 Provider（例如 `models.providers.ollama-cloud`），则跳过自动发现，您必须手动定义模型。回环自定义 Provider（例如 `http://127.0.0.2:11434`）仍被视为本地。请参阅下方显式配置部分。
 </Note>
+
+## 视觉和图像描述
+
+内置 Ollama Plugin 将 Ollama 注册为具有图像能力的媒体理解 Provider。这使 OpenClaw 能够将显式图像描述请求和已配置的图像模型默认值路由到本地或托管的 Ollama 视觉模型。
+
+对于本地视觉，拉取支持图像的模型：
+
+```bash
+ollama pull qwen2.5vl:7b
+export OLLAMA_API_KEY="ollama-local"
+```
+
+然后使用推理 CLI 验证：
+
+```bash
+openclaw infer image describe \
+  --file ./photo.jpg \
+  --model ollama/qwen2.5vl:7b \
+  --json
+```
+
+`--model` 必须是完整的 `<provider/model>` 引用。设置后，`openclaw infer image describe` 会直接运行该模型，而不会因模型支持原生视觉而跳过描述。
+
+要将 Ollama 设置为入站媒体的默认图像理解模型，请配置 `agents.defaults.imageModel`：
+
+```json5
+{
+  agents: {
+    defaults: {
+      imageModel: {
+        primary: "ollama/qwen2.5vl:7b",
+      },
+    },
+  },
+}
+```
+
+缓慢的本地视觉模型可能需要比云端模型更长的图像理解超时。在受限硬件上，当 Ollama 尝试分配完整的视觉上下文时，它们也可能崩溃或停止。设置能力超时，并在模型条目上限制 `num_ctx`（当您只需要普通图像描述轮次时）：
+
+```json5
+{
+  models: {
+    providers: {
+      ollama: {
+        models: [
+          {
+            id: "qwen2.5vl:7b",
+            name: "qwen2.5vl:7b",
+            input: ["text", "image"],
+            params: { num_ctx: 2048, keep_alive: "1m" },
+          },
+        ],
+      },
+    },
+  },
+  tools: {
+    media: {
+      image: {
+        timeoutSeconds: 180,
+        models: [{ provider: "ollama", model: "qwen2.5vl:7b", timeoutSeconds: 300 }],
+      },
+    },
+  },
+}
+```
+
+此超时适用于入站图像理解和 Agent 在一轮中可以调用的显式 `image` 工具。Provider 级别的 `models.providers.ollama.timeoutSeconds` 仍然控制正常模型调用的底层 Ollama HTTP 请求守卫。
+
+使用以下命令针对本地 Ollama 实时验证显式图像工具：
+
+```bash
+OPENCLAW_LIVE_TEST=1 OPENCLAW_LIVE_OLLAMA_IMAGE=1 \
+  pnpm test:live -- src/agents/tools/image-tool.ollama.live.test.ts
+```
+
+如果您手动定义 `models.providers.ollama.models`，请用图像输入支持标记视觉模型：
+
+```json5
+{
+  id: "qwen2.5vl:7b",
+  name: "qwen2.5vl:7b",
+  input: ["text", "image"],
+  contextWindow: 128000,
+  maxTokens: 8192,
+}
+```
+
+OpenClaw 会拒绝对未标记为图像支持的模型的图像描述请求。在隐式发现时，OpenClaw 会在 `/api/show` 报告视觉能力时从 Ollama 读取此信息。
 
 ## 配置
 
@@ -238,6 +351,16 @@ ollama pull mistral
             apiKey: "ollama-local",
             baseUrl: "http://ollama-host:11434", // 不带 /v1 - 使用原生 Ollama API URL
             api: "ollama", // 显式设置以保证原生工具调用行为
+            timeoutSeconds: 300, // 可选：给冷启动的本地模型更长的连接和流式传输时间
+            models: [
+              {
+                id: "qwen3:32b",
+                name: "qwen3:32b",
+                params: {
+                  keep_alive: "15m", // 可选：在轮次之间保持模型加载状态
+                },
+              },
+            ],
           },
         },
       },
@@ -250,6 +373,224 @@ ollama pull mistral
 
   </Tab>
 </Tabs>
+
+## 常用示例
+
+以下示例可作为起点，请将模型 ID 替换为 `ollama list` 或 `openclaw models list --provider ollama` 中的确切名称。
+
+<AccordionGroup>
+  <Accordion title="带自动发现的本地模型">
+    当 Ollama 与 Gateway 运行在同一台机器上，且您希望 OpenClaw 自动发现已安装的模型时使用此方式。
+
+    ```bash
+    ollama serve
+    ollama pull gemma4
+    export OLLAMA_API_KEY="ollama-local"
+    openclaw models list --provider ollama
+    openclaw models set ollama/gemma4
+    ```
+
+    此路径使配置保持最简。除非您想手动定义模型，否则不要添加 `models.providers.ollama` 块。
+
+  </Accordion>
+
+  <Accordion title="带手动模型的局域网 Ollama 主机">
+    对局域网主机使用原生 Ollama URL。不要添加 `/v1`。
+
+    ```json5
+    {
+      models: {
+        providers: {
+          ollama: {
+            baseUrl: "http://gpu-box.local:11434",
+            apiKey: "ollama-local",
+            api: "ollama",
+            timeoutSeconds: 300,
+            contextWindow: 32768,
+            maxTokens: 8192,
+            models: [
+              {
+                id: "qwen3.5:9b",
+                name: "qwen3.5:9b",
+                reasoning: true,
+                input: ["text"],
+                params: {
+                  num_ctx: 32768,
+                  thinking: false,
+                  keep_alive: "15m",
+                },
+              },
+            ],
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          model: { primary: "ollama/qwen3.5:9b" },
+        },
+      },
+    }
+    ```
+
+    `contextWindow` 是 OpenClaw 侧的上下文预算。`params.num_ctx` 发送给 Ollama 用于请求。当您的硬件无法运行模型完整的广告上下文时，请保持两者对齐。
+
+  </Accordion>
+
+  <Accordion title="仅 Ollama Cloud">
+    当您不运行本地守护进程且想直接使用托管的 Ollama 模型时使用此方式。
+
+    ```bash
+    export OLLAMA_API_KEY="your-ollama-api-key"
+    ```
+
+    ```json5
+    {
+      models: {
+        providers: {
+          ollama: {
+            baseUrl: "https://ollama.com",
+            apiKey: "OLLAMA_API_KEY",
+            api: "ollama",
+            models: [
+              {
+                id: "kimi-k2.5:cloud",
+                name: "kimi-k2.5:cloud",
+                reasoning: false,
+                input: ["text", "image"],
+                contextWindow: 128000,
+                maxTokens: 8192,
+              },
+            ],
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          model: { primary: "ollama/kimi-k2.5:cloud" },
+        },
+      },
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="通过已登录守护进程同时使用云端和本地">
+    当本地或局域网 Ollama 守护进程已通过 `ollama signin` 登录，并应同时提供本地模型和 `:cloud` 模型时使用此方式。
+
+    ```bash
+    ollama signin
+    ollama pull gemma4
+    ```
+
+    ```json5
+    {
+      models: {
+        providers: {
+          ollama: {
+            baseUrl: "http://127.0.0.1:11434",
+            apiKey: "ollama-local",
+            api: "ollama",
+            timeoutSeconds: 300,
+            models: [
+              { id: "gemma4", name: "gemma4", input: ["text"] },
+              { id: "kimi-k2.5:cloud", name: "kimi-k2.5:cloud", input: ["text", "image"] },
+            ],
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          model: {
+            primary: "ollama/gemma4",
+            fallbacks: ["ollama/kimi-k2.5:cloud"],
+          },
+        },
+      },
+    }
+    ```
+
+  </Accordion>
+
+  <Accordion title="多个 Ollama 主机">
+    当您有多个 Ollama 服务器时使用自定义 Provider ID。每个 Provider 有自己的主机、模型、身份验证、超时和模型引用。
+
+    ```json5
+    {
+      models: {
+        providers: {
+          "ollama-fast": {
+            baseUrl: "http://mini.local:11434",
+            apiKey: "ollama-local",
+            api: "ollama",
+            contextWindow: 32768,
+            models: [{ id: "gemma4", name: "gemma4", input: ["text"] }],
+          },
+          "ollama-large": {
+            baseUrl: "http://gpu-box.local:11434",
+            apiKey: "ollama-local",
+            api: "ollama",
+            timeoutSeconds: 420,
+            contextWindow: 131072,
+            maxTokens: 16384,
+            models: [{ id: "qwen3.5:27b", name: "qwen3.5:27b", input: ["text"] }],
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          model: {
+            primary: "ollama-fast/gemma4",
+            fallbacks: ["ollama-large/qwen3.5:27b"],
+          },
+        },
+      },
+    }
+    ```
+
+    当 OpenClaw 发送请求时，活动的 Provider 前缀会被剥离，因此 `ollama-large/qwen3.5:27b` 到达 Ollama 时为 `qwen3.5:27b`。
+
+  </Accordion>
+
+  <Accordion title="精简本地模型配置">
+    某些本地模型可以回答简单提示，但难以处理完整的 Agent 工具接口。在更改全局运行时设置之前，先通过限制工具和上下文来开始。
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          experimental: {
+            localModelLean: true,
+          },
+          model: { primary: "ollama/gemma4" },
+        },
+      },
+      models: {
+        providers: {
+          ollama: {
+            baseUrl: "http://127.0.0.1:11434",
+            apiKey: "ollama-local",
+            api: "ollama",
+            contextWindow: 32768,
+            models: [
+              {
+                id: "gemma4",
+                name: "gemma4",
+                input: ["text"],
+                params: { num_ctx: 32768 },
+                compat: { supportsTools: false },
+              },
+            ],
+          },
+        },
+      },
+    }
+    ```
+
+    仅当模型或服务器在工具 Schema 上持续失败时才使用 `compat.supportsTools: false`。它以 Agent 能力换取稳定性。
+    `localModelLean` 从 Agent 接口中移除浏览器、Cron 和消息工具，但不改变 Ollama 的运行时上下文或思维模式。对于会循环或将响应预算消耗在隐藏推理上的小型 Qwen 风格思维模型，请搭配显式 `params.num_ctx` 和 `params.thinking: false` 使用。
+
+  </Accordion>
+</AccordionGroup>
 
 ### 模型选择
 
@@ -268,15 +609,58 @@ ollama pull mistral
 }
 ```
 
+也支持自定义 Ollama Provider ID。当模型引用使用活动 Provider 前缀（例如 `ollama-spark/qwen3:32b`）时，OpenClaw 仅剥离该前缀，然后调用 Ollama，服务器收到的是 `qwen3:32b`。
+
+对于缓慢的本地模型，在提高整个 Agent 运行时超时之前，优先使用 Provider 范围的请求调优：
+
+```json5
+{
+  models: {
+    providers: {
+      ollama: {
+        timeoutSeconds: 300,
+        models: [
+          {
+            id: "gemma4:26b",
+            name: "gemma4:26b",
+            params: { keep_alive: "15m" },
+          },
+        ],
+      },
+    },
+  },
+}
+```
+
+`timeoutSeconds` 适用于模型 HTTP 请求，包括连接建立、标头、正文流式传输和总守卫获取中止。`params.keep_alive` 作为顶层 `keep_alive` 转发给原生 `/api/chat` 请求中的 Ollama；当第一轮加载时间是瓶颈时，按模型设置它。
+
+### 快速验证
+
+```bash
+# 此机器可见的 Ollama 守护进程
+curl http://127.0.0.1:11434/api/tags
+
+# OpenClaw 目录和所选模型
+openclaw models list --provider ollama
+openclaw models status
+
+# 直接模型冒烟测试
+openclaw infer model run \
+  --model ollama/gemma4 \
+  --prompt "Reply with exactly: ok"
+```
+
+对于远程主机，将 `127.0.0.1` 替换为 `baseUrl` 中使用的主机。如果 `curl` 有效但 OpenClaw 无效，请检查 Gateway 是否在不同的机器、容器或服务账户上运行。
+
 ## Ollama Web 搜索
 
 OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
 
-| 属性         | 详情                                                                                                              |
-| ----------- | ----------------------------------------------------------------------------------------------------------------- |
-| 主机         | 使用您配置的 Ollama 主机（设置时为 `models.providers.ollama.baseUrl`，否则为 `http://127.0.0.1:11434`）           |
-| 身份验证     | 无需密钥                                                                                                          |
-| 要求         | Ollama 必须运行并使用 `ollama signin` 登录                                                                        |
+| 属性         | 详情                                                                                                                                                                  |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 主机         | 使用您配置的 Ollama 主机（设置时为 `models.providers.ollama.baseUrl`，否则为 `http://127.0.0.1:11434`）；`https://ollama.com` 直接使用托管 API                         |
+| 身份验证     | 已登录本地 Ollama 主机无需密钥；直接 `https://ollama.com` 搜索或受身份验证保护的主机需要 `OLLAMA_API_KEY` 或配置的 Provider 身份验证                                   |
+| 要求         | 本地/自托管主机必须运行并使用 `ollama signin` 登录；直接托管搜索需要 `baseUrl: "https://ollama.com"` 加上真实的 Ollama API 密钥                                         |
 
 在 `openclaw onboard` 或 `openclaw configure --section web` 期间选择 **Ollama Web Search**，或设置：
 
@@ -291,6 +675,30 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
   },
 }
 ```
+
+对于通过 Ollama Cloud 直接进行托管搜索：
+
+```json5
+{
+  models: {
+    providers: {
+      ollama: {
+        baseUrl: "https://ollama.com",
+        apiKey: "OLLAMA_API_KEY",
+        api: "ollama",
+        models: [{ id: "kimi-k2.5:cloud", name: "kimi-k2.5:cloud", input: ["text"] }],
+      },
+    },
+  },
+  tools: {
+    web: {
+      search: { provider: "ollama" },
+    },
+  },
+}
+```
+
+对于已登录的本地守护进程，OpenClaw 使用守护进程的 `/api/experimental/web_search` 代理。对于 `https://ollama.com`，它直接调用托管的 `/api/web_search` 端点。
 
 <Note>
 有关完整的设置和行为详情，请参见 [Ollama Web Search](/tools/ollama-search)。
@@ -345,20 +753,29 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
   </Accordion>
 
   <Accordion title="上下文窗口">
-    对于自动发现的模型，OpenClaw 在可用时使用 Ollama 报告的上下文窗口，否则回退到 OpenClaw 使用的默认 Ollama 上下文窗口。
+    对于自动发现的模型，OpenClaw 在可用时使用 Ollama 报告的上下文窗口（包括自定义 Modelfile 中较大的 `PARAMETER num_ctx` 值），否则回退到 OpenClaw 使用的默认 Ollama 上下文窗口。
 
-    您可以在显式 Provider 配置中覆盖 `contextWindow` 和 `maxTokens`：
+    您可以为该 Ollama Provider 下的每个模型设置 Provider 级别的 `contextWindow`、`contextTokens` 和 `maxTokens` 默认值，然后根据需要按模型覆盖它们。`contextWindow` 是 OpenClaw 的提示和压缩预算。原生 Ollama 请求不设置 `options.num_ctx`，除非您显式配置 `params.num_ctx`，这样 Ollama 可以应用其自己的模型、`OLLAMA_CONTEXT_LENGTH` 或基于 VRAM 的默认值。要在不重建 Modelfile 的情况下限制或强制 Ollama 的每请求运行时上下文，请设置 `params.num_ctx`；无效、零、负数和非有限值将被忽略。OpenAI 兼容的 Ollama 适配器仍然默认从配置的 `params.num_ctx` 或 `contextWindow` 注入 `options.num_ctx`；如果您的上游拒绝 `options`，请用 `injectNumCtxForOpenAICompat: false` 禁用。
+
+    原生 Ollama 模型条目也接受 `params` 下的常见 Ollama 运行时选项，包括 `temperature`、`top_p`、`top_k`、`min_p`、`num_predict`、`stop`、`repeat_penalty`、`num_batch`、`num_thread` 和 `use_mmap`。OpenClaw 仅转发 Ollama 请求键，因此 `streaming` 等 OpenClaw 运行时参数不会泄露给 Ollama。使用 `params.think` 或 `params.thinking` 发送顶层 Ollama `think`；`false` 禁用 Qwen 风格思维模型的 API 级思维。
 
     ```json5
     {
       models: {
         providers: {
           ollama: {
+            contextWindow: 32768,
             models: [
               {
                 id: "llama3.3",
                 contextWindow: 131072,
                 maxTokens: 65536,
+                params: {
+                  num_ctx: 32768,
+                  temperature: 0.7,
+                  top_p: 0.9,
+                  thinking: false,
+                },
               }
             ]
           }
@@ -366,6 +783,36 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
       }
     }
     ```
+
+    每模型的 `agents.defaults.models["ollama/<model>"].params.num_ctx` 也有效。如果两者都配置，显式 Provider 模型条目优先于 Agent 默认值。
+
+  </Accordion>
+
+  <Accordion title="思维控制">
+    对于原生 Ollama 模型，OpenClaw 按照 Ollama 期望的方式转发思维控制：顶层 `think`，而非 `options.think`。
+
+    ```bash
+    openclaw agent --model ollama/gemma4 --thinking off
+    openclaw agent --model ollama/gemma4 --thinking low
+    ```
+
+    您也可以设置模型默认值：
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          models: {
+            "ollama/gemma4": {
+              thinking: "low",
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    每模型的 `params.think` 或 `params.thinking` 可以禁用或强制特定已配置模型的 Ollama API 思维。运行时命令（如 `/think off`）仍适用于当前运行。
 
   </Accordion>
 
@@ -385,7 +832,9 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
   </Accordion>
 
   <Accordion title="Memory 嵌入">
-    内置 Ollama Plugin 为 [Memory 搜索](/concepts/memory) 注册了一个 Memory 嵌入 Provider。它使用配置的 Ollama Base URL 和 API 密钥。
+    内置 Ollama Plugin 为
+    [Memory 搜索](/concepts/memory) 注册了一个 Memory 嵌入 Provider。它使用配置的 Ollama Base URL
+    和 API 密钥，调用 Ollama 当前的 `/api/embed` 端点，并在可能时将多个 Memory 块批量放入一个 `input` 请求。
 
     | 属性          | 值                  |
     | ------------- | ------------------- |
@@ -404,10 +853,31 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
     }
     ```
 
+    对于远程嵌入主机，将身份验证范围限定在该主机：
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          memorySearch: {
+            provider: "ollama",
+            remote: {
+              baseUrl: "http://gpu-box.local:11434",
+              model: "nomic-embed-text",
+              apiKey: "ollama-local",
+            },
+          },
+        },
+      },
+    }
+    ```
+
   </Accordion>
 
   <Accordion title="流式传输配置">
     OpenClaw 的 Ollama 集成默认使用**原生 Ollama API**（`/api/chat`），完全支持同时流式传输和工具调用。不需要特殊配置。
+
+    对于原生 `/api/chat` 请求，OpenClaw 也直接向 Ollama 转发思维控制：`/think off` 和 `openclaw agent --thinking off` 发送顶层 `think: false`，而 `/think low|medium|high` 发送匹配的顶层 `think` 努力字符串。`/think max` 映射到 Ollama 的最高原生努力 `think: "high"`。
 
     <Tip>
     如果您需要使用 OpenAI 兼容端点，请参阅上方"旧版 OpenAI 兼容模式"部分。在该模式下，流式传输和工具调用可能无法同时工作。
@@ -456,6 +926,98 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
     # 或重启 Ollama
     ollama serve
     ```
+
+  </Accordion>
+
+  <Accordion title="远程主机使用 curl 可以但 OpenClaw 不行">
+    从运行 Gateway 的同一台机器和运行时进行验证：
+
+    ```bash
+    openclaw gateway status --deep
+    curl http://ollama-host:11434/api/tags
+    ```
+
+    常见原因：
+
+    - `baseUrl` 指向 `localhost`，但 Gateway 在 Docker 或另一台主机上运行。
+    - URL 使用 `/v1`，选择了 OpenAI 兼容行为而非原生 Ollama。
+    - 远程主机需要在 Ollama 侧更改防火墙或局域网绑定。
+    - 模型存在于您笔记本电脑的守护进程上，但不在远程守护进程上。
+
+  </Accordion>
+
+  <Accordion title="模型将工具 JSON 输出为文本">
+    这通常意味着 Provider 使用 OpenAI 兼容模式，或模型无法处理工具 Schema。
+
+    优先使用原生 Ollama 模式：
+
+    ```json5
+    {
+      models: {
+        providers: {
+          ollama: {
+            baseUrl: "http://ollama-host:11434",
+            api: "ollama",
+          },
+        },
+      },
+    }
+    ```
+
+    如果小型本地模型仍然在工具 Schema 上失败，请在该模型条目上设置 `compat.supportsTools: false` 并重新测试。
+
+  </Accordion>
+
+  <Accordion title="冷启动本地模型超时">
+    大型本地模型在流式传输开始前可能需要较长的首次加载时间。将超时范围限定在 Ollama Provider，并可选择要求 Ollama 在轮次之间保持模型加载：
+
+    ```json5
+    {
+      models: {
+        providers: {
+          ollama: {
+            timeoutSeconds: 300,
+            models: [
+              {
+                id: "gemma4:26b",
+                name: "gemma4:26b",
+                params: { keep_alive: "15m" },
+              },
+            ],
+          },
+        },
+      },
+    }
+    ```
+
+    如果主机本身接受连接速度较慢，`timeoutSeconds` 也会为此 Provider 延长守卫的 Undici 连接超时。
+
+  </Accordion>
+
+  <Accordion title="大上下文模型太慢或内存不足">
+    许多 Ollama 模型宣传的上下文比您的硬件能舒适运行的要大。原生 Ollama 使用 Ollama 自己的运行时上下文默认值，除非您设置 `params.num_ctx`。当您想要可预测的首 Token 延迟时，同时限制 OpenClaw 的预算和 Ollama 的请求上下文：
+
+    ```json5
+    {
+      models: {
+        providers: {
+          ollama: {
+            contextWindow: 32768,
+            maxTokens: 8192,
+            models: [
+              {
+                id: "qwen3.5:9b",
+                name: "qwen3.5:9b",
+                params: { num_ctx: 32768, thinking: false },
+              },
+            ],
+          },
+        },
+      },
+    }
+    ```
+
+    如果 OpenClaw 发送的提示太多，先降低 `contextWindow`。如果 Ollama 加载的运行时上下文对机器来说太大，降低 `params.num_ctx`。如果生成运行时间太长，降低 `maxTokens`。
 
   </Accordion>
 </AccordionGroup>

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eec43ccc109d753a45e9186e030b8c04"
+mmh3_hash: "56d5cfea863be670964d716365e10848"
 summary: "通过 inferrs（OpenAI 兼容本地服务器）运行 OpenClaw"
 read_when:
   - 您想针对本地 inferrs 服务器运行 OpenClaw
@@ -79,7 +79,7 @@ title: "inferrs"
 }
 ```
 
-## 高级
+## 高级配置
 
 <AccordionGroup>
   <Accordion title="为什么 requiresStringContent 很重要">
@@ -188,7 +188,7 @@ title: "inferrs"
 如需一般帮助，请参见[故障排除](/help/troubleshooting)和 [FAQ](/help/faq)。
 </Tip>
 
-## 另请参阅
+## 相关
 
 <CardGroup cols={2}>
   <Card title="本地模型" href="/gateway/local-models" icon="server">

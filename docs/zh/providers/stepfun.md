@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "a2c1b520bab9897c183a78d51f75c315"
+mmh3_hash: "7ff630f41db12f96f2336a242fe2e533"
 summary: "在 OpenClaw 中使用 StepFun 模型"
 read_when:
   - 您想在 OpenClaw 中使用 StepFun 模型
   - 您需要 StepFun 设置指导
 title: "StepFun"
 ---
-
-# StepFun
 
 OpenClaw 内置了一个 StepFun Provider 插件，包含两个 Provider id：
 

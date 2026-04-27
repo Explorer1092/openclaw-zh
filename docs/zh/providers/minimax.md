@@ -1,7 +1,7 @@
 ---
 title: "MiniMax"
 sidebarTitle: "MiniMax"
-mmh3_hash: "125ee653a8e431026a4aa64456aa2fa2"
+mmh3_hash: "cfb5d4c066a16ba0856f9e98475f6776"
 summary: "在 OpenClaw 中使用 MiniMax 模型"
 read_when:
   - 您想在 OpenClaw 中使用 MiniMax 模型
@@ -16,17 +16,17 @@ MiniMax 还提供：
 
 - 通过 T2A v2 内置语音合成
 - 通过 `MiniMax-VL-01` 内置图像理解
-- 通过 `music-2.5+` 内置音乐生成
+- 通过 `music-2.6` 内置音乐生成
 - 通过 MiniMax Coding Plan 搜索 API 内置 `web_search`
 
 Provider 拆分：
 
 | Provider ID      | 身份验证 | 能力                                                       |
 | ---------------- | -------- | ---------------------------------------------------------- |
-| `minimax`        | API 密钥 | 文本、图像生成、图像理解、语音、Web 搜索                   |
-| `minimax-portal` | OAuth    | 文本、图像生成、图像理解                                   |
+| `minimax`        | API 密钥 | 文本、图像生成、音乐生成、视频生成、图像理解、语音、Web 搜索 |
+| `minimax-portal` | OAuth    | 文本、图像生成、音乐生成、视频生成、图像理解、语音           |
 
-## 模型阵容
+## 内置目录
 
 | 模型                     | 类型             | 描述                                     |
 | ------------------------ | ---------------- | ---------------------------------------- |
@@ -34,7 +34,7 @@ Provider 拆分：
 | `MiniMax-M2.7-highspeed` | 聊天（推理）     | 更快的 M2.7 推理层                       |
 | `MiniMax-VL-01`          | 视觉             | 图像理解模型                             |
 | `image-01`               | 图像生成         | 文本到图像和图像到图像编辑               |
-| `music-2.5+`             | 音乐生成         | 默认音乐模型                             |
+| `music-2.6`              | 音乐生成         | 默认音乐模型                             |
 | `music-2.5`              | 音乐生成         | 上一代音乐生成层                         |
 | `music-2.0`              | 音乐生成         | 旧版音乐生成层                           |
 | `MiniMax-Hailuo-2.3`     | 视频生成         | 文本到视频和图像参考流程                 |
@@ -237,19 +237,42 @@ MiniMax 插件为 `image_generate` 工具注册了 `image-01` 模型。它支持
 
 `minimax` 和 `minimax-portal` 都使用相同的 `image-01` 模型注册 `image_generate`。API 密钥设置使用 `MINIMAX_API_KEY`；OAuth 设置可以改用内置的 `minimax-portal` 身份验证路径。
 
-当入门或 API 密钥设置写入显式 `models.providers.minimax` 条目时，OpenClaw 会以 `input: ["text", "image"]` 具体化 `MiniMax-M2.7` 和 `MiniMax-M2.7-highspeed`。
+图像生成始终使用 MiniMax 的专用图像端点（`/v1/image_generation`），并忽略 `models.providers.minimax.baseUrl`，因为该字段配置的是聊天/Anthropic 兼容 Base URL。设置 `MINIMAX_API_HOST=https://api.minimaxi.com` 可将图像生成路由到中国区端点；默认全球端点为 `https://api.minimax.io`。
 
-内置捆绑的 MiniMax 文本目录本身保持仅文本元数据，直到存在该显式 Provider 配置。图像理解通过插件自有的 `MiniMax-VL-01` 媒体 Provider 单独公开。
+当入门或 API 密钥设置写入显式 `models.providers.minimax` 条目时，OpenClaw 会将 `MiniMax-M2.7` 和 `MiniMax-M2.7-highspeed` 具体化为仅文本聊天模型。图像理解通过插件自有的 `MiniMax-VL-01` 媒体 Provider 单独公开。
 
 <Note>
 请参阅[图像生成](/tools/image-generation)了解共享工具参数、Provider 选择和故障转移行为。
 </Note>
 
+### 文本转语音
+
+内置的 `minimax` 插件为 `messages.tts` 注册了 MiniMax T2A v2 语音 Provider。
+
+- 默认 TTS 模型：`speech-2.8-hd`
+- 默认语音：`English_expressive_narrator`
+- 支持的内置模型 id 包括 `speech-2.8-hd`、`speech-2.8-turbo`、`speech-2.6-hd`、`speech-2.6-turbo`、`speech-02-hd`、`speech-02-turbo`、`speech-01-hd` 和 `speech-01-turbo`。
+- 身份验证解析顺序：`messages.tts.providers.minimax.apiKey`，然后是 `minimax-portal` OAuth/令牌身份验证配置文件，然后是 Token Plan 环境变量（`MINIMAX_OAUTH_TOKEN`、`MINIMAX_CODE_PLAN_KEY`、`MINIMAX_CODING_API_KEY`），最后是 `MINIMAX_API_KEY`。
+- 如果未配置 TTS 主机，OpenClaw 会复用配置的 `minimax-portal` OAuth 主机并去掉 Anthropic 兼容路径后缀（如 `/anthropic`）。
+- 普通音频附件保持 MP3 格式。
+- 语音笔记目标（如 Feishu 和 Telegram）会使用 `ffmpeg` 将 MiniMax MP3 转码为 48kHz Opus，因为 Feishu/Lark 文件 API 原生音频消息只接受 `file_type: "opus"`。
+- MiniMax T2A 接受小数 `speed` 和 `vol`，但 `pitch` 以整数形式发送；OpenClaw 在 API 请求前会截断小数 `pitch` 值。
+
+| 设置                                     | 环境变量               | 默认值                        | 描述                             |
+| ---------------------------------------- | ---------------------- | ----------------------------- | -------------------------------- |
+| `messages.tts.providers.minimax.baseUrl` | `MINIMAX_API_HOST`     | `https://api.minimax.io`      | MiniMax T2A API 主机。           |
+| `messages.tts.providers.minimax.model`   | `MINIMAX_TTS_MODEL`    | `speech-2.8-hd`               | TTS 模型 id。                    |
+| `messages.tts.providers.minimax.voiceId` | `MINIMAX_TTS_VOICE_ID` | `English_expressive_narrator` | 语音输出使用的语音 id。          |
+| `messages.tts.providers.minimax.speed`   |                        | `1.0`                         | 播放速度，`0.5..2.0`。           |
+| `messages.tts.providers.minimax.vol`     |                        | `1.0`                         | 音量，`(0, 10]`。                |
+| `messages.tts.providers.minimax.pitch`   |                        | `0`                           | 整数音调偏移，`-12..12`。        |
+
 ### 音乐生成
 
 内置的 `minimax` 插件也通过共享的 `music_generate` 工具注册音乐生成。
 
-- 默认音乐模型：`minimax/music-2.5+`
+- 默认音乐模型：`minimax/music-2.6`
+- OAuth 音乐模型：`minimax-portal/music-2.6`
 - 也支持 `minimax/music-2.5` 和 `minimax/music-2.0`
 - 提示控制：`lyrics`、`instrumental`、`durationSeconds`
 - 输出格式：`mp3`
@@ -262,7 +285,7 @@ MiniMax 插件为 `image_generate` 工具注册了 `image-01` 模型。它支持
   agents: {
     defaults: {
       musicGenerationModel: {
-        primary: "minimax/music-2.5+",
+        primary: "minimax/music-2.6",
       },
     },
   },
@@ -391,8 +414,8 @@ MiniMax 插件也通过 MiniMax Coding Plan 搜索 API 注册 `web_search`。
   - OAuth 设置：`minimax-portal/<model>`
 - 默认聊天模型：`MiniMax-M2.7`
 - 备选聊天模型：`MiniMax-M2.7-highspeed`
-- 入门和直接 API 密钥设置为两个 M2.7 变体写入带 `input: ["text", "image"]` 的显式模型定义
-- 内置 Provider 目录目前将聊天引用作为仅文本元数据公开，直到存在显式 MiniMax Provider 配置
+- 入门和直接 API 密钥设置为两个 M2.7 变体写入仅文本模型定义
+- 图像理解使用插件自有的 `MiniMax-VL-01` 媒体 Provider
 - 如果需要精确的成本跟踪，请更新 `models.json` 中的价格值
 - 使用 `openclaw models list` 确认当前 Provider id，然后使用 `openclaw models set minimax/MiniMax-M2.7` 或 `openclaw models set minimax-portal/MiniMax-M2.7` 切换
 

@@ -1,7 +1,6 @@
 ---
-mmh3_hash: "8bb7afabb49e0debe2f3b821572101ad"
-title: "Anthropic (Claude)"
-sidebarTitle: "Anthropic"
+mmh3_hash: "6c99f3cd436fe45005e854778f6661b0"
+title: "Anthropic"
 summary: "在 OpenClaw 中通过 API 密钥或 Claude CLI 使用 Anthropic Claude"
 read_when:
   - 您想在 OpenClaw 中使用 Anthropic 模型
@@ -96,6 +95,23 @@ Anthropic 当前的公开文档：
     <Note>
     Claude CLI 后端的设置和运行时详情请参见 [CLI 后端](/gateway/cli-backends)。
     </Note>
+
+    ### 配置示例
+
+    优先使用规范的 Anthropic 模型引用，并附加 CLI runtime 覆盖：
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          model: { primary: "anthropic/claude-opus-4-7" },
+          agentRuntime: { id: "claude-cli" },
+        },
+      },
+    }
+    ```
+
+    旧版 `claude-cli/claude-opus-4-7` 模型引用仍然有效以保持兼容性，但新配置应将 Provider/模型选择保持为 `anthropic/*`，并在 `agentRuntime.id` 中指定执行后端。
 
     <Tip>
     如果您想要最清晰的计费路径，请改用 Anthropic API 密钥。OpenClaw 还支持 [OpenAI Codex](/providers/openai)、[Qwen Cloud](/providers/qwen)、[MiniMax](/providers/minimax) 和 [Z.AI / GLM](/providers/glm) 的订阅式选项。
@@ -260,10 +276,16 @@ OpenClaw 支持 Anthropic 的 prompt 缓存功能，适用于 API 密钥身份�
 
     OpenClaw 将此映射到请求的 `anthropic-beta: context-1m-2025-08-07`。
 
+    `params.context1m: true` 也适用于 Claude CLI 后端（`claude-cli/*`）的符合条件的 Opus 和 Sonnet 模型，将这些 CLI Session 的运行时上下文窗口扩展为与直接 API 行为一致。
+
     <Warning>
     需要您的 Anthropic 凭据具有长上下文访问权限。旧版令牌身份验证（`sk-ant-oat-*`）会被拒绝用于 1M 上下文请求——OpenClaw 记录警告并回退到标准上下文窗口。
     </Warning>
 
+  </Accordion>
+
+  <Accordion title="Claude Opus 4.7 1M context">
+    `anthropic/claude-opus-4.7` 及其 `claude-cli` 变体默认具有 1M 上下文窗口——无需 `params.context1m: true`。
   </Accordion>
 </AccordionGroup>
 

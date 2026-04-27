@@ -1,6 +1,6 @@
 ---
 title: "LiteLLM"
-mmh3_hash: "4d9c2eee55ec8edb074c491243c4c4fa"
+mmh3_hash: "98415298ca247d4ef6ada47d733ebd2f"
 summary: "通过 LiteLLM Proxy 运行 OpenClaw 以实现统一的模型访问和成本跟踪"
 read_when:
   - 您想要通过 LiteLLM 代理路由 OpenClaw
@@ -108,7 +108,34 @@ export LITELLM_API_KEY="sk-litellm-key"
 }
 ```
 
-## 高级主题
+## 高级配置
+
+### 图像生成
+
+LiteLLM 还可以通过 OpenAI 兼容的 `/images/generations` 和 `/images/edits` 路由为 `image_generate` 工具提供支持。在 `agents.defaults.imageGenerationModel` 下配置 LiteLLM 图像模型：
+
+```json5
+{
+  models: {
+    providers: {
+      litellm: {
+        baseUrl: "http://localhost:4000",
+        apiKey: "${LITELLM_API_KEY}",
+      },
+    },
+  },
+  agents: {
+    defaults: {
+      imageGenerationModel: {
+        primary: "litellm/gpt-image-2",
+        timeoutMs: 180_000,
+      },
+    },
+  },
+}
+```
+
+环回 LiteLLM URL（如 `http://localhost:4000`）无需全局私有网络覆盖即可使用。对于局域网托管的代理，请设置 `models.providers.litellm.request.allowPrivateNetwork: true`，因为 API 密钥将发送到配置的代理主机。
 
 <AccordionGroup>
   <Accordion title="虚拟密钥">

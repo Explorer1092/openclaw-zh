@@ -1,8 +1,8 @@
 ---
 title: "GitHub Copilot"
 sidebarTitle: "GitHub Copilot"
-mmh3_hash: "861aa7362aca8f876f8dfe8c33d0ec4d"
-summary: "使用设备流从 OpenClaw 登录 GitHub Copilot"
+mmh3_hash: "d88ba12b5efffdfcbb698dd4ce4b2d56"
+summary: "使用设备流或非交互式令牌导入从 OpenClaw 登录 GitHub Copilot"
 read_when:
   - 您想将 GitHub Copilot 用作模型 Provider
   - 您需要 `openclaw models auth login-github-copilot` 流程
@@ -28,14 +28,16 @@ GitHub Copilot 是 GitHub 的 AI 编码助手。它为您的 GitHub 账户和计
       </Step>
       <Step title="设置默认模型">
         ```bash
-        openclaw models set github-copilot/gpt-4o
+        openclaw models set github-copilot/claude-opus-4.7
         ```
 
         或在配置中：
 
         ```json5
         {
-          agents: { defaults: { model: { primary: "github-copilot/gpt-4o" } } },
+          agents: {
+            defaults: { model: { primary: "github-copilot/claude-opus-4.7" } },
+          },
         }
         ```
       </Step>
@@ -68,6 +70,19 @@ openclaw models auth login-github-copilot --yes
 openclaw models auth login --provider github-copilot --method device --set-default
 ```
 
+## 非交互式入门
+
+如果您已有 GitHub OAuth 访问令牌用于 Copilot，可以在无头设置中使用 `openclaw onboard --non-interactive` 导入它：
+
+```bash
+openclaw onboard --non-interactive --accept-risk \
+  --auth-choice github-copilot \
+  --github-copilot-token "$COPILOT_GITHUB_TOKEN" \
+  --skip-channels --skip-health
+```
+
+您也可以省略 `--auth-choice`；传递 `--github-copilot-token` 会推断 GitHub Copilot Provider 认证选项。如果省略该标志，入门程序将回退到 `COPILOT_GITHUB_TOKEN`、`GH_TOKEN`，然后是 `GITHUB_TOKEN`。使用 `--secret-input-mode ref` 并设置 `COPILOT_GITHUB_TOKEN` 可在 `auth-profiles.json` 中存储环境变量引用的 `tokenRef` 而非明文。
+
 <AccordionGroup>
   <Accordion title="需要交互式 TTY">
     设备登录流程需要交互式 TTY。直接在终端中运行，而不是在非交互式脚本或 CI 管道中。
@@ -79,6 +94,10 @@ openclaw models auth login --provider github-copilot --method device --set-defau
 
   <Accordion title="传输选择">
     Claude 模型 ID 自动使用 Anthropic Messages 传输。GPT、o 系列和 Gemini 模型保持 OpenAI Responses 传输。OpenClaw 根据模型引用选择正确的传输。
+  </Accordion>
+
+  <Accordion title="请求兼容性">
+    OpenClaw 在 Copilot 传输上发送 Copilot IDE 风格的请求标头，包括内置的压缩、工具结果和图像后续轮次。除非已针对 Copilot API 验证了相关行为，否则不会为 Copilot 启用 Provider 级别的 Responses 续传。
   </Accordion>
 
   <Accordion title="环境变量解析顺序">
@@ -100,7 +119,7 @@ openclaw models auth login --provider github-copilot --method device --set-defau
 </AccordionGroup>
 
 <Warning>
-需要交互式 TTY。直接在终端中运行登录命令，而不是在无头脚本或 CI 作业中。
+设备登录命令需要交互式 TTY。当需要无头设置时，请使用非交互式入门。
 </Warning>
 
 ## Memory 搜索嵌入

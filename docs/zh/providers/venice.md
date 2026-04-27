@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "9e810161ed23317f4f47fae2ef51455a"
+mmh3_hash: "4c4ef5dd7a4d3c90f3c166b1cde4ba42"
 title: "Venice AI"
 summary: "在 OpenClaw 中使用 Venice AI 注重隐私的模型"
 read_when:
   - 您想在 OpenClaw 中进行注重隐私的推理
   - 您需要 Venice AI 设置指导
 ---
-
-# Venice AI
 
 Venice AI 提供**注重隐私的 AI 推理**，支持无审查模型，并通过其匿名代理访问主要专有模型。默认情况下所有推理都是私密的——不会在您的数据上进行训练，也不会记录日志。
 
@@ -125,6 +123,10 @@ openclaw models list | grep venice
 | **无审查**                 | `venice-uncensored`              | 无内容限制                                    |
 
 </Tip>
+
+## DeepSeek V4 回放行为
+
+如果 Venice 公开了 DeepSeek V4 模型，例如 `venice/deepseek-v4-pro` 或 `venice/deepseek-v4-flash`，OpenClaw 会在代理省略的情况下，在 Assistant 工具调用轮次上填充所需的 DeepSeek V4 `reasoning_content` 回放占位符。Venice 拒绝 DeepSeek 原生的顶层 `thinking` 控制，因此 OpenClaw 将这个 Provider 特定的回放修复与原生 DeepSeek Provider 的思维控制分开处理。
 
 ## 可用模型（共 41 个）
 

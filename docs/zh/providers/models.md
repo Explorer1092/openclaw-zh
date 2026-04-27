@@ -1,6 +1,6 @@
 ---
 title: "Model Provider Quickstart"
-mmh3_hash: "a1856b9da2f87771038fb4cf5aaa7dd9"
+mmh3_hash: "4956c906a46a6c718c0a191981100cbb"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
   - 您想选择一个模型 Provider
@@ -25,8 +25,8 @@ OpenClaw 可以使用多个 LLM Provider。选择一个，进行身份验证，�
 ## 支持的 Provider（入门集）
 
 - [Alibaba Model Studio](/providers/alibaba)
-- [Anthropic (API + Claude CLI)](/providers/anthropic)
 - [Amazon Bedrock](/providers/bedrock)
+- [Anthropic (API + Claude CLI)](/providers/anthropic)
 - [BytePlus（国际）](/concepts/model-providers#byteplus-international)
 - [Chutes](/providers/chutes)
 - [ComfyUI](/providers/comfy)
@@ -57,3 +57,9 @@ OpenClaw 可以使用多个 LLM Provider。选择一个，进行身份验证，�
 - `google-gemini-cli` - 非官方 Gemini CLI OAuth 流程；需要本地安装 `gemini`（`brew install gemini-cli` 或 `npm install -g @google/gemini-cli`）；默认模型 `google-gemini-cli/gemini-3-flash-preview`；使用 `openclaw onboard --auth-choice google-gemini-cli` 或 `openclaw models auth login --provider google-gemini-cli --set-default`
 
 有关完整的 Provider 目录（xAI、Groq、Mistral 等）和高级配置，请参见[模型 Provider](/concepts/model-providers)。
+
+## 相关
+
+- [模型选择](/concepts/model-providers)
+- [模型故障转移](/concepts/model-failover)
+- [模型 CLI](/cli/models)

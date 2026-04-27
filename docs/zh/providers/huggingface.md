@@ -1,6 +1,6 @@
 ---
 title: "Hugging Face (Inference)"
-mmh3_hash: "09fc1f21753ed6f64a1adc883ea71964"
+mmh3_hash: "5c8a51e82b9440ebcaf87d1eee7e1bca"
 summary: "Hugging Face Inference 设置（身份验证 + 模型选择）"
 read_when:
   - 您想要在 OpenClaw 中使用 Hugging Face Inference
@@ -90,7 +90,7 @@ openclaw onboard --non-interactive \
 您可以在模型 id 后附加 `:fastest` 或 `:cheapest`。在[推理 Provider 设置](https://hf.co/settings/inference-providers)中设置默认顺序；请参阅[推理 Providers](https://huggingface.co/docs/inference-providers) 和 **GET** `https://router.huggingface.co/v1/models` 获取完整列表。
 </Tip>
 
-## 高级详情
+## 高级配置
 
 <AccordionGroup>
   <Accordion title="模型发现和入门下拉列表">

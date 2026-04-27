@@ -1,13 +1,11 @@
 ---
 title: "Qwen"
-mmh3_hash: "5f383fe211f4ad12fee762792377dd6f"
+mmh3_hash: "d1f9a6d088dca4643b95a260d40cae54"
 summary: "通过 OpenClaw 内置 qwen Provider 使用 Qwen Cloud"
 read_when:
   - 您想在 OpenClaw 中使用 Qwen
   - 您之前使用过 Qwen OAuth
 ---
-
-# Qwen
 
 <Warning>
 

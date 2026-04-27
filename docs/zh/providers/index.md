@@ -1,6 +1,6 @@
 ---
 title: "Provider Directory"
-mmh3_hash: "a9b831292cca43673752cdd1bc8d835f"
+mmh3_hash: "2340515f490108bfa09536be1dffc7ea"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
   - 您想选择一个模型 Provider
@@ -28,16 +28,21 @@ OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份�
 
 - [Alibaba Model Studio](/providers/alibaba)
 - [Amazon Bedrock](/providers/bedrock)
+- [Amazon Bedrock Mantle](/providers/bedrock-mantle)
 - [Anthropic (API + Claude CLI)](/providers/anthropic)
 - [Arcee AI (Trinity 模型)](/providers/arcee)
+- [Azure Speech](/providers/azure-speech)
 - [BytePlus（国际版）](/concepts/model-providers#byteplus-international)
+- [Cerebras](/providers/cerebras)
 - [Chutes](/providers/chutes)
-- [ComfyUI](/providers/comfy)
 - [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
+- [ComfyUI](/providers/comfy)
 - [DeepSeek](/providers/deepseek)
+- [ElevenLabs](/providers/elevenlabs)
 - [fal](/providers/fal)
 - [Fireworks](/providers/fireworks)
 - [GitHub Copilot](/providers/github-copilot)
+- [Gradium](/providers/gradium)
 - [GLM 模型](/providers/glm)
 - [Google (Gemini)](/providers/google)
 - [Groq（LPU 推理）](/providers/groq)
@@ -59,15 +64,17 @@ OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份�
 - [Qianfan](/providers/qianfan)
 - [Qwen Cloud](/providers/qwen)
 - [Runway](/providers/runway)
+- [SenseAudio](/providers/senseaudio)
 - [SGLang（本地模型）](/providers/sglang)
 - [StepFun](/providers/stepfun)
 - [Synthetic](/providers/synthetic)
+- [Tencent Cloud (TokenHub)](/providers/tencent)
 - [Together AI](/providers/together)
 - [Venice（Venice AI，注重隐私）](/providers/venice)
 - [Vercel AI Gateway](/providers/vercel-ai-gateway)
-- [Vydra](/providers/vydra)
 - [vLLM（本地模型）](/providers/vllm)
 - [Volcengine (Doubao)](/providers/volcengine)
+- [Vydra](/providers/vydra)
 - [xAI](/providers/xai)
 - [Xiaomi](/providers/xiaomi)
 - [Z.AI](/providers/zai)
@@ -82,6 +89,11 @@ OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份�
 ## 转录 Provider
 
 - [Deepgram（音频转录）](/providers/deepgram)
+- [ElevenLabs](/providers/elevenlabs#speech-to-text)
+- [Mistral](/providers/mistral#audio-transcription-voxtral)
+- [OpenAI](/providers/openai#speech-to-text)
+- [SenseAudio](/providers/senseaudio)
+- [xAI](/providers/xai#speech-to-text)
 
 ## 社区工具
 

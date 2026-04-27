@@ -1,14 +1,11 @@
 ---
-mmh3_hash: "82191ac11c198e40bf07aa6a06397558"
+mmh3_hash: "371b5ecb70eaa2b8af748eef454b202e"
 title: "Vercel AI Gateway"
-sidebarTitle: "Vercel AI Gateway"
 summary: "Vercel AI Gateway 设置（身份验证 + 模型选择）"
 read_when:
   - 您想将 Vercel AI Gateway 与 OpenClaw 一起使用
   - 您需要 API 密钥环境变量或 CLI 身份验证选项
 ---
-
-# Vercel AI Gateway
 
 [Vercel AI Gateway](https://vercel.com/ai-gateway) 提供统一的 API，通过单个端点访问数百个模型。
 
@@ -22,7 +19,8 @@ read_when:
 <Tip>
 OpenClaw 自动发现 Gateway `/v1/models` 目录，因此
 `/models vercel-ai-gateway` 包含当前模型引用，如
-`vercel-ai-gateway/openai/gpt-5.4`。
+`vercel-ai-gateway/openai/gpt-5.5` 和
+`vercel-ai-gateway/moonshotai/kimi-k2.6`。
 </Tip>
 
 ## 快速开始
@@ -94,7 +92,7 @@ OpenClaw 接受 Vercel Claude 简写模型引用，并在运行时将其标准�
   </Accordion>
 
   <Accordion title="Provider 路由">
-    Vercel AI Gateway 根据模型引用前缀将请求路由到上游 Provider。例如，`vercel-ai-gateway/anthropic/claude-opus-4.6` 通过 Anthropic 路由，而 `vercel-ai-gateway/openai/gpt-5.4` 通过 OpenAI 路由。您的单个 `AI_GATEWAY_API_KEY` 处理所有上游 Provider 的身份验证。
+    Vercel AI Gateway 根据模型引用前缀将请求路由到上游 Provider。例如，`vercel-ai-gateway/anthropic/claude-opus-4.6` 通过 Anthropic 路由，`vercel-ai-gateway/openai/gpt-5.5` 通过 OpenAI 路由，`vercel-ai-gateway/moonshotai/kimi-k2.6` 通过 MoonshotAI 路由。您的单个 `AI_GATEWAY_API_KEY` 处理所有上游 Provider 的身份验证。
   </Accordion>
 </AccordionGroup>
 

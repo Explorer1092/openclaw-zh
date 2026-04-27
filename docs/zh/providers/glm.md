@@ -1,6 +1,6 @@
 ---
 title: "GLM (Zhipu)"
-mmh3_hash: "13bc148f4931b07c56e5aaa00723cf43"
+mmh3_hash: "3c794600d2516172f066b16ccaa96e9d"
 summary: "GLM 模型系列概述 + 如何在 OpenClaw 中使用它"
 read_when:
   - 您想在 OpenClaw 中使用 GLM 模型
@@ -78,7 +78,7 @@ OpenClaw 目前为内置 `zai` Provider 提供以下 GLM 引用：
 默认内置模型引用为 `zai/glm-5.1`。GLM 版本和可用性可能会发生变化；请查看 Z.AI 的文档以获取最新信息。
 </Note>
 
-## 高级说明
+## 高级配置
 
 <AccordionGroup>
   <Accordion title="端点自动检测">

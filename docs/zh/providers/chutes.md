@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "14268b9e50d6e74fd06ac3090de57897"
+mmh3_hash: "3a32b1110e9a66389c2e513b5b262c52"
 title: "Chutes"
 summary: "Chutes 设置（OAuth 或 API 密钥、模型发现、别名）"
 read_when:
@@ -7,8 +7,6 @@ read_when:
   - 您需要 OAuth 或 API 密钥设置流程
   - 您想了解默认模型、别名或发现行为
 ---
-
-# Chutes
 
 [Chutes](https://chutes.ai) 通过 OpenAI 兼容的 API 公开开源模型目录。OpenClaw 支持内置 `chutes` Provider 的浏览器 OAuth 和直接 API 密钥两种身份验证方式。
 
@@ -126,7 +124,7 @@ OpenClaw 为内置的 Chutes 目录注册了三个便捷别名：
 ## 相关
 
 <CardGroup cols={2}>
-  <Card title="模型 Provider" href="/concepts/model-providers" icon="layers">
+  <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     Provider 规则、模型引用和故障转移行为。
   </Card>
   <Card title="配置参考" href="/gateway/configuration-reference" icon="gear">

@@ -1,14 +1,11 @@
 ---
-mmh3_hash: "36656cd34248bcc89f77c4675855e728"
+mmh3_hash: "8315b629628c4eb18dabda3d58d6578c"
 title: "Z.AI"
-sidebarTitle: "Z.AI"
 summary: "将 Z.AI (GLM 模型) 与 OpenClaw 一起使用"
 read_when:
   - 您想在 OpenClaw 中使用 Z.AI / GLM 模型
   - 您需要简单的 ZAI_API_KEY 设置
 ---
-
-# Z.AI
 
 Z.AI 是 **GLM** 模型的 API 平台。它为 GLM 提供 REST API，并使用 API 密钥进行身份验证。在 Z.AI 控制台中创建您的 API 密钥。OpenClaw 使用带有 Z.AI API 密钥的 `zai` Provider。
 
@@ -130,6 +127,36 @@ GLM 模型可用作 `zai/<model>`（例如：`zai/glm-5`）。默认内置模型
       },
     }
     ```
+
+  </Accordion>
+
+  <Accordion title="思考和保留思考">
+    Z.AI 的思考功能遵循 OpenClaw 的 `/think` 控制。当思考关闭时，
+    OpenClaw 发送 `thinking: { type: "disabled" }` 以避免在可见文本之前将输出预算
+    消耗在 `reasoning_content` 上。
+
+    保留思考为可选加入，因为 Z.AI 要求回放完整的历史 `reasoning_content`，
+    这会增加提示词 Token 数。按模型启用：
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          models: {
+            "zai/glm-5.1": {
+              params: { preserveThinking: true },
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    启用后，当思考开启时，OpenClaw 发送
+    `thinking: { type: "enabled", clear_thinking: false }` 并为同一
+    OpenAI 兼容转录回放先前的 `reasoning_content`。
+
+    高级用户仍可通过 `params.extra_body.thinking` 覆盖确切的 Provider 载荷。
 
   </Accordion>
 

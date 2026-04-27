@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "86731eb9280b509a6695e4f7210b167d"
+mmh3_hash: "621c562688d9b944b0c49024df6679f5"
 summary: "在 OpenClaw 中使用 Vydra 图像、视频和语音"
 read_when:
   - 您想在 OpenClaw 中使用 Vydra 媒体生成

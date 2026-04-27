@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a1bd7086974b594bf71269f8db3e413b"
+mmh3_hash: "a3bf4813b6f99cc1a4d7107928234e51"
 title: "Runway"
 summary: "在 OpenClaw 中设置 Runway 视频生成"
 read_when:
@@ -7,8 +7,6 @@ read_when:
   - 您需要 Runway API 密钥/环境设置
   - 您想将 Runway 设置为默认视频 Provider
 ---
-
-# Runway
 
 OpenClaw 内置了一个 `runway` Provider，用于托管的视频生成。
 

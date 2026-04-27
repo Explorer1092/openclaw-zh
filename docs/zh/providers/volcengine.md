@@ -1,21 +1,21 @@
 ---
-mmh3_hash: "03ae348905e3f5edfcdbcb705b303cb0"
+mmh3_hash: "24484894fb85f9594759fc44fbaa602f"
 title: "Volcengine (Doubao)"
-summary: "火山引擎设置（Doubao 模型、通用 + 编码端点）"
+summary: "火山引擎设置（Doubao 模型、编码端点和 Seed Speech TTS）"
 read_when:
   - 您想在 OpenClaw 中使用火山引擎或 Doubao 模型
   - 您需要 Volcengine API 密钥设置
+  - 您想使用 Volcengine Speech 文本转语音
 ---
 
-# Volcengine（Doubao）
+Volcengine Provider 提供对 Doubao 模型和火山引擎上托管的第三方模型的访问，为通用和编码工作负载分别提供单独的端点。同一内置插件也可以将 Volcengine Speech 注册为 TTS Provider。
 
-Volcengine Provider 提供对 Doubao 模型和火山引擎上托管的第三方模型的访问，为通用和编码工作负载分别提供单独的端点。
-
-| 详细信息   | 值                                                  |
-| --------- | --------------------------------------------------- |
-| Provider  | `volcengine`（通用）+ `volcengine-plan`（编码）      |
-| 身份验证  | `VOLCANO_ENGINE_API_KEY`                            |
-| API       | OpenAI 兼容                                         |
+| 详细信息   | 值                                                         |
+| --------- | ----------------------------------------------------------- |
+| Provider  | `volcengine`（通用 + TTS）+ `volcengine-plan`（编码）       |
+| 模型身份验证 | `VOLCANO_ENGINE_API_KEY`                                 |
+| TTS 身份验证 | `VOLCENGINE_TTS_API_KEY` 或 `BYTEPLUS_SEED_SPEECH_API_KEY` |
+| API       | OpenAI 兼容模型，BytePlus Seed Speech TTS                   |
 
 ## 快速开始
 
@@ -72,7 +72,7 @@ openclaw onboard --non-interactive \
 两个 Provider 都从单个 API 密钥配置。设置会自动注册两者。
 </Note>
 
-## 可用模型
+## 内置目录
 
 <Tabs>
   <Tab title="通用（volcengine）">
@@ -96,6 +96,51 @@ openclaw onboard --non-interactive \
   </Tab>
 </Tabs>
 
+## 文本转语音
+
+Volcengine TTS 使用 BytePlus Seed Speech HTTP API，与 OpenAI 兼容的 Doubao 模型 API 密钥分开配置。在 BytePlus 控制台中，打开 Seed Speech > Settings > API Keys 并复制 API 密钥，然后设置：
+
+```bash
+export VOLCENGINE_TTS_API_KEY="byteplus_seed_speech_api_key"
+export VOLCENGINE_TTS_RESOURCE_ID="seed-tts-1.0"
+```
+
+然后在 `openclaw.json` 中启用它：
+
+```json5
+{
+  messages: {
+    tts: {
+      auto: "always",
+      provider: "volcengine",
+      providers: {
+        volcengine: {
+          apiKey: "byteplus_seed_speech_api_key",
+          voice: "en_female_anna_mars_bigtts",
+          speedRatio: 1.0,
+        },
+      },
+    },
+  },
+}
+```
+
+对于语音备注目标，OpenClaw 向 Volcengine 请求 Provider 原生的 `ogg_opus`。对于普通音频附件，它请求 `mp3`。Provider 别名 `bytedance` 和 `doubao` 也解析到相同的语音 Provider。
+
+默认 resource id 为 `seed-tts-1.0`，因为这是 BytePlus 在默认项目中授予新创建的 Seed Speech API 密钥的内容。如果您的项目具有 TTS 2.0 权限，请设置 `VOLCENGINE_TTS_RESOURCE_ID=seed-tts-2.0`。
+
+<Warning>
+`VOLCANO_ENGINE_API_KEY` 用于 ModelArk/Doubao 模型端点，不是 Seed Speech API 密钥。TTS 需要来自 BytePlus Speech 控制台的 Seed Speech API 密钥，或旧版 Speech 控制台 AppID/token 对。
+</Warning>
+
+旧版 AppID/token 身份验证对于旧版 Speech 控制台应用程序仍然支持：
+
+```bash
+export VOLCENGINE_TTS_APPID="speech_app_id"
+export VOLCENGINE_TTS_TOKEN="speech_access_token"
+export VOLCENGINE_TTS_CLUSTER="volcano_tts"
+```
+
 ## 高级说明
 
 <AccordionGroup>
@@ -111,9 +156,7 @@ openclaw onboard --non-interactive \
   </Accordion>
 
   <Accordion title="守护进程的环境变量">
-    如果 Gateway 作为守护进程（launchd/systemd）运行，请确保
-    `VOLCANO_ENGINE_API_KEY` 对该进程可用（例如，在
-    `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
+    如果 Gateway 作为守护进程（launchd/systemd）运行，请确保模型和 TTS 环境变量（例如 `VOLCANO_ENGINE_API_KEY`、`VOLCENGINE_TTS_API_KEY`、`BYTEPLUS_SEED_SPEECH_API_KEY`、`VOLCENGINE_TTS_APPID` 和 `VOLCENGINE_TTS_TOKEN`）对该进程可用（例如，在 `~/.openclaw/.env` 中或通过 `env.shellEnv`）。
   </Accordion>
 </AccordionGroup>
 
@@ -127,7 +170,7 @@ openclaw onboard --non-interactive \
   <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     选择 Provider、模型引用和故障转移行为。
   </Card>
-  <Card title="配置" href="/configuration" icon="gear">
+  <Card title="配置" href="/gateway/configuration" icon="gear">
     Agent、模型和 Provider 的完整配置参考。
   </Card>
   <Card title="故障排查" href="/help/troubleshooting" icon="wrench">

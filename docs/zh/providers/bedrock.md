@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "5dfbe1901b6b54d85e33c32a1d5132a7"
+mmh3_hash: "ca247b3fdfc7a486c21acafb0cb6142e"
 summary: "在 OpenClaw 中使用 Amazon Bedrock（Converse API）模型"
 read_when:
   - 您想要在 OpenClaw 中使用 Amazon Bedrock 模型
   - 您需要为模型调用设置 AWS 凭据/区域
 title: "Amazon Bedrock"
 ---
-
-# Amazon Bedrock
 
 OpenClaw 可以通过 pi-ai 的 **Bedrock Converse** 流式 Provider 使用 **Amazon Bedrock** 模型。Bedrock 身份验证使用 **AWS SDK 默认凭据链**，而不是 API 密钥。
 

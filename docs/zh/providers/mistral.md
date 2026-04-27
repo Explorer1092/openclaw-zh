@@ -1,9 +1,10 @@
 ---
 title: "Mistral"
-mmh3_hash: "20eff77058333b6ae16a593740254708"
+mmh3_hash: "96738767e92b52a45ca9910d615218ca"
 summary: "在 OpenClaw 中使用 Mistral 模型和 Voxtral 转录"
 read_when:
   - 希望在 OpenClaw 中使用 Mistral 模型
+  - 希望将 Voxtral 用于 Voice Call 实时转录
   - 需要 Mistral API 密钥入门和模型参考
 ---
 
@@ -83,6 +84,45 @@ OpenClaw 目前提供以下内置 Mistral 目录：
 媒体转录路径使用 `/v1/audio/transcriptions`。Mistral 的默认音频模型是 `voxtral-mini-latest`。
 </Tip>
 
+## Voice Call 流式 STT
+
+内置的 `mistral` 插件将 Voxtral Realtime 注册为 Voice Call 流式 STT Provider。
+
+| 设置         | 配置路径                                                               | 默认值                                  |
+| ------------ | ---------------------------------------------------------------------- | --------------------------------------- |
+| API 密钥     | `plugins.entries.voice-call.config.streaming.providers.mistral.apiKey` | 回退到 `MISTRAL_API_KEY`                |
+| 模型         | `...mistral.model`                                                     | `voxtral-mini-transcribe-realtime-2602` |
+| 编码         | `...mistral.encoding`                                                  | `pcm_mulaw`                             |
+| 采样率       | `...mistral.sampleRate`                                                | `8000`                                  |
+| 目标延迟     | `...mistral.targetStreamingDelayMs`                                    | `800`                                   |
+
+```json5
+{
+  plugins: {
+    entries: {
+      "voice-call": {
+        config: {
+          streaming: {
+            enabled: true,
+            provider: "mistral",
+            providers: {
+              mistral: {
+                apiKey: "${MISTRAL_API_KEY}",
+                targetStreamingDelayMs: 800,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+<Note>
+OpenClaw 将 Mistral 实时 STT 默认设置为 8 kHz 的 `pcm_mulaw`，以便 Voice Call 可以直接转发 Twilio 媒体帧。仅当您的上游流已经是原始 PCM 时，才使用 `encoding: "pcm_s16le"` 和匹配的 `sampleRate`。
+</Note>
+
 ## 高级配置
 
 <AccordionGroup>
@@ -94,7 +134,7 @@ OpenClaw 目前提供以下内置 Mistral 目录：
     | OpenClaw 思考级别                                   | Mistral `reasoning_effort` |
     | --------------------------------------------------- | -------------------------- |
     | **off** / **minimal**                               | `none`                     |
-    | **low** / **medium** / **high** / **xhigh** / **adaptive** | `high`              |
+    | **low** / **medium** / **high** / **xhigh** / **adaptive** / **max** | `high`   |
 
     <Note>
     其他内置 Mistral 目录模型不使用此参数。当您需要 Mistral 原生推理优先行为时，继续使用 `magistral-*` 模型。
@@ -127,7 +167,7 @@ OpenClaw 目前提供以下内置 Mistral 目录：
   <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     选择 Provider、模型引用和故障转移行为。
   </Card>
-  <Card title="媒体理解" href="/tools/media-understanding" icon="microphone">
+  <Card title="媒体理解" href="/nodes/media-understanding" icon="microphone">
     音频转录设置和 Provider 选择。
   </Card>
 </CardGroup>

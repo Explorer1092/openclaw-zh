@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "676ce465e9b8ab1dcb6cb3f47534bb2b"
+mmh3_hash: "349fecba12a80063403afe75b17f640d"
 title: "Alibaba Model Studio"
 summary: "在 OpenClaw 中使用 Alibaba Model Studio Wan 视频生成"
 read_when:
   - 您想在 OpenClaw 中使用 Alibaba Wan 视频生成
   - 您需要为视频生成设置 Model Studio 或 DashScope API 密钥
 ---
-
-# Alibaba Model Studio
 
 OpenClaw 内置了一个 `alibaba` 视频生成 Provider，用于在 Alibaba Model Studio / DashScope 上运行 Wan 模型。
 
@@ -109,7 +107,7 @@ OpenClaw 内置了一个 `alibaba` 视频生成 Provider，用于在 Alibaba Mod
   <Card title="Qwen" href="/providers/qwen" icon="microchip">
     Qwen Provider 设置和 DashScope 集成。
   </Card>
-  <Card title="配置参考" href="/gateway/configuration-reference#agent-defaults" icon="gear">
+  <Card title="配置参考" href="/gateway/config-agents#agent-defaults" icon="gear">
     Agent 默认值和模型配置。
   </Card>
 </CardGroup>

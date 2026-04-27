@@ -1,14 +1,12 @@
 ---
 title: "fal"
-mmh3_hash: "bb2546ab80388cd3ebc8b71fe4e798d2"
+mmh3_hash: "2c4d8b31383884f0483a0a5c83e74c9d"
 summary: "在 OpenClaw 中设置 fal 图像和视频生成"
 read_when:
   - 您想在 OpenClaw 中使用 fal 图像生成
   - 您需要 FAL_KEY 身份验证流程
   - 您想要 fal 的 image_generate 或 video_generate 默认配置
 ---
-
-# fal
 
 OpenClaw 内置了一个 `fal` Provider，用于托管的图像和视频生成。
 
@@ -52,10 +50,13 @@ OpenClaw 内置了一个 `fal` Provider，用于托管的图像和视频生成�
 | 尺寸覆盖     | 支持                       |
 | 宽高比       | 支持                       |
 | 分辨率       | 支持                       |
+| 输出格式     | `png` 或 `jpeg`            |
 
 <Warning>
 fal 图像编辑端点**不**支持 `aspectRatio` 覆盖。
 </Warning>
+
+当您需要 PNG 输出时，使用 `outputFormat: "png"`。fal 在 OpenClaw 中未声明明确的透明背景控制，因此 `background: "transparent"` 对 fal 模型将报告为被忽略的覆盖。
 
 将 fal 设置为默认图像 Provider：
 
@@ -77,7 +78,7 @@ fal 图像编辑端点**不**支持 `aspectRatio` 覆盖。
 
 | 能力   | 值                                                           |
 | ------ | ------------------------------------------------------------ |
-| 模式   | 文本到视频、单图像参考                                       |
+| 模式   | 文本到视频、单图像参考、Seedance 参考到视频                   |
 | 运行时 | 基于队列的提交/状态/结果流程，适用于长时间运行的任务         |
 
 <AccordionGroup>
@@ -90,8 +91,10 @@ fal 图像编辑端点**不**支持 `aspectRatio` 覆盖。
 
     - `fal/bytedance/seedance-2.0/fast/text-to-video`
     - `fal/bytedance/seedance-2.0/fast/image-to-video`
+    - `fal/bytedance/seedance-2.0/fast/reference-to-video`
     - `fal/bytedance/seedance-2.0/text-to-video`
     - `fal/bytedance/seedance-2.0/image-to-video`
+    - `fal/bytedance/seedance-2.0/reference-to-video`
 
   </Accordion>
 
@@ -107,6 +110,23 @@ fal 图像编辑端点**不**支持 `aspectRatio` 覆盖。
       },
     }
     ```
+  </Accordion>
+
+  <Accordion title="Seedance 2.0 reference-to-video 配置示例">
+    ```json5
+    {
+      agents: {
+        defaults: {
+          videoGenerationModel: {
+            primary: "fal/bytedance/seedance-2.0/fast/reference-to-video",
+          },
+        },
+      },
+    }
+    ```
+
+    Reference-to-video 通过共享 `video_generate` 的 `images`、`videos` 和 `audioRefs` 参数最多接受 9 张图像、3 个视频和 3 个音频参考，总参考文件数量不超过 12 个。
+
   </Accordion>
 
   <Accordion title="HeyGen video-agent 配置示例">
@@ -137,7 +157,7 @@ fal 图像编辑端点**不**支持 `aspectRatio` 覆盖。
   <Card title="视频生成" href="/tools/video-generation" icon="video">
     共享视频工具参数和 Provider 选择。
   </Card>
-  <Card title="配置参考" href="/gateway/configuration-reference#agent-defaults" icon="gear">
+  <Card title="配置参考" href="/gateway/config-agents#agent-defaults" icon="gear">
     包括图像和视频模型选择的 Agent 默认值。
   </Card>
 </CardGroup>

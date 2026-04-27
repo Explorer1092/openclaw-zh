@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2fbd1bc11092ef2c26db98bf02f2ff8d"
+mmh3_hash: "5cec231fd21d9c8ec0799f3541702f52"
 title: "ComfyUI"
 summary: "在 OpenClaw 中设置 ComfyUI 工作流图像、视频和音乐生成"
 read_when:
@@ -7,8 +7,6 @@ read_when:
   - 您想将 Comfy Cloud 用于图像、视频或音乐工作流
   - 您需要内置 comfy 插件配置键
 ---
-
-# ComfyUI
 
 OpenClaw 内置了一个 `comfy` 插件，用于工作流驱动的 ComfyUI 运行。插件完全由工作流驱动，因此 OpenClaw 不会尝试将通用的 `size`、`aspectRatio`、`resolution`、`durationSeconds` 或 TTS 样式控件映射到您的图形上。
 
@@ -49,15 +47,17 @@ OpenClaw 内置了一个 `comfy` 插件，用于工作流驱动的 ComfyUI 运�
 
         ```json5
         {
-          models: {
-            providers: {
+          plugins: {
+            entries: {
               comfy: {
-                mode: "local",
-                baseUrl: "http://127.0.0.1:8188",
-                image: {
-                  workflowPath: "./workflows/flux-api.json",
-                  promptNodeId: "6",
-                  outputNodeId: "9",
+                config: {
+                  mode: "local",
+                  baseUrl: "http://127.0.0.1:8188",
+                  image: {
+                    workflowPath: "./workflows/flux-api.json",
+                    promptNodeId: "6",
+                    outputNodeId: "9",
+                  },
                 },
               },
             },
@@ -107,7 +107,7 @@ OpenClaw 内置了一个 `comfy` 插件，用于工作流驱动的 ComfyUI 运�
         export COMFY_CLOUD_API_KEY="your-key"
 
         # 或内联配置
-        openclaw config set models.providers.comfy.apiKey "your-key"
+        openclaw config set plugins.entries.comfy.config.apiKey "your-key"
         ```
       </Step>
       <Step title="准备工作流 JSON">
@@ -118,14 +118,16 @@ OpenClaw 内置了一个 `comfy` 插件，用于工作流驱动的 ComfyUI 运�
 
         ```json5
         {
-          models: {
-            providers: {
+          plugins: {
+            entries: {
               comfy: {
-                mode: "cloud",
-                image: {
-                  workflowPath: "./workflows/flux-api.json",
-                  promptNodeId: "6",
-                  outputNodeId: "9",
+                config: {
+                  mode: "cloud",
+                  image: {
+                    workflowPath: "./workflows/flux-api.json",
+                    promptNodeId: "6",
+                    outputNodeId: "9",
+                  },
                 },
               },
             },
@@ -166,25 +168,27 @@ Comfy 支持共享的顶级连接设置以及每个功能的工作流部分（`i
 
 ```json5
 {
-  models: {
-    providers: {
+  plugins: {
+    entries: {
       comfy: {
-        mode: "local",
-        baseUrl: "http://127.0.0.1:8188",
-        image: {
-          workflowPath: "./workflows/flux-api.json",
-          promptNodeId: "6",
-          outputNodeId: "9",
-        },
-        video: {
-          workflowPath: "./workflows/video-api.json",
-          promptNodeId: "12",
-          outputNodeId: "21",
-        },
-        music: {
-          workflowPath: "./workflows/music-api.json",
-          promptNodeId: "3",
-          outputNodeId: "18",
+        config: {
+          mode: "local",
+          baseUrl: "http://127.0.0.1:8188",
+          image: {
+            workflowPath: "./workflows/flux-api.json",
+            promptNodeId: "6",
+            outputNodeId: "9",
+          },
+          video: {
+            workflowPath: "./workflows/video-api.json",
+            promptNodeId: "12",
+            outputNodeId: "21",
+          },
+          music: {
+            workflowPath: "./workflows/music-api.json",
+            promptNodeId: "3",
+            outputNodeId: "18",
+          },
         },
       },
     },
@@ -245,15 +249,17 @@ Comfy 支持共享的顶级连接设置以及每个功能的工作流部分（`i
 
     ```json5
     {
-      models: {
-        providers: {
+      plugins: {
+        entries: {
           comfy: {
-            image: {
-              workflowPath: "./workflows/edit-api.json",
-              promptNodeId: "6",
-              inputImageNodeId: "7",
-              inputImageInputName: "image",
-              outputNodeId: "9",
+            config: {
+              image: {
+                workflowPath: "./workflows/edit-api.json",
+                promptNodeId: "6",
+                inputImageNodeId: "7",
+                inputImageInputName: "image",
+                outputNodeId: "9",
+              },
             },
           },
         },
@@ -302,12 +308,14 @@ Comfy 支持共享的顶级连接设置以及每个功能的工作流部分（`i
 
     ```json5
     {
-      models: {
-        providers: {
+      plugins: {
+        entries: {
           comfy: {
-            workflowPath: "./workflows/flux-api.json",
-            promptNodeId: "6",
-            outputNodeId: "9",
+            config: {
+              workflowPath: "./workflows/flux-api.json",
+              promptNodeId: "6",
+              outputNodeId: "9",
+            },
           },
         },
       },
@@ -349,7 +357,7 @@ Comfy 支持共享的顶级连接设置以及每个功能的工作流部分（`i
   <Card title="Provider 目录" href="/providers/index" icon="layers">
     所有 Provider 和模型引用的概述。
   </Card>
-  <Card title="配置参考" href="/gateway/configuration-reference#agent-defaults" icon="gear">
+  <Card title="配置参考" href="/gateway/config-agents#agent-defaults" icon="gear">
     完整配置参考，包括 Agent 默认值。
   </Card>
 </CardGroup>

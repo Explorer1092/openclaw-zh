@@ -1,20 +1,18 @@
 ---
-mmh3_hash: "8541e382e8d069e5f8b777e2a6e1fa34"
+mmh3_hash: "206dce1dd56e66fa92bf76a009da4abb"
 title: "SGLang"
-sidebarTitle: "SGLang"
 summary: "使用 SGLang（OpenAI 兼容自托管服务器）运行 OpenClaw"
 read_when:
   - 您想针对本地 SGLang 服务器运行 OpenClaw
   - 您想使用 OpenAI 兼容的 /v1 端点运行自己的模型
 ---
 
-# SGLang
-
 SGLang 可以通过 **OpenAI 兼容** HTTP API 提供开源模型服务。
 OpenClaw 可以使用 `openai-completions` API 连接到 SGLang。
 
-OpenClaw 还可以在您使用 `SGLANG_API_KEY` 选择加入时（如果您的服务器不强制身份验证，任何值都有效）
-且不定义显式的 `models.providers.sglang` 条目时，**自动发现** SGLang 中的可用模型。
+OpenClaw 还可以在您使用 `SGLANG_API_KEY` 选择加入时（如果您的服务器不强制身份验证，任何值都有效）且不定义显式的 `models.providers.sglang` 条目时，**自动发现** SGLang 中的可用模型。
+
+OpenClaw 将 `sglang` 视为支持流式使用计费的本地 OpenAI 兼容 Provider，因此状态/上下文 Token 计数可以从 `stream_options.include_usage` 响应中更新。
 
 ## 快速开始
 
