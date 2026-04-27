@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "3d35dc4dde62d56105a9de1d0fd21dff"
+mmh3_hash: "154e9ebedd89d57eb79f37b163a78e93"
 summary: "在 OpenClaw 中使用 NVIDIA 的 OpenAI 兼容 API"
 read_when:
   - 您想要在 OpenClaw 中免费使用开源模型
   - 您需要 NVIDIA_API_KEY 设置
 title: "NVIDIA"
 ---
-
-# NVIDIA
 
 NVIDIA 在 `https://integrate.api.nvidia.com/v1` 为开源模型提供免费的 OpenAI 兼容 API。使用来自 [build.nvidia.com](https://build.nvidia.com/settings/api-keys) 的 API 密钥进行身份验证。
 
@@ -64,7 +62,7 @@ NVIDIA 在 `https://integrate.api.nvidia.com/v1` 为开源模型提供免费的 
 | `nvidia/minimaxai/minimax-m2.5`            | Minimax M2.5                 | 196,608 | 8,192    |
 | `nvidia/z-ai/glm5`                         | GLM 5                        | 202,752 | 8,192    |
 
-## 高级说明
+## 高级配置
 
 <AccordionGroup>
   <Accordion title="自动启用行为">
