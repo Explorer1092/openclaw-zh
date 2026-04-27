@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "f61a49a0864d1c448b8391aa6e4aac01"
+mmh3_hash: "9e4ee17d3faf0136a39aa804994130cf"
 summary: "通过 imsg 实现传统 iMessage 支持（基于 stdio 的 JSON-RPC）。新设置应使用 BlueBubbles。"
 read_when:
   - 设置 iMessage 支持
   - 调试 iMessage 发送/接收
 title: "iMessage"
 ---
-
-# iMessage (传统: imsg)
 
 <Warning>
 对于新的 iMessage 部署，使用 <a href="/channels/bluebubbles">BlueBubbles</a>。
@@ -24,7 +22,7 @@ title: "iMessage"
   <Card title="Pairing" icon="link" href="/channels/pairing">
     iMessage DM 默认为 pairing 模式。
   </Card>
-  <Card title="Configuration reference" icon="settings" href="/gateway/configuration-reference#imessage">
+  <Card title="Configuration reference" icon="settings" href="/gateway/config-channels#imessage">
     完整的 iMessage 字段参考。
   </Card>
 </CardGroup>
@@ -51,7 +49,7 @@ imsg rpc --help
     imessage: {
       enabled: true,
       cliPath: "/usr/local/bin/imsg",
-      dbPath: "/Users/<you>/Library/Messages/chat.db",
+      dbPath: "/Users/user/Library/Messages/chat.db",
     },
   },
 }
@@ -184,6 +182,58 @@ imsg send <handle> "test"
 
   </Tab>
 </Tabs>
+
+## ACP 对话绑定
+
+传统 iMessage 聊天也可以绑定到 ACP 会话。
+
+快速操作流程：
+
+- 在 DM 或允许的群聊中运行 `/acp spawn codex --bind here`。
+- 该 iMessage 对话中的后续消息将路由到已生成的 ACP 会话。
+- `/new` 和 `/reset` 会就地重置同一绑定的 ACP 会话。
+- `/acp close` 关闭 ACP 会话并删除绑定。
+
+支持通过顶级 `bindings[]` 条目（使用 `type: "acp"` 和 `match.channel: "imessage"`）配置持久绑定。
+
+`match.peer.id` 可以使用：
+
+- 规范化的 DM handle，例如 `+15555550123` 或 `user@example.com`
+- `chat_id:<id>`（推荐用于稳定的群组绑定）
+- `chat_guid:<guid>`
+- `chat_identifier:<identifier>`
+
+示例：
+
+```json5
+{
+  agents: {
+    list: [
+      {
+        id: "codex",
+        runtime: {
+          type: "acp",
+          acp: { agent: "codex", backend: "acpx", mode: "persistent" },
+        },
+      },
+    ],
+  },
+  bindings: [
+    {
+      type: "acp",
+      agentId: "codex",
+      match: {
+        channel: "imessage",
+        accountId: "default",
+        peer: { kind: "group", id: "chat_id:123" },
+      },
+      acp: { label: "codex-group" },
+    },
+  ],
+}
+```
+
+参见 [ACP Agents](/tools/acp-agents) 了解共享 ACP 绑定行为。
 
 ## 部署模式
 
@@ -362,7 +412,15 @@ imsg send <handle> "test"
 
 ## 配置参考指针
 
-- [Configuration reference - iMessage](/gateway/configuration-reference#imessage)
+- [Configuration reference - iMessage](/gateway/config-channels#imessage)
 - [Gateway configuration](/gateway/configuration)
 - [Pairing](/channels/pairing)
 - [BlueBubbles](/channels/bluebubbles)
+
+## 相关
+
+- [Channels 概述](/channels) — 所有支持的 Channel
+- [Pairing](/channels/pairing) — DM 认证和配对流程
+- [Groups](/channels/groups) — 群聊行为和提及门控
+- [Channel 路由](/channels/channel-routing) — 消息的 Session 路由
+- [Security](/gateway/security) — 访问模型和安全加固

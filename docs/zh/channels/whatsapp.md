@@ -1,13 +1,10 @@
 ---
-title: "WhatsApp（Web 频道）"
-sidebarTitle: "WhatsApp"
-mmh3_hash: "d30ad184c95ebeae5f4260791a19bce7"
+mmh3_hash: "2177de4893fd4375355fa84a82802089"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
+title: "WhatsApp"
 ---
-
-# WhatsApp（Web 频道）
 
 状态：通过 WhatsApp Web（Baileys）生产可用。Gateway 拥有关联的会话。
 
@@ -65,6 +62,13 @@ openclaw channels login --channel whatsapp
     针对特定账户：
 
 ```bash
+openclaw channels login --channel whatsapp --account work
+```
+
+    在登录前附加现有/自定义 WhatsApp Web 认证目录：
+
+```bash
+openclaw channels add --channel whatsapp --account work --auth-dir /path/to/wa-auth
 openclaw channels login --channel whatsapp --account work
 ```
 
@@ -141,11 +145,49 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 ## 运行时模型
 
 - Gateway 拥有 WhatsApp socket 和重连循环。
+- 重连 watchdog 使用 WhatsApp Web 传输活动，而不仅仅是入站应用消息量，因此安静的关联设备会话不会仅因为最近没有人发送消息而重启。如果传输帧持续到达但在 watchdog 窗口内没有处理任何应用消息，较长的应用静默上限仍会强制重连。
 - 出站发送需要目标账户有活动的 WhatsApp 监听器。
 - 状态和广播聊天被忽略（`@status`、`@broadcast`）。
 - 直接聊天使用私信会话规则（`session.dmScope`；默认 `main` 将私信折叠到 agent 主会话）。
 - 群组会话是隔离的（`agent:<agentId>:whatsapp:group:<jid>`）。
 - WhatsApp Web 传输遵循 Gateway 主机上的标准代理环境变量（`HTTPS_PROXY`、`HTTP_PROXY`、`NO_PROXY` / 小写变体）。优先使用主机级代理配置，而非特定于 Channel 的 WhatsApp 代理设置。
+- 启用 `messages.removeAckAfterReply` 后，OpenClaw 在传递可见回复后会清除 WhatsApp ack reaction。
+
+## Plugin Hooks 和隐私
+
+WhatsApp 入站消息可能包含个人消息内容、电话号码、群组标识符、发送者名称和会话关联字段。因此，除非您明确选择加入，否则 WhatsApp 不会向插件广播入站 `message_received` hook 负载：
+
+```json5
+{
+  channels: {
+    whatsapp: {
+      pluginHooks: {
+        messageReceived: true,
+      },
+    },
+  },
+}
+```
+
+您可以将选择加入范围限定到单个账户：
+
+```json5
+{
+  channels: {
+    whatsapp: {
+      accounts: {
+        work: {
+          pluginHooks: {
+            messageReceived: true,
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+仅为您信任其接收入站 WhatsApp 消息内容和标识符的插件启用此功能。
 
 ## 访问控制和激活
 
@@ -166,7 +208,7 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 
     - 配对持久化在频道 allow-store 中，并与配置的 `allowFrom` 合并
     - 如果未配置 allowlist，关联的自身号码默认被允许
-    - 出站 `fromMe` 私信从不自动配对
+    - OpenClaw 从不自动配对出站 `fromMe` 私信（您从关联设备发送给自己的消息）
 
   </Tab>
 
@@ -198,6 +240,7 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 
     - 显式 WhatsApp 提及 bot 身份
     - 配置的提及正则模式（`agents.list[].groupChat.mentionPatterns`，回退 `messages.groupChat.mentionPatterns`）
+    - 已授权群组消息的入站语音笔记转录
     - 隐式回复-bot 检测（回复发送者匹配 bot 身份）
 
     安全注意：
@@ -250,7 +293,9 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
     - `<media:document>`
     - `<media:sticker>`
 
-    位置和联系人负载在路由之前规范化为文本上下文。
+    当正文仅为 `<media:audio>` 时，已授权群组消息的语音笔记在提及门控之前被转录，因此在语音笔记中说出 bot 提及词可以触发回复。如果转录仍未提及 bot，转录内容会保留在待处理群组历史记录中，而非原始占位符。
+
+    位置正文使用简洁坐标文本。位置标签/注释和联系人/vCard 详情以围栏不可信元数据形式呈现，而非内联提示文本。
 
   </Accordion>
 
@@ -316,9 +361,13 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 
   <Accordion title="出站媒体行为">
     - 支持图像、视频、音频（PTT 语音笔记）和文档负载
-    - `audio/ogg` 被重写为 `audio/ogg; codecs=opus` 以实现语音笔记兼容性
+    - 音频媒体通过带有 `ptt: true` 的 Baileys `audio` 负载发送，因此 WhatsApp 客户端将其渲染为按压通话语音笔记
+    - 回复负载保留 `audioAsVoice`；WhatsApp 的 TTS 语音笔记输出即使在 provider 返回 MP3 或 WebM 时也保持在此 PTT 路径上
+    - 原生 Ogg/Opus 音频以 `audio/ogg; codecs=opus` 发送以实现语音笔记兼容性
+    - 非 Ogg 音频（包括 Microsoft Edge TTS MP3/WebM 输出）在 PTT 传递前使用 `ffmpeg` 转码为 48 kHz 单声道 Ogg/Opus
+    - `/tts latest` 将最新的助手回复作为一条语音笔记发送，并抑制同一回复的重复发送；`/tts chat on|off|default` 控制当前 WhatsApp 聊天的自动 TTS
     - 通过视频发送上的 `gifPlayback: true` 支持动画 GIF 播放
-    - 发送多媒体回复负载时，标题应用于第一个媒体项
+    - 发送多媒体回复负载时，标题应用于第一个媒体项，但 PTT 语音笔记先发送音频，再单独发送可见文本，因为 WhatsApp 客户端无法一致渲染语音笔记标题
     - 媒体源可以是 HTTP(S)、`file://` 或本地路径
   </Accordion>
 
@@ -331,9 +380,57 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
   </Accordion>
 </AccordionGroup>
 
+## 回复引用
+
+WhatsApp 支持原生回复引用，出站回复会在视觉上引用入站消息。通过 `channels.whatsapp.replyToMode` 控制。
+
+| 值            | 行为                                         |
+| ------------- | -------------------------------------------- |
+| `"off"`       | 从不引用；以普通消息发送                     |
+| `"first"`     | 仅引用第一个出站回复分块                     |
+| `"all"`       | 引用每个出站回复分块                         |
+| `"batched"`   | 引用已排队的批量回复，立即回复不引用         |
+
+默认为 `"off"`。每账户覆盖使用 `channels.whatsapp.accounts.<id>.replyToMode`。
+
+```json5
+{
+  channels: {
+    whatsapp: {
+      replyToMode: "first",
+    },
+  },
+}
+```
+
+## Reaction 级别
+
+`channels.whatsapp.reactionLevel` 控制 agent 在 WhatsApp 上使用表情 reaction 的范围：
+
+| 级别          | Ack reaction | Agent 发起的 reaction | 描述                                 |
+| ------------- | ------------ | --------------------- | ------------------------------------ |
+| `"off"`       | 否           | 否                    | 完全不使用 reaction                  |
+| `"ack"`       | 是           | 否                    | 仅 ack reaction（回复前接收确认）    |
+| `"minimal"`   | 是           | 是（保守）            | Ack + agent reaction，保守指导方针   |
+| `"extensive"` | 是           | 是（鼓励）            | Ack + agent reaction，鼓励指导方针   |
+
+默认：`"minimal"`。
+
+每账户覆盖使用 `channels.whatsapp.accounts.<id>.reactionLevel`。
+
+```json5
+{
+  channels: {
+    whatsapp: {
+      reactionLevel: "ack",
+    },
+  },
+}
+```
+
 ## 确认 Reaction
 
-WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 ack reaction。
+WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 ack reaction。Ack reaction 受 `reactionLevel` 门控——当 `reactionLevel` 为 `"off"` 时被抑制。
 
 ```json5
 {
@@ -405,6 +502,8 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
   <Accordion title="已关联但断开连接 / 重连循环">
     症状：已关联账户出现重复断开连接或重连尝试。
 
+    安静的账户可以在正常消息超时之后保持连接；当 WhatsApp Web 传输活动停止、socket 关闭或应用级活动在较长安全窗口内保持静默时，watchdog 会重启。
+
     修复：
 
     ```bash
@@ -439,11 +538,82 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
   </Accordion>
 </AccordionGroup>
 
+## System Prompts
+
+WhatsApp 通过 `groups` 和 `direct` 映射支持群组和直接聊天的 Telegram 风格 system prompt。
+
+群组消息的解析层次：
+
+首先确定有效的 `groups` 映射：如果账户定义了自己的 `groups`，它完全替换根 `groups` 映射（不做深度合并）。然后在得到的单一映射上执行 prompt 查找：
+
+1. **群组特定 system prompt**（`groups["<groupId>"].systemPrompt`）：当特定群组条目存在于映射中**且**其 `systemPrompt` 键已定义时使用。如果 `systemPrompt` 为空字符串（`""`），则通配符被抑制且不应用任何 system prompt。
+2. **群组通配符 system prompt**（`groups["*"].systemPrompt`）：当特定群组条目完全不在映射中，或存在但未定义 `systemPrompt` 键时使用。
+
+直接消息的解析层次：
+
+首先确定有效的 `direct` 映射：如果账户定义了自己的 `direct`，它完全替换根 `direct` 映射（不做深度合并）。然后在得到的单一映射上执行 prompt 查找：
+
+1. **直接聊天特定 system prompt**（`direct["<peerId>"].systemPrompt`）：当特定对端条目存在于映射中**且**其 `systemPrompt` 键已定义时使用。如果 `systemPrompt` 为空字符串（`""`），则通配符被抑制且不应用任何 system prompt。
+2. **直接聊天通配符 system prompt**（`direct["*"].systemPrompt`）：当特定对端条目完全不在映射中，或存在但未定义 `systemPrompt` 键时使用。
+
+<Note>
+`dms` 仍是轻量级的每私信历史覆盖桶（`dms.<id>.historyLimit`）。Prompt 覆盖位于 `direct` 下。
+</Note>
+
+**与 Telegram 多账户行为的区别：** 在 Telegram 中，根 `groups` 在多账户设置中对所有账户都会被有意抑制——即使是未定义自己 `groups` 的账户——以防止 bot 接收它不属于的群组的群组消息。WhatsApp 不应用此保护：根 `groups` 和根 `direct` 始终被未定义账户级覆盖的账户继承，无论配置了多少个账户。在多账户 WhatsApp 设置中，如果您想要每账户的群组或直接 prompt，请在每个账户下显式定义完整映射，而不是依赖根级默认值。
+
+重要行为：
+
+- `channels.whatsapp.groups` 既是每群组配置映射，也是聊天级群组 allowlist。在根或账户范围内，`groups["*"]` 表示该范围"所有群组均被允许"。
+- 仅在您已经希望该范围接受所有群组时才添加通配符群组 `systemPrompt`。如果您仍然希望只有固定的一组群组 ID 有资格，请不要将 `groups["*"]` 用于 prompt 默认值。而是在每个明确 allowlist 的群组条目上重复该 prompt。
+- 群组准入和发送者授权是独立检查。`groups["*"]` 扩大了可以到达群组处理的群组集合，但它本身并不授权这些群组中的每个发送者。发送者访问仍由 `channels.whatsapp.groupPolicy` 和 `channels.whatsapp.groupAllowFrom` 单独控制。
+- `channels.whatsapp.direct` 对私信没有相同的副作用。`direct["*"]` 仅在私信已经由 `dmPolicy` 加上 `allowFrom` 或配对存储规则允许后，才提供默认直接聊天配置。
+
+示例：
+
+```json5
+{
+  channels: {
+    whatsapp: {
+      groups: {
+        // 仅在根范围应接受所有群组时使用。
+        // 适用于未定义自己 groups 映射的所有账户。
+        "*": { systemPrompt: "Default prompt for all groups." },
+      },
+      direct: {
+        // 适用于未定义自己 direct 映射的所有账户。
+        "*": { systemPrompt: "Default prompt for all direct chats." },
+      },
+      accounts: {
+        work: {
+          groups: {
+            // 此账户定义了自己的 groups，因此根 groups 被完全替换。
+            // 要保留通配符，也需在此处显式定义 "*"。
+            "120363406415684625@g.us": {
+              requireMention: false,
+              systemPrompt: "Focus on project management.",
+            },
+            // 仅在此账户应接受所有群组时使用。
+            "*": { systemPrompt: "Default prompt for work groups." },
+          },
+          direct: {
+            // 此账户定义了自己的 direct 映射，因此根 direct 条目被完全替换。
+            // 要保留通配符，也需在此处显式定义 "*"。
+            "+15551234567": { systemPrompt: "Prompt for a specific work direct chat." },
+            "*": { systemPrompt: "Default prompt for work direct chats." },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
 ## 配置参考指针
 
 主要参考：
 
-- [配置参考 - WhatsApp](/gateway/configuration-reference#whatsapp)
+- [配置参考 - WhatsApp](/gateway/config-channels#whatsapp)
 
 WhatsApp 高优先级字段：
 
@@ -452,6 +622,7 @@ WhatsApp 高优先级字段：
 - 多账户：`accounts.<id>.enabled`、`accounts.<id>.authDir`、账户级覆盖
 - 运维：`configWrites`、`debounceMs`、`web.enabled`、`web.heartbeatSeconds`、`web.reconnect.*`
 - 会话行为：`session.dmScope`、`historyLimit`、`dmHistoryLimit`、`dms.<id>.historyLimit`
+- prompts：`groups.<id>.systemPrompt`、`groups["*"].systemPrompt`、`direct.<id>.systemPrompt`、`direct["*"].systemPrompt`
 
 ## 相关
 

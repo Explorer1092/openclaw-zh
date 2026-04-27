@@ -1,18 +1,17 @@
 ---
-title: "Zalo 个人号 (非官方)"
-sidebarTitle: "Zalo 个人号"
-mmh3_hash: "43d385ce55001b2e61a8fad5dd14b7c6"
-summary: "Zalo personal account support via native zca-js (QR login), capabilities, and configuration"
+mmh3_hash: "67efeb5cd42ff536bb6ba354be304497"
+summary: "通过原生 zca-js（二维码登录）的 Zalo 个人账户支持、功能和配置"
 read_when:
-  - Setting up Zalo Personal for OpenClaw
-  - Debugging Zalo Personal login or message flow
+  - 为 OpenClaw 设置 Zalo 个人号
+  - 调试 Zalo 个人号登录或消息流
+title: "Zalo personal"
 ---
-
-# Zalo Personal (非官方)
 
 状态：实验性。此集成通过 OpenClaw 内置的原生 `zca-js` 自动化 **个人 Zalo 账户**。
 
-> **警告：** 这是一个非官方集成，可能导致账户被暂停/封禁。使用风险自负。
+<Warning>
+这是一个非官方集成，可能导致账户被暂停或封禁。使用风险自负。
+</Warning>
 
 ## 内置插件
 
@@ -51,15 +50,18 @@ Zalo Personal 作为内置插件随当前 OpenClaw 版本提供，正常打包�
 5. DM 访问默认为配对模式；首次联系时批准配对码。
 
 ## 它是什么
+
 - 完全在进程内通过 `zca-js` 运行。
 - 使用原生事件监听器接收入站消息。
 - 直接通过 JS API 发送回复（文本/媒体/链接）。
 - 专为无法使用 Zalo Bot API 的"个人账户"使用场景设计。
 
 ## 命名
-通道 id 为 `zalouser`，明确表示这是自动化 **个人 Zalo 用户账户**（非官方）。我们保留 `zalo` 用于未来可能的官方 Zalo API 集成。
+
+Channel id 为 `zalouser`，明确表示这是自动化 **个人 Zalo 用户账户**（非官方）。我们保留 `zalo` 用于未来可能的官方 Zalo API 集成。
 
 ## 查找 ID（目录）
+
 使用目录 CLI 发现对等方/群组及其 ID：
 
 ```bash
@@ -69,19 +71,23 @@ openclaw directory groups list --channel zalouser --query "work"
 ```
 
 ## 限制
+
 - 出站文本会被分块为约 2000 个字符（Zalo 客户端限制）。
 - 默认情况下阻止流式传输。
 
 ## 访问控制（私信）
+
 `channels.zalouser.dmPolicy` 支持：`pairing | allowlist | open | disabled`（默认：`pairing`）。
 
 `channels.zalouser.allowFrom` 接受用户 ID 或名称。初始化配置时，名称通过插件的进程内联系人查找解析为 ID。
 
 通过以下方式批准：
+
 - `openclaw pairing list zalouser`
 - `openclaw pairing approve zalouser <code>`
 
 ## 群组访问（可选）
+
 - 默认：`channels.zalouser.groupPolicy = "open"`（允许群组）。使用 `channels.defaults.groupPolicy` 在未设置时覆盖默认值。
 - 使用 allowlist 限制：
   - `channels.zalouser.groupPolicy = "allowlist"`
@@ -116,7 +122,8 @@ openclaw directory groups list --channel zalouser --query "work"
 
 - `channels.zalouser.groups.<group>.requireMention` 控制群组回复是否需要提及。
 - 解析顺序：精确群组 id/名称 -> 规范化群组 slug -> `*` -> 默认值（`true`）。
-- 这适用于白名单群组和开放群组模式。
+- 这适用于 allowlist 群组和开放群组模式。
+- 引用 bot 消息视为群组激活的隐式提及。
 - 已授权的控制命令（例如 `/new`）可以绕过提及门控。
 - 当因需要提及而跳过群组消息时，OpenClaw 将其存储为待处理的群组历史，并在下一条已处理的群组消息时包含。
 - 群组历史限制默认为 `messages.groupChat.historyLimit`（回退值 `50`）。可以通过 `channels.zalouser.historyLimit` 按账户覆盖。
@@ -138,6 +145,7 @@ openclaw directory groups list --channel zalouser --query "work"
 ```
 
 ## 多账户
+
 账户映射到 OpenClaw 状态中的 `zalouser` 配置文件。示例：
 
 ```json5
@@ -165,15 +173,18 @@ openclaw directory groups list --channel zalouser --query "work"
 ## 故障排除
 
 **登录状态无法保持：**
+
 - `openclaw channels status --probe`
 - 重新登录：`openclaw channels logout --channel zalouser && openclaw channels login --channel zalouser`
 
 **Allowlist/群组名称未解析：**
+
 - 在 `allowFrom`/`groupAllowFrom`/`groups` 中使用数字 ID 或精确的好友/群组名称。
 
 **从旧的基于 CLI 的设置升级：**
+
 - 移除所有旧的外部 `zca` 进程假设。
-- 该通道现在完全在 OpenClaw 内运行，无需外部 CLI 二进制文件。
+- 该 Channel 现在完全在 OpenClaw 内运行，无需外部 CLI 二进制文件。
 
 ## 相关
 

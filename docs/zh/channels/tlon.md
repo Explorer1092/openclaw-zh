@@ -1,16 +1,14 @@
 ---
-title: "Tlon"
-mmh3_hash: "f36b0e039a631377ab681afe3e99663f"
+mmh3_hash: "b2fe2a3213487c9cb490ea73ec800ff8"
 summary: "Tlon/Urbit 支持状态、功能和配置"
 read_when:
   - Working on Tlon/Urbit channel features
+title: "Tlon"
 ---
 
-# Tlon
+Tlon 是一个基于 Urbit 构建的去中心化通讯工具。OpenClaw 可以连接到您的 Urbit ship 并响应私信和群组聊天消息。群组回复默认需要 @ 提及，并且可以通过 allowlist 进一步限制。
 
-Tlon 是一个基于 Urbit 构建的去中心化通讯工具。OpenClaw 可以连接到您的 Urbit ship 并响应私信和群组聊天消息。群组回复默认需要 @ 提及，并且可以通过允许列表进一步限制。
-
-状态：内置插件。支持私信、群组提及、帖子回复、富文本格式化和图片上传。通过[捆绑技能](#捆绑技能)支持反应。尚不支持投票。
+状态：内置插件。支持私信、群组提及、帖子回复、富文本格式化和图片上传。通过[捆绑技能](#bundled-skill)支持 Reaction。尚不支持投票。
 
 ## 内置插件
 
@@ -39,7 +37,7 @@ openclaw plugins install ./path/to/local/tlon-plugin
    - 较旧/自定义安装可使用上述命令手动添加。
 2. 获取您的 ship URL 和登录代码。
 3. 配置 `channels.tlon`。
-4. 重启 gateway。
+4. 重启 Gateway。
 5. 向 bot 发送私信或在群组频道中提及它。
 
 最小配置（单账户）：
@@ -111,7 +109,7 @@ openclaw plugins install ./path/to/local/tlon-plugin
 
 ## 访问控制
 
-私信允许列表（空 = 不允许 DM，使用 `ownerShip` 进行审批流程）：
+DM allowlist（空 = 不允许 DM，使用 `ownerShip` 进行审批流程）：
 
 ```json5
 {
@@ -164,7 +162,7 @@ openclaw plugins install ./path/to/local/tlon-plugin
 
 设置后，所有者会收到以下情况的私信通知：
 
-- 不在允许列表中的 ship 的私信请求
+- 不在 allowlist 中的 ship 的私信请求
 - 在没有授权的频道中的提及
 - 群组邀请请求
 
@@ -208,8 +206,8 @@ Tlon 插件包含一个捆绑技能（[`@tloncorp/tlon-skill`](https://github.co
 - **联系人**：获取/更新个人资料、列出联系人
 - **频道**：列表、创建、发布消息、获取历史记录
 - **群组**：列表、创建、管理成员
-- **私信**：发送消息、对消息做出反应
-- **反应**：添加/移除帖子和私信的表情反应
+- **私信**：发送消息、对消息做出 Reaction
+- **Reaction**：添加/移除帖子和私信的表情 Reaction
 - **设置**：通过 slash 命令管理插件权限
 
 插件安装后技能自动可用。
@@ -223,7 +221,7 @@ Tlon 插件包含一个捆绑技能（[`@tloncorp/tlon-skill`](https://github.co
 | 帖子         | ✅ 支持（自动在帖子内回复）                |
 | 富文本       | ✅ Markdown 转换为 Tlon 格式              |
 | 图片         | ✅ 上传到 Tlon 存储                       |
-| 反应         | ✅ 通过[捆绑技能](#捆绑技能)支持          |
+| Reaction    | ✅ 通过[捆绑技能](#bundled-skill)支持     |
 | 投票         | ❌ 尚不支持                               |
 | 原生命令     | ✅ 支持（默认仅所有者）                   |
 
@@ -247,23 +245,23 @@ openclaw doctor
 
 ## 配置参考
 
-完整配置：[Configuration](/gateway/configuration)
+完整配置：[配置](/gateway/configuration)
 
 Provider 选项：
 
-- `channels.tlon.enabled`：启用/禁用频道启动。
+- `channels.tlon.enabled`：启用/禁用 Channel 启动。
 - `channels.tlon.ship`：bot 的 Urbit ship 名称（例如 `~sampel-palnet`）。
 - `channels.tlon.url`：ship URL（例如 `https://sampel-palnet.tlon.network`）。
 - `channels.tlon.code`：ship 登录代码。
 - `channels.tlon.allowPrivateNetwork`：允许 localhost/局域网 URL（SSRF 绕过）。
 - `channels.tlon.ownerShip`：用于审批系统的所有者 ship（始终被授权）。
 - `channels.tlon.dmAllowlist`：允许私信的 ship（空 = 无）。
-- `channels.tlon.autoAcceptDmInvites`：自动接受来自允许列表 ship 的私信。
+- `channels.tlon.autoAcceptDmInvites`：自动接受来自 allowlist 中 ship 的私信。
 - `channels.tlon.autoAcceptGroupInvites`：自动接受所有群组邀请。
 - `channels.tlon.autoDiscoverChannels`：自动发现群组频道（默认：true）。
-- `channels.tlon.groupChannels`：手动固定的频道嵌套。
-- `channels.tlon.defaultAuthorizedShips`：在所有频道中授权的 ship。
-- `channels.tlon.authorization.channelRules`：每频道认证规则。
+- `channels.tlon.groupChannels`：手动固定的 Channel 嵌套。
+- `channels.tlon.defaultAuthorizedShips`：在所有 Channel 中授权的 ship。
+- `channels.tlon.authorization.channelRules`：每 Channel 认证规则。
 - `channels.tlon.showModelSignature`：在消息后附加模型名称。
 
 ## 注意事项

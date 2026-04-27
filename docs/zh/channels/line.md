@@ -1,23 +1,22 @@
 ---
-title: "LINE (插件)"
-sidebarTitle: "LINE"
-mmh3_hash: "6b46be0512462ac7299c8468980f436d"
+mmh3_hash: "58c998a21988d8c57ef851df5a1031db"
 summary: "LINE Messaging API 插件设置、配置和使用"
 read_when:
   - 连接 OpenClaw 到 LINE
   - 配置 LINE webhook + 凭据
   - 使用 LINE 特有的消息选项
+title: LINE
 ---
-
-# LINE (插件)
 
 LINE 通过 LINE Messaging API 连接到 OpenClaw。该插件在 Gateway 上作为 Webhook 接收器运行，并使用您的 Channel access token + Channel secret 进行身份验证。
 
-状态：通过插件支持。支持私聊、群聊、媒体、位置、Flex 消息、模板消息和快速回复。不支持反应和主题。
+状态：内置插件。支持私聊、群聊、媒体、位置、Flex 消息、模板消息和快速回复。不支持反应和主题。
 
-## 需要安装插件
+## 内置插件
 
-安装 LINE 插件：
+LINE 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打包构建不需要单独安装。
+
+如果您使用的是旧版构建或不包含 LINE 的自定义安装，请手动安装：
 
 ```bash
 openclaw plugins install @openclaw/line
@@ -26,7 +25,7 @@ openclaw plugins install @openclaw/line
 本地检出（从 git 仓库运行时）：
 
 ```bash
-openclaw plugins install ./extensions/line
+openclaw plugins install ./path/to/local/line-plugin
 ```
 
 ## 设置
@@ -194,6 +193,8 @@ LINE 插件支持通过 Agent 消息工具发送图片、视频和音频文件�
 - **图片**：作为 LINE 图片消息发送，并自动生成预览。
 - **视频**：通过显式的预览和内容类型处理发送。
 - **音频**：作为 LINE 音频消息发送。
+
+出站媒体 URL 必须是公共 HTTPS URL。OpenClaw 在将 URL 传递给 LINE 之前会验证目标主机名，并拒绝回环、链路本地和私有网络目标。
 
 当 LINE 特定路径不可用时，通用媒体发送回退到现有的仅图片路由。
 

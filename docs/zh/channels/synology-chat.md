@@ -1,44 +1,53 @@
 ---
-mmh3_hash: "360cf740ee59888517a2edf97da0cb64"
-title: "Synology Chat"
+mmh3_hash: "9604fb99c46616a7039c0267e1208482"
 summary: "Synology Chat webhook 设置与 OpenClaw 配置"
 read_when:
   - 使用 OpenClaw 配置 Synology Chat
   - 调试 Synology Chat webhook 路由问题
+title: "Synology Chat"
 ---
 
-# Synology Chat（插件）
+状态：内置插件，使用 Synology Chat webhook 的私信 Channel。该插件接受来自 Synology Chat 外发 webhook 的入站消息，并通过 Synology Chat 传入 webhook 发送回复。
 
-状态：通过插件支持，作为使用 Synology Chat webhook 的私信 Channel。
-该插件接受来自 Synology Chat 外发 webhook 的入站消息，并通过 Synology Chat 传入 webhook 发送回复。
+## 内置插件
 
-## 需要插件
+Synology Chat 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打包构建无需单独安装。
 
-Synology Chat 基于插件运行，不属于默认核心 Channel 安装。
-
-从本地检出安装：
+如果您使用的是较旧的构建版本或不包含 Synology Chat 的自定义安装，请从本地检出手动安装：
 
 ```bash
-openclaw plugins install ./extensions/synology-chat
+openclaw plugins install ./path/to/local/synology-chat-plugin
 ```
 
 详情：[插件](/tools/plugin)
 
 ## 快速设置
 
-1. 安装并启用 Synology Chat 插件。
+1. 确保 Synology Chat 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 较旧/自定义安装可使用上述命令手动添加。
    - `openclaw onboard` 现在会在 Channel 设置列表中显示 Synology Chat，与 `openclaw channels add` 相同。
    - 非交互式设置：`openclaw channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
 2. 在 Synology Chat 集成中：
    - 创建一个传入 webhook 并复制其 URL。
    - 创建一个带有密钥令牌的外发 webhook。
-3. 将外发 webhook URL 指向你的 OpenClaw Gateway：
+3. 将外发 webhook URL 指向您的 OpenClaw Gateway：
    - 默认为 `https://gateway-host/webhook/synology`。
    - 或自定义的 `channels.synology-chat.webhookPath`。
 4. 在 OpenClaw 中完成设置。
    - 引导式：`openclaw onboard`
    - 直接：`openclaw channels add --channel synology-chat --token <token> --url <incoming-webhook-url>`
 5. 重启 Gateway 并向 Synology Chat 机器人发送私信。
+
+Webhook 认证详情：
+
+- OpenClaw 依次从 `body.token`、`?token=...` 和请求头中接受外发 webhook token。
+- 接受的请求头形式：
+  - `x-synology-token`
+  - `x-webhook-token`
+  - `x-openclaw-token`
+  - `Authorization: Bearer <token>`
+- 空或缺失的 token 将被关闭（拒绝）。
 
 最小配置：
 
@@ -72,6 +81,8 @@ openclaw plugins install ./extensions/synology-chat
 
 配置值会覆盖环境变量。
 
+`SYNOLOGY_CHAT_INCOMING_URL` 不能从工作区 `.env` 设置；参见 [工作区 `.env` 文件](/gateway/security)。
+
 ## 私信策略与访问控制
 
 - `dmPolicy: "allowlist"` 是推荐的默认设置。
@@ -95,15 +106,11 @@ openclaw message send --channel synology-chat --target 123456 --text "Hello from
 openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
 ```
 
-支持通过基于 URL 的文件传递发送媒体。
+支持通过基于 URL 的文件传递发送媒体。出站文件 URL 必须使用 `http` 或 `https`，私有或其他被阻止的网络目标在 OpenClaw 将 URL 转发到 NAS webhook 之前会被拒绝。
 
 ## 多账户
 
-支持在 `channels.synology-chat.accounts` 下配置多个 Synology Chat 账户。
-每个账户可以覆盖 token、传入 URL、webhook 路径、私信策略和限制。
-私信会话按账户和用户隔离，因此两个不同 Synology 账户上相同的数字 `user_id` 不共享对话状态。
-为每个已启用的账户设置不同的 `webhookPath`。OpenClaw 现在会拒绝重复的精确路径，并拒绝在多账户设置中仅继承共享 webhook 路径的命名账户启动。
-如果您明确需要命名账户的旧版继承行为，请在该账户或 `channels.synology-chat` 上设置 `dangerouslyAllowInheritedWebhookPath: true`，但重复的精确路径仍会被拒绝（失败关闭）。优先使用明确的每账户路径。
+支持在 `channels.synology-chat.accounts` 下配置多个 Synology Chat 账户。每个账户可以覆盖 token、传入 URL、webhook 路径、私信策略和限制。私信会话按账户和用户隔离，因此两个不同 Synology 账户上相同的数字 `user_id` 不共享对话状态。为每个已启用的账户设置不同的 `webhookPath`。OpenClaw 会拒绝重复的精确路径，并拒绝在多账户设置中仅继承共享 webhook 路径的命名账户启动。如果您明确需要命名账户的旧版继承行为，请在该账户或 `channels.synology-chat` 上设置 `dangerouslyAllowInheritedWebhookPath: true`，但重复的精确路径仍会被拒绝（失败关闭）。优先使用明确的每账户路径。
 
 ```json5
 {
@@ -141,10 +148,10 @@ openclaw message send --channel synology-chat --target synology-chat:123456 --te
 ## 故障排除
 
 - `Missing required fields (token, user_id, text)`：
-  - 出站 webhook 载荷缺少必填字段之一
+  - 外发 webhook 载荷缺少必填字段之一
   - 如果 Synology 在请求头中发送 token，确保 gateway/proxy 保留这些请求头
 - `Invalid token`：
-  - 出站 webhook 密钥与 `channels.synology-chat.token` 不匹配
+  - 外发 webhook 密钥与 `channels.synology-chat.token` 不匹配
   - 请求命中了错误的账户/webhook 路径
   - 反向代理在请求到达 OpenClaw 之前剥离了 token 请求头
 - `Rate limit exceeded`：

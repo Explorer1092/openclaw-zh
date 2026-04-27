@@ -1,20 +1,20 @@
 ---
-mmh3_hash: "e35833f4f0e8e6aa12a0b2103be34293"
+mmh3_hash: "5bdff338482ca07a91e1fe3f10bbe3af"
 summary: "WhatsApp 群组消息处理的行为和配置（mentionPatterns 在各界面间共享）"
 read_when:
   - 更改群组消息规则或提及
 title: "群组消息"
 ---
 
-# 群组消息（WhatsApp web Channel）
-
 目标：让 OpenClaw 坐在 WhatsApp 群组中，只在被 ping 时唤醒，并将该线程与个人私信会话分开。
 
-注意：`agents.list[].groupChat.mentionPatterns` 现在也被 Telegram/Discord/Slack/iMessage 使用；本文档聚焦于 WhatsApp 特定行为。对于多 agent 设置，请按 agent 设置 `agents.list[].groupChat.mentionPatterns`（或使用 `messages.groupChat.mentionPatterns` 作为全局回退）。
+<Note>
+`agents.list[].groupChat.mentionPatterns` 也被 Telegram、Discord、Slack 和 iMessage 使用。本文档聚焦于 WhatsApp 特定行为。对于多 Agent 设置，请按 Agent 设置 `agents.list[].groupChat.mentionPatterns`，或使用 `messages.groupChat.mentionPatterns` 作为全局回退。
+</Note>
 
 ## 已实现内容（2025-12-03）
 
-- 激活模式：`mention`（默认）或 `always`。`mention` 需要 ping（通过 `mentionedJids` 的真实 WhatsApp @提及、安全的正则表达式模式，或文本中任意位置的 bot E.164 号码）。`always` 在每条消息上唤醒 agent，但只有在能添加有意义价值时才回复；否则返回静默 token `NO_REPLY`。默认值可在配置中设置（`channels.whatsapp.groups`），并可通过 `/activation` 按群组覆盖。设置 `channels.whatsapp.groups` 时，它也充当群组 allowlist（包含 `"*"` 以允许所有群组）。
+- 激活模式：`mention`（默认）或 `always`。`mention` 需要 ping（通过 `mentionedJids` 的真实 WhatsApp @提及、安全的正则表达式模式，或文本中任意位置的 bot E.164 号码）。`always` 在每条消息上唤醒 Agent，但只有在能添加有意义价值时才回复；否则返回静默 token `NO_REPLY` / `no_reply`。默认值可在配置中设置（`channels.whatsapp.groups`），并可通过 `/activation` 按群组覆盖。设置 `channels.whatsapp.groups` 时，它也充当群组 allowlist（包含 `"*"` 以允许所有群组）。
 - 群组策略：`channels.whatsapp.groupPolicy` 控制是否接受群组消息（`open|disabled|allowlist`）。`allowlist` 使用 `channels.whatsapp.groupAllowFrom`（回退：显式的 `channels.whatsapp.allowFrom`）。默认为 `allowlist`（添加发送者之前被阻止）。
 - 每群组会话：会话键格式为 `agent:<agentId>:whatsapp:group:<jid>`，因此 `/verbose on`、`/trace on` 或 `/think high` 等命令（作为独立消息发送）的作用域限于该群组；个人私信状态不受影响。群组线程跳过心跳。
 - 上下文注入：**仅待处理的**群组消息（默认 50 条）——那些_没有_触发运行的消息——以 `[Chat messages since your last reply - for context]` 为前缀，触发行在 `[Current message - respond to this]` 下。已在会话中的消息不会重新注入。
@@ -83,3 +83,9 @@ title: "群组消息"
 - 回声抑制使用合并的批次字符串；如果您连续发送两次相同文本而没有提及，只有第一次会得到响应。
 - 会话存储条目将在会话存储中显示为 `agent:<agentId>:whatsapp:group:<jid>`（默认 `~/.openclaw/agents/<agentId>/sessions/sessions.json`）；缺少条目只意味着群组尚未触发运行。
 - 群组中的输入状态指示遵循 `agents.defaults.typingMode`（默认：未提及时为 `message`）。
+
+## 相关
+
+- [Groups](/channels/groups)
+- [Channel 路由](/channels/channel-routing)
+- [广播组](/channels/broadcast-groups)

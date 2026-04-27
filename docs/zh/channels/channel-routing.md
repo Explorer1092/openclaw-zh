@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6d584a8f4fb39befbd4558add8be41d6"
+mmh3_hash: "e67d388e574d2c2cbb9ba64173d999e8"
 summary: "每个 Channel（WhatsApp、Telegram、Discord、Slack）的路由规则和共享上下文"
 read_when:
   - 更改 Channel 路由或收件箱行为
@@ -24,6 +24,8 @@ OpenClaw 将回复**路由回消息来源的 Channel**。模型不选择 Channel
 直接消息折叠到 Agent 的 **main** 会话：
 
 - `agent:<agentId>:<mainKey>`（默认：`agent:main:main`）
+
+即使直接消息对话历史与 main 共享，沙箱和工具策略也会对外部 DM 使用派生的每账户直接聊天运行时键，因此来自 Channel 的消息不会被视为本地 main-session 运行。
 
 群组和 Channels 保持每个 Channel 隔离：
 
@@ -129,3 +131,9 @@ WebChat 附加到**选定的 Agent**，并默认为 Agent 的 main 会话。因�
 - 引用的上下文作为 `[Replying to ...]` 块追加到 `Body`。
 
 这在 Channels 之间是一致的。
+
+## 相关
+
+- [Groups](/channels/groups)
+- [广播组](/channels/broadcast-groups)
+- [Pairing](/channels/pairing)

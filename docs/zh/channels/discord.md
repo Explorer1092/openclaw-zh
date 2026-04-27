@@ -1,14 +1,12 @@
 ---
-mmh3_hash: "6d8cac15d772397953d59f4de60bcdfe"
+mmh3_hash: "cd777c9db5c9218986d01a8b2250b615"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
 title: "Discord"
 ---
 
-# Discord (Bot API)
-
-状态：通过官方 Discord gateway 支持 DM 和公会频道。
+通过官方 Discord gateway 支持 DM 和公会频道。
 
 <CardGroup cols={3}>
   <Card title="Pairing" icon="link" href="/channels/pairing">
@@ -62,15 +60,18 @@ title: "Discord"
     - `bot`
     - `applications.commands`
 
-    下方将出现 **Bot Permissions** 部分。启用：
+    下方将出现 **Bot Permissions** 部分。至少启用：
 
-    - View Channels
-    - Send Messages
-    - Read Message History
-    - Embed Links
-    - Attach Files
-    - Add Reactions（可选）
+    **General Permissions**
+      - View Channels
+    **Text Permissions**
+      - Send Messages
+      - Read Message History
+      - Embed Links
+      - Attach Files
+      - Add Reactions（可选）
 
+    这是普通文本频道的基本配置。如果你计划在 Discord 线程中发帖，包括创建或继续线程的论坛或媒体频道工作流，还需启用 **Send Messages in Threads**。
     复制底部生成的 URL，粘贴到浏览器中，选择你的服务器，然后点击 **Continue** 连接。你现在应该可以在 Discord 服务器中看到你的 bot。
 
   </Step>
@@ -267,6 +268,7 @@ Token 解析是账户感知的。配置 token 值优先于环境变量回退。`
 - 公会频道是隔离的会话键（`agent:<agentId>:discord:channel:<channelId>`）。
 - 群组 DM 默认被忽略（`channels.discord.dm.groupEnabled=false`）。
 - 原生 slash 命令在隔离的命令会话中运行（`agent:<agentId>:discord:slash:<userId>`），同时仍将 `CommandTargetSessionKey` 携带到路由的会话。
+- 仅文本的 cron/heartbeat 公告传递到 Discord 时使用最终 assistant 可见答案一次。媒体和结构化组件负载在 agent 发出多个可传递负载时仍然是多消息的。
 
 ## 论坛频道
 
@@ -493,57 +495,6 @@ Modal 表单：
 }
 ```
 
-## Developer Portal 设置
-
-<AccordionGroup>
-  <Accordion title="创建应用和 bot">
-
-    1. Discord Developer Portal -> **Applications** -> **New Application**
-    2. **Bot** -> **Add Bot**
-    3. 复制 bot token
-
-  </Accordion>
-
-  <Accordion title="特权 intents">
-    在 **Bot -> Privileged Gateway Intents** 中，启用：
-
-    - Message Content Intent
-    - Server Members Intent（推荐）
-
-    Presence intent 是可选的，仅在你想接收 presence 更新时才需要。设置 bot presence（`setPresence`）不需要为成员启用 presence 更新。
-
-  </Accordion>
-
-  <Accordion title="OAuth 范围和基本权限">
-    OAuth URL 生成器：
-
-    - 范围：`bot`、`applications.commands`
-
-    典型基本权限：
-
-    - View Channels
-    - Send Messages
-    - Read Message History
-    - Embed Links
-    - Attach Files
-    - Add Reactions（可选）
-
-    除非明确需要，否则避免 `Administrator`。
-
-  </Accordion>
-
-  <Accordion title="复制 ID">
-    启用 Discord 开发者模式，然后复制：
-
-    - 服务器 ID
-    - 频道 ID
-    - 用户 ID
-
-    在 OpenClaw 配置中优先使用数字 ID，以便进行可靠的审计和探测。
-
-  </Accordion>
-</AccordionGroup>
-
 ## 原生命令和命令授权
 
 - `commands.native` 默认为 `"auto"`，为 Discord 启用。
@@ -583,28 +534,9 @@ Modal 表单：
   </Accordion>
 
   <Accordion title="实时流式预览">
-    OpenClaw 可以通过发送临时消息并在文本到达时编辑来流式传输草稿回复。
+    OpenClaw 可以通过发送临时消息并在文本到达时编辑来流式传输草稿回复。`channels.discord.streaming` 接受 `off`（默认）| `partial` | `block` | `progress`。`progress` 在 Discord 上映射到 `partial`；`streamMode` 是旧版别名，会自动迁移。
 
-    - `channels.discord.streaming` 控制预览流式传输（`off` | `partial` | `block` | `progress`，默认：`off`）。
-    - 默认保持 `off`，因为 Discord 预览编辑可能很快触及频率限制，尤其是当多个 bot 或 gateway 共享同一账户或公会流量时。
-    - `progress` 接受用于跨频道一致性，在 Discord 上映射到 `partial`。
-    - `channels.discord.streamMode` 是旧版别名，会自动迁移。
-    - `partial` 在 token 到达时编辑单个预览消息。
-    - `block` 发出草稿大小的块（使用 `draftChunk` 调整大小和断点）。
-
-    示例：
-
-```json5
-{
-  channels: {
-    discord: {
-      streaming: "partial",
-    },
-  },
-}
-```
-
-    `block` 模式分块默认值（限制在 `channels.discord.textChunkLimit` 以内）：
+    默认保持 `off`，因为 Discord 预览编辑可能很快触及频率限制，尤其是当多个 bot 或 gateway 共享同一账户时。
 
 ```json5
 {
@@ -621,9 +553,12 @@ Modal 表单：
 }
 ```
 
-    预览流式传输仅限文本；媒体回复回退到正常传递。
+    - `partial` 在 token 到达时编辑单个预览消息。
+    - `block` 发出草稿大小的块（使用 `draftChunk` 调整大小和断点，限制在 `textChunkLimit` 以内）。
+    - 媒体、错误和显式回复的最终结果会取消待处理的预览编辑。
+    - `streaming.preview.toolProgress`（默认 `true`）控制工具/进度更新是否重用预览消息。
 
-    注意：预览流式传输与块流式传输是分开的。当为 Discord 显式启用块流式传输时，OpenClaw 跳过预览流以避免双重流式传输。
+    预览流式传输仅限文本；媒体回复回退到正常传递。当显式启用 `block` 流式传输时，OpenClaw 跳过预览流以避免双重流式传输。
 
   </Accordion>
 
@@ -953,22 +888,19 @@ Modal 表单：
     配置路径：
 
     - `channels.discord.execApprovals.enabled`
-    - `channels.discord.execApprovals.approvers`
+    - `channels.discord.execApprovals.approvers`（可选；在可能时回退到 `commands.ownerAllowFrom`）
     - `channels.discord.execApprovals.target`（`dm` | `channel` | `both`，默认：`dm`）
     - `agentFilter`、`sessionFilter`、`cleanupAfterResolve`
 
-    当 `target` 为 `channel` 或 `both` 时，审批提示在频道中可见。只有配置的审批者可以使用按钮；其他用户收到临时拒绝。审批提示包含命令文本，所以仅在可信频道中启用频道传递。如果无法从会话键推导出频道 ID，OpenClaw 回退到 DM 传递。
+    当 `enabled` 未设置或为 `"auto"` 且至少有一个审批者可以解析时，Discord 自动启用原生 exec 审批——来自 `execApprovals.approvers` 或 `commands.ownerAllowFrom`。Discord 不从频道 `allowFrom`、旧版 `dm.allowFrom` 或直接消息 `defaultTo` 推断 exec 审批者。显式设置 `enabled: false` 以禁用 Discord 作为原生审批客户端。
 
-    此处理程序的 Gateway 授权使用与其他 Gateway 客户端相同的共享凭据解析规约：
+    当 `target` 为 `channel` 或 `both` 时，审批提示在频道中可见。只有解析的审批者可以使用按钮；其他用户收到临时拒绝。审批提示包含命令文本，所以仅在可信频道中启用频道传递。如果无法从会话键推导出频道 ID，OpenClaw 回退到 DM 传递。
 
-    - 环境变量优先的本地认证（`OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD` 然后 `gateway.auth.*`）
-    - 本地模式中，仅当 `gateway.auth.*` 未设置时，`gateway.remote.*` 可作为回退；已配置但未解析的本地 SecretRef 会关闭失败
-    - 适用时通过 `gateway.remote.*` 支持远程模式
-    - URL 覆盖是安全的：CLI 覆盖不重用隐式凭据，环境变量覆盖仅使用环境变量凭据
+    Discord 还呈现其他聊天频道使用的共享审批按钮。原生 Discord 适配器主要添加审批者 DM 路由和频道扇出。当这些按钮存在时，它们是主要的审批 UX；OpenClaw 只有在工具结果显示聊天审批不可用或手动审批是唯一路径时才包含手动 `/approve` 命令。
 
-    如果审批因未知审批 ID 失败，请验证审批者列表和功能启用状态。
+    Gateway 认证和审批解析遵循共享 Gateway 客户端合约（`plugin:` ID 通过 `plugin.approval.resolve` 解析；其他 ID 通过 `exec.approval.resolve`）。审批默认在 30 分钟后过期。
 
-    相关文档：[Exec approvals](/tools/exec-approvals)
+    参见 [Exec approvals](/tools/exec-approvals)。
 
   </Accordion>
 </AccordionGroup>
@@ -984,6 +916,8 @@ Discord 消息操作包括消息传递、频道管理、审核、presence 和元
 - 审核：`timeout`、`kick`、`ban`
 - presence：`setPresence`
 
+`event-create` 操作接受可选的 `image` 参数（URL 或本地文件路径）来设置计划活动的封面图片。
+
 操作门控位于 `channels.discord.actions.*` 下。
 
 默认门控行为：
@@ -997,7 +931,7 @@ Discord 消息操作包括消息传递、频道管理、审核、presence 和元
 
 ## 组件 v2 UI
 
-OpenClaw 使用 Discord 组件 v2 进行 exec 审批和跨上下文标记。Discord 消息操作也可以接受 `components` 用于自定义 UI（高级；需要 Carbon 组件实例），而旧版 `embeds` 仍然可用，但不推荐。
+OpenClaw 使用 Discord 组件 v2 进行 exec 审批和跨上下文标记。Discord 消息操作也可以接受 `components` 用于自定义 UI（高级；需要通过 discord 工具构建组件负载），而旧版 `embeds` 仍然可用，但不推荐。
 
 - `channels.discord.ui.components.accentColor` 设置 Discord 组件容器使用的强调色（十六进制）。
 - 使用 `channels.discord.accounts.<id>.ui.components.accentColor` 按账户设置。
@@ -1019,17 +953,28 @@ OpenClaw 使用 Discord 组件 v2 进行 exec 审批和跨上下文标记。Disc
 }
 ```
 
-## 语音频道
+## 语音
 
-OpenClaw 可以加入 Discord 语音频道进行实时、持续的对话。这与语音消息附件是分开的。
+Discord 有两个不同的语音界面：实时**语音频道**（持续对话）和**语音消息附件**（波形预览格式）。Gateway 都支持。
 
-要求：
+### 语音频道
 
-- 启用原生命令（`commands.native` 或 `channels.discord.commands.native`）。
-- 配置 `channels.discord.voice`。
-- bot 需要在目标语音频道中拥有 Connect + Speak 权限。
+设置清单：
 
-使用 Discord 专用原生命令 `/vc join|leave|status` 控制会话。该命令使用账户默认 agent，并遵循与其他 Discord 命令相同的 allowlist 和群组策略规则。
+1. 在 Discord Developer Portal 中启用 Message Content Intent。
+2. 使用角色/用户 allowlist 时启用 Server Members Intent。
+3. 邀请 bot 时使用 `bot` 和 `applications.commands` 权限范围。
+4. 在目标语音频道中授予 Connect、Speak、Send Messages 和 Read Message History 权限。
+5. 启用原生命令（`commands.native` 或 `channels.discord.commands.native`）。
+6. 配置 `channels.discord.voice`。
+
+使用 `/vc join|leave|status` 控制会话。该命令使用账户默认 agent，并遵循与其他 Discord 命令相同的 allowlist 和群组策略规则。
+
+```bash
+/vc join channel:<voice-channel-id>
+/vc status
+/vc leave
+```
 
 自动加入示例：
 
@@ -1039,6 +984,7 @@ OpenClaw 可以加入 Discord 语音频道进行实时、持续的对话。这�
     discord: {
       voice: {
         enabled: true,
+        model: "openai/gpt-5.4-mini",
         autoJoin: [
           {
             guildId: "123456789012345678",
@@ -1049,7 +995,7 @@ OpenClaw 可以加入 Discord 语音频道进行实时、持续的对话。这�
         decryptionFailureTolerance: 24,
         tts: {
           provider: "openai",
-          openai: { voice: "alloy" },
+          openai: { voice: "onyx" },
         },
       },
     },
@@ -1060,14 +1006,26 @@ OpenClaw 可以加入 Discord 语音频道进行实时、持续的对话。这�
 注意：
 
 - `voice.tts` 仅覆盖语音播放的 `messages.tts`。
+- `voice.model` 仅覆盖 Discord 语音频道响应使用的 LLM。留空时继承路由的 agent 模型。
+- STT 使用 `tools.media.audio`；`voice.model` 不影响转录。
 - 语音转录轮次从 Discord `allowFrom`（或 `dm.allowFrom`）中推导所有者状态；非所有者发言者无法访问仅所有者工具（例如 `gateway` 和 `cron`）。
 - 语音默认启用；设置 `channels.discord.voice.enabled=false` 禁用。
 - `voice.daveEncryption` 和 `voice.decryptionFailureTolerance` 传递给 `@discordjs/voice` 加入选项。
 - `@discordjs/voice` 默认值：未设置时 `daveEncryption=true` 和 `decryptionFailureTolerance=24`。
 - OpenClaw 还监视接收解密失败，并在短时间内重复失败后通过离开/重新加入语音频道自动恢复。
-- 如果接收日志反复显示 `DecryptionFailed(UnencryptedWhenPassthroughDisabled)`，这可能是 [discord.js #11419](https://github.com/discordjs/discord.js/issues/11419) 中跟踪的上游 `@discordjs/voice` 接收错误。
+- 如果接收日志反复显示 `DecryptionFailed(UnencryptedWhenPassthroughDisabled)`，请更新后收集依赖报告和日志。捆绑的 `@discordjs/voice` 包含来自 discord.js PR #11449 的上游填充修复，关闭了 discord.js issue #11419。
 
-## 语音消息
+语音频道管道：
+
+- Discord PCM 捕获转换为 WAV 临时文件。
+- `tools.media.audio` 处理 STT，例如 `openai/gpt-4o-mini-transcribe`。
+- 转录通过正常的 Discord 入站和路由发送。
+- `voice.model`（如果设置）仅覆盖此语音频道轮次的响应 LLM。
+- `voice.tts` 合并在 `messages.tts` 之上；生成的音频在加入的频道中播放。
+
+各组件的凭据按各自解析：LLM 路由认证用于 `voice.model`，STT 认证用于 `tools.media.audio`，TTS 认证用于 `messages.tts`/`voice.tts`。
+
+### 语音消息
 
 Discord 语音消息显示波形预览，需要 OGG/Opus 音频和元数据。OpenClaw 自动生成波形，但需要 gateway 主机上可用的 `ffmpeg` 和 `ffprobe` 来检查和转换音频文件。
 
@@ -1200,13 +1158,11 @@ openclaw logs --follow
   </Accordion>
 </AccordionGroup>
 
-## 配置参考指针
+## 配置参考
 
-主要参考：
+主要参考：[配置参考 - Discord](/gateway/config-channels#discord)。
 
-- [配置参考 - Discord](/gateway/configuration-reference#discord)
-
-Discord 高优先级字段：
+<Accordion title="Discord 高优先级字段">
 
 - 启动/认证：`enabled`、`token`、`accounts.*`、`allowBots`
 - 策略：`groupPolicy`、`dm.*`、`guilds.*`、`guilds.*.channels.*`
@@ -1223,6 +1179,8 @@ Discord 高优先级字段：
 - UI：`ui.components.accentColor`
 - 功能：`threadBindings`、顶层 `bindings[]`（`type: "acp"`）、`pluralkit`、`execApprovals`、`intents`、`agentComponents`、`heartbeat`、`responsePrefix`
 
+</Accordion>
+
 ## 安全和运维
 
 - 将 bot token 视为密钥（在受监督的环境中优先使用 `DISCORD_BOT_TOKEN`）。
@@ -1231,10 +1189,23 @@ Discord 高优先级字段：
 
 ## 相关
 
-- [Pairing](/channels/pairing)
-- [Groups](/channels/groups)
-- [Channel 路由](/channels/channel-routing)
-- [Security](/gateway/security)
-- [多 Agent 路由](/concepts/multi-agent)
-- [故障排除](/channels/troubleshooting)
-- [Slash commands](/tools/slash-commands)
+<CardGroup cols={2}>
+  <Card title="Pairing" icon="link" href="/channels/pairing">
+    将 Discord 用户与 Gateway 配对。
+  </Card>
+  <Card title="Groups" icon="users" href="/channels/groups">
+    群聊和 allowlist 行为。
+  </Card>
+  <Card title="Channel routing" icon="route" href="/channels/channel-routing">
+    将入站消息路由到 Agents。
+  </Card>
+  <Card title="Security" icon="shield" href="/gateway/security">
+    威胁模型和安全加固。
+  </Card>
+  <Card title="Multi-agent routing" icon="sitemap" href="/concepts/multi-agent">
+    将公会和频道映射到 Agents。
+  </Card>
+  <Card title="Slash commands" icon="terminal" href="/tools/slash-commands">
+    原生命令行为。
+  </Card>
+</CardGroup>

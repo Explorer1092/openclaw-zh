@@ -1,16 +1,21 @@
 ---
-mmh3_hash: "5c9a79de2f8c71e88e66856831d062d1"
-title: "聊天频道"
-sidebarTitle: "聊天频道"
+mmh3_hash: "f967edc194da72060346175f0bdbdb14"
 summary: "OpenClaw 可以连接的消息平台"
 read_when:
   - 选择 OpenClaw 的聊天频道
   - 需要支持的消息平台快速概览
+title: "聊天频道"
+sidebarTitle: "聊天频道"
 ---
-# 聊天频道
 
 OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 Channel 通过 Gateway 连接。
 文本在所有平台都支持；媒体和反应功能因 Channel 而异。
+
+## 投递说明
+
+- 包含 Markdown 图片语法（如 `![alt](url)`）的 Telegram 回复在可能的情况下会在最终出站路径上转换为媒体回复。
+- Slack 多人私信作为群聊路由，因此群组策略、提及行为和群组会话规则适用于 MPIM 对话。
+- WhatsApp 设置是按需安装的：在 Baileys 运行时依赖项暂存之前，入门引导可以显示设置流程，并且 Gateway 只在 Channel 实际激活时才加载 WhatsApp 运行时。
 
 ## 支持的 Channels
 

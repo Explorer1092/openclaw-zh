@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "02efc0ed076351062f333d606fc1232f"
+mmh3_hash: "8771e828521f2142e9f2a33438eb1198"
 summary: "配对概述：批准谁可以私信您 + 哪些节点可以加入"
 read_when:
   - 设置 DM 访问控制
@@ -8,20 +8,18 @@ read_when:
 title: "Pairing"
 ---
 
-# Pairing
-
 "配对"是 OpenClaw 的显式**所有者批准**步骤。它用于两个地方：
 
 1. **DM 配对**（谁被允许与机器人交谈）
 2. **节点配对**（哪些设备/节点被允许加入 Gateway 网络）
 
-安全上下文：[安全](/gateway/security)
+安全上下文：[Security](/gateway/security)
 
 ## 1) DM 配对（入站聊天访问）
 
 当 Channel 配置为 DM 策略 `pairing` 时，未知发送者获得一个短代码，并且在您批准之前他们的消息**不会被处理**。
 
-默认 DM 策略记录在：[安全](/gateway/security)
+默认 DM 策略记录在：[Security](/gateway/security)
 
 配对代码：
 
@@ -54,8 +52,9 @@ openclaw pairing approve telegram <CODE>
 
 将这些视为敏感信息（它们控制对您的助手的访问）。
 
-重要：此存储用于 DM 访问。群组授权是单独的。
-批准 DM 配对代码不会自动允许该发送者在群组中运行命令或控制机器人。对于群组访问，请配置 Channel 的显式群组 allowlist（例如 `groupAllowFrom`、`groups` 或根据 Channel 的每个群组/每个话题覆盖）。
+<Note>
+此存储用于 DM 访问。群组授权是单独的。批准 DM 配对代码不会自动允许该发送者在群组中运行命令或控制机器人。对于群组访问，请配置 Channel 的显式群组 allowlist（例如 `groupAllowFrom`、`groups` 或根据 Channel 的每个群组/每个话题覆盖）。
+</Note>
 
 ## 2) 节点设备配对（iOS/Android/macOS/无头节点）
 
@@ -84,6 +83,7 @@ openclaw pairing approve telegram <CODE>
 - 引导权限范围检查带角色前缀，而非单一扁平的权限池：
   operator 权限范围条目仅满足 operator 请求，非 operator 角色
   仍需在自己的角色前缀下请求权限范围
+- 后续的令牌轮换/撤销仍受设备已批准角色合约和调用者 Session 的 operator 范围两者约束
 
 在其有效期内，将设置代码视为密码。
 
@@ -96,6 +96,28 @@ openclaw devices reject <requestId>
 ```
 
 如果同一设备以不同的认证详情重试（例如不同的角色/权限范围/公钥），之前的待处理请求会被取代，并创建新的 `requestId`。
+
+<Note>
+已配对的设备不会静默获得更广泛的访问权限。如果它重新连接时请求更多权限范围或更广泛的角色，OpenClaw 保持现有批准不变，并创建新的待处理升级请求。在批准之前，使用 `openclaw devices list` 比较当前已批准的访问权限与新请求的访问权限。
+</Note>
+
+### 可选的可信 CIDR 节点自动批准
+
+设备配对默认情况下仍为手动。对于严格控制的节点网络，您可以使用显式 CIDR 或精确 IP 选择启用首次节点自动批准：
+
+```json5
+{
+  gateway: {
+    nodes: {
+      pairing: {
+        autoApproveCidrs: ["192.168.1.0/24"],
+      },
+    },
+  },
+}
+```
+
+这仅适用于没有请求权限范围的新 `role: node` 配对请求。Operator、浏览器、Control UI 和 WebChat 客户端仍需手动批准。角色、权限范围、元数据和公钥更改仍需手动批准。
 
 ### 节点配对状态存储
 
@@ -111,8 +133,8 @@ openclaw devices reject <requestId>
 
 ## 相关文档
 
-- 安全模型 + 提示注入：[安全](/gateway/security)
-- 安全更新（运行 doctor）：[更新](/install/updating)
+- 安全模型 + 提示注入：[Security](/gateway/security)
+- 安全更新（运行 doctor）：[Updating](/install/updating)
 - Channel 配置：
   - Telegram：[Telegram](/channels/telegram)
   - WhatsApp：[WhatsApp](/channels/whatsapp)

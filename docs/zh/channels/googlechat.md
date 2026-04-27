@@ -1,13 +1,10 @@
 ---
-title: "Google Chat (Chat API)"
-sidebarTitle: "Google Chat"
-mmh3_hash: "9a214c6b9d4795d65ba3a6e99d18b141"
+mmh3_hash: "aecf8b9f20df130d75275e74fbd65abe"
 summary: "Google Chat 应用支持状态、功能和配置"
 read_when:
   - 使用 Google Chat channel 功能时
+title: "Google Chat"
 ---
-
-# Google Chat (Chat API)
 
 状态：通过 Google Chat API Webhook（仅 HTTP）支持私信 + 群组空间。
 
@@ -203,6 +200,7 @@ your-domain.com {
 - 如果未设置 `webhookPath`，默认 Webhook 路径为 `/googlechat`。
 - `dangerouslyAllowNameMatching` 为 allowlist 重新启用可变电子邮件主账号匹配（紧急兼容模式）。
 - 当启用 `actions.reactions` 时，可通过 `reactions` 工具和 `channels action` 使用 Reaction。
+- 消息操作公开了用于文本的 `send` 和用于显式附件发送的 `upload-file`。`upload-file` 接受 `media` / `filePath` / `path` 以及可选的 `message`、`filename` 和线程目标。
 - `typingIndicator` 支持 `none`、`message`（默认）和 `reaction`（reaction 需要用户 OAuth）。
 - 附件通过 Chat API 下载并存储在媒体管道中（大小受 `mediaMaxMb` 限制）。
 

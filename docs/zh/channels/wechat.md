@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "445205c2462d653ed1f05918db8faaf2"
+mmh3_hash: "b020c9dd0ca10af92690d2907c97b62d"
 summary: "通过外部 openclaw-weixin 插件设置 WeChat Channel"
 read_when:
   - 您想将 OpenClaw 连接到 WeChat 或微信
@@ -7,8 +7,6 @@ read_when:
   - 您需要了解外部 Channel 插件如何在 Gateway 旁边运行
 title: "WeChat"
 ---
-
-# WeChat
 
 OpenClaw 通过腾讯的外部 `@tencent-weixin/openclaw-weixin` Channel 插件连接到 WeChat。
 

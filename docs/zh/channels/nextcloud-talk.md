@@ -1,13 +1,10 @@
 ---
-title: "Nextcloud Talk"
-sidebarTitle: "Nextcloud Talk"
-mmh3_hash: "155a99ebe94ce84ce8125260da250f42"
+mmh3_hash: "0577ae8566e2aa83a2903dd6213ce304"
 summary: "Nextcloud Talk 支持状态、功能和配置"
 read_when:
   - 开发 Nextcloud Talk Channel 功能
+title: "Nextcloud Talk"
 ---
-
-# Nextcloud Talk
 
 状态：内置插件（Webhook bot）。支持私信、聊天室、反应和 markdown 消息。
 
@@ -46,6 +43,31 @@ openclaw plugins install ./path/to/local/nextcloud-talk-plugin
 4. 配置 OpenClaw：
    - 配置：`channels.nextcloud-talk.baseUrl` + `channels.nextcloud-talk.botSecret`
    - 或环境变量：`NEXTCLOUD_TALK_BOT_SECRET`（仅默认账户）
+
+   CLI 设置：
+
+   ```bash
+   openclaw channels add --channel nextcloud-talk \
+     --url https://cloud.example.com \
+     --token "<shared-secret>"
+   ```
+
+   等效的显式字段：
+
+   ```bash
+   openclaw channels add --channel nextcloud-talk \
+     --base-url https://cloud.example.com \
+     --secret "<shared-secret>"
+   ```
+
+   文件支持的密钥：
+
+   ```bash
+   openclaw channels add --channel nextcloud-talk \
+     --base-url https://cloud.example.com \
+     --secret-file /path/to/nextcloud-talk-secret
+   ```
+
 5. 重启 Gateway（或完成初始化）。
 
 最小配置：
@@ -100,14 +122,14 @@ openclaw plugins install ./path/to/local/nextcloud-talk-plugin
 
 ## 功能
 
-| 功能 | 状态 |
-| --- | --- |
-| 私信 | 支持 |
-| 聊天室 | 支持 |
-| 话题串 | 不支持 |
-| 媒体 | 仅 URL |
-| 反应 | 支持 |
-| 原生命令 | 不支持 |
+| 功能       | 状态    |
+| ---------- | ------- |
+| 私信       | 支持    |
+| 聊天室     | 支持    |
+| 话题串     | 不支持  |
+| 媒体       | 仅 URL  |
+| 反应       | 支持    |
+| 原生命令   | 不支持  |
 
 ## 配置参考（Nextcloud Talk）
 

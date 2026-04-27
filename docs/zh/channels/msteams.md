@@ -1,17 +1,10 @@
 ---
-title: "Microsoft Teams"
-sidebarTitle: "Microsoft Teams"
-mmh3_hash: "4034235ce3803b0a726b7da24d35f256"
+mmh3_hash: "80eb0d3abcb8a1a0cc32635394ca814b"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when:
   - 开发 Microsoft Teams Channel 功能
+title: "Microsoft Teams"
 ---
-
-# Microsoft Teams
-
-> "Abandon all hope, ye who enter here."
-
-更新时间：2026-03-25
 
 状态：支持文本 + DM 附件；Channel/群组文件发送需要 `sharePointSiteId` + Graph 权限（参见[在群聊中发送文件](#sending-files-in-group-chats)）。投票通过 Adaptive Cards 发送。消息操作提供显式 `upload-file` 用于文件优先发送。
 
@@ -33,25 +26,68 @@ openclaw plugins install ./path/to/local/msteams-plugin
 
 详情：[插件](/tools/plugin)
 
-## 快速设置（初学者）
+## 快速设置
 
-1. 确认 Microsoft Teams 插件可用。
-   - 当前打包的 OpenClaw 版本已内置。
-   - 旧版/自定义安装可使用上述命令手动添加。
-2. 创建一个 **Azure Bot**（App ID + client secret + tenant ID）。
-3. 使用这些凭据配置 OpenClaw。
-4. 通过公共 URL 或隧道公开 `/api/messages`（默认端口 3978）。
-5. 安装 Teams 应用包并启动 Gateway。
+[`@microsoft/teams.cli`](https://www.npmjs.com/package/@microsoft/teams.cli) 在一个命令中处理 bot 注册、manifest 创建和凭据生成。
 
-最小配置：
+**1. 安装并登录**
+
+```bash
+npm install -g @microsoft/teams.cli@preview
+teams login
+teams status   # 验证已登录并查看您的租户信息
+```
+
+<Note>
+Teams CLI 目前处于预览版。命令和标志可能在版本之间发生变化。
+</Note>
+
+**2. 启动隧道**（Teams 无法访问 localhost）
+
+如果尚未安装和认证 devtunnel CLI，请先操作（[入门指南](https://learn.microsoft.com/en-us/azure/developer/dev-tunnels/get-started)）。
+
+```bash
+# 一次性设置（跨会话持久 URL）：
+devtunnel create my-openclaw-bot --allow-anonymous
+devtunnel port create my-openclaw-bot -p 3978 --protocol auto
+
+# 每次开发会话：
+devtunnel host my-openclaw-bot
+# 您的端点：https://<tunnel-id>.devtunnels.ms/api/messages
+```
+
+<Note>
+`--allow-anonymous` 是必需的，因为 Teams 无法使用 devtunnels 进行认证。每个入站 bot 请求仍然由 Teams SDK 自动验证。
+</Note>
+
+替代方案：`ngrok http 3978` 或 `tailscale funnel 3978`（但这些每次会话可能会更改 URL）。
+
+**3. 创建应用**
+
+```bash
+teams app create \
+  --name "OpenClaw" \
+  --endpoint "https://<your-tunnel-url>/api/messages"
+```
+
+此单个命令：
+
+- 创建 Entra ID（Azure AD）应用程序
+- 生成客户端密钥
+- 构建并上传 Teams 应用 manifest（含图标）
+- 注册 bot（默认 Teams 管理——不需要 Azure 订阅）
+
+输出将显示 `CLIENT_ID`、`CLIENT_SECRET`、`TENANT_ID` 和 **Teams App ID**——记录这些以备后续步骤使用。它还会提议直接在 Teams 中安装应用。
+
+**4. 配置 OpenClaw**，使用输出中的凭据：
 
 ```json5
 {
   channels: {
     msteams: {
       enabled: true,
-      appId: "<APP_ID>",
-      appPassword: "<APP_PASSWORD>",
+      appId: "<CLIENT_ID>",
+      appPassword: "<CLIENT_SECRET>",
       tenantId: "<TENANT_ID>",
       webhook: { port: 3978, path: "/api/messages" },
     },
@@ -59,7 +95,29 @@ openclaw plugins install ./path/to/local/msteams-plugin
 }
 ```
 
-注意：群聊默认被阻止（`channels.msteams.groupPolicy: "allowlist"`）。要允许群组回复，设置 `channels.msteams.groupAllowFrom`（或使用 `groupPolicy: "open"` 允许任何成员，需要提及）。
+或直接使用环境变量：`MSTEAMS_APP_ID`、`MSTEAMS_APP_PASSWORD`、`MSTEAMS_TENANT_ID`。
+
+**5. 在 Teams 中安装应用**
+
+`teams app create` 会提示您安装应用——选择"Install in Teams"。如果您跳过了，可以稍后获取链接：
+
+```bash
+teams app get <teamsAppId> --install-link
+```
+
+**6. 验证一切正常**
+
+```bash
+teams app doctor <teamsAppId>
+```
+
+这会对 bot 注册、AAD 应用配置、manifest 有效性和 SSO 设置运行诊断。
+
+对于生产部署，考虑使用[联合认证](#federated-authentication-certificate-plus-managed-identity)（证书或托管身份）代替客户端密钥。
+
+<Note>
+群聊默认被阻止（`channels.msteams.groupPolicy: "allowlist"`）。要允许群组回复，设置 `channels.msteams.groupAllowFrom`，或使用 `groupPolicy: "open"` 允许任何成员（需要提及）。
+</Note>
 
 ## 目标
 
@@ -135,34 +193,37 @@ openclaw plugins install ./path/to/local/msteams-plugin
 }
 ```
 
-## 工作原理
+<details>
+<summary><strong>手动设置（不使用 Teams CLI）</strong></summary>
 
-1. 安装 Microsoft Teams 插件。
+如果无法使用 Teams CLI，可以通过 Azure Portal 手动设置 bot。
+
+### 工作原理
+
+1. 确认 Microsoft Teams 插件可用（当前版本已内置）。
 2. 创建一个 **Azure Bot**（App ID + secret + tenant ID）。
 3. 构建一个引用 bot 并包含以下 RSC 权限的 **Teams 应用包**。
 4. 将 Teams 应用上传/安装到团队（或用于 DM 的个人范围）。
 5. 在 `~/.openclaw/openclaw.json` 中配置 `msteams`（或环境变量）并启动 Gateway。
 6. Gateway 默认在 `/api/messages` 上监听 Bot Framework Webhook 流量。
 
-## Azure Bot 设置（先决条件）
-
-在配置 OpenClaw 之前，您需要创建 Azure Bot 资源。
-
 ### 步骤 1：创建 Azure Bot
 
 1. 前往 [创建 Azure Bot](https://portal.azure.com/#create/Microsoft.AzureBot)
 2. 填写**基础**选项卡：
 
-   | 字段 | 值 |
-   | --- | --- |
-   | **Bot handle** | 您的 bot 名称，例如 `openclaw-msteams`（必须唯一） |
-   | **Subscription** | 选择您的 Azure 订阅 |
-   | **Resource group** | 创建新的或使用现有的 |
-   | **Pricing tier** | **Free** 用于开发/测试 |
-   | **Type of App** | **Single Tenant**（推荐——见下面的注意） |
-   | **Creation type** | **Create new Microsoft App ID** |
+   | 字段               | 值                                              |
+   | ------------------ | ----------------------------------------------- |
+   | **Bot handle**     | 您的 bot 名称，例如 `openclaw-msteams`（必须唯一） |
+   | **Subscription**   | 选择您的 Azure 订阅                              |
+   | **Resource group** | 创建新的或使用现有的                             |
+   | **Pricing tier**   | **Free** 用于开发/测试                           |
+   | **Type of App**    | **Single Tenant**（推荐——见下面的注意）           |
+   | **Creation type**  | **Create new Microsoft App ID**                 |
 
-> **弃用通知：** 2025-07-31 之后不再创建新的多租户 bot。新 bot 使用 **Single Tenant**。
+<Warning>
+2025-07-31 之后不再创建新的多租户 bot。新 bot 使用 **Single Tenant**。
+</Warning>
 
 3. 点击 **Review + create** → **Create**（等待约 1-2 分钟）
 
@@ -179,7 +240,7 @@ openclaw plugins install ./path/to/local/msteams-plugin
 1. 在 Azure Bot → **Configuration** 中
 2. 将 **Messaging endpoint** 设置为您的 Webhook URL：
    - 生产环境：`https://your-domain.com/api/messages`
-   - 本地开发：使用隧道（见下面的[本地开发](#local-development-tunneling)）
+   - 本地开发：使用隧道（见[本地开发（隧道）](#local-development-tunneling)）
 
 ### 步骤 4：启用 Teams Channel
 
@@ -187,103 +248,249 @@ openclaw plugins install ./path/to/local/msteams-plugin
 2. 点击 **Microsoft Teams** → Configure → Save
 3. 接受服务条款
 
+### 步骤 5：构建 Teams 应用 Manifest
+
+- 包含一个 `bot` 条目，其中 `botId = <App ID>`。
+- 范围：`personal`、`team`、`groupChat`。
+- `supportsFiles: true`（个人范围文件处理所需）。
+- 添加 RSC 权限（参见[当前 Teams RSC 权限](#current-teams-rsc-permissions-manifest)）。
+- 创建图标：`outline.png`（32x32）和 `color.png`（192x192）。
+- 将所有三个文件一起压缩：`manifest.json`、`outline.png`、`color.png`。
+
+### 步骤 6：配置 OpenClaw
+
+```json5
+{
+  channels: {
+    msteams: {
+      enabled: true,
+      appId: "<APP_ID>",
+      appPassword: "<APP_PASSWORD>",
+      tenantId: "<TENANT_ID>",
+      webhook: { port: 3978, path: "/api/messages" },
+    },
+  },
+}
+```
+
+环境变量：`MSTEAMS_APP_ID`、`MSTEAMS_APP_PASSWORD`、`MSTEAMS_TENANT_ID`。
+
+### 步骤 7：运行 Gateway
+
+当插件已安装且存在带有凭据的 `msteams` 配置时，Teams Channel 自动启动。
+
+</details>
+
+## 联合认证（证书 + 托管身份）
+
+> 2026.3.24 版本新增
+
+对于生产部署，OpenClaw 支持**联合认证**，作为客户端密钥的更安全替代方案。提供两种方法：
+
+### 选项 A：基于证书的认证
+
+使用在 Entra ID 应用注册中注册的 PEM 证书。
+
+**设置：**
+
+1. 生成或获取证书（带私钥的 PEM 格式）。
+2. 在 Entra ID → App Registration → **Certificates & secrets** → **Certificates** → 上传公共证书。
+
+**配置：**
+
+```json5
+{
+  channels: {
+    msteams: {
+      enabled: true,
+      appId: "<APP_ID>",
+      tenantId: "<TENANT_ID>",
+      authType: "federated",
+      certificatePath: "/path/to/cert.pem",
+      webhook: { port: 3978, path: "/api/messages" },
+    },
+  },
+}
+```
+
+**环境变量：**
+
+- `MSTEAMS_AUTH_TYPE=federated`
+- `MSTEAMS_CERTIFICATE_PATH=/path/to/cert.pem`
+
+### 选项 B：Azure 托管身份
+
+使用 Azure 托管身份进行无密码认证。这非常适合 Azure 基础设施上的部署（AKS、App Service、Azure VM），其中托管身份可用。
+
+**工作原理：**
+
+1. bot Pod/VM 具有托管身份（系统分配或用户分配）。
+2. **联合身份凭据**将托管身份链接到 Entra ID 应用注册。
+3. 运行时，OpenClaw 使用 `@azure/identity` 从 Azure IMDS 端点（`169.254.169.254`）获取 token。
+4. token 被传递给 Teams SDK 用于 bot 认证。
+
+**先决条件：**
+
+- 启用了托管身份的 Azure 基础设施（AKS 工作负载身份、App Service、VM）
+- 在 Entra ID 应用注册上创建的联合身份凭据
+- 从 Pod/VM 访问 IMDS（`169.254.169.254:80`）的网络访问
+
+**配置（系统分配托管身份）：**
+
+```json5
+{
+  channels: {
+    msteams: {
+      enabled: true,
+      appId: "<APP_ID>",
+      tenantId: "<TENANT_ID>",
+      authType: "federated",
+      useManagedIdentity: true,
+      webhook: { port: 3978, path: "/api/messages" },
+    },
+  },
+}
+```
+
+**配置（用户分配托管身份）：**
+
+```json5
+{
+  channels: {
+    msteams: {
+      enabled: true,
+      appId: "<APP_ID>",
+      tenantId: "<TENANT_ID>",
+      authType: "federated",
+      useManagedIdentity: true,
+      managedIdentityClientId: "<MI_CLIENT_ID>",
+      webhook: { port: 3978, path: "/api/messages" },
+    },
+  },
+}
+```
+
+**环境变量：**
+
+- `MSTEAMS_AUTH_TYPE=federated`
+- `MSTEAMS_USE_MANAGED_IDENTITY=true`
+- `MSTEAMS_MANAGED_IDENTITY_CLIENT_ID=<client-id>`（仅用户分配）
+
+### AKS 工作负载身份设置
+
+对于使用工作负载身份的 AKS 部署：
+
+1. **在 AKS 集群上启用工作负载身份**。
+2. **在 Entra ID 应用注册上创建联合身份凭据：**
+
+   ```bash
+   az ad app federated-credential create --id <APP_OBJECT_ID> --parameters '{
+     "name": "my-bot-workload-identity",
+     "issuer": "<AKS_OIDC_ISSUER_URL>",
+     "subject": "system:serviceaccount:<NAMESPACE>:<SERVICE_ACCOUNT>",
+     "audiences": ["api://AzureADTokenExchange"]
+   }'
+   ```
+
+3. **使用应用客户端 ID 注释 Kubernetes 服务账户：**
+
+   ```yaml
+   apiVersion: v1
+   kind: ServiceAccount
+   metadata:
+     name: my-bot-sa
+     annotations:
+       azure.workload.identity/client-id: "<APP_CLIENT_ID>"
+   ```
+
+4. **为工作负载身份注入标记 Pod：**
+
+   ```yaml
+   metadata:
+     labels:
+       azure.workload.identity/use: "true"
+   ```
+
+5. **确保网络访问** IMDS（`169.254.169.254`）——如果使用 NetworkPolicy，添加允许流量到 `169.254.169.254/32` 的端口 80 出口规则。
+
+### 认证类型比较
+
+| 方法               | 配置                                               | 优点                            | 缺点                           |
+| ------------------ | -------------------------------------------------- | ------------------------------- | ------------------------------ |
+| **客户端密钥**     | `appPassword`                                      | 设置简单                        | 需要密钥轮换，安全性较低       |
+| **证书**           | `authType: "federated"` + `certificatePath`        | 网络上无共享密钥                | 证书管理开销                   |
+| **托管身份**       | `authType: "federated"` + `useManagedIdentity`     | 无密码，无需管理密钥            | 需要 Azure 基础设施            |
+
+**默认行为：** 当未设置 `authType` 时，OpenClaw 默认使用客户端密钥认证。现有配置无需更改即可继续使用。
+
 ## 本地开发（隧道）
 
-Teams 无法访问 `localhost`。使用隧道进行本地开发：
-
-**选项 A：ngrok**
+Teams 无法访问 `localhost`。使用持久开发隧道确保 URL 跨会话保持一致：
 
 ```bash
-ngrok http 3978
-# 复制 https URL，例如 https://abc123.ngrok.io
-# 将消息端点设置为：https://abc123.ngrok.io/api/messages
+# 一次性设置：
+devtunnel create my-openclaw-bot --allow-anonymous
+devtunnel port create my-openclaw-bot -p 3978 --protocol auto
+
+# 每次开发会话：
+devtunnel host my-openclaw-bot
 ```
 
-**选项 B：Tailscale Funnel**
+替代方案：`ngrok http 3978` 或 `tailscale funnel 3978`（每次会话 URL 可能更改）。
+
+如果您的隧道 URL 发生变化，更新端点：
 
 ```bash
-tailscale funnel 3978
-# 使用您的 Tailscale funnel URL 作为消息端点
+teams app update <teamsAppId> --endpoint "https://<new-url>/api/messages"
 ```
-
-## Teams Developer Portal（替代方案）
-
-除了手动创建 manifest ZIP，您可以使用 [Teams Developer Portal](https://dev.teams.microsoft.com/apps)：
-
-1. 点击 **+ New app**
-2. 填写基本信息（名称、描述、开发者信息）
-3. 前往 **App features** → **Bot**
-4. 选择 **Enter a bot ID manually** 并粘贴您的 Azure Bot App ID
-5. 勾选范围：**Personal**、**Team**、**Group Chat**
-6. 点击 **Distribute** → **Download app package**
-7. 在 Teams 中：**Apps** → **Manage your apps** → **Upload a custom app** → 选择 ZIP
-
-这通常比手动编辑 JSON manifest 更容易。
 
 ## 测试 Bot
 
-**选项 A：Azure Web Chat（首先验证 Webhook）**
+**运行诊断：**
 
-1. 在 Azure Portal → 您的 Azure Bot 资源 → **Test in Web Chat**
-2. 发送消息——您应该看到响应
-3. 这在 Teams 设置之前确认您的 Webhook 端点工作正常
+```bash
+teams app doctor <teamsAppId>
+```
 
-**选项 B：Teams（应用安装后）**
+一次性检查 bot 注册、AAD 应用、manifest 和 SSO 配置。
 
-1. 安装 Teams 应用（旁加载或组织目录）
+**发送测试消息：**
+
+1. 安装 Teams 应用（使用 `teams app get <id> --install-link` 获取安装链接）
 2. 在 Teams 中找到 bot 并发送 DM
 3. 检查 Gateway 日志以查看传入活动
 
-## 设置（最小纯文本）
+## 环境变量
 
-1. **安装 Microsoft Teams 插件**
-   - 从 npm：`openclaw plugins install @openclaw/msteams`
-   - 从本地检出：`openclaw plugins install ./extensions/msteams`
+所有配置键都可以通过环境变量设置：
 
-2. **Bot 注册**
-   - 创建 Azure Bot（见上文）并记录：
-     - App ID
-     - Client secret（App password）
-     - Tenant ID（单租户）
+- `MSTEAMS_APP_ID`
+- `MSTEAMS_APP_PASSWORD`
+- `MSTEAMS_TENANT_ID`
+- `MSTEAMS_AUTH_TYPE`（可选：`"secret"` 或 `"federated"`）
+- `MSTEAMS_CERTIFICATE_PATH`（联合 + 证书）
+- `MSTEAMS_CERTIFICATE_THUMBPRINT`（可选，认证不需要）
+- `MSTEAMS_USE_MANAGED_IDENTITY`（联合 + 托管身份）
+- `MSTEAMS_MANAGED_IDENTITY_CLIENT_ID`（仅用户分配 MI）
 
-3. **Teams 应用 manifest**
-   - 包含一个 `bot` 条目，其中 `botId = <App ID>`。
-   - 范围：`personal`、`team`、`groupChat`。
-   - `supportsFiles: true`（个人范围文件处理所需）。
-   - 添加 RSC 权限（下文）。
-   - 创建图标：`outline.png`（32x32）和 `color.png`（192x192）。
-   - 将所有三个文件一起压缩：`manifest.json`、`outline.png`、`color.png`。
+## 成员信息操作
 
-4. **配置 OpenClaw**
+OpenClaw 为 Microsoft Teams 提供 Graph 支持的 `member-info` 操作，使 Agent 和自动化可以直接从 Microsoft Graph 解析 Channel 成员详细信息（显示名称、电子邮件、角色）。
 
-   ```json
-   {
-     "msteams": {
-       "enabled": true,
-       "appId": "<APP_ID>",
-       "appPassword": "<APP_PASSWORD>",
-       "tenantId": "<TENANT_ID>",
-       "webhook": { "port": 3978, "path": "/api/messages" }
-     }
-   }
-   ```
+要求：
 
-   您也可以使用环境变量代替配置键：
-   - `MSTEAMS_APP_ID`
-   - `MSTEAMS_APP_PASSWORD`
-   - `MSTEAMS_TENANT_ID`
+- `Member.Read.Group` RSC 权限（已在推荐 manifest 中）
+- 跨团队查找：`User.Read.All` Graph 应用程序权限加管理员同意
 
-5. **Bot 端点**
-   - 将 Azure Bot Messaging Endpoint 设置为：
-     - `https://<host>:3978/api/messages`（或您选择的路径/端口）。
-
-6. **运行 Gateway**
-   - 当插件已安装且存在带有凭据的 `msteams` 配置时，Teams Channel 自动启动。
+该操作受 `channels.msteams.actions.memberInfo` 控制（默认：当 Graph 凭据可用时启用）。
 
 ## 历史上下文
 
 - `channels.msteams.historyLimit` 控制有多少最近的 Channel/群组消息被包装到提示中。
 - 回退到 `messages.groupChat.historyLimit`。设置 `0` 禁用（默认 50）。
+- 获取的话题串历史按发送者 allowlist（`allowFrom` / `groupAllowFrom`）过滤，因此话题串上下文植入仅包含来自允许发送者的消息。
+- 引用附件上下文（从 Teams 回复 HTML 派生的 `ReplyTo*`）目前按接收时传递。
+- 换句话说，allowlist 控制谁可以触发 Agent；今天只有特定的补充上下文路径被过滤。
 - DM 历史可以用 `channels.msteams.dmHistoryLimit` 限制（用户回合）。每用户覆盖：`channels.msteams.dms["<user_id>"].historyLimit`。
 
 ## 当前 Teams RSC 权限（Manifest）
@@ -304,53 +511,59 @@ tailscale funnel 3978
 
 - `ChatMessage.Read.Chat`（Application）——接收所有群聊消息，无需 @mention
 
+通过 Teams CLI 添加 RSC 权限：
+
+```bash
+teams app rsc add <teamsAppId> ChannelMessage.Read.Group --type Application
+```
+
 ## Teams Manifest 示例（已编辑）
 
 最小、有效的示例，包含所需字段。替换 ID 和 URL。
 
-```json
+```json5
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.23/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.23",
-  "version": "1.0.0",
-  "id": "00000000-0000-0000-0000-000000000000",
-  "name": { "short": "OpenClaw" },
-  "developer": {
-    "name": "Your Org",
-    "websiteUrl": "https://example.com",
-    "privacyUrl": "https://example.com/privacy",
-    "termsOfUseUrl": "https://example.com/terms"
+  $schema: "https://developer.microsoft.com/en-us/json-schemas/teams/v1.23/MicrosoftTeams.schema.json",
+  manifestVersion: "1.23",
+  version: "1.0.0",
+  id: "00000000-0000-0000-0000-000000000000",
+  name: { short: "OpenClaw" },
+  developer: {
+    name: "Your Org",
+    websiteUrl: "https://example.com",
+    privacyUrl: "https://example.com/privacy",
+    termsOfUseUrl: "https://example.com/terms",
   },
-  "description": { "short": "OpenClaw in Teams", "full": "OpenClaw in Teams" },
-  "icons": { "outline": "outline.png", "color": "color.png" },
-  "accentColor": "#5B6DEF",
-  "bots": [
+  description: { short: "OpenClaw in Teams", full: "OpenClaw in Teams" },
+  icons: { outline: "outline.png", color: "color.png" },
+  accentColor: "#5B6DEF",
+  bots: [
     {
-      "botId": "11111111-1111-1111-1111-111111111111",
-      "scopes": ["personal", "team", "groupChat"],
-      "isNotificationOnly": false,
-      "supportsCalling": false,
-      "supportsVideo": false,
-      "supportsFiles": true
-    }
+      botId: "11111111-1111-1111-1111-111111111111",
+      scopes: ["personal", "team", "groupChat"],
+      isNotificationOnly: false,
+      supportsCalling: false,
+      supportsVideo: false,
+      supportsFiles: true,
+    },
   ],
-  "webApplicationInfo": {
-    "id": "11111111-1111-1111-1111-111111111111"
+  webApplicationInfo: {
+    id: "11111111-1111-1111-1111-111111111111",
   },
-  "authorization": {
-    "permissions": {
-      "resourceSpecific": [
-        { "name": "ChannelMessage.Read.Group", "type": "Application" },
-        { "name": "ChannelMessage.Send.Group", "type": "Application" },
-        { "name": "Member.Read.Group", "type": "Application" },
-        { "name": "Owner.Read.Group", "type": "Application" },
-        { "name": "ChannelSettings.Read.Group", "type": "Application" },
-        { "name": "TeamMember.Read.Group", "type": "Application" },
-        { "name": "TeamSettings.Read.Group", "type": "Application" },
-        { "name": "ChatMessage.Read.Chat", "type": "Application" }
-      ]
-    }
-  }
+  authorization: {
+    permissions: {
+      resourceSpecific: [
+        { name: "ChannelMessage.Read.Group", type: "Application" },
+        { name: "ChannelMessage.Send.Group", type: "Application" },
+        { name: "Member.Read.Group", type: "Application" },
+        { name: "Owner.Read.Group", type: "Application" },
+        { name: "ChannelSettings.Read.Group", type: "Application" },
+        { name: "TeamMember.Read.Group", type: "Application" },
+        { name: "TeamSettings.Read.Group", type: "Application" },
+        { name: "ChatMessage.Read.Chat", type: "Application" },
+      ],
+    },
+  },
 }
 ```
 
@@ -366,14 +579,27 @@ tailscale funnel 3978
 
 要更新已安装的 Teams 应用（例如，添加 RSC 权限）：
 
+```bash
+# 下载、编辑并重新上传 manifest
+teams app manifest download <teamsAppId> manifest.json
+# 在本地编辑 manifest.json...
+teams app manifest upload manifest.json <teamsAppId>
+# 如果内容更改，版本会自动递增
+```
+
+更新后，在每个团队中重新安装应用以使新权限生效，并**完全退出并重新启动 Teams**（不只是关闭窗口）以清除缓存的应用元数据。
+
+<details>
+<summary>手动 manifest 更新（不使用 CLI）</summary>
+
 1. 使用新设置更新您的 `manifest.json`
 2. **增加 `version` 字段**（例如，`1.0.0` → `1.1.0`）
 3. **重新压缩** manifest 和图标（`manifest.json`、`outline.png`、`color.png`）
 4. 上传新的 zip：
-   - **选项 A（Teams Admin Center）：** Teams Admin Center → Teams apps → Manage apps → 找到您的应用 → Upload new version
-   - **选项 B（旁加载）：** 在 Teams 中 → Apps → Manage your apps → Upload a custom app
-5. **对于团队 Channel：** 在每个团队中重新安装应用，以使新权限生效
-6. **完全退出并重新启动 Teams**（不只是关闭窗口）以清除缓存的应用元数据
+   - **Teams Admin Center：** Teams apps → Manage apps → 找到您的应用 → Upload new version
+   - **旁加载：** 在 Teams 中 → Apps → Manage your apps → Upload a custom app
+
+</details>
 
 ## 功能：仅 RSC vs Graph
 
@@ -401,12 +627,12 @@ tailscale funnel 3978
 
 ### RSC vs Graph API
 
-| 功能 | RSC 权限 | Graph API |
-| --- | --- | --- |
-| **实时消息** | 是（通过 Webhook） | 否（仅轮询） |
-| **历史消息** | 否 | 是（可以查询历史） |
-| **设置复杂性** | 仅应用 manifest | 需要管理员同意 + token 流 |
-| **离线工作** | 否（必须运行） | 是（随时查询） |
+| 功能              | RSC 权限              | Graph API                           |
+| ----------------- | --------------------- | ----------------------------------- |
+| **实时消息**      | 是（通过 Webhook）    | 否（仅轮询）                        |
+| **历史消息**      | 否                    | 是（可以查询历史）                  |
+| **设置复杂性**    | 仅应用 manifest       | 需要管理员同意 + token 流           |
+| **离线工作**      | 否（必须运行）        | 是（随时查询）                      |
 
 **底线：** RSC 用于实时监听；Graph API 用于历史访问。要在离线时赶上错过的消息，您需要带有 `ChannelMessage.Read.All` 的 Graph API（需要管理员同意）。
 
@@ -441,7 +667,7 @@ Teams markdown 比 Slack 或 Discord 更受限：
 
 - 基本格式有效：**粗体**、*斜体*、`代码`、链接
 - 复杂 markdown（表格、嵌套列表）可能无法正确呈现
-- 支持 Adaptive Cards 用于投票和任意卡片发送（见下文）
+- 支持 Adaptive Cards 用于投票和语义展示发送（见下文）
 
 ## 配置
 
@@ -469,6 +695,12 @@ Teams markdown 比 Slack 或 Discord 更受限：
 - `channels.msteams.teams.<teamId>.channels.<conversationId>.tools`：每 Channel 工具策略覆盖（`allow`/`deny`/`alsoAllow`）。
 - `channels.msteams.teams.<teamId>.channels.<conversationId>.toolsBySender`：每 Channel 每发送者工具策略覆盖（支持 `"*"` 通配符）。
 - `toolsBySender` 键应使用显式前缀：`id:`、`e164:`、`username:`、`name:`（旧版无前缀键仍映射到 `id:`）。
+- `channels.msteams.actions.memberInfo`：启用或禁用 Graph 支持的成员信息操作（默认：当 Graph 凭据可用时启用）。
+- `channels.msteams.authType`：认证类型——`"secret"`（默认）或 `"federated"`。
+- `channels.msteams.certificatePath`：PEM 证书文件路径（联合 + 证书认证）。
+- `channels.msteams.certificateThumbprint`：证书指纹（可选，认证不需要）。
+- `channels.msteams.useManagedIdentity`：启用托管身份认证（联合模式）。
+- `channels.msteams.managedIdentityClientId`：用户分配托管身份的客户端 ID。
 - `channels.msteams.sharePointSiteId`：群聊/Channel 中文件上传的 SharePoint 站点 ID（见[在群聊中发送文件](#sending-files-in-group-chats)）。
 
 ## 路由和 Session
@@ -483,10 +715,10 @@ Teams markdown 比 Slack 或 Discord 更受限：
 
 Teams 最近在同一底层数据模型上引入了两种 Channel UI 样式：
 
-| 样式 | 描述 | 推荐 `replyStyle` |
-| --- | --- | --- |
-| **Posts**（经典） | 消息显示为卡片，下方有线程回复 | `thread`（默认） |
-| **Threads**（类似 Slack） | 消息线性流动，更像 Slack | `top-level` |
+| 样式                    | 描述                               | 推荐 `replyStyle` |
+| ----------------------- | ---------------------------------- | ----------------- |
+| **Posts**（经典）       | 消息显示为卡片，下方有线程回复     | `thread`（默认）  |
+| **Threads**（类似 Slack）| 消息线性流动，更像 Slack            | `top-level`       |
 
 **问题：** Teams API 不公开 Channel 使用哪种 UI 样式。如果您使用错误的 `replyStyle`：
 
@@ -495,20 +727,22 @@ Teams 最近在同一底层数据模型上引入了两种 Channel UI 样式：
 
 **解决方案：** 根据 Channel 的设置方式配置每 Channel 的 `replyStyle`：
 
-```json
+```json5
 {
-  "msteams": {
-    "replyStyle": "thread",
-    "teams": {
-      "19:abc...@thread.tacv2": {
-        "channels": {
-          "19:xyz...@thread.tacv2": {
-            "replyStyle": "top-level"
-          }
-        }
-      }
-    }
-  }
+  channels: {
+    msteams: {
+      replyStyle: "thread",
+      teams: {
+        "19:abc...@thread.tacv2": {
+          channels: {
+            "19:xyz...@thread.tacv2": {
+              replyStyle: "top-level",
+            },
+          },
+        },
+      },
+    },
+  },
 }
 ```
 
@@ -518,6 +752,7 @@ Teams 最近在同一底层数据模型上引入了两种 Channel UI 样式：
 
 - **DM：** 图像和文件附件通过 Teams bot 文件 API 工作。
 - **Channel/群组：** 附件存储在 M365 存储（SharePoint/OneDrive）中。Webhook 有效负载仅包含 HTML 存根，而不是实际文件字节。**需要 Graph API 权限**才能下载 Channel 附件。
+- 对于显式文件优先发送，使用 `action=upload-file` 配合 `media` / `filePath` / `path`；可选的 `message` 成为附带的文本/评论，`filename` 覆盖上传的名称。
 
 没有 Graph 权限，带有图像的 Channel 消息将仅作为文本接收（bot 无法访问图像内容）。
 默认情况下，OpenClaw 仅从 Microsoft/Teams 主机名下载媒体。使用 `channels.msteams.mediaAllowHosts` 覆盖（使用 `["*"]` 允许任何主机）。
@@ -527,11 +762,11 @@ Authorization 标头仅附加到 `channels.msteams.mediaAuthAllowHosts` 中的�
 
 Bot 可以使用 FileConsentCard 流在 DM 中发送文件（内置）。但是，**在群聊/Channel 中发送文件**需要额外设置：
 
-| 上下文 | 文件发送方式 | 所需设置 |
-| --- | --- | --- |
-| **DM** | FileConsentCard → 用户接受 → bot 上传 | 开箱即用 |
-| **群聊/Channel** | 上传到 SharePoint → 共享链接 | 需要 `sharePointSiteId` + Graph 权限 |
-| **图像（任何上下文）** | Base64 编码内联 | 开箱即用 |
+| 上下文                  | 文件发送方式                      | 所需设置                                    |
+| ----------------------- | --------------------------------- | ------------------------------------------- |
+| **DM**                  | FileConsentCard → 用户接受 → bot 上传 | 开箱即用                                    |
+| **群聊/Channel**        | 上传到 SharePoint → 共享链接      | 需要 `sharePointSiteId` + Graph 权限        |
+| **图像（任何上下文）**  | Base64 编码内联                   | 开箱即用                                    |
 
 ### 为什么群聊需要 SharePoint
 
@@ -574,21 +809,21 @@ Bot 没有个人 OneDrive 驱动器（`/me/drive` Graph API 端点对应用程�
 
 ### 共享行为
 
-| 权限 | 共享行为 |
-| --- | --- |
-| 仅 `Sites.ReadWrite.All` | 组织范围共享链接（组织中的任何人都可以访问） |
-| `Sites.ReadWrite.All` + `Chat.Read.All` | 每用户共享链接（仅聊天成员可以访问） |
+| 权限                                        | 共享行为                                                  |
+| ------------------------------------------- | --------------------------------------------------------- |
+| 仅 `Sites.ReadWrite.All`                    | 组织范围共享链接（组织中的任何人都可以访问）              |
+| `Sites.ReadWrite.All` + `Chat.Read.All`     | 每用户共享链接（仅聊天成员可以访问）                      |
 
 每用户共享更安全，因为只有聊天参与者可以访问文件。如果缺少 `Chat.Read.All` 权限，bot 回退到组织范围共享。
 
 ### 回退行为
 
-| 场景 | 结果 |
-| --- | --- |
-| 群聊 + 文件 + 已配置 `sharePointSiteId` | 上传到 SharePoint，发送共享链接 |
-| 群聊 + 文件 + 无 `sharePointSiteId` | 尝试 OneDrive 上传（可能失败），仅发送文本 |
-| 个人聊天 + 文件 | FileConsentCard 流（无需 SharePoint 即可工作） |
-| 任何上下文 + 图像 | Base64 编码内联（无需 SharePoint 即可工作） |
+| 场景                                                      | 结果                                               |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| 群聊 + 文件 + 已配置 `sharePointSiteId`                  | 上传到 SharePoint，发送共享链接                    |
+| 群聊 + 文件 + 无 `sharePointSiteId`                      | 尝试 OneDrive 上传（可能失败），仅发送文本          |
+| 个人聊天 + 文件                                           | FileConsentCard 流（无需 SharePoint 即可工作）     |
+| 任何上下文 + 图像                                         | Base64 编码内联（无需 SharePoint 即可工作）        |
 
 ### 文件存储位置
 
@@ -603,24 +838,23 @@ OpenClaw 将 Teams 投票作为 Adaptive Cards 发送（没有原生 Teams 投�
 - Gateway 必须保持在线才能记录投票。
 - 投票尚未自动发布结果摘要（如需要，检查存储文件）。
 
-## Adaptive Cards（任意）
+## 展示卡片
 
-使用 `message` 工具或 CLI 向 Teams 用户或对话发送任何 Adaptive Card JSON。
+使用 `message` 工具或 CLI 向 Teams 用户或对话发送语义展示载荷。OpenClaw 从通用展示契约将它们渲染为 Teams Adaptive Cards。
 
-`card` 参数接受 Adaptive Card JSON 对象。当提供 `card` 时，消息文本是可选的。
+当提供 `presentation` 时，消息文本是可选的。
 
 **Agent 工具：**
 
-```json
+```json5
 {
-  "action": "send",
-  "channel": "msteams",
-  "target": "user:<id>",
-  "card": {
-    "type": "AdaptiveCard",
-    "version": "1.5",
-    "body": [{ "type": "TextBlock", "text": "Hello!" }]
-  }
+  action: "send",
+  channel: "msteams",
+  target: "user:<id>",
+  presentation: {
+    title: "Hello",
+    blocks: [{ type: "text", text: "Hello!" }],
+  },
 }
 ```
 
@@ -629,21 +863,21 @@ OpenClaw 将 Teams 投票作为 Adaptive Cards 发送（没有原生 Teams 投�
 ```bash
 openclaw message send --channel msteams \
   --target "conversation:19:abc...@thread.tacv2" \
-  --card '{"type":"AdaptiveCard","version":"1.5","body":[{"type":"TextBlock","text":"Hello!"}]}'
+  --presentation '{"title":"Hello","blocks":[{"type":"text","text":"Hello!"}]}'
 ```
 
-参见 [Adaptive Cards 文档](https://adaptivecards.io/)了解卡片架构和示例。有关目标格式详细信息，请参见下面的[目标格式](#target-formats)。
+有关目标格式详细信息，请参见下面的[目标格式](#target-formats)。
 
 ## 目标格式
 
 MSTeams 目标使用前缀来区分用户和对话：
 
-| 目标类型 | 格式 | 示例 |
-| --- | --- | --- |
-| 用户（按 ID） | `user:<aad-object-id>` | `user:40a1a0ed-4ff2-4164-a219-55518990c197` |
-| 用户（按名称） | `user:<display-name>` | `user:John Smith`（需要 Graph API） |
-| 群组/Channel | `conversation:<conversation-id>` | `conversation:19:abc123...@thread.tacv2` |
-| 群组/Channel（原始） | `<conversation-id>` | `19:abc123...@thread.tacv2`（如果包含 `@thread`） |
+| 目标类型              | 格式                              | 示例                                               |
+| --------------------- | --------------------------------- | -------------------------------------------------- |
+| 用户（按 ID）         | `user:<aad-object-id>`            | `user:40a1a0ed-4ff2-4164-a219-55518990c197`        |
+| 用户（按名称）        | `user:<display-name>`             | `user:John Smith`（需要 Graph API）                |
+| 群组/Channel          | `conversation:<conversation-id>`  | `conversation:19:abc123...@thread.tacv2`           |
+| 群组/Channel（原始）  | `<conversation-id>`               | `19:abc123...@thread.tacv2`（如果包含 `@thread`）  |
 
 **CLI 示例：**
 
@@ -657,36 +891,37 @@ openclaw message send --channel msteams --target "user:John Smith" --message "He
 # 发送到群聊或 Channel
 openclaw message send --channel msteams --target "conversation:19:abc...@thread.tacv2" --message "Hello"
 
-# 将 Adaptive Card 发送到对话
+# 将展示卡片发送到对话
 openclaw message send --channel msteams --target "conversation:19:abc...@thread.tacv2" \
-  --card '{"type":"AdaptiveCard","version":"1.5","body":[{"type":"TextBlock","text":"Hello"}]}'
+  --presentation '{"title":"Hello","blocks":[{"type":"text","text":"Hello"}]}'
 ```
 
 **Agent 工具示例：**
 
-```json
+```json5
 {
-  "action": "send",
-  "channel": "msteams",
-  "target": "user:John Smith",
-  "message": "Hello!"
+  action: "send",
+  channel: "msteams",
+  target: "user:John Smith",
+  message: "Hello!",
 }
 ```
 
-```json
+```json5
 {
-  "action": "send",
-  "channel": "msteams",
-  "target": "conversation:19:abc...@thread.tacv2",
-  "card": {
-    "type": "AdaptiveCard",
-    "version": "1.5",
-    "body": [{ "type": "TextBlock", "text": "Hello" }]
-  }
+  action: "send",
+  channel: "msteams",
+  target: "conversation:19:abc...@thread.tacv2",
+  presentation: {
+    title: "Hello",
+    blocks: [{ type: "text", text: "Hello" }],
+  },
 }
 ```
 
-注意：没有 `user:` 前缀，名称默认为群组/团队解析。按显示名称定位人员时始终使用 `user:`。
+<Note>
+没有 `user:` 前缀，名称默认为群组或团队解析。按显示名称定位人员时始终使用 `user:`。
+</Note>
 
 ## 主动消息
 
@@ -723,13 +958,13 @@ https://teams.microsoft.com/l/channel/19%3A15bc...%40thread.tacv2/ChannelName?gr
 
 Bot 在私有 Channel 中的支持有限：
 
-| 功能 | 标准 Channel | 私有 Channel |
-| --- | --- | --- |
-| Bot 安装 | 是 | 有限 |
-| 实时消息（Webhook） | 是 | 可能不工作 |
-| RSC 权限 | 是 | 可能行为不同 |
-| @mentions | 是 | 如果 bot 可访问 |
-| Graph API 历史 | 是 | 是（带权限） |
+| 功能                  | 标准 Channel  | 私有 Channel         |
+| --------------------- | ------------- | -------------------- |
+| Bot 安装              | 是            | 有限                 |
+| 实时消息（Webhook）   | 是            | 可能不工作           |
+| RSC 权限              | 是            | 可能行为不同         |
+| @mentions             | 是            | 如果 bot 可访问      |
+| Graph API 历史        | 是            | 是（带权限）         |
 
 **如果私有 Channel 不工作的解决方法：**
 
@@ -769,6 +1004,7 @@ Bot 在私有 Channel 中的支持有限：
 - [RSC 权限参考](https://learn.microsoft.com/en-us/microsoftteams/platform/graph-api/rsc/resource-specific-consent)
 - [Teams bot 文件处理](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/bots-filesv4)（Channel/群组需要 Graph）
 - [主动消息](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/conversations/send-proactive-messages)
+- [@microsoft/teams.cli](https://www.npmjs.com/package/@microsoft/teams.cli)——bot 管理 Teams CLI
 
 ## 相关
 

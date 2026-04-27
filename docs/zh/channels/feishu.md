@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "64829654c4f23056a1f1c60e43bd9e8a"
+mmh3_hash: "6903462b3c7d9b4ee76fa707f0da0308"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
@@ -17,7 +17,9 @@ Feishu（Lark）是一体化协作平台，团队可在其中聊天、共享文�
 
 ## 快速开始
 
-> **需要 OpenClaw 2026.4.10 或更高版本。** 运行 `openclaw --version` 检查。通过 `openclaw update` 升级。
+<Note>
+需要 OpenClaw 2026.4.25 或更高版本。运行 `openclaw --version` 检查。通过 `openclaw update` 升级。
+</Note>
 
 <Steps>
   <Step title="运行 Channel 设置向导">
@@ -71,6 +73,7 @@ openclaw pairing approve feishu <CODE>
 - `true` — 需要 @提及（默认）
 - `false` — 无需 @提及即可响应
 - 每群组覆盖：`channels.feishu.groups.<chat_id>.requireMention`
+- 仅广播的 `@all` 和 `@_all` 不被视为机器人提及。同时提及 `@all` 和机器人的消息仍然算作机器人提及。
 
 ---
 
@@ -168,7 +171,9 @@ openclaw pairing list feishu
 | `/reset`  | 重置当前会话      |
 | `/model`  | 显示或切换 AI 模型 |
 
-> Feishu/Lark 不支持原生斜杠命令菜单，因此这些命令作为纯文本消息发送。
+<Note>
+Feishu/Lark 不支持原生斜杠命令菜单，因此这些命令作为纯文本消息发送。
+</Note>
 
 ---
 
@@ -212,6 +217,11 @@ openclaw pairing list feishu
           appId: "cli_xxx",
           appSecret: "xxx",
           name: "Primary bot",
+          tts: {
+            providers: {
+              openai: { voice: "shimmer" },
+            },
+          },
         },
         backup: {
           appId: "cli_yyy",
@@ -226,6 +236,7 @@ openclaw pairing list feishu
 ```
 
 `defaultAccount` 控制当出站 API 未指定 `accountId` 时使用哪个账户。
+`accounts.<id>.tts` 使用与 `messages.tts` 相同的格式，并深度合并到全局 TTS 配置中，因此多机器人 Feishu 设置可以在全局保留共享的提供商凭据，同时只覆盖每个账户的语音、模型、角色或自动模式。
 
 ### 消息限制
 
@@ -363,7 +374,7 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 - `match.peer.kind`：`"direct"`（私信）或 `"group"`（群聊）
 - `match.peer.id`：用户 Open ID（`ou_xxx`）或群组 ID（`oc_xxx`）
 
-查找方法参见[获取群组/用户 ID](#获取群组用户-id)。
+查找方法参见[获取群组/用户 ID](#get-groupuser-ids)。
 
 ---
 
@@ -385,6 +396,7 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 | `channels.feishu.accounts.<id>.appId`             | App ID                                  | —                |
 | `channels.feishu.accounts.<id>.appSecret`         | App Secret                              | —                |
 | `channels.feishu.accounts.<id>.domain`            | 每账户域名覆盖                          | `feishu`         |
+| `channels.feishu.accounts.<id>.tts`               | 每账户 TTS 覆盖                         | `messages.tts`   |
 | `channels.feishu.dmPolicy`                        | 私信策略                                | `allowlist`      |
 | `channels.feishu.allowFrom`                       | 私信 allowlist（open_id 列表）          | [BotOwnerId]     |
 | `channels.feishu.groupPolicy`                     | 群组策略                                | `allowlist`      |
@@ -413,6 +425,8 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 - ✅ 视频/媒体
 - ✅ 贴纸
 
+入站 Feishu/Lark 音频消息规范化为媒体占位符，而不是原始的 `file_key` JSON。当配置了 `tools.media.audio` 时，OpenClaw 下载语音备注资源并在 Agent 轮次之前运行共享音频转录，因此 Agent 接收到口语转录。如果 Feishu 在音频负载中直接包含转录文本，则使用该文本，而不进行另一次 ASR 调用。没有音频转录提供商时，Agent 仍然接收 `<media:audio>` 占位符和保存的附件，而不是原始的 Feishu 资源负载。
+
 ### 发送
 
 - ✅ 文本
@@ -423,11 +437,15 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 - ✅ 交互式卡片（包含流式更新）
 - ⚠️ 富文本（post 样式格式；不支持完整的 Feishu/Lark 创作功能）
 
+原生 Feishu/Lark 音频气泡使用 Feishu `audio` 消息类型，并需要 Ogg/Opus 上传媒体（`file_type: "opus"`）。现有的 `.opus` 和 `.ogg` 媒体直接作为原生音频发送。MP3/WAV/M4A 和其他可能的音频格式仅在回复请求语音传递时（`audioAsVoice` / 消息工具 `asVoice`，包括 TTS 语音备注回复）才使用 `ffmpeg` 转码为 48kHz Ogg/Opus。普通 MP3 附件仍然是普通文件。如果 `ffmpeg` 缺失或转换失败，OpenClaw 回退到文件附件并记录原因。
+
 ### 话题和回复
 
 - ✅ 内联回复
 - ✅ 话题回复
 - ✅ 回复话题消息时媒体回复保持话题感知
+
+对于 `groupSessionScope: "group_topic"` 和 `"group_topic_sender"`，原生 Feishu/Lark 话题群组使用事件 `thread_id`（`omt_*`）作为规范话题会话键。OpenClaw 将普通群组回复转换为线程时，仍使用回复根消息 ID（`om_*`），以便第一轮和后续轮次保持在同一会话中。
 
 ---
 

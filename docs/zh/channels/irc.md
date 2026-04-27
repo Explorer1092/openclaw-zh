@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a879caf68c05654c65558ac874f756d5"
+mmh3_hash: "5da0524ccfdc707822e919589b25b657"
 title: IRC
 summary: "IRC 插件设置、访问控制和故障排除"
 read_when:
@@ -7,9 +7,7 @@ read_when:
   - 配置 IRC allowlist、群组策略或提及门控
 ---
 
-# IRC
-
-当您想要 OpenClaw 在经典 Channels（`#room`）和直接消息中时，请使用 IRC。IRC 作为扩展 Plugin 提供，但在主配置中的 `channels.irc` 下配置。
+当您想要 OpenClaw 在经典 Channels（`#room`）和直接消息中时，请使用 IRC。IRC 作为内置 Plugin 提供，但在主配置中的 `channels.irc` 下配置。
 
 ## 快速开始
 
@@ -21,7 +19,7 @@ read_when:
   channels: {
     irc: {
       enabled: true,
-      host: "irc.libera.chat",
+      host: "irc.example.com",
       port: 6697,
       tls: true,
       nick: "openclaw-bot",
@@ -30,6 +28,8 @@ read_when:
   },
 }
 ```
+
+建议使用私有 IRC 服务器进行 bot 协调。如果您有意使用公共 IRC 网络，常见选择包括 Libera.Chat、OFTC 和 Snoonet。避免将可预测的公共频道用于 bot 或群组通信后端流量。
 
 3. 启动/重启 Gateway：
 
@@ -232,6 +232,8 @@ IRC Channels 有两个单独的"门"：
 - `IRC_CHANNELS`（逗号分隔）
 - `IRC_NICKSERV_PASSWORD`
 - `IRC_NICKSERV_REGISTER_EMAIL`
+
+`IRC_HOST` 不能从工作区 `.env` 设置；参见 [工作区 `.env` 文件](/gateway/security)。
 
 ## 故障排除
 

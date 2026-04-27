@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "f76713a003eab8b6f20c1290035a4bb7"
+mmh3_hash: "65939f59fc305789cbd1938efe6550a9"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置路径和号码模型"
 read_when:
   - 设置 Signal 支持
   - 调试 Signal 发送/接收
 title: "Signal"
 ---
-
-# Signal (signal-cli)
 
 状态：外部 CLI 集成。Gateway 通过 HTTP JSON-RPC + SSE 与 `signal-cli` 通信。
 
@@ -100,7 +98,7 @@ title: "Signal"
 }
 ```
 
-多账户支持：使用 `channels.signal.accounts` 配置每个账户，可选 `name`。参见 [配置参考](/gateway/configuration-reference#multi-account-all-channels) 了解共享模式。
+多账户支持：使用 `channels.signal.accounts` 配置每个账户，可选 `name`。参见 [`gateway/configuration`](/gateway/config-channels#multi-account-all-channels) 了解共享模式。
 
 ## 设置路径 B：注册专用 bot 号码（SMS，Linux）
 
@@ -143,7 +141,7 @@ signal-cli -a +<BOT_PHONE_NUMBER> verify <VERIFICATION_CODE>
 
 ```bash
 # 如果您将 Gateway 作为用户 systemd 服务运行：
-systemctl --user restart openclaw-gateway
+systemctl --user restart openclaw-gateway.service
 
 # 然后验证：
 openclaw doctor
@@ -155,7 +153,9 @@ openclaw channels status --probe
    - 在服务器上批准代码：`openclaw pairing approve signal <PAIRING_CODE>`。
    - 将 bot 号码保存为手机上的联系人以避免"未知联系人"。
 
-重要提示：使用 `signal-cli` 注册电话号码账户可能会取消该号码的主 Signal 应用会话的身份验证。优先使用专用 bot 号码，或者如果您需要保留现有手机应用设置，请使用二维码链接模式。
+<Warning>
+使用 `signal-cli` 注册电话号码账户可能会取消该号码的主 Signal 应用会话的身份验证。优先使用专用 bot 号码，或者如果您需要保留现有手机应用设置，请使用二维码链接模式。
+</Warning>
 
 上游参考：
 
@@ -211,6 +211,7 @@ DM：
 - 出站文本按 `channels.signal.textChunkLimit` 分块（默认 4000）。
 - 可选换行分块：设置 `channels.signal.chunkMode="newline"` 以在长度分块之前按空行（段落边界）分割。
 - 支持附件（从 `signal-cli` 获取 base64）。
+- 当 `contentType` 缺失时，语音备忘录附件使用 `signal-cli` 文件名作为 MIME 回退，以便音频转录仍能分类 AAC 语音备忘录。
 - 默认媒体上限：`channels.signal.mediaMaxMb`（默认 8）。
 - 使用 `channels.signal.ignoreAttachments` 跳过媒体下载。
 - 群组历史上下文使用 `channels.signal.historyLimit`（或 `channels.signal.accounts.*.historyLimit`），回退到 `messages.groupChat.historyLimit`。设置 `0` 禁用（默认 50）。

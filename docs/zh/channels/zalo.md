@@ -1,30 +1,28 @@
 ---
-title: "Zalo (Bot API)"
-sidebarTitle: "Zalo"
-mmh3_hash: "6f402ab06410a005bdae657aed13a58e"
+mmh3_hash: "b5ff11ac91184cca22ed431b376384c5"
 summary: "Zalo bot 支持状态、功能和配置"
 read_when:
   - 开发 Zalo 功能或 webhook
+title: "Zalo"
 ---
-
-# Zalo (Bot API)
 
 状态：实验性。支持私信。下方[功能](#capabilities)部分反映当前 Marketplace bot 行为。
 
-## 需要插件
+## 内置插件
 
-Zalo 作为插件提供，未与核心安装包捆绑。
+Zalo 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打包构建无需单独安装。
+
+如果您使用的是较旧的构建版本或不包含 Zalo 的自定义安装，请手动安装：
 
 - 通过 CLI 安装：`openclaw plugins install @openclaw/zalo`
-- 或在设置过程中选择 **Zalo** 并确认安装提示
+- 或从源代码检出：`openclaw plugins install ./path/to/local/zalo-plugin`
 - 详情：[插件](/tools/plugin)
 
 ## 快速设置（新手）
 
-1. 安装 Zalo 插件：
-   - 从源代码检出：`openclaw plugins install ./extensions/zalo`
-   - 从 npm（如已发布）：`openclaw plugins install @openclaw/zalo`
-   - 或在新手引导中选择 **Zalo** 并确认安装提示
+1. 确保 Zalo 插件可用。
+   - 当前打包的 OpenClaw 版本已内置。
+   - 较旧/自定义安装可使用上述命令手动添加。
 2. 设置 token：
    - 环境变量：`ZALO_BOT_TOKEN=...`
    - 或配置：`channels.zalo.accounts.default.botToken: "..."`。
@@ -221,7 +219,7 @@ Provider 选项：
 - `channels.zalo.tokenFile`：从文件路径读取 token。符号链接被拒绝。
 - `channels.zalo.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
 - `channels.zalo.allowFrom`：私信 allowlist（用户 ID）。`open` 需要 `"*"`。向导会要求输入数字 ID。
-- `channels.zalo.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。存在于配置中；有关当前 Marketplace bot 行为，请参见[功能](#capabilities)和[访问控制（群组）](#访问控制群组)。
+- `channels.zalo.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。存在于配置中；有关当前 Marketplace bot 行为，请参见[功能](#capabilities)和[访问控制（群组）](#access-control-groups)。
 - `channels.zalo.groupAllowFrom`：群组发送者 allowlist（用户 ID）。未设置时回退到 `allowFrom`。
 - `channels.zalo.mediaMaxMb`：入站/出站媒体上限（MB，默认 5）。
 - `channels.zalo.webhookUrl`：启用 webhook 模式（需要 HTTPS）。
@@ -237,7 +235,7 @@ Provider 选项：
 - `channels.zalo.accounts.<id>.enabled`：启用/禁用账户。
 - `channels.zalo.accounts.<id>.dmPolicy`：每账户私信策略。
 - `channels.zalo.accounts.<id>.allowFrom`：每账户 allowlist。
-- `channels.zalo.accounts.<id>.groupPolicy`：每账户群组策略。存在于配置中；有关当前 Marketplace bot 行为，请参见[功能](#capabilities)和[访问控制（群组）](#访问控制群组)。
+- `channels.zalo.accounts.<id>.groupPolicy`：每账户群组策略。存在于配置中；有关当前 Marketplace bot 行为，请参见[功能](#capabilities)和[访问控制（群组）](#access-control-groups)。
 - `channels.zalo.accounts.<id>.groupAllowFrom`：每账户群组发送者 allowlist。
 - `channels.zalo.accounts.<id>.webhookUrl`：每账户 webhook URL。
 - `channels.zalo.accounts.<id>.webhookSecret`：每账户 webhook secret。

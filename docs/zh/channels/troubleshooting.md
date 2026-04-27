@@ -1,14 +1,11 @@
 ---
-title: "频道故障排除"
-sidebarTitle: "频道故障排除"
-mmh3_hash: "8024fba6bc9d662265e9e76c742f6cc4"
+mmh3_hash: "0633691ffeac642754a7bc3df210a4b4"
 summary: "快速频道级故障排除，含各频道故障特征和修复方法"
 read_when:
   - 频道传输显示已连接但回复失败
   - 深入查阅 provider 文档前需要进行频道特定检查
+title: "Channel troubleshooting"
 ---
-
-# 频道故障排除
 
 当频道已连接但行为异常时，请使用本页面。
 
@@ -41,7 +38,7 @@ openclaw channels status --probe
 | 群组消息被忽略 | 检查配置中的 `requireMention` 和提及模式 | 提及 bot 或放宽该群组的提及策略。 |
 | 随机断开/重新登录循环 | `openclaw channels status --probe` + 日志 | 重新登录并验证凭据目录是否正常。 |
 
-完整故障排除：[/channels/whatsapp#troubleshooting](/channels/whatsapp#troubleshooting)
+完整故障排除：[WhatsApp 故障排除](/channels/whatsapp#troubleshooting)
 
 ## Telegram
 
@@ -52,10 +49,11 @@ openclaw channels status --probe
 | `/start` 但无可用回复流程 | `openclaw pairing list telegram` | 批准配对或更改私信策略。 |
 | Bot 在线但群组保持沉默 | 验证提及要求和 bot 隐私模式 | 禁用隐私模式以提高群组可见性，或提及 bot。 |
 | 网络错误导致发送失败 | 检查日志中的 Telegram API 调用失败 | 修复到 `api.telegram.org` 的 DNS/IPv6/代理路由。 |
+| 轮询停滞或重连缓慢 | `openclaw logs --follow` 查看轮询诊断 | 升级；如果重启是误报，调整 `pollingStallThresholdMs`。持续停滞仍指向代理/DNS/IPv6 问题。 |
 | `setMyCommands` 启动时被拒绝 | 检查日志中的 `BOT_COMMANDS_TOO_MUCH` | 减少插件/技能/自定义 Telegram 命令或禁用原生菜单。 |
 | 升级后 allowlist 阻止您 | `openclaw security audit` 和配置 allowlist | 运行 `openclaw doctor --fix` 或将 `@username` 替换为数字发送者 ID。 |
 
-完整故障排除：[/channels/telegram#troubleshooting](/channels/telegram#troubleshooting)
+完整故障排除：[Telegram 故障排除](/channels/telegram#troubleshooting)
 
 ## Discord
 
@@ -67,7 +65,7 @@ openclaw channels status --probe
 | 群组消息被忽略 | 检查日志中的提及门控丢弃 | 提及 bot 或设置服务器/频道 `requireMention: false`。 |
 | 私信回复缺失 | `openclaw pairing list discord` | 批准私信配对或调整私信策略。 |
 
-完整故障排除：[/channels/discord#troubleshooting](/channels/discord#troubleshooting)
+完整故障排除：[Discord 故障排除](/channels/discord#troubleshooting)
 
 ## Slack
 
@@ -79,7 +77,7 @@ openclaw channels status --probe
 | 私信被阻止 | `openclaw pairing list slack` | 批准配对或放宽私信策略。 |
 | 频道消息被忽略 | 检查 `groupPolicy` 和频道 allowlist | 允许该频道或将策略切换为 `open`。 |
 
-完整故障排除：[/channels/slack#troubleshooting](/channels/slack#troubleshooting)
+完整故障排除：[Slack 故障排除](/channels/slack#troubleshooting)
 
 ## iMessage 和 BlueBubbles
 
@@ -93,8 +91,8 @@ openclaw channels status --probe
 
 完整故障排除：
 
-- [/channels/imessage#troubleshooting](/channels/imessage#troubleshooting)
-- [/channels/bluebubbles#troubleshooting](/channels/bluebubbles#troubleshooting)
+- [iMessage 故障排除](/channels/imessage#troubleshooting)
+- [BlueBubbles 故障排除](/channels/bluebubbles#troubleshooting)
 
 ## Signal
 
@@ -106,7 +104,7 @@ openclaw channels status --probe
 | 私信被阻止 | `openclaw pairing list signal` | 批准发送者或调整私信策略。 |
 | 群组回复不触发 | 检查群组 allowlist 和提及模式 | 添加发送者/群组或放宽门控。 |
 
-完整故障排除：[/channels/signal#troubleshooting](/channels/signal#troubleshooting)
+完整故障排除：[Signal 故障排除](/channels/signal#troubleshooting)
 
 ## QQ Bot
 
@@ -119,7 +117,7 @@ openclaw channels status --probe
 | 语音未转录 | 检查 STT provider 配置 | 配置 `channels.qqbot.stt` 或 `tools.media.audio`。 |
 | 主动消息未到达 | 检查 QQ 平台交互要求 | QQ 可能会阻止没有近期交互的 bot 发起消息。 |
 
-完整故障排除：[/channels/qqbot#troubleshooting](/channels/qqbot#troubleshooting)
+完整故障排除：[QQ Bot 故障排除](/channels/qqbot#troubleshooting)
 
 ## Matrix
 
@@ -134,3 +132,9 @@ openclaw channels status --probe
 | 交叉签名/引导看起来不正确 | `openclaw matrix verify bootstrap` | 一次性修复密钥存储、交叉签名和备份状态。 |
 
 完整设置和配置：[Matrix](/channels/matrix)
+
+## 相关
+
+- [Pairing](/channels/pairing)
+- [Channel 路由](/channels/channel-routing)
+- [Gateway 故障排除](/gateway/troubleshooting)
