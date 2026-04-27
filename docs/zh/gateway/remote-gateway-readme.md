@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "55f3704cca2a80b17b251c91ccc08ed4"
+mmh3_hash: "a4e733b4cc65d0e5505e1a2df1b0998f"
 summary: "OpenClaw.app 连接到远程 Gateway 的 SSH 隧道设置"
 read_when: "通过 SSH 将 macOS 应用程序连接到远程 Gateway"
 title: "远程 Gateway 设置"
@@ -161,3 +161,8 @@ launchctl bootout gui/$UID/ai.openclaw.ssh-tunnel
 | `RunAtLoad`                          | Agent 加载时启动隧道                           |
 
 OpenClaw.app 连接到客户端机器上的 `ws://127.0.0.1:18789`。SSH 隧道将该连接转发到运行 Gateway 的远程机器上的端口 18789。
+
+## 相关
+
+- [远程访问](/gateway/remote)
+- [Tailscale](/gateway/tailscale)

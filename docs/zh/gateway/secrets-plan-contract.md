@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "64cccb96e643c110852e333efffa1fab"
+mmh3_hash: "53d4a1fcabefc498277832eef0b7fc9e"
 summary: "`secrets apply` 计划的约定：目标验证、路径匹配，以及 `auth-profiles.json` 目标作用域"
 read_when:
   - 生成或审查 `openclaw secrets apply` 计划
@@ -81,6 +81,12 @@ Invalid plan target path for models.providers.apiKey: models.providers.openai.ba
 ```
 
 对于无效计划，不会提交任何写入。
+
+## Exec provider 同意行为
+
+- `--dry-run` 默认跳过 exec SecretRef 检查。
+- 包含 exec SecretRef/provider 的计划在写入模式下会被拒绝，除非设置了 `--allow-exec`。
+- 验证/应用包含 exec 的计划时，在 dry-run 和写入命令中都传递 `--allow-exec`。
 
 ## 运行时和审计作用域说明
 

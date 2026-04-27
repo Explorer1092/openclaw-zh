@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "83f292393cc6c82b1396bd143692a3a6"
+mmh3_hash: "71f4d0e11cf03c72a676c54c6cc24f0c"
 title: "沙盒 vs 工具策略 vs 提升模式"
 sidebarTitle: "沙盒与工具策略"
 summary: "工具被阻止的原因:sandbox runtime、工具允许/拒绝策略和提升 exec 门控"
@@ -135,7 +135,7 @@ Elevated **不**授予额外工具;它只影响 `exec`。
 
 在 `"non-main"` 模式下,group/channel 键_不是_ main。使用主 session key(由 `sandbox explain` 显示)或将模式切换为 `"off"`。
 
-## 另请参见
+## 相关
 
 - [Sandboxing](/gateway/sandboxing) — 完整 sandbox 参考(modes、scopes、backends、images)
 - [Multi-Agent Sandbox & Tools](/tools/multi-agent-sandbox-tools) — 每个 agent 覆盖和优先级

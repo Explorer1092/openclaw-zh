@@ -1,6 +1,6 @@
 ---
 title: "诊断标志"
-mmh3_hash: "b26bc76d5f1b4a62b0caec15bb1c80a0"
+mmh3_hash: "f16a457b0ab465e4ba240afcec1fbb88"
 summary: "用于定向调试日志的诊断标志"
 read_when: ["您需要定向调试日志而不提高全局日志级别","您需要捕获子系统特定日志以进行支持"]
 ---
@@ -87,3 +87,8 @@ tail -f /tmp/openclaw/openclaw-$(date +%F).log | rg "telegram http error"
 - 如果 `logging.level` 设置高于 `warn`,这些日志可能会被抑制。默认 `info` 即可。
 - 标志可以安全地保持启用状态;它们只影响特定子系统的日志量。
 - 使用 [/logging](/logging) 更改日志目标、级别和脱敏。
+
+## 相关
+
+- [Gateway 诊断](/gateway/diagnostics)
+- [Gateway 故障排除](/gateway/troubleshooting)

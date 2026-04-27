@@ -1,7 +1,7 @@
 ---
 title: "网关托管配对 (选项 B)"
 sidebarTitle: "网关托管配对"
-mmh3_hash: "814435ff69cc2ab78f5451a34a7a6337"
+mmh3_hash: "48f0d2637afada274625789ae244941b"
 summary: "Gateway 拥有的节点配对(Option B)用于 iOS 和其他远程节点"
 read_when: ["在没有 macOS UI 的情况下实现节点配对批准","为批准远程节点添加 CLI 流程","使用节点管理扩展 gateway 协议"]
 ---
@@ -117,3 +117,9 @@ macOS 应用程序可以选择尝试**静默批准**,当:
 - 传输是**无状态的**;它不存储成员资格。
 - 如果 Gateway 离线或配对被禁用,节点无法配对。
 - 如果 Gateway 处于远程模式,配对仍然针对远程 Gateway 的存储发生。
+
+## 相关
+
+- [Channel 配对](/channels/pairing)
+- [节点](/nodes)
+- [设备 CLI](/cli/devices)

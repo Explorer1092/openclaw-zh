@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dc2814035c78f2d8ad90b2c1b1605578"
+mmh3_hash: "bc1b5f6edac3846d4f06ddced9e38b2d"
 summary: "节点发现和传输(Bonjour、Tailscale、SSH)用于查找 Gateway"
 read_when:
   - 实现或更改 Bonjour 发现/广播
@@ -84,8 +84,9 @@ OpenClaw 有两个表面上看起来相似的不同问题:
 禁用/覆盖:
 
 - `OPENCLAW_DISABLE_BONJOUR=1` 禁用广播。
+- 当 `OPENCLAW_DISABLE_BONJOUR` 未设置时，Bonjour 在普通主机上广播，在检测到的容器内自动禁用。仅对主机、macvlan 或其他支持 mDNS 的网络使用 `0`；使用 `1` 强制禁用。
 - `~/.openclaw/openclaw.json` 中的 `gateway.bind` 控制 Gateway 绑定模式。
-- `OPENCLAW_SSH_PORT` 覆盖 TXT 中广播的 SSH 端口(默认为 22)。
+- `OPENCLAW_SSH_PORT` 覆盖发出 `sshPort` 时广播的 SSH 端口。
 - `OPENCLAW_TAILNET_DNS` 发布 `tailnetDns` 提示(MagicDNS)。
 - `OPENCLAW_CLI_PATH` 覆盖广播的 CLI 路径。
 
@@ -136,3 +137,9 @@ Gateway 是节点/客户端准入的事实来源。
 - **Gateway**:广播发现信标,拥有配对决策,并托管 WS 端点。
 - **macOS 应用程序**:帮助您选择 Gateway,显示配对提示,并仅将 SSH 用作回退。
 - **iOS/Android 节点**:浏览 Bonjour 作为便利,并连接到配对的 Gateway WS。
+
+## 相关
+
+- [远程访问](/gateway/remote)
+- [Tailscale](/gateway/tailscale)
+- [Bonjour 发现](/gateway/bonjour)

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "302354d9fc73f9b8b7b8e145d4f68f7d"
+mmh3_hash: "57ce7a69c9c31a1559c7295bd6e4bedb"
 summary: "Gateway、Channel、自动化、节点和 Browser 的深度故障排除运行手册"
 read_when:
   - 故障排除中心将您引导到这里进行更深入的诊断
@@ -29,6 +29,41 @@ openclaw channels status --probe
 - `openclaw gateway status` 显示 `Runtime: running`、`Connectivity probe: ok` 和一行 `Capability: ...`。
 - `openclaw doctor` 报告没有阻塞的配置/服务问题。
 - `openclaw channels status --probe` 显示实时每账户传输状态，以及在支持的情况下探测/审计结果（如 `works` 或 `audit ok`）。
+
+## 裂脑安装和较新配置守护
+
+当 Gateway 服务在更新后意外停止，或日志显示某个 `openclaw` 二进制文件比上次写入 `openclaw.json` 的版本更旧时使用。
+
+OpenClaw 使用 `meta.lastTouchedVersion` 标记配置写入。只读命令仍然可以检查较新 OpenClaw 写入的配置，但进程和服务变更拒绝从较旧的二进制文件继续。被阻止的操作包括 Gateway 服务启动、停止、重启、卸载、强制服务重安装、服务模式 Gateway 启动以及 `gateway --force` 端口清理。
+
+```bash
+which openclaw
+openclaw --version
+openclaw gateway status --deep
+openclaw config get meta.lastTouchedVersion
+```
+
+<Steps>
+  <Step title="修复 PATH">
+    修复 `PATH`，使 `openclaw` 解析到较新的安装，然后重新运行该操作。
+  </Step>
+  <Step title="重新安装 Gateway 服务">
+    从较新的安装中重新安装预期的 Gateway 服务：
+
+    ```bash
+    openclaw gateway install --force
+    openclaw gateway restart
+    ```
+
+  </Step>
+  <Step title="删除过时的包装器">
+    删除仍指向旧 `openclaw` 二进制文件的过时系统包或旧包装器条目。
+  </Step>
+</Steps>
+
+<Warning>
+仅用于有意降级或紧急恢复，为单个命令设置 `OPENCLAW_ALLOW_OLDER_BINARY_DESTRUCTIVE_ACTIONS=1`。正常操作时保持未设置。
+</Warning>
 
 ## Anthropic 429 长上下文需要额外使用
 
@@ -232,6 +267,64 @@ openclaw gateway status --deep   # 同时扫描系统级服务
 - [/gateway/background-process](/gateway/background-process)
 - [/gateway/configuration](/gateway/configuration)
 - [/gateway/doctor](/gateway/doctor)
+
+## Gateway 已恢复上次已知良好配置
+
+当 Gateway 启动，但日志显示它已恢复 `openclaw.json` 时使用。
+
+```bash
+openclaw logs --follow
+openclaw config file
+openclaw config validate
+openclaw doctor
+```
+
+查找：
+
+- `Config auto-restored from last-known-good`
+- `gateway: invalid config was restored from last-known-good backup`
+- `config reload restored last-known-good config after invalid-config`
+- 活动配置旁边的带时间戳的 `openclaw.json.clobbered.*` 文件
+- 以 `Config recovery warning` 开头的主 Agent 系统事件
+
+<AccordionGroup>
+  <Accordion title="发生了什么">
+    - 被拒绝的配置在启动或热重载期间未通过验证。
+    - OpenClaw 将被拒绝的有效负载保留为 `.clobbered.*`。
+    - 活动配置已从最后验证的上次已知良好副本中恢复。
+    - 下一个主 Agent 轮次会被警告不要盲目地重写被拒绝的配置。
+    - 如果所有验证问题都在 `plugins.entries.<id>...` 下，OpenClaw 不会恢复整个文件。插件本地失败保持明显，而不相关的用户设置保留在活动配置中。
+  </Accordion>
+  <Accordion title="检查和修复">
+    ```bash
+    CONFIG="$(openclaw config file)"
+    ls -lt "$CONFIG".clobbered.* "$CONFIG".rejected.* 2>/dev/null | head
+    diff -u "$CONFIG" "$(ls -t "$CONFIG".clobbered.* 2>/dev/null | head -n 1)"
+    openclaw config validate
+    openclaw doctor
+    ```
+  </Accordion>
+  <Accordion title="常见特征">
+    - `.clobbered.*` 存在 → 外部直接编辑或启动读取已恢复。
+    - `.rejected.*` 存在 → OpenClaw 拥有的配置写入在提交前未通过 schema 或覆盖检查。
+    - `Config write rejected:` → 写入试图删除必需的形状、大幅缩减文件或持久化无效配置。
+    - `missing-meta-vs-last-good`、`gateway-mode-missing-vs-last-good` 或 `size-drop-vs-last-good:*` → 启动将当前文件视为被覆盖，因为与上次已知良好备份相比它丢失了字段或大小。
+    - `Config last-known-good promotion skipped` → 候选包含如 `***` 之类的已编辑密钥占位符。
+  </Accordion>
+  <Accordion title="修复选项">
+    1. 如果恢复的活动配置是正确的，请保留它。
+    2. 仅从 `.clobbered.*` 或 `.rejected.*` 中复制预期的键，然后使用 `openclaw config set` 或 `config.patch` 应用它们。
+    3. 在重启之前运行 `openclaw config validate`。
+    4. 如果手动编辑，请保留完整的 JSON5 配置，而不仅仅是您想要更改的部分对象。
+  </Accordion>
+</AccordionGroup>
+
+相关：
+
+- [Config](/cli/config)
+- [配置：热重载](/gateway/configuration#config-hot-reload)
+- [配置：严格验证](/gateway/configuration#strict-validation)
+- [Doctor](/gateway/doctor)
 
 ## Gateway 探测警告
 
@@ -475,3 +568,9 @@ openclaw gateway restart
 - [/gateway/pairing](/gateway/pairing)
 - [/gateway/authentication](/gateway/authentication)
 - [/gateway/background-process](/gateway/background-process)
+
+## 相关
+
+- [Doctor](/gateway/doctor)
+- [常见问题](/help/faq)
+- [Gateway 服务手册](/gateway)

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "818a6f11d008d0bb0723e3ebd089ce5d"
+mmh3_hash: "609e6a7a6140296e8abe1de60927feca"
 summary: "Secrets 管理:SecretRef 合约、运行时快照行为和安全单向清除"
 read_when:
   - 为 Provider 凭证和 `auth-profiles.json` refs 配置 SecretRefs
@@ -284,6 +284,39 @@ SecretRefs 仅在有效活跃表面上验证。
   },
 }
 ```
+
+## MCP server 环境变量
+
+通过 `plugins.entries.acpx.config.mcpServers` 配置的 MCP server 环境变量支持 SecretInput。这使 API 密钥和令牌不会出现在纯文本配置中：
+
+```json5
+{
+  plugins: {
+    entries: {
+      acpx: {
+        enabled: true,
+        config: {
+          mcpServers: {
+            github: {
+              command: "npx",
+              args: ["-y", "@modelcontextprotocol/server-github"],
+              env: {
+                GITHUB_PERSONAL_ACCESS_TOKEN: {
+                  source: "env",
+                  provider: "default",
+                  id: "MCP_GITHUB_PAT",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+纯文本字符串值仍然有效。环境模板引用（如 `${MCP_SERVER_API_KEY}`）和 SecretRef 对象在 Gateway 激活期间、MCP server 进程启动之前解析。与其他 SecretRef 表面一样，未解析的引用仅在 `acpx` 插件有效激活时才会阻止激活。
 
 ## 沙盒 SSH 认证材料
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8eb0700015100dedbd992acef8149d21"
+mmh3_hash: "de568ce7f92943cb9797c9bb23a5dde0"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
@@ -11,6 +11,7 @@ title: "配置"
 # 配置
 
 OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSON5 支持注释和尾随逗号">**JSON5**</Tooltip> 配置文件。
+活动配置路径必须是普通文件。带符号链接的 `openclaw.json` 布局不支持 OpenClaw 所有写入；原子写入可能替换路径而不是保留符号链接。如果您将配置保存在默认状态目录之外，请将 `OPENCLAW_CONFIG_PATH` 直接指向真实文件。
 
 如果文件缺失,OpenClaw 使用安全的默认值。添加配置的常见原因:
 
@@ -19,6 +20,8 @@ OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSO
 - 调整 Session、媒体、网络或 UI
 
 请参阅[完整参考文档](/gateway/configuration-reference)了解所有可用字段。
+
+Agent 和自动化应在编辑配置之前使用 `config.schema.lookup` 获取精确的字段级文档。使用本页面进行任务导向指导，使用[配置参考文档](/gateway/configuration-reference)获取更广泛的字段映射和默认值。
 
 <Tip>
 **配置新手?** 从 `openclaw onboard` 开始进行交互式设置,或查看[配置示例](/gateway/configuration-examples)指南获取完整的复制粘贴配置。
@@ -65,16 +68,7 @@ OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSO
 OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类型或无效值会导致 Gateway **拒绝启动**。唯一的根级别例外是 `$schema`(字符串),以便编辑器可以附加 JSON Schema 元数据。
 </Warning>
 
-Schema 工具说明：
-
-- `openclaw config schema` 输出 Control UI 和配置验证使用的相同 JSON Schema 系列。
-- 将该 schema 输出视为 `openclaw.json` 的规范机器可读契约；本概览和配置参考对其进行了总结。
-- 字段 `title` 和 `description` 值会被携带到 schema 输出中，供编辑器和表单工具使用。
-- 嵌套对象、通配符（`*`）和数组项（`[]`）条目在存在匹配字段文档时继承相同的文档元数据。
-- `anyOf` / `oneOf` / `allOf` 组合分支同样继承相同的文档元数据，因此联合/交叉变体保留相同的字段帮助信息。
-- `config.schema.lookup` 返回一个带有浅层 schema 节点（`title`、`description`、`type`、`enum`、`const`、常见边界及类似验证字段）、匹配 UI 提示元数据和即时子摘要的规范化配置路径，供下探工具使用。
-- 当 gateway 可以加载当前清单注册表时，运行时插件/channel schema 会被合并进来。
-- `pnpm config:docs:check` 检测文档面向的配置基线工件与当前 schema 表面之间的漂移。
+`openclaw config schema` 输出 Control UI 和验证使用的规范 JSON Schema。`config.schema.lookup` 为下探工具获取单个路径范围的节点加上子摘要。字段 `title`/`description` 文档元数据会传递到嵌套对象、通配符（`*`）、数组项（`[]`）以及 `anyOf`/`oneOf`/`allOf` 分支。运行时插件和 Channel schema 在加载清单注册表时合并进来。
 
 当验证失败时：
 
@@ -82,6 +76,8 @@ Schema 工具说明：
 - 只有诊断命令可用（`openclaw doctor`、`openclaw logs`、`openclaw health`、`openclaw status`）
 - 运行 `openclaw doctor` 查看具体问题
 - 运行 `openclaw doctor --fix`（或 `--yes`）应用修复
+
+Gateway 在每次成功启动后保存一个受信任的最后已知良好副本。如果 `openclaw.json` 之后验证失败（或丢失 `gateway.mode`、大幅缩小，或有杂乱的日志行前置），OpenClaw 会将损坏的文件保存为 `.clobbered.*`，恢复最后已知良好副本，并记录恢复原因。当候选文件包含诸如 `***` 之类的已修订密钥占位符时，将跳过升级为最后已知良好副本。当所有验证问题的范围都在 `plugins.entries.<id>...` 时，OpenClaw 不执行整文件恢复。它保持当前配置活动并显示插件本地失败，以便插件 schema 或主机版本不匹配不会回滚不相关的用户设置。
 
 ## 常见任务
 
@@ -140,8 +136,9 @@ Schema 工具说明：
     - `agents.defaults.models` 定义模型目录并作为 `/model` 的允许列表。
     - 模型引用使用 `provider/model` 格式(例如 `anthropic/claude-opus-4-6`)。
     - `agents.defaults.imageMaxDimensionPx` 控制转录/工具图像缩放（默认 `1200`）；在截图密集的运行中，较低的值通常可以减少视觉 token 使用量。
+    - 使用 `openclaw config set agents.defaults.models '<json>' --strict-json --merge` 添加允许列表条目而不删除现有模型。除非传递 `--replace`，否则会拒绝可能删除条目的普通替换。
     - 参见[模型 CLI](/concepts/models)了解在聊天中切换模型,参见[模型故障转移](/concepts/model-failover)了解认证轮换和备用行为。
-    - 对于自定义/自托管提供商,请参阅参考文档中的[自定义提供商](/gateway/configuration-reference#custom-providers-and-base-urls)。
+    - 对于自定义/自托管提供商,请参阅参考文档中的[自定义提供商](/gateway/config-tools#custom-providers-and-base-urls)。
 
   </Accordion>
 
@@ -155,7 +152,7 @@ Schema 工具说明：
 
     对于群组,使用 `groupPolicy` + `groupAllowFrom` 或特定于 Channel 的允许列表。
 
-    参见[完整参考文档](/gateway/configuration-reference#dm-and-group-access)了解每个 Channel 的详细信息。
+    参见[完整参考文档](/gateway/config-channels#dm-and-group-access)了解每个 Channel 的详细信息。
 
   </Accordion>
 
@@ -184,7 +181,7 @@ Schema 工具说明：
 
     - **元数据提及**:原生 @-提及(WhatsApp 点击提及、Telegram @bot 等)
     - **文本模式**:`mentionPatterns` 中的正则表达式模式
-    - 参见[完整参考文档](/gateway/configuration-reference#group-chat-mention-gating)了解每个 Channel 的覆盖和自聊模式。
+    - 参见[完整参考文档](/gateway/config-channels#group-chat-mention-gating)了解每个 Channel 的覆盖和自聊模式。
 
   </Accordion>
 
@@ -209,7 +206,7 @@ Schema 工具说明：
     - 省略 `agents.defaults.skills` 则默认不限制技能。
     - 省略 `agents.list[].skills` 则继承默认值。
     - 设置 `agents.list[].skills: []` 则无技能。
-    - 参见 [Skills](/tools/skills)、[Skills 配置](/tools/skills-config) 和[配置参考文档](/gateway/configuration-reference#agentsdefaultsskills)。
+    - 参见 [Skills](/tools/skills)、[Skills 配置](/tools/skills-config) 和[配置参考文档](/gateway/config-agents#agents-defaults-skills)。
 
   </Accordion>
 
@@ -267,7 +264,7 @@ Schema 工具说明：
     - `dmScope`: `main`(共享) | `per-peer` | `per-channel-peer` | `per-account-channel-peer`
     - `threadBindings`: 线程绑定 Session 路由的全局默认值（Discord 支持 `/focus`、`/unfocus`、`/agents`、`/session idle` 和 `/session max-age`）。
     - 参见[Session 管理](/concepts/session)了解范围、身份链接和发送策略。
-    - 参见[完整参考文档](/gateway/configuration-reference#session)了解所有字段。
+    - 参见[完整参考文档](/gateway/config-agents#session)了解所有字段。
 
   </Accordion>
 
@@ -289,7 +286,7 @@ Schema 工具说明：
 
     首先构建镜像:`scripts/sandbox-setup.sh`
 
-    参见[沙盒](/gateway/sandboxing)完整指南和[完整参考文档](/gateway/configuration-reference#sandbox)了解所有选项。
+    参见[沙盒](/gateway/sandboxing)完整指南和[完整参考文档](/gateway/config-agents#agentsdefaultssandbox)了解所有选项。
 
   </Accordion>
 
@@ -447,7 +444,7 @@ Schema 工具说明：
     }
     ```
 
-    参见[多 Agent](/concepts/multi-agent)和[完整参考文档](/gateway/configuration-reference#multi-agent-routing)了解绑定规则和每个 Agent 的访问配置文件。
+    参见[多 Agent](/concepts/multi-agent)和[完整参考文档](/gateway/config-agents#multi-agent-routing)了解绑定规则和每个 Agent 的访问配置文件。
 
   </Accordion>
 
@@ -470,6 +467,8 @@ Schema 工具说明：
     - **同级键**:在包含后合并(覆盖包含的值)
     - **嵌套包含**:支持最多 10 层深度
     - **相对路径**:相对于包含文件解析
+    - **OpenClaw 所有写入**:当写入仅更改由单文件包含（如 `plugins: { $include: "./plugins.json5" }`）支持的一个顶级部分时，OpenClaw 更新该包含文件并保持 `openclaw.json` 不变
+    - **不支持的写穿**:根包含、包含数组以及带同级覆盖的包含，对于 OpenClaw 所有写入会安全关闭，而不是展平配置
     - **错误处理**:清晰的错误提示,包括缺失文件、解析错误和循环包含
 
   </Accordion>
@@ -478,6 +477,12 @@ Schema 工具说明：
 ## 配置热重载 {#config-hot-reload}
 
 Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数设置无需手动重启。
+
+直接文件编辑在验证之前被视为不可信。Watcher 会等待编辑器临时写入/重命名的变化稳定下来，读取最终文件，并通过恢复最后已知良好配置来拒绝无效的外部编辑。OpenClaw 所有的配置写入在写入前使用相同的 schema 门控；丢弃 `gateway.mode` 或将文件缩小超过一半等破坏性覆盖会被拒绝并保存为 `.rejected.*` 以供检查。
+
+插件本地验证失败是例外情况：如果所有问题都在 `plugins.entries.<id>...` 下，重载会保持当前配置并报告插件问题，而不是恢复 `.last-good`。
+
+如果您在日志中看到 `Config auto-restored from last-known-good` 或 `config reload restored last-known-good config`，请检查 `openclaw.json` 旁边的 `.clobbered.*` 文件，修复被拒绝的负载，然后运行 `openclaw config validate`。有关恢复检查清单，请参见 [Gateway 故障排除](/gateway/troubleshooting#gateway-restored-last-known-good-config)。
 
 ### 重载模式
 
@@ -506,7 +511,7 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
 | Agent 和模型      | `agent`、`agents`、`models`、`routing`                               | 否              |
 | 自动化          | `hooks`、`cron`、`agent.heartbeat`                                   | 否              |
 | Session 和消息 | `session`、`messages`                                                | 否              |
-| 工具和媒体       | `tools`、`browser`、`skills`、`audio`、`talk`                        | 否              |
+| 工具和媒体       | `tools`、`browser`、`skills`、`mcp`、`audio`、`talk`                 | 否              |
 | UI 和其他           | `ui`、`logging`、`identity`、`bindings`                              | 否              |
 | Gateway 服务器      | `gateway.*`(端口、绑定、认证、Tailscale、TLS、HTTP)                 | **是**         |
 | 基础设施      | `discovery`、`canvasHost`、`plugins`                                 | **是**         |
@@ -515,75 +520,38 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
 `gateway.reload` 和 `gateway.remote` 是例外 — 更改它们**不会**触发重启。
 </Note>
 
+### 重载规划
+
+当您编辑通过 `$include` 引用的源文件时，OpenClaw 根据源文件编写的布局规划重载，而不是展平的内存视图。即使单个顶级部分（如 `plugins: { $include: "./plugins.json5" }`）存在于自己的包含文件中，这也能使热重载决策（热应用 vs 重启）可预测。当源布局不明确时，重载规划安全地关闭。
+
 ## 配置 RPC（编程更新）
 
+对于通过 Gateway API 写入配置的工具，推荐此流程：
+
+- `config.schema.lookup`：检查一个子树（浅层 schema 节点 + 子摘要）
+- `config.get`：获取当前快照加 `hash`
+- `config.patch`：用于部分更新（JSON merge patch：对象合并，`null` 删除，数组替换）
+- `config.apply`：仅当您打算替换整个配置时使用
+- `update.run`：用于显式自我更新加重启
+- `update.status`：检查最新的更新重启哨兵，并在重启后验证运行版本
+
+Agent 应将 `config.schema.lookup` 作为获取精确字段级文档和约束的第一步。需要更广泛的配置映射、默认值或专用子系统参考链接时，使用[配置参考文档](/gateway/configuration-reference)。
+
 <Note>
-控制平面写入 RPC（`config.apply`、`config.patch`、`update.run`）对每个 `deviceId+clientIp` 限速为**每 60 秒 3 次请求**。当达到限制时，RPC 返回 `UNAVAILABLE` 并附带 `retryAfterMs`。
+控制平面写入（`config.apply`、`config.patch`、`update.run`）对每个 `deviceId+clientIp` 限速为每 60 秒 3 次请求。重启请求会合并，然后在两次重启周期之间强制执行 30 秒冷却期。`update.status` 是只读的，但因为重启哨兵可以包含更新步骤摘要和命令输出尾部，所以它是 admin 范围的。
 </Note>
 
-安全/默认流程：
+示例部分补丁：
 
-- `config.schema.lookup`：检查一个路径范围的配置子树，包含浅层 schema 节点、匹配的提示元数据和即时子摘要
-- `config.get`：获取当前快照 + 哈希
-- `config.patch`：首选的部分更新路径
-- `config.apply`：仅用于完整配置替换
-- `update.run`：显式自我更新 + 重启
+```bash
+openclaw gateway call config.get --params '{}'  # 捕获 payload.hash
+openclaw gateway call config.patch --params '{
+  "raw": "{ channels: { telegram: { groups: { \"*\": { requireMention: false } } } } }",
+  "baseHash": "<hash>"
+}'
+```
 
-当不替换整个配置时，优先使用 `config.schema.lookup` 然后 `config.patch`。
-
-<AccordionGroup>
-  <Accordion title="config.apply(完整替换)">
-    验证 + 写入完整配置并在一步中重启 Gateway。
-
-    <Warning>
-    `config.apply` 替换**整个配置**。使用 `config.patch` 进行部分更新,或使用 `openclaw config set` 更改单个键。
-    </Warning>
-
-    参数:
-
-    - `raw`(字符串) — 整个配置的 JSON5 负载
-    - `baseHash`(可选) — 来自 `config.get` 的配置哈希(配置存在时必需)
-    - `sessionKey`(可选) — 用于重启后唤醒 ping 的 Session 键
-    - `note`(可选) — 重启哨兵的注释
-    - `restartDelayMs`(可选) — 重启前的延迟(默认 2000)
-
-    当某次重启已在挂起/进行中时,重启请求会被合并,且两次重启周期之间有 30 秒的冷却期。
-
-    ```bash
-    openclaw gateway call config.get --params '{}'  # 捕获 payload.hash
-    openclaw gateway call config.apply --params '{
-      "raw": "{ agents: { defaults: { workspace: \"~/.openclaw/workspace\" } } }",
-      "baseHash": "<hash>",
-      "sessionKey": "agent:main:whatsapp:direct:+15555550123"
-    }'
-    ```
-
-  </Accordion>
-
-  <Accordion title="config.patch(部分更新)">
-    将部分更新合并到现有配置中(JSON merge patch 语义):
-
-    - 对象递归合并
-    - `null` 删除键
-    - 数组替换
-
-    参数:
-
-    - `raw`(字符串) — 仅包含要更改的键的 JSON5
-    - `baseHash`(必需) — 来自 `config.get` 的配置哈希
-    - `sessionKey`、`note`、`restartDelayMs` — 与 `config.apply` 相同
-
-    重启行为与 `config.apply` 相同:合并待处理的重启请求,以及重启周期之间 30 秒的冷却期。
-
-    ```bash
-    openclaw gateway call config.patch --params '{
-      "raw": "{ channels: { telegram: { groups: { \"*\": { requireMention: false } } } } }",
-      "baseHash": "<hash>"
-    }'
-    ```
-
-  </Accordion>
-</AccordionGroup>
+`config.apply` 和 `config.patch` 都接受 `raw`、`baseHash`、`sessionKey`、`note` 和 `restartDelayMs`。当配置已存在时，两种方法都需要 `baseHash`。
 
 ## 环境变量
 
@@ -649,11 +617,11 @@ OpenClaw 从父进程读取环境变量,以及:
   },
   skills: {
     entries: {
-      "nano-banana-pro": {
+      "image-lab": {
         apiKey: {
           source: "file",
           provider: "filemain",
-          id: "/skills/entries/nano-banana-pro/apiKey",
+          id: "/skills/entries/image-lab/apiKey",
         },
       },
     },
@@ -683,3 +651,9 @@ SecretRef 详情(包括 `env`/`file`/`exec` 的 `secrets.providers`)请参见 [S
 ---
 
 _相关:[配置示例](/gateway/configuration-examples) · [配置参考文档](/gateway/configuration-reference) · [Doctor](/gateway/doctor)_
+
+## 相关
+
+- [配置参考文档](/gateway/configuration-reference)
+- [配置示例](/gateway/configuration-examples)
+- [Gateway 说明书](/gateway)

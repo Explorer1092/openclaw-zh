@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d8025db12b3d4480a70b9b68539efc87"
+mmh3_hash: "568949ba45638d9d468d1647a062a165"
 summary: "使用 SSH 隧道(Gateway WS)和 Tailnet 进行远程访问"
 read_when:
   - 运行或故障排除远程 Gateway 设置
@@ -244,3 +244,9 @@ launchctl bootout gui/$UID/ai.openclaw.ssh-tunnel
 | `ssh -N`                             | SSH 不执行远程命令（仅端口转发）                            |
 | `KeepAlive`                          | 如果隧道崩溃则自动重启                                      |
 | `RunAtLoad`                          | 在登录时 LaunchAgent 加载时启动隧道                         |
+
+## 相关
+
+- [Tailscale](/gateway/tailscale)
+- [认证](/gateway/authentication)
+- [远程 Gateway 设置](/gateway/remote-gateway-readme)

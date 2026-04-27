@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "691964c433ac917000d7bfe27a484162"
+mmh3_hash: "7ee5495e0f1ac54ab6caaf882d6c277a"
 title: OpenShell
 summary: "将 OpenShell 作为 OpenClaw agent 的托管沙盒后端"
 read_when:
@@ -273,7 +273,7 @@ openclaw sandbox recreate --all
 4. 在 `mirror` 模式中:exec 之前将本地同步到远程,运行,exec 之后同步回来。
 5. 在 `remote` 模式中:创建时一次性播种,然后直接在远程 workspace 上操作。
 
-## 另请参见
+## 相关
 
 - [Sandboxing](/gateway/sandboxing) — 模式、scope 和后端比较
 - [Sandbox vs Tool Policy vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) — 调试被阻止的工具

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "86e5064c14e90187920dbee65046e8aa"
+mmh3_hash: "dee5205af63fa36983b2f712ecc7f5fb"
 summary: "从 Gateway 公开兼容 OpenAI 的 /v1/chat/completions HTTP 端点"
 read_when:
   - 集成期望 OpenAI Chat Completions 的工具
@@ -168,7 +168,7 @@ OpenClaw 将 OpenAI `model` 字段视为 **Agent 目标**，而不是原始 prov
 
     示例：
     `x-openclaw-model: openai/gpt-5.4`
-    `x-openclaw-model: gpt-5.4`
+    `x-openclaw-model: gpt-5.5`
 
     如果省略，所选 Agent 将使用其正常配置的模型选择运行。
 
@@ -276,3 +276,8 @@ curl -sS http://127.0.0.1:18789/v1/embeddings \
 - `openclaw/default` 始终存在，因此一个稳定的 id 在所有环境中都有效。
 - 后端 provider/model 覆盖属于 `x-openclaw-model`，而不是 OpenAI `model` 字段。
 - `/v1/embeddings` 支持 `input` 作为字符串或字符串数组。
+
+## 相关
+
+- [配置参考](/gateway/configuration-reference)
+- [OpenAI](/providers/openai)

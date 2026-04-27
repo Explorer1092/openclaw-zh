@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f8450bc8fb329ca2c866714922050933"
+mmh3_hash: "4758ee63a5d2ac65002a5780a38c40c4"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:
   - 学习如何配置 OpenClaw
@@ -630,3 +630,8 @@ title: "配置示例"
 - Provider IDs 不同（电话号码、用户 IDs、channel IDs）。使用 provider 文档确认格式。
 - 稍后添加的可选部分：`web`、`browser`、`ui`、`discovery`、`canvasHost`、`talk`、`signal`、`imessage`。
 - 有关更深入的设置说明，请参见 [Providers](/providers) 和 [Troubleshooting](/gateway/troubleshooting)。
+
+## 相关
+
+- [配置参考](/gateway/configuration-reference)
+- [配置](/gateway/configuration)

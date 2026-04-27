@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c8d695b71796303a83edc85bd224ff2e"
+mmh3_hash: "d41db38c310ef49e1d1c00e76c16fc14"
 summary: "历史 Bridge 协议（旧版节点）：TCP JSONL、配对、作用域 RPC"
 read_when:
   - 构建或调试节点客户端（iOS/Android/macOS 节点模式）
@@ -74,3 +74,8 @@ Gateway → 客户端：
 ## 版本控制
 
 Bridge 是**隐式 v1**（无最小/最大协商）。本节仅供历史参考；当前节点/operator 客户端使用 WebSocket [Gateway 协议](/gateway/protocol)。
+
+## 相关
+
+- [Gateway 协议](/gateway/protocol)
+- [节点](/nodes)

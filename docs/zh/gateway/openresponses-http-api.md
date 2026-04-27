@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a9c8de5cf0f98190d992f1e37131b3a7"
+mmh3_hash: "38f2b8fd241cd8efec16fa9dbf95ed58"
 summary: "从 Gateway 公开兼容 OpenResponses 的 /v1/responses HTTP 端点"
 read_when:
   - 集成使用 OpenResponses API 的客户端
@@ -323,3 +323,8 @@ curl -N http://127.0.0.1:18789/v1/responses \
     "input": "hi"
   }'
 ```
+
+## 相关
+
+- [OpenAI Chat Completions](/gateway/openai-http-api)
+- [OpenAI](/providers/openai)

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5df6cc15d5dc5a694ec521aef08421ac"
+mmh3_hash: "46a0421e5e1763baf030af244824922c"
 summary: "后台 exec 执行和进程管理"
 read_when:
   - 添加或修改后台 exec 行为
@@ -123,3 +123,8 @@ OpenClaw 通过 `exec` 工具运行 shell 命令，并在内存中保留长时�
 ```json
 { "tool": "process", "action": "paste", "sessionId": "<id>", "text": "line1\nline2\n" }
 ```
+
+## 相关
+
+- [Exec 工具](/tools/exec)
+- [Exec 审批](/tools/exec-approvals)

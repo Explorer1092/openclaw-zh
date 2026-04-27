@@ -1,7 +1,7 @@
 ---
 title: "Tailscale (网关仪表板)"
 sidebarTitle: "Tailscale"
-mmh3_hash: "1f492ec0f978336b36e510b722826147"
+mmh3_hash: "4e795bc6d9e94828bd6b0bd815e5b9eb"
 summary: "网关仪表板的集成 Tailscale Serve/Funnel"
 read_when: ["在 localhost 外暴露网关控制 UI","自动化 tailnet 或公共仪表板访问"]
 ---
@@ -15,6 +15,8 @@ OpenClaw 可以为网关仪表板和 WebSocket 端口自动配置 Tailscale **Se
 - `funnel`:通过 `tailscale funnel` 公共 HTTPS。OpenClaw 需要共享密码。
 - `off`:默认(无 Tailscale 自动化)。
 
+Status 和审计输出使用 **Tailscale exposure** 来表示此 OpenClaw Serve/Funnel 模式。`off` 意味着 OpenClaw 未管理 Serve 或 Funnel；它不意味着本地 Tailscale 守护进程已停止或注销。
+
 ## 身份验证
 
 设置 `gateway.auth.mode` 来控制握手:
@@ -25,6 +27,7 @@ OpenClaw 可以为网关仪表板和 WebSocket 端口自动配置 Tailscale **Se
 - `trusted-proxy`（身份感知反向代理；参见 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)）
 
 当 `tailscale.mode = "serve"` 且 `gateway.auth.allowTailscale` 为 `true` 时,Control UI/WebSocket 身份验证可以使用 Tailscale 身份头(`tailscale-user-login`)而无需提供令牌/密码。OpenClaw 通过本地 Tailscale 守护进程(`tailscale whois`)解析 `x-forwarded-for` 地址并将其与头匹配来验证身份,然后接受它。OpenClaw 仅在请求来自环回并带有 Tailscale 的 `x-forwarded-for`、`x-forwarded-proto` 和 `x-forwarded-host` 头时将请求视为 Serve。
+对于包含浏览器设备身份的 Control UI 操作员 Session，此已验证的 Serve 路径也会跳过设备配对往返。它不会绕过浏览器设备身份：无设备的客户端仍会被拒绝，节点角色或非 Control UI WebSocket 连接仍遵循正常的配对和认证检查。
 HTTP API 端点（例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`）**不**使用 Tailscale 身份头认证。它们仍遵循 Gateway 正常的 HTTP 认证模式：默认为共享密钥认证，或有意配置的 trusted-proxy / 私有 ingress `none` 设置。
 此无令牌流程假设 Gateway 主机是可信的。如果不受信任的本地代码可能在同一主机上运行，请禁用 `gateway.auth.allowTailscale` 并改为要求令牌/密码身份验证。
 要求明确的共享密钥凭证，请设置 `gateway.auth.allowTailscale: false` 并使用 `gateway.auth.mode: "token"` 或 `"password"`。
@@ -61,7 +64,9 @@ HTTP API 端点（例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`）**不
 - 控制 UI:`http://<tailscale-ip>:18789/`
 - WebSocket:`ws://<tailscale-ip>:18789`
 
-注意:在此模式下,环回(`http://127.0.0.1:18789`)将**无法**工作。
+<Note>
+在此模式下,环回(`http://127.0.0.1:18789`)将**无法**工作。
+</Note>
 
 ### 公共互联网(Funnel + 共享密码)
 
@@ -113,3 +118,9 @@ openclaw gateway --tailscale funnel --auth password
 - `tailscale serve` 命令:https://tailscale.com/kb/1242/tailscale-serve
 - Tailscale Funnel 概述:https://tailscale.com/kb/1223/tailscale-funnel
 - `tailscale funnel` 命令:https://tailscale.com/kb/1311/tailscale-funnel
+
+## 相关
+
+- [远程访问](/gateway/remote)
+- [发现](/gateway/discovery)
+- [认证](/gateway/authentication)

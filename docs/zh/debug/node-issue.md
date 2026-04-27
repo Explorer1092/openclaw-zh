@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7686570ca443008d796d0c3a0030a0e9"
+mmh3_hash: "acd5f8af1d29f70671d852c111cea23c"
 summary: Node + tsx "__name is not a function" 崩溃说明和解决方法
 read_when:
   - 调试仅 Node 的开发脚本或监视模式故障
@@ -84,3 +84,8 @@ node --import tsx scripts/repro/tsx-name-repro.ts
 - 在 Node 22/24 上复现以确认 Node 25 回归。
 - 如果存在已知回归, 测试 `tsx` nightly 或固定到早期版本。
 - 如果在 Node LTS 上复现, 向上游提交包含 `__name` 堆栈跟踪的最小复现。
+
+## 相关
+
+- [Node.js 安装](/install/node)
+- [Gateway 故障排除](/gateway/troubleshooting)

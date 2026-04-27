@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b2d8be1758bf1fa55e4132c15c9e8ce7"
+mmh3_hash: "8f81049f565284ffd7afbc5597853a0f"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -9,7 +9,9 @@ title: "Heartbeat"
 
 # Heartbeat (Gateway)
 
-> **Heartbeat vs Cron?** 参见 [Automation & Tasks](/automation) 了解何时使用各自的指导。
+<Note>
+**Heartbeat vs Cron?** 参见 [Automation & Tasks](/automation) 了解何时使用各自的指导。
+</Note>
 
 Heartbeat 在主 Session 中运行**定期 Agent 轮次**,以便模型能够无需打扰您地呈现任何需要关注的内容。
 
@@ -52,7 +54,8 @@ Heartbeat 是计划的主 Session 轮次 — 它**不会**创建[后台任务](/
 - 间隔:`30m`(或当检测到 Anthropic OAuth/token 认证模式时为 `1h`,包括 Claude CLI 复用)。设置 `agents.defaults.heartbeat.every` 或每个 Agent 的 `agents.list[].heartbeat.every`;使用 `0m` 禁用。
 - 提示正文(可通过 `agents.defaults.heartbeat.prompt` 配置):
   `Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.`
-- Heartbeat 提示以**逐字**方式作为用户消息发送。系统提示包含"Heartbeat"部分,运行在内部被标记。
+- Heartbeat 提示以**逐字**方式作为用户消息发送。系统提示包含"Heartbeat"部分，仅在为默认 Agent 启用 Heartbeat 时，运行在内部被标记。
+- 当使用 `0m` 禁用 Heartbeat 时，正常运行也会从引导上下文中省略 `HEARTBEAT.md`，以便模型看不到仅 Heartbeat 的指令。
 - 活跃时间(`heartbeat.activeHours`)在配置的时区中检查。在窗口外,Heartbeat 被跳过,直到窗口内的下一个滴答。
 
 ## Heartbeat 提示的用途
@@ -169,7 +172,9 @@ Heartbeat 可以响应已完成的[后台任务](/automation/tasks),但 Heartbea
 - 完全省略 `activeHours`(无时间窗口限制;这是默认行为)。
 - 设置全天窗口:`activeHours: { start: "00:00", end: "24:00" }`。
 
-不要将相同的 `start` 和 `end` 时间(例如 `08:00` 到 `08:00`)。这被视为零宽度窗口,因此 Heartbeat 总是被跳过。
+<Warning>
+不要设置相同的 `start` 和 `end` 时间(例如 `08:00` 到 `08:00`)。这被视为零宽度窗口,因此 Heartbeat 总是被跳过。
+</Warning>
 
 ### 多账户示例
 
@@ -240,7 +245,8 @@ Heartbeat 可以响应已完成的[后台任务](/automation/tasks),但 Heartbea
 - 如果 `target` 解析为没有外部目的地,运行仍然发生但不发送出站消息。
 - 如果 `showOk`、`showAlerts` 和 `useIndicator` 全部禁用,运行会以 `reason=alerts-disabled` 提前跳过。
 - 如果仅禁用警报交付,OpenClaw 仍可以运行 Heartbeat、更新到期任务时间戳、恢复 Session 空闲时间戳,并抑制出站警报负载。
-- 仅 Heartbeat 的回复**不会**保持 Session 活跃;`updatedAt` 被恢复,以便空闲过期正常行为。
+- 仅 Heartbeat 的回复**不会**保持 Session 活跃。Heartbeat 元数据可能更新 Session 行，但空闲过期使用来自最后一条真实用户/Channel 消息的 `lastInteractionAt`，每日过期使用 `sessionStartedAt`。
+- Control UI 和 WebChat 历史隐藏 Heartbeat 提示和仅 OK 的确认。底层 Session transcript 仍可包含这些轮次以供审计/回放。
 - 分离的[后台任务](/automation/tasks)可以排队系统事件并唤醒 Heartbeat,以便主 Session 快速注意到某些内容。该唤醒不会使 Heartbeat 运行变成后台任务。
 
 ## 可见性控制

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eb306fc328891159d20cb4829712a7b2"
+mmh3_hash: "f9dc7de862ffc6f36889382b81227860"
 summary: "模型认证:OAuth、API 密钥、Claude CLI 复用和 Anthropic setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
@@ -56,6 +56,22 @@ openclaw doctor
 Anthropic setup-token 认证在 OpenClaw 中作为受支持的 token 路径仍然可用。Anthropic 工作人员告知我们 OpenClaw 风格的 Claude CLI 使用已再次获得许可，因此除非 Anthropic 发布新的政策，OpenClaw 将 Claude CLI 复用和 `claude -p` 的使用视为此集成的认可路径。当 Claude CLI 复用在主机上可用时，该路径现在是首选路径。
 
 对于长期 Gateway 主机，Anthropic API 密钥仍然是最可预测的设置。如果您想在同一主机上复用现有的 Claude 登录，请使用引导/配置中的 Anthropic Claude CLI 路径。
+
+Claude CLI 复用的推荐主机设置：
+
+```bash
+# 在 Gateway 主机上运行
+claude auth login
+claude auth status --text
+openclaw models auth login --provider anthropic --method cli --set-default
+```
+
+这是一个两步设置：
+
+1. 在 Gateway 主机上将 Claude Code 本身登录到 Anthropic。
+2. 告诉 OpenClaw 将 Anthropic 模型选择切换到本地 `claude-cli` 后端，并存储匹配的 OpenClaw auth profile。
+
+如果 `claude` 不在 `PATH` 上，请先安装 Claude Code 或将 `agents.defaults.cliBackends.claude-cli.command` 设置为真实的二进制路径。
 
 手动输入令牌（任何提供商；写入 `auth-profiles.json` 并更新配置）：
 
@@ -156,3 +172,9 @@ openclaw models status
 ### 令牌即将过期/已过期
 
 运行 `openclaw models status` 确认哪个 profile 即将过期。如果 Anthropic token profile 缺失或已过期，请通过 setup-token 刷新该设置或迁移到 Anthropic API 密钥。
+
+## 相关
+
+- [Secrets 管理](/gateway/secrets)
+- [远程访问](/gateway/remote)
+- [Auth 存储](/concepts/oauth)

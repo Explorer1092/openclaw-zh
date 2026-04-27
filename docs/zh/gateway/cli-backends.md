@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "04b878ed3e04ac4d6e5b85217fb2d522"
+mmh3_hash: "9c15330f2e188628532798dfe225e0be"
 summary: "CLI backend：通过本地 AI CLI 的纯文本回退，以及可选的 MCP 工具桥接"
 read_when:
   - 您希望在 API 提供商失败时有一个可靠的回退
@@ -26,7 +26,7 @@ title: "CLI Backends"
 您可以**无需任何配置**使用 Codex CLI（捆绑的 OpenAI 插件注册了一个默认 backend）：
 
 ```bash
-openclaw agent --message "hi" --model codex-cli/gpt-5.4
+openclaw agent --message "hi" --model codex-cli/gpt-5.5
 ```
 
 如果您的 Gateway 在 launchd/systemd 下运行并且 PATH 很少，只需添加命令路径：
@@ -59,11 +59,11 @@ openclaw agent --message "hi" --model codex-cli/gpt-5.4
     defaults: {
       model: {
         primary: "anthropic/claude-opus-4-6",
-        fallbacks: ["codex-cli/gpt-5.4"],
+        fallbacks: ["codex-cli/gpt-5.5"],
       },
       models: {
         "anthropic/claude-opus-4-6": { alias: "Opus" },
-        "codex-cli/gpt-5.4": {},
+        "codex-cli/gpt-5.5": {},
       },
     },
   },
@@ -131,7 +131,7 @@ agents.defaults.cliBackends
 
 1. **选择一个 backend** 基于 provider 前缀（`codex-cli/...`）。
 2. **构建系统提示** 使用相同的 OpenClaw 提示 + workspace 上下文。
-3. **执行 CLI** 带有 Session ID（如果支持），以便历史保持一致。
+3. **执行 CLI** 带有 Session ID（如果支持），以便历史保持一致。捆绑的 `claude-cli` 后端在每个 OpenClaw Session 中保持一个 Claude stdio 进程活跃，并通过 stream-json stdin 发送后续轮次。
 4. **解析输出**（JSON 或纯文本）并返回最终文本。
 5. **持久化 Session ID** 每个 backend，以便后续重用相同的 CLI Session。
 
@@ -151,12 +151,14 @@ agents.defaults.cliBackends
   - `always`：始终发送 Session ID（如果未存储则为新 UUID）。
   - `existing`：仅在之前存储了 Session ID 时发送。
   - `none`：从不发送 Session ID。
+- `claude-cli` 默认为 `liveSession: "claude-stdio"`、`output: "jsonl"` 和 `input: "stdin"`，以便后续轮次在活跃的 Claude 进程期间重用。热 stdio 现在是默认值，包括省略传输字段的自定义配置。如果 Gateway 重启或空闲进程退出，OpenClaw 将从存储的 Claude Session ID 恢复。存储的 Session ID 在恢复前会与现有的可读项目转录进行验证，因此幻影绑定会以 `reason=transcript-missing` 清除，而不是在 `--resume` 下静默启动新的 Claude CLI Session。
+- 存储的 CLI Session 是提供商拥有的连续性。隐式每日 Session 重置不会中断它们；`/reset` 和显式 `session.reset` 策略仍然会中断。
 
 序列化说明：
 
 - `serialize: true` 保持同一通道运行有序。
 - 大多数 CLI 在一个 provider 通道上序列化。
-- 当 backend 认证状态更改时（包括重新登录、令牌轮换或更改的认证 profile 凭证），OpenClaw 会丢弃存储的 CLI Session 复用。
+- 当所选认证身份更改时，OpenClaw 会丢弃存储的 CLI Session 复用，包括更改的 auth profile ID、静态 API 密钥、静态令牌，或 CLI 公开 OAuth 账户身份时。OAuth 访问和刷新令牌轮换不会中断存储的 CLI Session。如果 CLI 不公开稳定的 OAuth 账户 ID，OpenClaw 让该 CLI 强制执行恢复权限。
 
 ## 图像（透传）
 
@@ -254,7 +256,7 @@ CLI backend **不会**直接接收 OpenClaw 工具调用，但 backend 可以通
 当前捆绑行为：
 
 - `claude-cli`：生成严格的 MCP 配置文件
-- `codex-cli`：`mcp_servers` 的内联配置覆盖
+- `codex-cli`：`mcp_servers` 的内联配置覆盖；生成的 OpenClaw 回环服务器使用 Codex 的每服务器工具审批模式标记，以便 MCP 调用不会因本地审批提示而停滞
 - `google-gemini-cli`：生成 Gemini 系统设置文件
 
 启用 Bundle MCP 时，OpenClaw：
@@ -281,3 +283,8 @@ CLI backend **不会**直接接收 OpenClaw 工具调用，但 backend 可以通
 - **模型名称错误**：使用 `modelAliases` 将 `provider/model` → CLI 模型映射。
 - **无 Session 连续性**：确保设置了 `sessionArg` 且 `sessionMode` 不是 `none`（Codex CLI 当前无法使用 JSON 输出恢复）。
 - **图像被忽略**：设置 `imageArg`（并验证 CLI 支持文件路径）。
+
+## 相关
+
+- [Gateway 说明书](/gateway)
+- [本地模型](/gateway/local-models)

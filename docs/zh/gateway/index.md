@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a791fecac2edefc4de108cc4b4ffbe81"
+mmh3_hash: "764d280a6ee8295c332c42c231be7f9e"
 summary: "Gateway 服务、生命周期和操作手册"
 read_when:
   - 运行或调试 Gateway 进程
@@ -156,6 +156,30 @@ openclaw gateway probe
 
 详细设置:[/gateway/multiple-gateways](/gateway/multiple-gateways)。
 
+## VoiceClaw 实时 Brain 端点
+
+OpenClaw 在 `/voiceclaw/realtime` 暴露了一个 VoiceClaw 兼容的实时 WebSocket 端点。当 VoiceClaw 桌面客户端应该直接与实时 OpenClaw Brain 对话而不是通过单独的中继进程时，使用它。
+
+该端点使用 Gemini Live 进行实时音频，并通过直接向 Gemini Live 公开 OpenClaw 工具来将 OpenClaw 作为 Brain 调用。工具调用立即返回 `working` 结果以保持语音轮次响应，然后 OpenClaw 异步执行实际工具并将结果注入回实时 Session。在 Gateway 进程环境中设置 `GEMINI_API_KEY`。如果启用了 Gateway 认证，桌面客户端在其第一条 `session.config` 消息中发送 Gateway token 或 password。
+
+实时 Brain 访问运行拥有者授权的 OpenClaw Agent 命令。将 `gateway.auth.mode: "none"` 限制在仅回环的测试实例中。非本地实时 Brain 连接需要 Gateway 认证。
+
+对于隔离的测试 Gateway，使用其自己的端口、配置和状态运行单独的实例：
+
+```bash
+OPENCLAW_CONFIG_PATH=/path/to/openclaw-realtime/openclaw.json \
+OPENCLAW_STATE_DIR=/path/to/openclaw-realtime/state \
+OPENCLAW_SKIP_CHANNELS=1 \
+GEMINI_API_KEY=... \
+openclaw gateway --port 19789
+```
+
+然后将 VoiceClaw 配置为使用：
+
+```text
+ws://127.0.0.1:19789/voiceclaw/realtime
+```
+
 ## 远程访问
 
 首选:Tailscale/VPN。
@@ -187,7 +211,9 @@ openclaw gateway restart
 openclaw gateway stop
 ```
 
-LaunchAgent 标签为 `ai.openclaw.gateway`(默认)或 `ai.openclaw.<profile>`(命名配置文件)。`openclaw doctor` 审计和修复服务配置漂移。
+使用 `openclaw gateway restart` 进行重启。不要连锁使用 `openclaw gateway stop` 和 `openclaw gateway start`；在 macOS 上，`gateway stop` 会在停止之前有意禁用 LaunchAgent。
+
+LaunchAgent 标签为 `ai.openclaw.gateway`（默认）或 `ai.openclaw.<profile>`（命名配置文件）。`openclaw doctor` 审计和修复服务配置漂移。
 
   </Tab>
 
@@ -255,28 +281,7 @@ sudo systemctl enable --now openclaw-gateway[-<profile>].service
   </Tab>
 </Tabs>
 
-## 一台主机上的多个 Gateways
-
-大多数设置应该运行 **一个** Gateway。
-仅在严格隔离/冗余(例如 rescue profile)时使用多个。
-
-每个实例的清单:
-
-- 唯一的 `gateway.port`
-- 唯一的 `OPENCLAW_CONFIG_PATH`
-- 唯一的 `OPENCLAW_STATE_DIR`
-- 唯一的 `agents.defaults.workspace`
-
-示例:
-
-```bash
-OPENCLAW_CONFIG_PATH=~/.openclaw/a.json OPENCLAW_STATE_DIR=~/.openclaw-a openclaw gateway --port 19001
-OPENCLAW_CONFIG_PATH=~/.openclaw/b.json OPENCLAW_STATE_DIR=~/.openclaw-b openclaw gateway --port 19002
-```
-
-参见:[Multiple gateways](/gateway/multiple-gateways)。
-
-### Dev profile 快速路径
+## Dev profile 快速路径
 
 ```bash
 openclaw --dev setup
@@ -347,3 +352,10 @@ openclaw health
 - [Health](/gateway/health)
 - [Doctor](/gateway/doctor)
 - [Authentication](/gateway/authentication)
+
+## 相关
+
+- [配置](/gateway/configuration)
+- [Gateway 故障排除](/gateway/troubleshooting)
+- [远程访问](/gateway/remote)
+- [Secrets 管理](/gateway/secrets)

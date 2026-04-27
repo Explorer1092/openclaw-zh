@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3aa871e8833c85733a7b15f989514a2b"
+mmh3_hash: "cf1bbb9e8eacdd869b9b5f4a3e177b48"
 summary: "日志表面、文件日志、WS 日志样式和控制台格式化"
 read_when:
   - 更改日志输出或格式
@@ -20,6 +20,7 @@ OpenClaw 有两个日志"表面":
 
 - 默认滚动日志文件位于 `/tmp/openclaw/` 下(每天一个文件):`openclaw-YYYY-MM-DD.log`
   - 日期使用 Gateway 主机的本地时区。
+- 活动日志文件在达到 `logging.maxFileBytes`（默认：100 MB）时轮转，保留最多五个编号归档，并继续写入新的活动文件。
 - 日志文件路径和级别可以通过 `~/.openclaw/openclaw.json` 配置:
   - `logging.file`
   - `logging.level`
@@ -47,9 +48,9 @@ CLI 捕获 `console.log/info/warn/error/debug/trace` 并将它们写入文件日
 - `logging.consoleLevel`(默认 `info`)
 - `logging.consoleStyle`(`pretty` | `compact` | `json`)
 
-## 工具摘要脱敏
+## 脱敏
 
-详细的工具摘要(例如 `🛠️ Exec: ...`)可以在进入控制台流之前屏蔽敏感令牌。这**仅限工具**,不会更改文件日志。
+OpenClaw 可以在日志或 transcript 输出离开进程之前屏蔽敏感令牌。相同的脱敏策略应用于控制台、文件日志、OTLP 日志记录和 Session transcript 文本接收器，因此在 JSONL 行或消息写入磁盘之前，匹配的密钥值会被屏蔽。
 
 - `logging.redactSensitive`:`off` | `tools`(默认:`tools`)
 - `logging.redactPatterns`:正则表达式字符串数组(覆盖默认值)
@@ -106,3 +107,10 @@ openclaw gateway --verbose --ws-log full
 - **WhatsApp 消息正文**在 `debug` 级别记录(使用 `--verbose` 查看它们)
 
 这使现有的文件日志保持稳定,同时使交互式输出可扫描。
+
+
+## 相关
+
+- [Logging](/logging)
+- [OpenTelemetry 导出](/gateway/opentelemetry)
+- [诊断导出](/gateway/diagnostics)

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "449a1a63952ab00da070162eddabc0ef"
+mmh3_hash: "cc08168c0c64b86eb882e9412f881bb3"
 summary: "Gateway、节点和 Canvas Host 如何连接。"
 read_when:
   - 您想要 Gateway 网络模型的简明概述
@@ -20,3 +20,9 @@ title: "网络模型"
   - `/__openclaw__/a2ui/`
     当配置了 `gateway.auth` 且 Gateway 绑定超出回环时，这些路由受 Gateway 身份验证保护。节点客户端使用与其活跃 WS 会话绑定的节点作用域功能 URL。参见 [Gateway 配置](/gateway/configuration)（`canvasHost`、`gateway`）。
 - 远程使用通常是 SSH 隧道或 tailnet VPN。参见 [远程访问](/gateway/remote) 和 [发现](/gateway/discovery)。
+
+## 相关
+
+- [远程访问](/gateway/remote)
+- [受信代理认证](/gateway/trusted-proxy-auth)
+- [Gateway 协议](/gateway/protocol)

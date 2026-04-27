@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b397ecb332e08af6168f185206569f75"
+mmh3_hash: "f34f86a28f6b6892fee25dd2a1ca9e68"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 Gateway WS 客户端
@@ -515,3 +515,8 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
 ## 范围
 
 此协议公开**完整的 Gateway API**(状态、Channel、模型、聊天、Agent、Session、节点、审批等)。确切的表面由 `src/gateway/protocol/schema.ts` 中的 TypeBox schema 定义。
+
+## 相关
+
+- [Bridge 协议](/gateway/bridge-protocol)
+- [Gateway 服务手册](/gateway)

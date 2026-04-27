@@ -1,7 +1,7 @@
 ---
 title: "网关锁定"
 sidebarTitle: "网关锁定"
-mmh3_hash: "2aa41845a73e4a6160c474cf80252c11"
+mmh3_hash: "89c95e96d59d24cf7256aff02b6f6878"
 summary: "使用 WebSocket 监听器绑定的 Gateway 单例守护"
 read_when:
   - 运行或调试 gateway 进程

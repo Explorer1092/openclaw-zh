@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "71aa0cea19b5af6e4d12ea50e3c4a04c"
+mmh3_hash: "cc829164d4d44bbbfa50d2f98d7a3cf2"
 summary: "通过 Gateway HTTP 端点直接调用单个工具"
 read_when:
   - 在不运行完整 Agent 轮次的情况下调用工具
@@ -157,3 +157,8 @@ curl -sS http://127.0.0.1:18789/tools/invoke \
     "args": {}
   }'
 ```
+
+## 相关
+
+- [Gateway 协议](/gateway/protocol)
+- [工具和插件](/tools)
