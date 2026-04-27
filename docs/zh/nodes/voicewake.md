@@ -1,12 +1,10 @@
 ---
 title: "语音唤醒"
 sidebarTitle: "语音唤醒"
-mmh3_hash: "0763bec9373c950103591d6669114087"
+mmh3_hash: "72ca184650108e9a142066a18c21ad43"
 summary: "全局语音唤醒词 (Gateway 拥有) 以及它们如何在 Node 间同步"
 read_when: ["更改语音唤醒词行为或默认值","添加需要唤醒词同步的新 Node 平台"]
 ---
-
-# 语音唤醒 (全局唤醒词)
 
 OpenClaw 将 **唤醒词视为由 Gateway 拥有的单个全局列表**。
 
@@ -39,14 +37,37 @@ OpenClaw 将 **唤醒词视为由 Gateway 拥有的单个全局列表**。
 - 触发词被标准化（修剪，删除空值）。空列表回退到默认值。
 - 强制执行限制以确保安全（计数/长度上限）。
 
+### 路由方法（触发词 → 目标）
+
+- `voicewake.routing.get` → `{ config: VoiceWakeRoutingConfig }`
+- `voicewake.routing.set` 带参数 `{ config: VoiceWakeRoutingConfig }` → `{ config: VoiceWakeRoutingConfig }`
+
+`VoiceWakeRoutingConfig` 形状:
+
+```json
+{
+  "version": 1,
+  "defaultTarget": { "mode": "current" },
+  "routes": [{ "trigger": "robot wake", "target": { "sessionKey": "agent:main:main" } }],
+  "updatedAtMs": 1730000000000
+}
+```
+
+路由目标支持以下之一：
+
+- `{ "mode": "current" }`
+- `{ "agentId": "main" }`
+- `{ "sessionKey": "agent:main:main" }`
+
 ### 事件
 
 - `voicewake.changed` 载荷 `{ triggers: string[] }`
+- `voicewake.routing.changed` 载荷 `{ config: VoiceWakeRoutingConfig }`
 
 谁接收它:
 
-- 所有 WebSocket 客户端 (macOS 应用, WebChat 等)
-- 所有连接的 Node (iOS/Android)，以及在 Node 连接时作为初始"当前状态"推送。
+- 所有 WebSocket 客户端（macOS 应用、WebChat 等）
+- 所有连接的 Node（iOS/Android），以及在 Node 连接时作为初始"当前状态"推送。
 
 ## 客户端行为
 
@@ -58,9 +79,15 @@ OpenClaw 将 **唤醒词视为由 Gateway 拥有的单个全局列表**。
 ### iOS Node
 
 - 使用全局列表进行 `VoiceWakeManager` 触发检测。
-- 在设置中编辑唤醒词会调用 `voicewake.set` (通过 Gateway WS)，并保持本地唤醒词检测响应。
+- 在设置中编辑唤醒词会调用 `voicewake.set`（通过 Gateway WS），并保持本地唤醒词检测响应。
 
 ### Android Node
 
 - 语音唤醒目前在 Android 运行时/Settings 中已禁用。
 - Android 语音使用 Voice 标签页中的手动麦克风捕获，而不是唤醒词触发。
+
+## 相关文档
+
+- [对讲模式](/nodes/talk)
+- [音频与语音笔记](/nodes/audio)
+- [媒体理解](/nodes/media-understanding)

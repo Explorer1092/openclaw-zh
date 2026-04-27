@@ -1,6 +1,6 @@
 ---
 title: "音频与语音笔记"
-mmh3_hash: "ccd0a04c1ab17d747e04d7175d13331f"
+mmh3_hash: "6fe1d76b5acb39f46112900c83e7b99e"
 summary: "入站音频/语音笔记如何下载、转录并注入到回复中"
 read_when:
   - 更改音频转录或媒体处理时
@@ -32,7 +32,7 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 3. **Gemini CLI**（`gemini`）使用 `read_many_files`
 4. **Provider 认证**
    - 配置的 `models.providers.*` 支持音频的条目首先尝试
-   - 捆绑的回退顺序：OpenAI → Groq → Deepgram → Google → Mistral
+   - 捆绑的回退顺序：OpenAI → Groq → xAI → Deepgram → Google → SenseAudio → ElevenLabs → Mistral
 
 要禁用自动检测，请设置 `tools.media.audio.enabled: false`。
 要自定义，请设置 `tools.media.audio.models`。
@@ -113,6 +113,21 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 }
 ```
 
+### 仅 Provider（SenseAudio）
+
+```json5
+{
+  tools: {
+    media: {
+      audio: {
+        enabled: true,
+        models: [{ provider: "senseaudio", model: "senseaudio-asr-pro-1.5-260319" }],
+      },
+    },
+  },
+}
+```
+
 ### 将转录回显到聊天（可选启用）
 
 ```json5
@@ -137,6 +152,8 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 - 当使用 `provider: "deepgram"` 时，Deepgram 会获取 `DEEPGRAM_API_KEY`。
 - Deepgram 设置详情：[Deepgram（音频转录）](/providers/deepgram)。
 - Mistral 设置详情：[Mistral](/providers/mistral)。
+- 当使用 `provider: "senseaudio"` 时，SenseAudio 会获取 `SENSEAUDIO_API_KEY`。
+- SenseAudio 设置详情：[SenseAudio](/providers/senseaudio)。
 - 音频 Provider 可以通过 `tools.media.audio` 覆盖 `baseUrl`、`headers` 和 `providerOptions`。
 - 默认大小上限为 20MB（`tools.media.audio.maxBytes`）。超大音频将跳过该模型并尝试下一个条目。
 - 小于 1024 字节的微小/空音频文件会在 Provider/CLI 转录之前被跳过。
@@ -190,3 +207,9 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 - 对于 `parakeet-mlx`，如果传递 `--output-dir`，当 `--output-format` 为 `txt`（或省略）时，OpenClaw 读取 `<output-dir>/<media-basename>.txt`；非 `txt` 输出格式回退到 stdout 解析。
 - 保持合理的超时时间（`timeoutSeconds`，默认 60 秒）以避免阻塞回复队列。
 - 预检转录仅处理**第一个**音频附件用于提及检测。其他音频在主媒体理解阶段处理。
+
+## 相关文档
+
+- [媒体理解](/nodes/media-understanding)
+- [对讲模式](/nodes/talk)
+- [语音唤醒](/nodes/voicewake)

@@ -1,7 +1,7 @@
 ---
 title: "Windows"
 sidebarTitle: "Windows"
-mmh3_hash: "b21ed87c3e978aea4fc5f426260b7a27"
+mmh3_hash: "98728e60a7d61b7ebee8be95f7b0862d"
 summary: "Windows 支持：原生和 WSL2 安装路径、守护进程及当前注意事项"
 read_when:
   - 在 Windows 上安装 OpenClaw
@@ -240,3 +240,8 @@ pnpm gateway:watch
 ## Windows 伴侣应用
 
 我们还没有 Windows 伴侣应用。如果你想贡献力量使其实现，欢迎贡献。
+
+## 相关文档
+
+- [安装概述](/install)
+- [平台](/platforms)

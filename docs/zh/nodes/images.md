@@ -1,7 +1,7 @@
 ---
 title: "图像与媒体支持"
 sidebarTitle: "图像与媒体"
-mmh3_hash: "645169322da91a7c2f73ec2465da9be2"
+mmh3_hash: "075db3b0338287e0a8a5e8e9ff4e9c9d"
 summary: "发送、Gateway 和 Agent 回复的图像和媒体处理规则"
 read_when:
   - 修改媒体管道或附件时
@@ -46,7 +46,7 @@ WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、
 - 当入站 Web 消息包含媒体时，OpenClaw 下载到临时文件并暴露模板变量：
   - `{{MediaUrl}}` 入站媒体的伪 URL。
   - `{{MediaPath}}` 在运行命令之前写入的本地临时路径。
-- 当启用每 session Docker 沙盒时，入站媒体会被复制到沙盒工作区，`MediaPath`/`MediaUrl` 重写为类似 `media/inbound/<filename>` 的相对路径。
+- 当启用每 Session Docker 沙盒时，入站媒体会被复制到沙盒工作区，`MediaPath`/`MediaUrl` 重写为类似 `media/inbound/<filename>` 的相对路径。
 - 媒体理解（如果通过 `tools.media.*` 或共享 `tools.media.models` 配置）在模板化之前运行，并可以将 `[Image]`、`[Audio]` 和 `[Video]` 块插入 `Body`。
   - 音频设置 `{{Transcript}}` 并使用转录进行命令解析，以便斜杠命令仍然有效。
   - 视频和图像描述保留任何标题文本以进行命令解析。
@@ -73,3 +73,9 @@ WhatsApp 频道通过 **Baileys Web** 运行。本文档记录了当前发送、
 - 覆盖图像/音频/文档案例的发送 + 回复流程。
 - 验证图像的重新压缩（大小限制）和音频的语音笔记标志。
 - 确保多媒体回复作为顺序发送扇出。
+
+## 相关文档
+
+- [相机捕获](/nodes/camera)
+- [媒体理解](/nodes/media-understanding)
+- [音频与语音笔记](/nodes/audio)

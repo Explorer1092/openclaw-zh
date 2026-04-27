@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a629d894db6e7e024299f14f59d4e5e2"
+mmh3_hash: "846823ba1409c71f648182d32bc36bb1"
 title: "macOS 上的 Gateway (外部 launchd)"
 summary: "macOS 上的 Gateway 运行时（外部 launchd 服务）"
 read_when:
@@ -67,3 +67,8 @@ openclaw gateway --port 18999 --bind loopback
 ```bash
 openclaw gateway call health --url ws://127.0.0.1:18999 --timeout 3000
 ```
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [Gateway 运行手册](/gateway)

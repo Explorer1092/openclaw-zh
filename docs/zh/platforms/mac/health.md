@@ -1,7 +1,7 @@
 ---
 title: "macOS 上的健康检查"
 sidebarTitle: "健康检查"
-mmh3_hash: "d9094db9a6dae40cb72eb4e308e60c70"
+mmh3_hash: "8159440509cfc169299fc36eb436b1f1"
 summary: "macOS 应用如何报告网关/Baileys 健康状态"
 read_when: ["调试 mac 应用健康指示器"]
 ---
@@ -33,3 +33,8 @@ read_when: ["调试 mac 应用健康指示器"]
 - 你仍然可以在[网关健康](/gateway/health)中使用 CLI 流程(`openclaw status`、
   `openclaw status --deep`、`openclaw health --json`)并跟踪
   `/tmp/openclaw/openclaw-*.log` 以查找 `web-heartbeat` / `web-reconnect`。
+
+## 相关文档
+
+- [Gateway 健康](/gateway/health)
+- [macOS 应用](/platforms/macos)

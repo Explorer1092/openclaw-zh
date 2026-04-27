@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3bbf465b306e4d5f986d43969d321b13"
+mmh3_hash: "504c20990f9277f0613f2d60c421c37c"
 title: "日志记录 (macOS)"
 sidebarTitle: "日志记录"
 summary: "OpenClaw 日志:滚动诊断文件日志 + 统一日志隐私标志"
@@ -57,3 +57,8 @@ sudo install -m 644 -o root -g wheel /tmp/ai.openclaw.plist /Library/Preferences
 - 删除覆盖:`sudo rm /Library/Preferences/Logging/Subsystems/ai.openclaw.plist`。
 - 可选择运行 `sudo log config --reload` 以强制 logd 立即删除覆盖。
 - 请记住,此表面可能包括电话号码和消息正文;仅在你主动需要额外详细信息时才保留 plist。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [Gateway 日志](/gateway/logging)

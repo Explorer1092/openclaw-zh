@@ -1,7 +1,7 @@
 ---
 title: "Canvas (macOS 应用)"
 sidebarTitle: "Canvas"
-mmh3_hash: "ae535565380eb29063d5eafcc5405516"
+mmh3_hash: "79dce46ceaf952b39d7e9bfe0f586f4a"
 summary: "通过 WKWebView + 自定义 URL 方案嵌入的代理控制 Canvas 面板"
 read_when: ["实现 macOS Canvas 面板","为可视化工作区添加代理控件","调试 WKWebView canvas 加载"]
 ---
@@ -117,3 +117,8 @@ window.location.href = "openclaw://agent?message=Review%20this%20design";
 - Canvas 方案阻止目录遍历;文件必须位于会话根目录下。
 - 本地 Canvas 内容使用自定义方案(不需要环回服务器)。
 - 仅在明确导航时才允许外部 `http(s)` URL。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [WebChat](/web/webchat)

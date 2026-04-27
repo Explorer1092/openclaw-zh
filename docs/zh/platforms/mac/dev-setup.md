@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "991d916f708bf95ed247cbf404a4932e"
+mmh3_hash: "a8a4268a580c6c19cb09285ddf061365"
 title: "macOS 开发设置"
 summary: "在 OpenClaw macOS 应用上工作的开发者设置指南"
 read_when:
@@ -106,3 +106,8 @@ lsof -nP -iTCP:18789 -sTCP:LISTEN
 ```
 
 如果手动运行占用了端口，停止该进程（Ctrl+C）。作为最后手段，杀死你在上面找到的 PID。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [安装概述](/install)

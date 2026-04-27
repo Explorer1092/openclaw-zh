@@ -1,7 +1,7 @@
 ---
 title: "macOS 签名 (调试构建)"
 sidebarTitle: "签名 (调试)"
-mmh3_hash: "a977de7d89eb8013c05494e989a33cd0"
+mmh3_hash: "bc118234ba9e1a372e7d7e545e1ebe31"
 summary: "打包脚本生成的 macOS 调试构建的签名步骤"
 read_when:
   - 构建或签名 mac 调试构建
@@ -47,3 +47,8 @@ About 选项卡读取这些 key 以显示版本、构建日期、git commit 以�
 ## 为什么
 
 TCC 权限与 bundle 标识符 _和_ 代码签名绑定。具有变化 UUID 的未签名调试构建导致 macOS 在每次重建后忘记授权。签名二进制文件（默认 ad-hoc）并保持固定的 bundle id/路径（`dist/OpenClaw.app`）在构建之间保留授权，与 VibeTunnel 方法匹配。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [macOS 权限](/platforms/mac/permissions)

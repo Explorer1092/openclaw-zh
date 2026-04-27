@@ -1,7 +1,7 @@
 ---
 title: "OpenClaw macOS IPC 架构"
 sidebarTitle: "macOS IPC"
-mmh3_hash: "b50ea09a8e200291d022156f85f4981b"
+mmh3_hash: "463f86576ff716b09a740689c69875ce"
 summary: "OpenClaw 应用、网关节点传输和 PeekabooBridge 的 macOS IPC 架构"
 read_when: ["编辑 IPC 合约或菜单栏应用 IPC"]
 ---
@@ -55,3 +55,8 @@ Agent -> Gateway -> Node Service (WS)
 - 所有通信都保持仅本地;没有网络套接字被暴露。
 - TCC 提示仅来自 GUI 应用捆绑包;在重建时保持签名的捆绑包 ID 稳定。
 - IPC 强化:套接字模式 `0600`、令牌、对等 UID 检查、HMAC 质询/响应、短 TTL。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [macOS IPC 流程（执行审批）](/tools/exec-approvals-advanced#macos-ipc-flow)

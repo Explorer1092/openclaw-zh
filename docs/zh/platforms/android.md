@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3976dbc35daaa78f6f1fa94975d11c37"
+mmh3_hash: "e66d9f898ea77c347395ec0fa72be000"
 title: "Android 应用 (节点)"
 summary: "Android 应用（节点）：连接手册 + Connect/Chat/Voice/Canvas 命令接口"
 read_when:
@@ -231,3 +231,9 @@ Android 可以将设备通知作为事件转发到 gateway。多个控件允许�
 <Note>
 通知转发需要 Android 通知监听器权限。应用在设置期间会提示授予此权限。
 </Note>
+
+## 相关文档
+
+- [iOS 应用](/platforms/ios)
+- [节点](/nodes)
+- [Android 节点故障排除](/nodes/troubleshooting)

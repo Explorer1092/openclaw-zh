@@ -1,7 +1,7 @@
 ---
 title: "远程 OpenClaw (macOS ⇄ 远程主机)"
 sidebarTitle: "远程 OpenClaw"
-mmh3_hash: "70da3727513b0f0df4fb9153848a4aa5"
+mmh3_hash: "430945a40e7293911c0e1b5b03a3f1b0"
 summary: "macOS 应用通过 SSH 控制远程 OpenClaw gateway 的流程"
 read_when:
   - 设置或调试远程 mac 控制
@@ -23,6 +23,10 @@ read_when:
 
 - **SSH tunnel**（默认）：使用 `ssh -N -L ...` 将 gateway 端口转发到 localhost。gateway 将节点的 IP 视为 `127.0.0.1`，因为隧道是 loopback。
 - **Direct (ws/wss)**：直接连接到 gateway URL。gateway 看到真实的客户端 IP。
+
+在 SSH tunnel 模式下，发现的 LAN/tailnet 主机名保存为 `gateway.remote.sshTarget`。应用将 `gateway.remote.url` 保持在本地隧道端点，例如 `ws://127.0.0.1:18789`，因此 CLI、Web Chat 和本地 node host 服务都使用相同的安全 loopback 传输。
+
+浏览器自动化在远程模式下由 CLI node host 负责，而不是由原生 macOS 应用节点负责。可能时，应用会启动已安装的 node host 服务；如果你需要从该 Mac 进行浏览器控制，请使用 `openclaw node install ...` 和 `openclaw node start` 安装/启动（或在前台运行 `openclaw node run ...`），然后以该浏览器可用的节点为目标。
 
 ## 远程主机的前置条件
 
@@ -84,3 +88,8 @@ openclaw nodes notify --node <id> --title "Ping" --body "Remote gateway ready" -
 ```
 
 应用中不再有全局"默认声音"切换；调用者为每个请求选择声音（或无）。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [远程访问](/gateway/remote)

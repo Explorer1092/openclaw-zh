@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5c9f0883b5fb13f4054e43175f368383"
+mmh3_hash: "6a94eedcada563380c0996f6d9a94151"
 title: "平台"
 summary: "平台支持概述（Gateway + 配套应用）"
 read_when:
@@ -54,3 +54,9 @@ Linux 配套应用，但 Gateway 今日已完全支持。
 - macOS: LaunchAgent（`ai.openclaw.gateway` 或 `ai.openclaw.<profile>`；旧版 `com.openclaw.*`）
 - Linux/WSL2: systemd 用户服务（`openclaw-gateway[-<profile>].service`）
 - 原生 Windows: 计划任务（`OpenClaw Gateway` 或 `OpenClaw Gateway (<profile>)`），如果任务创建被拒绝则回退到每用户 Startup 文件夹登录项
+
+## 相关文档
+
+- [安装概述](/install)
+- [macOS 应用](/platforms/macos)
+- [iOS 应用](/platforms/ios)

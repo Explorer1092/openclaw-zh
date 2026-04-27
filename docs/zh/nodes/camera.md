@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "0f204e28cd230c5d10ee9d51c86ab334"
-summary: "相机捕获 (iOS node + macOS 应用) 用于 agent 使用: 照片 (jpg) 和短视频片段 (mp4)"
+mmh3_hash: "ee7663b3d972181f4f6752b2a8fe4142"
+summary: "相机捕获 (iOS/Android node + macOS 应用) 用于 agent 使用: 照片 (jpg) 和短视频片段 (mp4)"
 read_when:
-  - 添加或修改 iOS node 或 macOS 上的相机捕获
+  - 添加或修改 iOS/Android node 或 macOS 上的相机捕获
   - 扩展 agent 可访问的 MEDIA 临时文件工作流
 title: "相机捕获"
 ---
-
-# 相机捕获 (agent)
 
 OpenClaw 支持 agent 工作流的**相机捕获**:
 
@@ -100,6 +98,12 @@ openclaw nodes camera clip --node <id> --no-audio
 
 像 `canvas.*` 一样, Android node 仅允许在**前台**执行 `camera.*` 命令。后台调用返回 `NODE_BACKGROUND_UNAVAILABLE`。
 
+### Android 命令 (通过 Gateway `node.invoke`)
+
+- `camera.list`
+  - 响应载荷:
+    - `devices`: `{ id, name, position, deviceType }` 数组
+
 ### 载荷保护
 
 照片会被重新压缩以保持 base64 载荷在 5 MB 以下。
@@ -154,3 +158,9 @@ openclaw nodes screen record --node <id> --duration 10s --fps 15   # 打印 MEDI
 注意:
 
 - 需要 macOS **Screen Recording** 权限 (TCC)。
+
+## 相关文档
+
+- [图像与媒体支持](/nodes/images)
+- [媒体理解](/nodes/media-understanding)
+- [位置命令](/nodes/location-command)

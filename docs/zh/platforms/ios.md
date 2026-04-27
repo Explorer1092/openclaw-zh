@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "77cd04dbd80a29ca093d0c4c7335bf7d"
+mmh3_hash: "7d8c4ca602a2dfe6f62049d7293b0321"
 title: "iOS 应用 (节点)"
 summary: "iOS 节点应用：连接到 Gateway、配对、canvas 和故障排除"
 read_when:
@@ -45,6 +45,22 @@ openclaw devices approve <requestId>
 
 如果应用使用更改的 auth 详情（角色/作用域/公钥）重试配对，之前的待处理请求将被取代，并创建新的 `requestId`。
 在批准之前重新运行 `openclaw devices list`。
+
+可选：如果 iOS 节点始终从严格控制的子网连接，你可以使用明确的 CIDR 或精确 IP 选择首次节点自动批准：
+
+```json5
+{
+  gateway: {
+    nodes: {
+      pairing: {
+        autoApproveCidrs: ["192.168.1.0/24"],
+      },
+    },
+  },
+}
+```
+
+默认禁用。仅适用于没有请求作用域的全新 `role: node` 配对。Operator/browser 配对以及任何角色、作用域、元数据或公钥更改仍然需要手动批准。
 
 4. 验证连接：
 

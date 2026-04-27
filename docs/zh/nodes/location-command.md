@@ -1,12 +1,10 @@
 ---
 title: "位置命令"
 sidebarTitle: "位置命令"
-mmh3_hash: "dbb8d1c900ef40f9d8804fa6d6dca97a"
-summary: "Node 的位置命令 (location.get)，权限模式和后台行为"
+mmh3_hash: "8145ee0d6a95aa713cc2431a7ba1d0de"
+summary: "Node 的位置命令 (location.get)，权限模式和 Android 前台行为"
 read_when: ["添加位置 Node 支持或权限 UI 时","设计 Android 位置权限或前台行为时"]
 ---
-
-# 位置命令 (Node)
 
 ## 摘要 (TL;DR)
 
@@ -96,3 +94,9 @@ UI 行为:
 - 关闭: "位置共享已禁用。"
 - 使用期间: "仅当 OpenClaw 打开时。"
 - 精确: "使用精确 GPS 位置。关闭以共享大致位置。"
+
+## 相关文档
+
+- [Channel 位置解析](/channels/location)
+- [相机捕获](/nodes/camera)
+- [对讲模式](/nodes/talk)

@@ -1,7 +1,7 @@
 ---
 title: "Peekaboo Bridge (macOS UI 自动化)"
 sidebarTitle: "Peekaboo Bridge"
-mmh3_hash: "f4ac004242de27a3fa4684481eae3364"
+mmh3_hash: "079f7468f771626dc5ec2ce743980799"
 summary: "macOS UI 自动化的 PeekabooBridge 集成"
 read_when: ["在 OpenClaw.app 中托管 PeekabooBridge","通过 Swift Package Manager 集成 Peekaboo","更改 PeekabooBridge 协议/路径"]
 ---
@@ -58,3 +58,8 @@ export PEEKABOO_BRIDGE_SOCKET=/path/to/bridge.sock
   `PEEKABOO_ALLOW_UNSIGNED_SOCKET_CLIENTS=1` 运行主机。
 - 如果未找到主机,请打开其中一个主机应用(Peekaboo.app 或 OpenClaw.app)
   并确认已授予权限。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [macOS 权限](/platforms/mac/permissions)

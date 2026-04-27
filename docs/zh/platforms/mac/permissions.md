@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b5838532d1cc1101b4441f3f71745737"
+mmh3_hash: "cfd9dbd911f472261982eb9f9304e4a5"
 summary: "macOS 权限持久化 (TCC) 和签名要求"
 read_when:
   - 调试缺失或卡住的 macOS 权限提示
@@ -45,3 +45,8 @@ macOS 也可能对终端/后台进程门控 Desktop、Documents 和 Downloads。
 解决方法:如果你想避免按文件夹授予权限,请将文件移动到 OpenClaw workspace(`~/.openclaw/workspace`)。
 
 如果你正在测试权限,请始终使用真实证书签名。Ad-hoc 构建仅适用于权限无关紧要的快速本地运行。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [macOS 签名](/platforms/mac/signing)

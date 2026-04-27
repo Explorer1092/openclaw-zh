@@ -1,7 +1,7 @@
 ---
 title: "技能 (macOS)"
 sidebarTitle: "技能"
-mmh3_hash: "42df337e753a7b0efb487785a79fb4ae"
+mmh3_hash: "5f40ab859ff3641478c879db4be2cafd"
 summary: "macOS Skills 设置 UI 和 gateway 支持的状态"
 read_when:
   - 更新 macOS Skills 设置 UI
@@ -34,3 +34,8 @@ macOS 应用通过 gateway 显示 OpenClaw 技能；它不在本地解析技能�
 ## 远程模式
 
 - 安装 + 配置更新发生在 gateway 主机上（而不是本地 Mac）。
+
+## 相关文档
+
+- [技能](/tools/skills)
+- [macOS 应用](/platforms/macos)

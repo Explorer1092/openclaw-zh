@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "29b86fe62cda7332284451359124650e"
+mmh3_hash: "e04995d9daf9c83f287bdd993d66faef"
 summary: "mac 应用如何嵌入 Gateway WebChat 以及如何调试它"
 read_when:
   - 调试 mac WebChat 视图或 loopback 端口
@@ -38,3 +38,8 @@ macOS 菜单栏应用将 WebChat UI 嵌入为原生 SwiftUI 视图。它连接�
 ## 已知限制
 
 - UI 针对聊天 session 进行了优化（不是完整的浏览器沙箱）。
+
+## 相关文档
+
+- [WebChat](/web/webchat)
+- [macOS 应用](/platforms/macos)

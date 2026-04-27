@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "33d4594330a717898e981ef6133ade65"
+mmh3_hash: "01277aea173381a1e1f4f6a5947afc18"
 summary: "Node 的配对、功能、权限和 canvas/camera/screen/device/notifications/system 的 CLI 辅助工具"
 read_when:
   - 将 iOS/Android Node 配对到 Gateway
@@ -8,13 +8,11 @@ read_when:
 title: "节点"
 ---
 
-# 节点
-
 **node** 是连接到 Gateway **WebSocket**（与操作员相同的端口）并具有 `role: "node"` 的配套设备（macOS/iOS/Android/无头），并通过 `node.invoke` 暴露命令界面（例如 `canvas.*`、`camera.*`、`device.*`、`notifications.*`、`system.*`）。协议详情：[Gateway 协议](/gateway/protocol)。
 
 旧版传输：[Bridge 协议](/gateway/bridge-protocol)（TCP JSONL；仅当前节点的历史记录）。
 
-macOS 也可以在 **node 模式**下运行：菜单栏应用连接到 Gateway 的 WS 服务器，并将其本地 canvas/camera 命令作为 node 暴露（因此 `openclaw nodes …` 对这台 Mac 有效）。
+macOS 也可以在 **node 模式**下运行：菜单栏应用连接到 Gateway 的 WS 服务器，并将其本地 canvas/camera 命令作为 node 暴露（因此 `openclaw nodes …` 对这台 Mac 有效）。在远程 gateway 模式下，浏览器自动化由 CLI node host（`openclaw node run` 或已安装的 node 服务）处理，而不是由原生应用 node 处理。
 
 注意：
 
@@ -101,6 +99,7 @@ openclaw node run --host 127.0.0.1 --port 18790 --display-name "Build Node"
 
 ```bash
 openclaw node install --host <gateway-host> --port 18789 --display-name "Build Node"
+openclaw node start
 openclaw node restart
 ```
 
@@ -142,7 +141,7 @@ openclaw config set tools.exec.security allowlist
 openclaw config set tools.exec.node "<id-or-name>"
 ```
 
-或每个 session：
+或每个 Session：
 
 ```
 /exec host=node security=allowlist node=<id-or-name>
@@ -150,7 +149,7 @@ openclaw config set tools.exec.node "<id-or-name>"
 
 一旦设置，任何带有 `host=node` 的 `exec` 调用都会在 node host 上运行（受 node 允许列表/批准限制）。
 
-`host=auto` 不会自行隐式选择节点，但来自 `auto` 的明确每次调用 `host=node` 请求是允许的。如果你希望 node exec 成为 session 的默认值，请显式设置 `tools.exec.host=node` 或 `/exec host=node ...`。
+`host=auto` 不会自行隐式选择节点，但来自 `auto` 的明确每次调用 `host=node` 请求是允许的。如果你希望 node exec 成为 Session 的默认值，请显式设置 `tools.exec.host=node` 或 `/exec host=node ...`。
 
 相关：
 

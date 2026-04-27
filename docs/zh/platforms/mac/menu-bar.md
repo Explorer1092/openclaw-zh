@@ -1,7 +1,7 @@
 ---
 title: "菜单栏状态逻辑"
 sidebarTitle: "菜单栏状态"
-mmh3_hash: "4a27189d8d223956ba1ae2c0e47a3ba9"
+mmh3_hash: "8445f5fe50c8cfe2973c7e33837be6e3"
 summary: "菜单栏状态逻辑以及向用户显示的内容"
 read_when: ["调整 mac 菜单 UI 或状态逻辑"]
 ---
@@ -73,3 +73,8 @@ read_when: ["调整 mac 菜单 UI 或状态逻辑"]
 - 在其他活跃时启动 main:图标立即翻转到 main。
 - 快速工具突发:确保徽章不闪烁(工具结果上的 TTL 宽限期)。
 - 所有会话空闲后健康行重新出现。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [菜单栏图标](/platforms/mac/icon)

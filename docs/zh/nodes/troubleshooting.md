@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "ef6545b6364181b8d9088dd7167d1daa"
+mmh3_hash: "1597178e7e8b8f546139a604122a6218"
 summary: "排查节点配对、前台要求、权限和工具失败问题"
 read_when:
   - 节点已连接但 camera/canvas/screen/exec 工具失败
   - 您需要节点配对与审批的心智模型
 title: "节点故障排除"
 ---
-
-# 节点故障排除
 
 当节点在状态中可见但节点工具失败时使用本页面。
 
@@ -92,7 +90,8 @@ openclaw approvals allowlist add --node <idOrNameOrIp> "/usr/bin/uname"
 - `LOCATION_PERMISSION_REQUIRED` → 未授予请求的位置模式。
 - `LOCATION_BACKGROUND_UNAVAILABLE` → 应用处于后台但仅存在"使用期间"权限。
 - `SYSTEM_RUN_DENIED: approval required` → Exec 请求需要明确审批。
-- `SYSTEM_RUN_DENIED: allowlist miss` → 命令被白名单模式阻止。在 Windows Node host 上，`cmd.exe /c ...` 等 shell 包装器形式在白名单模式下被视为白名单未命中，除非通过询问流程批准。
+- `SYSTEM_RUN_DENIED: allowlist miss` → 命令被白名单模式阻止。
+  在 Windows Node host 上，`cmd.exe /c ...` 等 shell 包装器形式在白名单模式下被视为白名单未命中，除非通过询问流程批准。
 
 ## 快速恢复循环
 
@@ -117,3 +116,9 @@ openclaw logs --follow
 - [/nodes/location-command](/nodes/location-command)
 - [/tools/exec-approvals](/tools/exec-approvals)
 - [/gateway/pairing](/gateway/pairing)
+
+## 相关文档
+
+- [节点概览](/nodes)
+- [Gateway 故障排除](/gateway/troubleshooting)
+- [Channel 故障排除](/channels/troubleshooting)

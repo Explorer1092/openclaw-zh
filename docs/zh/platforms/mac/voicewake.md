@@ -1,7 +1,7 @@
 ---
 title: "语音唤醒和按下说话"
 sidebarTitle: "语音唤醒"
-mmh3_hash: "31784e922dfe33a045450bf41305733c"
+mmh3_hash: "16e005297351af0e1207b509bf697139"
 summary: "mac 应用中的语音唤醒和按下说话模式以及路由详细信息"
 read_when: ["处理语音唤醒或 PTT 路径"]
 ---
@@ -73,3 +73,9 @@ read_when: ["处理语音唤醒或 PTT 路径"]
 - 打开按下说话,按住 Cmd+Fn,说话,释放:叠加层应该显示部分,然后发送。
 - 按住时,菜单栏耳朵应该保持放大(使用 `triggerVoiceEars(ttl:nil)`);
   它们在释放后下降。
+
+## 相关文档
+
+- [语音唤醒](/nodes/voicewake)
+- [语音叠加层](/platforms/mac/voice-overlay)
+- [macOS 应用](/platforms/macos)

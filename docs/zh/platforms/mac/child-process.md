@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e2a5e1d261090e69a3808e07d26bd7d0"
+mmh3_hash: "dbe8699f890ee700d7b56b2e016c0995"
 title: "macOS 上的网关生命周期"
 sidebarTitle: "网关生命周期"
 summary: "macOS 上的网关生命周期(launchd)"
@@ -62,3 +62,8 @@ rm ~/.openclaw/disable-launchagent
 - 可预测的日志和监督。
 
 如果再次需要真正的子进程模式,应将其记录为单独的、明确的仅开发模式。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [Gateway 运行手册](/gateway)

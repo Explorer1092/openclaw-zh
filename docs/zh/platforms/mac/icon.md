@@ -1,7 +1,7 @@
 ---
 title: "菜单栏图标状态"
 sidebarTitle: "菜单栏图标"
-mmh3_hash: "df3fe60b3aeb81b072d5fa7779ca556f"
+mmh3_hash: "f98052de0c6603677743c417a6e2552c"
 summary: "macOS 上 OpenClaw 的菜单栏图标状态和动画"
 read_when: ["更改菜单栏图标行为"]
 ---
@@ -37,3 +37,8 @@ read_when: ["更改菜单栏图标行为"]
 - 耳朵/工作没有外部 CLI/代理切换;将其保留在应用自己的信号内部,
   以避免意外抖动。
 - 保持 TTL 简短(&lt;10s),以便如果作业挂起,图标会快速返回基线。
+
+## 相关文档
+
+- [菜单栏](/platforms/mac/menu-bar)
+- [macOS 应用](/platforms/macos)

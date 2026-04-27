@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "74894acec8078885c21943da46ef676d"
+mmh3_hash: "7dec753b8311bcaf005b8cc433607551"
 title: "语音叠加层生命周期 (macOS)"
 sidebarTitle: "语音叠加层"
 summary: "唤醒词和按下说话重叠时的语音叠加层生命周期"
@@ -75,3 +75,9 @@ read_when: ["调整语音叠加层行为"]
    应用运行时冷却。
 4. 将 `VoiceWakeOverlayController` 连接到发布者;从 runtime/PTT 中删除直接调用。
 5. 为会话采用、冷却和空文本关闭添加集成测试。
+
+## 相关文档
+
+- [macOS 应用](/platforms/macos)
+- [语音唤醒 (macOS)](/platforms/mac/voicewake)
+- [对讲模式](/nodes/talk)
