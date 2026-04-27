@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7b41063d5ccd3b1fca51c579a7370fee"
+mmh3_hash: "f8fa786ec0c94df6c45f44429bf9fab4"
 summary: "Hooks：用于命令和生命周期事件的事件驱动自动化"
 read_when:
   - 你需要为 /new、/reset、/stop 和 Agent 生命周期事件设置事件驱动自动化
@@ -9,7 +9,7 @@ title: "Hooks"
 
 # Hooks
 
-Hooks 是在 Gateway 内发生某些事件时运行的小脚本。它们会从目录中自动发现，并可以通过 `openclaw hooks` 检查。
+Hooks 是在 Gateway 内发生某些事件时运行的小脚本。它们会从目录中自动发现，并可以通过 `openclaw hooks` 检查。Gateway 仅在启用 Hooks 或配置了至少一个 Hook 条目、Hook Pack、遗留 handler 或额外 Hook 目录后才加载内部 Hooks。
 
 OpenClaw 中有两种类型的 Hooks：
 
@@ -109,7 +109,7 @@ const handler = async (event) => {
 export default handler;
 ```
 
-每个事件包括：`type`、`action`、`sessionKey`、`timestamp`、`messages`（push 以发送给用户）和 `context`（事件特定数据）。
+每个事件包括：`type`、`action`、`sessionKey`、`timestamp`、`messages`（push 以发送给用户）和 `context`（事件特定数据）。Agent 和工具 Plugin Hook 上下文还可以包含 `trace`，这是一个只读的 W3C 兼容诊断 trace 上下文，Plugin 可以将其传入结构化日志以用于 OTEL 关联。
 
 ### 事件上下文亮点
 
@@ -129,6 +129,8 @@ export default handler;
 
 **压缩事件**：`session:compact:before` 包括 `messageCount`、`tokenCount`。`session:compact:after` 添加 `compactedCount`、`summaryLength`、`tokensBefore`、`tokensAfter`。
 
+`command:stop` 观察用户发出 `/stop`；它是取消/命令生命周期，而非 Agent 终结的守门人。需要检查自然最终答案并要求 Agent 再执行一次的 Plugin 应改用有类型的 Plugin Hook `before_agent_finalize`。参见 [Plugin Hooks](/plugins/hooks)。
+
 ## Hook 发现
 
 Hooks 会从以下目录自动发现，按覆盖优先级从低到高排列：
@@ -139,6 +141,8 @@ Hooks 会从以下目录自动发现，按覆盖优先级从低到高排列：
 4. **工作空间 Hooks**：`<workspace>/hooks/`（每 Agent，默认禁用直到明确启用）
 
 工作空间 Hooks 可以添加新的 Hook 名称，但不能覆盖具有相同名称的内置、托管或 Plugin 提供的 Hooks。
+
+Gateway 在启动时会跳过内部 Hook 发现，直到配置了内部 Hooks。使用 `openclaw hooks enable <name>` 启用内置或托管 Hook、安装 Hook Pack，或设置 `hooks.internal.enabled=true` 以选择启用。当你启用一个命名 Hook 时，Gateway 只加载该 Hook 的 handler；`hooks.internal.enabled=true`、额外 Hook 目录和遗留 handler 才会选择进行广泛发现。
 
 ### Hook Pack
 
@@ -206,9 +210,9 @@ Gateway 启动时从活动工作空间运行 `BOOT.md`。
 
 ## Plugin Hooks
 
-Plugin 可以通过 Plugin SDK 注册 Hooks 以进行更深度的集成：拦截工具调用、修改提示、控制消息流等。Plugin SDK 公开了 28 个 Hooks，涵盖模型解析、Agent 生命周期、消息流、工具执行、子 Agent 协调和 Gateway 生命周期。
+Plugin 可以通过 Plugin SDK 注册有类型的 Hooks 以进行更深度的集成：拦截工具调用、修改提示、控制消息流等。当你需要 `before_tool_call`、`before_agent_reply`、`before_install` 或其他进程内生命周期 Hooks 时，请使用 Plugin Hooks。
 
-有关完整的 Plugin Hook 参考，包括 `before_tool_call`、`before_agent_reply`、`before_install` 和所有其他 Plugin Hooks，请参见 [Plugin 架构](/plugins/architecture#provider-runtime-hooks)。
+有关完整的 Plugin Hook 参考，请参见 [Plugin Hooks](/plugins/hooks)。
 
 ## 配置
 
@@ -312,9 +316,9 @@ openclaw hooks info my-hook
 2. 重启 Gateway 进程以重新加载 Hooks。
 3. 检查 Gateway 日志：`./scripts/clawlog.sh | grep hook`
 
-## 相关文档
+## 相关
 
 - [CLI 参考：hooks](/cli/hooks)
 - [Webhooks](/automation/cron-jobs#webhooks)
-- [Plugin 架构](/plugins/architecture#provider-runtime-hooks) — 完整 Plugin Hook 参考
+- [Plugin Hooks](/plugins/hooks) — 进程内 Plugin 生命周期 Hooks
 - [配置](/gateway/configuration-reference#hooks)

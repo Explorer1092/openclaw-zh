@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "55e8cf0ab758d27e9841649cf9c22912"
+mmh3_hash: "8af1b022ac555a984ebc129ed335a140"
 title: "Brave Search API（旧版路径）"
 summary: "用于 web_search 的 Brave Search API 设置"
 read_when:
@@ -102,3 +102,7 @@ await web_search({
 - 默认情况下，结果缓存 15 分钟（可通过 `cacheTtlMinutes` 配置）。
 
 有关完整的 web_search 配置，请参阅 [Web 工具](/tools/web)。
+
+## 相关
+
+- [Brave Search](/tools/brave-search)

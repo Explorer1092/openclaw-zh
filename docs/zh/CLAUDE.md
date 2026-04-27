@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "635bac2a61deaad0a98be45023f08a0d"
+mmh3_hash: "7a38885691caf5546af1f3501ade0bd3"
 ---
 # 文档指南
 
@@ -8,8 +8,8 @@ mmh3_hash: "635bac2a61deaad0a98be45023f08a0d"
 ## Mintlify 规则
 
 - 文档托管在 Mintlify（`https://docs.openclaw.ai`）。
-- `docs/**/*.md` 中的内部文档链接必须保持根相对路径，不带 `.md` 或 `.mdx` 后缀（示例：`[Config](/configuration)`）。
-- 章节交叉引用应在根相对路径上使用锚点（示例：`[Hooks](/configuration#hooks)`）。
+- `docs/**/*.md` 中的内部文档链接必须保持根相对路径，不带 `.md` 或 `.mdx` 后缀（示例：`[Config](/gateway/configuration)`）。
+- 章节交叉引用应在根相对路径上使用锚点（示例：`[Hooks](/gateway/configuration-reference#hooks)`）。
 - 文档标题应避免使用破折号和撇号，因为 Mintlify 锚点生成在这些情况下不稳定。
 - README 和其他 GitHub 渲染文档应保留绝对文档 URL，以便链接在 Mintlify 外部也能正常工作。
 - 文档内容必须保持通用性：不包含个人设备名称、主机名或本地路径；使用 `user@gateway-host` 等占位符。

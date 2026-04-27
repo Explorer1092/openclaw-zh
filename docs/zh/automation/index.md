@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e5cc6b87c5cb540b455b393d08d0ec02"
+mmh3_hash: "f94a19eb4cf45ee8c4ca3e43d58d2c29"
 summary: "自动化机制概览：任务、Cron、Hooks、常设指令和 Task Flow"
 read_when:
   - 决定如何使用 OpenClaw 自动化工作时
@@ -43,7 +43,7 @@ flowchart TD
 | 审计运行内容和时间                      | 后台任务               | `openclaw tasks list` 和 `openclaw tasks audit`  |
 | 多步骤研究后汇总                        | Task Flow              | 带修订追踪的持久编排                             |
 | 会话重置时运行脚本                      | Hooks                  | 事件驱动，在生命周期事件触发                     |
-| 每次工具调用时执行代码                  | Hooks                  | Hooks 可按事件类型过滤                           |
+| 每次工具调用时执行代码                  | Plugin Hooks           | 进程内 Hooks 可拦截工具调用                      |
 | 总是在回复前检查合规性                  | 常设指令               | 自动注入每个会话                                 |
 
 ### 定时任务 (Cron) vs Heartbeat
@@ -86,13 +86,13 @@ Task Flow 是后台任务之上的流程编排基础设施。它管理带有托�
 
 ### Hooks
 
-Hooks 是由 Agent 生命周期事件（`/new`、`/reset`、`/stop`）、会话压缩、Gateway 启动、消息流和工具调用触发的事件驱动脚本。Hooks 会从目录中自动发现，并可以通过 `openclaw hooks` 管理。
+内部 Hooks 是由 Agent 生命周期事件（`/new`、`/reset`、`/stop`）、会话压缩、Gateway 启动和消息流触发的事件驱动脚本。它们会从目录中自动发现，并可以通过 `openclaw hooks` 管理。若需要进程内工具调用拦截，请使用 [Plugin Hooks](/plugins/hooks)。
 
 参见 [Hooks](/automation/hooks)。
 
 ### Heartbeat
 
-Heartbeat 是周期性的主会话轮次（默认每 30 分钟）。它在一个 Agent 轮次中批量处理多个检查（收件箱、日历、通知），并带有完整的会话上下文。Heartbeat 轮次不创建任务记录。使用 `HEARTBEAT.md` 作为小清单，或在 Heartbeat 内部需要仅到期的定期检查时使用 `tasks:` 块。空的 Heartbeat 文件以 `empty-heartbeat-file` 跳过；仅到期任务模式以 `no-tasks-due` 跳过。
+Heartbeat 是周期性的主会话轮次（默认每 30 分钟）。它在一个 Agent 轮次中批量处理多个检查（收件箱、日历、通知），并带有完整的会话上下文。Heartbeat 轮次不创建任务记录，也不会延长每日/闲置会话重置的新鲜度。使用 `HEARTBEAT.md` 作为小清单，或在 Heartbeat 内部需要仅到期的定期检查时使用 `tasks:` 块。空的 Heartbeat 文件以 `empty-heartbeat-file` 跳过；仅到期任务模式以 `no-tasks-due` 跳过。
 
 参见 [Heartbeat](/gateway/heartbeat)。
 
@@ -100,17 +100,18 @@ Heartbeat 是周期性的主会话轮次（默认每 30 分钟）。它在一个
 
 - **Cron** 处理精确调度（每日报告、每周回顾）和一次性提醒。所有 Cron 执行都创建任务记录。
 - **Heartbeat** 每 30 分钟在一个批量轮次中处理例行监控（收件箱、日历、通知）。
-- **Hooks** 通过自定义脚本响应特定事件（工具调用、会话重置、压缩）。
+- **Hooks** 通过自定义脚本响应特定事件（会话重置、压缩、消息流）。Plugin Hooks 涵盖工具调用。
 - **常设指令** 为 Agent 提供持久上下文和权限边界。
 - **Task Flow** 在各个任务之上协调多步骤流程。
 - **任务** 自动追踪所有后台工作，以便你检查和审计。
 
-## 相关文档
+## 相关
 
 - [定时任务](/automation/cron-jobs) — 精确调度和一次性提醒
 - [后台任务](/automation/tasks) — 所有后台工作的任务账本
 - [Task Flow](/automation/taskflow) — 持久多步骤流程编排
 - [Hooks](/automation/hooks) — 事件驱动的生命周期脚本
+- [Plugin Hooks](/plugins/hooks) — 进程内工具、提示、消息和生命周期 Hooks
 - [常设指令](/automation/standing-orders) — 持久 Agent 指令
 - [Heartbeat](/gateway/heartbeat) — 周期性主会话轮次
 - [配置参考](/gateway/configuration-reference) — 所有配置键

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0b697e413a925a1a0b387420db6a6ab0"
+mmh3_hash: "e8da5049c68f0a09d2a8d3f63eba8576"
 summary: "网络中心: gateway 界面、配对、发现和安全"
 read_when:
   - 您需要网络架构 + 安全概述
@@ -61,3 +61,8 @@ title: "网络"
 - [Gateway 配置参考](/gateway/configuration)
 - [故障排除](/gateway/troubleshooting)
 - [Doctor](/gateway/doctor)
+
+## 相关
+
+- [Gateway 网络模型](/gateway/network-model)
+- [远程访问](/gateway/remote)

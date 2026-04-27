@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3ff6f791d0dd02804848fcab7f04cb6a"
+mmh3_hash: "7699ca0cd676e22030b691c61a61b32b"
 summary: "用于 web_search 的 Perplexity Search API 和 Sonar/OpenRouter 兼容性"
 read_when:
   - 您想使用 Perplexity Search 进行网络搜索
@@ -174,3 +174,8 @@ await web_search({
 
 有关完整的 web_search 配置，请参阅 [Web 工具](/tools/web)。
 有关更多详细信息，请参阅 [Perplexity Search API 文档](https://docs.perplexity.ai/docs/search/quickstart)。
+
+## 相关
+
+- [Perplexity Search](/tools/perplexity-search)
+- [Web 搜索](/tools/web)

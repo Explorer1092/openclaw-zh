@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f1eed30dedbaac4e66a94cd664c143e4"
+mmh3_hash: "2108bc7e6bf01ff740753b19b2971ba9"
 summary: "OpenProse: .prose 工作流、slash 命令和 OpenClaw 中的状态"
 read_when:
   - 您想运行或编写 .prose 工作流
@@ -133,3 +133,8 @@ OpenProse 程序映射到 OpenClaw 原语:
 将 `.prose` 文件视为代码。运行前请审查。使用 OpenClaw 工具允许列表和批准门来控制副作用。
 
 对于确定性的、经批准的工作流,请与 [Lobster](/tools/lobster) 进行比较。
+
+## 相关
+
+- [文本转语音](/tools/tts)
+- [Markdown 格式化](/concepts/markdown-formatting)

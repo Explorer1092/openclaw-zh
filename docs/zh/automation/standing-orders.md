@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "12c171fa0d4ce382a69507ff12e1ee72"
+mmh3_hash: "7269c3768c7bc07cd5549ce86506d6f4"
 summary: "为自主 Agent 程序定义永久操作权限"
 read_when:
   - 设置无需逐任务提示即可运行的自主 Agent 工作流时
@@ -246,10 +246,10 @@ openclaw cron add \
 - 在单个程序中混合关注点——不同领域使用不同程序
 - 忘记用 Cron 作业强制执行——没有触发器的常设指令只是建议
 
-## 相关文档
+## 相关
 
-- [自动化与任务](/automation) — 所有自动化机制一览
-- [Cron 作业](/automation/cron-jobs) — 常设指令的计划强制执行
-- [Hooks](/automation/hooks) — Agent 生命周期事件的事件驱动脚本
-- [Webhooks](/automation/cron-jobs#webhooks) — 入站 HTTP 事件触发器
-- [Agent 工作空间](/concepts/agent-workspace) — 常设指令的存放位置，包括自动注入引导文件的完整列表（AGENTS.md、SOUL.md 等）
+- [自动化与任务](/automation)：所有自动化机制一览。
+- [Cron 作业](/automation/cron-jobs)：常设指令的计划强制执行。
+- [Hooks](/automation/hooks)：Agent 生命周期事件的事件驱动脚本。
+- [Webhooks](/automation/cron-jobs#webhooks)：入站 HTTP 事件触发器。
+- [Agent 工作空间](/concepts/agent-workspace)：常设指令的存放位置，包括自动注入引导文件的完整列表（AGENTS.md、SOUL.md 等）。

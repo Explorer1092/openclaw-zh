@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e8871606fb0f5640591c9dfd8f1df804"
+mmh3_hash: "58780d5cd37baa2b0f1a47c8b63d560d"
 summary: "OpenClaw 是一个可在任何操作系统上运行的 AI agent 多通道 gateway。"
 read_when:
   - 向新人介绍 OpenClaw
@@ -74,22 +74,22 @@ Gateway 是会话、路由和通道连接的单一真实来源。
 ## 核心功能
 
 <Columns>
-  <Card title="多通道 gateway" icon="network">
+  <Card title="多通道 gateway" icon="network" href="/channels">
     使用单个 Gateway 进程支持 Discord、iMessage、Signal、Slack、Telegram、WhatsApp、WebChat 等。
   </Card>
-  <Card title="插件 Channel" icon="plug">
+  <Card title="插件 Channel" icon="plug" href="/tools/plugin">
     捆绑插件在正常当前版本中添加 Matrix、Nostr、Twitch、Zalo 等。
   </Card>
-  <Card title="多 agent 路由" icon="route">
+  <Card title="多 agent 路由" icon="route" href="/concepts/multi-agent">
     每个 agent、workspace 或发送者的隔离会话。
   </Card>
-  <Card title="媒体支持" icon="image">
+  <Card title="媒体支持" icon="image" href="/nodes/images">
     发送和接收图像、音频和文档。
   </Card>
-  <Card title="Web 控制 UI" icon="monitor">
+  <Card title="Web 控制 UI" icon="monitor" href="/web/control-ui">
     用于聊天、配置、会话和节点的浏览器仪表板。
   </Card>
-  <Card title="移动节点" icon="smartphone">
+  <Card title="移动节点" icon="smartphone" href="/nodes">
     配对 iOS 和 Android 节点，支持 Canvas、相机和语音工作流。
   </Card>
 </Columns>

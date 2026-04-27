@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "387017f4f42bb6e62b8c754b1499b05f"
+mmh3_hash: "f0385f0be54ad263c0de82ff7791d06d"
 title: "Pi 集成架构"
 summary: "OpenClaw 嵌入式 Pi Agent 集成的架构和会话生命周期"
 read_when:
@@ -26,10 +26,10 @@ OpenClaw 使用 pi SDK 将 AI 编程智能体嵌入到其消息 Gateway 架构�
 
 ```json
 {
-  "@mariozechner/pi-agent-core": "0.64.0",
-  "@mariozechner/pi-ai": "0.64.0",
-  "@mariozechner/pi-coding-agent": "0.64.0",
-  "@mariozechner/pi-tui": "0.64.0"
+  "@mariozechner/pi-agent-core": "0.70.2",
+  "@mariozechner/pi-ai": "0.70.2",
+  "@mariozechner/pi-coding-agent": "0.70.2",
+  "@mariozechner/pi-tui": "0.70.2"
 }
 ```
 
@@ -225,7 +225,7 @@ const subscription = subscribeEmbeddedPiSession({
 - `tool_execution_start` / `tool_execution_update` / `tool_execution_end`
 - `turn_start` / `turn_end`
 - `agent_start` / `agent_end`
-- `auto_compaction_start` / `auto_compaction_end`
+- `compaction_start` / `compaction_end`
 
 ### 4. 提示
 
@@ -561,3 +561,8 @@ Pi 集成覆盖涵盖以下套件：
 - `src/agents/pi-embedded-runner-extraparams.live.test.ts`（启用 `OPENCLAW_LIVE_TEST=1`）
 
 有关当前运行命令，请参阅 [Pi 开发工作流](/pi-dev)。
+
+## 相关
+
+- [Pi 开发工作流](/pi-dev)
+- [安装概览](/install)

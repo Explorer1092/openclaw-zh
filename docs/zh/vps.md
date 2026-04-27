@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "15c62201a2c8c33cd5fa580d8490abea"
+mmh3_hash: "7d10ae062bbe0c6d5e2611f99ece832b"
 summary: "在 Linux 服务器或云 VPS 上运行 OpenClaw — 提供商选择、架构和调优"
 read_when:
   - 您想在 Linux 服务器或云 VPS 上运行 Gateway
@@ -112,3 +112,12 @@ TimeoutStartSec=90
 
 `Restart=` 策略如何帮助自动化恢复：
 [systemd 可以自动化服务恢复](https://www.redhat.com/en/blog/systemd-automate-recovery)。
+
+有关 Linux OOM 行为、子进程 victim 选择和 `exit 137` 诊断，请参阅 [Linux 内存压力和 OOM 杀手](/platforms/linux#memory-pressure-and-oom-kills)。
+
+## 相关
+
+- [安装概览](/install)
+- [DigitalOcean](/install/digitalocean)
+- [Fly.io](/install/fly)
+- [Hetzner](/install/hetzner)

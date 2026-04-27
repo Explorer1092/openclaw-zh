@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "42659931bb7073603491e4a027574a02"
+mmh3_hash: "15279d598ced9561165c45385c4fe392"
 summary: "Task Flow：后台任务之上的流程编排层"
 read_when:
   - 想了解 Task Flow 与后台任务的关系时
@@ -22,6 +22,78 @@ Task Flow 是位于[后台任务](/automation/tasks)之上的流程编排基础�
 | 多步骤管道（A 然后 B 然后 C）          | Task Flow（托管模式） |
 | 观察外部创建的任务                     | Task Flow（镜像模式） |
 | 一次性提醒                             | Cron 作业             |
+
+## 可靠的定时工作流模式
+
+对于市场情报简报等周期性工作流，将调度、编排和可靠性检查视为独立的层：
+
+1. 使用[定时任务](/automation/cron-jobs)控制时间。
+2. 当工作流需要在之前上下文上构建时，使用持久 Cron Session。
+3. 使用 [Lobster](/tools/lobster) 处理确定性步骤、审批门和恢复令牌。
+4. 使用 Task Flow 跨子任务、等待、重试和 Gateway 重启追踪多步骤运行。
+
+Cron 示例形式：
+
+```bash
+openclaw cron add \
+  --name "Market intelligence brief" \
+  --cron "0 7 * * 1-5" \
+  --tz "America/New_York" \
+  --session session:market-intel \
+  --message "Run the market-intel Lobster workflow. Verify source freshness before summarizing." \
+  --announce \
+  --channel slack \
+  --to "channel:C1234567890"
+```
+
+当周期性工作流需要特意保留历史记录、之前的运行摘要或持久上下文时，使用 `session:<id>` 而非 `isolated`。当每次运行应从全新状态开始且所有必要状态在工作流中已明确提供时，使用 `isolated`。
+
+在工作流内部，在 LLM 摘要步骤之前进行可靠性检查：
+
+```yaml
+name: market-intel-brief
+steps:
+  - id: preflight
+    command: market-intel check --json
+  - id: collect
+    command: market-intel collect --json
+    stdin: $preflight.json
+  - id: summarize
+    command: market-intel summarize --json
+    stdin: $collect.json
+  - id: approve
+    command: market-intel deliver --preview
+    stdin: $summarize.json
+    approval: required
+  - id: deliver
+    command: market-intel deliver --execute
+    stdin: $summarize.json
+    condition: $approve.approved
+```
+
+推荐的预检项目：
+
+- 浏览器可用性和 Profile 选择，例如使用 `openclaw` 用于托管状态，或在需要已登录的 Chrome Session 时使用 `user`。参见 [Browser](/tools/browser)。
+- 每个来源的 API 凭证和配额。
+- 所需端点的网络可达性。
+- Agent 所需工具已启用，例如 `lobster`、`browser` 和 `llm-task`。
+- 已为 Cron 配置失败通知目标，以便预检失败可见。参见[定时任务](/automation/cron-jobs#delivery-and-output)。
+
+每个收集项目的推荐数据溯源字段：
+
+```json
+{
+  "sourceUrl": "https://example.com/report",
+  "retrievedAt": "2026-04-24T12:00:00Z",
+  "asOf": "2026-04-24",
+  "title": "Example report",
+  "content": "..."
+}
+```
+
+在摘要处理前，工作流应拒绝或标记陈旧项目。LLM 步骤应只接收结构化 JSON，并被要求在输出中保留 `sourceUrl`、`retrievedAt` 和 `asOf`。当工作流内需要经过 Schema 验证的模型步骤时，使用 [LLM Task](/tools/llm-task)。
+
+对于可复用的团队或社区工作流，将 CLI、`.lobster` 文件和任何设置说明打包为 Skill 或 Plugin，并通过 [ClawHub](/tools/clawhub) 发布。除非 Plugin API 缺少所需的通用功能，否则请将工作流特定的 guardrail 保留在该包中。
 
 ## 同步模式
 
@@ -75,9 +147,9 @@ openclaw tasks flow cancel <lookup>
 
 流程协调任务，而不是替代任务。一个流程在其生命周期中可能驱动多个后台任务。使用 `openclaw tasks` 检查单个任务记录，使用 `openclaw tasks flow` 检查编排流程。
 
-## 相关文档
+## 相关
 
 - [后台任务](/automation/tasks) — 流程协调的后台工作账本
-- [CLI：tasks](/cli/index#tasks) — `openclaw tasks flow` 的 CLI 命令参考
+- [CLI：tasks](/cli/tasks) — `openclaw tasks flow` 的 CLI 命令参考
 - [自动化概览](/automation) — 所有自动化机制一览
 - [Cron 作业](/automation/cron-jobs) — 可能馈入流程的定时作业

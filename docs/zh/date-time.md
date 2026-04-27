@@ -1,6 +1,6 @@
 ---
 title: "日期和时间"
-mmh3_hash: "5753d93e3d3094026613172d4258deea"
+mmh3_hash: "392be64e9262adf19b28dd31bd9ece97"
 summary: "跨信封、提示、工具和连接器的日期和时间处理"
 read_when: ["您正在更改向模型或用户显示时间戳的方式","您正在调试消息或系统提示输出中的时间格式"]
 ---
@@ -28,9 +28,9 @@ OpenClaw 默认对传输时间戳使用**主机本地时间**,并且仅在系统
     defaults: {
       envelopeTimezone: "local", // "utc" | "local" | "user" | IANA 时区
       envelopeTimestamp: "on", // "on" | "off"
-      envelopeElapsed: "on" // "on" | "off"
-    }
-  }
+      envelopeElapsed: "on", // "on" | "off"
+    },
+  },
 }
 ```
 
@@ -86,9 +86,9 @@ System: [2026-01-12 12:19:17 PST] Model switched.
   agents: {
     defaults: {
       userTimezone: "America/Chicago",
-      timeFormat: "auto" // auto | 12 | 24
-    }
-  }
+      timeFormat: "auto", // auto | 12 | 24
+    },
+  },
 }
 ```
 

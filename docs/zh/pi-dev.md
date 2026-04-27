@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c386287ee64e66732e9a0d8ff1f09c2a"
+mmh3_hash: "efae822582b0f879708ff083a14f2b1e"
 title: "Pi 开发工作流"
 summary: "Pi 集成的开发工作流：构建、测试和实时验证"
 read_when:
@@ -79,3 +79,7 @@ OPENCLAW_LIVE_TEST=1 pnpm test src/agents/pi-embedded-runner-extraparams.live.te
 
 - [测试](/help/testing)
 - [快速开始](/start/getting-started)
+
+## 相关
+
+- [Pi 集成架构](/pi)

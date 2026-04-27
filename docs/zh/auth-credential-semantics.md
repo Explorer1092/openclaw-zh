@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5f849a8de49f1ec0fa39644512a4788a"
+mmh3_hash: "306319fb76384e3c9e073d0d5d6dac81"
 title: "Auth 凭据语义"
 summary: "auth profile 的标准凭据资格与解析语义"
 read_when:
@@ -70,3 +70,8 @@ Token 凭据（`type: "token"`）支持内联 `token` 和/或 `tokenRef`。
 `Auth profile credentials are missing or expired.`
 
 后续行可以添加对用户友好的详细信息和稳定的原因代码。
+
+## 相关
+
+- [密钥管理](/gateway/secrets)
+- [Auth 存储](/concepts/oauth)

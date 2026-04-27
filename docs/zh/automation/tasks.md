@@ -1,16 +1,17 @@
 ---
-mmh3_hash: "72933cb5cb3601476c8003b536069621"
+mmh3_hash: "ed2eda14ffdd700cbd0d7232f01f3027"
 summary: "ACP 运行、子 Agent、独立 Cron 作业和 CLI 操作的后台任务追踪"
 read_when:
   - 检查进行中或最近完成的后台工作时
   - 调试后台 Agent 运行的传递失败时
   - 了解后台运行与会话、Cron 和 Heartbeat 的关系时
 title: "后台任务"
+sidebarTitle: "后台任务"
 ---
 
-# 后台任务
-
-> **寻找调度功能？** 参见[自动化与任务](/automation)以选择合适的机制。本页介绍**追踪**后台工作，而非调度。
+<Note>
+寻找调度功能？参见[自动化与任务](/automation)以选择合适的机制。本页是后台工作的活动账本，而非调度器。
+</Note>
 
 后台任务追踪**在你的主对话会话之外**运行的工作：ACP 运行、子 Agent 生成、独立 Cron 作业执行和 CLI 发起的操作。
 
@@ -25,7 +26,7 @@ title: "后台任务"
 - 任务是**记录**，不是调度器——Cron 和 Heartbeat 决定工作*何时*运行，任务追踪*发生了什么*。
 - ACP、子 Agent、所有 Cron 作业和 CLI 操作创建任务。Heartbeat 轮次不创建。
 - 每个任务经过 `queued → running → terminal`（succeeded、failed、timed_out、cancelled 或 lost）。
-- Cron 任务在 Cron 运行时仍拥有该作业期间保持活动；聊天支持的 CLI 任务仅在其拥有的运行上下文仍活动时保持活动。
+- Cron 任务在 Cron 运行时仍拥有该作业期间保持活动；如果内存中的运行时状态消失，任务维护会在将任务标记为 lost 之前首先检查持久的 Cron 运行历史。
 - 完成是推送驱动的：后台工作可以直接通知或在完成时唤醒请求方会话/Heartbeat，因此状态轮询循环通常是错误的方式。
 - 独立 Cron 运行和子 Agent 完成在最终清理记录之前会尽力清理其子会话的追踪浏览器标签/进程。
 - 独立 Cron 传递会在后代子 Agent 工作仍在排出时抑制陈旧的中间父回复，并在最终后代输出在传递前到达时优先使用它。
@@ -35,35 +36,54 @@ title: "后台任务"
 
 ## 快速开始
 
-```bash
-# 列出所有任务（最新在前）
-openclaw tasks list
+<Tabs>
+  <Tab title="列表与过滤">
+    ```bash
+    # 列出所有任务（最新在前）
+    openclaw tasks list
 
-# 按运行时或状态过滤
-openclaw tasks list --runtime acp
-openclaw tasks list --status running
+    # 按运行时或状态过滤
+    openclaw tasks list --runtime acp
+    openclaw tasks list --status running
+    ```
 
-# 显示特定任务的详情（按 ID、运行 ID 或会话键）
-openclaw tasks show <lookup>
+  </Tab>
+  <Tab title="检查">
+    ```bash
+    # 显示特定任务的详情（按 ID、运行 ID 或会话键）
+    openclaw tasks show <lookup>
+    ```
+  </Tab>
+  <Tab title="取消与通知">
+    ```bash
+    # 取消运行中的任务（终止子会话）
+    openclaw tasks cancel <lookup>
 
-# 取消运行中的任务（终止子会话）
-openclaw tasks cancel <lookup>
+    # 更改任务的通知策略
+    openclaw tasks notify <lookup> state_changes
+    ```
 
-# 更改任务的通知策略
-openclaw tasks notify <lookup> state_changes
+  </Tab>
+  <Tab title="审计与维护">
+    ```bash
+    # 运行健康审计
+    openclaw tasks audit
 
-# 运行健康审计
-openclaw tasks audit
+    # 预览或应用维护
+    openclaw tasks maintenance
+    openclaw tasks maintenance --apply
+    ```
 
-# 预览或应用维护
-openclaw tasks maintenance
-openclaw tasks maintenance --apply
-
-# 检查 TaskFlow 状态
-openclaw tasks flow list
-openclaw tasks flow show <lookup>
-openclaw tasks flow cancel <lookup>
-```
+  </Tab>
+  <Tab title="Task Flow">
+    ```bash
+    # 检查 TaskFlow 状态
+    openclaw tasks flow list
+    openclaw tasks flow show <lookup>
+    openclaw tasks flow cancel <lookup>
+    ```
+  </Tab>
+</Tabs>
 
 ## 什么会创建任务
 
@@ -75,17 +95,22 @@ openclaw tasks flow cancel <lookup>
 | CLI 操作               | `cli`           | 通过 Gateway 运行的 `openclaw agent` 命令              | `silent`              |
 | Agent 媒体作业         | `cli`           | 会话支持的 `video_generate` 运行                       | `silent`              |
 
-主会话 Cron 任务默认使用 `silent` 通知策略——它们创建记录用于追踪，但不生成通知。独立 Cron 任务也默认为 `silent`，但更显眼，因为它们在自己的会话中运行。
+<AccordionGroup>
+  <Accordion title="Cron 和媒体的默认通知策略">
+    主会话 Cron 任务默认使用 `silent` 通知策略——它们创建记录用于追踪，但不生成通知。独立 Cron 任务也默认为 `silent`，但更显眼，因为它们在自己的会话中运行。
 
-会话支持的 `video_generate` 运行也使用 `silent` 通知策略。它们仍然创建任务记录，但完成时会作为内部唤醒交回给原始 Agent 会话，以便 Agent 可以写入后续消息并自己附加完成的视频。如果你选择 `tools.media.asyncCompletion.directSend`，异步 `music_generate` 和 `video_generate` 完成会先尝试直接 Channel 传递，然后再回退到请求方会话唤醒路径。
+    会话支持的 `video_generate` 运行也使用 `silent` 通知策略。它们仍然创建任务记录，但完成时会作为内部唤醒交回给原始 Agent 会话，以便 Agent 可以写入后续消息并自己附加完成的视频。如果你选择 `tools.media.asyncCompletion.directSend`，异步 `music_generate` 和 `video_generate` 完成会先尝试直接 Channel 传递，然后再回退到请求方会话唤醒路径。
 
-当会话支持的 `video_generate` 任务仍然活动时，工具还充当护栏：同一会话中重复的 `video_generate` 调用会返回活动任务状态，而不是启动第二个并发生成。当你想要从 Agent 侧进行显式的进度/状态查询时，使用 `action: "status"`。
-
-**不会创建任务的情况：**
-
-- Heartbeat 轮次——主会话；参见 [Heartbeat](/gateway/heartbeat)
-- 普通交互式聊天轮次
-- 直接 `/command` 响应
+  </Accordion>
+  <Accordion title="并发 video_generate 护栏">
+    当会话支持的 `video_generate` 任务仍然活动时，工具还充当护栏：同一会话中重复的 `video_generate` 调用会返回活动任务状态，而不是启动第二个并发生成。当你想要从 Agent 侧进行显式的进度/状态查询时，使用 `action: "status"`。
+  </Accordion>
+  <Accordion title="不会创建任务的情况">
+    - Heartbeat 轮次——主会话；参见 [Heartbeat](/gateway/heartbeat)
+    - 普通交互式聊天轮次
+    - 直接 `/command` 响应
+  </Accordion>
+</AccordionGroup>
 
 ## 任务生命周期
 
@@ -113,12 +138,14 @@ stateDiagram-v2
 
 过渡自动发生——当关联的 Agent 运行结束时，任务状态自动更新以匹配。
 
+Agent 运行完成对活动任务记录具有权威性。成功的独立运行终结为 `succeeded`，普通运行错误终结为 `failed`，超时或中止结果终结为 `timed_out`。如果操作员已取消任务，或运行时已记录了更强的终态（如 `failed`、`timed_out` 或 `lost`），则后续的成功信号不会降级该终态。
+
 `lost` 状态是运行时感知的：
 
 - ACP 任务：支撑的 ACP 子会话元数据消失。
 - 子 Agent 任务：支撑的子会话从目标 Agent 存储中消失。
-- Cron 任务：Cron 运行时不再将该作业追踪为活动。
-- CLI 任务：独立子会话任务使用子会话；聊天支持的 CLI 任务使用活动运行上下文，因此残留的 Channel/组/直接会话行不会使它们保持活动。
+- Cron 任务：Cron 运行时不再将该作业追踪为活动，且持久的 Cron 运行历史未显示该次运行的终态结果。离线 CLI 审计不会仅因本地集合为空而将 Cron 任务标记为 lost。
+- CLI 任务：独立子会话任务使用子会话；聊天支持的 CLI 任务使用活动运行上下文，因此残留的 Channel/组/直接会话行不会使它们保持活动。Gateway 支持的 `openclaw agent` 运行也从其运行结果终结，因此已完成的运行不会保持活动直到清理器将其标记为 `lost`。
 
 ## 传递和通知
 
@@ -152,85 +179,87 @@ openclaw tasks notify <lookup> state_changes
 
 ## CLI 参考
 
-### `tasks list`
+<AccordionGroup>
+  <Accordion title="tasks list">
+    ```bash
+    openclaw tasks list [--runtime <acp|subagent|cron|cli>] [--status <status>] [--json]
+    ```
 
-```bash
-openclaw tasks list [--runtime <acp|subagent|cron|cli>] [--status <status>] [--json]
-```
+    输出列：任务 ID、类型、状态、传递、运行 ID、子会话、摘要。
 
-输出列：任务 ID、类型、状态、传递、运行 ID、子会话、摘要。
+  </Accordion>
+  <Accordion title="tasks show">
+    ```bash
+    openclaw tasks show <lookup>
+    ```
 
-### `tasks show`
+    查找令牌接受任务 ID、运行 ID 或会话键。显示完整记录，包括时间、传递状态、错误和终态摘要。
 
-```bash
-openclaw tasks show <lookup>
-```
+  </Accordion>
+  <Accordion title="tasks cancel">
+    ```bash
+    openclaw tasks cancel <lookup>
+    ```
 
-查找令牌接受任务 ID、运行 ID 或会话键。显示完整记录，包括时间、传递状态、错误和终态摘要。
+    对于 ACP 和子 Agent 任务，这会终止子会话。对于 CLI 追踪的任务，取消操作记录在任务注册表中（没有单独的子运行时句柄）。状态过渡到 `cancelled` 并在适用时发送传递通知。
 
-### `tasks cancel`
+  </Accordion>
+  <Accordion title="tasks notify">
+    ```bash
+    openclaw tasks notify <lookup> <done_only|state_changes|silent>
+    ```
+  </Accordion>
+  <Accordion title="tasks audit">
+    ```bash
+    openclaw tasks audit [--json]
+    ```
 
-```bash
-openclaw tasks cancel <lookup>
-```
+    暴露操作问题。当检测到问题时，发现结果也会出现在 `openclaw status` 中。
 
-对于 ACP 和子 Agent 任务，这会终止子会话。对于 CLI 追踪的任务，取消操作记录在任务注册表中（没有单独的子运行时句柄）。状态过渡到 `cancelled` 并在适用时发送传递通知。
+    | 发现                      | 严重性     | 触发条件                                                               |
+    | ------------------------- | ---------- | ---------------------------------------------------------------------- |
+    | `stale_queued`            | warn       | 排队超过 10 分钟                                                       |
+    | `stale_running`           | error      | 运行超过 30 分钟                                                       |
+    | `lost`                    | warn/error | 运行时支持的任务所有权消失；保留中的 lost 任务警告，过期后变为 error   |
+    | `delivery_failed`         | warn       | 传递失败且通知策略不是 `silent`                                        |
+    | `missing_cleanup`         | warn       | 没有清理时间戳的终态任务                                               |
+    | `inconsistent_timestamps` | warn       | 时间轴违规（例如结束时间早于开始时间）                                 |
 
-### `tasks notify`
+  </Accordion>
+  <Accordion title="tasks maintenance">
+    ```bash
+    openclaw tasks maintenance [--json]
+    openclaw tasks maintenance --apply [--json]
+    ```
 
-```bash
-openclaw tasks notify <lookup> <done_only|state_changes|silent>
-```
+    用于预览或应用任务和 Task Flow 状态的协调、清理标记和清理。
 
-### `tasks audit`
+    协调是运行时感知的：
 
-```bash
-openclaw tasks audit [--json]
-```
+    - ACP/子 Agent 任务检查其支撑子会话。
+    - Cron 任务检查 Cron 运行时是否仍拥有该作业，然后从持久 Cron 运行日志/作业状态恢复终态，然后再回退到 `lost`。只有 Gateway 进程对内存中的 Cron 活动作业集具有权威性；离线 CLI 审计使用持久历史，但不会仅因本地集合为空就将 Cron 任务标记为 lost。
+    - 聊天支持的 CLI 任务检查拥有的活动运行上下文，而不仅仅是聊天会话行。
 
-暴露操作问题。当检测到问题时，发现结果也会出现在 `openclaw status` 中。
+    完成清理也是运行时感知的：
 
-| 发现                      | 严重性 | 触发条件                                              |
-| ------------------------- | ------ | ----------------------------------------------------- |
-| `stale_queued`            | warn   | 排队超过 10 分钟                                      |
-| `stale_running`           | error  | 运行超过 30 分钟                                      |
-| `lost`                    | error  | 运行时支持的任务所有权消失                            |
-| `delivery_failed`         | warn   | 传递失败且通知策略不是 `silent`                       |
-| `missing_cleanup`         | warn   | 没有清理时间戳的终态任务                              |
-| `inconsistent_timestamps` | warn   | 时间轴违规（例如结束时间早于开始时间）                |
+    - 子 Agent 完成在宣告清理继续之前，尽力关闭子会话的追踪浏览器标签/进程。
+    - 独立 Cron 完成在运行完全拆除之前，尽力关闭 Cron 会话的追踪浏览器标签/进程。
+    - 独立 Cron 传递在需要时等待后代子 Agent 后续处理，并抑制陈旧的父确认文本而不宣告它。
+    - 子 Agent 完成传递优先使用最新可见的助手文本；如果为空，则回退到清理后的最新工具/工具结果文本，仅超时工具调用运行可以折叠为简短的部分进度摘要。终态失败运行宣告失败状态，不重放捕获的回复文本。
+    - 清理失败不会掩盖实际任务结果。
 
-### `tasks maintenance`
+  </Accordion>
+  <Accordion title="tasks flow list | show | cancel">
+    ```bash
+    openclaw tasks flow list [--status <status>] [--json]
+    openclaw tasks flow show <lookup> [--json]
+    openclaw tasks flow cancel <lookup>
+    ```
 
-```bash
-openclaw tasks maintenance [--json]
-openclaw tasks maintenance --apply [--json]
-```
+    当你关心的是编排 Task Flow 而不是单个后台任务记录时，使用这些命令。
 
-用于预览或应用任务和 Task Flow 状态的协调、清理标记和清理。
-
-协调是运行时感知的：
-
-- ACP/子 Agent 任务检查其支撑子会话。
-- Cron 任务检查 Cron 运行时是否仍拥有该作业。
-- 聊天支持的 CLI 任务检查拥有的活动运行上下文，而不仅仅是聊天会话行。
-
-完成清理也是运行时感知的：
-
-- 子 Agent 完成在宣告清理继续之前，尽力关闭子会话的追踪浏览器标签/进程。
-- 独立 Cron 完成在运行完全拆除之前，尽力关闭 Cron 会话的追踪浏览器标签/进程。
-- 独立 Cron 传递在需要时等待后代子 Agent 后续处理，并抑制陈旧的父确认文本而不宣告它。
-- 子 Agent 完成传递优先使用最新可见的助手文本；如果为空，则回退到清理后的最新工具/工具结果文本，仅超时工具调用运行可以折叠为简短的部分进度摘要。
-- 清理失败不会掩盖实际任务结果。
-
-### `tasks flow list|show|cancel`
-
-```bash
-openclaw tasks flow list [--status <status>] [--json]
-openclaw tasks flow show <lookup> [--json]
-openclaw tasks flow cancel <lookup>
-```
-
-当你关心的是编排 Task Flow 而不是单个后台任务记录时，使用这些命令。
+  </Accordion>
+</AccordionGroup>
 
 ## 聊天任务看板（`/tasks`）
 
@@ -272,44 +301,55 @@ $OPENCLAW_STATE_DIR/tasks/runs.sqlite
 
 清理器每 **60 秒**运行一次，处理三件事：
 
-1. **协调** — 检查活动任务是否仍有权威的运行时支撑。ACP/子 Agent 任务使用子会话状态，Cron 任务使用活动作业所有权，聊天支持的 CLI 任务使用拥有的运行上下文。如果该支撑状态消失超过 5 分钟，任务将被标记为 `lost`。
-2. **清理标记** — 在终态任务上设置 `cleanupAfter` 时间戳（endedAt + 7 天）。
-3. **清理** — 删除已超过 `cleanupAfter` 日期的记录。
+<Steps>
+  <Step title="协调">
+    检查活动任务是否仍有权威的运行时支撑。ACP/子 Agent 任务使用子会话状态，Cron 任务使用活动作业所有权，聊天支持的 CLI 任务使用拥有的运行上下文。如果该支撑状态消失超过 5 分钟，任务将被标记为 `lost`。
+  </Step>
+  <Step title="清理标记">
+    在终态任务上设置 `cleanupAfter` 时间戳（endedAt + 7 天）。在保留期内，lost 任务仍作为警告出现在审计中；在 `cleanupAfter` 过期或清理元数据缺失时，它们变为错误。
+  </Step>
+  <Step title="清理">
+    删除已超过 `cleanupAfter` 日期的记录。
+  </Step>
+</Steps>
 
+<Note>
 **保留期**：终态任务记录保留 **7 天**，然后自动清理。无需配置。
+</Note>
 
 ## 任务与其他系统的关系
 
-### 任务与 Task Flow
+<AccordionGroup>
+  <Accordion title="任务与 Task Flow">
+    [Task Flow](/automation/taskflow) 是后台任务之上的流程编排层。一个流程在其生命周期中可能使用托管或镜像同步模式协调多个任务。使用 `openclaw tasks` 检查单个任务记录，使用 `openclaw tasks flow` 检查编排流程。
 
-[Task Flow](/automation/taskflow) 是后台任务之上的流程编排层。一个流程在其生命周期中可能使用托管或镜像同步模式协调多个任务。使用 `openclaw tasks` 检查单个任务记录，使用 `openclaw tasks flow` 检查编排流程。
+    参见 [Task Flow](/automation/taskflow) 了解详情。
 
-参见 [Task Flow](/automation/taskflow) 了解详情。
+  </Accordion>
+  <Accordion title="任务与 Cron">
+    Cron 作业**定义**存储在 `~/.openclaw/cron/jobs.json`；运行时执行状态存储在旁边的 `~/.openclaw/cron/jobs-state.json` 中。**每次** Cron 执行都会创建任务记录——无论是主会话还是独立执行。主会话 Cron 任务默认使用 `silent` 通知策略，因此它们追踪但不生成通知。
 
-### 任务与 Cron
+    参见 [Cron 作业](/automation/cron-jobs)。
 
-Cron 作业**定义**存储在 `~/.openclaw/cron/jobs.json`。**每次** Cron 执行都会创建任务记录——无论是主会话还是独立执行。主会话 Cron 任务默认使用 `silent` 通知策略，因此它们追踪但不生成通知。
+  </Accordion>
+  <Accordion title="任务与 Heartbeat">
+    Heartbeat 运行是主会话轮次——它们不创建任务记录。当任务完成时，它可以触发 Heartbeat 唤醒，让你及时看到结果。
 
-参见 [Cron 作业](/automation/cron-jobs)。
+    参见 [Heartbeat](/gateway/heartbeat)。
 
-### 任务与 Heartbeat
+  </Accordion>
+  <Accordion title="任务与会话">
+    任务可能引用 `childSessionKey`（工作运行的位置）和 `requesterSessionKey`（启动它的人）。会话是对话上下文；任务是其上的活动追踪。
+  </Accordion>
+  <Accordion title="任务与 Agent 运行">
+    任务的 `runId` 链接到执行工作的 Agent 运行。Agent 生命周期事件（启动、结束、错误）自动更新任务状态——你不需要手动管理生命周期。
+  </Accordion>
+</AccordionGroup>
 
-Heartbeat 运行是主会话轮次——它们不创建任务记录。当任务完成时，它可以触发 Heartbeat 唤醒，让你及时看到结果。
-
-参见 [Heartbeat](/gateway/heartbeat)。
-
-### 任务与会话
-
-任务可能引用 `childSessionKey`（工作运行的位置）和 `requesterSessionKey`（启动它的人）。会话是对话上下文；任务是其上的活动追踪。
-
-### 任务与 Agent 运行
-
-任务的 `runId` 链接到执行工作的 Agent 运行。Agent 生命周期事件（启动、结束、错误）自动更新任务状态——你不需要手动管理生命周期。
-
-## 相关文档
+## 相关
 
 - [自动化与任务](/automation) — 所有自动化机制一览
-- [Task Flow](/automation/taskflow) — 任务之上的流程编排
-- [定时任务](/automation/cron-jobs) — 调度后台工作
+- [CLI：Tasks](/cli/tasks) — CLI 命令参考
 - [Heartbeat](/gateway/heartbeat) — 周期性主会话轮次
-- [CLI：Tasks](/cli/index#tasks) — CLI 命令参考
+- [定时任务](/automation/cron-jobs) — 调度后台工作
+- [Task Flow](/automation/taskflow) — 任务之上的流程编排
