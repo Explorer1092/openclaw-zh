@@ -1,0 +1,177 @@
+---
+mmh3_hash: "7440aa8d88dfbb67545b10edca0576c7"
+summary: "导出经过编辑的轨迹包，用于调试 OpenClaw Agent Session"
+read_when:
+  - 调试 Agent 为何以特定方式回答、失败或调用工具
+  - 导出 OpenClaw Session 的支持包
+  - 调查提示上下文、工具调用、运行时错误或使用元数据
+  - 禁用或重新定位轨迹捕获
+title: "轨迹包"
+---
+
+轨迹捕获是 OpenClaw 的每 Session 飞行记录仪。它为每次 Agent 运行记录结构化时间线，然后 `/export-trajectory` 将当前 Session 打包到经过编辑的支持包中。
+
+当您需要回答以下问题时使用它：
+
+- 向模型发送了什么提示、系统提示和工具？
+- 哪些对话消息和工具调用导致了这个答案？
+- 运行是否超时、中止、压缩或遇到 Provider 错误？
+- 哪些模型、Plugin、Skill 和运行时设置处于活跃状态？
+- Provider 返回了哪些使用量和提示缓存元数据？
+
+## 快速开始
+
+在活跃 Session 中发送以下内容：
+
+```text
+/export-trajectory
+```
+
+别名：
+
+```text
+/trajectory
+```
+
+OpenClaw 在工作区下写入包：
+
+```text
+.openclaw/trajectory-exports/openclaw-trajectory-<session>-<timestamp>/
+```
+
+您可以选择相对输出目录名称：
+
+```text
+/export-trajectory bug-1234
+```
+
+自定义路径在 `.openclaw/trajectory-exports/` 内解析。绝对路径和 `~` 路径被拒绝。
+
+## 访问
+
+轨迹导出是所有者命令。发送者必须通过该 Channel 的正常命令授权检查和所有者检查。
+
+## 记录的内容
+
+默认情况下，OpenClaw Agent 运行启用轨迹捕获。
+
+运行时事件包括：
+
+- `session.started`
+- `trace.metadata`
+- `context.compiled`
+- `prompt.submitted`
+- `model.completed`
+- `trace.artifacts`
+- `session.ended`
+
+对话事件也从活跃 Session 分支重建：
+
+- 用户消息
+- 助手消息
+- 工具调用
+- 工具结果
+- 压缩
+- 模型变更
+- 标签和自定义 Session 条目
+
+事件以 JSON Lines 格式写入，带有以下 Schema 标记：
+
+```json
+{
+  "traceSchema": "openclaw-trajectory",
+  "schemaVersion": 1
+}
+```
+
+## 包文件
+
+导出的包可以包含：
+
+| 文件                  | 内容                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `manifest.json`       | 包 Schema、来源文件、事件计数和生成的文件列表                                              |
+| `events.jsonl`        | 有序的运行时和对话时间线                                                                   |
+| `session-branch.json` | 经过编辑的活跃对话分支和 Session 头部                                                      |
+| `metadata.json`       | OpenClaw 版本、操作系统/运行时、模型、配置快照、Plugin、Skill 和提示元数据                 |
+| `artifacts.json`      | 最终状态、错误、使用量、提示缓存、压缩计数、助手文本和工具元数据                           |
+| `prompts.json`        | 已提交的提示和选定的提示构建详情                                                           |
+| `system-prompt.txt`   | 最新编译的系统提示（当捕获时）                                                             |
+| `tools.json`          | 发送给模型的工具定义（当捕获时）                                                           |
+
+`manifest.json` 列出了该包中存在的文件。当 Session 未捕获对应的运行时数据时，某些文件会被省略。
+
+## 捕获位置
+
+默认情况下，运行时轨迹事件写入 Session 文件旁边：
+
+```text
+<session>.trajectory.jsonl
+```
+
+OpenClaw 还在 Session 旁边写入一个尽力而为的指针文件：
+
+```text
+<session>.trajectory-path.json
+```
+
+设置 `OPENCLAW_TRAJECTORY_DIR` 将运行时轨迹辅助文件存储在专用目录中：
+
+```bash
+export OPENCLAW_TRAJECTORY_DIR=/var/lib/openclaw/trajectories
+```
+
+设置此变量后，OpenClaw 在该目录中为每个 Session id 写入一个 JSONL 文件。
+
+## 禁用捕获
+
+在启动 OpenClaw 之前设置 `OPENCLAW_TRAJECTORY=0`：
+
+```bash
+export OPENCLAW_TRAJECTORY=0
+```
+
+这会禁用运行时轨迹捕获。`/export-trajectory` 仍然可以导出对话分支，但仅运行时文件（如已编译的上下文、Provider 工件和提示元数据）可能缺失。
+
+## 隐私和限制
+
+轨迹包设计用于支持和调试，而非公开发布。OpenClaw 在写入导出文件之前会编辑敏感值：
+
+- 凭据和已知的密钥状有效载荷字段
+- 图像数据
+- 本地状态路径
+- 工作区路径，替换为 `$WORKSPACE_DIR`
+- 在检测到的情况下替换主目录路径
+
+导出器还限制输入大小：
+
+- 运行时辅助文件：50 MiB
+- Session 文件：50 MiB
+- 运行时事件：200,000
+- 总导出事件：250,000
+- 超过 256 KiB 的单个运行时事件行被截断
+
+在团队外部分享之前审查包。编辑是尽力而为的，无法了解每个应用程序特定的密钥。
+
+## 故障排除
+
+如果导出没有运行时事件：
+
+- 确认 OpenClaw 启动时未设置 `OPENCLAW_TRAJECTORY=0`
+- 检查 `OPENCLAW_TRAJECTORY_DIR` 是否指向可写目录
+- 在 Session 中再运行一条消息，然后再次导出
+- 检查 `manifest.json` 中的 `runtimeEventCount`
+
+如果命令拒绝输出路径：
+
+- 使用相对名称，如 `bug-1234`
+- 不要传递 `/tmp/...` 或 `~/...`
+- 将导出保留在 `.openclaw/trajectory-exports/` 内
+
+如果导出因大小错误失败，则 Session 或辅助文件超过了导出安全限制。启动新 Session 或导出更小的复现案例。
+
+## 相关
+
+- [差异](/tools/diffs)
+- [Session 管理](/concepts/session)
+- [Exec 工具](/tools/exec)
