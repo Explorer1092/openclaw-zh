@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "10773d38e7fe033b5d75d663f5ef4bfa"
+mmh3_hash: "8f011fc94a7dc97ff551c84c96b8f690"
 summary: "OpenClaw 引导选项和流程概述"
 read_when:
   - 选择引导路径
@@ -7,8 +7,6 @@ read_when:
 title: "引导概述"
 sidebarTitle: "引导概述"
 ---
-
-# 引导概述
 
 OpenClaw 有两种引导路径。两者都会配置认证、Gateway 和可选 Channel——区别只在于交互方式不同。
 
@@ -64,3 +62,8 @@ CLI 命令文档：[`openclaw onboard`](/cli/onboard)
 - 模型 ID 和可选别名
 
 多个自定义端点可以共存——每个都有自己的端点 ID。
+
+## 相关
+
+- [入门指南](/start/getting-started)
+- [CLI 引导参考](/start/wizard-cli-reference)

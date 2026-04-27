@@ -1,12 +1,10 @@
 ---
-mmh3_hash: "990492315bc24b6c01d4ad178b46e3eb"
+mmh3_hash: "6afb462c3c06ce1911dbaf027374bb59"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图
 title: "文档中心"
 ---
-
-# 文档中心
 
 <Note>
 如果您是 OpenClaw 新用户，请从[入门指南](/start/getting-started)开始。
@@ -167,6 +165,7 @@ title: "文档中心"
 
 - [插件概述](/tools/plugin)
 - [构建插件](/plugins/building-plugins)
+- [插件 Hooks](/plugins/hooks)
 - [插件清单](/plugins/manifest)
 - [Agent 工具](/plugins/building-plugins#registering-agent-tools)
 - [插件包](/plugins/bundles)
@@ -198,3 +197,7 @@ title: "文档中心"
 - [测试](/reference/test)
 - [发布策略](/reference/RELEASING)
 - [设备型号](/reference/device-models)
+
+## 相关
+
+- [入门指南](/start/getting-started)

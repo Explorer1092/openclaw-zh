@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ba1c4fd73e20ccd3d643412bddeae074"
+mmh3_hash: "b0c95d41a3fc3d25f09f9f72a826d04c"
 summary: "Gemini 网页搜索，基于 Google Search 接地"
 read_when:
   - 希望将 Gemini 用于 web_search

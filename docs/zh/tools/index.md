@@ -1,6 +1,6 @@
 ---
 title: "工具和 Plugin"
-mmh3_hash: "16fc6c9145ff3e9ccac087f9134b4edf"
+mmh3_hash: "0e7de821be16ea194276d585201fd7af"
 summary: "OpenClaw 工具和 Plugin 概览：Agent 可以做什么以及如何扩展它"
 read_when:
   - 了解 OpenClaw 提供哪些工具
@@ -45,10 +45,10 @@ OpenClaw 有三个协同工作的层次：
 
 | 工具                                       | 功能                                                                  | 页面                                        |
 | ------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------- |
-| `exec` / `process`                         | 运行 Shell 命令，管理后台进程                                         | [Exec](/tools/exec)                         |
+| `exec` / `process`                         | 运行 Shell 命令，管理后台进程                                         | [Exec](/tools/exec)、[Exec 批准](/tools/exec-approvals) |
 | `code_execution`                           | 运行沙盒远程 Python 分析                                              | [Code Execution](/tools/code-execution)     |
 | `browser`                                  | 控制 Chromium 浏览器（导航、点击、截图）                              | [浏览器](/tools/browser)                    |
-| `web_search` / `x_search` / `web_fetch`    | 搜索网页，搜索 X 帖子，抓取页面内容                                   | [Web](/tools/web)                           |
+| `web_search` / `x_search` / `web_fetch`    | 搜索网页，搜索 X 帖子，抓取页面内容                                   | [Web](/tools/web)、[Web Fetch](/tools/web-fetch) |
 | `read` / `write` / `edit`                  | 工作区中的文件 I/O                                                    |                                             |
 | `apply_patch`                              | 多块文件补丁                                                          | [Apply Patch](/tools/apply-patch)           |
 | `message`                                  | 跨所有 Channel 发送消息                                               | [Agent Send](/tools/agent-send)             |
@@ -80,17 +80,18 @@ OpenClaw 有三个协同工作的层次：
 - `config.apply` 仅用于完整配置替换
 - `update.run` 用于显式自我更新 + 重启
 
-对于部分更改，优先使用 `config.schema.lookup` 然后 `config.patch`。仅在有意替换整个配置时使用 `config.apply`。该工具还拒绝更改 `tools.exec.ask` 或 `tools.exec.security`；旧版 `tools.bash.*` 别名规范化为相同的受保护 exec 路径。
+对于部分更改，优先使用 `config.schema.lookup` 然后 `config.patch`。仅在有意替换整个配置时使用 `config.apply`。更广泛的配置文档请阅读 [配置](/gateway/configuration) 和 [配置参考](/gateway/configuration-reference)。该工具还拒绝更改 `tools.exec.ask` 或 `tools.exec.security`；旧版 `tools.bash.*` 别名规范化为相同的受保护 exec 路径。
 
 ### Plugin 提供的工具
 
 Plugin 可以注册额外的工具。一些示例：
 
-- [Lobster](/tools/lobster) — 带可恢复批准的类型化工作流运行时
-- [LLM Task](/tools/llm-task) — 用于结构化输出的仅 JSON LLM 步骤
-- [Music Generation](/tools/music-generation) — 带工作流支持 Provider 的共享 `music_generate` 工具
 - [Diffs](/tools/diffs) — diff 查看器和渲染器
+- [LLM Task](/tools/llm-task) — 用于结构化输出的仅 JSON LLM 步骤
+- [Lobster](/tools/lobster) — 带可恢复批准的类型化工作流运行时
+- [Music Generation](/tools/music-generation) — 带工作流支持 Provider 的共享 `music_generate` 工具
 - [OpenProse](/prose) — Markdown 优先的工作流编排
+- [Tokenjuice](/tools/tokenjuice) — 压缩嘈杂的 `exec` 和 `bash` 工具结果
 
 ## 工具配置
 
@@ -107,6 +108,8 @@ Plugin 可以注册额外的工具。一些示例：
 }
 ```
 
+当显式允许列表解析为没有可调用的工具时，OpenClaw 会安全失败。例如，`tools.allow: ["query_db"]` 仅在已加载的 Plugin 实际注册了 `query_db` 时才有效。如果没有内置、Plugin 或捆绑的 MCP 工具匹配允许列表，运行会在模型调用之前停止，而不是继续进行可能产生幻觉工具结果的纯文本运行。
+
 ### 工具配置文件
 
 `tools.profile` 在应用 `allow`/`deny` 之前设置基础允许列表。每个 Agent 覆盖：`agents.list[].tools.profile`。
@@ -117,6 +120,10 @@ Plugin 可以注册额外的工具。一些示例：
 | `coding`    | `group:fs`、`group:runtime`、`group:web`、`group:sessions`、`group:memory`、`cron`、`image`、`image_generate`、`music_generate`、`video_generate` |
 | `messaging` | `group:messaging`、`sessions_list`、`sessions_history`、`sessions_send`、`session_status`                                                        |
 | `minimal`   | 仅 `session_status`                                                                                                                             |
+
+`coding` 包含轻量级 Web 工具（`web_search`、`web_fetch`、`x_search`），但不包含完整的浏览器控制工具。浏览器自动化可以驱动真实的 Session 和已登录的配置文件，因此请使用 `tools.alsoAllow: ["browser"]` 或每个 Agent 的 `agents.list[].tools.alsoAllow: ["browser"]` 显式添加它。
+
+`coding` 和 `messaging` 配置文件还允许在 Plugin 键 `bundle-mcp` 下配置的捆绑 MCP 工具。当你想要配置文件保留其正常内置工具但隐藏所有配置的 MCP 工具时，添加 `tools.deny: ["bundle-mcp"]`。`minimal` 配置文件不包含捆绑 MCP 工具。
 
 ### 工具组
 

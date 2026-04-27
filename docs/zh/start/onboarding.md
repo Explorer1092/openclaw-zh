@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ca7bb00da3b1c744759f620e4e8defd7"
+mmh3_hash: "3cc1d171c6b4f79d5412a855c22573d5"
 summary: "OpenClaw 的首次运行入门流程（macOS 应用）"
 read_when:
   - 设计 macOS 入门助手
@@ -7,8 +7,6 @@ read_when:
 title: "入门（macOS 应用）"
 sidebarTitle: "入门：macOS 应用"
 ---
-
-# 入门（macOS 应用）
 
 本文档描述了**当前**的首次运行入门流程。目标是流畅的"第 0 天"体验：选择 Gateway 运行位置，连接认证，运行向导，并让 Agent 自我引导。
 有关引导路径的一般概述，请参阅[引导概述](/start/onboarding-overview)。
@@ -84,3 +82,8 @@ sidebarTitle: "入门：macOS 应用"
   设置完成后，应用程序会打开一个专用的入门聊天 Session，以便 Agent 可以自我介绍并指导后续步骤。这使得首次运行指导与您的正常对话分开。有关 Gateway 主机上首次 Agent 运行期间发生的事情，请参阅[引导](/start/bootstrapping)。
 </Step>
 </Steps>
+
+## 相关
+
+- [引导概述](/start/onboarding-overview)
+- [入门指南](/start/getting-started)

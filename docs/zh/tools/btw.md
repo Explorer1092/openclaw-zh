@@ -4,10 +4,8 @@ read_when:
   - 您想对当前 Session 提出一个快速的旁边问题
   - 您正在实现或调试 BTW 在不同 Client 上的行为
 title: "BTW 旁问"
-mmh3_hash: "7e7d0903cc2309da1076c00aa8256145"
+mmh3_hash: "3b41a41abbc2eb7c09d33c41e78cbdda"
 ---
-
-# BTW 旁问
 
 `/btw` 让您对**当前 Session** 提出一个快速的旁边问题，而不会将该问题变成普通的对话历史。
 

@@ -1,16 +1,16 @@
 ---
 title: "apply_patch 工具"
 sidebarTitle: "apply_patch 工具"
-mmh3_hash: "d2c0ca5b3e1de8584a1b98527bc6ba1a"
+mmh3_hash: "00e80d23336c965f239db234c2dfaea9"
 summary: "使用 apply_patch 工具应用多文件补丁"
-read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或调试基于补丁的编辑"]
+read_when:
+  - 需要跨多个文件进行结构化文件编辑
+  - 想要记录或调试基于补丁的编辑
 ---
 
-# apply_patch 工具
+使用结构化补丁格式应用文件更改。这对于多文件或多块编辑非常理想，在这种情况下单个 `edit` 调用会很脆弱。
 
-使用结构化补丁格式应用文件更改。这对于多文件或多块编辑非常理想,在这种情况下单个 `edit` 调用会很脆弱。
-
-该工具接受一个包装一个或多个文件操作的 `input` 字符串:
+该工具接受一个包装一个或多个文件操作的 `input` 字符串：
 
 ```
 *** Begin Patch
@@ -27,12 +27,12 @@ read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或�
 
 ## 参数
 
-- `input`(必需): 完整的补丁内容,包括 `*** Begin Patch` 和 `*** End Patch`。
+- `input`（必需）：完整的补丁内容，包括 `*** Begin Patch` 和 `*** End Patch`。
 
 ## 注意事项
 
-- 补丁路径支持相对路径(从工作区目录)和绝对路径。
-- `tools.exec.applyPatch.workspaceOnly` 默认为 `true`(工作区包含)。仅当您有意希望 `apply_patch` 在工作区目录之外写入/删除时,才将其设置为 `false`。
+- 补丁路径支持相对路径（从工作区目录）和绝对路径。
+- `tools.exec.applyPatch.workspaceOnly` 默认为 `true`（工作区包含）。仅当您有意希望 `apply_patch` 在工作区目录之外写入/删除时，才将其设置为 `false`。
 - 在 `*** Update File:` 块中使用 `*** Move to:` 重命名文件。
 - `*** End of File` 在需要时标记仅 EOF 插入。
 - 默认对 OpenAI 和 OpenAI Codex 模型可用。设置 `tools.exec.applyPatch.enabled: false` 可禁用。
@@ -47,3 +47,9 @@ read_when: ["需要跨多个文件进行结构化文件编辑","想要记录或�
   "input": "*** Begin Patch\n*** Update File: src/index.ts\n@@\n-const foo = 1\n+const foo = 2\n*** End Patch"
 }
 ```
+
+## 相关
+
+- [Diffs](/tools/diffs)
+- [Exec 工具](/tools/exec)
+- [代码执行](/tools/code-execution)

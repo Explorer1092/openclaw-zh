@@ -1,7 +1,7 @@
 ---
 title: "Dashboard (Control UI)"
 sidebarTitle: "Dashboard"
-mmh3_hash: "2438c7c2265afd2fb9bae991f33b354c"
+mmh3_hash: "4ad075e36b1d9702ca06327fdd72e75f"
 summary: "Gateway Dashboard（Control UI）访问和身份验证"
 read_when:
   - 更改 Dashboard 身份验证或暴露模式
@@ -15,6 +15,7 @@ Gateway Dashboard 是默认情况下在 `/` 提供的浏览器 Control UI
 快速打开（本地 Gateway）：
 
 - [http://127.0.0.1:18789/](http://127.0.0.1:18789/)（或 [http://localhost:18789/](http://localhost:18789/)）
+- 当 `gateway.tls.enabled: true` 时，使用 `https://127.0.0.1:18789/`，WebSocket 端点使用 `wss://127.0.0.1:18789`。
 
 关键参考：
 
@@ -45,6 +46,7 @@ sessionStorage 中，并在加载后从 URL 中清除。
 ## 身份验证基础（本地 vs 远程）
 
 - **Localhost**：打开 `http://127.0.0.1:18789/`。
+- **Gateway TLS**：当 `gateway.tls.enabled: true` 时，Dashboard/状态链接使用 `https://`，Control UI WebSocket 链接使用 `wss://`。
 - **共享密钥令牌来源**：`gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）；`openclaw dashboard` 可以通过 URL 片段传递令牌以进行一次性引导，Control UI 将其保留在当前浏览器标签会话和所选 Gateway URL 的 sessionStorage 中，而非 localStorage。
 - 如果 `gateway.auth.token` 由 SecretRef 管理，`openclaw dashboard` 会按设计打印/复制/打开一个无令牌 URL。这避免了在 shell 日志、剪贴板历史或浏览器启动参数中暴露外部管理的令牌。
 - 如果 `gateway.auth.token` 配置为 SecretRef 且在您当前的 shell 中未解析，`openclaw dashboard` 仍然打印无令牌 URL 以及可操作的身份验证设置指导。
@@ -66,3 +68,8 @@ sessionStorage 中，并在加载后从 URL 中清除。
   - 未配置共享密钥：`openclaw doctor --generate-gateway-token`
 - 在 Dashboard 设置中，将令牌或密码粘贴到身份验证字段中，然后连接。
 - UI 语言选择器在 **Overview -> Gateway Access -> Language**。它是访问卡的一部分，而不是 Appearance 部分。
+
+## 相关
+
+- [Control UI](/web/control-ui)
+- [WebChat](/web/webchat)

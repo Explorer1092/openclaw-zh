@@ -1,15 +1,12 @@
 ---
-mmh3_hash: "220ace720d40c10df44e871b1051e39d"
+mmh3_hash: "adaa51b672d2ebe954ef9aeabb2e559c"
 title: "工具循环检测"
-description: "配置可选的防护机制，防止重复性或停滞的工具调用循环"
 summary: "如何启用和调整检测重复工具调用循环的防护机制"
 read_when:
   - 用户反映 Agent 陷入重复工具调用的僵局
   - 需要调整重复调用保护参数
   - 正在编辑 Agent 工具/运行时策略
 ---
-
-# 工具循环检测
 
 OpenClaw 可防止 Agent 陷入重复的工具调用模式。
 该防护默认**禁用**。
@@ -100,3 +97,9 @@ OpenClaw 可防止 Agent 陷入重复的工具调用模式。
 - `tools.loopDetection` 与 Agent 级别的覆盖配置合并。
 - 每个 Agent 的配置完全覆盖或扩展全局值。
 - 如果不存在配置，防护将保持关闭状态。
+
+## 相关
+
+- [Exec 批准](/tools/exec-approvals)
+- [思考级别](/tools/thinking)
+- [子 Agent](/tools/subagents)

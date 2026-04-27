@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "46a90e1fa55797d1cfc779b00dd80d58"
+mmh3_hash: "bc78ca4b9f24057ebe60d5589ecd8f9b"
 summary: "快速开始已移至入门。"
 read_when:
   - 您正在寻找最快的设置步骤
   - 您是从旧链接发送到这里的
 title: "快速开始"
 ---
-
-# 快速开始
 
 <Info>
 快速开始现在是[入门](/start/getting-started)的一部分。
@@ -21,3 +19,8 @@ title: "快速开始"
     完整的 CLI 向导参考和高级选项。
   </Card>
 </Columns>
+
+## 相关
+
+- [入门](/start/getting-started)
+- [安装概述](/install)

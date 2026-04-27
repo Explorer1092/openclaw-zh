@@ -1,6 +1,6 @@
 ---
 title: "Elevated Mode"
-mmh3_hash: "a04f3d5b64f5b41bd90e6bc38aebe638"
+mmh3_hash: "37411d1da2bd9458919d12711ffd6e5b"
 summary: "提升执行模式：在沙盒 Agent 中从沙盒外运行命令"
 read_when:
   - 调整提升模式默认值、允许列表或 Slash Command 行为

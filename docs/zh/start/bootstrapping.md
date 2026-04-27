@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bfa0bdaaf42cffba881ebd9df4a75749"
+mmh3_hash: "3422fb9763bc1febac7d6d1974270f2c"
 summary: "Agent 引导仪式，播种工作空间和身份文件"
 read_when:
   - 了解第一次 Agent 运行时发生的事情
@@ -8,8 +8,6 @@ read_when:
 title: "Agent 引导"
 sidebarTitle: "引导"
 ---
-
-# Agent 引导
 
 引导是**首次运行**仪式，用于准备 Agent 工作空间并收集身份详细信息。它在引导之后、Agent 首次启动时发生。
 
@@ -21,6 +19,10 @@ sidebarTitle: "引导"
 - 运行简短的问答仪式（一次一个问题）。
 - 将身份 + 偏好写入 `IDENTITY.md`、`USER.md`、`SOUL.md`。
 - 完成后删除 `BOOTSTRAP.md`，使其仅运行一次。
+
+## 跳过引导
+
+如需跳过预置工作空间的引导，请运行 `openclaw onboard --skip-bootstrap`。
 
 ## 它在哪里运行
 

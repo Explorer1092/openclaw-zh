@@ -1,7 +1,7 @@
 ---
 title: "Skill 配置"
 sidebarTitle: "Skill 配置"
-mmh3_hash: "d4be38695739c98fdebf69fdc05f02b1"
+mmh3_hash: "9854d6c719008b4d4ec8086cd7ba846c"
 summary: "Skill 配置架构和示例"
 read_when:
   - 添加或修改 Skill 配置
@@ -46,7 +46,7 @@ read_when:
 
 示例：
 
-- 原生 Nano Banana 风格设置：`agents.defaults.imageGenerationModel.primary: "google/gemini-3.1-flash-image-preview"`
+- 原生 Nano Banana Pro 风格设置：`agents.defaults.imageGenerationModel.primary: "google/gemini-3-pro-image-preview"`
 - 原生 fal 设置：`agents.defaults.imageGenerationModel.primary: "fal/fal-ai/flux/dev"`
 
 ## Agent Skill 允许列表
@@ -103,11 +103,17 @@ read_when:
 
 ### 沙箱 Skill + 环境变量
 
-当 Session **被沙箱化**时,Skill 进程在 Docker 内部运行。沙箱**不**继承主机 `process.env`。
+当 Session **被沙箱化**时，Skill 进程在已配置的沙箱后端内运行。沙箱**不**继承主机 `process.env`。
 
-使用以下之一:
+使用以下之一：
 
-- `agents.defaults.sandbox.docker.env`(或每个 agent 的 `agents.list[].sandbox.docker.env`)
-- 将环境烘焙到您的自定义沙箱镜像中
+- `agents.defaults.sandbox.docker.env` 用于 Docker 后端（或每个 Agent 的 `agents.list[].sandbox.docker.env`）
+- 将环境烘焙到您的自定义沙箱镜像或远程沙箱环境中
 
 全局 `env` 和 `skills.entries.<skill>.env/apiKey` 仅适用于**主机**运行。
+
+## 相关
+
+- [技能](/tools/skills)
+- [创建技能](/tools/creating-skills)
+- [Slash 命令](/tools/slash-commands)

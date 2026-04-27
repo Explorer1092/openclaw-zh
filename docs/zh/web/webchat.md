@@ -1,11 +1,10 @@
 ---
-title: "WebChat (Gateway WebSocket UI)"
-sidebarTitle: "WebChat"
-mmh3_hash: "f394f22ddb801aaec0744d4a4f796828"
+title: "WebChat"
+mmh3_hash: "3763104c3542916576e00832f845b1d7"
 summary: "环回 WebChat 静态主机和 Gateway WS 聊天 UI 使用"
-read_when: ["调试或配置 WebChat 访问"]
+read_when:
+  - 调试或配置 WebChat 访问
 ---
-# WebChat (Gateway WebSocket UI)
 
 状态: macOS/iOS SwiftUI 聊天 UI 直接与 Gateway WebSocket 通信。
 
@@ -26,6 +25,7 @@ read_when: ["调试或配置 WebChat 访问"]
 - UI 连接到 Gateway WebSocket 并使用 `chat.history`、`chat.send` 和 `chat.inject`。
 - `chat.history` 有大小限制以保证稳定性：Gateway 可能截断长文本字段、省略大型元数据，并用占位符替换超大条目（`[chat.history omitted: message too large]`）。
 - `chat.history` 还进行显示标准化：内联传递指令标签（如 `[[reply_to_*]]` 和 `[[audio_as_voice]]`）、纯文本工具调用 XML 有效载荷（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>`、`<tool_calls>...</tool_calls>`、`<function_calls>...</function_calls>` 和截断的工具调用块）以及泄漏的 ASCII/全角模型控制令牌从可见文本中被去除，整个可见文本仅为精确静默令牌 `NO_REPLY` / `no_reply` 的 assistant 条目被省略。
+- 推理标记的回复有效载荷（`isReasoning: true`）被排除在 WebChat assistant 内容、转录重放文本和音频内容块之外，因此仅 thinking 的有效载荷不会作为可见的 assistant 消息或可播放的音频出现。
 - `chat.inject` 直接将 assistant 注释附加到转录并将其广播到 UI（无 Agent 运行）。
 - 中止的运行可以在 UI 中保留部分 assistant 输出可见。
 - 当存在缓冲输出时，Gateway 将中止的部分 assistant 文本持久化到转录历史中，并用中止元数据标记这些条目。
@@ -61,3 +61,8 @@ WebChat 选项：
 - `gateway.auth.mode: "trusted-proxy"`：身份感知**非环回**代理来源后面的浏览器客户端的反向代理认证（请参见 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)）。
 - `gateway.remote.url`、`gateway.remote.token`、`gateway.remote.password`：远程 Gateway 目标。
 - `session.*`：Session 存储和主键默认值。
+
+## 相关
+
+- [Control UI](/web/control-ui)
+- [Dashboard](/web/dashboard)

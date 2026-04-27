@@ -1,30 +1,36 @@
 ---
 title: "思考级别（/think 指令）"
 sidebarTitle: "思考级别"
-mmh3_hash: "c7cd234ff96364c0d79c9ca92244861a"
+mmh3_hash: "04ea5ad4568228a18646596eed2e00f0"
 summary: "/think、/fast、/verbose、/trace 和推理可见性的指令语法"
 read_when:
   - 调整 thinking、fast 模式或 verbose 指令解析或默认值
 ---
 
-# 思考级别（/think 指令）
-
 ## 它做什么
 
 - 任何入站正文中的内联指令：`/t <level>`、`/think:<level>` 或 `/thinking <level>`。
-- 级别（别名）：`off | minimal | low | medium | high | xhigh | adaptive`
+- 级别（别名）：`off | minimal | low | medium | high | xhigh | adaptive | max`
   - minimal → "think"
   - low → "think hard"
   - medium → "think harder"
   - high → "ultrathink"（最大预算）
-  - xhigh → "ultrathink+"（GPT-5.2 + Codex 模型以及 Anthropic Claude Opus 4.7 effort）
-  - adaptive → Provider 管理的自适应推理（支持 Anthropic Claude 4.6 和 Opus 4.7）
+  - xhigh → "ultrathink+"（GPT-5.2+ 和 Codex 模型，以及 Anthropic Claude Opus 4.7 effort）
+  - adaptive → Provider 管理的自适应推理（支持 Anthropic/Bedrock 上的 Claude 4.6、Anthropic Claude Opus 4.7 和 Google Gemini 动态 thinking）
+  - max → Provider 最大推理（Anthropic Claude Opus 4.7；Ollama 将其映射到最高原生 `think` effort）
   - `x-high`、`x_high`、`extra-high`、`extra high` 和 `extra_high` 映射到 `xhigh`。
-  - `highest`、`max` 映射到 `high`。
+  - `highest` 映射到 `high`。
 - Provider 注意事项：
+  - Thinking 菜单和选择器由 Provider 配置文件驱动。Provider Plugin 声明所选模型的确切级别集，包括二进制 `on` 等标签。
+  - `adaptive`、`xhigh` 和 `max` 仅对支持它们的 Provider/模型配置文件进行宣传。不支持级别的类型化指令会被拒绝并显示该模型的有效选项。
+  - 现有存储的不支持级别由 Provider 配置文件等级重新映射。`adaptive` 在非自适应模型上回退到 `medium`，而 `xhigh` 和 `max` 回退到所选模型最大支持的非 `off` 级别。
   - Anthropic Claude 4.6 模型在未设置显式 thinking 级别时默认为 `adaptive`。
   - Anthropic Claude Opus 4.7 不默认为自适应 thinking。其 API effort 默认值由 Provider 所有，除非您显式设置 thinking 级别。
   - Anthropic Claude Opus 4.7 将 `/think xhigh` 映射到自适应 thinking 加 `output_config.effort: "xhigh"`，因为 `/think` 是 thinking 指令，而 `xhigh` 是 Opus 4.7 的 effort 设置。
+  - Anthropic Claude Opus 4.7 还开放 `/think max`；它映射到相同的 Provider 所有最大 effort 路径。
+  - 支持 thinking 的 Ollama 模型开放 `/think low|medium|high|max`；`max` 映射到原生 `think: "high"`，因为 Ollama 的原生 API 接受 `low`、`medium` 和 `high` effort 字符串。
+  - OpenAI GPT 模型通过特定模型的 Responses API effort 支持映射 `/think`。`/think off` 仅在目标模型支持时发送 `reasoning.effort: "none"`；否则 OpenClaw 省略禁用的推理负载，而不是发送不支持的值。
+  - Google Gemini 将 `/think adaptive` 映射到 Gemini 的 Provider 所有动态 thinking。Gemini 3 请求省略固定的 `thinkingLevel`，而 Gemini 2.5 请求发送 `thinkingBudget: -1`；固定级别仍然映射到该模型系列最近的 Gemini `thinkingLevel` 或预算。
   - MiniMax（`minimax/*`）在 Anthropic 兼容流式路径上默认为 `thinking: { type: "disabled" }`，除非您在模型参数或请求参数中显式设置 thinking。这避免了 MiniMax 非原生 Anthropic 流格式的 `reasoning_content` 增量泄漏。
   - Z.AI（`zai/*`）仅支持二进制 thinking（`on`/`off`）。任何非 `off` 级别都被视为 `on`（映射到 `low`）。
   - Moonshot（`moonshot/*`）将 `/think off` 映射到 `thinking: { type: "disabled" }`，将任何非 `off` 级别映射到 `thinking: { type: "enabled" }`。当 thinking 启用时，Moonshot 只接受 `tool_choice` 为 `auto|none`；OpenClaw 会将不兼容的值标准化为 `auto`。
@@ -35,7 +41,7 @@ read_when:
 2. Session 覆盖（通过发送仅指令消息设置）。
 3. 每 Agent 默认值（配置中的 `agents.list[].thinkingDefault`）。
 4. 全局默认值（配置中的 `agents.defaults.thinkingDefault`）。
-5. 回退：Anthropic Claude 4.6 模型为 `adaptive`，Anthropic Claude Opus 4.7 在未显式配置时为 `off`，其他推理能力模型为 `low`，否则为 `off`。
+5. 回退：可用时使用 Provider 声明的默认值；否则具有推理能力的模型解析为 `medium` 或该模型最近支持的非 `off` 级别，不具有推理能力的模型保持 `off`。
 
 ## 设置 Session 默认值
 
@@ -64,6 +70,7 @@ read_when:
 - 对于直接公共 `anthropic/*` 请求（包括发送到 `api.anthropic.com` 的 OAuth 认证流量），快速模式映射到 Anthropic 服务层：`/fast on` 设置 `service_tier=auto`，`/fast off` 设置 `service_tier=standard_only`。
 - 对于 Anthropic 兼容路径上的 `minimax/*`，`/fast on`（或 `params.fastMode: true`）将 `MiniMax-M2.7` 改写为 `MiniMax-M2.7-highspeed`。
 - 显式 Anthropic `serviceTier` / `service_tier` 模型参数在同时设置时覆盖快速模式默认值。对于非 Anthropic 代理基础 URL，OpenClaw 仍然跳过 Anthropic 服务层注入。
+- `/status` 仅在快速模式启用时显示 `Fast`。
 
 ## 详细指令（/verbose 或 /v）
 
@@ -108,9 +115,13 @@ read_when:
 
 - 网络聊天思考选择器在页面加载时从入站 Session 存储/配置中镜像 Session 的存储级别。
 - 选择另一个级别通过 `sessions.patch` 立即写入 Session 覆盖；它不等待下次发送，也不是一次性的 `thinkingOnce` 覆盖。
-- 第一个选项始终是 `Default (<resolved level>)`，其中解析的默认值来自活动 Session 模型：Anthropic 上的 Claude 4.6 为 `adaptive`，Anthropic Claude Opus 4.7 在未配置时为 `off`，其他推理能力模型为 `low`，否则为 `off`。
-- 选择器保持 Provider 感知：
-  - 大多数 Provider 显示 `off | minimal | low | medium | high | adaptive`
-  - Anthropic Claude Opus 4.7 显示 `off | minimal | low | medium | high | xhigh | adaptive`
-  - Z.AI 显示二进制 `off | on`
+- 第一个选项始终是 `Default (<resolved level>)`，其中解析的默认值来自活动 Session 模型的 Provider thinking 配置文件加上 `/status` 和 `session_status` 使用的相同回退逻辑。
+- 选择器使用 Gateway Session 行/默认值返回的 `thinkingLevels`，`thinkingOptions` 保留为遗留标签列表。浏览器 UI 不保留自己的 Provider 正则表达式列表；Plugin 拥有特定模型的级别集。
 - `/think:<level>` 仍然有效并更新相同的存储 Session 级别，因此聊天指令和选择器保持同步。
+
+## Provider 配置文件
+
+- Provider Plugin 可以暴露 `resolveThinkingProfile(ctx)` 来定义模型支持的级别和默认值。
+- 每个配置文件级别都有存储的规范 `id`（`off`、`minimal`、`low`、`medium`、`high`、`xhigh`、`adaptive` 或 `max`），并可能包含显示 `label`。二进制 Provider 使用 `{ id: "low", label: "on" }`。
+- 已发布的遗留钩子（`supportsXHighThinking`、`isBinaryThinking` 和 `resolveDefaultThinkingLevel`）保留为兼容性适配器，但新的自定义级别集应使用 `resolveThinkingProfile`。
+- Gateway 行/默认值暴露 `thinkingLevels`、`thinkingOptions` 和 `thinkingDefault`，以便 ACP/聊天客户端渲染运行时验证使用的相同配置文件 ID 和标签。

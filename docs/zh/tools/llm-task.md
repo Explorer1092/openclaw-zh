@@ -1,7 +1,7 @@
 ---
 title: "LLM 任务"
 sidebarTitle: "LLM 任务"
-mmh3_hash: "538bcfd35973a38f0bfec593d8e54eff"
+mmh3_hash: "cf838e510391bf365bd03789dae827c3"
 summary: "用于工作流的仅 JSON LLM 任务（可选插件工具）"
 read_when:
   - 您想要工作流内的仅 JSON LLM 步骤
@@ -53,9 +53,9 @@ read_when:
         "enabled": true,
         "config": {
           "defaultProvider": "openai-codex",
-          "defaultModel": "gpt-5.4",
+          "defaultModel": "gpt-5.5",
           "defaultAuthProfileId": "main",
-          "allowedModels": ["openai-codex/gpt-5.4"],
+          "allowedModels": ["openai/gpt-5.4"],
           "maxTokens": 800,
           "timeoutMs": 30000
         }
@@ -114,3 +114,9 @@ openclaw.invoke --tool llm-task --action json --args-json '{
 - 此运行不向模型公开任何工具。
 - 除非使用 `schema` 进行验证，否则请将输出视为不受信任。
 - 在任何有副作用的步骤（发送、发布、exec）之前进行审批。
+
+## 相关
+
+- [思考级别](/tools/thinking)
+- [子 Agent](/tools/subagents)
+- [Slash Command](/tools/slash-commands)

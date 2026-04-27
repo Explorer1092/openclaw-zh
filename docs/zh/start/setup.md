@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "d342df06f56d8980201088bec98d2dee"
+mmh3_hash: "222f3880dad10b79c868d4fb04531b5f"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器
   - 想要"最新 + 最好"而不破坏个人设置
 title: "设置"
 ---
-
-# 设置
 
 <Note>
 如果您是首次设置，请从[入门指南](/start/getting-started)开始。
@@ -16,9 +14,11 @@ title: "设置"
 
 ## 摘要（TL;DR）
 
-- **定制内容在仓库之外：** `~/.openclaw/workspace`（工作区）+ `~/.openclaw/openclaw.json`（配置）。
-- **稳定工作流：** 安装 macOS 应用程序；让它运行捆绑的 Gateway。
-- **前沿工作流：** 通过 `pnpm gateway:watch` 自己运行 Gateway，然后让 macOS 应用程序以本地模式连接。
+根据更新频率和是否自己运行 Gateway 选择工作流：
+
+- **定制内容在仓库之外：** 将你的配置和工作区保存在 `~/.openclaw/openclaw.json` 和 `~/.openclaw/workspace/` 中，这样仓库更新不会影响它们。
+- **稳定工作流（推荐大多数人）：** 安装 macOS 应用程序，让它运行捆绑的 Gateway。
+- **前沿工作流（开发版）：** 通过 `pnpm gateway:watch` 自己运行 Gateway，然后让 macOS 应用程序以本地模式连接。
 
 ## 前提条件（从源码）
 

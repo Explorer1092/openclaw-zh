@@ -1,7 +1,7 @@
 ---
 title: "Exec 工具"
 sidebarTitle: "Exec 工具"
-mmh3_hash: "fb299ebaf7824cacc563a040bf2233cf"
+mmh3_hash: "12c12051c90bf54ef17f5b0c57a493ff"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
 read_when:
   - 使用或修改 exec 工具
@@ -59,7 +59,7 @@ read_when:
 - `tools.exec.node`（默认：未设置）
 - `tools.exec.strictInlineEval`（默认：false）：为 true 时，内联解释器 eval 形式（如 `python -c`、`node -e`、`ruby -e`、`perl -e`、`php -r`、`lua -e` 和 `osascript -e`）始终需要显式批准。`allow-always` 仍可以持久化良性的解释器/脚本调用，但内联 eval 形式每次仍会提示。
 - `tools.exec.pathPrepend`：要为 exec 运行前置到 `PATH` 的目录列表（仅 Gateway + 沙盒）。
-- `tools.exec.safeBins`：可以在没有显式允许列表条目的情况下运行的仅 stdin 安全二进制文件。有关行为详细信息，请参见 [安全 bin](/tools/exec-approvals#safe-bins-stdin-only)。
+- `tools.exec.safeBins`：可以在没有显式允许列表条目的情况下运行的仅 stdin 安全二进制文件。有关行为详细信息，请参见 [安全 bin](/tools/exec-approvals-advanced#safe-bins-stdin-only)。
 - `tools.exec.safeBinTrustedDirs`：用于 `safeBins` 路径检查的额外显式受信任目录。`PATH` 条目永远不会自动受信任。内置默认值为 `/bin` 和 `/usr/bin`。
 - `tools.exec.safeBinProfiles`：每个安全 bin 的可选自定义 argv 策略（`minPositional`、`maxPositional`、`allowedValueFlags`、`deniedFlags`）。
 
@@ -114,7 +114,7 @@ openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 
 ## 允许列表 + 安全 bin
 
-允许列表强制执行**仅**匹配解析的二进制路径（无基名匹配）。当 `security=allowlist` 时，仅当每个管道段都在允许列表中或是安全 bin 时，才自动允许 shell 命令。在允许列表模式下，链接（`;`、`&&`、`||`）和重定向仅在每个顶级段满足允许列表时被允许（包括安全 bin）。重定向仍不受支持。持久 `allow-always` 信任不会绕过该规则：链接命令仍然要求每个顶级段都匹配。
+手动允许列表强制执行匹配已解析的二进制路径 glob 和裸命令名 glob。裸名称仅匹配通过 PATH 调用的命令，因此当命令为 `rg` 时，`rg` 可以匹配 `/opt/homebrew/bin/rg`，但不匹配 `./rg` 或 `/tmp/rg`。当 `security=allowlist` 时，仅当每个管道段都在允许列表中或是安全 bin 时，才自动允许 shell 命令。在允许列表模式下，链接（`;`、`&&`、`||`）和重定向仅在每个顶级段满足允许列表时被允许（包括安全 bin）。重定向仍不受支持。持久 `allow-always` 信任不会绕过该规则：链接命令仍然要求每个顶级段都匹配。
 
 `autoAllowSkills` 是 exec 批准中的一个独立便捷路径。它与手动路径允许列表条目不同。对于严格的显式信任，保持 `autoAllowSkills` 禁用。
 
@@ -130,7 +130,7 @@ openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 `openclaw security audit` 和 `openclaw doctor` 还会在你将 `jq` 等宽行为 bin 显式加回 `safeBins` 时发出警告。
 如果你显式将解释器加入允许列表，请启用 `tools.exec.strictInlineEval`，使内联代码 eval 形式仍需新的批准。
 
-有关完整的策略详细信息和示例，请参见 [Exec 批准](/tools/exec-approvals#safe-bins-stdin-only) 和 [安全 bin 与允许列表](/tools/exec-approvals#safe-bins-versus-allowlist)。
+有关完整的策略详细信息和示例，请参见 [Exec 批准](/tools/exec-approvals-advanced#safe-bins-stdin-only) 和 [安全 bin 与允许列表](/tools/exec-approvals-advanced#safe-bins-versus-allowlist)。
 
 ## 示例
 
@@ -177,7 +177,7 @@ openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 {
   tools: {
     exec: {
-      applyPatch: { workspaceOnly: true, allowModels: ["gpt-5.4"] },
+      applyPatch: { workspaceOnly: true, allowModels: ["gpt-5.5"] },
     },
   },
 }

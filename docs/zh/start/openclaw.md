@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "39afd4ec03011b551d3bed04b8316c52"
+mmh3_hash: "7eff91331b07adb377b5b81f87453fe2"
 summary: "将 OpenClaw 作为带有安全警告的个人助手运行的端到端指南"
 read_when:
   - 引导新的助手实例
@@ -67,7 +67,7 @@ openclaw gateway --port 18789
 
 现在从你的白名单手机向助手号码发送消息。
 
-当引导完成时，我们会自动打开 Dashboard 并打印一个干净的（非令牌化的）链接。如果提示需要认证，请将配置的共享密钥粘贴到 Control UI 设置中。引导默认使用令牌（`gateway.auth.token`），但如果你将 `gateway.auth.mode` 切换为 `password`，密码认证也可以使用。稍后重新打开：`openclaw dashboard`。
+当引导完成时，OpenClaw 会自动打开 Dashboard 并打印一个干净的（非令牌化的）链接。如果 Dashboard 提示需要认证，请将配置的共享密钥粘贴到 Control UI 设置中。引导默认使用令牌（`gateway.auth.token`），但如果你将 `gateway.auth.mode` 切换为 `password`，密码认证也可以使用。稍后重新打开：`openclaw dashboard`。
 
 ## 给 Agent 一个工作区（AGENTS）
 
@@ -75,7 +75,9 @@ OpenClaw 从其工作区目录读取操作说明和"记忆"。
 
 默认情况下，OpenClaw 使用 `~/.openclaw/workspace` 作为 Agent 工作区，并在设置/首次运行 Agent 时自动创建它（加上初始的 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`）。`BOOTSTRAP.md` 仅在工作区是全新时创建（在你删除它之后不应再回来）。`MEMORY.md` 是可选的（不自动创建）；当存在时，它会在正常 Session 中加载。子 Agent Session 仅注入 `AGENTS.md` 和 `TOOLS.md`。
 
-提示：像对待 OpenClaw 的"记忆"一样对待这个文件夹，并将其设为 git 仓库（最好是私有的），以便备份你的 `AGENTS.md` + 记忆文件。如果安装了 git，全新的工作区会自动初始化。
+<Tip>
+像对待 OpenClaw 的"记忆"一样对待这个文件夹，并将其设为 git 仓库（最好是私有的），以便备份你的 `AGENTS.md` + 记忆文件。如果安装了 git，全新的工作区会自动初始化。
+</Tip>
 
 ```bash
 openclaw setup
@@ -88,8 +90,10 @@ openclaw setup
 
 ```json5
 {
-  agent: {
-    workspace: "~/.openclaw/workspace",
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+    },
   },
 }
 ```
@@ -98,8 +102,10 @@ openclaw setup
 
 ```json5
 {
-  agent: {
-    skipBootstrap: true,
+  agents: {
+    defaults: {
+      skipBootstrap: true,
+    },
   },
 }
 ```
@@ -108,7 +114,7 @@ openclaw setup
 
 OpenClaw 默认为良好的助手设置，但你通常需要调整：
 
-- `SOUL.md` 中的人设/指令
+- `SOUL.md` 中的人设/指令（参见 [`SOUL.md`](/concepts/soul)）
 - 思考默认值（如果需要）
 - 心跳（一旦你信任它）
 
@@ -224,3 +230,9 @@ openclaw health --json   # Gateway 健康快照（WS；默认可返回新鲜的�
 - Windows 状态：[Windows（WSL2）](/platforms/windows)
 - Linux 状态：[Linux 应用](/platforms/linux)
 - 安全：[安全](/gateway/security)
+
+## 相关
+
+- [入门指南](/start/getting-started)
+- [设置](/start/setup)
+- [Channels 概述](/channels)

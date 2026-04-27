@@ -1,61 +1,105 @@
 ---
-mmh3_hash: "9d62aaa66eec83af6647a2b62eb6ad32"
-summary: "媒体生成、理解和语音功能的统一登录页面"
+mmh3_hash: "911ebfc702603343d607aa11c4e5d9f5"
+summary: "图像、视频、音乐、语音和媒体理解能力一览"
 read_when:
-  - 寻找媒体能力概述
-  - 决定配置哪个媒体 Provider
+  - 寻找 OpenClaw 媒体能力的概述
+  - 决定配置哪个媒体提供商
   - 了解异步媒体生成的工作原理
-title: "Media Overview"
+title: "Media overview"
+sidebarTitle: "Media overview"
 ---
 
-# 媒体生成与理解
+OpenClaw 生成图像、视频和音乐，理解入站媒体（图像、音频、视频），并通过文本转语音大声朗读回复。所有媒体能力都由工具驱动：Agent 根据对话决定何时使用它们，每个工具仅在至少配置了一个支持提供商时才会出现。
 
-OpenClaw 生成图像、视频和音乐，理解入站媒体（图像、音频、视频），并通过文本转语音大声朗读回复。所有媒体能力都由工具驱动：Agent 根据对话决定何时使用它们，每个工具仅在至少配置了一个支持 Provider 时才会出现。
+## 能力
 
-## 能力一览
+<CardGroup cols={2}>
+  <Card title="图像生成" href="/tools/image-generation" icon="image">
+    通过 `image_generate` 从文本提示或参考图像创建和编辑图像。同步——与回复内联完成。
+  </Card>
+  <Card title="视频生成" href="/tools/video-generation" icon="video">
+    通过 `video_generate` 实现文本转视频、图像转视频和视频转视频。异步——在后台运行并在就绪时发布结果。
+  </Card>
+  <Card title="音乐生成" href="/tools/music-generation" icon="music">
+    通过 `music_generate` 生成音乐或音轨。共享提供商为异步；ComfyUI 工作流路径同步运行。
+  </Card>
+  <Card title="文本转语音" href="/tools/tts" icon="microphone">
+    通过 `tts` 工具加 `messages.tts` 配置将出站回复转换为语音音频。同步。
+  </Card>
+  <Card title="媒体理解" href="/nodes/media-understanding" icon="eye">
+    使用具有视觉能力的模型提供商和专用媒体理解插件总结入站图像、音频和视频。
+  </Card>
+  <Card title="语音转文字" href="/nodes/audio" icon="ear-listen">
+    通过批量 STT 或 Voice Call 流式 STT 提供商转录入站语音消息。
+  </Card>
+</CardGroup>
 
-| 能力            | 工具             | Provider                                                                                     | 功能                                      |
-| --------------- | ---------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| 图像生成        | `image_generate` | ComfyUI、fal、Google、MiniMax、OpenAI、Vydra                                                  | 从文本提示或参考创建或编辑图像            |
-| 视频生成        | `video_generate` | Alibaba、BytePlus、ComfyUI、fal、Google、MiniMax、OpenAI、Qwen、Runway、Together、Vydra、xAI | 从文本、图像或现有视频创建视频            |
-| 音乐生成        | `music_generate` | ComfyUI、Google、MiniMax                                                                     | 从文本提示创建音乐或音轨                  |
-| 文本转语音（TTS） | `tts`           | ElevenLabs、Microsoft、MiniMax、OpenAI                                                        | 将出站回复转换为语音音频                  |
-| 媒体理解        | （自动）         | 任何具有视觉/音频能力的模型 Provider，加上 CLI 回退                                          | 总结入站图像、音频和视频                  |
+## 提供商能力矩阵
 
-## Provider 能力矩阵
-
-此表显示哪些 Provider 支持平台上的哪些媒体能力。
-
-| Provider   | 图像 | 视频 | 音乐 | TTS | STT / 转录 | 媒体理解 |
-| ---------- | ---- | ---- | ---- | --- | ---------- | -------- |
-| Alibaba    |      | 是   |      |     |            |          |
-| BytePlus   |      | 是   |      |     |            |          |
-| ComfyUI    | 是   | 是   | 是   |     |            |          |
-| Deepgram   |      |      |      |     | 是         |          |
-| ElevenLabs |      |      |      | 是  |            |          |
-| fal        | 是   | 是   |      |     |            |          |
-| Google     | 是   | 是   | 是   |     |            | 是       |
-| Microsoft  |      |      |      | 是  |            |          |
-| MiniMax    | 是   | 是   | 是   | 是  |            |          |
-| OpenAI     | 是   | 是   |      | 是  | 是         | 是       |
-| Qwen       |      | 是   |      |     |            |          |
-| Runway     |      | 是   |      |     |            |          |
-| Together   |      | 是   |      |     |            |          |
-| Vydra      | 是   | 是   |      |     |            |          |
-| xAI        |      | 是   |      |     |            |          |
+| 提供商       | 图像 | 视频 | 音乐 | TTS | STT | 实时语音 | 媒体理解 |
+| ------------ | :--: | :--: | :--: | :-: | :-: | :------: | :------: |
+| Alibaba      |      |  ✓   |      |     |     |          |          |
+| BytePlus     |      |  ✓   |      |     |     |          |          |
+| ComfyUI      |  ✓   |  ✓   |  ✓   |     |     |          |          |
+| Deepgram     |      |      |      |     |  ✓  |    ✓     |          |
+| ElevenLabs   |      |      |      |  ✓  |  ✓  |          |          |
+| fal          |  ✓   |  ✓   |      |     |     |          |          |
+| Google       |  ✓   |  ✓   |  ✓   |  ✓  |     |    ✓     |    ✓     |
+| Gradium      |      |      |      |  ✓  |     |          |          |
+| Local CLI    |      |      |      |  ✓  |     |          |          |
+| Microsoft    |      |      |      |  ✓  |     |          |          |
+| MiniMax      |  ✓   |  ✓   |  ✓   |  ✓  |     |          |          |
+| Mistral      |      |      |      |     |  ✓  |          |          |
+| OpenAI       |  ✓   |  ✓   |      |  ✓  |  ✓  |    ✓     |    ✓     |
+| Qwen         |      |  ✓   |      |     |     |          |          |
+| Runway       |      |  ✓   |      |     |     |          |          |
+| SenseAudio   |      |      |      |     |  ✓  |          |          |
+| Together     |      |  ✓   |      |     |     |          |          |
+| Vydra        |  ✓   |  ✓   |      |  ✓  |     |          |          |
+| xAI          |  ✓   |  ✓   |      |  ✓  |  ✓  |          |    ✓     |
+| Xiaomi MiMo  |  ✓   |      |      |  ✓  |     |          |    ✓     |
 
 <Note>
-媒体理解使用在您的 Provider 配置中注册的任何具有视觉能力或音频能力的模型。上表重点介绍具有专用媒体理解支持的 Provider；大多数具有多模态模型的 LLM Provider（Anthropic、Google、OpenAI 等）在配置为活跃回复模型时也可以理解入站媒体。
+媒体理解使用在你的提供商配置中注册的任何具有视觉能力或音频能力的模型。上表列出了具有专用媒体理解支持的提供商；大多数多模态 LLM 提供商（Anthropic、Google、OpenAI 等）在配置为活跃回复模型时也可以理解入站媒体。
 </Note>
 
-## 异步生成的工作原理
+## 异步 vs 同步
 
-视频和音乐生成作为后台任务运行，因为 Provider 处理通常需要 30 秒到几分钟。当 Agent 调用 `video_generate` 或 `music_generate` 时，OpenClaw 立即将请求提交给 Provider，返回任务 ID，并在任务账本中跟踪作业。当 Provider 完成时，OpenClaw 唤醒 Agent，以便它可以将完成的媒体发布回原始 Channel。图像生成和 TTS 是同步的，并与回复内联完成。
+| 能力           | 模式 | 原因                                                               |
+| -------------- | ---- | ------------------------------------------------------------------ |
+| 图像           | 同步 | 提供商响应在几秒内返回；与回复内联完成。                           |
+| 文本转语音     | 同步 | 提供商响应在几秒内返回；附加到回复音频。                           |
+| 视频           | 异步 | 提供商处理需要 30 秒到几分钟。                                     |
+| 音乐（共享）   | 异步 | 与视频相同的提供商处理特性。                                       |
+| 音乐（ComfyUI）| 同步 | 本地工作流针对已配置的 ComfyUI 服务器内联运行。                   |
 
-## 快速链接
+对于异步工具，OpenClaw 将请求提交给提供商，立即返回任务 ID，并在任务账本中跟踪作业。Agent 在作业运行期间继续响应其他消息。当提供商完成时，OpenClaw 唤醒 Agent，以便它可以将完成的媒体发布回原始 Channel。
 
-- [图像生成](/tools/image-generation) -- 生成和编辑图像
-- [视频生成](/tools/video-generation) -- 文本转视频、图像转视频和视频转视频
-- [音乐生成](/tools/music-generation) -- 创作音乐和音轨
-- [文本转语音](/tools/tts) -- 将回复转换为语音音频
-- [媒体理解](/nodes/media-understanding) -- 理解入站图像、音频和视频
+## 语音转文字和 Voice Call
+
+Deepgram、ElevenLabs、Mistral、OpenAI、SenseAudio 和 xAI 在配置后都可以通过批量 `tools.media.audio` 路径转录入站音频。在入站上下文中预检语音备注以进行提及门控或命令解析的 Channel 插件会标记已转录的附件，因此共享媒体理解通道会复用该转录，而不是对同一音频进行第二次 STT 调用。
+
+Deepgram、ElevenLabs、Mistral、OpenAI 和 xAI 还注册了 Voice Call 流式 STT 提供商，因此实时电话音频可以转发到所选供应商，而无需等待完整录音。
+
+## 提供商映射（供应商如何跨表面分布）
+
+<AccordionGroup>
+  <Accordion title="Google">
+    图像、视频、音乐、批量 TTS、后端实时语音和媒体理解表面。
+  </Accordion>
+  <Accordion title="OpenAI">
+    图像、视频、批量 TTS、批量 STT、Voice Call 流式 STT、后端实时语音和记忆嵌入表面。
+  </Accordion>
+  <Accordion title="xAI">
+    图像、视频、搜索、代码执行、批量 TTS、批量 STT 和 Voice Call 流式 STT。xAI 实时语音是上游能力，但在共享实时语音契约能够表示它之前，尚未在 OpenClaw 中注册。
+  </Accordion>
+</AccordionGroup>
+
+## 相关
+
+- [图像生成](/tools/image-generation)
+- [视频生成](/tools/video-generation)
+- [音乐生成](/tools/music-generation)
+- [文本转语音](/tools/tts)
+- [媒体理解](/nodes/media-understanding)
+- [音频节点](/nodes/audio)

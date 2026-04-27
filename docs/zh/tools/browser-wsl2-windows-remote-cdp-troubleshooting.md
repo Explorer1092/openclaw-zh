@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d002799db085a995568473170c94e787"
+mmh3_hash: "3d723caa2fece16f6b553574bae18b84"
 summary: "分层排查 WSL2 Gateway + Windows Chrome 远程 CDP"
 read_when:
   - 在 WSL2 中运行 OpenClaw Gateway 而 Chrome 在 Windows 上
@@ -8,15 +8,7 @@ read_when:
 title: "WSL2 + Windows + 远程 Chrome CDP 故障排除"
 ---
 
-# WSL2 + Windows + 远程 Chrome CDP 故障排除
-
-本指南涵盖常见的分体主机设置，其中：
-
-- OpenClaw Gateway 在 WSL2 内运行
-- Chrome 在 Windows 上运行
-- 浏览器控制必须跨越 WSL2/Windows 边界
-
-本指南还涵盖来自 [issue #39369](https://github.com/openclaw/openclaw/issues/39369) 的分层失败模式：多个独立问题可能同时出现，这会让错误的层看起来首先出现故障。
+在常见的分体主机设置中，OpenClaw Gateway 在 WSL2 内运行，Chrome 在 Windows 上运行，浏览器控制必须跨越 WSL2/Windows 边界。来自 [issue #39369](https://github.com/openclaw/openclaw/issues/39369) 的分层失败模式意味着多个独立问题可能同时出现，这会让错误的层看起来首先出现故障。
 
 ## 首先选择正确的浏览器模式
 
@@ -218,3 +210,9 @@ openclaw browser tabs --browser-profile remote
 - 先在本地验证 Windows Chrome 端点
 - 再从 WSL2 验证同一端点
 - 之后才调试 OpenClaw 配置或 Control UI 认证
+
+## 相关
+
+- [浏览器](/tools/browser)
+- [浏览器登录](/tools/browser-login)
+- [浏览器 Linux 故障排除](/tools/browser-linux-troubleshooting)

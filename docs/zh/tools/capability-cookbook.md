@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "86614cfd8c67859a7f4bc12ad44ff394"
+mmh3_hash: "5dc614ba79e765372c9149c7a07aa9a6"
 summary: "为 OpenClaw Plugin 系统添加新共享能力的贡献者指南"
 read_when:
   - 添加新的核心能力和 Plugin 注册入口
@@ -8,8 +8,6 @@ read_when:
 title: "添加能力（贡献者指南）"
 sidebarTitle: "添加能力"
 ---
-
-# 添加能力
 
 <Info>
   本文是面向 OpenClaw 核心开发者的**贡献者指南**。如果你在构建外部 Plugin，
@@ -67,6 +65,19 @@ sidebarTitle: "添加能力"
 - 调用 `api.runtime.*` 或对应的 `plugin-sdk/*-runtime` Helper
 - 永远不直接调用供应商实现
 
+## Provider 和 Harness 接缝
+
+当行为属于 Model Provider 契约而非通用 Agent 循环时，使用 Provider Hook。示例包括传输选择后特定 Provider 的请求参数、鉴权配置文件偏好、提示词叠加以及 Model/配置文件故障转移后的后续回退路由。
+
+当行为属于执行轮次的运行时时，使用 Agent Harness Hook。Harness 可以将成功但不可用的尝试结果（如空结果、仅推理或仅规划响应）分类，使外部 Model 回退策略能够做出重试决策。
+
+保持两个接缝的范围较窄：
+
+- 核心拥有重试/回退策略
+- Provider Plugin 拥有特定 Provider 的请求/鉴权/路由提示
+- Harness Plugin 拥有运行时特定的尝试分类
+- 第三方 Plugin 返回提示，而不是直接修改核心状态
+
 ## 文件核查清单
 
 对于新能力，预计需要修改以下区域：
@@ -112,3 +123,9 @@ sidebarTitle: "添加能力"
 - Plugin 文档解释了归属边界
 
 如果 PR 跳过了能力层并将供应商行为硬编码到 Channel/工具中，请退回并先定义契约。
+
+## 相关
+
+- [Plugin](/tools/plugin)
+- [创建 Skill](/tools/creating-skills)
+- [工具与 Plugin](/tools)

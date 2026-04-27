@@ -1,13 +1,11 @@
 ---
 title: "创建技能"
-mmh3_hash: "3d1bd9d19edb7d90fc844fb04deb82cb"
+mmh3_hash: "6491614b30c6e54da83650beaabe33f1"
 summary: "使用 SKILL.md 构建和测试自定义工作区技能"
 read_when:
   - 在工作区中创建新的自定义技能
   - 需要基于 SKILL.md 的技能的快速入门工作流程
 ---
-
-# 创建技能
 
 技能教 Agent 如何以及何时使用工具。每个技能是一个包含 `SKILL.md` 文件的目录，该文件具有 YAML frontmatter 和 Markdown 指令。
 

@@ -1,14 +1,12 @@
 ---
 title: "浏览器登录与 X/Twitter 发帖"
 sidebarTitle: "浏览器登录"
-mmh3_hash: "96b945df1bc94cb2205172b0bc5e5768"
+mmh3_hash: "60862a39a3a451887d7379dc43122187"
 summary: "浏览器自动化 + X/Twitter 发帖的手动登录"
 read_when:
   - 需要登录网站以进行浏览器自动化
   - 想要发布更新到 X/Twitter
 ---
-
-# 浏览器登录 + X/Twitter 发帖
 
 ## 手动登录（推荐）
 
@@ -73,3 +71,9 @@ openclaw browser open https://x.com --browser-profile openclaw --target host
 ```
 
 或者为负责发帖更新的 Agent 禁用沙盒。
+
+## 相关
+
+- [浏览器](/tools/browser)
+- [浏览器 Linux 故障排除](/tools/browser-linux-troubleshooting)
+- [浏览器 WSL2 故障排除](/tools/browser-wsl2-windows-remote-cdp-troubleshooting)

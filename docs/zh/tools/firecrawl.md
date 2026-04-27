@@ -1,6 +1,6 @@
 ---
 title: "Firecrawl"
-mmh3_hash: "345c44f8243ea46370673d6ffd7508bd"
+mmh3_hash: "f1f7b913530e2e23531a2b1f4b958cb6"
 summary: "Firecrawl 搜索、抓取和 web_fetch 回退"
 read_when:
   - 需要 Firecrawl 支持的网页提取

@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "09bec2cba305a0b4bd21e3ab08c67a7f"
+mmh3_hash: "0d95a443b5b57fedf253a5bf8b0fec68"
 summary: "Brave Search API 设置，用于 web_search"
 read_when:
   - 希望将 Brave Search 用于 web_search
   - 需要 BRAVE_API_KEY 或了解套餐详情
 title: "Brave Search"
 ---
-
-# Brave Search API
 
 OpenClaw 支持将 Brave Search API 作为 `web_search` 提供商。
 
@@ -55,17 +53,41 @@ OpenClaw 支持将 Brave Search API 作为 `web_search` 提供商。
 
 ## 工具参数
 
-| 参数          | 描述                                                             |
-| ------------- | ---------------------------------------------------------------- |
-| `query`       | 搜索查询词（必填）                                               |
-| `count`       | 返回结果数量（1-10，默认：5）                                    |
-| `country`     | 2 位 ISO 国家代码（如 "US"、"DE"）                               |
-| `language`    | 搜索结果的 ISO 639-1 语言代码（如 "en"、"de"、"fr"）             |
-| `search_lang` | Brave 搜索语言代码（如 `en`、`en-gb`、`zh-hans`）               |
-| `ui_lang`     | 界面元素的 ISO 语言代码                                          |
-| `freshness`   | 时间过滤：`day`（24h）、`week`、`month` 或 `year`               |
-| `date_after`  | 仅返回此日期后发布的结果（YYYY-MM-DD）                           |
-| `date_before` | 仅返回此日期前发布的结果（YYYY-MM-DD）                           |
+<ParamField path="query" type="string" required>
+搜索查询词。
+</ParamField>
+
+<ParamField path="count" type="number" default="5">
+返回结果数量（1-10）。
+</ParamField>
+
+<ParamField path="country" type="string">
+2 位 ISO 国家代码（如 `US`、`DE`）。
+</ParamField>
+
+<ParamField path="language" type="string">
+搜索结果的 ISO 639-1 语言代码（如 `en`、`de`、`fr`）。
+</ParamField>
+
+<ParamField path="search_lang" type="string">
+Brave 搜索语言代码（如 `en`、`en-gb`、`zh-hans`）。
+</ParamField>
+
+<ParamField path="ui_lang" type="string">
+界面元素的 ISO 语言代码。
+</ParamField>
+
+<ParamField path="freshness" type="'day' | 'week' | 'month' | 'year'">
+时间过滤——`day` 为 24 小时。
+</ParamField>
+
+<ParamField path="date_after" type="string">
+仅返回此日期后发布的结果（`YYYY-MM-DD`）。
+</ParamField>
+
+<ParamField path="date_before" type="string">
+仅返回此日期前发布的结果（`YYYY-MM-DD`）。
+</ParamField>
 
 **示例：**
 

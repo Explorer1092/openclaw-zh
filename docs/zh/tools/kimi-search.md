@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8cd6eefab2c75f93001df2a49f15598b"
+mmh3_hash: "29c1e089b5923028c0076a806dae2ac5"
 summary: "Kimi 网页搜索，通过 Moonshot 网页搜索"
 read_when:
   - 希望将 Kimi 用于 web_search
@@ -32,7 +32,7 @@ OpenClaw 支持将 Kimi 作为 `web_search` 提供商，使用 Moonshot 网页�
 - Moonshot API 地区：
   - `https://api.moonshot.ai/v1`
   - `https://api.moonshot.cn/v1`
-- 默认 Kimi 网页搜索模型（默认为 `kimi-k2.5`）
+- 默认 Kimi 网页搜索模型（默认为 `kimi-k2.6`）
 
 ## 配置
 
@@ -45,7 +45,7 @@ OpenClaw 支持将 Kimi 作为 `web_search` 提供商，使用 Moonshot 网页�
           webSearch: {
             apiKey: "sk-...", // 如果已设置 KIMI_API_KEY 或 MOONSHOT_API_KEY 则可选
             baseUrl: "https://api.moonshot.ai/v1",
-            model: "kimi-k2.5",
+            model: "kimi-k2.6",
           },
         },
       },
@@ -66,7 +66,7 @@ OpenClaw 支持将 Kimi 作为 `web_search` 提供商，使用 Moonshot 网页�
 **环境变量替代方案：** 在 Gateway 环境中设置 `KIMI_API_KEY` 或 `MOONSHOT_API_KEY`。对于 Gateway 安装，将其放入 `~/.openclaw/.env`。
 
 如果省略 `baseUrl`，OpenClaw 默认为 `https://api.moonshot.ai/v1`。
-如果省略 `model`，OpenClaw 默认为 `kimi-k2.5`。
+如果省略 `model`，OpenClaw 默认为 `kimi-k2.6`。
 
 ## 工作原理
 

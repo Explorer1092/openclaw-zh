@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1a134d2b9bb9959a7cc07e07638570ac"
+mmh3_hash: "12b9a309a7cba44662834e07e1b3ce94"
 summary: "Grok 网页搜索，通过 xAI 网页接地响应"
 read_when:
   - 希望将 Grok 用于 web_search

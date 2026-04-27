@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "54104d47bf008c162d6d5f33b5b5a021"
+mmh3_hash: "47f746c3a1277317b198a3ed21c519f0"
 title: "Lobster"
 sidebarTitle: "Lobster 工作流"
 summary: "OpenClaw 的类型化工作流运行时，具有可恢复的批准门控。"
@@ -192,7 +192,9 @@ Lobster 是一个**可选**插件工具（默认不启用）。
 
 避免使用 `tools.allow: ["lobster"]`，除非您打算在限制性允许列表模式下运行。
 
-注意：允许列表是可选插件的选择加入。如果您的允许列表仅命名插件工具（如 `lobster`），OpenClaw 会保持核心工具启用。要限制核心工具，也在允许列表中包含您想要的核心工具或组。
+<Note>
+允许列表是可选插件的选择加入。如果您的允许列表仅命名插件工具（如 `lobster`），OpenClaw 会保持核心工具启用。要限制核心工具，也在允许列表中包含您想要的核心工具或组。
+</Note>
 
 ## 示例：电子邮件分类
 
@@ -340,3 +342,9 @@ OpenProse 与 Lobster 配合得很好：使用 `/prose` 编排多 Agent 准备�
 
 - 线程：[https://x.com/plattenschieber/status/2014508656335770033](https://x.com/plattenschieber/status/2014508656335770033)
 - 仓库：[https://github.com/bloomedai/brain-cli](https://github.com/bloomedai/brain-cli)
+
+## 相关
+
+- [自动化与任务](/automation) — 调度 Lobster 工作流
+- [自动化概览](/automation) — 所有自动化机制
+- [工具概览](/tools) — 所有可用的 Agent 工具

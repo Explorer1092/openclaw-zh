@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0477c788331772a723f63e5821d92b9d"
+mmh3_hash: "4c520adfd46f08a65592ca7cf5ac36a1"
 summary: "CLI 引导向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
 read_when:
   - 运行或配置 CLI 引导向导
@@ -7,8 +7,6 @@ read_when:
 title: "引导向导（CLI）"
 sidebarTitle: "引导向导：CLI"
 ---
-
-# 引导向导（CLI）
 
 CLI 引导向导是在 macOS、Linux 或 Windows（通过 WSL2；强烈推荐）上设置 OpenClaw 的**推荐**方式。
 它在一个引导式流程中配置本地 Gateway 或远程 Gateway 连接，以及 Channel、Skill 和工作区默认值。

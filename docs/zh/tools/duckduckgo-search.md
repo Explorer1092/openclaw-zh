@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "69d699b971cbf6187de01e3e6b3e12ff"
+mmh3_hash: "4c309b48847286e2cba83967305c9f75"
 summary: "DuckDuckGo 网页搜索 -- 无需密钥的回退提供商（实验性，基于 HTML）"
 read_when:
   - 希望使用无需 API 密钥的网页搜索提供商
@@ -7,8 +7,6 @@ read_when:
   - 需要零配置的搜索回退方案
 title: "DuckDuckGo Search"
 ---
-
-# DuckDuckGo Search
 
 OpenClaw 支持将 DuckDuckGo 作为**无需密钥**的 `web_search` 提供商。无需 API 密钥或账号。
 
@@ -65,12 +63,21 @@ OpenClaw 支持将 DuckDuckGo 作为**无需密钥**的 `web_search` 提供商�
 
 ## 工具参数
 
-| 参数         | 描述                                                       |
-| ------------ | ---------------------------------------------------------- |
-| `query`      | 搜索查询词（必填）                                         |
-| `count`      | 返回结果数量（1-10，默认：5）                              |
-| `region`     | DuckDuckGo 地区代码（如 `us-en`、`uk-en`、`de-de`）       |
-| `safeSearch` | 安全搜索级别：`strict`、`moderate`（默认）或 `off`         |
+<ParamField path="query" type="string" required>
+搜索查询词。
+</ParamField>
+
+<ParamField path="count" type="number" default="5">
+返回结果数量（1-10）。
+</ParamField>
+
+<ParamField path="region" type="string">
+DuckDuckGo 地区代码（如 `us-en`、`uk-en`、`de-de`）。
+</ParamField>
+
+<ParamField path="safeSearch" type="'strict' | 'moderate' | 'off'" default="moderate">
+安全搜索级别。
+</ParamField>
 
 地区和安全搜索也可在 Plugin 配置中设置（见上文）——工具参数会在每次查询时覆盖配置值。
 

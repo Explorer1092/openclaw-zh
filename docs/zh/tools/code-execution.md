@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c4da4679c146da76f7912d86671975ec"
+mmh3_hash: "b633abd65c5bd5523bd10b1b0ca380d6"
 summary: "code_execution -- 通过 xAI 运行沙盒远程 Python 分析"
 read_when:
   - 希望启用或配置 code_execution
@@ -7,8 +7,6 @@ read_when:
   - 希望将 x_search 或 web_search 与远程 Python 分析结合使用
 title: "Code Execution"
 ---
-
-# Code Execution
 
 `code_execution` 在 xAI 的 Responses API 上运行沙盒远程 Python 分析。
 这与本地 [`exec`](/tools/exec) 不同：
@@ -84,6 +82,8 @@ Use web_search to gather the latest AI benchmark numbers, then use code_executio
 
 ## 相关
 
+- [Exec 工具](/tools/exec)
+- [Exec 审批](/tools/exec-approvals)
+- [apply_patch 工具](/tools/apply-patch)
 - [Web 工具](/tools/web)
-- [Exec](/tools/exec)
 - [xAI](/providers/xai)

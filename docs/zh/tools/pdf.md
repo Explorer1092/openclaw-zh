@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9fca6fdd61675df190f11fe9498b67ac"
+mmh3_hash: "ad1f1707e160b19a97abc93505b9a464"
 title: "PDF 工具"
 summary: "使用原生 Provider 支持和提取回退分析一个或多个 PDF 文档"
 read_when:
@@ -7,8 +7,6 @@ read_when:
   - 您需要确切的 pdf 工具参数和限制
   - 您正在调试原生 PDF 模式与提取回退
 ---
-
-# PDF 工具
 
 `pdf` 分析一个或多个 PDF 文档并返回文本。
 
@@ -37,12 +35,29 @@ read_when:
 
 ## 输入参考
 
-- `pdf`（`string`）：一个 PDF 路径或 URL
-- `pdfs`（`string[]`）：多个 PDF 路径或 URL，总计最多 10 个
-- `prompt`（`string`）：分析提示，默认为 `Analyze this PDF document.`
-- `pages`（`string`）：页面过滤，如 `1-5` 或 `1,3,7-9`
-- `model`（`string`）：可选的模型覆盖（`provider/model`）
-- `maxBytesMb`（`number`）：每个 PDF 的大小上限（MB）
+<ParamField path="pdf" type="string">
+一个 PDF 路径或 URL。
+</ParamField>
+
+<ParamField path="pdfs" type="string[]">
+多个 PDF 路径或 URL，总计最多 10 个。
+</ParamField>
+
+<ParamField path="prompt" type="string" default="Analyze this PDF document.">
+分析提示。
+</ParamField>
+
+<ParamField path="pages" type="string">
+页面过滤，如 `1-5` 或 `1,3,7-9`。
+</ParamField>
+
+<ParamField path="model" type="string">
+可选的模型覆盖（`provider/model` 格式）。
+</ParamField>
+
+<ParamField path="maxBytesMb" type="number">
+每个 PDF 的大小上限（MB）。默认为 `agents.defaults.pdfMaxBytesMb` 或 `10`。
+</ParamField>
 
 输入说明：
 
@@ -56,12 +71,14 @@ read_when:
 - 本地文件路径（包括 `~` 展开）
 - `file://` URL
 - `http://` 和 `https://` URL
+- OpenClaw 托管的入站引用，如 `media://inbound/<id>`
 
 引用说明：
 
 - 其他 URI 方案（例如 `ftp://`）会以 `unsupported_pdf_reference` 被拒绝。
 - 在沙箱模式下，远程 `http(s)` URL 会被拒绝。
 - 启用仅工作区文件策略时，允许根目录之外的本地文件路径会被拒绝。
+- 托管入站引用和 OpenClaw 入站媒体存储下的重放路径在仅工作区文件策略下是允许的。
 
 ## 执行模式
 
@@ -90,7 +107,7 @@ read_when:
 - 页面图像提取使用 `4,000,000` 像素预算。
 - 如果目标模型不支持图像输入且没有可提取的文本，工具报错。
 - 如果文本提取成功，但图像提取需要在仅文本模型上使用视觉功能，OpenClaw 会丢弃已渲染的图像并继续使用提取的文本。
-- 提取回退需要 `pdfjs-dist`（以及用于图像渲染的 `@napi-rs/canvas`）。
+- 提取回退使用捆绑的 `document-extract` 插件。该插件拥有 `pdfjs-dist`；`@napi-rs/canvas` 仅在图像渲染回退可用时使用。
 
 ## 配置
 
@@ -109,7 +126,7 @@ read_when:
 }
 ```
 
-完整字段详情参见 [配置参考](/gateway/configuration-reference)。
+完整字段详情参见[配置参考](/gateway/configuration-reference)。
 
 ## 输出详情
 
@@ -168,4 +185,4 @@ read_when:
 ## 相关
 
 - [工具概览](/tools) — 所有可用的 Agent 工具
-- [配置参考](/gateway/configuration-reference#agent-defaults) — pdfMaxBytesMb 和 pdfMaxPages 配置
+- [配置参考](/gateway/config-agents#agent-defaults) — pdfMaxBytesMb 和 pdfMaxPages 配置

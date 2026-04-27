@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e17d4dd09185898cd192fe3d3fef5c63"
+mmh3_hash: "f4bd983e65eb867a26a63a20e7f433eb"
 summary: "CLI 引导流程、认证/模型设置、输出和内部的完整参考"
 read_when:
   - 您需要 openclaw onboard 的详细行为
@@ -7,8 +7,6 @@ read_when:
 title: "CLI 引导参考"
 sidebarTitle: "CLI 参考"
 ---
-
-# CLI 引导参考
 
 此页面是 `openclaw onboard` 的完整参考。有关简短指南，请参阅[引导向导（CLI）](/start/wizard)。
 
@@ -127,22 +125,22 @@ sidebarTitle: "CLI 参考"
   <Accordion title="Anthropic API 密钥">
     如果存在则使用 `ANTHROPIC_API_KEY`，或提示输入密钥，然后保存以供守护程序使用。
   </Accordion>
-  <Accordion title="OpenAI Code 订阅（Codex CLI 重用）">
-    如果 `~/.codex/auth.json` 存在，向导可以重用它。
-    重用的 Codex CLI 凭据仍由 Codex CLI 管理；到期时 OpenClaw
-    首先重新读取该来源，当 Provider 可以刷新时，将刷新的凭据写回
-    Codex 存储，而不是自己接管。
-  </Accordion>
   <Accordion title="OpenAI Code 订阅（OAuth）">
     浏览器流程；粘贴 `code#state`。
 
-    当模型未设置或为 `openai/*` 时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.4`。
+    当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.5`。
+
+  </Accordion>
+  <Accordion title="OpenAI Code 订阅（设备配对）">
+    带短期设备码的浏览器配对流程。
+
+    当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.5`。
 
   </Accordion>
   <Accordion title="OpenAI API 密钥">
     如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将凭据存储在认证配置文件中。
 
-    当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.4`。
+    当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
 
   </Accordion>
   <Accordion title="xAI（Grok）API 密钥">
@@ -255,6 +253,7 @@ sidebarTitle: "CLI 参考"
 `~/.openclaw/openclaw.json` 中的典型字段：
 
 - `agents.defaults.workspace`
+- `agents.defaults.skipBootstrap`（当传递 `--skip-bootstrap` 时）
 - `agents.defaults.model` / `models.providers`（如果选择 Minimax）
 - `tools.profile`（本地引导在未设置时默认为 `"coding"`；现有显式值会被保留）
 - `gateway.*`（模式、绑定、认证、Tailscale）

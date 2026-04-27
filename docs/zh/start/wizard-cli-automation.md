@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "22c405da0672d99610b2733a08c26d5f"
+mmh3_hash: "4566fda78b331f8ac343c8090bce3dd4"
 summary: "OpenClaw CLI 的脚本化引导和 Agent 设置"
 read_when:
   - 您在脚本或 CI 中自动化引导
@@ -7,8 +7,6 @@ read_when:
 title: "CLI 自动化"
 sidebarTitle: "CLI 自动化"
 ---
-
-# CLI 自动化
 
 使用 `--non-interactive` 自动化 `openclaw onboard`。
 
@@ -28,10 +26,13 @@ openclaw onboard --non-interactive \
   --gateway-bind loopback \
   --install-daemon \
   --daemon-runtime node \
+  --skip-bootstrap \
   --skip-skills
 ```
 
 添加 `--json` 以获得机器可读的摘要。
+
+当您的自动化预先填充工作区文件，不希望引导创建默认的引导文件时，请使用 `--skip-bootstrap`。
 
 使用 `--secret-input-mode ref` 在认证配置文件中存储环境支持的引用，而不是明文值。
 向导流程中提供了环境引用和配置的 Provider 引用（`file` 或 `exec`）之间的交互式选择。
@@ -202,7 +203,7 @@ Anthropic setup-token 作为受支持的引导 Token 路径仍然可用，但 Op
 ```bash
 openclaw agents add work \
   --workspace ~/.openclaw/workspace-work \
-  --model openai/gpt-5.4 \
+  --model openai/gpt-5.5 \
   --bind whatsapp:biz \
   --non-interactive \
   --json

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "017d8d86a3fbbbc8eedfb82128791cc4"
+mmh3_hash: "cb8723fc03b6847be83417c0314139eb"
 summary: "Perplexity Search API 及 Sonar/OpenRouter 兼容性，用于 web_search"
 read_when:
   - 希望使用 Perplexity Search 进行网页搜索

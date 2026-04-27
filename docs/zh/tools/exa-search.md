@@ -1,14 +1,12 @@
 ---
-mmh3_hash: "2d5c82bf1c8104b259cdf9a561ac7008"
+mmh3_hash: "72e3f5ad48a2349a5e90aaa7e90c101a"
 summary: "Exa AI 搜索 -- 神经网络搜索与关键词搜索，支持内容提取"
 read_when:
   - 希望将 Exa 用于 web_search
   - 需要 EXA_API_KEY
   - 需要神经网络搜索或内容提取
-title: "Exa Search"
+title: "Exa search"
 ---
-
-# Exa Search
 
 OpenClaw 支持将 [Exa AI](https://exa.ai/) 作为 `web_search` 提供商。Exa 提供神经网络、关键词和混合搜索模式，并内置内容提取功能（摘要、文本、总结）。
 
@@ -58,15 +56,33 @@ OpenClaw 支持将 [Exa AI](https://exa.ai/) 作为 `web_search` 提供商。Exa
 
 ## 工具参数
 
-| 参数          | 描述                                                                           |
-| ------------- | ------------------------------------------------------------------------------ |
-| `query`       | 搜索查询词（必填）                                                              |
-| `count`       | 返回结果数量（1-100）                                                           |
-| `type`        | 搜索模式：`auto`、`neural`、`fast`、`deep`、`deep-reasoning` 或 `instant`      |
-| `freshness`   | 时间过滤：`day`、`week`、`month` 或 `year`                                     |
-| `date_after`  | 此日期后的结果（YYYY-MM-DD）                                                    |
-| `date_before` | 此日期前的结果（YYYY-MM-DD）                                                    |
-| `contents`    | 内容提取选项（见下文）                                                          |
+<ParamField path="query" type="string" required>
+搜索查询词。
+</ParamField>
+
+<ParamField path="count" type="number">
+返回结果数量（1–100）。
+</ParamField>
+
+<ParamField path="type" type="'auto' | 'neural' | 'fast' | 'deep' | 'deep-reasoning' | 'instant'">
+搜索模式。
+</ParamField>
+
+<ParamField path="freshness" type="'day' | 'week' | 'month' | 'year'">
+时间过滤。
+</ParamField>
+
+<ParamField path="date_after" type="string">
+此日期后的结果（`YYYY-MM-DD`）。
+</ParamField>
+
+<ParamField path="date_before" type="string">
+此日期前的结果（`YYYY-MM-DD`）。
+</ParamField>
+
+<ParamField path="contents" type="object">
+内容提取选项（见下文）。
+</ParamField>
 
 ### 内容提取
 
@@ -105,7 +121,7 @@ await web_search({
 
 - 如果未提供 `contents` 选项，Exa 默认使用 `{ highlights: true }`，结果中会包含关键句子摘录
 - 结果在 Exa API 响应可用时会保留 `highlightScores` 和 `summary` 字段
-- 结果描述优先从摘要解析，然后是总结，最后是完整文本
+- 结果描述优先从摘要（highlights）解析，然后是 summary，最后是完整文本
 - `freshness` 和 `date_after`/`date_before` 不能同时使用——请选择一种时间过滤模式
 - 每次查询最多返回 100 条结果（受 Exa 搜索类型限制）
 - 结果默认缓存 15 分钟（可通过 `cacheTtlMinutes` 配置）

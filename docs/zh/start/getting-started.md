@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "86db91ee64126c4357988341f9385de1"
+mmh3_hash: "aa474e19a8d2a95a203d1f38d4e1f7e8"
 summary: "从零开始安装 OpenClaw，在几分钟内完成第一次聊天。"
 read_when:
   - 首次从零开始设置
   - 你想要最快速地完成可用聊天
 title: "快速开始"
 ---
-
-# 快速开始
 
 安装 OpenClaw，运行引导向导，与 AI 助手聊天——整个过程约需 5 分钟。完成后你将拥有一个运行中的 Gateway、已配置的认证和可用的聊天 Session。
 
@@ -141,3 +139,9 @@ openclaw dashboard
 
 完整参考：[环境变量](/help/environment)。
 </Accordion>
+
+## 相关
+
+- [安装概述](/install)
+- [Channels 概述](/channels)
+- [设置](/start/setup)

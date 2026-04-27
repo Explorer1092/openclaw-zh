@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "fb7e2b415bc7e6df15c677693f263a6d"
+mmh3_hash: "fbe620348c98516096c3bf98ceaab18e"
 summary: "从 CLI 运行 Agent turn 并可选地将回复传递到 Channel"
 read_when:
   - 希望从脚本或命令行触发 Agent 运行
   - 需要以编程方式将 Agent 回复传递到聊天 Channel
 title: "Agent Send"
 ---
-
-# Agent Send
 
 `openclaw agent` 无需入站聊天消息即可从命令行运行单个 Agent turn。适用于脚本化工作流、测试和程序化传递。
 
@@ -64,7 +62,7 @@ title: "Agent Send"
 | `--reply-to \<target\>`       | 传递目标覆盖                                             |
 | `--reply-channel \<name\>`    | 传递 Channel 覆盖                                        |
 | `--reply-account \<id\>`      | 传递账号 ID 覆盖                                         |
-| `--thinking \<level\>`        | 设置思考级别（off、minimal、low、medium、high、xhigh）   |
+| `--thinking \<level\>`        | 为所选模型配置文件设置思考级别                           |
 | `--verbose \<on\|full\|off\>` | 设置详细级别                                             |
 | `--timeout \<seconds\>`       | 覆盖 Agent 超时                                          |
 | `--json`                      | 输出结构化 JSON                                          |

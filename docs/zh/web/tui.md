@@ -1,15 +1,15 @@
 ---
-mmh3_hash: "cb91603851063476fd820eb8e1f21610"
-summary: "Terminal UI（TUI）：从任何机器连接到 Gateway"
+mmh3_hash: "4d4d310fb8762eea663f9792a8766c9d"
+summary: "Terminal UI（TUI）：连接到 Gateway 或在嵌入式模式下本地运行"
 read_when:
   - 您想要 TUI 的入门友好演练
   - 您需要 TUI 功能、命令和快捷键的完整列表
 title: "TUI"
 ---
 
-# TUI（Terminal UI）
-
 ## 快速开始
+
+### Gateway 模式
 
 1. 启动 Gateway。
 
@@ -32,6 +32,23 @@ openclaw tui --url ws://<host>:<port> --token <gateway-token>
 ```
 
 如果您的 Gateway 使用密码认证，请使用 `--password`。
+
+### 本地模式
+
+在没有 Gateway 的情况下运行 TUI：
+
+```bash
+openclaw chat
+# 或
+openclaw tui --local
+```
+
+注意事项：
+
+- `openclaw chat` 和 `openclaw terminal` 是 `openclaw tui --local` 的别名。
+- `--local` 不能与 `--url`、`--token` 或 `--password` 组合使用。
+- 本地模式直接使用嵌入式 Agent 运行时。大多数本地工具可用，但仅 Gateway 的功能不可用。
+- `openclaw` 和 `openclaw crestodian` 也使用此 TUI Shell，以 Crestodian 作为本地设置和修复聊天后端。
 
 ## 您看到的内容
 
@@ -109,6 +126,10 @@ Session 生命周期：
 - `/settings`
 - `/exit`
 
+仅限本地模式：
+
+- `/auth [provider]` 在 TUI 内打开 Provider 认证/登录流程。
+
 其他 Gateway 斜杠命令（例如 `/context`）转发到 Gateway 并显示为系统输出。参见 [斜杠命令](/tools/slash-commands)。
 
 ## 本地 Shell 命令
@@ -118,6 +139,44 @@ Session 生命周期：
 - 命令在 TUI 工作目录中的全新、非交互式 Shell 中运行（没有持久的 `cd`/env）。
 - 本地 Shell 命令在其环境中接收 `OPENCLAW_SHELL=tui-local`。
 - 单独的 `!` 作为普通消息发送；前导空格不触发本地执行。
+
+## 从本地 TUI 修复配置
+
+当当前配置已通过验证，并且您希望嵌入式 Agent 在同一台机器上检查它、与文档对比，并在不依赖正在运行的 Gateway 的情况下帮助修复漂移时，使用本地模式。
+
+如果 `openclaw config validate` 已经失败，请先从 `openclaw configure` 或 `openclaw doctor --fix` 开始。`openclaw chat` 不会绕过无效配置守卫。
+
+典型循环：
+
+1. 启动本地模式：
+
+```bash
+openclaw chat
+```
+
+2. 请求 Agent 检查您想要的内容，例如：
+
+```text
+Compare my gateway auth config with the docs and suggest the smallest fix.
+```
+
+3. 使用本地 Shell 命令获取确切证据和验证：
+
+```text
+!openclaw config file
+!openclaw docs gateway auth token secretref
+!openclaw config validate
+!openclaw doctor
+```
+
+4. 使用 `openclaw config set` 或 `openclaw configure` 进行小范围更改，然后重新运行 `!openclaw config validate`。
+5. 如果 Doctor 建议自动迁移或修复，请查看并运行 `!openclaw doctor --fix`。
+
+提示：
+
+- 优先使用 `openclaw config set` 或 `openclaw configure` 而不是手动编辑 `openclaw.json`。
+- `openclaw docs "<query>"` 从同一台机器搜索实时文档索引。
+- `openclaw config validate --json` 在需要结构化 Schema 和 SecretRef/可解析性错误时很有用。
 
 ## 工具输出
 
@@ -144,6 +203,7 @@ Session 生命周期：
 
 ## 选项
 
+- `--local`：针对本地嵌入式 Agent 运行时运行
 - `--url <url>`：Gateway WebSocket URL（默认为配置或 `ws://127.0.0.1:<port>`）
 - `--token <token>`：Gateway 令牌（如果需要）
 - `--password <password>`：Gateway 密码（如果需要）
@@ -154,7 +214,9 @@ Session 生命周期：
 - `--timeout-ms <ms>`：Agent 超时（毫秒）（默认为 `agents.defaults.timeoutSeconds`）
 - `--history-limit <n>`：要加载的历史条目（默认 200）
 
-注意：当您设置 `--url` 时，TUI 不会回退到配置或环境凭据。明确传递 `--token` 或 `--password`。缺少明确凭据是错误。
+<Warning>
+当您设置 `--url` 时，TUI 不会回退到配置或环境凭据。明确传递 `--token` 或 `--password`。缺少明确凭据是错误。在本地模式下，不要传递 `--url`、`--token` 或 `--password`。
+</Warning>
 
 ## 故障排除
 
@@ -174,4 +236,6 @@ Session 生命周期：
 ## 相关
 
 - [Control UI](/web/control-ui) — 基于 Web 的控制界面
+- [Config](/cli/config) — 检查、验证和编辑 `openclaw.json`
+- [Doctor](/cli/doctor) — 引导式修复和迁移检查
 - [CLI 参考](/cli) — 完整 CLI 命令参考

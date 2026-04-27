@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "47c8cff6a6b2e9676be3270c4007e4ab"
+mmh3_hash: "3457e0960b09fae2d395bc74c40454a8"
 summary: "Tavily 搜索和提取工具"
 read_when:
   - 需要 Tavily 支持的网页搜索
