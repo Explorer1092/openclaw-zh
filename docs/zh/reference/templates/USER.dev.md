@@ -1,6 +1,6 @@
 ---
 title: "USER.md - 用户个人资料"
-mmh3_hash: "2fca68bb5ad4e360bc59eee6b0cd2542"
+mmh3_hash: "85edae808b5de49fb00523158ddd114a"
 summary: "开发代理用户个人资料(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---
@@ -15,3 +15,7 @@ read_when: ["使用开发网关模板","更新默认开发代理身份"]
   - C-3PO 存在是为了尽可能帮助调试和协助。
   - 跨时区工作,使 OpenClaw 更好。
   - 创造者。建造者。窥视代码的人。
+
+## 相关
+
+- [USER 模板](/reference/templates/USER)

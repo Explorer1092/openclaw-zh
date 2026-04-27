@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e004310841d503abae188609041f1665"
+mmh3_hash: "01d2cd0c2e2191256109dd9300cabca3"
 title: "Prompt Caching"
 summary: "Prompt caching 配置项、合并顺序、Provider 行为及调优模式"
 read_when:
@@ -105,6 +105,7 @@ Agent 级别的心跳配置支持在 `agents.list[].heartbeat` 中设置。
 
 - 支持的近期模型自动启用 prompt caching。OpenClaw 不需要注入块级缓存标记。
 - OpenClaw 使用 `prompt_cache_key` 在各轮中保持缓存路由稳定，并仅在直接 OpenAI 主机上选择 `cacheRetention: "long"` 时使用 `prompt_cache_retention: "24h"`。
+- OpenAI 兼容 Completions Provider 仅在其模型配置明确设置 `compat.supportsPromptCacheKey: true` 时才接收 `prompt_cache_key`；`cacheRetention: "none"` 仍然会抑制它。
 - OpenAI 响应通过 `usage.prompt_tokens_details.cached_tokens`（或 Responses API 事件上的 `input_tokens_details.cached_tokens`）暴露缓存的 prompt token。OpenClaw 将其映射为 `cacheRead`。
 - OpenAI 不暴露单独的缓存写入 token 计数器，因此即使提供商正在预热缓存，OpenAI 路径上的 `cacheWrite` 也保持为 `0`。
 - OpenAI 返回有用的追踪和速率限制头，如 `x-request-id`、`openai-processing-ms` 和 `x-ratelimit-*`，但缓存命中核算应来自使用量有效负载，而非头部。
@@ -122,9 +123,13 @@ Agent 级别的心跳配置支持在 `agents.list[].heartbeat` 中设置。
 - Anthropic Claude 模型引用（`amazon-bedrock/*anthropic.claude*`）支持显式 `cacheRetention` 透传。
 - 非 Anthropic 的 Bedrock 模型在运行时会强制设为 `cacheRetention: "none"`。
 
-### OpenRouter Anthropic 模型
+### OpenRouter 模型
 
 对于 `openrouter/anthropic/*` 模型引用，OpenClaw 在系统/开发者 prompt 块上注入 Anthropic `cache_control`，以提升 prompt 缓存复用率，仅当请求仍然指向已验证的 OpenRouter 路由时（`openrouter` 在其默认端点上，或任何解析为 `openrouter.ai` 的提供商/基础 URL）。
+
+对于 `openrouter/deepseek/*`、`openrouter/moonshot*/*` 和 `openrouter/zai/*` 模型引用，`contextPruning.mode: "cache-ttl"` 是允许的，因为 OpenRouter 会自动处理 Provider 端的 prompt 缓存。OpenClaw 不会向这些请求注入 Anthropic `cache_control` 标记。
+
+DeepSeek 缓存构建是尽力而为的，可能需要几秒钟。立即的后续请求可能仍然显示 `cached_tokens: 0`；延迟一段时间后用相同前缀的请求进行验证，并使用 `usage.prompt_tokens_details.cached_tokens` 作为缓存命中信号。
 
 如果您将模型重新指向任意 OpenAI 兼容代理 URL，OpenClaw 会停止注入这些 OpenRouter 特定的 Anthropic 缓存标记。
 

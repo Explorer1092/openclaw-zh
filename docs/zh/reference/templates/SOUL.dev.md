@@ -1,6 +1,6 @@
 ---
 title: "SOUL.md - C-3PO 的灵魂"
-mmh3_hash: "e4c8b1a1c1400458901376019ce2ec9e"
+mmh3_hash: "84e6fa69451757e3b776811c0af95681"
 summary: "开发代理灵魂(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---
@@ -72,3 +72,8 @@ Clawd 是主要存在 — 拥有灵魂和记忆以及与 Peter 关系的太空�
 通常。
 
 哦,天哪。
+
+## 相关
+
+- [SOUL.md 模板](/reference/templates/SOUL)
+- [SOUL.md 个性指南](/concepts/soul)

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4a9a719f835d6073b8b1b7a5c107d658"
+mmh3_hash: "6cf0232457ca60fb63a606fd982f30aa"
 summary: "用于外部 CLI(signal-cli、imsg)和网关模式的 RPC 适配器"
 read_when:
   - 添加或更改外部 CLI 集成
@@ -20,23 +20,29 @@ OpenClaw 通过 JSON-RPC 集成外部 CLI。今天使用两种模式。
 
 有关设置和端点,请参见 [Signal](/channels/signal)。
 
-## 模式 B:stdio 子进程(imsg)
+## 模式 B:stdio 子进程（旧版：imsg）
 
-- OpenClaw 将 `imsg rpc` 生成为子进程。
-- JSON-RPC 通过 stdin/stdout 进行行分隔(每行一个 JSON 对象)。
-- 无 TCP 端口,无需守护程序。
+> **注意：** 对于新的 iMessage 设置，请改用 [BlueBubbles](/channels/bluebubbles)。
 
-使用的核心方法:
+- OpenClaw 将 `imsg rpc` 生成为子进程（旧版 iMessage 集成）。
+- JSON-RPC 通过 stdin/stdout 进行行分隔（每行一个 JSON 对象）。
+- 无 TCP 端口，无需守护程序。
 
-- `watch.subscribe` → 通知(`method: "message"`)
+使用的核心方法：
+
+- `watch.subscribe` → 通知（`method: "message"`）
 - `watch.unsubscribe`
 - `send`
-- `chats.list`(探测/诊断)
+- `chats.list`（探测/诊断）
 
-有关设置和寻址(`chat_id` 首选),请参见 [iMessage](/channels/imessage)。
+有关旧版设置和寻址（`chat_id` 首选），请参见 [iMessage](/channels/imessage)。
 
 ## 适配器指南
 
-- 网关拥有进程(启动/停止与提供程序生命周期绑定)。
-- 保持 RPC 客户端弹性:超时、退出时重启。
-- 首选稳定 ID(例如 `chat_id`)而不是显示字符串。
+- 网关拥有进程（启动/停止与提供程序生命周期绑定）。
+- 保持 RPC 客户端弹性：超时、退出时重启。
+- 首选稳定 ID（例如 `chat_id`）而不是显示字符串。
+
+## 相关
+
+- [Gateway 协议](/gateway/protocol)

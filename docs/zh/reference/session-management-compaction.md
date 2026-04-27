@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "02d620890bd5cbca8c80cb404ffee767"
+mmh3_hash: "6c87c5f68f9b1efe22de34dc75425f4b"
 summary: "深入研究：Session 存储 + 转录、生命周期和（自动）压缩内部"
 read_when:
   - 您需要调试 Session id、转录 JSONL 或 sessions.json 字段
@@ -104,6 +104,8 @@ openclaw sessions cleanup --enforce
 - `cron.sessionRetention`（默认 `24h`）从 Session 存储中清除旧的隔离 Cron 运行 Session（`false` 禁用）。
 - `cron.runLog.maxBytes` + `cron.runLog.keepLines` 清除 `~/.openclaw/cron/runs/<jobId>.jsonl` 文件（默认：`2_000_000` 字节和 `2000` 行）。
 
+当 cron 强制创建新的隔离运行 Session 时，它会在写入新行之前清理上一个 `cron:<jobId>` Session 条目。它携带安全的偏好设置，如 thinking/fast/verbose 设置、标签和明确的用户选择的模型/auth 覆盖。它会丢弃环境对话上下文，如 Channel/群组路由、发送或队列策略、提升、来源和 ACP 运行时绑定，以便新的隔离运行不会从旧运行继承过时的传递或运行时权限。
+
 ---
 
 ## Session 键（`sessionKey`）
@@ -131,6 +133,7 @@ openclaw sessions cleanup --enforce
 - **重置**（`/new`、`/reset`）为该 `sessionKey` 创建新的 `sessionId`。
 - **每日重置**（Gateway 主机本地时间默认凌晨 4:00）在重置边界后的下一条消息时创建新的 `sessionId`。
 - **空闲到期**（`session.reset.idleMinutes` 或旧版 `session.idleMinutes`）当空闲窗口后消息到达时创建新的 `sessionId`。当每日和空闲都配置时，首先到期的胜出。
+- **系统事件**（心跳、cron 唤醒、exec 通知、Gateway 记账）可能会改变 Session 行，但不会延长每日/空闲重置的新鲜度。重置滚动会在构建新提示词之前丢弃上一个 Session 排队的系统事件通知。
 - **线程父级分叉守卫**（`session.parentForkMaxTokens`，默认 `100000`）当父级 Session 已经太大时跳过父级转录分叉；新线程从头开始。设置 `0` 禁用。
 
 实现细节：决策发生在 `src/auto-reply/reply/session.ts` 中的 `initSessionState()` 中。
@@ -345,3 +348,9 @@ Pi 还在扩展 API 中公开了 `session_before_compact` 钩子，但 OpenClaw 
   - 压缩设置（对于模型窗口，`reserveTokens` 太高可能导致更早的压缩）
   - 工具结果膨胀：启用/调整 Session 修剪
 - 静默轮次泄漏？确认回复以 `NO_REPLY`（不区分大小写的精确 token）开头，并且您使用的是包含流式传输抑制修复的构建。
+
+## 相关
+
+- [Session 管理](/concepts/session)
+- [Session 修剪](/concepts/session-pruning)
+- [上下文引擎](/concepts/context-engine)

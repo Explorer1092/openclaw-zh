@@ -1,7 +1,7 @@
 ---
 title: "为威胁模型做贡献"
 summary: "如何为 OpenClaw 威胁模型做贡献"
-mmh3_hash: "cb30738d22e993b95dd1bf0a2a73d26e"
+mmh3_hash: "39501618d463254cd3bc238ffcd40dd6"
 read_when:
   - 您想贡献安全发现或威胁场景
   - 审查或更新威胁模型
@@ -108,3 +108,8 @@ ID 由维护者在审查期间分配。您不需要选择一个。
 
 威胁模型的贡献者在威胁模型致谢、发布说明和 OpenClaw 安全名人堂中得到认可，以表彰重大
 贡献。
+
+## 相关
+
+- [威胁模型](/security/THREAT-MODEL-ATLAS)
+- [形式化验证](/security/formal-verification)

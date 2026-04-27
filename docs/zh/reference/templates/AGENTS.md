@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ea8d7a62715490079de3cfb61f21242b"
+mmh3_hash: "1982f24c98956d38fdcc8e24dcc28bb3"
 title: "AGENTS.md 模板"
 summary: "AGENTS.md 的工作空间模板"
 read_when:
@@ -220,3 +220,7 @@ read_when:
 ## 让它成为你自己的
 
 这是一个起点。随着你弄清楚什么有效，添加你自己的惯例、风格和规则。
+
+## 相关
+
+- [默认 AGENTS.md](/reference/AGENTS.default)

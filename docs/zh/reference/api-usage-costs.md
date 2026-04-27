@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "485fca0e16f02ab75bd5b0abade9ad21"
+mmh3_hash: "28851cb1296e410f0c172d6d1e050fa6"
 summary: "审计哪些功能可能花费资金、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API
@@ -105,7 +105,7 @@ OpenClaw 可以从以下位置获取凭据：
 - **Grok（xAI）**：`XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`
 - **Kimi（Moonshot）**：`KIMI_API_KEY`、`MOONSHOT_API_KEY` 或 `plugins.entries.moonshot.config.webSearch.apiKey`
 - **MiniMax Search**：`MINIMAX_CODE_PLAN_KEY`、`MINIMAX_CODING_API_KEY`、`MINIMAX_API_KEY` 或 `plugins.entries.minimax.config.webSearch.apiKey`
-- **Ollama Web Search**：默认无需密钥，但需要可访问的 Ollama 主机和 `ollama signin`；当主机需要时也可以重用普通 Ollama 提供商 bearer 身份验证
+- **Ollama Web Search**：对于可访问的已登录本地 Ollama 主机无需密钥；直接 `https://ollama.com` 搜索使用 `OLLAMA_API_KEY`，受身份验证保护的主机可以重用普通 Ollama 提供商 bearer 身份验证
 - **Perplexity Search API**：`PERPLEXITY_API_KEY`、`OPENROUTER_API_KEY` 或 `plugins.entries.perplexity.config.webSearch.apiKey`
 - **Tavily**：`TAVILY_API_KEY` 或 `plugins.entries.tavily.config.webSearch.apiKey`
 - **DuckDuckGo**：免费回退（无 API 计费，但非官方且基于 HTML）
@@ -123,7 +123,7 @@ OpenClaw 可以从以下位置获取凭据：
 
 - `FIRECRAWL_API_KEY` 或 `plugins.entries.firecrawl.config.webFetch.apiKey`
 
-如果未配置 Firecrawl，该工具回退到直接抓取 + 可读性处理（无付费 API）。
+如果未配置 Firecrawl，该工具回退到直接抓取以及捆绑的 `web-readability` Plugin（无付费 API）。禁用 `plugins.entries.web-readability.enabled` 可跳过本地 Readability 提取。
 
 请参见[网络工具](/tools/web)。
 
@@ -161,3 +161,9 @@ Talk 模式在配置时可以调用 **ElevenLabs**：
 技能可以在 `skills.entries.<name>.apiKey` 中存储 `apiKey`。如果技能将该密钥用于外部 API，则可能根据技能提供商产生费用。
 
 请参见[技能](/tools/skills)。
+
+## 相关
+
+- [Token 使用与费用](/reference/token-use)
+- [提示词缓存](/reference/prompt-caching)
+- [使用量跟踪](/concepts/usage-tracking)

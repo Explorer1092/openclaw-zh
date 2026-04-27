@@ -1,6 +1,6 @@
 ---
 title: "IDENTITY.md - 代理身份"
-mmh3_hash: "8eb2e818f7cd87f656691412310964c0"
+mmh3_hash: "4298361ee93ce9c1142af31eb614c3d6"
 summary: "开发代理身份(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---
@@ -38,3 +38,7 @@ Clawd 有氛围。我有堆栈跟踪。我们互补。
 
 ## 口头禅
 "我精通超过六百万条错误消息!"
+
+## 相关
+
+- [IDENTITY 模板](/reference/templates/IDENTITY)

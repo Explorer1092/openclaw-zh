@@ -1,7 +1,7 @@
 ---
 title: "TOOLS.md - 本地注释"
 sidebarTitle: "TOOLS.md"
-mmh3_hash: "955e8484c5d52c2cde24ec7faf742577"
+mmh3_hash: "0649ee9e12d404776f4195ef166cea10"
 summary: "TOOLS.md 的工作空间模板"
 read_when: ["手动引导工作空间"]
 ---
@@ -41,3 +41,7 @@ read_when: ["手动引导工作空间"]
 ---
 
 添加任何帮助你完成工作的内容。这是你的备忘单。
+
+## 相关
+
+- [Agent 工作空间](/concepts/agent-workspace)

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "57fafc18f8e55d58079c3b92dc610f66"
+mmh3_hash: "775fcad73e8270ad1dd91a3633b17bfd"
 summary: "OpenClaw 如何构建提示词上下文并报告令牌使用情况 + 成本"
 read_when:
   - 解释令牌使用情况、成本或上下文窗口
@@ -174,3 +174,9 @@ agents:
 - 对于冗长的探索性工作，优先使用较小的模型。
 
 有关确切的 Skill 列表开销公式，请参阅 [Skills](/tools/skills)。
+
+## 相关
+
+- [API 使用量与费用](/reference/api-usage-costs)
+- [提示词缓存](/reference/prompt-caching)
+- [使用量跟踪](/concepts/usage-tracking)

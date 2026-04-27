@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5ff341527850bf4c90677f1c902fa5d0"
+mmh3_hash: "43671c15d86d248a61f5ae29865b7412"
 summary: "SecretRef 凭据界面的规范支持与不支持范围"
 read_when:
   - 验证 SecretRef 凭据覆盖范围
@@ -39,9 +39,11 @@ title: "SecretRef 凭据界面"
 - `skills.entries.*.apiKey`
 - `agents.defaults.memorySearch.remote.apiKey`
 - `agents.list[].memorySearch.remote.apiKey`
+- `agents.list[].tts.providers.*.apiKey`
 - `talk.providers.*.apiKey`
 - `messages.tts.providers.*.apiKey`
 - `tools.web.fetch.firecrawl.apiKey`
+- `plugins.entries.acpx.config.mcpServers.*.env.*`
 - `plugins.entries.brave.config.webSearch.apiKey`
 - `plugins.entries.exa.config.webSearch.apiKey`
 - `plugins.entries.google.config.webSearch.apiKey`
@@ -51,6 +53,8 @@ title: "SecretRef 凭据界面"
 - `plugins.entries.firecrawl.config.webSearch.apiKey`
 - `plugins.entries.minimax.config.webSearch.apiKey`
 - `plugins.entries.tavily.config.webSearch.apiKey`
+- `plugins.entries.voice-call.config.tts.providers.*.apiKey`
+- `plugins.entries.voice-call.config.twilio.authToken`
 - `tools.web.search.apiKey`
 - `gateway.auth.password`
 - `gateway.auth.token`
@@ -117,6 +121,7 @@ title: "SecretRef 凭据界面"
 - 身份验证配置文件计划目标需要 `agentId`。
 - 计划条目以 `profiles.*.key` / `profiles.*.token` 为目标，并写入同级 ref（`keyRef` / `tokenRef`）。
 - 身份验证配置文件 ref 包含在运行时解析和审计覆盖中。
+- 在 `openclaw.json` 中，SecretRef 必须使用结构化对象，例如 `{"source":"env","provider":"default","id":"DISCORD_BOT_TOKEN"}`。遗留的 `secretref-env:<ENV_VAR>` 标记字符串在 SecretRef 凭据路径上被拒绝；运行 `openclaw doctor --fix` 以迁移有效的标记。
 - OAuth 策略守卫：`auth.profiles.<id>.mode = "oauth"` 不能与该配置文件的 SecretRef 输入结合使用。当违反此策略时，启动/重新加载和身份验证配置文件解析会快速失败。
 - 对于 SecretRef 管理的模型提供商，生成的 `agents/*/agent/models.json` 条目为 `apiKey`/头部界面持久化非密钥标记（而非解析的密钥值）。
 - 标记持久化以源为权威：OpenClaw 从活动源配置快照（预解析）写入标记，而非从解析的运行时密钥值写入。
@@ -147,3 +152,8 @@ title: "SecretRef 凭据界面"
 原因：
 
 - 这些凭据是生成的、轮换的、承载 Session 的或 OAuth 持久类，不适合只读外部 SecretRef 解析。
+
+## 相关
+
+- [Secrets 管理](/gateway/secrets)
+- [Auth 凭据语义](/auth-credential-semantics)

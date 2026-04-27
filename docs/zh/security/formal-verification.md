@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f130a2347d87e8429beb7dc39fa5e6a4"
+mmh3_hash: "ca87b54acc06e90a4d7d4f56bda56907"
 title: "形式验证（安全模型）"
 sidebarTitle: "形式验证"
 summary: OpenClaw 最高风险路径的机器检查安全模型。
@@ -162,3 +162,8 @@ make <target>
 - 红色（预期）：
   - `make routing-precedence-negative`
   - `make routing-identitylinks-negative`
+
+## 相关
+
+- [威胁模型](/security/THREAT-MODEL-ATLAS)
+- [为威胁模型做贡献](/security/CONTRIBUTING-THREAT-MODEL)

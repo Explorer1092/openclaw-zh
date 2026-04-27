@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d6c88002f00e8a98d0786ceba0598848"
+mmh3_hash: "d280884f49fcff774e4f05fef5783776"
 summary: "项目起源、贡献者和许可证。"
 read_when:
   - 您想要了解项目背景故事或贡献者致谢
@@ -29,3 +29,8 @@ OpenClaw = CLAW + TARDIS，因为每只太空龙虾都需要一台时空机器�
 MIT - 像海洋中的龙虾一样自由。
 
 > "我们都只是在玩弄自己的提示词。"（可能是一个喝高了令牌的 AI）
+
+## 相关
+
+- [Token 使用与费用](/reference/token-use)
+- [发布政策](/reference/RELEASING)

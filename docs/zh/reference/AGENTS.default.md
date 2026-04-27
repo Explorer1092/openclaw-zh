@@ -1,6 +1,6 @@
 ---
 title: "默认 AGENTS.md"
-mmh3_hash: "0444edc05b8cc8564a3b1a0b5e0829e0"
+mmh3_hash: "cf49b3538e1c29e59d0b627db37bba51"
 summary: "OpenClaw 个人助理设置的默认 Agent 指令和技能列表"
 read_when:
   - 启动新的 OpenClaw Agent Session
@@ -49,7 +49,7 @@ cp docs/reference/AGENTS.default.md ~/.openclaw/workspace/AGENTS.md
 ## 会话开始(必需)
 
 - 读取 `SOUL.md`、`USER.md`，以及 `memory/` 中的今天和昨天。
-- 如果 `MEMORY.md` 存在则读取；仅当 `MEMORY.md` 不存在时才回退到小写 `memory.md`。
+- 如果 `MEMORY.md` 存在则读取。
 - 在响应之前执行此操作。
 
 ## Soul(必需)
@@ -68,7 +68,7 @@ cp docs/reference/AGENTS.default.md ~/.openclaw/workspace/AGENTS.md
 - 每日日志:`memory/YYYY-MM-DD.md`(如果需要,创建 `memory/`)。
 - 长期内存:`MEMORY.md` 用于持久事实、偏好和决定。
 - 小写 `memory.md` 仅为旧版回退；不要故意同时保留两个根文件。
-- 在会话开始时，如果 `MEMORY.md` 存在则读取今天 + 昨天 + `MEMORY.md`，否则读取 `memory.md`。
+- 在会话开始时，如果 `MEMORY.md` 存在则读取今天 + 昨天 + `MEMORY.md`。
 - 捕获:决定、偏好、约束、开放循环。
 - 除非明确要求,否则避免机密。
 
@@ -123,3 +123,8 @@ git commit -m "Add Clawd workspace"
 - 对于浏览器驱动的验证,使用 `openclaw browser`(标签/状态/截图)与 OpenClaw 管理的 Chrome 配置文件。
 - 对于 DOM 检查,使用 `openclaw browser eval|query|dom|snapshot`(当您需要机器输出时使用 `--json`/`--out`)。
 - 对于交互,使用 `openclaw browser click|type|hover|drag|select|upload|press|wait|navigate|back|evaluate|run`(click/type 需要快照引用;对 CSS 选择器使用 `evaluate`)。
+
+## 相关
+
+- [Agent 工作空间](/concepts/agent-workspace)
+- [Agent 运行时](/concepts/agent)

@@ -1,6 +1,7 @@
 ---
-mmh3_hash: "6335aa0ae0868e25a96c0149ebf83e29"
+mmh3_hash: "1fe31231bddac6332aba26387483825e"
 title: "记忆配置参考"
+sidebarTitle: "记忆配置"
 summary: "记忆搜索、嵌入 Provider、QMD、混合搜索和多模态索引的所有配置选项"
 read_when:
   - 您想配置记忆搜索 Provider 或嵌入模型
@@ -192,13 +193,33 @@ arn:aws:bedrock:*::foundation-model/amazon.titan-embed-text-v2:0
 
 ## 本地嵌入配置
 
-| 键                    | 类型     | 默认值                  | 说明                        |
-| --------------------- | -------- | ----------------------- | --------------------------- |
-| `local.modelPath`     | `string` | 自动下载                | GGUF 模型文件路径            |
-| `local.modelCacheDir` | `string` | node-llama-cpp 默认值   | 下载模型的缓存目录           |
+| 键                    | 类型               | 默认值                  | 说明                        |
+| --------------------- | ------------------ | ----------------------- | --------------------------- |
+| `local.modelPath`     | `string`           | 自动下载                | GGUF 模型文件路径            |
+| `local.modelCacheDir` | `string`           | node-llama-cpp 默认值   | 下载模型的缓存目录           |
+| `local.contextSize`   | `number \| "auto"` | `4096`                 | 嵌入上下文的上下文窗口大小。4096 覆盖典型的块（128–512 个 token），同时限制非权重 VRAM。在受限主机上降低到 1024–2048。`"auto"` 使用模型训练的最大值——不推荐用于 8B+ 模型（Qwen3-Embedding-8B：40960 个 token → 约 32 GB VRAM vs 4096 时约 8.8 GB）。 |
 
 默认模型：`embeddinggemma-300m-qat-Q8_0.gguf`（约 0.6 GB，自动下载）。
 需要原生构建：`pnpm approve-builds` 然后 `pnpm rebuild node-llama-cpp`。
+
+使用独立 CLI 验证 Gateway 使用的相同 Provider 路径：
+
+```bash
+openclaw memory status --deep --agent main
+openclaw memory index --force --agent main
+```
+
+如果 `provider` 为 `auto`，只有当 `local.modelPath` 指向现有本地文件时才选择 `local`。`hf:` 和 HTTP(S) 模型引用仍然可以与 `provider: "local"` 一起明确使用，但在模型在磁盘上可用之前，它们不会使 `auto` 在本地之前选择。
+
+---
+
+### 内联嵌入超时
+
+**`sync.embeddingBatchTimeoutSeconds`**（类型：`number`）
+
+覆盖记忆索引期间内联嵌入批次的超时时间。
+
+未设置时使用 Provider 默认值：本地/自托管 Provider（如 `local`、`ollama` 和 `lmstudio`）为 600 秒，托管 Provider 为 120 秒。当本地 CPU 绑定的嵌入批次是健康的但速度较慢时，增加此值。
 
 ---
 
@@ -316,6 +337,8 @@ arn:aws:bedrock:*::foundation-model/amazon.titan-embed-text-v2:0
 | `remote.batch.timeoutMinutes` | `number`  | --      | 批量超时                  |
 
 适用于 `openai`、`gemini` 和 `voyage`。对于大型回填，OpenAI 批量通常最快且最便宜。
+
+这与 `sync.embeddingBatchTimeoutSeconds` 不同，后者控制本地/自托管 Provider 和托管 Provider 在 Provider 批量 API 未激活时使用的内联嵌入调用。
 
 ---
 
@@ -487,3 +510,8 @@ QMD 模型覆盖保持在 QMD 侧，而非 OpenClaw 配置。如果需要全局�
 - 梦境将机器状态写入 `memory/.dreams/`。
 - 梦境将人类可读的叙事输出写入 `DREAMS.md`（或现有的 `dreams.md`）。
 - 轻度/深度/REM 阶段策略和阈值是内部行为，不是面向用户的配置。
+
+## 相关
+
+- [配置参考](/gateway/configuration-reference)
+- [记忆概述](/concepts/memory)

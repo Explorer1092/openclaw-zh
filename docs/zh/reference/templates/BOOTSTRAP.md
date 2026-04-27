@@ -1,7 +1,7 @@
 ---
 title: "BOOTSTRAP.md - 你好,世界"
 sidebarTitle: "BOOTSTRAP.md"
-mmh3_hash: "92c912124649cda750fb33606e08684d"
+mmh3_hash: "2da30af54df19e4f7ea368648abcba9e"
 summary: "新代理的首次运行仪式"
 read_when: ["手动引导工作空间"]
 ---
@@ -55,3 +55,7 @@ read_when: ["手动引导工作空间"]
 ---
 
 *在那里祝你好运。让它有价值。*
+
+## 相关
+
+- [Agent 工作空间](/concepts/agent-workspace)

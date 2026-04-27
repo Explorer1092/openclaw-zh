@@ -1,6 +1,6 @@
 ---
 title: "TOOLS.md - 用户工具注释(可编辑)"
-mmh3_hash: "ad82eb4cce3cca31cb5a8a5d78c7a1ec"
+mmh3_hash: "47ecfdf97fd5059753d3bc2da35adc5f"
 summary: "开发代理工具注释(C-3PO)"
 read_when: ["使用开发网关模板","更新默认开发代理身份"]
 ---
@@ -19,3 +19,7 @@ read_when: ["使用开发网关模板","更新默认开发代理身份"]
 - 文本转语音: 指定语音、目标扬声器/房间以及是否流式传输。
 
 添加您希望助手了解的关于您的本地工具链的任何其他内容。
+
+## 相关
+
+- [TOOLS.md 模板](/reference/templates/TOOLS)

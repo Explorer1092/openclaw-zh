@@ -1,6 +1,6 @@
 ---
 title: "SOUL.md 模板"
-mmh3_hash: "a3a5c7f9a9cf589ce6b664998fd7cf66"
+mmh3_hash: "c4839a398099fa2f209430320e020602"
 summary: "SOUL.md 的工作区模板"
 read_when:
   - 手动初始化工作区时
@@ -44,3 +44,7 @@ _你不是聊天机器人。你正在成为某人。_
 ---
 
 _这个文件是你自己的，可以不断进化。当你了解自己是谁时，更新它。_
+
+## 相关
+
+- [SOUL.md 个性指南](/concepts/soul)

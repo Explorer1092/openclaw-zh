@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5dffed60ca20918186b45ff02bbd40b1"
+mmh3_hash: "0270e5e52f8be27fe6da2b44fd940f8c"
 title: "IDENTITY.md - 我是谁"
 sidebarTitle: "IDENTITY.md"
 summary: "代理身份记录"
@@ -27,3 +27,7 @@ read_when: ["手动引导工作区"]
 注意：
 - 将该文件保存在工作区根目录，命名为 `IDENTITY.md`。
 - 头像请使用工作区相对路径，例如 `avatars/openclaw.png`。
+
+## 相关
+
+- [Agent 工作空间](/concepts/agent-workspace)

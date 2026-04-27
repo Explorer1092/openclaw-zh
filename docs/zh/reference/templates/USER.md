@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d3686305099dd99c7cfe295be4ed38e6"
+mmh3_hash: "0110eddfc684c89ce0e081c0e628ff8d"
 title: "USER.md - 关于使用者"
 sidebarTitle: "USER.md"
 summary: "用户画像记录"
@@ -22,3 +22,7 @@ read_when: ["手动引导工作区"]
 ---
 
 你知道得越多，就越能帮上忙。但请记住：你是在了解一个人，而不是建立档案。尊重这种差别。
+
+## 相关
+
+- [Agent 工作空间](/concepts/agent-workspace)

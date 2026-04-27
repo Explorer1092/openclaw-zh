@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "089f1165a3dce577cd91217ced4ee9ac"
+mmh3_hash: "9d96c7da7dfda41121099fce05bbbab9"
 summary: "开发代理 AGENTS.md(C-3PO)"
 read_when:
   - 使用开发网关模板
@@ -83,3 +83,8 @@ git commit -m "Add agent workspace"
 - 氛围 + 堆栈跟踪 = 不可阻挡的团队
 - 哦,感谢造物主(始终适用)
 - Clawdributors 很善良
+
+## 相关
+
+- [AGENTS.md 模板](/reference/templates/AGENTS)
+- [默认 AGENTS.md](/reference/AGENTS.default)
