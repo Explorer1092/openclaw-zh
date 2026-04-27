@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "85ec2014b5765e6b7257daab6a03fa6e"
+mmh3_hash: "ac002199e0ddcc324a049a55291d502c"
 title: "脚本"
 summary: "仓库脚本：目的、范围和安全注意事项"
 read_when:
@@ -51,3 +51,8 @@ read_when:
 
 - 保持脚本专注且有文档。
 - 在相关文档中添加简短条目（如果缺失则创建）。
+
+## 相关
+
+- [测试](/help/testing)
+- [实时测试](/help/testing-live)

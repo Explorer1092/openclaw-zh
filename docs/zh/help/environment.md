@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a294d93ff251562b9c96961118aaffe6"
+mmh3_hash: "bdaecd2e7d9151515a1ac552d1681134"
 summary: "OpenClaw 加载环境变量的位置和优先级顺序"
 read_when:
   - 您需要知道加载哪些环境变量,以及按什么顺序

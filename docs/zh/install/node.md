@@ -1,24 +1,22 @@
 ---
-mmh3_hash: "c2e3cfdf88b76d3f21bbf2d8af3f3f34"
+mmh3_hash: "f890f49996ac36c4dc965db1381d4c08"
 title: "Node.js"
 summary: "安装和配置 Node.js 以供 OpenClaw 使用 — 版本要求、安装选项和 PATH 故障排除"
 read_when:
-  - 您需要在安装 OpenClaw 之前安装 Node.js
-  - 您安装了 OpenClaw 但 `openclaw` 命令未找到
-  - npm install -g 因权限或 PATH 问题失败
+  - 你需要在安装 OpenClaw 之前安装 Node.js
+  - 你安装了 OpenClaw 但 `openclaw` 命令找不到
+  - npm install -g 因权限或 PATH 问题而失败
 ---
 
-# Node.js
+OpenClaw 需要 **Node 22.14 或更新版本**。**Node 24 是安装、CI 和发布工作流的默认推荐运行时**。Node 22 通过活跃 LTS 线继续受支持。[安装器脚本](/install#alternative-install-methods)会自动检测并安装 Node — 本页面适用于你想自己设置 Node 并确保一切配置正确（版本、PATH、全局安装）的情况。
 
-OpenClaw 需要 **Node 22.14 或更高版本**。**Node 24 是安装、CI 和发布工作流的默认和推荐运行时。** Node 22 通过活跃的 LTS 线仍受支持。[安装程序脚本](/install#install-methods)将自动检测和安装 Node — 本页适用于您想自行设置 Node 并确保一切正确连接（版本、PATH、全局安装）的情况。
-
-## 检查您的版本
+## 检查你的版本
 
 ```bash
 node -v
 ```
 
-如果打印 `v24.x.x` 或更高版本，您使用的是推荐的默认值。如果打印 `v22.16.x` 或更高版本，您使用的是受支持的 Node 22 LTS 路径，但我们仍建议在方便时升级到 Node 24。如果未安装 Node 或版本太旧，请选择下面的安装方法。
+如果打印 `v24.x.x` 或更高，你使用的是推荐的默认版本。如果打印 `v22.14.x` 或更高，你使用的是受支持的 Node 22 LTS 路径，但我们仍然建议在方便时升级到 Node 24。如果未安装 Node 或版本太旧，请选择下面的安装方法。
 
 ## 安装 Node
 
@@ -30,7 +28,7 @@ node -v
     brew install node
     ```
 
-    或从 [nodejs.org](https://nodejs.org/) 下载 macOS 安装程序。
+    或从 [nodejs.org](https://nodejs.org/) 下载 macOS 安装器。
 
   </Tab>
   <Tab title="Linux">
@@ -63,17 +61,17 @@ node -v
     choco install nodejs-lts
     ```
 
-    或从 [nodejs.org](https://nodejs.org/) 下载 Windows 安装程序。
+    或从 [nodejs.org](https://nodejs.org/) 下载 Windows 安装器。
 
   </Tab>
 </Tabs>
 
-<Accordion title="使用版本管理器 (nvm, fnm, mise, asdf)">
-  版本管理器让您可以轻松切换 Node 版本。流行选项：
+<Accordion title="使用版本管理器（nvm、fnm、mise、asdf）">
+  版本管理器让你可以轻松在 Node 版本之间切换。常用选项：
 
 - [**fnm**](https://github.com/Schniz/fnm) — 快速、跨平台
 - [**nvm**](https://github.com/nvm-sh/nvm) — 在 macOS/Linux 上广泛使用
-- [**mise**](https://mise.jdx.dev/) — 多语言（Node, Python, Ruby 等）
+- [**mise**](https://mise.jdx.dev/) — 多语言（Node、Python、Ruby 等）
 
 使用 fnm 的示例：
 
@@ -83,7 +81,7 @@ fnm use 24
 ```
 
   <Warning>
-  确保您的版本管理器在您的 shell 启动文件（`~/.zshrc` 或 `~/.bashrc`）中初始化。如果没有，`openclaw` 可能在新终端会话中找不到，因为 PATH 不会包含 Node 的 bin 目录。
+  确保你的版本管理器在 shell 启动文件（`~/.zshrc` 或 `~/.bashrc`）中初始化。如果没有，`openclaw` 可能在新终端会话中找不到，因为 PATH 不会包含 Node 的 bin 目录。
   </Warning>
 </Accordion>
 
@@ -91,15 +89,15 @@ fnm use 24
 
 ### `openclaw: command not found`
 
-这几乎总是意味着 npm 的全局 bin 目录不在您的 PATH 上。
+这几乎总是意味着 npm 的全局 bin 目录不在你的 PATH 中。
 
 <Steps>
-  <Step title="找到您的全局 npm 前缀">
+  <Step title="找到你的全局 npm 前缀">
     ```bash
     npm prefix -g
     ```
   </Step>
-  <Step title="检查它是否在您的 PATH 上">
+  <Step title="检查它是否在你的 PATH 中">
     ```bash
     echo "$PATH"
     ```
@@ -107,7 +105,7 @@ fnm use 24
     在输出中查找 `<npm-prefix>/bin`（macOS/Linux）或 `<npm-prefix>`（Windows）。
 
   </Step>
-  <Step title="将其添加到您的 shell 启动文件">
+  <Step title="将其添加到你的 shell 启动文件">
     <Tabs>
       <Tab title="macOS / Linux">
         添加到 `~/.zshrc` 或 `~/.bashrc`：
@@ -116,19 +114,19 @@ fnm use 24
         export PATH="$(npm prefix -g)/bin:$PATH"
         ```
 
-        然后打开一个新终端（或在 zsh 中运行 `rehash` / 在 bash 中运行 `hash -r`）。
+        然后打开新终端（或在 zsh 中运行 `rehash` / 在 bash 中运行 `hash -r`）。
       </Tab>
       <Tab title="Windows">
-        通过设置 → 系统 → 环境变量将 `npm prefix -g` 的输出添加到您的系统 PATH。
+        通过 设置 → 系统 → 环境变量，将 `npm prefix -g` 的输出添加到系统 PATH。
       </Tab>
     </Tabs>
 
   </Step>
 </Steps>
 
-### `npm install -g` 上的权限错误（Linux）
+### `npm install -g` 的权限错误（Linux）
 
-如果您看到 `EACCES` 错误，请将 npm 的全局前缀切换到用户可写目录：
+如果你看到 `EACCES` 错误，将 npm 的全局前缀切换到用户可写的目录：
 
 ```bash
 mkdir -p "$HOME/.npm-global"
@@ -136,4 +134,10 @@ npm config set prefix "$HOME/.npm-global"
 export PATH="$HOME/.npm-global/bin:$PATH"
 ```
 
-将 `export PATH=...` 行添加到您的 `~/.bashrc` 或 `~/.zshrc` 以使其永久生效。
+将 `export PATH=...` 行添加到你的 `~/.bashrc` 或 `~/.zshrc` 以使其永久生效。
+
+## 相关
+
+- [安装概览](/install) — 所有安装方法
+- [更新](/install/updating) — 保持 OpenClaw 最新
+- [入门指南](/start/getting-started) — 安装后的第一步

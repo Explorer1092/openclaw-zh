@@ -1,31 +1,31 @@
 ---
-mmh3_hash: "35a7c53fce6d5d6ec308ef41276ca576"
+mmh3_hash: "9ed8fbe0597f6764ca881f767b7bb526"
 summary: "适用于长期运行 OpenClaw Gateway 主机的共享 Docker VM 运行时步骤"
 read_when:
-  - 您正在使用 Docker 在云 VM 上部署 OpenClaw
-  - 您需要共享的二进制文件烘焙、持久性和更新流程
-title: "Docker VM Runtime"
+  - 你正在使用 Docker 在云 VM 上部署 OpenClaw
+  - 你需要共享的二进制文件烘焙、持久化和更新流程
+title: "Docker VM 运行时"
 ---
 
-# Docker VM Runtime
-
-适用于基于 VM 的 Docker 安装（如 GCP、Hetzner 和类似 VPS 提供商）的共享运行时步骤。
+用于基于 VM 的 Docker 安装（如 GCP、Hetzner 和类似 VPS provider）的共享运行时步骤。
 
 ## 将所需的二进制文件烘焙到镜像中
 
-在运行的容器内安装二进制文件是一个陷阱。在运行时安装的任何内容都将在重启时丢失。
+在运行中的容器内安装二进制文件是一个陷阱。
+在运行时安装的任何内容在重启时都会丢失。
 
-Skills 所需的所有外部二进制文件必须在镜像构建时安装。
+skills 所需的所有外部二进制文件必须在镜像构建时安装。
 
-下面的示例仅显示三个常见二进制文件：
+下面的示例仅显示三个常见的二进制文件：
 
 - `gog` 用于 Gmail 访问
 - `goplaces` 用于 Google Places
 - `wacli` 用于 WhatsApp
 
-这些是示例，不是完整列表。您可以使用相同的模式安装所需数量的二进制文件。
+这些是示例，不是完整列表。
+你可以使用相同的模式安装任意多个二进制文件。
 
-如果您稍后添加依赖于其他二进制文件的新 Skills，您必须：
+如果你后来添加依赖其他二进制文件的新 skills，你必须：
 
 1. 更新 Dockerfile
 2. 重建镜像
@@ -50,7 +50,7 @@ RUN curl -L https://github.com/steipete/goplaces/releases/latest/download/goplac
 RUN curl -L https://github.com/steipete/wacli/releases/latest/download/wacli_Linux_x86_64.tar.gz \
   | tar -xz -C /usr/local/bin && chmod +x /usr/local/bin/wacli
 
-# 使用相同的模式在下面添加更多二进制文件
+# 使用相同模式在下面添加更多二进制文件
 
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
@@ -70,14 +70,19 @@ ENV NODE_ENV=production
 CMD ["node","dist/index.js"]
 ```
 
-## 构建并启动
+<Note>
+上面的下载 URL 适用于 x86_64 (amd64)。对于基于 ARM 的 VM（例如 Hetzner ARM、GCP Tau T2A），请将下载 URL 替换为每个工具发布页面上相应的 ARM64 变体。
+</Note>
+
+## 构建和启动
 
 ```bash
 docker compose build
 docker compose up -d openclaw-gateway
 ```
 
-如果构建因 `pnpm install --frozen-lockfile` 期间的 `Killed` 或退出代码 137 而失败，VM 内存不足。在重试之前使用更大的机器规格。
+如果在 `pnpm install --frozen-lockfile` 期间构建失败并显示 `Killed` 或 `exit code 137`，则 VM 内存不足。
+在重试之前使用更大的机器类型。
 
 验证二进制文件：
 
@@ -107,22 +112,23 @@ docker compose logs -f openclaw-gateway
 [gateway] listening on ws://0.0.0.0:18789
 ```
 
-## 什么在哪里持久化
+## 持久化位置
 
-OpenClaw 在 Docker 中运行，但 Docker 不是真相来源。所有长期状态必须在重启、重建和重新启动后保留。
+OpenClaw 在 Docker 中运行，但 Docker 不是事实来源。
+所有长期状态必须在重启、重建和重新启动后仍然存在。
 
-| 组件                | 位置                                    | 持久化机制         | 注意事项                                                           |
-| ------------------- | --------------------------------------- | ------------------ | ------------------------------------------------------------------ |
-| Gateway 配置        | `/home/node/.openclaw/`                 | 主机卷挂载         | 包括 `openclaw.json`、`.env`                                       |
-| 模型身份验证配置文件| `/home/node/.openclaw/agents/`          | 主机卷挂载         | `agents/<agentId>/agent/auth-profiles.json`（OAuth、API 密钥）     |
-| Skill 配置          | `/home/node/.openclaw/skills/`          | 主机卷挂载         | Skill 级别状态                                                     |
-| Agent 工作空间      | `/home/node/.openclaw/workspace/`       | 主机卷挂载         | 代码和 Agent 工件                                                  |
-| WhatsApp 会话       | `/home/node/.openclaw/`                 | 主机卷挂载         | 保留 QR 登录                                                       |
-| Gmail 密钥环        | `/home/node/.openclaw/`                 | 主机卷 + 密码      | 需要 `GOG_KEYRING_PASSWORD`                                        |
-| 外部二进制文件      | `/usr/local/bin/`                       | Docker 镜像        | 必须在构建时烘焙                                                   |
-| Node 运行时         | 容器文件系统                            | Docker 镜像        | 每次镜像构建时重建                                                 |
-| OS 软件包           | 容器文件系统                            | Docker 镜像        | 不要在运行时安装                                                   |
-| Docker 容器         | 短暂                                    | 可重启             | 可以安全销毁                                                       |
+| 组件               | 位置                              | 持久化机制             | 备注                                                            |
+| ------------------ | --------------------------------- | ---------------------- | --------------------------------------------------------------- |
+| Gateway 配置       | `/home/node/.openclaw/`           | 主机卷挂载             | 包括 `openclaw.json`、`.env`                                    |
+| Model 认证配置文件 | `/home/node/.openclaw/agents/`    | 主机卷挂载             | `agents/<agentId>/agent/auth-profiles.json`（OAuth、API 密钥）  |
+| Skill 配置         | `/home/node/.openclaw/skills/`    | 主机卷挂载             | Skill 级别状态                                                  |
+| Agent 工作区       | `/home/node/.openclaw/workspace/` | 主机卷挂载             | 代码和 agent 产出物                                             |
+| WhatsApp Session   | `/home/node/.openclaw/`           | 主机卷挂载             | 保留二维码登录                                                  |
+| Gmail keyring      | `/home/node/.openclaw/`           | 主机卷挂载 + 密码      | 需要 `GOG_KEYRING_PASSWORD`                                     |
+| 外部二进制文件     | `/usr/local/bin/`                 | Docker 镜像            | 必须在构建时烘焙                                                |
+| Node 运行时        | 容器文件系统                      | Docker 镜像            | 每次镜像构建时重建                                              |
+| OS 软件包          | 容器文件系统                      | Docker 镜像            | 不要在运行时安装                                                |
+| Docker 容器        | 临时                              | 可重启                 | 可以安全销毁                                                    |
 
 ## 更新
 
@@ -133,3 +139,9 @@ git pull
 docker compose build
 docker compose up -d
 ```
+
+## 相关
+
+- [Docker](/install/docker)
+- [Podman](/install/podman)
+- [ClawDock](/install/clawdock)
