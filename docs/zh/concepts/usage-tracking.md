@@ -1,12 +1,12 @@
 ---
-title: "用量跟踪"
-sidebarTitle: "用量跟踪"
-mmh3_hash: "f73cc59b0c87446b27e3e57fafa71520"
+title: "Usage tracking"
+sidebarTitle: "Usage tracking"
+mmh3_hash: "902ec2df1c369c7c96672bf9c86899b5"
 summary: "Usage tracking 表面和凭据要求"
-read_when: ["你正在连接 provider usage/quota 表面","你需要解释 usage tracking 行为或 auth 要求"]
+read_when:
+  - 你正在连接 provider usage/quota 表面
+  - 你需要解释 usage tracking 行为或 auth 要求
 ---
-
-# 用量跟踪
 
 ## 它是什么
 
@@ -38,3 +38,9 @@ read_when: ["你正在连接 provider usage/quota 表面","你需要解释 usage
 - **z.ai**：通过 env/config/auth store 的 API key。
 
 当无法解析可用的 provider usage auth 时，隐藏 Usage。Providers 可以提供插件特定的 usage auth 逻辑；否则 OpenClaw 回退到从 auth profiles、环境变量或配置中匹配 OAuth/API-key 凭据。
+
+## Related
+
+- [Token use and costs](/reference/token-use)
+- [API usage and costs](/reference/api-usage-costs)
+- [Prompt caching](/reference/prompt-caching)

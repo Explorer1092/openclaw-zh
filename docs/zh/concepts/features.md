@@ -1,32 +1,30 @@
 ---
-mmh3_hash: "10a966495ad92fd1f5155703dc06d2e3"
+mmh3_hash: "49264731fa8ac39ef0b9203882ae7f98"
 summary: "OpenClaw 跨 Channel、路由、媒体和用户体验的功能"
 read_when:
   - 你想要 OpenClaw 支持内容的完整列表
 title: "Features"
 ---
 
-# Features
-
 ## 亮点
 
 <Columns>
-  <Card title="Channels" icon="message-square">
+  <Card title="Channels" icon="message-square" href="/channels">
     单个 Gateway 支持 Discord、iMessage、Signal、Slack、Telegram、WhatsApp、WebChat 及更多。
   </Card>
-  <Card title="Plugins" icon="plug">
+  <Card title="Plugins" icon="plug" href="/tools/plugin">
     捆绑插件在正常当前版本中无需单独安装即可添加 Matrix、Nextcloud Talk、Nostr、Twitch、Zalo 及更多功能。
   </Card>
-  <Card title="路由" icon="route">
+  <Card title="路由" icon="route" href="/concepts/multi-agent">
     具有隔离 Session 的多 Agent 路由。
   </Card>
-  <Card title="媒体" icon="image">
+  <Card title="媒体" icon="image" href="/nodes/images">
     支持图像、音频、视频、文档的输入输出，以及图像/视频生成。
   </Card>
-  <Card title="应用和界面" icon="monitor">
+  <Card title="应用和界面" icon="monitor" href="/web/control-ui">
     Web Control UI 和 macOS 配套应用。
   </Card>
-  <Card title="移动节点" icon="smartphone">
+  <Card title="移动节点" icon="smartphone" href="/nodes">
     支持配对、语音/聊天和丰富设备命令的 iOS 和 Android 节点。
   </Card>
 </Columns>
@@ -75,3 +73,8 @@ title: "Features"
 - 网络搜索（Brave、DuckDuckGo、Exa、Firecrawl、Gemini、Grok、Kimi、MiniMax Search、Ollama Web Search、Perplexity、SearXNG、Tavily）
 - Cron jobs 和心跳调度
 - Skills、插件和工作流管道（Lobster）
+
+## 相关链接
+
+- [实验性功能](/concepts/experimental-features)
+- [Agent runtime](/concepts/agent)

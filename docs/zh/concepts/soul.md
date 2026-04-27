@@ -1,14 +1,13 @@
 ---
-mmh3_hash: "20b212ebb651e4c118e36100163c6186"
+mmh3_hash: "93be7ed5f4fd537f54ba89e9178138ae"
+title: "SOUL.md personality guide"
+sidebarTitle: "SOUL.md personality guide"
 summary: "使用 SOUL.md 为你的 OpenClaw Agent 赋予真正的声音，而非千篇一律的 Assistant 腔调"
 read_when:
   - 你希望 Agent 听起来不那么千篇一律
   - 你正在编辑 SOUL.md
   - 你想要更强的个性，同时不破坏安全性或简洁性
-title: "SOUL.md 个性指南"
 ---
-
-# SOUL.md 个性指南
 
 `SOUL.md` 是你 Agent 声音的所在。
 

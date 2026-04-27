@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e4d4b1b4a50315941c4ef52b8d3b34d0"
+mmh3_hash: "d22ce70c169e9bea58b26a251b2ae773"
 title: "Active Memory"
 summary: "Plugin 拥有的阻塞式 Memory 子 Agent，在交互式聊天 Session 中注入相关 Memory"
 read_when:
@@ -8,17 +8,15 @@ read_when:
   - 您想调整 Active Memory 行为而不在所有地方启用它
 ---
 
-# Active Memory
-
 Active Memory 是一个可选的 Plugin 拥有的阻塞式 Memory 子 Agent，在符合条件的对话式 Session 的主要回复之前运行。
 
 它的存在是因为大多数 Memory 系统虽然有能力但是被动的。它们依赖主 Agent 决定何时搜索 Memory，或者用户说"记住这个"或"搜索 Memory"之类的话。到那时，Memory 本可以让回复感觉自然的时机已经过去。
 
 Active Memory 在生成主要回复之前，给系统一次有限的机会来呈现相关 Memory。
 
-## 粘贴到您的 Agent
+## 快速开始
 
-如果您希望 Agent 以自包含、安全默认设置启用 Active Memory，请将以下内容粘贴到您的 Agent 中：
+将以下内容粘贴到 `openclaw.json` 中，这是一个安全默认设置——Plugin 开启，限定到 `main` Agent，仅限直接消息式 Session，在可用时继承 Session 模型：
 
 ```json5
 {
@@ -44,9 +42,7 @@ Active Memory 在生成主要回复之前，给系统一次有限的机会来呈
 }
 ```
 
-这将为 `main` Agent 开启 Plugin，默认将其限制为直接消息式 Session，让其首先继承当前 Session 模型，并仅在没有可用的显式或继承模型时才使用配置的回退模型。
-
-之后，重启 Gateway：
+然后重启 Gateway：
 
 ```bash
 openclaw gateway
@@ -59,135 +55,56 @@ openclaw gateway
 /trace on
 ```
 
-## 开启 Active Memory
-
-最安全的设置是：
-
-1. 启用 Plugin
-2. 针对一个对话式 Agent
-3. 仅在调整时保持日志记录开启
-
-在 `openclaw.json` 中从以下内容开始：
-
-```json5
-{
-  plugins: {
-    entries: {
-      "active-memory": {
-        enabled: true,
-        config: {
-          agents: ["main"],
-          allowedChatTypes: ["direct"],
-          modelFallback: "google/gemini-3-flash",
-          queryMode: "recent",
-          promptStyle: "balanced",
-          timeoutMs: 15000,
-          maxSummaryChars: 220,
-          persistTranscripts: false,
-          logging: true,
-        },
-      },
-    },
-  },
-}
-```
-
-然后重启 Gateway：
-
-```bash
-openclaw gateway
-```
-
-含义：
+关键字段的作用：
 
 - `plugins.entries.active-memory.enabled: true` 开启 Plugin
 - `config.agents: ["main"]` 只让 `main` Agent 使用 Active Memory
-- `config.allowedChatTypes: ["direct"]` 默认仅在直接消息式 Session 中保持 Active Memory 开启
-- 如果 `config.model` 未设置，Active Memory 首先继承当前 Session 模型
-- `config.modelFallback` 可选择为召回提供您自己的回退 provider/模型
-- `config.promptStyle: "balanced"` 在 `recent` 模式下使用默认通用提示风格
+- `config.allowedChatTypes: ["direct"]` 将其限定到直接消息式 Session（如需群组/Channel 须明确选入）
+- `config.model`（可选）固定专用召回模型；未设置时继承当前 Session 模型
+- `config.modelFallback` 仅在无显式或继承模型可解析时使用
+- `config.promptStyle: "balanced"` 是 `recent` 模式的默认值
 - Active Memory 仍然只在符合条件的交互式持久聊天 Session 上运行
 
 ## 速度建议
 
-最简单的设置是不设置 `config.model`，让 Active Memory 使用您已用于正常回复的同一模型。这是最安全的默认值，因为它遵循您现有的 provider、认证和模型偏好。
+最简单的设置是不设置 `config.model`，让 Active Memory 使用您已用于正常回复的同一模型。这是最安全的默认值，因为它遵循您现有的 Provider、认证和模型偏好。
 
-如果您希望 Active Memory 感觉更快，请使用专用推理模型，而不是借用主聊天模型。
+如果您希望 Active Memory 感觉更快，请使用专用推理模型，而不是借用主聊天模型。召回质量很重要，但延迟比主回复路径更重要，而 Active Memory 的工具接口很窄（只调用 `memory_search` 和 `memory_get`）。
 
-快速 provider 设置示例：
+好的快速模型选项：
 
-```json5
-models: {
-  providers: {
-    cerebras: {
-      baseUrl: "https://api.cerebras.ai/v1",
-      apiKey: "${CEREBRAS_API_KEY}",
-      api: "openai-completions",
-      models: [{ id: "gpt-oss-120b", name: "GPT OSS 120B (Cerebras)" }],
-    },
-  },
-},
-plugins: {
-  entries: {
-    "active-memory": {
-      enabled: true,
-      config: {
-        model: "cerebras/gpt-oss-120b",
-      },
-    },
-  },
-}
-```
-
-值得考虑的快速模型选项：
-
-- `cerebras/gpt-oss-120b`：具有狭窄工具接口的快速专用召回模型
+- `cerebras/gpt-oss-120b`：专用低延迟召回模型
+- `google/gemini-3-flash`：不更改主聊天模型的低延迟回退
 - 您的正常 Session 模型：通过不设置 `config.model` 使用
-- 低延迟回退模型，如 `google/gemini-3-flash`：当您想要独立的召回模型而不更改主聊天模型时
-
-为什么 Cerebras 是 Active Memory 的强速度导向选项：
-
-- Active Memory 工具接口很窄：只调用 `memory_search` 和 `memory_get`
-- 召回质量很重要，但延迟比主回复路径更重要
-- 专用快速 provider 避免将 Memory 召回延迟与您的主聊天 provider 绑定
-
-如果您不想要独立的速度优化模型，不设置 `config.model`，让 Active Memory 继承当前 Session 模型。
 
 ### Cerebras 设置
 
-添加这样的 provider 条目：
+添加 Cerebras Provider 并将 Active Memory 指向它：
 
 ```json5
-models: {
-  providers: {
-    cerebras: {
-      baseUrl: "https://api.cerebras.ai/v1",
-      apiKey: "${CEREBRAS_API_KEY}",
-      api: "openai-completions",
-      models: [{ id: "gpt-oss-120b", name: "GPT OSS 120B (Cerebras)" }],
+{
+  models: {
+    providers: {
+      cerebras: {
+        baseUrl: "https://api.cerebras.ai/v1",
+        apiKey: "${CEREBRAS_API_KEY}",
+        api: "openai-completions",
+        models: [{ id: "gpt-oss-120b", name: "GPT OSS 120B (Cerebras)" }],
+      },
     },
   },
-}
-```
-
-然后将 Active Memory 指向它：
-
-```json5
-plugins: {
-  entries: {
-    "active-memory": {
-      enabled: true,
-      config: {
-        model: "cerebras/gpt-oss-120b",
+  plugins: {
+    entries: {
+      "active-memory": {
+        enabled: true,
+        config: { model: "cerebras/gpt-oss-120b" },
       },
     },
   },
 }
 ```
 
-注意事项：
-
-- 确保 Cerebras API 密钥对您选择的模型实际具有模型访问权限，因为仅 `/v1/models` 可见性并不保证 `chat/completions` 访问
+确保 Cerebras API 密钥对所选模型实际具有 `chat/completions` 访问权限——仅 `/v1/models` 可见性并不保证这一点。
 
 ## 如何查看
 
@@ -348,11 +265,11 @@ Active Memory 是一个对话丰富功能，而不是平台范围的推理功能
 
 ```mermaid
 flowchart LR
-  U["用户消息"] --> Q["构建 Memory 查询"]
-  Q --> R["Active Memory 阻塞式 Memory 子 Agent"]
-  R -->|无或空| M["主回复"]
-  R -->|相关摘要| I["追加隐藏 active_memory_plugin 系统上下文"]
-  I --> M["主回复"]
+  U["User Message"] --> Q["Build Memory Query"]
+  Q --> R["Active Memory Blocking Memory Sub-Agent"]
+  R -->|NONE or empty| M["Main Reply"]
+  R -->|relevant summary| I["Append Hidden active_memory_plugin System Context"]
+  I --> M["Main Reply"]
 ```
 
 阻塞式 Memory 子 Agent 只能使用：
@@ -364,7 +281,68 @@ flowchart LR
 
 ## 查询模式
 
-`config.queryMode` 控制阻塞式 Memory 子 Agent 看到多少对话。
+`config.queryMode` 控制阻塞式 Memory 子 Agent 看到多少对话。选择仍能很好地回答后续问题的最小模式；超时预算应随上下文大小增加（`message` < `recent` < `full`）。
+
+<Tabs>
+  <Tab title="message">
+    只发送最新的用户消息。
+
+    ```text
+    Latest user message only
+    ```
+
+    在以下情况下使用：
+
+    - 您想要最快的行为
+    - 您希望对稳定偏好召回有最强的偏向
+    - 后续轮次不需要对话上下文
+
+    `config.timeoutMs` 从约 `3000` 到 `5000` 毫秒开始。
+
+  </Tab>
+
+  <Tab title="recent">
+    发送最新的用户消息加上一个小的最近对话尾部。
+
+    ```text
+    Recent conversation tail:
+    user: ...
+    assistant: ...
+    user: ...
+
+    Latest user message:
+    ...
+    ```
+
+    在以下情况下使用：
+
+    - 您想要速度和对话基础之间更好的平衡
+    - 后续问题通常取决于最后几轮
+
+    `config.timeoutMs` 从约 `15000` 毫秒开始。
+
+  </Tab>
+
+  <Tab title="full">
+    将完整对话发送给阻塞式 Memory 子 Agent。
+
+    ```text
+    Full conversation context:
+    user: ...
+    assistant: ...
+    user: ...
+    ...
+    ```
+
+    在以下情况下使用：
+
+    - 最强的召回质量比延迟更重要
+    - 对话中包含线程深处的重要设置
+
+    根据线程大小，从约 `15000` 毫秒或更高开始。
+
+  </Tab>
+</Tabs>
 
 ## 提示风格
 
@@ -450,75 +428,6 @@ promptOverride: "You are a memory search agent. Return NONE or one compact user 
 
 除非您有意测试不同的召回合同，否则不推荐进行提示自定义。默认提示经过调整，返回 `NONE` 或为主模型提供紧凑的用户事实上下文。
 
-### `message`
-
-只发送最新的用户消息。
-
-```text
-Latest user message only
-```
-
-在以下情况下使用：
-
-- 您想要最快的行为
-- 您希望对稳定偏好召回有最强的偏向
-- 后续轮次不需要对话上下文
-
-推荐超时：
-
-- 从约 `3000` 到 `5000` 毫秒开始
-
-### `recent`
-
-发送最新的用户消息加上一个小的最近对话尾部。
-
-```text
-Recent conversation tail:
-user: ...
-assistant: ...
-user: ...
-
-Latest user message:
-...
-```
-
-在以下情况下使用：
-
-- 您想要速度和对话基础之间更好的平衡
-- 后续问题通常取决于最后几轮
-
-推荐超时：
-
-- 从约 `15000` 毫秒开始
-
-### `full`
-
-将完整对话发送给阻塞式 Memory 子 Agent。
-
-```text
-Full conversation context:
-user: ...
-assistant: ...
-user: ...
-...
-```
-
-在以下情况下使用：
-
-- 最强的召回质量比延迟更重要
-- 对话中包含线程深处的重要设置
-
-推荐超时：
-
-- 与 `message` 或 `recent` 相比大幅增加
-- 根据线程大小，从约 `15000` 毫秒或更高开始
-
-一般来说，超时应随上下文大小增加：
-
-```text
-message < recent < full
-```
-
 ## 转录持久化
 
 Active Memory 阻塞式 Memory 子 Agent 运行在子 Agent 调用期间创建真实的 `session.jsonl` 转录。
@@ -581,7 +490,7 @@ plugins.entries.active-memory
 | `config.model`              | `string`                                                                                              | 可选的阻塞式 Memory 子 Agent 模型引用；未设置时，Active Memory 使用当前 Session 模型         |
 | `config.queryMode`          | `"message" \| "recent" \| "full"`                                                                     | 控制阻塞式 Memory 子 Agent 看到多少对话                                                      |
 | `config.promptStyle`        | `"balanced" \| "strict" \| "contextual" \| "recall-heavy" \| "precision-heavy" \| "preference-only"` | 控制阻塞式 Memory 子 Agent 在决定是否返回 Memory 时的积极程度或严格程度                     |
-| `config.thinking`           | `"off" \| "minimal" \| "low" \| "medium" \| "high" \| "xhigh" \| "adaptive"`                         | 阻塞式 Memory 子 Agent 的高级思考覆盖；默认 `off` 以保证速度                                |
+| `config.thinking`           | `"off" \| "minimal" \| "low" \| "medium" \| "high" \| "xhigh" \| "adaptive" \| "max"`                | 阻塞式 Memory 子 Agent 的高级思考覆盖；默认 `off` 以保证速度                                |
 | `config.promptOverride`     | `string`                                                                                              | 高级完整提示替换；不建议正常使用                                                             |
 | `config.promptAppend`       | `string`                                                                                              | 追加到默认或覆盖提示的高级额外指令                                                           |
 | `config.timeoutMs`          | `number`                                                                                              | 阻塞式 Memory 子 Agent 的硬超时，上限为 120000 毫秒                                         |
@@ -655,151 +564,24 @@ plugins.entries.active-memory
 
 ## 常见问题
 
-### 嵌入 Provider 意外更改
+Active Memory 在 `agents.defaults.memorySearch` 下使用正常的 `memory_search` 管道，因此大多数召回异常是嵌入 Provider 问题，而不是 Active Memory 的错误。
 
-Active Memory 在 `agents.defaults.memorySearch` 下使用正常的 `memory_search` 管道。这意味着嵌入 Provider 设置仅在您的 `memorySearch` 设置需要嵌入来实现您想要的行为时才是必需的。
+<AccordionGroup>
+  <Accordion title="嵌入 Provider 切换或停止工作">
+    如果 `memorySearch.provider` 未设置，OpenClaw 自动检测第一个可用的嵌入 Provider。新的 API 密钥、配额耗尽或速率受限的托管 Provider 可能会在运行之间更改解析的 Provider。如果没有 Provider 可解析，`memory_search` 可能会降级为词法检索；在 Provider 已选择后发生的运行时失败不会自动回退。
 
-在实践中：
+    显式固定 Provider（以及可选的回退）以使选择具有确定性。有关 Provider 完整列表和固定示例，请参见 [Memory Search](/concepts/memory-search)。
 
-- 如果您想要一个非自动检测的 Provider（如 `ollama`），**必须**显式设置 Provider
-- 如果自动检测无法为您的环境解析任何可用的嵌入 Provider，**必须**显式设置 Provider
-- 如果您想要确定性的 Provider 选择而不是"第一个可用的优先"，**强烈建议**显式设置 Provider
-- 如果自动检测已经解析了您想要的 Provider 并且该 Provider 在您的部署中是稳定的，通常**不需要**显式设置 Provider
+  </Accordion>
 
-如果 `memorySearch.provider` 未设置，OpenClaw 自动检测第一个可用的嵌入 Provider。
-
-这在实际部署中可能令人困惑：
-
-- 新可用的 API 密钥可能会改变 Memory 搜索使用的 Provider
-- 某个命令或诊断界面可能使选择的 Provider 看起来与您在实时 Memory 同步或搜索引导期间实际命中的路径不同
-- 托管 Provider 可能因配额或速率限制错误而失败，这些错误只有在 Active Memory 开始在每次回复前发出召回搜索时才会出现
-
-当 `memory_search` 可以在降级的词法模式下运行时（通常在没有嵌入 Provider 可以解析时发生），Active Memory 仍然可以在没有嵌入的情况下运行。
-
-不要对 Provider 运行时失败（如配额耗尽、速率限制、网络/Provider 错误或在已选择 Provider 后缺少本地/远程模型）假设同样的回退。
-
-在实践中：
-
-- 如果没有嵌入 Provider 可以解析，`memory_search` 可能会降级为词法检索
-- 如果嵌入 Provider 已解析然后在运行时失败，OpenClaw 目前不保证该请求的词法回退
-- 如果您需要确定性的 Provider 选择，请固定 `agents.defaults.memorySearch.provider`
-- 如果您需要运行时错误上的 Provider 故障转移，请显式配置 `agents.defaults.memorySearch.fallback`
-
-如果您依赖嵌入支持的召回、多模态索引或特定的本地/远程 Provider，请显式固定 Provider 而不是依赖自动检测。
-
-常见固定示例：
-
-OpenAI：
-
-```json5
-{
-  agents: {
-    defaults: {
-      memorySearch: {
-        provider: "openai",
-        model: "text-embedding-3-small",
-      },
-    },
-  },
-}
-```
-
-Gemini：
-
-```json5
-{
-  agents: {
-    defaults: {
-      memorySearch: {
-        provider: "gemini",
-        model: "gemini-embedding-001",
-      },
-    },
-  },
-}
-```
-
-Ollama：
-
-```json5
-{
-  agents: {
-    defaults: {
-      memorySearch: {
-        provider: "ollama",
-        model: "nomic-embed-text",
-      },
-    },
-  },
-}
-```
-
-如果您期望在运行时错误（如配额耗尽）上的 Provider 故障转移，仅固定 Provider 是不够的。也需要显式配置回退：
-
-```json5
-{
-  agents: {
-    defaults: {
-      memorySearch: {
-        provider: "openai",
-        fallback: "gemini",
-      },
-    },
-  },
-}
-```
-
-### 调试 Provider 问题
-
-如果 Active Memory 缓慢、空或似乎意外切换 Provider：
-
-- 在重现问题时查看 Gateway 日志；查找如 `active-memory: ... start|done`、`memory sync failed (search-bootstrap)` 或 Provider 特定嵌入错误的行
-- 开启 `/trace on` 以在 Session 中呈现 Plugin 拥有的 Active Memory 调试摘要
-- 如果您还想在每次回复后看到正常的 `🧩 Active Memory: ...` 状态行，开启 `/verbose on`
-- 运行 `openclaw memory status --deep` 以检查当前 Memory 搜索后端和索引健康状况
-- 检查 `agents.defaults.memorySearch.provider` 及相关的认证/配置，确保您期望的 Provider 在运行时实际上可以解析
-- 如果您使用 `ollama`，验证已安装配置的嵌入模型，例如 `ollama list`
-
-示例调试循环：
-
-```text
-1. 启动 Gateway 并查看其日志
-2. 在聊天 Session 中，运行 /trace on
-3. 发送一条应触发 Active Memory 的消息
-4. 将聊天可见的调试行与 Gateway 日志行进行比较
-5. 如果 Provider 选择不明确，显式固定 agents.defaults.memorySearch.provider
-```
-
-示例：
-
-```json5
-{
-  agents: {
-    defaults: {
-      memorySearch: {
-        provider: "ollama",
-        model: "nomic-embed-text",
-      },
-    },
-  },
-}
-```
-
-或者，如果您想要 Gemini 嵌入：
-
-```json5
-{
-  agents: {
-    defaults: {
-      memorySearch: {
-        provider: "gemini",
-      },
-    },
-  },
-}
-```
-
-更改 Provider 后，重启 Gateway 并使用 `/trace on` 进行新的测试，使 Active Memory 调试行反映新的嵌入路径。
+  <Accordion title="召回感觉缓慢、空或不一致">
+    - 开启 `/trace on` 以在 Session 中呈现 Plugin 拥有的 Active Memory 调试摘要。
+    - 开启 `/verbose on` 以在每次回复后看到 `🧩 Active Memory: ...` 状态行。
+    - 查看 Gateway 日志，查找 `active-memory: ... start|done`、`memory sync failed (search-bootstrap)` 或 Provider 嵌入错误。
+    - 运行 `openclaw memory status --deep` 以检查 Memory 搜索后端和索引健康状况。
+    - 如果您使用 `ollama`，确认嵌入模型已安装（`ollama list`）。
+  </Accordion>
+</AccordionGroup>
 
 ## 相关页面
 

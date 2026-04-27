@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "5a5d92bfd28fd721f41e1b0a7b948240"
+mmh3_hash: "6fea0f27d1697265401ade40c2bd00f5"
 title: "Memory Overview"
 summary: "OpenClaw 如何跨 Session 记忆内容"
 read_when:
   - 您想了解内存如何工作
   - 您想知道应该写哪些内存文件
 ---
-
-# 内存概述
 
 OpenClaw 通过在 Agent 工作区中写入**纯 Markdown 文件**来记忆内容。model 只"记住"保存到磁盘的内容——没有隐藏状态。
 
@@ -150,3 +148,10 @@ openclaw memory index --force   # 重建索引
 - [Dreaming](/concepts/dreaming) — 从短期召回到长期内存的后台提升
 - [Memory 配置参考](/reference/memory-config) — 所有配置项
 - [Compaction](/concepts/compaction) — compaction 如何与内存交互
+
+## 相关链接
+
+- [Active memory](/concepts/active-memory)
+- [Memory 搜索](/concepts/memory-search)
+- [内置内存引擎](/concepts/memory-builtin)
+- [Honcho 内存](/concepts/memory-honcho)

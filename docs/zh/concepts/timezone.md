@@ -1,14 +1,14 @@
 ---
-title: "时区"
-sidebarTitle: "时区"
-mmh3_hash: "640f1f99385f34cbefecb4153fb4b03b"
+title: "Timezones"
+sidebarTitle: "Timezones"
+mmh3_hash: "afb5e81d6a856bab3032876b1da0cfff"
 summary: "Agents、envelopes 和 prompts 的 Timezone 处理"
-read_when: ["你需要了解如何为 model 规范化时间戳","为 system prompts 配置用户 timezone"]
+read_when:
+  - 你需要了解如何为 model 规范化时间戳
+  - 为 system prompts 配置用户 timezone
 ---
 
-# 时区
-
-OpenClaw 标准化时间戳,以便 model 看到 **单个参考时间**。
+OpenClaw 标准化时间戳，以便 model 看到**单个参考时间**。
 
 ## Message envelopes (默认本地)
 
@@ -87,7 +87,7 @@ System prompt 包括:
 
 参见 [Date & Time](/date-time) 了解完整行为和示例。
 
-## 延伸阅读
+## Related
 
 - [Heartbeat](/gateway/heartbeat) — 活跃时间使用 timezone 进行调度
 - [Cron Jobs](/automation/cron-jobs) — cron 表达式使用 timezone 进行调度

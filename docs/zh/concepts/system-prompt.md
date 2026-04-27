@@ -1,13 +1,12 @@
 ---
-title: "System Prompt"
-mmh3_hash: "5098c7a659ab20d46bcb9685d0ba88e8"
+title: "System prompt"
+sidebarTitle: "System prompt"
+mmh3_hash: "511e9fee044ec79ca783d690ed359e9c"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
 read_when:
   - 编辑 system prompt 文本、tools 列表或 time/heartbeat 部分
   - 更改 workspace bootstrap 或 skills 注入行为
 ---
-
-# System Prompt
 
 OpenClaw 为每个 Agent 运行构建自定义 system prompt。Prompt 由 **OpenClaw 拥有**，不使用 pi-coding-agent 默认 prompt。
 
@@ -26,6 +25,7 @@ Provider plugins 可以贡献 cache-aware prompt 指导，而不替换完整的 
 Prompt 有意紧凑并使用固定部分：
 
 - **Tooling**：结构化工具真实来源提醒，加上运行时工具使用指导。
+- **Execution Bias**：紧凑的执行跟进指导：在回合中对可执行请求采取行动，继续直到完成或受阻，从弱工具结果中恢复，实时检查可变状态，以及在完成前验证。
 - **Safety**：简短的护栏提醒，避免权力寻求行为或绕过监督。
 - **Skills**（在可用时）：告诉 model 如何按需加载 Skill 指令。
 - **OpenClaw Self-Update**：如何使用 `config.schema.lookup` 安全检查配置、使用 `config.patch` 修补配置、使用 `config.apply` 替换完整配置，以及仅在用户明确请求时运行 `update.run`。仅限所有者的 `gateway` 工具也拒绝重写 `tools.exec.ask` / `tools.exec.security`，包括规范化到这些受保护 exec 路径的旧版 `tools.bash.*` 别名。
@@ -79,7 +79,9 @@ Bootstrap 文件被修剪并附加在 **Project Context** 下，以便 model 在
 
 所有这些文件在每次回合都**注入到 context 窗口中**，除非有特定于文件的门控条件。`HEARTBEAT.md` 在 heartbeats 对默认 Agent 禁用或 `agents.defaults.heartbeat.includeSystemPromptSection` 为 false 时的正常运行中会被忽略。保持注入文件简洁——特别是 `MEMORY.md`，它可能随时间增长并导致意外的高 context 使用和更频繁的 compaction。
 
-> **注意：** `memory/*.md` 每日文件**不是**正常 bootstrap Project Context 的一部分。在普通回合中，它们通过 `memory_search` 和 `memory_get` tools 按需访问，因此除非 model 明确读取它们，否则不会计入 context 窗口。裸 `/new` 和 `/reset` 回合是例外：runtime 可以为第一次回合预先附加最近的每日内存作为一次性启动上下文块。
+<Note>
+`memory/*.md` 每日文件**不是**正常 bootstrap Project Context 的一部分。在普通回合中，它们通过 `memory_search` 和 `memory_get` tools 按需访问，因此除非 model 明确读取它们，否则不会计入 context 窗口。裸 `/new` 和 `/reset` 回合是例外：runtime 可以为第一次回合预先附加最近的每日内存作为一次性启动上下文块。
+</Note>
 
 大文件会用标记截断。每个文件的最大大小由 `agents.defaults.bootstrapMaxChars` 控制（默认：12000）。跨文件的总注入 bootstrap 内容上限由 `agents.defaults.bootstrapTotalMaxChars` 控制（默认：60000）。缺失文件注入一个简短的缺失文件标记。当发生截断时，OpenClaw 可以在 Project Context 中注入警告块；通过 `agents.defaults.bootstrapPromptTruncationWarning` 控制（`off`、`once`、`always`；默认：`once`）。
 
@@ -87,7 +89,7 @@ Bootstrap 文件被修剪并附加在 **Project Context** 下，以便 model 在
 
 内部 hooks 可以通过 `agent:bootstrap` 拦截此步骤以改变或替换注入的 bootstrap 文件（例如交换 `SOUL.md` 为替代角色）。
 
-如果您想让 Agent 听起来不那么通用，从 [SOUL.md 个性指南](/concepts/soul) 开始。
+如果你想让 Agent 听起来不那么通用，从 [SOUL.md Personality Guide](/concepts/soul) 开始。
 
 要检查每个注入文件贡献多少（原始与注入、截断，加上 tool schema 开销），使用 `/context list` 或 `/context detail`。参见 [Context](/concepts/context)。
 
@@ -109,6 +111,8 @@ Bootstrap 文件被修剪并附加在 **Project Context** 下，以便 model 在
 当存在符合条件的 Skills 时，OpenClaw 注入一个紧凑的**可用 Skills 列表**（`formatSkillsForPrompt`），其中包含每个 Skill 的**文件路径**。Prompt 指示 model 使用 `read` 在列出的位置（workspace、managed 或 bundled）加载 SKILL.md。如果没有符合条件的 Skills，则省略 Skills 部分。
 
 资格包括 Skill 元数据门、运行时环境/配置检查，以及在配置 `agents.defaults.skills` 或 `agents.list[].skills` 时的有效 Agent Skill 允许列表。
+
+插件捆绑的 Skills 仅在其所有者插件启用时才有资格。这使 tool 插件能够公开更深入的操作指南，而无需将所有指导直接嵌入每个工具描述中。
 
 ```
 <available_skills>
@@ -136,4 +140,12 @@ Skills 列表预算由 Skills 子系统拥有：
 
 ## Documentation
 
-在可用时，system prompt 包括一个 **Documentation** 部分，指向本地 OpenClaw 文档目录（repo workspace 中的 `docs/` 或捆绑的 npm 包 docs），还注明了公共镜像、源码 repo、社区 Discord 和 ClawHub（[https://clawhub.ai](https://clawhub.ai)）用于 Skills 发现。Prompt 指示 model 首先参考本地文档了解 OpenClaw 行为、命令、配置或架构，并尽可能自己运行 `openclaw status`（仅在缺乏访问权限时询问用户）。
+System prompt 包含一个 **Documentation** 部分。当本地文档可用时，它指向本地 OpenClaw 文档目录（Git checkout 中的 `docs/` 或捆绑的 npm 包 docs）。如果本地文档不可用，则回退到 [https://docs.openclaw.ai](https://docs.openclaw.ai)。
+
+同一部分还包括 OpenClaw 源码位置。Git checkouts 暴露本地源码根目录，以便 Agent 可以直接检查代码。Package 安装包含 GitHub 源码 URL，并告诉 Agent 在文档不完整或过时时到那里查看源码。Prompt 还注明了公共文档镜像、社区 Discord 和 ClawHub（[https://clawhub.ai](https://clawhub.ai)）用于 Skills 发现。它告诉 model 首先参考文档了解 OpenClaw 行为、命令、配置或架构，并尽可能自己运行 `openclaw status`（仅在缺乏访问权限时询问用户）。对于配置，它特别指向 Agent 使用 `gateway` tool action `config.schema.lookup` 获取精确的字段级文档和约束，然后查阅 `docs/gateway/configuration.md` 和 `docs/gateway/configuration-reference.md` 获取更广泛的指导。
+
+## 相关
+
+- [Agent runtime](/concepts/agent)
+- [Agent workspace](/concepts/agent-workspace)
+- [Context engine](/concepts/context-engine)

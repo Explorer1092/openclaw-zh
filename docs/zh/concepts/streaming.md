@@ -1,14 +1,12 @@
 ---
-title: "Streaming and Chunking"
-mmh3_hash: "62f81a4ce4bd77327613af931cce5767"
+title: "Streaming and chunking"
+mmh3_hash: "49ba3ce72331d474d6334aa579041a73"
 summary: "Streaming + chunking 行为（block 回复、channel 预览 streaming、模式映射）"
 read_when:
   - 解释 streaming 或 chunking 在 channels 上如何工作
   - 更改 block streaming 或 channel chunking 行为
   - 调试重复/早期 block 回复或 channel 预览 streaming
 ---
-
-# Streaming + chunking
 
 OpenClaw 有两个单独的 streaming 层:
 
@@ -54,6 +52,12 @@ Model output
 - `message_end`: 等到 assistant 消息完成,然后刷新缓冲的输出。
 
 如果缓冲的文本超过 `maxChars`,`message_end` 仍使用 chunker,因此它可以在结束时发出多个块。
+
+### Block streaming 的媒体传递
+
+`MEDIA:` 指令是正常的传递元数据。当 block streaming 提前发送媒体块时，OpenClaw 会记住本轮的该次传递。如果最终 assistant payload 重复了相同的媒体 URL，最终传递会去除重复媒体，而不是再次发送附件。
+
+完全重复的最终 payload 会被抑制。如果最终 payload 在已流式传输的媒体周围添加了不同的文本，OpenClaw 仍会发送新文本，同时保持媒体单次传递。这可以防止在 Telegram 等 channel 上，当 Agent 在 streaming 期间发出 `MEDIA:` 且 provider 在完成回复中也包含它时，出现重复的语音笔记或文件。
 
 ## Chunking 算法(低/高界限)
 
@@ -110,11 +114,12 @@ Block chunking 由 `EmbeddedBlockChunker` 实现:
 
 ### Channel 映射
 
-| Channel  | `off` | `partial` | `block` | `progress`        |
-| -------- | ----- | --------- | ------- | ----------------- |
-| Telegram | ✅    | ✅        | ✅      | 映射到 `partial`  |
-| Discord  | ✅    | ✅        | ✅      | 映射到 `partial`  |
-| Slack    | ✅    | ✅        | ✅      | ✅                |
+| Channel    | `off` | `partial` | `block` | `progress`        |
+| ---------- | ----- | --------- | ------- | ----------------- |
+| Telegram   | ✅    | ✅        | ✅      | 映射到 `partial`  |
+| Discord    | ✅    | ✅        | ✅      | 映射到 `partial`  |
+| Slack      | ✅    | ✅        | ✅      | ✅                |
+| Mattermost | ✅    | ✅        | ✅      | ✅                |
 
 仅限 Slack:
 
@@ -123,7 +128,7 @@ Block chunking 由 `EmbeddedBlockChunker` 实现:
 
 旧版 key 迁移:
 
-- Telegram: `streamMode` + 布尔值 `streaming` 自动迁移到 `streaming` 枚举。
+- Telegram: 旧版 `streamMode` 和标量/布尔值 `streaming` 由 doctor/config 兼容性路径检测并迁移到 `streaming.mode`。
 - Discord: `streamMode` + 布尔值 `streaming` 自动迁移到 `streaming` 枚举。
 - Slack: `streamMode` 自动迁移到 `streaming.mode`；布尔值 `streaming` 自动迁移到 `streaming.mode` 加 `streaming.nativeTransport`；旧版 `nativeStreaming` 自动迁移到 `streaming.nativeTransport`。
 
@@ -132,7 +137,8 @@ Block chunking 由 `EmbeddedBlockChunker` 实现:
 Telegram:
 
 - 使用 `sendMessage` + `editMessageText` 在 DMs 和群组/话题中进行预览更新。
-- 当明确启用 Telegram block streaming 时跳过预览 streaming(以避免双重 streaming)。
+- 当预览已可见约一分钟时，发送全新的最终消息而非原地编辑，然后清理预览，使 Telegram 的时间戳反映回复完成时间。
+- 当明确启用 Telegram block streaming 时跳过预览 streaming（以避免双重 streaming）。
 - `/reasoning stream` 可以将 reasoning 写入预览。
 
 Discord:
@@ -140,12 +146,55 @@ Discord:
 - 使用 send + edit 预览消息。
 - `block` 模式使用 draft chunking (`draftChunk`)。
 - 当明确启用 Discord block streaming 时跳过预览 streaming。
+- 最终媒体、错误和显式回复 payload 会取消待处理的预览而不刷新新 draft，然后使用正常传递。
 
 Slack:
 
-- `partial` 可以使用 Slack 原生 streaming(`chat.startStream`/`append`/`stop`)(在可用时)。
+- `partial` 可以使用 Slack 原生 streaming（`chat.startStream`/`append`/`stop`）（在可用时）。
 - `block` 使用追加式 draft 预览。
-- `progress` 使用状态预览文本,然后给出最终答案。
+- `progress` 使用状态预览文本，然后给出最终答案。
+- 原生和 draft 预览 streaming 会抑制该轮的 block 回复，因此 Slack 回复仅由一条传递路径进行流式传输。
+- 最终媒体/错误 payload 和 progress 最终答案不会创建临时 draft 消息；只有可以编辑预览的文本/block 最终答案才会刷新待处理的 draft 文本。
+
+Mattermost:
+
+- 将 thinking、tool 活动和部分回复文本流式传输到单个 draft 预览帖子中，当最终答案可以安全发送时，在原地完成。
+- 如果预览帖子被删除或在完成时不可用，则回退到发送全新的最终帖子。
+- 最终媒体/错误 payload 在正常传递之前取消待处理的预览更新，而不是刷新临时预览帖子。
+
+Matrix:
+
+- Draft 预览在最终文本可以重用预览事件时在原地完成。
+- 仅媒体、错误和回复目标不匹配的最终答案会在正常传递之前取消待处理的预览更新；已可见的过时预览将被撤回。
+
+### Tool 进度预览更新
+
+预览 streaming 还可以包括 **tool 进度**更新——在工具运行时出现在同一预览消息中的简短状态行，如"searching the web"、"reading file"或"calling tool"——位于最终回复之前。这使多步骤 tool 轮次在视觉上保持活跃，而不是在第一个 thinking 预览和最终答案之间保持沉默。
+
+支持的界面：
+
+- **Discord**、**Slack** 和 **Telegram** 在预览 streaming 活跃时默认将 tool 进度流式传输到实时预览编辑中。
+- Telegram 自 `v2026.4.22` 起已启用 tool 进度预览更新；保持启用状态可保留该已发布的行为。
+- **Mattermost** 已将 tool 活动折叠到其单一 draft 预览帖子中（见上文）。
+- Tool 进度编辑遵循活跃的预览 streaming 模式；当预览 streaming 为 `off` 或 block streaming 已接管消息时跳过。
+- 要保留预览 streaming 但隐藏 tool 进度行，将该 channel 的 `streaming.preview.toolProgress` 设置为 `false`。要完全禁用预览编辑，将 `streaming.mode` 设置为 `off`。
+
+示例：
+
+```json
+{
+  "channels": {
+    "telegram": {
+      "streaming": {
+        "mode": "partial",
+        "preview": {
+          "toolProgress": false
+        }
+      }
+    }
+  }
+}
+```
 
 ## 相关
 

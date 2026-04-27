@@ -1,12 +1,11 @@
 ---
-mmh3_hash: "d6436e48d3642e9e8b3a6bdb0816781f"
+mmh3_hash: "ebb7fb7f81541d01563ba68b2215d78c"
 summary: "Agent loop 生命周期、流和等待语义"
 read_when:
   - 你需要了解 agent loop 或生命周期事件的详细流程
+  - 你正在修改 Session 排队、转录写入或 Session 写锁行为
 title: "Agent Loop"
 ---
-
-# Agent Loop (OpenClaw)
 
 agentic loop 是 Agent 的完整"真实"运行过程：接收输入 → 上下文组装 → model 推理 →
 工具执行 → 流式回复 → 持久化。它是将消息转换为操作和最终回复的权威路径，同时保持 Session 状态的一致性。
@@ -46,13 +45,15 @@ agentic loop 是 Agent 的完整"真实"运行过程：接收输入 → 上下�
 - 这可以防止 tool/Session 竞争并保持 Session 历史一致性。
 - 消息 Channel 可以选择队列模式（collect/steer/followup）来馈送此 lane 系统。
   参见 [Command Queue](/concepts/queue)。
+- 转录写入同样受 Session 文件上的写锁保护。该锁是进程感知且基于文件的，因此能捕获绕过进程内队列或来自另一进程的写入者。
+- Session 写锁默认是不可重入的。如果辅助程序有意在保留一个逻辑写入者的同时嵌套获取同一锁，则必须通过 `allowReentrant: true` 显式选入。
 
 ## Session + workspace 准备
 
 - Workspace 被解析和创建；沙盒运行可能重定向到沙盒 workspace root。
 - Skills 被加载（或从快照重用）并注入到 env 和 prompt 中。
 - Bootstrap/context 文件被解析并注入到 system prompt 报告中。
-- 获取 Session 写锁；`SessionManager` 在流式传输之前被打开和准备。
+- 获取 Session 写锁；`SessionManager` 在流式传输之前被打开和准备。任何后续的转录重写、compaction 或截断路径在打开或修改转录文件之前必须获取同一锁。
 
 ## Prompt 组装 + system prompt
 
@@ -87,7 +88,7 @@ OpenClaw 有两个 hook 系统：
 - **`before_compaction` / `after_compaction`**：观察或注释 compaction 循环。
 - **`before_tool_call` / `after_tool_call`**：拦截 tool 参数/结果。
 - **`before_install`**：检查内置扫描结果，并可选地阻止 skill 或插件安装。
-- **`tool_result_persist`**：在工具结果写入 Session transcript 之前同步转换它们。
+- **`tool_result_persist`**：在工具结果写入 OpenClaw 拥有的 Session transcript 之前同步转换它们。
 - **`message_received` / `message_sending` / `message_sent`**：入站 + 出站 message hooks。
 - **`session_start` / `session_end`**：Session 生命周期边界。
 - **`gateway_start` / `gateway_stop`**：Gateway 生命周期事件。
@@ -101,7 +102,9 @@ OpenClaw 有两个 hook 系统：
 - `message_sending`：`{ cancel: true }` 是终止性的，会阻止优先级较低的处理程序。
 - `message_sending`：`{ cancel: false }` 是空操作，不会清除先前的取消。
 
-参见 [Plugin hooks](/plugins/architecture#provider-runtime-hooks) 了解 hook API 和注册详细信息。
+参见 [Plugin hooks](/plugins/hooks) 了解 hook API 和注册详细信息。
+
+Harness 可能以不同方式适配这些 hook。Codex app-server harness 将 OpenClaw Plugin hooks 作为已记录镜像接口的兼容性合约，而 Codex 原生 hook 仍然是独立的较低级别 Codex 机制。
 
 ## 流式传输 + 部分回复
 
@@ -114,14 +117,14 @@ OpenClaw 有两个 hook 系统：
 
 - Tool start/update/end 事件在 `tool` 流上发出。
 - Tool 结果在记录/发出之前对大小和图像 payloads 进行清理。
-- 跟踪 messaging tool 发送以抑制重复的 Assistant 确认。
+- 跟踪 messaging tool 发送以抑制重复的 assistant 确认。
 
 ## 回复塑形 + 抑制
 
 - 最终 payloads 从以下内容组装：
   - assistant 文本（和可选的 reasoning）
   - 内联 tool 摘要（当 verbose + 允许时）
-  - model 错误时的 Assistant 错误文本
+  - model 错误时的 assistant 错误文本
 - 精确的静默令牌 `NO_REPLY` / `no_reply` 从传出 payloads 中过滤。
 - 从最终 payload 列表中删除 messaging tool 重复项。
 - 如果没有可渲染的 payloads 并且工具出错，则发出回退工具错误回复
@@ -148,7 +151,8 @@ OpenClaw 有两个 hook 系统：
 
 - `agent.wait` 默认值：30s（仅等待）。`timeoutMs` 参数覆盖。
 - Agent runtime：`agents.defaults.timeoutSeconds` 默认 172800s（48 小时）；在 `runEmbeddedPiAgent` abort 计时器中强制执行。
-- LLM 空闲超时：`agents.defaults.llm.idleTimeoutSeconds` 在指定空闲窗口内没有响应块到达时中止 model 请求。对慢速本地模型或 reasoning/tool-call 提供商需显式设置；设为 0 可禁用。未设置时，如果已配置 `agents.defaults.timeoutSeconds` 则使用该值，否则使用 120s。Cron 触发的运行若没有显式 LLM 或 agent 超时，则禁用空闲看门狗，依赖 cron 外部超时。
+- model 空闲超时：当没有响应块在空闲窗口内到达时，OpenClaw 中止 model 请求。`models.providers.<id>.timeoutSeconds` 为慢速本地/自托管 Provider 扩展此空闲看门狗；否则，OpenClaw 在已配置时使用 `agents.defaults.timeoutSeconds`，默认上限为 120s。没有显式 model 或 Agent 超时的 Cron 触发运行会禁用空闲看门狗，依赖 cron 外部超时。
+- Provider HTTP 请求超时：`models.providers.<id>.timeoutSeconds` 适用于该 Provider 的 model HTTP 请求，包括连接、header、body、SDK 请求超时、总守护 fetch 中止处理和 model 流空闲看门狗。对慢速本地/自托管 Provider（如 Ollama）使用此选项，然后再提高整个 Agent runtime 超时。
 
 ## 可能提前结束的位置
 

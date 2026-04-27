@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4d287497bf79504347250a84961e5d78"
+mmh3_hash: "cd925c0c7c20e2e9a7abf643f58ec22b"
 title: "Memory Search"
 summary: "内存搜索如何使用 embedding 和混合检索找到相关笔记"
 read_when:
@@ -7,8 +7,6 @@ read_when:
   - 您想选择 embedding 提供商
   - 您想调整搜索质量
 ---
-
-# Memory Search
 
 `memory_search` 从内存文件中找到相关笔记，即使措辞与原文不同。它通过将内存索引为小块并使用 embedding、关键词或两者结合进行搜索来工作。
 
@@ -28,7 +26,7 @@ read_when:
 }
 ```
 
-要使用无 API 密钥的本地 embedding，使用 `provider: "local"`（需要 node-llama-cpp）。
+要使用无 API 密钥的本地 embedding，请在 OpenClaw 旁边安装可选的 `node-llama-cpp` 运行时包并使用 `provider: "local"`。
 
 ## 支持的提供商
 
@@ -118,6 +116,8 @@ flowchart LR
 
 **只有关键词匹配？** 您的 embedding 提供商可能未配置。检查 `openclaw memory status --deep`。
 
+**本地 embedding 超时？** `ollama`、`lmstudio` 和 `local` 默认使用较长的内联批处理超时。如果主机速度较慢，请设置 `agents.defaults.memorySearch.sync.embeddingBatchTimeoutSeconds` 并重新运行 `openclaw memory index --force`。
+
 **找不到 CJK 文本？** 使用 `openclaw memory index --force` 重建 FTS 索引。
 
 ## 延伸阅读
@@ -125,3 +125,9 @@ flowchart LR
 - [Active Memory](/concepts/active-memory) — 交互式聊天 Session 的子 Agent 内存
 - [Memory](/concepts/memory) — 文件布局、后端、工具
 - [Memory 配置参考](/reference/memory-config) — 所有配置项
+
+## 相关链接
+
+- [Memory 概述](/concepts/memory)
+- [Active memory](/concepts/active-memory)
+- [内置内存引擎](/concepts/memory-builtin)

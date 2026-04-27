@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "928584fd4a197ca7408b218f986b41c7"
+mmh3_hash: "56c708077d2548f60e97efc87301269f"
 title: "内置内存引擎"
 summary: "默认的基于 SQLite 的内存后端，支持关键词、向量和混合搜索"
 read_when:
   - 你想了解默认内存后端
   - 你想配置 embedding 提供商或混合搜索
 ---
-
-# 内置内存引擎
 
 内置引擎是默认的内存后端。它将内存索引存储在每个 Agent 的 SQLite 数据库中，无需任何额外依赖即可开始使用。
 
@@ -39,6 +37,24 @@ read_when:
 
 没有 embedding 提供商时，只有关键词搜索可用。
 
+要强制使用内置本地 embedding 提供商，请在 OpenClaw 旁边安装可选的 `node-llama-cpp` 运行时包，然后将 `local.modelPath` 指向一个 GGUF 文件：
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "local",
+        fallback: "none",
+        local: {
+          modelPath: "~/.node-llama-cpp/models/embeddinggemma-300m-qat-Q8_0.gguf",
+        },
+      },
+    },
+  },
+}
+```
+
 ## 支持的 embedding 提供商
 
 | 提供商   | ID        | 自动检测 | 备注                                |
@@ -48,7 +64,7 @@ read_when:
 | Voyage   | `voyage`  | 是       |                                     |
 | Mistral  | `mistral` | 是       |                                     |
 | Ollama   | `ollama`  | 否       | 本地，需显式设置                    |
-| 本地     | `local`   | 是（优先）| GGUF 模型，约 0.6 GB 下载           |
+| 本地     | `local`   | 是（优先）| 可选的 `node-llama-cpp` 运行时      |
 
 自动检测会按照显示顺序选取第一个可解析 API 密钥的提供商。设置 `memorySearch.provider` 可覆盖此行为。
 
@@ -82,6 +98,15 @@ OpenClaw 将 `MEMORY.md` 和 `memory/*.md` 分块（约 400 个 token，80 token
 
 **内存搜索已禁用？** 运行 `openclaw memory status` 检查。如果未检测到提供商，请显式设置或添加 API 密钥。
 
+**本地提供商未检测到？** 确认本地路径存在并运行：
+
+```bash
+openclaw memory status --deep --agent main
+openclaw memory index --force --agent main
+```
+
+独立 CLI 命令和 Gateway 使用相同的 `local` 提供商 id。如果提供商设置为 `auto`，则只有当 `memorySearch.local.modelPath` 指向现有本地文件时，本地 embedding 才会优先考虑。
+
 **结果过时？** 运行 `openclaw memory index --force` 重建。监视器在极少数情况下可能遗漏变更。
 
 **sqlite-vec 加载失败？** OpenClaw 会自动回退到进程内余弦相似度计算。检查日志以获取具体加载错误。
@@ -89,3 +114,9 @@ OpenClaw 将 `MEMORY.md` 和 `memory/*.md` 分块（约 400 个 token，80 token
 ## 配置
 
 关于 embedding 提供商设置、混合搜索调优（权重、MMR、时间衰减）、批量索引、多模态内存、sqlite-vec、额外路径及所有其他配置项，请参见[内存配置参考](/reference/memory-config)。
+
+## 相关链接
+
+- [Memory 概述](/concepts/memory)
+- [Memory 搜索](/concepts/memory-search)
+- [Active memory](/concepts/active-memory)

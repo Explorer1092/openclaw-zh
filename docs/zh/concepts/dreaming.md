@@ -1,6 +1,7 @@
 ---
-mmh3_hash: "900e5d30fe9f085e873a744e1adeea2d"
+mmh3_hash: "8967eb2af0b8d8c5af2e60257d0433aa"
 title: "Dreaming"
+sidebarTitle: "Dreaming"
 summary: "后台内存整合系统，包含轻度、深度和 REM 阶段以及梦境日记"
 read_when:
   - 您希望内存升级自动运行
@@ -8,11 +9,11 @@ read_when:
   - 您希望在不污染 MEMORY.md 的情况下调整整合频率
 ---
 
-# Dreaming
-
 Dreaming 是 `memory-core` 中的后台内存整合系统。它帮助 OpenClaw 将强短期信号转移到持久内存中，同时保持过程的可解释性和可审查性。
 
+<Note>
 Dreaming 是**可选开启**的，默认禁用。
+</Note>
 
 ## Dreaming 写入的内容
 
@@ -35,33 +36,36 @@ Dreaming 使用三个协作阶段：
 
 这些阶段是内部实现细节，不是单独的用户可配置"模式"。
 
-### 轻度阶段
+<AccordionGroup>
+  <Accordion title="轻度阶段">
+    轻度阶段摄取最近的每日内存信号和召回痕迹，去重后暂存候选行。
 
-轻度阶段摄取最近的每日内存信号和召回痕迹，去重后暂存候选行。
+    - 从短期召回状态、最近的每日内存文件和可用时的已脱敏 Session 记录中读取。
+    - 当存储包含内联输出时，写入一个托管的 `## Light Sleep` 块。
+    - 记录强化信号，供后续深度排名使用。
+    - 永不写入 `MEMORY.md`。
 
-- 从短期召回状态、最近的每日内存文件和可用时的已脱敏 Session 记录中读取。
-- 当存储包含内联输出时，写入一个托管的 `## Light Sleep` 块。
-- 记录强化信号，供后续深度排名使用。
-- 永不写入 `MEMORY.md`。
+  </Accordion>
+  <Accordion title="深度阶段">
+    深度阶段决定什么成为长期内存。
 
-### 深度阶段
+    - 使用加权评分和阈值门控对候选项排名。
+    - 需要通过 `minScore`、`minRecallCount` 和 `minUniqueQueries`。
+    - 在写入前从实时每日文件重新加载片段，跳过已过时/已删除的片段。
+    - 将升级条目追加到 `MEMORY.md`。
+    - 向 `DREAMS.md` 写入 `## Deep Sleep` 摘要，并可选地写入 `memory/dreaming/deep/YYYY-MM-DD.md`。
 
-深度阶段决定什么成为长期内存。
+  </Accordion>
+  <Accordion title="REM 阶段">
+    REM 阶段提取模式和反思信号。
 
-- 使用加权评分和阈值门控对候选项排名。
-- 需要通过 `minScore`、`minRecallCount` 和 `minUniqueQueries`。
-- 在写入前从实时每日文件重新加载片段，跳过已过时/已删除的片段。
-- 将升级条目追加到 `MEMORY.md`。
-- 向 `DREAMS.md` 写入 `## Deep Sleep` 摘要，并可选地写入 `memory/dreaming/deep/YYYY-MM-DD.md`。
+    - 从最近的短期痕迹中构建主题和反思摘要。
+    - 当存储包含内联输出时，写入一个托管的 `## REM Sleep` 块。
+    - 记录用于深度排名的 REM 强化信号。
+    - 永不写入 `MEMORY.md`。
 
-### REM 阶段
-
-REM 阶段提取模式和反思信号。
-
-- 从最近的短期痕迹中构建主题和反思摘要。
-- 当存储包含内联输出时，写入一个托管的 `## REM Sleep` 块。
-- 记录用于深度排名的 REM 强化信号。
-- 永不写入 `MEMORY.md`。
+  </Accordion>
+</AccordionGroup>
 
 ## Session 记录摄取
 
@@ -71,15 +75,20 @@ Dreaming 可以将已脱敏的 Session 记录摄取到 dreaming 语料库中。�
 
 Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶段积累足够材料后，`memory-core` 会运行一个尽力而为的后台子 Agent 回合（使用默认运行时模型）并追加一条简短的日记条目。
 
-此日记供人类在 Dreams UI 中阅读，不作为升级来源。
-Dreaming 生成的日记/报告工件被排除在短期升级之外。只有有依据的内存片段才有资格升级到 `MEMORY.md`。
+<Note>
+此日记供人类在 Dreams UI 中阅读，不作为升级来源。Dreaming 生成的日记/报告工件被排除在短期升级之外。只有有依据的内存片段才有资格升级到 `MEMORY.md`。
+</Note>
 
 还有一个用于审阅和恢复工作的有依据的历史回填通道：
 
-- `memory rem-harness --path ... --grounded` 从历史 `YYYY-MM-DD.md` 笔记预览有依据的日记输出。
-- `memory rem-backfill --path ...` 将可逆的有依据日记条目写入 `DREAMS.md`。
-- `memory rem-backfill --path ... --stage-short-term` 将有依据的持久候选项暂存到正常深度阶段已使用的同一短期证据存储中。
-- `memory rem-backfill --rollback` 和 `--rollback-short-term` 删除这些暂存的回填工件，不影响普通日记条目或实时短期召回。
+<AccordionGroup>
+  <Accordion title="回填命令">
+    - `memory rem-harness --path ... --grounded` 从历史 `YYYY-MM-DD.md` 笔记预览有依据的日记输出。
+    - `memory rem-backfill --path ...` 将可逆的有依据日记条目写入 `DREAMS.md`。
+    - `memory rem-backfill --path ... --stage-short-term` 将有依据的持久候选项暂存到正常深度阶段已使用的同一短期证据存储中。
+    - `memory rem-backfill --rollback` 和 `--rollback-short-term` 删除这些暂存的回填工件，不影响普通日记条目或实时短期召回。
+  </Accordion>
+</AccordionGroup>
 
 控制 UI 提供相同的日记回填/重置流程，您可以在决定有依据的候选项是否值得升级之前，在 Dreams 场景中检查结果。该场景还显示一个独特的有依据通道，让您能看到哪些暂存的短期条目来自历史重放，哪些升级项目是有依据引导的，并仅清除有依据的暂存条目而不影响普通实时短期状态。
 
@@ -100,7 +109,7 @@ Dreaming 生成的日记/报告工件被排除在短期升级之外。只有有�
 
 ## 调度
 
-启用后，`memory-core` 自动管理一个完整 dreaming 扫描的定时任务。每次扫描按顺序运行各阶段：轻度 -> REM -> 深度。
+启用后，`memory-core` 自动管理一个完整 dreaming 扫描的定时任务。每次扫描按顺序运行各阶段：轻度 → REM → 深度。
 
 默认节奏行为：
 
@@ -110,43 +119,44 @@ Dreaming 生成的日记/报告工件被排除在短期升级之外。只有有�
 
 ## 快速开始
 
-启用 dreaming：
-
-```json
-{
-  "plugins": {
-    "entries": {
-      "memory-core": {
-        "config": {
-          "dreaming": {
-            "enabled": true
+<Tabs>
+  <Tab title="启用 dreaming">
+    ```json
+    {
+      "plugins": {
+        "entries": {
+          "memory-core": {
+            "config": {
+              "dreaming": {
+                "enabled": true
+              }
+            }
           }
         }
       }
     }
-  }
-}
-```
-
-使用自定义扫描节奏启用 dreaming：
-
-```json
-{
-  "plugins": {
-    "entries": {
-      "memory-core": {
-        "config": {
-          "dreaming": {
-            "enabled": true,
-            "timezone": "America/Los_Angeles",
-            "frequency": "0 */6 * * *"
+    ```
+  </Tab>
+  <Tab title="自定义扫描节奏">
+    ```json
+    {
+      "plugins": {
+        "entries": {
+          "memory-core": {
+            "config": {
+              "dreaming": {
+                "enabled": true,
+                "timezone": "America/Los_Angeles",
+                "frequency": "0 */6 * * *"
+              }
+            }
           }
         }
       }
     }
-  }
-}
-```
+    ```
+  </Tab>
+</Tabs>
 
 ## Slash 命令
 
@@ -159,43 +169,52 @@ Dreaming 生成的日记/报告工件被排除在短期升级之外。只有有�
 
 ## CLI 工作流程
 
-使用 CLI 升级进行预览或手动应用：
+<Tabs>
+  <Tab title="升级预览/应用">
+    ```bash
+    openclaw memory promote
+    openclaw memory promote --apply
+    openclaw memory promote --limit 5
+    openclaw memory status --deep
+    ```
 
-```bash
-openclaw memory promote
-openclaw memory promote --apply
-openclaw memory promote --limit 5
-openclaw memory status --deep
-```
+    手动 `memory promote` 默认使用深度阶段阈值，除非使用 CLI 参数覆盖。
 
-手动 `memory promote` 默认使用深度阶段阈值，除非使用 CLI 参数覆盖。
+  </Tab>
+  <Tab title="解释升级">
+    解释特定候选项是否会升级的原因：
 
-解释特定候选项是否会升级的原因：
+    ```bash
+    openclaw memory promote-explain "router vlan"
+    openclaw memory promote-explain "router vlan" --json
+    ```
 
-```bash
-openclaw memory promote-explain "router vlan"
-openclaw memory promote-explain "router vlan" --json
-```
+  </Tab>
+  <Tab title="REM harness 预览">
+    预览 REM 反思、候选真相和深度升级输出，不写入任何内容：
 
-预览 REM 反思、候选真相和深度升级输出，不写入任何内容：
+    ```bash
+    openclaw memory rem-harness
+    openclaw memory rem-harness --json
+    ```
 
-```bash
-openclaw memory rem-harness
-openclaw memory rem-harness --json
-```
+  </Tab>
+</Tabs>
 
 ## 关键默认值
 
 所有设置位于 `plugins.entries.memory-core.config.dreaming` 下。
 
-| 键          | 默认值        |
-| ----------- | ------------- |
-| `enabled`   | `false`       |
-| `frequency` | `0 3 * * *`   |
+<ParamField path="enabled" type="boolean" default="false">
+  启用或禁用 dreaming 扫描。
+</ParamField>
+<ParamField path="frequency" type="string" default="0 3 * * *">
+  完整 dreaming 扫描的 Cron 节奏。
+</ParamField>
 
-阶段策略、阈值和存储行为是内部实现细节（非用户可配置项）。
-
-参见 [Memory 配置参考](/reference/memory-config#dreaming) 了解完整键列表。
+<Note>
+阶段策略、阈值和存储行为是内部实现细节（非用户可配置项）。参见 [Memory 配置参考](/reference/memory-config#dreaming) 了解完整键列表。
+</Note>
 
 ## Dreams UI
 
@@ -211,6 +230,6 @@ openclaw memory rem-harness --json
 ## 相关链接
 
 - [Memory](/concepts/memory)
-- [Memory Search](/concepts/memory-search)
-- [memory CLI](/cli/memory)
+- [Memory CLI](/cli/memory)
 - [Memory 配置参考](/reference/memory-config)
+- [Memory Search](/concepts/memory-search)

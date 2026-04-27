@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c0177f55cf4d65c903dfcb0b3d15dd87"
+mmh3_hash: "7a7e751b88880f7eb62fc2d653f4ce9f"
 summary: "Context：model 看到什么、如何构建以及如何检查"
 read_when:
   - 您想了解 OpenClaw 中"context"的含义
@@ -7,8 +7,6 @@ read_when:
   - 您想减少 context 开销（/context、/status、/compact）
 title: "Context"
 ---
-
-# Context
 
 "Context"是 **OpenClaw 发送给 model 用于运行的所有内容**。它受 model 的 **context window**（token 限制）约束。
 

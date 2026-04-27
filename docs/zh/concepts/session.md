@@ -1,13 +1,13 @@
 ---
-mmh3_hash: "5512479894becaba84757c24a36bcb1f"
-title: "Session 管理"
+mmh3_hash: "c224265a1479a477eb070e8972706291"
+title: "Session management"
+sidebarTitle: "Session management"
 summary: "OpenClaw 如何管理对话 Session"
 read_when:
   - 你想了解 Session 路由和隔离
   - 你想为多用户设置配置私信范围
+  - 你在调试每日或空闲 Session 重置
 ---
-
-# Session 管理
 
 OpenClaw 将对话组织成 **Session**。每条消息根据其来源——私信、群聊、cron 任务等——路由到一个 Session。
 
@@ -56,11 +56,13 @@ OpenClaw 将对话组织成 **Session**。每条消息根据其来源——私�
 
 Session 被复用直到过期：
 
-- **每日重置**（默认）— Gateway 主机本地时间凌晨 4:00 创建新 Session。
-- **空闲重置**（可选）— 一段时间不活动后创建新 Session。设置 `session.reset.idleMinutes`。
+- **每日重置**（默认）— Gateway 主机本地时间凌晨 4:00 创建新 Session。每日新鲜度基于当前 `sessionId` 开始的时间，而不是后来的元数据写入。
+- **空闲重置**（可选）— 一段时间不活动后创建新 Session。设置 `session.reset.idleMinutes`。空闲新鲜度基于上一次真实的用户/Channel 交互，因此心跳、cron 和 exec 系统事件不会保持 Session 存活。
 - **手动重置** — 在聊天中输入 `/new` 或 `/reset`。`/new <model>` 同时切换 model。
 
-当每日和空闲重置都配置时，最先到期的那个获胜。
+当每日和空闲重置都配置时，最先到期的那个获胜。心跳、cron、exec 和其他系统事件回合可能会写入 Session 元数据，但这些写入不会延长每日或空闲重置的新鲜度。当重置滚动 Session 时，旧 Session 排队的系统事件通知将被丢弃，以免过时的后台更新被添加到新 Session 的第一个 prompt 之前。
+
+具有活跃 provider 拥有的 CLI Session 的 Sessions 不会被隐式的每日默认切断。当这些 Sessions 应该在计时器上过期时，使用 `/reset` 或明确配置 `session.reset`。
 
 ## 状态存储位置
 
@@ -68,6 +70,14 @@ Session 被复用直到过期：
 
 - **存储：** `~/.openclaw/agents/<agentId>/sessions/sessions.json`
 - **Transcript：** `~/.openclaw/agents/<agentId>/sessions/<sessionId>.jsonl`
+
+`sessions.json` 保留独立的生命周期时间戳：
+
+- `sessionStartedAt`：当前 `sessionId` 开始的时间；每日重置使用此值。
+- `lastInteractionAt`：延长空闲生命周期的上一次用户/Channel 交互。
+- `updatedAt`：上一次 store 行变更；对列出和修剪有用，但不是每日/空闲重置新鲜度的权威来源。
+
+没有 `sessionStartedAt` 的旧行在可用时从 transcript JSONL Session 头解析。如果旧行也缺少 `lastInteractionAt`，空闲新鲜度回退到该 Session 开始时间，而不是后来的记账写入。
 
 ## Session 维护
 
@@ -103,3 +113,9 @@ OpenClaw 随时间自动限制 Session 存储。默认情况下，它在 `warn` 
 - [Multi-Agent](/concepts/multi-agent) — 跨 Agent 的路由和 Session 隔离
 - [Background Tasks](/automation/tasks) — 分离的工作如何创建带 Session 引用的任务记录
 - [Channel Routing](/channels/channel-routing) — 入站消息如何路由到 Session
+
+## Related
+
+- [Session pruning](/concepts/session-pruning)
+- [Session tools](/concepts/session-tool)
+- [Command queue](/concepts/queue)

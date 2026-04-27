@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "1a3889c5c7a2344952f0bb3a8415dca9"
+mmh3_hash: "818c491037a3ed6443ad2b9eef0cc0d2"
 title: "Honcho 内存"
 summary: "通过 Honcho 插件实现的 AI 原生跨 Session 内存"
 read_when:
   - 你想要在 Session 和 Channel 间持久化的内存
   - 你想要 AI 驱动的召回和用户建模
 ---
-
-# Honcho 内存
 
 [Honcho](https://honcho.dev) 为 OpenClaw 添加了 AI 原生内存。它将对话持久化到专用服务，并随时间构建用户和 Agent 模型，为你的 Agent 提供跨 Session 的上下文，超越工作区 Markdown 文件的范围。
 
@@ -118,3 +116,9 @@ openclaw honcho search <query> [-k N] [-d D] # 对内存进行语义搜索
 - [Honcho OpenClaw 集成指南](https://docs.honcho.dev/v3/guides/integrations/openclaw)
 - [Memory](/concepts/memory) — OpenClaw 内存概述
 - [Context Engines](/concepts/context-engine) — 插件 context engine 的工作原理
+
+## 相关链接
+
+- [Memory 概述](/concepts/memory)
+- [内置内存引擎](/concepts/memory-builtin)
+- [QMD 内存引擎](/concepts/memory-qmd)

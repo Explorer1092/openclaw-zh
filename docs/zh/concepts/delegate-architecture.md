@@ -1,12 +1,10 @@
 ---
-mmh3_hash: "63428bbee72e236da0e2365addcc60ea"
+mmh3_hash: "a38932b6586005cd8d60384870c8c916"
 summary: "Delegate 架构: 以组织成员身份运行 OpenClaw 作为具名 agent"
 title: "Delegate Architecture"
 read_when: "你想要一个具有自己身份、代表组织中人员行动的 agent。"
 status: active
 ---
-
-# Delegate Architecture
 
 目标:将 OpenClaw 作为**具名 delegate** 运行——一个具有自己身份、"代表"组织中人员行动的 agent。该 agent 永远不会冒充人类。它在自己的账户下发送、读取和安排,并具有明确的委派权限。
 
@@ -73,11 +71,15 @@ delegate 按计划**自主**操作,执行常驻命令,无需每次操作都获�
 
 此层级将层级 2 权限与 [Cron Jobs](/automation/cron-jobs) 和[常驻命令](/automation/standing-orders)结合使用。
 
-> **安全警告**: 层级 3 需要仔细配置硬性限制——无论收到何种指令,agent 都绝对不能执行的操作。在授予任何身份提供商权限之前,请完成以下先决条件。
+<Warning>
+层级 3 需要仔细配置硬性限制：无论收到何种指令，agent 都绝对不能执行的操作。在授予任何身份提供商权限之前，请完成以下先决条件。
+</Warning>
 
 ## 先决条件: 隔离和加固
 
-> **先做这个。** 在授予任何凭据或身份提供商访问权限之前,锁定 delegate 的边界。本节中的步骤定义 agent **不能**做什么——在赋予它执行任何操作的能力之前建立这些约束。
+<Note>
+**先做这个。** 在授予任何凭据或身份提供商访问权限之前，锁定 delegate 的边界。本节中的步骤定义 agent **不能**做什么——在赋予它执行任何操作的能力之前建立这些约束。
+</Note>
 
 ### 硬性限制(不可妥协)
 
@@ -183,7 +185,9 @@ New-ApplicationAccessPolicy `
   -AccessRight RestrictAccess
 ```
 
-> **安全警告**: 没有应用访问策略,`Mail.Read` 应用权限会授予对**租户中每个邮箱**的访问权限。在应用读取任何邮件之前始终创建访问策略。通过确认应用对安全组外部邮箱返回 `403` 来进行测试。
+<Warning>
+没有应用访问策略，`Mail.Read` 应用权限会授予对**租户中每个邮箱**的访问权限。在应用读取任何邮件之前始终创建访问策略。通过确认应用对安全组外部邮箱返回 `403` 来进行测试。
+</Warning>
 
 #### Google Workspace
 
@@ -199,7 +203,9 @@ https://www.googleapis.com/auth/calendar           # 层级 2
 
 服务账户模拟 delegate 用户(不是负责人),保留"代表"模型。
 
-> **安全警告**: 域范围委派允许服务账户模拟**整个域中的任何用户**。将范围限制为最低要求,并在管理控制台中(Security > API controls > Domain-wide delegation)将服务账户的客户端 ID 仅限于上面列出的范围。具有广泛范围的泄露服务账户密钥会授予对组织中每个邮箱和日历的完全访问权限。按计划轮换密钥并监控管理控制台审计日志以了解意外模拟事件。
+<Warning>
+域范围委派允许服务账户模拟**整个域中的任何用户**。将范围限制为最低要求，并在管理控制台中（Security > API controls > Domain-wide delegation）将服务账户的客户端 ID 仅限于上面列出的范围。具有广泛范围的泄露服务账户密钥会授予对组织中每个邮箱和日历的完全访问权限。按计划轮换密钥并监控管理控制台审计日志以了解意外模拟事件。
+</Warning>
 
 ### 3. 将 delegate 绑定到 channel
 
@@ -297,3 +303,9 @@ delegate 模型适用于任何小型组织:
 6. **审阅并调整**能力层级,随着信任建立而增加。
 
 多个组织可以使用多 agent 路由共享一个 Gateway 服务器——每个组织都有自己的隔离 agent、workspace 和凭据。
+
+## 相关链接
+
+- [Agent runtime](/concepts/agent)
+- [Sub-agents](/tools/subagents)
+- [Multi-agent 路由](/concepts/multi-agent)

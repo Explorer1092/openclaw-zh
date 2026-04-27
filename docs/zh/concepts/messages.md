@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9e76a5d1c60c3a81bd9a6270295a4cc0"
+mmh3_hash: "58c059d5e85d60efa5172c911745d772"
 summary: "Message 流程、sessions、queueing 和 reasoning 可见性"
 read_when:
   - 解释入站消息如何变成回复
@@ -8,11 +8,9 @@ read_when:
 title: "Messages"
 ---
 
-# Messages
+OpenClaw 通过 session 解析、queueing、streaming、tool 执行和 reasoning 可见性的管道处理入站消息。本页面描述从入站消息到回复的完整路径。
 
-本页面将 OpenClaw 如何处理入站消息、sessions、queueing、streaming 和 reasoning 可见性联系在一起。
-
-## Message 流程(高层次)
+## Message 流程（高层次）
 
 ```
 Inbound message
@@ -22,22 +20,24 @@ Inbound message
   -> outbound replies (channel 限制 + chunking)
 ```
 
-关键旋钮位于配置中:
+关键旋钮位于配置中：
+
 - `messages.*` 用于前缀、queueing 和 group 行为。
 - `agents.defaults.*` 用于 block streaming 和 chunking 默认值。
-- Channel 覆盖(`channels.whatsapp.*`、`channels.telegram.*` 等)用于 caps 和 streaming 切换。
+- Channel 覆盖（`channels.whatsapp.*`、`channels.telegram.*` 等）用于 caps 和 streaming 切换。
 
 参见 [Configuration](/gateway/configuration) 了解完整 schema。
 
 ## 入站去重
 
-Channels 可以在重新连接后重新传递相同的消息。OpenClaw 保留一个短期缓存,按 channel/account/peer/session/message id 键控,以便重复传递不会触发另一个 agent 运行。
+Channels 可以在重新连接后重新传递相同的消息。OpenClaw 保留一个短期缓存，按 channel/account/peer/session/message id 键控，以便重复传递不会触发另一个 agent 运行。
 
 ## 入站去抖动
 
-来自 **同一发送者** 的快速连续消息可以通过 `messages.inbound` 批量处理到单个 agent 回合中。去抖动的作用域是每个 channel + conversation,并使用最新消息进行回复线程/IDs。
+来自**同一发送者**的快速连续消息可以通过 `messages.inbound` 批量处理到单个 agent 回合中。去抖动的作用域是每个 channel + conversation，并使用最新消息进行回复线程/IDs。
 
-配置(全局默认 + 每个 channel 覆盖):
+配置（全局默认 + 每个 channel 覆盖）：
+
 ```json5
 {
   messages: {
@@ -46,85 +46,115 @@ Channels 可以在重新连接后重新传递相同的消息。OpenClaw 保留�
       byChannel: {
         whatsapp: 5000,
         slack: 1500,
-        discord: 1500
-      }
-    }
-  }
+        discord: 1500,
+      },
+    },
+  },
 }
 ```
 
-注意:
-- 去抖动适用于 **仅文本** 消息;媒体/附件立即刷新。
-- Control commands 绕过去抖动,以便它们保持独立。
+注意：
+
+- 去抖动适用于**仅文本**消息；媒体/附件立即刷新。
+- Control commands 绕过去抖动，以便它们保持独立——**除非** channel 明确选择了同一发送者私信合并（例如 [BlueBubbles `coalesceSameSenderDms`](/channels/bluebubbles#coalescing-split-send-dms-command--url-in-one-composition)），此时私信命令会在去抖动窗口内等待，以便分段发送的 payload 可以加入同一 agent 回合。
 
 ## Sessions 和 devices
 
-Sessions 由 gateway 拥有,而不是由 clients 拥有。
+Sessions 由 gateway 拥有，而不是由 clients 拥有。
+
 - 直接聊天折叠到 agent main session key 中。
 - Groups/channels 获得自己的 session keys。
 - Session store 和 transcripts 位于 gateway 主机上。
 
-多个 devices/channels 可以映射到同一 session,但历史记录不会完全同步回每个客户端。建议:使用一个主要设备进行长时间对话,以避免发散的 context。Control UI 和 TUI 始终显示 gateway 支持的 session transcript,因此它们是真相的来源。
+多个 devices/channels 可以映射到同一 session，但历史记录不会完全同步回每个客户端。建议：使用一个主要设备进行长时间对话，以避免发散的 context。Control UI 和 TUI 始终显示 gateway 支持的 session transcript，因此它们是真相的来源。
 
-详细信息:[Session management](/concepts/session)。
+详细信息：[Session management](/concepts/session)。
+
+## Tool result 元数据
+
+Tool result `content` 是 model 可见的结果。Tool result `details` 是用于 UI 渲染、诊断、媒体传递和 plugin 的运行时元数据。
+
+OpenClaw 明确保持这一边界：
+
+- `toolResult.details` 在 provider 重放和 compaction 输入之前被剥离。
+- 持久化的 session transcripts 仅保留有限的 `details`；过大的元数据将被替换为标记了 `persistedDetailsTruncated: true` 的紧凑摘要。
+- Plugin 和 tool 应将 model 必须读取的文本放在 `content` 中，而不仅仅在 `details` 中。
 
 ## 入站 bodies 和 history context
 
-OpenClaw 将 **prompt body** 与 **command body** 分开:
-- `Body`: 发送到 agent 的 prompt 文本。这可能包括 channel envelopes 和可选的 history wrappers。
-- `CommandBody`: 用于 directive/command 解析的原始用户文本。
-- `RawBody`: `CommandBody` 的传统别名(为兼容性保留)。
+OpenClaw 将 **prompt body** 与 **command body** 分开：
 
-当 channel 提供 history 时,它使用共享 wrapper:
+- `Body`：发送到 agent 的 prompt 文本。这可能包括 channel envelopes 和可选的 history wrappers。
+- `CommandBody`：用于 directive/command 解析的原始用户文本。
+- `RawBody`：`CommandBody` 的传统别名（为兼容性保留）。
+
+当 channel 提供 history 时，它使用共享 wrapper：
+
 - `[Chat messages since your last reply - for context]`
 - `[Current message - respond to this]`
 
-对于 **非直接聊天**(groups/channels/rooms),**当前消息 body** 以发送者标签为前缀(与用于 history 条目的样式相同)。这使实时和排队/history 消息在 agent prompt 中保持一致。
+对于**非直接聊天**（groups/channels/rooms），**当前消息 body** 以发送者标签为前缀（与用于 history 条目的样式相同）。这使实时和排队/history 消息在 agent prompt 中保持一致。
 
-History buffers 是 **仅待处理**:它们包括 *未* 触发运行的 group 消息(例如,mention-gated 消息),并 **排除** 已在 session transcript 中的消息。
+History buffers 是**仅待处理**的：它们包括未触发运行的 group 消息（例如，mention-gated 消息），并**排除**已在 session transcript 中的消息。
 
-Directive 剥离仅适用于 **当前消息** 部分,因此 history 保持完整。包装 history 的 Channels 应将 `CommandBody`(或 `RawBody`)设置为原始消息文本,并将 `Body` 保持为组合 prompt。History buffers 可通过 `messages.groupChat.historyLimit`(全局默认值)和每个 channel 覆盖(如 `channels.slack.historyLimit` 或 `channels.telegram.accounts.<id>.historyLimit`)配置(设置 `0` 以禁用)。
+Directive 剥离仅适用于**当前消息**部分，因此 history 保持完整。包装 history 的 Channels 应将 `CommandBody`（或 `RawBody`）设置为原始消息文本，并将 `Body` 保持为组合 prompt。History buffers 可通过 `messages.groupChat.historyLimit`（全局默认值）和每个 channel 覆盖（如 `channels.slack.historyLimit` 或 `channels.telegram.accounts.<id>.historyLimit`）配置（设置 `0` 以禁用）。
 
 ## Queueing 和 followups
 
-如果运行已处于活动状态,入站消息可以排队、引导到当前运行中或为 followup 回合收集。
+如果运行已处于活动状态，入站消息可以排队、引导到当前运行中或为 followup 回合收集。
 
-- 通过 `messages.queue`(和 `messages.queue.byChannel`)配置。
-- 模式:`interrupt`、`steer`、`followup`、`collect`,加上 backlog 变体。
+- 通过 `messages.queue`（和 `messages.queue.byChannel`）配置。
+- 模式：`interrupt`、`steer`、`followup`、`collect`，加上 backlog 变体。
 
-详细信息:[Queueing](/concepts/queue)。
+详细信息：[Queueing](/concepts/queue)。
 
 ## Streaming、chunking 和 batching
 
 Block streaming 在 model 生成文本块时发送部分回复。Chunking 尊重 channel 文本限制并避免拆分围栏代码。
 
-关键设置:
-- `agents.defaults.blockStreamingDefault` (`on|off`,默认 off)
+关键设置：
+
+- `agents.defaults.blockStreamingDefault` (`on|off`，默认 off)
 - `agents.defaults.blockStreamingBreak` (`text_end|message_end`)
 - `agents.defaults.blockStreamingChunk` (`minChars|maxChars|breakPreference`)
-- `agents.defaults.blockStreamingCoalesce` (基于空闲的 batching)
-- `agents.defaults.humanDelay` (block 回复之间的类人暂停)
-- Channel 覆盖:`*.blockStreaming` 和 `*.blockStreamingCoalesce`(非 Telegram channels 需要显式 `*.blockStreaming: true`)
+- `agents.defaults.blockStreamingCoalesce`（基于空闲的 batching）
+- `agents.defaults.humanDelay`（block 回复之间的类人暂停）
+- Channel 覆盖：`*.blockStreaming` 和 `*.blockStreamingCoalesce`（非 Telegram channels 需要显式 `*.blockStreaming: true`）
 
-详细信息:[Streaming + chunking](/concepts/streaming)。
+详细信息：[Streaming + chunking](/concepts/streaming)。
 
 ## Reasoning 可见性和 tokens
 
-OpenClaw 可以公开或隐藏 model reasoning:
+OpenClaw 可以公开或隐藏 model reasoning：
+
 - `/reasoning on|off|stream` 控制可见性。
-- 当 model 生成时,Reasoning 内容仍计入 token usage。
+- 当 model 生成时，Reasoning 内容仍计入 token usage。
 - Telegram 支持 reasoning stream 到草稿气泡中。
 
-详细信息:[Thinking + reasoning directives](/tools/thinking) 和 [Token use](/reference/token-use)。
+详细信息：[Thinking + reasoning directives](/tools/thinking) 和 [Token use](/reference/token-use)。
 
 ## 前缀、threading 和 replies
 
-出站消息格式化集中在 `messages` 中:
+出站消息格式化集中在 `messages` 中：
 
-- `messages.responsePrefix`、`channels.<channel>.responsePrefix` 和 `channels.<channel>.accounts.<id>.responsePrefix`(出站前缀级联),加上 `channels.whatsapp.messagePrefix`(WhatsApp 入站前缀)
+- `messages.responsePrefix`、`channels.<channel>.responsePrefix` 和 `channels.<channel>.accounts.<id>.responsePrefix`（出站前缀级联），加上 `channels.whatsapp.messagePrefix`（WhatsApp 入站前缀）
 - 通过 `replyToMode` 和每个 channel 默认值进行回复 threading
 
-详细信息：[Configuration](/gateway/configuration-reference#messages) 和 channel 文档。
+详细信息：[Configuration](/gateway/config-agents#messages) 和 channel 文档。
+
+## 静默回复
+
+精确的静默 token `NO_REPLY` / `no_reply` 表示"不传递用户可见的回复"。当一次回合还有待处理的工具媒体时（如生成的 TTS 音频），OpenClaw 会剥离静默文本但仍传递媒体附件。OpenClaw 按对话类型解析该行为：
+
+- 直接对话默认不允许静默，会将裸静默回复重写为简短的可见备用内容。
+- Groups/channels 默认允许静默。
+- 内部编排默认允许静默。
+
+OpenClaw 还将静默回复用于非直接聊天中在任何 assistant 回复之前发生的内部 runner 失败，因此 groups/channels 不会看到 gateway 错误样板。直接聊天默认显示紧凑的失败提示；原始 runner 详情仅在 `/verbose` 为 `on` 或 `full` 时显示。
+
+默认值位于 `agents.defaults.silentReply` 和 `agents.defaults.silentReplyRewrite` 下；`surfaces.<id>.silentReply` 和 `surfaces.<id>.silentReplyRewrite` 可按 surface 覆盖它们。
+
+当父 session 有一个或多个待处理的派生子 agent 运行时，裸静默回复会在所有 surface 上被丢弃，而不是被重写，因此父 session 保持静默，直到子完成事件传递真正的回复。
 
 ## 相关链接
 

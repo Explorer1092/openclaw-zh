@@ -1,6 +1,7 @@
 ---
-mmh3_hash: "365ce00d1ed5b15cdd359adfae36b9d9"
-title: "Session 工具"
+mmh3_hash: "36b4ec54df1713cbe1e1b5c99fdcce5f"
+title: "Session tools"
+sidebarTitle: "Session tools"
 summary: "Agent 跨 Session 状态、召回、消息传递和子 Agent 编排工具"
 read_when:
   - 你想了解 Agent 拥有哪些 Session 工具
@@ -8,15 +9,13 @@ read_when:
   - 你想检查状态或控制已生成的子 Agent
 ---
 
-# Session 工具
-
 OpenClaw 为 Agent 提供跨 Session 工作、检查状态和编排子 Agent 的工具。
 
 ## 可用工具
 
 | 工具               | 功能                                                                |
 | ------------------ | ------------------------------------------------------------------- |
-| `sessions_list`    | 列出带有可选过滤器（类型、近期性）的 Session                        |
+| `sessions_list`    | 列出带有可选过滤器（类型、标签、Agent、近期性、预览）的 Session      |
 | `sessions_history` | 读取特定 Session 的 transcript                                      |
 | `sessions_send`    | 向另一个 Session 发送消息，并可选择等待                             |
 | `sessions_spawn`   | 生成一个隔离的子 Agent Session 用于后台工作                         |
@@ -26,7 +25,7 @@ OpenClaw 为 Agent 提供跨 Session 工作、检查状态和编排子 Agent 的
 
 ## 列出和读取 Session
 
-`sessions_list` 返回带有键、类型、Channel、model、token 计数和时间戳的 Session。按类型（`main`、`group`、`cron`、`hook`、`node`）或近期性（`activeMinutes`）过滤。
+`sessions_list` 返回带有键、agentId、类型、Channel、model、token 计数和时间戳的 Session。按类型（`main`、`group`、`cron`、`hook`、`node`）、精确 `label`、精确 `agentId`、搜索文本或近期性（`activeMinutes`）过滤。需要邮箱风格分类时，它还可以请求可见性范围派生的标题、最后消息预览片段或每行有界最近消息。派生的标题和预览仅为调用者在配置的 Session 工具可见性策略下已经可以看到的 Session 生成，因此不相关的 Session 保持隐藏。
 
 `sessions_history` 获取特定 Session 的对话 transcript。默认情况下，工具结果被排除——传递 `includeTools: true` 可以查看它们。返回的视图有意地有边界和安全过滤：
 
@@ -57,7 +56,7 @@ OpenClaw 为 Agent 提供跨 Session 工作、检查状态和编排子 Agent 的
 
 ## 状态和编排辅助
 
-`session_status` 是当前或另一个可见 Session 的轻量 `/status` 等效工具。它报告使用量、时间、model/runtime 状态，以及存在时的关联后台任务上下文。像 `/status` 一样，它可以从最新的 transcript 使用条目回填稀疏的 token/缓存计数器，`model=default` 可以清除每个 Session 的覆盖。
+`session_status` 是当前或另一个可见 Session 的轻量 `/status` 等效工具。它报告使用量、时间、model/runtime 状态，以及存在时的关联后台任务上下文。像 `/status` 一样，它可以从最新的 transcript 使用条目回填稀疏的 token/缓存计数器，`model=default` 可以清除每个 Session 的覆盖。使用 `sessionKey="current"` 获取调用者的当前 Session；像 `openclaw-tui` 这样的可见客户端标签不是 Session keys。
 
 `sessions_yield` 有意结束当前回合，以便下一条消息可以是你等待的后续事件。在生成子 Agent 后使用它，当你希望完成结果作为下一条消息到达，而不是构建轮询循环时。
 
@@ -77,6 +76,7 @@ OpenClaw 为 Agent 提供跨 Session 工作、检查状态和编排子 Agent 的
 - 子 Session 的 `model` 和 `thinking` 覆盖。
 - `thread: true` 将生成绑定到聊天线程（Discord、Slack 等）。
 - `sandbox: "require"` 对子 Session 强制沙盒。
+- `context: "fork"` 用于原生子 Agent，当子 Agent 需要当前请求者 transcript 时；省略或使用 `context: "isolated"` 获得干净的子 Agent。
 
 默认的叶子子 Agent 不获得 Session 工具。当 `maxSpawnDepth >= 2` 时，深度为 1 的编排子 Agent 还会获得 `sessions_spawn`、`subagents`、`sessions_list` 和 `sessions_history`，以便它们可以管理自己的子 Agent。叶子运行仍然不获得递归编排工具。
 
@@ -103,3 +103,8 @@ Session 工具的作用域限制了 Agent 可以看到的内容：
 - [ACP Agents](/tools/acp-agents) — 外部 harness 生成
 - [Multi-agent](/concepts/multi-agent) — 多 Agent 架构
 - [Gateway Configuration](/gateway/configuration) — Session 工具配置项
+
+## Related
+
+- [Session management](/concepts/session)
+- [Session pruning](/concepts/session-pruning)

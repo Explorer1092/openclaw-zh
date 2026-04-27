@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "0a7ec68cee508bb1747c185f77d00278"
+mmh3_hash: "442daffaf0733439fec2675edfd014f8"
 title: "QMD Memory Engine"
 summary: "本地优先的搜索辅助程序，支持 BM25、向量、重排序和查询扩展"
 read_when:
   - 你想将 QMD 设置为内存后端
   - 你想要重排序或索引额外路径等高级内存功能
 ---
-
-# QMD 内存引擎
 
 [QMD](https://github.com/tobi/qmd) 是一个本地优先的搜索辅助程序，与 OpenClaw 并行运行。它在单个二进制文件中结合了 BM25、向量搜索和重排序，并可以索引工作区内存文件以外的内容。
 
@@ -16,7 +14,7 @@ read_when:
 - **重排序和查询扩展**，提升召回质量。
 - **索引额外目录** — 项目文档、团队笔记、磁盘上的任何内容。
 - **索引 Session 记录** — 召回早期对话。
-- **完全本地** — 通过 Bun + node-llama-cpp 运行，自动下载 GGUF 模型。
+- **完全本地** — 通过可选的 node-llama-cpp 运行时包运行，自动下载 GGUF 模型。
 - **自动回退** — 如果 QMD 不可用，OpenClaw 无缝回退到内置引擎。
 
 ## 入门指南
@@ -38,12 +36,12 @@ read_when:
 }
 ```
 
-OpenClaw 在 `~/.openclaw/agents/<agentId>/qmd/` 下创建一个自包含的 QMD 主目录，并自动管理辅助程序生命周期——集合、更新和 embedding 运行都由 OpenClaw 处理。它优先使用当前的 QMD 集合和 MCP 查询形式，但在需要时仍会回退到旧版 `--mask` 集合标志和较旧的 MCP 工具名称。
+OpenClaw 在 `~/.openclaw/agents/<agentId>/qmd/` 下创建一个自包含的 QMD 主目录，并自动管理辅助程序生命周期——集合、更新和 embedding 运行都由 OpenClaw 处理。它优先使用当前的 QMD 集合和 MCP 查询形式，但在需要时仍会回退到旧版 `--mask` 集合标志和较旧的 MCP 工具名称。启动时的协调还会在同名的旧 QMD 集合仍然存在时，将过期的托管集合重建为规范模式。
 
 ## 辅助程序工作原理
 
 - OpenClaw 从工作区内存文件和任何配置的 `memory.qmd.paths` 创建集合，然后在启动时和定期（默认每 5 分钟）运行 `qmd update` + `qmd embed`。
-- 默认工作区集合跟踪 `MEMORY.md` 加上 `memory/` 目录树。小写 `memory.md` 仍作为 bootstrap 备用，不是单独的 QMD 集合。
+- 默认工作区集合跟踪 `MEMORY.md` 加上 `memory/` 目录树。小写 `memory.md` 不作为根内存文件被索引。
 - 启动刷新在后台运行，不会阻塞聊天启动。
 - 搜索使用配置的 `searchMode`（默认：`search`；也支持 `vsearch` 和 `query`）。如果某个模式失败，OpenClaw 会使用 `qmd query` 重试。
 - 如果 QMD 完全失败，OpenClaw 回退到内置 SQLite 引擎。
@@ -100,7 +98,7 @@ export QMD_GENERATE_MODEL="/absolute/path/to/generator.gguf"
 
 ## 搜索范围
 
-默认情况下，QMD 搜索结果仅在私信 Session（非群组或 Channel）中显示。配置 `memory.qmd.scope` 可更改此行为：
+默认情况下，QMD 搜索结果在私信和 Channel Session（非群组）中显示。配置 `memory.qmd.scope` 可更改此行为：
 
 ```json5
 {
@@ -140,10 +138,18 @@ export QMD_GENERATE_MODEL="/absolute/path/to/generator.gguf"
 
 **搜索超时？** 增加 `memory.qmd.limits.timeoutMs`（默认：4000ms）。对于较慢的硬件，设置为 `120000`。
 
-**群组聊天中结果为空？** 检查 `memory.qmd.scope` — 默认只允许私信 Session。
+**群组聊天中结果为空？** 检查 `memory.qmd.scope` — 默认只允许私信和 Channel Session。
+
+**根内存搜索突然范围过大？** 重启 Gateway 或等待下次启动时的协调。OpenClaw 在检测到同名冲突时，会将过期的托管集合重建为规范的 `MEMORY.md` 和 `memory/` 模式。
 
 **工作区可见的临时仓库导致 `ENAMETOOLONG` 或索引损坏？** QMD 遍历目前遵循底层 QMD 扫描器行为，而非 OpenClaw 的内置符号链接规则。在 QMD 提供循环安全遍历或显式排除控制之前，请将临时 monorepo 检出保存在隐藏目录（如 `.tmp/`）下或索引 QMD 根目录之外。
 
 ## 配置
 
 关于完整配置接口（`memory.qmd.*`）、搜索模式、更新间隔、范围规则及所有其他配置项，请参见[内存配置参考](/reference/memory-config)。
+
+## 相关链接
+
+- [Memory 概述](/concepts/memory)
+- [内置内存引擎](/concepts/memory-builtin)
+- [Honcho 内存](/concepts/memory-honcho)

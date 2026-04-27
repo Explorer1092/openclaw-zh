@@ -1,13 +1,12 @@
 ---
-mmh3_hash: "bbc340570ed7a0dd0c225f16bd1f9e38"
-title: "Session 修剪"
+mmh3_hash: "faf54a44a7e18f0576671d59b3faa353"
+title: "Session pruning"
+sidebarTitle: "Session pruning"
 summary: "修剪旧的 tool results 以保持 context 精简和缓存高效"
 read_when:
   - 你想减少来自 tool 输出的 context 增长
   - 你想了解 Anthropic prompt cache 优化
 ---
-
-# Session 修剪
 
 Session 修剪在每次 LLM 调用之前从 context 中修剪**旧的 tool results**。它减少因累积的工具输出（exec 结果、文件读取、搜索结果）而导致的 context 膨胀，而不重写正常的对话文本。
 
@@ -31,11 +30,13 @@ Session 修剪在每次 LLM 调用之前从 context 中修剪**旧的 tool resul
 
 ## 旧版图像清理
 
-OpenClaw 还对旧版 Session 运行单独的幂等清理，这些 Session 在历史记录中持久化了原始图像块。
+OpenClaw 还为在历史记录中持久化了原始图像块或 prompt-hydration 媒体标记的 Sessions 构建单独的幂等 replay 视图。
 
 - 它逐字节保留**3 个最近完成的回合**，以保持近期后续请求的 prompt 缓存前缀稳定。
-- `user` 或 `toolResult` 历史记录中已处理的旧图像块可以被替换为 `[image data removed - already processed by model]`。
-- 这与正常的 cache-TTL 修剪是分开的。它的存在是为了防止重复的图像 payload 在后续回合中破坏 prompt 缓存。
+- 在 replay 视图中，来自 `user` 或 `toolResult` 历史记录的已处理旧图像块可以被替换为 `[image data removed - already processed by model]`。
+- 旧版文本媒体引用，如 `[media attached: ...]`、`[Image: source: ...]` 和 `media://inbound/...` 可以被替换为 `[media reference removed - already processed by model]`。当前回合的附件标记保持完整，以便视觉模型仍然可以 hydrate 新图像。
+- 原始 Session transcript 不被重写，因此历史记录查看器仍然可以渲染原始消息条目及其图像。
+- 这与正常的 cache-TTL 修剪是分开的。它的存在是为了防止重复的图像 payload 或过时的媒体引用在后续回合中破坏 prompt 缓存。
 
 ## 智能默认值
 
@@ -78,3 +79,9 @@ OpenClaw 对 Anthropic 配置文件自动启用修剪：
 
 - [Compaction](/concepts/compaction) — 基于总结的 context 减少
 - [Gateway Configuration](/gateway/configuration) — 所有修剪配置项（`contextPruning.*`）
+
+## Related
+
+- [Session management](/concepts/session)
+- [Session tools](/concepts/session-tool)
+- [Context engine](/concepts/context-engine)

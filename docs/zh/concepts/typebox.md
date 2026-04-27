@@ -1,15 +1,11 @@
 ---
-title: "TypeBox 作为协议真相来源"
-sidebarTitle: "TypeBox 协议真相来源"
-mmh3_hash: "a45941e3d3e14959b6776eb7a356491b"
+title: "TypeBox"
+sidebarTitle: "TypeBox"
+mmh3_hash: "786ba3c843be8f6ebe1023edfe88f1ee"
 summary: "TypeBox schemas 作为 gateway protocol 的单一真相来源"
 read_when:
   - 更新 protocol schemas 或 codegen
 ---
-
-# TypeBox 作为协议真相来源
-
-最后更新：2026-01-10
 
 TypeBox 是 TypeScript 优先的 schema 库。我们使用它定义 **Gateway WebSocket protocol**（握手、request/response、server events）。这些 schemas 驱动 **runtime 验证**、**JSON Schema 导出** 和 macOS app 的 **Swift codegen**。一个真相来源；其他一切都是生成的。
 
@@ -285,3 +281,8 @@ Swift 生成器发出：
 3. 当新 RPC 需要 operator 或 node 作用域分类时，更新 `src/gateway/method-scopes.ts`。
 4. 运行 `pnpm protocol:check`。
 5. 提交重新生成的 schema + Swift models。
+
+## Related
+
+- [Rich output protocol](/reference/rich-output-protocol)
+- [RPC adapters](/reference/rpc)

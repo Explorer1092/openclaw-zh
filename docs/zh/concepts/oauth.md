@@ -1,6 +1,6 @@
 ---
 title: "OAuth"
-mmh3_hash: "27b3f0a1e04d63581c410ce42da350b1"
+mmh3_hash: "b1fdcca0d137e458df9105cccb80e51f"
 summary: "OpenClaw 中的 OAuth: token 交换、存储和多账户模式"
 read_when:
   - 你想端到端了解 OpenClaw OAuth
@@ -8,8 +8,6 @@ read_when:
   - 你想要 Claude CLI 或 OAuth auth 流程
   - 你想要多个账户或 profile 路由
 ---
-
-# OAuth
 
 OpenClaw 通过 OAuth 支持提供 provider "subscription auth"（特别是 **OpenAI Codex（ChatGPT OAuth）**）。对于 Anthropic，实际分工现在是：
 
@@ -42,7 +40,7 @@ OAuth providers 通常在登录/刷新流程期间铸造 **新的 refresh token*
 
 - runtime 从 **一个地方** 读取凭据
 - 我们可以保留多个 profiles 并确定性地路由它们
-- 当从外部 CLI（如 Codex CLI）重用凭据时，OpenClaw 以来源镜像它们，并重新读取该外部源而不是自行轮换 refresh token
+- 外部 CLI 重用是 provider 特定的：Codex CLI 可以引导一个空的 `openai-codex:default` profile，但一旦 OpenClaw 有了本地 OAuth profile，本地 refresh token 就是规范的；其他集成可以保持外部管理并重新读取其 CLI auth store
 
 ## 存储（tokens 位于何处）
 
@@ -119,7 +117,7 @@ Profiles 存储 `expires` 时间戳。
 
 - 如果 `expires` 在未来 → 使用存储的 access token
 - 如果过期 → 刷新（在文件锁下）并覆盖存储的凭据
-- 例外：重用的外部 CLI 凭据保持外部管理；OpenClaw 重新读取 CLI auth store，永远不会自行消耗复制的 refresh token
+- 例外：某些外部 CLI 凭据保持外部管理；OpenClaw 重新读取这些 CLI auth store，而不是消耗复制的 refresh tokens。Codex CLI bootstrap 有意更窄：它为空的 `openai-codex:default` profile 播种，然后 OpenClaw 拥有的刷新保持本地 profile 为规范
 
 刷新流程是自动的；你通常不需要手动管理 tokens。
 
@@ -157,10 +155,10 @@ openclaw agents add personal
 
 相关文档：
 
-- [/concepts/model-failover](/concepts/model-failover)（轮换 + cooldown 规则）
-- [/tools/slash-commands](/tools/slash-commands)（命令表面）
+- [Model failover](/concepts/model-failover)（轮换 + cooldown 规则）
+- [Slash commands](/tools/slash-commands)（命令表面）
 
-## 相关
+## Related
 
 - [Authentication](/gateway/authentication) — model provider auth 概述
 - [Secrets](/gateway/secrets) — 凭据存储和 SecretRef

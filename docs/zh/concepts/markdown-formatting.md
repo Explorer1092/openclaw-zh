@@ -1,11 +1,13 @@
 ---
 title: "Markdown 格式"
 sidebarTitle: "Markdown 格式"
-mmh3_hash: "69b17d883823ad6d99a695cbb87c0e4d"
+mmh3_hash: "02705220d8216600f84c9b2cb22f5d5e"
 summary: "出站 channels 的 Markdown 格式化管道"
-read_when: ["你正在为出站 channels 更改 markdown 格式化或分块","你正在添加新的 channel formatter 或样式映射","你正在调试跨 channels 的格式化回归"]
+read_when:
+  - 你正在为出站 channels 更改 markdown 格式化或分块
+  - 你正在添加新的 channel formatter 或样式映射
+  - 你正在调试跨 channels 的格式化回归
 ---
-# Markdown 格式
 
 OpenClaw 通过将出站 Markdown 转换为共享的中间表示(IR),然后再渲染特定于 channel 的输出来格式化它。IR 保持源文本完整,同时携带样式/链接跨度,以便分块和渲染可以在 channels 之间保持一致。
 
@@ -42,19 +44,15 @@ IR(示意):
 ```json
 {
   "text": "Hello world — see docs.",
-  "styles": [
-    { "start": 6, "end": 11, "style": "bold" }
-  ],
-  "links": [
-    { "start": 19, "end": 23, "href": "https://docs.openclaw.ai" }
-  ]
+  "styles": [{ "start": 6, "end": 11, "style": "bold" }],
+  "links": [{ "start": 19, "end": 23, "href": "https://docs.openclaw.ai" }]
 }
 ```
 
 ## 在哪里使用
 
 - Slack、Telegram 和 Signal 出站适配器从 IR 渲染。
-- 其他 channels(WhatsApp、iMessage、MS Teams、Discord)仍使用纯文本或其自己的格式化规则,在启用时在分块之前应用 Markdown 表转换。
+- 其他 channels(WhatsApp、iMessage、Microsoft Teams、Discord)仍使用纯文本或其自己的格式化规则,在启用时在分块之前应用 Markdown 表转换。
 
 ## 表处理
 
@@ -110,3 +108,8 @@ Spoiler 标记(`||spoiler||`)仅针对 Signal 解析,它们映射到 SPOILER 样
 - Telegram HTML 需要转义标签之外的文本以避免损坏的标记。
 - Signal 样式范围依赖于 UTF-16 偏移量;不要使用代码点偏移量。
 - 为围栏代码块保留尾随换行符,以便关闭标记位于其自己的行上。
+
+## 相关链接
+
+- [Streaming 和分块](/concepts/streaming)
+- [System Prompt](/concepts/system-prompt)
