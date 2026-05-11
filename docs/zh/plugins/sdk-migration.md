@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0ec2f13a9a0c1bd26fc281e302f6491d"
+mmh3_hash: "9bb182f74cca304dc6d21b5f892f3387"
 title: "Plugin SDK 迁移"
 sidebarTitle: "迁移至 SDK"
 summary: "从旧版向后兼容层迁移到现代 Plugin SDK"
@@ -11,8 +11,6 @@ read_when:
   - 您维护外部 OpenClaw Plugin
 ---
 
-# Plugin SDK 迁移
-
 OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的现代 Plugin 架构。如果您的 Plugin 是在新架构之前构建的，本指南可帮助您迁移。
 
 ## 正在改变什么
@@ -20,6 +18,8 @@ OpenClaw 已从宽泛的向后兼容层迁移到具有专注文档化导入的�
 旧版 Plugin 系统提供了两个开放接口，让 Plugin 可以从单个入口点导入所需的任何内容：
 
 - **`openclaw/plugin-sdk/compat`** — 重新导出数十个辅助工具的单一导入。它被引入是为了在构建新 Plugin 架构期间保持基于 Hook 的旧版 Plugin 正常工作。
+- **`openclaw/plugin-sdk/infra-runtime`** — 混合了系统事件、心跳状态、投递队列、Fetch/代理辅助工具、文件辅助工具、批准类型和不相关工具的宽泛运行时辅助工具桶。
+- **`openclaw/plugin-sdk/config-runtime`** — 在迁移窗口期间仍包含已弃用的直接加载/写入辅助工具的宽泛配置兼容桶。
 - **`openclaw/extension-api`** — 给予 Plugin 直接访问宿主端辅助工具（如嵌入式 Agent 运行器）的桥接层。
 - **`api.registerEmbeddedExtensionFactory(...)`** — 已移除的仅 Pi 捆绑扩展 Hook，可观察嵌入式运行器事件，如 `tool_result`。
 
@@ -49,6 +49,102 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
 - OpenAI 在其自己的 `api.ts` 中保留 Provider 构建器、默认模型辅助工具和实时 Provider 构建器
 - OpenRouter 在其自己的 `api.ts` 中保留 Provider 构建器以及入门/配置辅助工具
 
+## Talk 和实时语音迁移计划
+
+实时语音、电话、会议和浏览器 Talk 代码正从界面本地的轮次记账迁移到由 `openclaw/plugin-sdk/realtime-voice` 导出的共享 Talk Session 控制器。新控制器拥有通用 Talk 事件信封、活跃轮次状态、捕获状态、输出音频状态、近期事件历史和陈旧轮次拒绝。Provider Plugin 应继续拥有厂商特定的实时 Session；界面 Plugin 应继续拥有捕获、播放、电话和会议特有问题。
+
+此 Talk 迁移有意地做到破坏性清晰：
+
+1. 将共享控制器/运行时原语保留在 `plugin-sdk/realtime-voice` 中。
+2. 将捆绑界面迁移到共享控制器：浏览器中继、托管房间切换、语音通话实时、语音通话流式 STT、Google Meet 实时和原生一键通话。
+3. 将旧 Talk RPC 族替换为最终的 `talk.session.*` 和 `talk.client.*` API。
+4. 在 Gateway `hello-ok.features.events` 中宣布一个实时 Talk 事件 Channel：`talk.event`。
+5. 删除旧的实时 HTTP 端点和任何请求时的指令覆盖路径。
+
+新代码不应直接调用 `createTalkEventSequencer(...)`，除非它正在实现低级适配器或测试夹具。优先使用共享控制器，以便轮次范围的事件无法在没有轮次 id 的情况下发出，陈旧的 `turnEnd`/`turnCancel` 调用无法清除较新的活跃轮次，并且输出音频生命周期事件在电话、会议、浏览器中继、托管房间切换和原生 Talk 客户端之间保持一致。
+
+目标公共 API 形态为：
+
+```typescript
+// Gateway 拥有的 Talk Session API。
+await gateway.request("talk.session.create", {
+  mode: "realtime",
+  transport: "gateway-relay",
+  brain: "agent-consult",
+  sessionKey: "main",
+});
+await gateway.request("talk.session.appendAudio", { sessionId, audioBase64 });
+await gateway.request("talk.session.cancelOutput", { sessionId, reason: "barge-in" });
+await gateway.request("talk.session.submitToolResult", {
+  sessionId,
+  callId,
+  result: { status: "working" },
+  options: { willContinue: true },
+});
+await gateway.request("talk.session.submitToolResult", {
+  sessionId,
+  callId,
+  result: { status: "already_delivered" },
+  options: { suppressResponse: true },
+});
+await gateway.request("talk.session.submitToolResult", { sessionId, callId, result });
+await gateway.request("talk.session.close", { sessionId });
+
+// 客户端拥有的 Provider Session API。
+await gateway.request("talk.client.create", {
+  mode: "realtime",
+  transport: "webrtc",
+  brain: "agent-consult",
+  sessionKey: "main",
+});
+await gateway.request("talk.client.toolCall", { sessionKey, callId, name, args });
+```
+
+浏览器拥有的 WebRTC/Provider-websocket Session 使用 `talk.client.create`，因为浏览器拥有 Provider 协商和媒体传输，而 Gateway 拥有凭据、指令和工具策略。`talk.session.*` 是 Gateway 托管中继实时、Gateway 托管中继转录和托管房间原生 STT/TTS Session 的通用 Gateway 托管界面。
+
+将实时选择器放在 `talk.provider`/`talk.providers` 旁边的旧版配置应使用 `openclaw doctor --fix` 修复；运行时 Talk 不会将语音/TTS Provider 配置重新解释为实时 Provider 配置。
+
+支持的 `talk.session.create` 组合有意地较小：
+
+| 模式            | 传输            | Brain           | 所有者              | 说明                                                                                                               |
+| --------------- | --------------- | --------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `realtime`      | `gateway-relay` | `agent-consult` | Gateway             | 通过 Gateway 桥接的全双工 Provider 音频；工具调用通过 Agent 咨询工具路由。                                          |
+| `transcription` | `gateway-relay` | `none`          | Gateway             | 仅流式 STT；调用方发送输入音频并接收转录事件。                                                                      |
+| `stt-tts`       | `managed-room`  | `agent-consult` | 原生/客户端房间     | 一键通话和对讲机风格的房间，客户端拥有捕获/播放，Gateway 拥有轮次状态。                                             |
+| `stt-tts`       | `managed-room`  | `direct-tools`  | 原生/客户端房间     | 仅限管理员的房间模式，适用于直接执行 Gateway 工具操作的受信任第一方界面。                                            |
+
+已移除方法映射：
+
+| 旧方法                           | 新方法                                                     |
+| -------------------------------- | ---------------------------------------------------------- |
+| `talk.realtime.session`          | `talk.client.create`                                       |
+| `talk.realtime.toolCall`         | `talk.client.toolCall`                                     |
+| `talk.realtime.relayAudio`       | `talk.session.appendAudio`                                 |
+| `talk.realtime.relayCancel`      | `talk.session.cancelOutput` 或 `talk.session.cancelTurn`   |
+| `talk.realtime.relayToolResult`  | `talk.session.submitToolResult`                            |
+| `talk.realtime.relayStop`        | `talk.session.close`                                       |
+| `talk.transcription.session`     | `talk.session.create({ mode: "transcription" })`           |
+| `talk.transcription.relayAudio`  | `talk.session.appendAudio`                                 |
+| `talk.transcription.relayCancel` | `talk.session.cancelTurn`                                  |
+| `talk.transcription.relayStop`   | `talk.session.close`                                       |
+| `talk.handoff.create`            | `talk.session.create({ transport: "managed-room" })`       |
+| `talk.handoff.join`              | `talk.session.join`                                        |
+| `talk.handoff.revoke`            | `talk.session.close`                                       |
+
+统一的控制词汇表也有意较窄：
+
+| 方法                            | 适用范围                                                    | 契约                                                                                                                                                                                     |
+| ------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `talk.session.appendAudio`      | `realtime/gateway-relay`, `transcription/gateway-relay`     | 将 base64 PCM 音频块追加到由同一 Gateway 连接拥有的 Provider Session。                                                                                                                   |
+| `talk.session.startTurn`        | `stt-tts/managed-room`                                      | 开始托管房间用户轮次。                                                                                                                                                                   |
+| `talk.session.endTurn`          | `stt-tts/managed-room`                                      | 经陈旧轮次验证后结束活跃轮次。                                                                                                                                                           |
+| `talk.session.cancelTurn`       | 所有 Gateway 拥有的 Session                                 | 取消轮次的活跃捕获/Provider/Agent/TTS 工作。                                                                                                                                             |
+| `talk.session.cancelOutput`     | `realtime/gateway-relay`                                    | 停止 Assistant 音频输出，不必结束用户轮次。                                                                                                                                              |
+| `talk.session.submitToolResult` | `realtime/gateway-relay`                                    | 完成中继发出的 Provider 工具调用；传递 `options.willContinue` 用于中间输出，或传递 `options.suppressResponse` 以满足调用而不获得另一个 Assistant 响应。                                   |
+| `talk.session.close`            | 所有统一 Session                                            | 停止中继 Session 或撤销托管房间状态，然后遗忘统一 Session id。                                                                                                                           |
+
+不要在核心中引入 Provider 或平台特例来使其工作。核心拥有 Talk Session 语义。Provider Plugin 拥有厂商 Session 设置。语音通话和 Google Meet 拥有电话/会议适配器。浏览器和原生应用拥有设备捕获/播放 UX。
+
 ## 兼容性策略
 
 对于外部 Plugin，兼容性工作遵循以下顺序：
@@ -60,11 +156,47 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
 5. 记录弃用和迁移路径
 6. 仅在宣布的迁移窗口之后删除，通常在主要版本中
 
+维护人员可以使用 `pnpm plugins:boundary-report` 审计当前迁移队列。使用 `pnpm plugins:boundary-report:summary` 获取紧凑计数，`--owner <id>` 获取一个 Plugin 或兼容性所有者的报告，当 CI 门控应该在到期兼容记录、跨所有者保留 SDK 导入或未使用的保留 SDK 子路径上失败时使用 `pnpm plugins:boundary-report:ci`。报告按删除日期对已弃用的兼容记录分组，计算本地代码/文档引用数量，显示跨所有者保留 SDK 导入，并汇总私有内存宿主 SDK 桥，以便兼容性清理保持明确，而不是依赖临时搜索。保留的 SDK 子路径必须有被跟踪的所有者使用；未使用的保留辅助工具导出应从公共 SDK 中删除。
+
 如果清单字段仍然被接受，Plugin 作者可以继续使用它，直到文档和诊断另有说明。新代码应优先使用文档化的替代方案，但现有 Plugin 在普通小版本发布期间不应中断。
 
 ## 如何迁移
 
 <Steps>
+  <Step title="迁移运行时配置加载/写入辅助工具">
+    捆绑 Plugin 应停止直接调用 `api.runtime.config.loadConfig()` 和 `api.runtime.config.writeConfigFile(...)`。优先使用已传入活跃调用路径的配置。需要当前进程快照的长期处理程序可以使用 `api.runtime.config.current()`。长期 Agent 工具应在 `execute` 内使用工具上下文的 `ctx.getRuntimeConfig()`，以便在配置写入之前创建的工具仍能看到刷新后的运行时配置。
+
+    配置写入必须通过事务性辅助工具并选择写后策略：
+
+    ```typescript
+    await api.runtime.config.mutateConfigFile({
+      afterWrite: { mode: "auto" },
+      mutate(draft) {
+        draft.plugins ??= {};
+      },
+    });
+    ```
+
+    当调用方知道更改需要清洁 Gateway 重启时使用 `afterWrite: { mode: "restart", reason: "..." }`，仅当调用方拥有后续操作且有意抑制重新加载规划器时使用 `afterWrite: { mode: "none", reason: "..." }`。变更结果包含用于测试和日志记录的类型化 `followUp` 摘要；Gateway 仍然负责应用或调度重启。`loadConfig` 和 `writeConfigFile` 在迁移窗口期间保留为外部 Plugin 的已弃用兼容性辅助工具，并以 `runtime-config-load-write` 兼容性代码警告一次。捆绑 Plugin 和 repo 运行时代码受 `pnpm check:deprecated-api-usage` 和 `pnpm check:no-runtime-action-load-config` 中的扫描器护栏保护：新的生产 Plugin 使用直接失败，直接配置写入失败，Gateway 服务器方法必须使用请求运行时快照，运行时 Channel 发送/操作/客户端辅助工具必须从其边界接收配置，长期运行时模块有零个允许的环境 `loadConfig()` 调用。
+
+    新 Plugin 代码也应避免导入宽泛的 `openclaw/plugin-sdk/config-runtime` 兼容桶。使用与工作匹配的窄向 SDK 子路径：
+
+    | 需求 | 导入 |
+    | --- | --- |
+    | 配置类型，如 `OpenClawConfig` | `openclaw/plugin-sdk/config-contracts` |
+    | 已加载配置断言和 Plugin 入口配置查找 | `openclaw/plugin-sdk/plugin-config-runtime` |
+    | 当前运行时快照读取 | `openclaw/plugin-sdk/runtime-config-snapshot` |
+    | 配置写入 | `openclaw/plugin-sdk/config-mutation` |
+    | Session 存储辅助工具 | `openclaw/plugin-sdk/session-store-runtime` |
+    | Markdown 表格配置 | `openclaw/plugin-sdk/markdown-table-runtime` |
+    | 群组策略运行时辅助工具 | `openclaw/plugin-sdk/runtime-group-policy` |
+    | 密钥输入解析 | `openclaw/plugin-sdk/secret-input-runtime` |
+    | 模型/Session 覆盖 | `openclaw/plugin-sdk/model-session-runtime` |
+
+    捆绑 Plugin 及其测试受扫描器对宽泛桶的保护，因此导入和模拟保持在其所需行为的本地范围内。宽泛桶仍存在于外部兼容性，但新代码不应依赖它。
+
+  </Step>
+
   <Step title="将 Pi 工具结果扩展迁移到中间件">
     捆绑 Plugin 必须将仅 Pi 的 `api.registerEmbeddedExtensionFactory(...)` 工具结果处理程序替换为运行时中立的中间件。
 
@@ -132,6 +264,8 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
 
     ```bash
     grep -r "plugin-sdk/compat" my-plugin/
+    grep -r "plugin-sdk/infra-runtime" my-plugin/
+    grep -r "plugin-sdk/config-runtime" my-plugin/
     grep -r "openclaw/extension-api" my-plugin/
     ```
 
@@ -179,6 +313,51 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
 
   </Step>
 
+  <Step title="替换宽泛的 infra-runtime 导入">
+    `openclaw/plugin-sdk/infra-runtime` 仍然存在以保持外部兼容性，但新代码应导入其实际需要的专注辅助工具界面：
+
+    | 需求 | 导入 |
+    | --- | --- |
+    | 系统事件队列辅助工具 | `openclaw/plugin-sdk/system-event-runtime` |
+    | 心跳唤醒、事件和可见性辅助工具 | `openclaw/plugin-sdk/heartbeat-runtime` |
+    | 待处理投递队列清空 | `openclaw/plugin-sdk/delivery-queue-runtime` |
+    | Channel 活动遥测 | `openclaw/plugin-sdk/channel-activity-runtime` |
+    | 内存去重缓存 | `openclaw/plugin-sdk/dedupe-runtime` |
+    | 安全本地文件/媒体路径辅助工具 | `openclaw/plugin-sdk/file-access-runtime` |
+    | 调度器感知的 Fetch | `openclaw/plugin-sdk/runtime-fetch` |
+    | 代理和守卫 Fetch 辅助工具 | `openclaw/plugin-sdk/fetch-runtime` |
+    | SSRF 调度器策略类型 | `openclaw/plugin-sdk/ssrf-dispatcher` |
+    | 批准请求/解析类型 | `openclaw/plugin-sdk/approval-runtime` |
+    | 批准回复有效载荷和命令辅助工具 | `openclaw/plugin-sdk/approval-reply-runtime` |
+    | 错误格式化辅助工具 | `openclaw/plugin-sdk/error-runtime` |
+    | 传输就绪等待 | `openclaw/plugin-sdk/transport-ready-runtime` |
+    | 安全令牌辅助工具 | `openclaw/plugin-sdk/secure-random-runtime` |
+    | 有界异步任务并发 | `openclaw/plugin-sdk/concurrency-runtime` |
+    | 数值强制转换 | `openclaw/plugin-sdk/number-runtime` |
+    | 进程本地异步锁 | `openclaw/plugin-sdk/async-lock-runtime` |
+    | 文件锁 | `openclaw/plugin-sdk/file-lock` |
+
+    捆绑 Plugin 受扫描器对 `infra-runtime` 的保护，因此 repo 代码无法退回到宽泛桶。
+
+  </Step>
+
+  <Step title="迁移 Channel 路由辅助工具">
+    新的 Channel 路由代码应使用 `openclaw/plugin-sdk/channel-route`。旧的路由键和可比较目标名称在迁移窗口期间仍作为兼容性别名存在，但新 Plugin 应使用直接描述行为的路由名称：
+
+    | 旧辅助工具 | 现代辅助工具 |
+    | --- | --- |
+    | `channelRouteIdentityKey(...)` | `channelRouteDedupeKey(...)` |
+    | `channelRouteKey(...)` | `channelRouteCompactKey(...)` |
+    | `ComparableChannelTarget` | `ChannelRouteParsedTarget` |
+    | `resolveComparableTargetForChannel(...)` | `resolveRouteTargetForChannel(...)` |
+    | `resolveComparableTargetForLoadedChannel(...)` | `resolveRouteTargetForLoadedChannel(...)` |
+    | `comparableChannelTargetsMatch(...)` | `channelRouteTargetsMatchExact(...)` |
+    | `comparableChannelTargetsShareRoute(...)` | `channelRouteTargetsShareConversation(...)` |
+
+    现代路由辅助工具在原生批准、回复抑制、入站去重、Cron 投递和 Session 路由中一致规范化 `{ channel, to, accountId, threadId }`。如果您的 Plugin 拥有自定义目标语法，使用 `resolveChannelRouteTargetWithParser(...)` 将该解析器适配到同一路由目标契约中。
+
+  </Step>
+
   <Step title="构建和测试">
     ```bash
     pnpm build
@@ -199,7 +378,7 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/channel-core` | 专注的 Channel 入口定义和构建器 | `defineChannelPluginEntry`, `defineSetupPluginEntry`, `createChatChannelPlugin`, `createChannelPluginBase` |
   | `plugin-sdk/setup` | 共享设置向导辅助工具 | 允许列表提示、设置状态构建器 |
   | `plugin-sdk/setup-runtime` | 设置时运行时辅助工具 | 导入安全的设置补丁适配器、查找说明辅助工具、`promptResolvedAllowFrom`、`splitSetupEntries`、委托设置代理 |
-  | `plugin-sdk/setup-adapter-runtime` | 设置适配器辅助工具 | `createEnvPatchedAccountSetupAdapter` |
+  | `plugin-sdk/setup-adapter-runtime` | 已弃用的设置适配器别名 | 使用 `plugin-sdk/setup-runtime` |
   | `plugin-sdk/setup-tools` | 设置工具辅助工具 | `formatCliCommand`, `detectBinary`, `extractArchive`, `resolveBrewExecutable`, `formatDocsLink`, `CONFIG_DIR` |
   | `plugin-sdk/account-core` | 多账户辅助工具 | 账户列表/配置/操作门控辅助工具 |
   | `plugin-sdk/account-id` | 账户 ID 辅助工具 | `DEFAULT_ACCOUNT_ID`、账户 ID 规范化 |
@@ -207,9 +386,11 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/account-helpers` | 窄向账户辅助工具 | 账户列表/账户操作辅助工具 |
   | `plugin-sdk/channel-setup` | 设置向导适配器 | `createOptionalChannelSetupSurface`, `createOptionalChannelSetupAdapter`, `createOptionalChannelSetupWizard`, 以及 `DEFAULT_ACCOUNT_ID`, `createTopLevelChannelDmPolicy`, `setSetupChannelEnabled`, `splitSetupEntries` |
   | `plugin-sdk/channel-pairing` | DM 配对原语 | `createChannelPairingController` |
-  | `plugin-sdk/channel-reply-pipeline` | 回复前缀 + 输入连接 | `createChannelReplyPipeline` |
-  | `plugin-sdk/channel-config-helpers` | 配置适配器工厂 | `createHybridChannelConfigAdapter` |
-  | `plugin-sdk/channel-config-schema` | 配置 Schema 构建器 | 共享 Channel 配置 Schema 原语；捆绑 Channel 命名的 Schema 导出仅用于旧版兼容性 |
+  | `plugin-sdk/channel-reply-pipeline` | 回复前缀、输入和源投递连接 | `createChannelReplyPipeline`, `resolveChannelSourceReplyDeliveryMode` |
+  | `plugin-sdk/channel-config-helpers` | 配置适配器工厂和 DM 访问辅助工具 | `createHybridChannelConfigAdapter`, `resolveChannelDmAccess`, `resolveChannelDmAllowFrom`, `resolveChannelDmPolicy`, `normalizeChannelDmPolicy`, `normalizeLegacyDmAliases` |
+  | `plugin-sdk/channel-config-schema` | 配置 Schema 构建器 | 共享 Channel 配置 Schema 原语和通用构建器（仅限通用构建器） |
+  | `plugin-sdk/bundled-channel-config-schema` | 捆绑的配置 Schema | 仅 OpenClaw 维护的捆绑 Plugin；新 Plugin 必须定义 Plugin 本地 Schema |
+  | `plugin-sdk/channel-config-schema-legacy` | 已弃用的捆绑配置 Schema | 仅兼容性别名；为维护的捆绑 Plugin 使用 `plugin-sdk/bundled-channel-config-schema` |
   | `plugin-sdk/telegram-command-config` | Telegram 命令配置辅助工具 | 命令名称规范化、描述截断、重复/冲突验证 |
   | `plugin-sdk/channel-policy` | 群组/DM 策略解析 | `resolveChannelGroupRequireMention` |
   | `plugin-sdk/channel-lifecycle` | 账户状态和草稿流生命周期辅助工具 | `createAccountStatusSink`、草稿预览最终化辅助工具 |
@@ -231,8 +412,8 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/lazy-runtime` | 懒加载运行时辅助工具 | `createLazyRuntimeModule`, `createLazyRuntimeMethod`, `createLazyRuntimeMethodBinder`, `createLazyRuntimeNamedExport`, `createLazyRuntimeSurface` |
   | `plugin-sdk/process-runtime` | 进程辅助工具 | 共享 exec 辅助工具 |
   | `plugin-sdk/cli-runtime` | CLI 运行时辅助工具 | 命令格式化、等待、版本辅助工具 |
-  | `plugin-sdk/gateway-runtime` | Gateway 辅助工具 | Gateway 客户端和 Channel 状态补丁辅助工具 |
-  | `plugin-sdk/config-runtime` | 配置辅助工具 | 配置加载/写入辅助工具 |
+  | `plugin-sdk/gateway-runtime` | Gateway 辅助工具 | Gateway 客户端、事件循环就绪启动辅助工具和 Channel 状态补丁辅助工具 |
+  | `plugin-sdk/config-runtime` | 已弃用的配置兼容垫片 | 优先使用 `config-contracts`、`plugin-config-runtime`、`runtime-config-snapshot` 和 `config-mutation` |
   | `plugin-sdk/telegram-command-config` | Telegram 命令辅助工具 | 当捆绑 Telegram 契约界面不可用时的回退稳定 Telegram 命令验证辅助工具 |
   | `plugin-sdk/approval-runtime` | 批准提示辅助工具 | Exec/Plugin 批准有效载荷、批准能力/配置文件辅助工具、原生批准路由/运行时辅助工具以及结构化批准显示路径格式化 |
   | `plugin-sdk/approval-auth-runtime` | 批准认证辅助工具 | 批准者解析、同聊天操作认证 |
@@ -244,13 +425,20 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/approval-native-runtime` | 批准目标辅助工具 | 原生批准目标/账户绑定辅助工具 |
   | `plugin-sdk/approval-reply-runtime` | 批准回复辅助工具 | Exec/Plugin 批准回复有效载荷辅助工具 |
   | `plugin-sdk/channel-runtime-context` | Channel 运行时上下文辅助工具 | 通用 Channel 运行时上下文注册/获取/监听辅助工具 |
-  | `plugin-sdk/security-runtime` | 安全辅助工具 | 共享信任、DM 门控、外部内容和密钥收集辅助工具 |
+  | `plugin-sdk/security-runtime` | 安全辅助工具 | 共享信任、DM 门控、根绑定文件/路径辅助工具、外部内容和密钥收集辅助工具 |
   | `plugin-sdk/ssrf-policy` | SSRF 策略辅助工具 | 主机允许列表和私有网络策略辅助工具 |
   | `plugin-sdk/ssrf-runtime` | SSRF 运行时辅助工具 | 固定调度器、守卫获取、SSRF 策略辅助工具 |
+  | `plugin-sdk/system-event-runtime` | 系统事件辅助工具 | `enqueueSystemEvent`, `peekSystemEventEntries` |
+  | `plugin-sdk/heartbeat-runtime` | 心跳辅助工具 | 心跳唤醒、事件和可见性辅助工具 |
+  | `plugin-sdk/delivery-queue-runtime` | 投递队列辅助工具 | `drainPendingDeliveries` |
+  | `plugin-sdk/channel-activity-runtime` | Channel 活动辅助工具 | `recordChannelActivity` |
+  | `plugin-sdk/dedupe-runtime` | 去重辅助工具 | 内存去重缓存 |
+  | `plugin-sdk/file-access-runtime` | 文件访问辅助工具 | 安全本地文件/媒体路径辅助工具 |
+  | `plugin-sdk/transport-ready-runtime` | 传输就绪辅助工具 | `waitForTransportReady` |
   | `plugin-sdk/collection-runtime` | 有界缓存辅助工具 | `pruneMapToMaxSize` |
   | `plugin-sdk/diagnostic-runtime` | 诊断门控辅助工具 | `isDiagnosticFlagEnabled`, `isDiagnosticsEnabled` |
   | `plugin-sdk/error-runtime` | 错误格式化辅助工具 | `formatUncaughtError`, `isApprovalNotFoundError`、错误图辅助工具 |
-  | `plugin-sdk/fetch-runtime` | 包装的 Fetch/代理辅助工具 | `resolveFetch`、代理辅助工具 |
+  | `plugin-sdk/fetch-runtime` | 包装的 Fetch/代理辅助工具 | `resolveFetch`、代理辅助工具、EnvHttpProxyAgent 选项辅助工具 |
   | `plugin-sdk/host-runtime` | 主机规范化辅助工具 | `normalizeHostname`, `normalizeScpRemoteHost` |
   | `plugin-sdk/retry-runtime` | 重试辅助工具 | `RetryConfig`, `retryAsync`、策略运行器 |
   | `plugin-sdk/allow-from` | 允许列表格式化 | `formatAllowFromLowercase` |
@@ -289,7 +477,7 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/provider-selection-runtime` | Provider 选择辅助工具 | 已配置或自动 Provider 选择以及原始 Provider 配置合并 |
   | `plugin-sdk/provider-env-vars` | Provider 环境变量辅助工具 | Provider 认证环境变量查找辅助工具 |
   | `plugin-sdk/provider-model-shared` | 共享 Provider 模型/重播辅助工具 | `ProviderReplayFamily`, `buildProviderReplayFamilyHooks`, `normalizeModelCompat`、共享重播策略构建器、Provider 端点辅助工具和模型 ID 规范化辅助工具 |
-  | `plugin-sdk/provider-catalog-shared` | 共享 Provider 目录辅助工具 | `findCatalogTemplate`, `buildSingleProviderApiKeyCatalog`, `supportsNativeStreamingUsageCompat`, `applyProviderNativeStreamingUsageCompat` |
+  | `plugin-sdk/provider-catalog-shared` | 共享 Provider 目录辅助工具 | `findCatalogTemplate`, `buildSingleProviderApiKeyCatalog`, `buildManifestModelProviderConfig`, `supportsNativeStreamingUsageCompat`, `applyProviderNativeStreamingUsageCompat` |
   | `plugin-sdk/provider-onboard` | Provider 入门补丁 | 入门配置辅助工具 |
   | `plugin-sdk/provider-http` | Provider HTTP 辅助工具 | 通用 Provider HTTP/端点能力辅助工具，包括音频转录多部分表单辅助工具 |
   | `plugin-sdk/provider-web-fetch` | Provider Web 抓取辅助工具 | Web 抓取 Provider 注册/缓存辅助工具 |
@@ -301,15 +489,16 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/provider-stream` | Provider 流包装辅助工具 | `ProviderStreamFamily`, `buildProviderStreamFamilyHooks`, `composeProviderStreamWrappers`、流包装类型，以及共享的 Anthropic/Bedrock/DeepSeek V4/Google/Kilocode/Moonshot/OpenAI/OpenRouter/Z.A.I/MiniMax/Copilot 包装辅助工具 |
   | `plugin-sdk/provider-transport-runtime` | Provider 传输辅助工具 | 原生 Provider 传输辅助工具，如守卫获取、传输消息变换和可写传输事件流 |
   | `plugin-sdk/keyed-async-queue` | 有序异步队列 | `KeyedAsyncQueue` |
-  | `plugin-sdk/media-runtime` | 共享媒体辅助工具 | 媒体获取/变换/存储辅助工具以及媒体有效载荷构建器 |
+  | `plugin-sdk/media-runtime` | 共享媒体辅助工具 | 媒体获取/变换/存储辅助工具、ffprobe 支持的视频尺寸探测和媒体有效载荷构建器 |
   | `plugin-sdk/media-generation-runtime` | 共享媒体生成辅助工具 | 共享故障转移辅助工具、候选选择以及图像/视频/音乐生成的缺失模型消息 |
   | `plugin-sdk/media-understanding` | 媒体理解辅助工具 | 媒体理解 Provider 类型以及面向 Provider 的图像/音频辅助工具导出 |
-  | `plugin-sdk/text-runtime` | 共享文本辅助工具 | Assistant 可见文本提取、Markdown 渲染/分块/表格辅助工具、编辑辅助工具、指令标签辅助工具、安全文本工具及相关文本/日志辅助工具 |
+  | `plugin-sdk/text-runtime` | 已弃用的宽泛文本兼容导出 | 使用 `string-coerce-runtime`、`text-chunking`、`text-utility-runtime` 和 `logging-core` |
   | `plugin-sdk/text-chunking` | 文本分块辅助工具 | 出站文本分块辅助工具 |
-  | `plugin-sdk/speech` | 语音辅助工具 | 语音 Provider 类型以及面向 Provider 的指令、注册表和验证辅助工具 |
+  | `plugin-sdk/speech` | 语音辅助工具 | 语音 Provider 类型以及面向 Provider 的指令、注册表、验证辅助工具和 OpenAI 兼容 TTS 构建器 |
   | `plugin-sdk/speech-core` | 共享语音核心 | 语音 Provider 类型、注册表、指令、规范化 |
   | `plugin-sdk/realtime-transcription` | 实时转录辅助工具 | Provider 类型、注册表辅助工具和共享 WebSocket Session 辅助工具 |
-  | `plugin-sdk/realtime-voice` | 实时语音辅助工具 | Provider 类型、注册表/解析辅助工具和桥接 Session 辅助工具 |
+  | `plugin-sdk/realtime-voice` | 实时语音辅助工具 | Provider 类型、注册表/解析辅助工具、桥接 Session 辅助工具、共享 Agent 回话队列、转录/事件健康、回声抑制和快速上下文咨询辅助工具 |
+  | `plugin-sdk/image-generation` | 图像生成辅助工具 | 图像生成 Provider 类型以及图像资产/数据 URL 辅助工具和 OpenAI 兼容图像 Provider 构建器 |
   | `plugin-sdk/image-generation-core` | 共享图像生成核心 | 图像生成类型、故障转移、认证和注册表辅助工具 |
   | `plugin-sdk/music-generation` | 音乐生成辅助工具 | 音乐生成 Provider/请求/结果类型 |
   | `plugin-sdk/music-generation-core` | 共享音乐生成核心 | 音乐生成类型、故障转移辅助工具、Provider 查找和模型引用解析 |
@@ -325,9 +514,9 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/direct-dm` | 直接 DM 辅助工具 | 共享直接 DM 认证/守卫辅助工具 |
   | `plugin-sdk/extension-shared` | 共享扩展辅助工具 | 被动 Channel/状态辅助原语 |
   | `plugin-sdk/webhook-targets` | Webhook 目标辅助工具 | Webhook 目标注册表和路由安装辅助工具 |
-  | `plugin-sdk/webhook-path` | Webhook 路径辅助工具 | Webhook 路径规范化辅助工具 |
+  | `plugin-sdk/webhook-path` | 已弃用的 Webhook 路径别名 | 使用 `plugin-sdk/webhook-ingress` |
   | `plugin-sdk/web-media` | 共享 Web 媒体辅助工具 | 远程/本地媒体加载辅助工具 |
-  | `plugin-sdk/zod` | Zod 重导出 | 为 Plugin SDK 消费者重导出的 `zod` |
+  | `plugin-sdk/zod` | 已弃用的 Zod 兼容重导出 | 直接从 `zod` 导入 |
   | `plugin-sdk/memory-core` | 捆绑的 memory-core 辅助工具 | 内存管理器/配置/文件/CLI 辅助工具界面 |
   | `plugin-sdk/memory-core-engine-runtime` | 内存引擎运行时外观 | 内存索引/搜索运行时外观 |
   | `plugin-sdk/memory-core-host-engine-foundation` | 内存宿主基础引擎 | 内存宿主基础引擎导出 |
@@ -337,36 +526,26 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
   | `plugin-sdk/memory-core-host-multimodal` | 内存宿主多模态辅助工具 | 内存宿主多模态辅助工具 |
   | `plugin-sdk/memory-core-host-query` | 内存宿主查询辅助工具 | 内存宿主查询辅助工具 |
   | `plugin-sdk/memory-core-host-secret` | 内存宿主密钥辅助工具 | 内存宿主密钥辅助工具 |
-  | `plugin-sdk/memory-core-host-events` | 内存宿主事件日志辅助工具 | 内存宿主事件日志辅助工具 |
+  | `plugin-sdk/memory-core-host-events` | 已弃用的内存事件别名 | 使用 `plugin-sdk/memory-host-events` |
   | `plugin-sdk/memory-core-host-status` | 内存宿主状态辅助工具 | 内存宿主状态辅助工具 |
   | `plugin-sdk/memory-core-host-runtime-cli` | 内存宿主 CLI 运行时 | 内存宿主 CLI 运行时辅助工具 |
   | `plugin-sdk/memory-core-host-runtime-core` | 内存宿主核心运行时 | 内存宿主核心运行时辅助工具 |
   | `plugin-sdk/memory-core-host-runtime-files` | 内存宿主文件/运行时辅助工具 | 内存宿主文件/运行时辅助工具 |
   | `plugin-sdk/memory-host-core` | 内存宿主核心运行时别名 | 内存宿主核心运行时辅助工具的厂商中性别名 |
   | `plugin-sdk/memory-host-events` | 内存宿主事件日志别名 | 内存宿主事件日志辅助工具的厂商中性别名 |
-  | `plugin-sdk/memory-host-files` | 内存宿主文件/运行时别名 | 内存宿主文件/运行时辅助工具的厂商中性别名 |
+  | `plugin-sdk/memory-host-files` | 已弃用的内存文件/运行时别名 | 使用 `plugin-sdk/memory-core-host-runtime-files` |
   | `plugin-sdk/memory-host-markdown` | 托管 Markdown 辅助工具 | 内存相邻 Plugin 的共享托管 Markdown 辅助工具 |
   | `plugin-sdk/memory-host-search` | 活跃内存搜索外观 | 懒加载的活跃内存搜索管理器运行时外观 |
-  | `plugin-sdk/memory-host-status` | 内存宿主状态别名 | 内存宿主状态辅助工具的厂商中性别名 |
+  | `plugin-sdk/memory-host-status` | 已弃用的内存宿主状态别名 | 使用 `plugin-sdk/memory-core-host-status` |
   | `plugin-sdk/memory-lancedb` | 捆绑的 memory-lancedb 辅助工具 | Memory-lancedb 辅助工具界面 |
-  | `plugin-sdk/testing` | 测试工具 | 测试辅助工具和模拟 |
+  | `plugin-sdk/testing` | 测试工具 | Repo 本地已弃用的兼容桶；使用专注的 repo 本地测试子路径，如 `plugin-sdk/plugin-test-runtime`、`plugin-sdk/channel-test-helpers`、`plugin-sdk/channel-target-testing`、`plugin-sdk/test-env` 和 `plugin-sdk/test-fixtures` |
 </Accordion>
 
-此表格是常用迁移子集，而非完整的 SDK 界面。完整的 200+ 入口点列表位于 `scripts/lib/plugin-sdk-entrypoints.json`。
+此表格有意是常用迁移子集，而非完整的 SDK 界面。编译器入口点清单位于 `scripts/lib/plugin-sdk-entrypoints.json`；包导出从公共子集生成。
 
-该列表仍然包括一些捆绑 Plugin 辅助工具接缝，如 `plugin-sdk/feishu`、`plugin-sdk/feishu-setup`、`plugin-sdk/zalo`、`plugin-sdk/zalo-setup` 和 `plugin-sdk/matrix*`。这些仍然为捆绑 Plugin 维护和兼容性而导出，但它们有意从常用迁移表中省略，不是新 Plugin 代码的推荐目标。
+保留的捆绑 Plugin 辅助工具接缝已从公共 SDK 导出映射中退役，但明确记录的兼容性外观除外，如为已发布的 `@openclaw/discord@2026.3.13` 包保留的已弃用 `plugin-sdk/discord` 垫片。所有者特定的辅助工具位于拥有者 Plugin 包内；共享的宿主行为应通过通用 SDK 契约移动，如 `plugin-sdk/gateway-runtime`、`plugin-sdk/security-runtime` 和 `plugin-sdk/plugin-config-runtime`。
 
-同样的规则适用于其他捆绑辅助工具家族，如：
-
-- 浏览器支持辅助工具：`plugin-sdk/browser-cdp`, `plugin-sdk/browser-config-runtime`, `plugin-sdk/browser-config-support`, `plugin-sdk/browser-control-auth`, `plugin-sdk/browser-node-runtime`, `plugin-sdk/browser-profiles`, `plugin-sdk/browser-security-runtime`, `plugin-sdk/browser-setup-tools`, `plugin-sdk/browser-support`
-- Matrix：`plugin-sdk/matrix*`
-- LINE：`plugin-sdk/line*`
-- IRC：`plugin-sdk/irc*`
-- 捆绑辅助工具/Plugin 界面：`plugin-sdk/googlechat`, `plugin-sdk/zalouser`, `plugin-sdk/bluebubbles*`, `plugin-sdk/mattermost*`, `plugin-sdk/msteams`, `plugin-sdk/nextcloud-talk`, `plugin-sdk/nostr`, `plugin-sdk/tlon`, `plugin-sdk/twitch`, `plugin-sdk/github-copilot-login`, `plugin-sdk/github-copilot-token`, `plugin-sdk/diagnostics-otel`, `plugin-sdk/diagnostics-prometheus`, `plugin-sdk/diffs`, `plugin-sdk/llm-task`, `plugin-sdk/thread-ownership` 和 `plugin-sdk/voice-call`
-
-`plugin-sdk/github-copilot-token` 目前暴露了窄向 Token 辅助工具界面：`DEFAULT_COPILOT_API_BASE_URL`、`deriveCopilotApiBaseUrlFromToken` 和 `resolveCopilotApiToken`。
-
-使用最窄的导入来匹配工作。如果找不到导出，请查看 `src/plugin-sdk/` 中的源代码或在 Discord 中提问。
+使用最窄的导入来匹配工作。如果找不到导出，请查看 `src/plugin-sdk/` 中的源代码或询问维护者哪个通用契约应该拥有它。
 
 ## 活跃的弃用项
 
@@ -430,7 +609,7 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
     | `ProviderDiscoveryResult`  | `ProviderCatalogResult`   |
     | `ProviderPluginDiscovery`  | `ProviderPluginCatalog`   |
 
-    以及旧版 `ProviderCapabilities` 静态包 — Provider Plugin 应通过 Provider 运行时契约而不是静态对象附加能力事实。
+    以及旧版 `ProviderCapabilities` 静态包 — Provider Plugin 应通过显式 Provider Hook 如 `buildReplayPolicy`、`normalizeToolSchemas` 和 `wrapStreamFn`，而不是静态对象。
 
   </Accordion>
 
@@ -488,16 +667,16 @@ OpenClaw 不会在引入替代方案的同一次变更中删除或重新解释�
 
   </Accordion>
 
-  <Accordion title="runtime.tasks.flow → runtime.tasks.flows">
+  <Accordion title="runtime.tasks.flow → runtime.tasks.managedFlows">
     **旧**：`runtime.tasks.flow`（单数）返回实时任务流访问器。
 
-    **新**：`runtime.tasks.flows`（复数）返回基于 DTO 的 TaskFlow 访问，这是导入安全的，不需要加载完整的任务运行时。
+    **新**：`runtime.tasks.managedFlows` 为需要从流创建、更新、取消或运行子任务的 Plugin 保留托管 TaskFlow 变更运行时。当 Plugin 只需要基于 DTO 的读取时使用 `runtime.tasks.flows`。
 
     ```typescript
     // 之前
-    const flow = api.runtime.tasks.flow(ctx);
+    const flow = api.runtime.tasks.flow.fromToolContext(ctx);
     // 之后
-    const flows = api.runtime.tasks.flows(ctx);
+    const flow = api.runtime.tasks.managedFlows.fromToolContext(ctx);
     ```
 
   </Accordion>

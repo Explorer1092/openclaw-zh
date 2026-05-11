@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b91c2a79c795c9e7d9d5b662c47c36d9"
+mmh3_hash: "d6c7eccb47c70a0811615fc55d9df730"
 title: "Plugin 设置和配置"
 sidebarTitle: "设置和配置"
 summary: "设置向导、setup-entry.ts、配置模式和 package.json 元数据"
@@ -8,8 +8,6 @@ read_when:
   - 您需要了解 setup-entry.ts 与 index.ts 的区别
   - 您正在定义 Plugin 配置模式或 package.json openclaw 元数据
 ---
-
-# Plugin 设置和配置
 
 Plugin 打包（`package.json` 元数据）、清单（`openclaw.plugin.json`）、设置入口和配置模式的参考文档。
 
@@ -157,18 +155,19 @@ Plugin 打包（`package.json` 元数据）、清单（`openclaw.plugin.json`）
 
 `openclaw.install` 是包元数据，而非清单元数据。
 
-| 字段                         | 类型                 | 含义                                                                             |
-| ---------------------------- | -------------------- | -------------------------------------------------------------------------------- |
-| `npmSpec`                    | `string`             | 安装/更新流程的规范 npm 规格。                                                   |
-| `localPath`                  | `string`             | 本地开发或捆绑安装路径。                                                         |
-| `defaultChoice`              | `"npm"` \| `"local"` | 两者都可用时的首选安装来源。                                                     |
-| `minHostVersion`             | `string`             | 支持的最低 OpenClaw 版本，格式为 `>=x.y.z`。                                     |
-| `expectedIntegrity`          | `string`             | 预期的 npm dist 完整性字符串，通常为 `sha512-...`，用于固定安装。               |
-| `allowInvalidConfigRecovery` | `boolean`            | 让捆绑 Plugin 的重安装流程能够从特定的旧配置失败中恢复。                         |
+| 字段                         | 类型                                | 含义                                                                              |
+| ---------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
+| `clawhubSpec`                | `string`                            | 安装/更新和入门按需安装流程的规范 ClawHub 规格。                                  |
+| `npmSpec`                    | `string`                            | 安装/更新回退流程的规范 npm 规格。                                                |
+| `localPath`                  | `string`                            | 本地开发或捆绑安装路径。                                                          |
+| `defaultChoice`              | `"clawhub"` \| `"npm"` \| `"local"` | 多个来源都可用时的首选安装来源。                                                  |
+| `minHostVersion`             | `string`                            | 支持的最低 OpenClaw 版本，格式为 `>=x.y.z` 或 `>=x.y.z-prerelease`。             |
+| `expectedIntegrity`          | `string`                            | 预期的 npm dist 完整性字符串，通常为 `sha512-...`，用于固定安装。                |
+| `allowInvalidConfigRecovery` | `boolean`                           | 让捆绑 Plugin 的重安装流程能够从特定的旧配置失败中恢复。                          |
 
 <AccordionGroup>
   <Accordion title="入门行为">
-    交互式入门也使用 `openclaw.install` 来支持按需安装界面。如果您的 Plugin 在运行时加载之前暴露了 Provider 认证选项或 Channel 设置/目录元数据，入门可以显示该选项、提示 npm 或本地安装、安装或启用 Plugin，然后继续所选流程。npm 入门选项需要带有注册表 `npmSpec` 的受信任目录元数据；确切版本和 `expectedIntegrity` 是可选固定。如果 `expectedIntegrity` 存在，安装/更新流程会强制执行它。将"显示什么"元数据放在 `openclaw.plugin.json` 中，将"如何安装"元数据放在 `package.json` 中。
+    交互式入门也使用 `openclaw.install` 来支持按需安装界面。如果您的 Plugin 在运行时加载之前暴露了 Provider 认证选项或 Channel 设置/目录元数据，入门可以显示该选项、提示 ClawHub、npm 或本地安装、安装或启用 Plugin，然后继续所选流程。ClawHub 入门选项使用 `clawhubSpec`，当存在时优先使用；npm 选项需要带有注册表 `npmSpec` 的受信任目录元数据；确切版本和 `expectedIntegrity` 是可选的 npm 固定。如果 `expectedIntegrity` 存在，安装/更新流程会对 npm 强制执行它。将"显示什么"元数据放在 `openclaw.plugin.json` 中，将"如何安装"元数据放在 `package.json` 中。
   </Accordion>
   <Accordion title="minHostVersion 强制执行">
     如果设置了 `minHostVersion`，安装和清单注册表加载都会强制执行它。较旧的宿主会跳过该 Plugin；无效的版本字符串会被拒绝。
@@ -327,7 +326,7 @@ export default defineSetupPluginEntry(myChannelPlugin);
 | 导入路径                           | 用途                                                                              | 主要导出                                                                                                                                                                                                                                                                                    |
 | ---------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `plugin-sdk/setup-runtime`         | 在 `setupEntry` / 延迟 Channel 启动中保持可用的设置时运行时辅助工具 | `createPatchedAccountSetupAdapter`, `createEnvPatchedAccountSetupAdapter`, `createSetupInputPresenceValidator`, `noteChannelLookupFailure`, `noteChannelLookupSummary`, `promptResolvedAllowFrom`, `splitSetupEntries`, `createAllowlistSetupWizardProxy`, `createDelegatedSetupWizardProxy` |
-| `plugin-sdk/setup-adapter-runtime` | 环境感知的账户设置适配器                                                          | `createEnvPatchedAccountSetupAdapter`                                                                                                                                                                                                                                                         |
+| `plugin-sdk/setup-adapter-runtime` | 已弃用兼容性别名；使用 `plugin-sdk/setup-runtime`                                 | `createEnvPatchedAccountSetupAdapter`                                                                                                                                                                                                                                                         |
 | `plugin-sdk/setup-tools`           | 设置/安装 CLI/存档/文档辅助工具                                                   | `formatCliCommand`, `detectBinary`, `extractArchive`, `resolveBrewExecutable`, `formatDocsLink`, `CONFIG_DIR`                                                                                                                                                                                  |
 
 当您需要完整的共享设置工具箱（包括配置补丁辅助工具如 `moveSingleAccountChannelSectionToDefaultAccount(...)`）时，使用更宽泛的 `plugin-sdk/setup` 接缝。
@@ -397,6 +396,20 @@ const accountSchema = z.object({
 });
 
 const configSchema = buildChannelConfigSchema(accountSchema);
+```
+
+如果您已经将契约编写为 JSON Schema 或 TypeBox，请使用直接辅助工具，这样 OpenClaw 可以在元数据路径上跳过 Zod 到 JSON Schema 的转换：
+
+```typescript
+import { Type } from "typebox";
+import { buildJsonChannelConfigSchema } from "openclaw/plugin-sdk/channel-config-schema";
+
+const configSchema = buildJsonChannelConfigSchema(
+  Type.Object({
+    token: Type.Optional(Type.String()),
+    allowFrom: Type.Optional(Type.Array(Type.String())),
+  }),
+);
 ```
 
 对于第三方 Plugin，冷路径契约仍然是 Plugin 清单：将生成的 JSON Schema 镜像到 `openclaw.plugin.json#channelConfigs` 中，以便配置模式、设置和 UI 界面可以在不加载运行时代码的情况下检查 `channels.<id>`。
@@ -478,15 +491,15 @@ const setupWizard: ChannelSetupWizard = {
 
 ## 发布和安装
 
-**外部 Plugin：** 发布到 [ClawHub](/tools/clawhub) 或 npm，然后安装：
+**外部 Plugin：** 发布到 [ClawHub](/clawhub)，然后安装：
 
 <Tabs>
-  <Tab title="自动（先 ClawHub 后 npm）">
+  <Tab title="npm">
     ```bash
     openclaw plugins install @myorg/openclaw-my-plugin
     ```
 
-    OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
+    在发布截止日期期间，裸包规格从 npm 安装。
 
   </Tab>
   <Tab title="仅 ClawHub">
@@ -495,10 +508,10 @@ const setupWizard: ChannelSetupWizard = {
     ```
   </Tab>
   <Tab title="npm 包规格">
-    没有匹配的 `npm:` 覆盖。当您希望在 ClawHub 回退后使用 npm 路径时，请使用普通的 npm 包规格：
+    当包尚未迁移到 ClawHub，或当您在迁移期间需要直接 npm 安装路径时，使用 npm：
 
     ```bash
-    openclaw plugins install @myorg/openclaw-my-plugin
+    openclaw plugins install npm:@myorg/openclaw-my-plugin
     ```
 
   </Tab>
@@ -513,12 +526,14 @@ openclaw plugins install <package-name>
 ```
 
 <Info>
-对于 npm 来源的安装，`openclaw plugins install` 运行项目本地的 `npm install --ignore-scripts`（无生命周期脚本），忽略继承的全局 npm 安装设置。保持 Plugin 依赖树为纯 JS/TS，避免需要 `postinstall` 构建的包。
+对于 npm 来源的安装，`openclaw plugins install` 在 `~/.openclaw/npm` 下安装包，并禁用生命周期脚本。保持 Plugin 依赖树为纯 JS/TS，避免需要 `postinstall` 构建的包。
 </Info>
 
 <Note>
-捆绑的 OpenClaw 自有 Plugin 是唯一的启动修复例外：当打包安装看到由 Plugin 配置、旧版 Channel 配置或其捆绑的默认启用清单启用的 Plugin 时，启动会在导入之前安装该 Plugin 缺失的运行时依赖。第三方 Plugin 不应依赖启动安装；继续使用显式的 Plugin 安装程序。
+Gateway 启动不安装 Plugin 依赖。npm/git/ClawHub 安装流程拥有依赖收敛；本地 Plugin 必须已经安装了其依赖。
 </Note>
+
+捆绑包元数据是显式的，而不是在 Gateway 启动时从构建好的 JavaScript 推断的。运行时依赖属于拥有它们的 Plugin 包；打包的 OpenClaw 启动永远不会修复或镜像 Plugin 依赖。
 
 ## 相关
 

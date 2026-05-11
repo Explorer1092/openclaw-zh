@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "588edaa0f0ed9b8297a21f5f7a7fab63"
+mmh3_hash: "9713ea3744d69316c6c86bdb4c1f3836"
 title: "Plugin SDK 概览"
 sidebarTitle: "SDK 概览"
 summary: "导入映射、注册 API 参考和 SDK 架构"
@@ -9,18 +9,15 @@ read_when:
   - 您正在查找特定的 SDK 导出
 ---
 
-# Plugin SDK 概览
-
 Plugin SDK 是 Plugin 与核心之间的类型化契约。本页是**导入什么**和**可以注册什么**的参考文档。
 
-<Tip>
-  **正在寻找操作指南？**
+<Note>
+  本页适用于在 OpenClaw 内部使用 `openclaw/plugin-sdk/*` 的 Plugin 作者。对于想通过 Gateway 运行 Agent 的外部应用、脚本、仪表板、CI 作业和 IDE 扩展，请改用 [OpenClaw App SDK](/concepts/openclaw-sdk) 和 `@openclaw/sdk` 包。
+</Note>
 
-- 第一个 Plugin？从 [入门指南](/plugins/building-plugins) 开始。
-- Channel Plugin？参见 [Channel Plugin](/plugins/sdk-channel-plugins)。
-- Provider Plugin？参见 [Provider Plugin](/plugins/sdk-provider-plugins)。
-- Tool 或生命周期 Hook Plugin？参见 [Plugin Hook](/plugins/hooks)。
-  </Tip>
+<Tip>
+正在寻找操作指南？从 [构建 Plugin](/plugins/building-plugins) 开始，Channel Plugin 使用 [Channel Plugin](/plugins/sdk-channel-plugins)，Provider Plugin 使用 [Provider Plugin](/plugins/sdk-provider-plugins)，本地 AI CLI 后端使用 [CLI 后端 Plugin](/plugins/cli-backend-plugins)，Tool 或生命周期 Hook Plugin 使用 [Plugin Hook](/plugins/hooks)。
+</Tip>
 
 ## 导入规范
 
@@ -33,19 +30,21 @@ import { defineChannelPluginEntry } from "openclaw/plugin-sdk/channel-core";
 
 每个子路径都是一个小型自包含模块。这保持了启动速度并防止循环依赖问题。对于 Channel 特定的入口/构建辅助工具，优先使用 `openclaw/plugin-sdk/channel-core`；将 `openclaw/plugin-sdk/core` 保留用于更广泛的伞形接口和共享辅助工具，如 `buildChannelConfigSchema`。
 
-对于 Channel 配置，通过 `openclaw.plugin.json#channelConfigs` 发布 Channel 自有的 JSON Schema。`plugin-sdk/channel-config-schema` 子路径用于共享 Schema 原语和通用构建器。该子路径上任何捆绑 Channel 命名的 Schema 导出都是旧版兼容性导出，不是新 Plugin 的模式。
+对于 Channel 配置，通过 `openclaw.plugin.json#channelConfigs` 发布 Channel 自有的 JSON Schema。`plugin-sdk/channel-config-schema` 子路径用于共享 Schema 原语和通用构建器。OpenClaw 的捆绑 Plugin 使用 `plugin-sdk/bundled-channel-config-schema` 保留捆绑 Channel Schema。已弃用的兼容性导出保留在 `plugin-sdk/channel-config-schema-legacy` 上；两个捆绑 Schema 子路径都不是新 Plugin 的模式。
 
 <Warning>
   不要导入 Provider 或 Channel 品牌的便利接缝（例如 `openclaw/plugin-sdk/slack`、`.../discord`、`.../signal`、`.../whatsapp`）。捆绑 Plugin 在自己的 `api.ts` / `runtime-api.ts` barrel 中组合通用 SDK 子路径；核心消费者应使用那些 Plugin 本地 barrel，或在需求真正是跨 Channel 时添加窄向通用 SDK 契约。
 
-少量捆绑 Plugin 辅助接缝（`plugin-sdk/feishu`、`plugin-sdk/zalo`、`plugin-sdk/matrix*` 等）仍出现在生成的导出映射中。它们仅用于捆绑 Plugin 维护，不是新第三方 Plugin 的推荐导入路径。
+当有被跟踪的所有者使用时，少量捆绑 Plugin 辅助接缝仍出现在生成的导出映射中。它们仅用于捆绑 Plugin 维护，不是新第三方 Plugin 的推荐导入路径。
+
+`openclaw/plugin-sdk/discord` 和 `openclaw/plugin-sdk/telegram-account` 也作为已弃用的兼容性外观保留，用于被跟踪的所有者使用。不要将这些导入路径复制到新 Plugin 中；改用注入的运行时辅助工具和通用 Channel SDK 子路径。
 </Warning>
 
 ## 子路径参考
 
 Plugin SDK 以按区域分组的窄子路径集合暴露（Plugin 入口、Channel、Provider、认证、运行时、能力、内存和保留的捆绑 Plugin 辅助工具）。完整目录（分组并链接）请参见 [Plugin SDK 子路径](/plugins/sdk-subpaths)。
 
-200+ 子路径的生成列表位于 `scripts/lib/plugin-sdk-entrypoints.json`。
+编译器入口点清单位于 `scripts/lib/plugin-sdk-entrypoints.json`；包导出在减去 `scripts/lib/plugin-sdk-private-local-only-subpaths.json` 中列出的 repo 本地测试/内部子路径后从公共子集生成。运行 `pnpm plugin-sdk:surface` 审计公共导出计数。足够旧且未被捆绑扩展生产代码使用的已弃用公共子路径在 `scripts/lib/plugin-sdk-deprecated-public-subpaths.json` 中跟踪；宽泛的已弃用重导出桶在 `scripts/lib/plugin-sdk-deprecated-barrel-subpaths.json` 中跟踪。
 
 ## 注册 API
 
@@ -76,20 +75,78 @@ Plugin SDK 以按区域分组的窄子路径集合暴露（Plugin 入口、Chann
 | `api.registerTool(tool, opts?)` | Agent Tool（必需或 `{ optional: true }`）       |
 | `api.registerCommand(def)`      | 自定义命令（绕过 LLM）                          |
 
+当 Agent 需要简短的命令自有路由提示时，Plugin 命令可以设置 `agentPromptGuidance`。将该文本保留为关于命令本身的内容；不要向核心提示构建器添加 Provider 或 Plugin 特定的策略。
+
 ### 基础设施
 
-| 方法                                           | 注册内容                        |
-| ---------------------------------------------- | ------------------------------- |
-| `api.registerHook(events, handler, opts?)`     | 事件 Hook                       |
-| `api.registerHttpRoute(params)`                | Gateway HTTP 端点               |
-| `api.registerGatewayMethod(name, handler)`     | Gateway RPC 方法                |
-| `api.registerGatewayDiscoveryService(service)` | 本地 Gateway 发现广播器         |
-| `api.registerCli(registrar, opts?)`            | CLI 子命令                      |
-| `api.registerService(service)`                 | 后台服务                        |
-| `api.registerInteractiveHandler(registration)` | 交互式处理程序                  |
-| `api.registerAgentToolResultMiddleware(...)`   | 运行时工具结果中间件            |
-| `api.registerMemoryPromptSupplement(builder)`  | 附加的内存相邻提示部分          |
-| `api.registerMemoryCorpusSupplement(adapter)`  | 附加的内存搜索/读取语料库       |
+| 方法                                           | 注册内容                             |
+| ---------------------------------------------- | ------------------------------------ |
+| `api.registerHook(events, handler, opts?)`     | 事件 Hook                            |
+| `api.registerHttpRoute(params)`                | Gateway HTTP 端点                    |
+| `api.registerGatewayMethod(name, handler)`     | Gateway RPC 方法                     |
+| `api.registerGatewayDiscoveryService(service)` | 本地 Gateway 发现广播器              |
+| `api.registerCli(registrar, opts?)`            | CLI 子命令                           |
+| `api.registerNodeCliFeature(registrar, opts?)` | `openclaw nodes` 下的节点功能 CLI    |
+| `api.registerService(service)`                 | 后台服务                             |
+| `api.registerInteractiveHandler(registration)` | 交互式处理程序                       |
+| `api.registerAgentToolResultMiddleware(...)`   | 运行时工具结果中间件                 |
+| `api.registerMemoryPromptSupplement(builder)`  | 附加的内存相邻提示部分               |
+| `api.registerMemoryCorpusSupplement(adapter)`  | 附加的内存搜索/读取语料库            |
+
+### 工作流 Plugin 的宿主 Hook
+
+宿主 Hook 是需要参与宿主生命周期而不仅仅是添加 Provider、Channel 或 Tool 的 Plugin 的 SDK 接缝。它们是通用契约；计划模式可以使用它们，但审批工作流、工作区策略门、后台监控器、设置向导和 UI 伴侣 Plugin 也可以。
+
+| 方法                                                                                 | 拥有的契约                                                                                                             |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `api.session.state.registerSessionExtension(...)`                                    | Plugin 自有的、与 JSON 兼容的通过 Gateway Session 投影的 Session 状态                                                  |
+| `api.session.workflow.enqueueNextTurnInjection(...)`                                 | 注入到一个 Session 的下一个 Agent 轮次中的持久性精确一次上下文                                                          |
+| `api.registerTrustedToolPolicy(...)`                                                 | 可以阻止或重写工具参数的捆绑/受信任预插 Plugin 工具策略                                                                |
+| `api.registerToolMetadata(...)`                                                      | 不更改工具实现的工具目录显示元数据                                                                                      |
+| `api.registerCommand(...)`                                                           | 范围化 Plugin 命令；命令结果可以设置 `continueAgent: true`；Discord 原生命令支持 `descriptionLocalizations`             |
+| `api.session.controls.registerControlUiDescriptor(...)`                              | Session、工具、运行或设置界面的控制 UI 贡献描述符                                                                       |
+| `api.lifecycle.registerRuntimeLifecycle(...)`                                        | 重置/删除/重新加载路径上 Plugin 自有运行时资源的清理回调                                                                |
+| `api.agent.events.registerAgentEventSubscription(...)`                               | 工作流状态和监控器的净化事件订阅                                                                                        |
+| `api.runContext.setRunContext(...)` / `getRunContext(...)` / `clearRunContext(...)`  | 在终端运行生命周期清除的每次运行 Plugin 暂存状态                                                                        |
+| `api.session.workflow.registerSessionSchedulerJob(...)`                              | Plugin 自有调度器作业的清理元数据；不调度工作或创建任务记录                                                             |
+| `api.session.workflow.sendSessionAttachment(...)`                                    | 仅捆绑的宿主中介文件附件投递到活跃的直接出站 Session 路由                                                               |
+| `api.session.workflow.scheduleSessionTurn(...)` / `unscheduleSessionTurnsByTag(...)` | 仅捆绑的 Cron 支持的计划 Session 轮次加上基于标签的清理                                                                 |
+| `api.session.controls.registerSessionAction(...)`                                    | 客户端可以通过 Gateway 调度的类型化 Session 操作                                                                        |
+
+对新 Plugin 代码使用分组命名空间：
+
+- `api.session.state.registerSessionExtension(...)`
+- `api.session.workflow.enqueueNextTurnInjection(...)`
+- `api.session.workflow.registerSessionSchedulerJob(...)`
+- `api.session.workflow.sendSessionAttachment(...)`
+- `api.session.workflow.scheduleSessionTurn(...)`
+- `api.session.workflow.unscheduleSessionTurnsByTag(...)`
+- `api.session.controls.registerSessionAction(...)`
+- `api.session.controls.registerControlUiDescriptor(...)`
+- `api.agent.events.registerAgentEventSubscription(...)`
+- `api.agent.events.emitAgentEvent(...)`
+- `api.runContext.setRunContext(...)` / `getRunContext(...)` / `clearRunContext(...)`
+- `api.lifecycle.registerRuntimeLifecycle(...)`
+
+等效的扁平方法作为现有 Plugin 的已弃用兼容性别名仍然可用。不要添加调用 `api.registerSessionExtension`、`api.enqueueNextTurnInjection`、`api.registerControlUiDescriptor`、`api.registerRuntimeLifecycle`、`api.registerAgentEventSubscription`、`api.emitAgentEvent`、`api.setRunContext`、`api.getRunContext`、`api.clearRunContext`、`api.registerSessionSchedulerJob`、`api.registerSessionAction`、`api.sendSessionAttachment`、`api.scheduleSessionTurn` 或 `api.unscheduleSessionTurnsByTag` 的新 Plugin 代码。
+
+`scheduleSessionTurn(...)` 是 Gateway Cron 调度器上的 Session 范围便利包装。Cron 拥有时序并在轮次运行时创建后台任务记录；Plugin SDK 只约束目标 Session、Plugin 自有命名和清理。当工作本身需要持久性多步骤任务流状态时，在计划轮次内使用 `api.runtime.tasks.managedFlows`。
+
+契约有意地划分权限：
+
+- 外部 Plugin 可以拥有 Session 扩展、UI 描述符、命令、工具元数据、下一轮次注入和普通 Hook。
+- 受信任的工具策略在普通 `before_tool_call` Hook 之前运行，仅捆绑，因为它们参与宿主安全策略。
+- 保留的命令所有权仅捆绑。外部 Plugin 应使用自己的命令名称或别名。
+- `allowPromptInjection=false` 禁用提示变更 Hook，包括 `agent_turn_prepare`、`before_prompt_build`、`heartbeat_prompt_contribution`、来自旧版 `before_agent_start` 的提示字段和 `enqueueNextTurnInjection`。
+
+非计划模式消费者示例：
+
+| Plugin 原型            | 使用的 Hook                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 审批工作流             | Session 扩展、命令延续、下一轮次注入、UI 描述符                                                                                              |
+| 预算/工作区策略门      | 受信任工具策略、工具元数据、Session 投影                                                                                                     |
+| 后台生命周期监控器     | 运行时生命周期清理、Agent 事件订阅、Session 调度器所有权/清理、心跳提示贡献、UI 描述符                                                       |
+| 设置或入门向导         | Session 扩展、范围化命令、控制 UI 描述符                                                                                                     |
 
 <Note>
   保留的核心管理员命名空间（`config.*`、`exec.approvals.*`、`wizard.*`、`update.*`）始终保持 `operator.admin`，即使 Plugin 尝试分配更窄的 Gateway 方法范围。优先使用 Plugin 特定的前缀来处理 Plugin 自有的方法。
@@ -127,6 +184,9 @@ Gateway 发现 Plugin 不得将广播的 TXT 值视为机密或认证凭据。�
 
 - `commands`：注册器拥有的显式命令根
 - `descriptors`：用于根 CLI 帮助、路由和延迟 Plugin CLI 注册的解析时命令描述符
+- `parentPath`：嵌套命令组的可选父命令路径，如 `["nodes"]`
+
+对于配对节点功能，优先使用 `api.registerNodeCliFeature(registrar, opts?)`。它是 `api.registerCli(..., { parentPath: ["nodes"] })` 的小型包装，使 `openclaw nodes canvas` 等命令成为明确的 Plugin 自有节点功能。
 
 如果您希望 Plugin 命令在正常根 CLI 路径中保持延迟加载，请提供覆盖该注册器暴露的每个顶级命令根的 `descriptors`。
 
@@ -148,6 +208,27 @@ api.registerCli(
 );
 ```
 
+嵌套命令将解析的父命令作为 `program` 接收：
+
+```typescript
+api.registerCli(
+  async ({ program }) => {
+    const { registerNodesCanvasCommands } = await import("./src/cli.js");
+    registerNodesCanvasCommands(program);
+  },
+  {
+    parentPath: ["nodes"],
+    descriptors: [
+      {
+        name: "canvas",
+        description: "Capture or render canvas content from a paired node",
+        hasSubcommands: true,
+      },
+    ],
+  },
+);
+```
+
 仅当您不需要延迟根 CLI 注册时才单独使用 `commands`。该急切兼容路径仍然受支持，但它不安装描述符支持的占位符用于解析时延迟加载。
 
 ### CLI 后端注册
@@ -158,6 +239,9 @@ api.registerCli(
 - 后端 `config` 使用与 `agents.defaults.cliBackends.<id>` 相同的形状。
 - 用户配置仍然优先。OpenClaw 在运行 CLI 之前将 `agents.defaults.cliBackends.<id>` 合并到 Plugin 默认值之上。
 - 当后端在合并后需要兼容性重写时（例如规范化旧标志形状），使用 `normalizeConfig`。
+- 对于属于 CLI 方言的请求范围 argv 重写（例如将 OpenClaw 思考级别映射到原生 effort 标志），使用 `resolveExecutionArgs`。
+
+有关端到端的编写指南，请参见 [CLI 后端 Plugin](/plugins/cli-backend-plugins)。
 
 ### 专有槽
 
@@ -178,6 +262,7 @@ api.registerCli(
 - `registerMemoryCapability` 是首选的专有内存 Plugin API。
 - `registerMemoryCapability` 也可以暴露 `publicArtifacts.listArtifacts(...)`，以便伴侣 Plugin 可以通过 `openclaw/plugin-sdk/memory-host-core` 使用导出的内存工件，而不是访问特定内存 Plugin 的私有布局。
 - `registerMemoryPromptSection`、`registerMemoryFlushPlan` 和 `registerMemoryRuntime` 是旧版兼容的专有内存 Plugin API。
+- `MemoryFlushPlan.model` 可以将刷新轮次固定到确切的 `provider/model` 引用（如 `ollama/qwen3:8b`），而不继承活跃的回退链。
 - `registerMemoryEmbeddingProvider` 让活跃内存 Plugin 注册一个或多个嵌入适配器 id（例如 `openai`、`gemini` 或自定义 Plugin 定义的 id）。
 - 用户配置（如 `agents.defaults.memorySearch.provider` 和 `agents.defaults.memorySearch.fallback`）对这些注册的适配器 id 进行解析。
 
@@ -202,6 +287,7 @@ api.registerCli(
 - `message_received`：当您需要入站线程/主题路由时，使用类型化的 `threadId` 字段。将 `metadata` 保留用于 Channel 特定的附加信息。
 - `message_sending`：在回退到 Channel 特定的 `metadata` 之前，使用类型化的 `replyToId` / `threadId` 路由字段。
 - `gateway_start`：使用 `ctx.config`、`ctx.workspaceDir` 和 `ctx.getCron?.()` 获取 Gateway 拥有的启动状态，而不是依赖内部 `gateway:startup` Hook。
+- `cron_changed`：观察 Gateway 拥有的 Cron 生命周期变化。在同步外部唤醒调度器时使用 `event.job?.state?.nextRunAtMs` 和 `ctx.getCron?.()`，并将 OpenClaw 保留为到期检查和执行的事实来源。
 
 ### API 对象字段
 
@@ -236,7 +322,7 @@ my-plugin/
   永远不要在生产代码中通过 `openclaw/plugin-sdk/<your-plugin>` 导入自己的 Plugin。通过 `./api.ts` 或 `./runtime-api.ts` 路由内部导入。SDK 路径仅是外部契约。
 </Warning>
 
-外观加载的捆绑 Plugin 公共界面（`api.ts`、`runtime-api.ts`、`index.ts`、`setup-entry.ts` 等公共入口文件）在 OpenClaw 已经运行时优先使用活跃的运行时配置快照。如果尚不存在运行时快照，则回退到磁盘上的已解析配置文件。
+外观加载的捆绑 Plugin 公共界面（`api.ts`、`runtime-api.ts`、`index.ts`、`setup-entry.ts` 等公共入口文件）在 OpenClaw 已经运行时优先使用活跃的运行时配置快照。如果尚不存在运行时快照，则回退到磁盘上的已解析配置文件。打包的捆绑 Plugin 外观应通过 OpenClaw 的 Plugin 外观加载器加载；直接从 `dist/extensions/...` 导入会绕过打包安装用于 Plugin 自有代码的清单和运行时旁车检查。
 
 Provider Plugin 可以在辅助工具有意地是 Provider 特定的且尚不属于通用 SDK 子路径时暴露窄向 Plugin 本地契约 barrel。捆绑示例：
 

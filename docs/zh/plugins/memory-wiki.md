@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8b5ced3fff7e2288bb2cc70253dba5f9"
+mmh3_hash: "ca6cd604fc1b15a3194bc10d5087f594"
 summary: "memory-wiki：具有溯源、声明、仪表板和桥接模式的编译知识库"
 read_when:
   - 您需要超越普通 MEMORY.md 笔记的持久知识
@@ -7,8 +7,6 @@ read_when:
   - 您想了解 wiki_search、wiki_get 或桥接模式
 title: "Memory Wiki"
 ---
-
-# Memory Wiki
 
 `memory-wiki` 是一个捆绑 Plugin，将持久 Memory 转变为编译的知识库。
 
@@ -58,6 +56,8 @@ title: "Memory Wiki"
 - 当您希望共享搜索跨两个层时，使用 `memory_search corpus=all`
 
 如果桥接模式报告零导出构件，Active Memory Plugin 当前尚未公开公共桥接输入。首先运行 `openclaw wiki doctor`，然后确认 Active Memory Plugin 是否支持公共构件。
+
+当桥接模式处于活跃状态且启用了 `bridge.readMemoryArtifacts` 时，`openclaw wiki status`、`openclaw wiki doctor` 和 `openclaw wiki bridge import` 通过运行中的 Gateway 读取。这使 CLI 桥接检查与运行时 Memory Plugin 上下文保持一致。如果桥接被禁用或构件读取被关闭，这些命令保持本地/离线行为。
 
 ## 库模式
 
@@ -134,14 +134,82 @@ Plugin 初始化如下的库：
 
 证据条目可以包括：
 
+- `kind`
 - `sourceId`
 - `path`
 - `lines`
 - `weight`
+- `confidence`
+- `privacyTier`
 - `note`
 - `updatedAt`
 
 这就是使 Wiki 更像信念层而不是被动笔记转储的原因。声明可以被跟踪、评分、争议和解决回源。
+
+## 面向 Agent 的实体元数据
+
+实体页面还可以携带供 Agent 使用的路由元数据。这是通用的前置内容，因此适用于人员、团队、系统、项目或任何其他实体类型。
+
+常见字段包括：
+
+- `entityType`：例如 `person`、`team`、`system` 或 `project`
+- `canonicalId`：跨别名和导入使用的稳定身份键
+- `aliases`：应解析到同一页面的名称、句柄或标签
+- `privacyTier`：`public`、`local-private`、`sensitive` 或 `confirm-before-use`
+- `bestUsedFor` / `notEnoughFor`：紧凑的路由提示
+- `lastRefreshedAt`：独立于页面编辑时间的源刷新时间戳
+- `personCard`：可选的人员特定路由卡，包含句柄、社交账号、电子邮件、时区、通道、咨询内容、避免咨询内容、置信度和隐私级别
+- `relationships`：到相关页面的类型化边，包含目标、类型、权重、置信度、证据类型、隐私级别和备注
+
+对于人员 Wiki，Agent 通常应先从 `reports/person-agent-directory.md` 开始，然后在使用联系方式或推断事实之前用 `wiki_get` 打开人员页面。
+
+示例：
+
+```yaml
+pageType: entity
+entityType: person
+id: entity.brad-groux
+canonicalId: maintainer.brad-groux
+aliases:
+  - Brad
+  - bgroux
+privacyTier: local-private
+bestUsedFor:
+  - Microsoft Teams and Azure routing
+notEnoughFor:
+  - legal approval
+lastRefreshedAt: "2026-04-29T00:00:00.000Z"
+personCard:
+  handles:
+    - "@bgroux"
+  socials:
+    - "https://x.example/bgroux"
+  emails:
+    - brad@example.com
+  timezone: America/Chicago
+  lane: Microsoft ecosystem
+  askFor:
+    - Teams rollout questions
+  avoidAskingFor:
+    - unrelated billing decisions
+  confidence: 0.8
+  privacyTier: confirm-before-use
+relationships:
+  - targetId: entity.alice
+    targetTitle: Alice
+    kind: collaborates-with
+    confidence: 0.7
+    evidenceKind: discrawl-stat
+claims:
+  - id: claim.brad.teams
+    text: Brad is useful for Microsoft Teams routing.
+    status: supported
+    confidence: 0.9
+    evidence:
+      - kind: maintainer-whois
+        sourceId: source.maintainers
+        privacyTier: local-private
+```
 
 ## 编译管道
 
@@ -170,6 +238,10 @@ Plugin 初始化如下的库：
 - `reports/low-confidence.md`
 - `reports/claim-health.md`
 - `reports/stale-pages.md`
+- `reports/person-agent-directory.md`
+- `reports/relationship-graph.md`
+- `reports/provenance-coverage.md`
+- `reports/privacy-review.md`
 
 这些报告跟踪以下内容：
 
@@ -179,6 +251,10 @@ Plugin 初始化如下的库：
 - 低置信度页面和声明
 - 过时或未知新鲜度
 - 有未解决问题的页面
+- 人员/实体路由卡
+- 结构化关系边
+- 证据类别覆盖率
+- 使用前需要审查的非公开隐私级别
 
 ## 搜索和检索
 
@@ -199,11 +275,22 @@ Plugin 初始化如下的库：
 - 声明 ID 可以解析回拥有页面
 - 争议/过时/新鲜声明影响排名
 - 溯源标签可以在结果中保留
+- 搜索模式可以为人员查找、问题路由、源证据或原始声明偏置排名
 
 实用规则：
 
 - 使用 `memory_search corpus=all` 进行一次广泛的召回
 - 当您关心 Wiki 特定排名、溯源或页面级信念结构时，使用 `wiki_search` + `wiki_get`
+
+搜索模式：
+
+- `auto`：平衡的默认值
+- `find-person`：提升类人实体、别名、句柄、社交账号和规范 ID
+- `route-question`：提升 Agent 卡、咨询提示、最佳使用提示和关系上下文
+- `source-evidence`：提升源页面和结构化证据元数据
+- `raw-claim`：提升匹配的结构化声明，并在结果中返回声明/证据元数据
+
+当结果与结构化声明匹配时，`wiki_search` 可以在其详细信息负载中返回 `matchedClaimId`、`matchedClaimStatus`、`matchedClaimConfidence`、`evidenceKinds` 和 `evidenceSourceIds`。在可用时，文本输出还包括紧凑的 `Claim:` 和 `Evidence:` 行。
 
 ## Agent 工具
 
@@ -218,7 +305,7 @@ Plugin 注册以下工具：
 它们的功能：
 
 - `wiki_status`：当前库模式、健康状态、Obsidian CLI 可用性
-- `wiki_search`：搜索 Wiki 页面，以及在配置时搜索共享 Memory 语料库
+- `wiki_search`：搜索 Wiki 页面，以及在配置时搜索共享 Memory 语料库；接受 `mode` 参数用于人员查找、问题路由、源证据或原始声明下钻
 - `wiki_get`：通过 ID/路径读取 Wiki 页面，或回退到共享 Memory 语料库
 - `wiki_apply`：在不进行自由格式页面手术的情况下进行精确的综合/元数据变更
 - `wiki_lint`：结构检查、溯源缺口、矛盾、开放问题
@@ -313,6 +400,9 @@ Plugin 还注册了一个非独占的 Memory 语料库补充，因此当 Active 
 {
   memory: {
     backend: "qmd",
+  },
+  plugins: {
+    entries: {
       "memory-wiki": {
         enabled: true,
         config: {

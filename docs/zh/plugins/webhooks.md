@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "6794beffabe92f6c4da4f969d9d220c3"
+mmh3_hash: "183153b9936bc1b80ad449c2cbc58516"
 summary: "Webhooks Plugin：用于受信任外部自动化的经过身份验证的 TaskFlow 入口"
 read_when:
   - 您想从外部系统触发或驱动 TaskFlow
   - 您正在配置捆绑的 webhooks Plugin
 title: "Webhooks Plugin"
 ---
-
-# Webhooks（Plugin）
 
 Webhooks Plugin 添加经过身份验证的 HTTP 路由，将外部自动化绑定到 OpenClaw TaskFlow。
 
@@ -83,7 +81,7 @@ Plugin 应用：
 - 请求正文大小和超时守卫
 - 固定窗口速率限制
 - 飞行中请求限制
-- 通过 `api.runtime.taskFlow.bindSession(...)` 的所有者绑定 TaskFlow 访问
+- 通过 `api.runtime.tasks.managedFlows.bindSession(...)` 的所有者绑定 TaskFlow 访问
 
 ## 请求格式
 

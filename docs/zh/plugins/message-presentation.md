@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9873e5d490b003b6d8c5f7e37d29bf90"
+mmh3_hash: "3c24b3c12fed80f598163d043404611f"
 summary: "Channel Plugin 的语义消息卡片、按钮、选择菜单、降级文本和交付提示"
 title: "消息呈现"
 read_when:
@@ -272,12 +272,17 @@ Provider 原生有效负载兼容性是现有回复生产者的过渡便利。�
 import {
   interactiveReplyToPresentation,
   normalizeMessagePresentation,
+  presentationToInteractiveControlsReply,
   presentationToInteractiveReply,
   renderMessagePresentationFallbackText,
 } from "openclaw/plugin-sdk/interactive-runtime";
 ```
 
 新代码应直接接受或生成 `MessagePresentation`。
+
+`presentationToInteractiveReply(...)` 通过将标题、文本、上下文、按钮和选择菜单映射到旧版 `InteractiveReply` 形态来保留可见的呈现文本。已原生绘制标题、文本、上下文和分隔符块的组件渲染器应改用 `presentationToInteractiveControlsReply(...)`，然后仅附加按钮和选择控件。
+
+`renderMessagePresentationFallbackText(...)` 对于没有文本降级的呈现块（例如仅分隔符的呈现）返回空字符串。需要非空发送正文的传输可以传入 `emptyFallback` 以选择加入最小正文，而不更改默认降级契约。
 
 ## 交付固定
 

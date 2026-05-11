@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "37c2d872080d434b206734d015d4788f"
+mmh3_hash: "8ee285c53052da8a7f85a1af473226b1"
 title: "构建 Plugin"
 sidebarTitle: "入门指南"
 summary: "几分钟内创建您的第一个 OpenClaw Plugin"
@@ -13,19 +13,13 @@ read_when:
 
 Plugin 通过以下能力扩展 OpenClaw：Channel、模型 Provider、语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取、Web 搜索、Agent Tool 或任意组合。
 
-您无需将 Plugin 添加到 OpenClaw 仓库。发布到 [ClawHub](/tools/clawhub) 或 npm，用户使用以下命令安装：
-
-```bash
-openclaw plugins install <package-name>
-```
-
-OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
+您无需将 Plugin 添加到 OpenClaw 仓库。发布到 [ClawHub](/clawhub)，用户使用以下命令安装：`openclaw plugins install clawhub:<package-name>`。在 ClawHub 推出期间，裸包规范仍从 npm 安装。
 
 ## 前提条件
 
 - Node >= 22 和包管理器（npm 或 pnpm）
 - 熟悉 TypeScript (ESM)
-- 对于仓库内 Plugin：已克隆仓库并完成 `pnpm install`
+- 对于仓库内 Plugin：已克隆仓库并完成 `pnpm install`。源码检出的 Plugin 开发仅支持 pnpm，因为 OpenClaw 从 `extensions/*` 工作区包加载打包 Plugin。
 
 ## 您要构建哪种 Plugin？
 
@@ -36,7 +30,10 @@ OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
   <Card title="Provider Plugin" icon="cpu" href="/plugins/sdk-provider-plugins">
     添加模型 Provider（LLM、代理或自定义端点）
   </Card>
-  <Card title="Tool / Hook Plugin" icon="wrench">
+  <Card title="CLI 后端 Plugin" icon="terminal" href="/plugins/cli-backend-plugins">
+    将本地 AI CLI 映射到 OpenClaw 的文本回退运行器
+  </Card>
+  <Card title="Tool / Hook Plugin" icon="wrench" href="/plugins/hooks">
     注册 Agent Tool、事件 Hook 或服务 — 继续阅读下方内容
   </Card>
 </CardGroup>
@@ -74,6 +71,12 @@ OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
       "id": "my-plugin",
       "name": "My Plugin",
       "description": "Adds a custom tool to OpenClaw",
+      "contracts": {
+        "tools": ["my_tool"]
+      },
+      "activation": {
+        "onStartup": true
+      },
       "configSchema": {
         "type": "object",
         "additionalProperties": false
@@ -82,7 +85,7 @@ OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
     ```
     </CodeGroup>
 
-    每个 Plugin 都需要一个清单，即使没有配置也是如此。完整模式请参见 [清单](/plugins/manifest)。ClawHub 发布代码片段的规范模板在 `docs/snippets/plugin-publish/` 中。
+    每个 Plugin 都需要一个清单，即使没有配置也是如此。运行时注册的 Tool 必须在 `contracts.tools` 中列出，以便 OpenClaw 无需加载每个 Plugin 运行时即可发现所属 Plugin。Plugin 也应有意声明 `activation.onStartup`。本示例将其设置为 `true`。完整模式请参见 [清单](/plugins/manifest)。ClawHub 发布代码片段的规范模板在 `docs/snippets/plugin-publish/` 中。
 
   </Step>
 
@@ -142,7 +145,7 @@ OpenClaw 首先尝试 ClawHub，然后自动回退到 npm。
 | 能力                | 注册方法                                                 | 详细指南                                                                          |
 | ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | 文本推理 (LLM)      | `api.registerProvider(...)`                              | [Provider Plugin](/plugins/sdk-provider-plugins)                                  |
-| CLI 推理后端        | `api.registerCliBackend(...)`                            | [CLI Backends](/gateway/cli-backends)                                             |
+| CLI 推理后端        | `api.registerCliBackend(...)`                            | [CLI 后端 Plugin](/plugins/cli-backend-plugins)                                   |
 | Channel / 消息      | `api.registerChannel(...)`                               | [Channel Plugin](/plugins/sdk-channel-plugins)                                    |
 | 语音 (TTS/STT)      | `api.registerSpeechProvider(...)`                        | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
 | 实时转录            | `api.registerRealtimeTranscriptionProvider(...)`         | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
@@ -225,8 +228,48 @@ register(api) {
 ```
 
 - Tool 名称不得与核心 Tool 名称冲突（冲突的 Tool 会被跳过）
+- 注册对象格式错误的 Tool（包括缺少 `parameters` 的情况）会被跳过并在 Plugin 诊断中报告，而不是中断 Agent 运行
 - 对于有副作用或需要额外二进制依赖的 Tool，使用 `optional: true`
 - 用户可以通过将 Plugin id 添加到 `tools.allow` 来启用 Plugin 的所有 Tool
+
+## 注册 CLI 命令
+
+Plugin 可以使用 `api.registerCli` 添加根 `openclaw` 命令组。为每个顶层命令根提供 `descriptors`，以便 OpenClaw 在不贪婪加载每个 Plugin 运行时的情况下显示和路由命令。
+
+```typescript
+register(api) {
+  api.registerCli(
+    ({ program }) => {
+      const demo = program
+        .command("demo-plugin")
+        .description("Run demo plugin commands");
+
+      demo
+        .command("ping")
+        .description("Check that the plugin CLI is executable")
+        .action(() => {
+          console.log("demo-plugin:pong");
+        });
+    },
+    {
+      descriptors: [
+        {
+          name: "demo-plugin",
+          description: "Run demo plugin commands",
+          hasSubcommands: true,
+        },
+      ],
+    },
+  );
+}
+```
+
+安装后，验证运行时注册并执行命令：
+
+```bash
+openclaw plugins inspect demo-plugin --runtime --json
+openclaw demo-plugin ping
+```
 
 ## 导入规范
 
@@ -252,7 +295,7 @@ import { ... } from "openclaw/plugin-sdk";
 
 如果辅助工具仅在一个打包 Provider 包内有用，请将其保留在该包根接口上，而不是将其提升到 `openclaw/plugin-sdk/*` 中。
 
-一些生成的 `openclaw/plugin-sdk/<bundled-id>` 辅助接口仍然存在，用于打包 Plugin 维护和兼容性，例如 `plugin-sdk/feishu-setup` 或 `plugin-sdk/zalo-setup`。将这些视为保留接口，而不是新第三方 Plugin 的默认模式。
+部分生成的 `openclaw/plugin-sdk/<bundled-id>` 辅助接口在有经过追踪的所有者使用时仍然存在，用于打包 Plugin 维护。将这些视为保留接口，而不是新第三方 Plugin 的默认模式。
 
 ## 提交前检查清单
 
@@ -281,6 +324,9 @@ import { ... } from "openclaw/plugin-sdk";
   </Card>
   <Card title="Provider Plugin" icon="cpu" href="/plugins/sdk-provider-plugins">
     构建模型 Provider Plugin
+  </Card>
+  <Card title="CLI 后端 Plugin" icon="terminal" href="/plugins/cli-backend-plugins">
+    注册本地 AI CLI 后端
   </Card>
   <Card title="SDK 概览" icon="book-open" href="/plugins/sdk-overview">
     导入映射和注册 API 参考

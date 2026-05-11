@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6c661544db24c0bf256bf9d1e8883198"
+mmh3_hash: "808887a2fcdb5a27494fbfc414c60441"
 summary: "Plugin Hook：拦截 Agent、工具、消息、Session 和 Gateway 生命周期事件"
 title: "Plugin Hook"
 read_when:
@@ -48,6 +48,35 @@ export default definePluginEntry({
 
 Hook 处理程序按降序 `priority` 顺序依次运行。相同优先级的 Hook 保持注册顺序。
 
+`api.on(name, handler, opts?)` 接受：
+
+- `priority` — 处理程序排序（值越高越先运行）。
+- `timeoutMs` — 可选的每个 Hook 预算。设置后，Hook 运行器在预算耗尽后中止该处理程序并继续下一个，而不是让缓慢的设置或召回工作消耗调用方配置的模型超时。省略则使用 Hook 运行器通用应用的默认观察/决策超时。
+
+操作员也可以在不修补 Plugin 代码的情况下设置 Hook 预算：
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "my-plugin": {
+        "hooks": {
+          "timeoutMs": 30000,
+          "timeouts": {
+            "before_prompt_build": 90000,
+            "agent_end": 60000
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+`hooks.timeouts.<hookName>` 覆盖 `hooks.timeoutMs`，后者覆盖 Plugin 编写的 `api.on(..., { timeoutMs })` 值。每个配置值必须是不超过 600000 毫秒的正整数。对已知缓慢的 Hook 使用每 Hook 覆盖，以避免单个 Plugin 在所有地方获得更长的预算。
+
+每个 Hook 接收 `event.context.pluginConfig`，即注册该处理程序的 Plugin 的已解析配置。将其用于需要当前 Plugin 选项的 Hook 决策；OpenClaw 按处理程序注入它，而不会更改其他 Plugin 看到的共享事件对象。
+
 ## Hook 目录
 
 Hook 按其扩展的界面分组。**粗体**名称接受决策结果（阻止、取消、覆盖或要求审批）；所有其他的仅用于观察。
@@ -55,11 +84,14 @@ Hook 按其扩展的界面分组。**粗体**名称接受决策结果（阻止�
 **Agent 轮次**
 
 - `before_model_resolve` — 在 Session 消息加载之前覆盖 Provider 或模型
+- `agent_turn_prepare` — 消费排队的 Plugin 轮次注入，并在提示 Hook 之前添加同轮次上下文
 - `before_prompt_build` — 在模型调用之前添加动态上下文或系统提示文本
 - `before_agent_start` — 仅兼容性的组合阶段；优先使用上面两个 Hook
+- **`before_agent_run`** — 在模型提交之前检查最终提示和 Session 消息，并可选地阻止运行
 - **`before_agent_reply`** — 用合成回复或静默短路模型轮次
 - **`before_agent_finalize`** — 检查自然最终答案并请求再次模型传递
 - `agent_end` — 观察最终消息、成功状态和运行持续时间
+- `heartbeat_prompt_contribution` — 仅为心跳轮次添加心跳专用上下文，用于后台监控和生命周期 Plugin
 
 **对话观察**
 
@@ -96,6 +128,7 @@ Hook 按其扩展的界面分组。**粗体**名称接受决策结果（阻止�
 **生命周期**
 
 - `gateway_start`/`gateway_stop` — 随 Gateway 启动或停止 Plugin 拥有的服务
+- `cron_changed` — 观察 Gateway 拥有的 Cron 生命周期变更（添加、更新、移除、启动、完成、计划）
 - **`before_install`** — 检查 Skill 或 Plugin 安装扫描并可选地阻止
 
 ## 工具调用策略
@@ -104,6 +137,7 @@ Hook 按其扩展的界面分组。**粗体**名称接受决策结果（阻止�
 
 - `event.toolName`
 - `event.params`
+- 可选的 `event.derivedPaths`，包含对已知工具包络（如 `apply_patch`）进行最佳努力宿主派生的目标路径提示；如果存在，这些路径可能不完整或可能过度近似工具实际将触及的内容（例如，输入格式错误或不完整时）
 - 可选的 `event.runId`
 - 可选的 `event.toolCallId`
 - 上下文字段，如 `ctx.agentId`、`ctx.sessionKey`、`ctx.sessionId`、`ctx.runId`、`ctx.jobId`（在 Cron 驱动的运行上设置）和诊断 `ctx.trace`
@@ -138,6 +172,8 @@ type BeforeToolCallResult = {
 - 较低优先级的 `block: true` 仍然可以在较高优先级的 Hook 请求审批后阻止。
 - `onResolution` 接收已解析的审批决策——`allow-once`、`allow-always`、`deny`、`timeout` 或 `cancelled`。
 
+需要宿主级别策略的打包 Plugin 可以使用 `api.registerTrustedToolPolicy(...)` 注册受信任的工具策略。这些在普通的 `before_tool_call` Hook 和外部 Plugin 决策之前运行。仅将其用于受宿主信任的门控，如工作区策略、预算执行或保留的工作流安全。外部 Plugin 应使用普通的 `before_tool_call` Hook。
+
 ### 工具结果持久化
 
 工具结果可以包含用于 UI 渲染、诊断、媒体路由或 Plugin 拥有的元数据的结构化 `details`。将 `details` 视为运行时元数据，而不是提示内容：
@@ -151,17 +187,37 @@ type BeforeToolCallResult = {
 对新 Plugin 使用特定阶段的 Hook：
 
 - `before_model_resolve`：仅接收当前提示和附件元数据。返回 `providerOverride` 或 `modelOverride`。
-- `before_prompt_build`：接收当前提示和 Session 消息。返回 `prependContext`、`systemPrompt`、`prependSystemContext` 或 `appendSystemContext`。
+- `agent_turn_prepare`：接收当前提示、准备好的 Session 消息以及为此 Session 排干的任何精确一次排队注入。返回 `prependContext` 或 `appendContext`。
+- `before_prompt_build`：接收当前提示和 Session 消息。返回 `prependContext`、`appendContext`、`systemPrompt`、`prependSystemContext` 或 `appendSystemContext`。
+- `heartbeat_prompt_contribution`：仅为心跳轮次运行，返回 `prependContext` 或 `appendContext`。适用于需要汇总当前状态而不更改用户发起轮次的后台监控器。
 
 `before_agent_start` 保留用于兼容性。优先使用上面的显式 Hook，以便您的 Plugin 不依赖于旧版组合阶段。
 
+`before_agent_run` 在提示构建之后和任何模型输入（包括提示本地图像加载和 `llm_input` 观察）之前运行。它将当前用户输入作为 `prompt` 接收，以及 `messages` 中加载的 Session 历史记录和活动系统提示。返回 `{ outcome: "block", reason, message? }` 在模型读取提示之前停止运行。`reason` 是内部的；`message` 是面向用户的替换。唯一支持的结果是 `pass` 和 `block`；不支持的决策形状以关闭方式失败。
+
+当运行被阻止时，OpenClaw 仅将替换文本存储在 `message.content` 中，加上非敏感的阻止元数据，如阻止的 Plugin id 和时间戳。原始用户文本不会保留在转录或未来上下文中。内部阻止原因被视为敏感信息，从转录、历史记录、广播、日志和诊断有效载荷中排除。可观察性应使用净化字段，如阻止者 id、结果、时间戳或安全类别。
+
 `before_agent_start` 和 `agent_end` 在 OpenClaw 可以识别活动运行时包含 `event.runId`。相同的值也可在 `ctx.runId` 上获得。Cron 驱动的运行还公开 `ctx.jobId`（原始 Cron 作业 id），以便 Plugin Hook 可以将指标、副作用或状态限定到特定的计划作业。
+
+对于来自 Channel 的运行，`ctx.messageProvider` 是 Provider 界面，如 `discord` 或 `telegram`，而 `ctx.channelId` 是 OpenClaw 可以从 Session 键或交付元数据派生时的会话目标标识符。
 
 对于不应接收原始提示、历史记录、响应、标头、请求正文或 Provider 请求 ID 的 Provider 调用遥测，使用 `model_call_started` 和 `model_call_ended`。这些 Hook 包含稳定的元数据，如 `runId`、`callId`、`provider`、`model`、可选的 `api`/`transport`、终端 `durationMs`/`outcome` 和 OpenClaw 可以派生有界 Provider 请求 id 哈希时的 `upstreamRequestIdHash`。
 
 `before_agent_finalize` 仅在线束即将接受自然最终助手答案时运行。它不是 `/stop` 取消路径，当用户中止轮次时不会运行。返回 `{ action: "revise", reason }` 请求线束在最终确定之前再次传递模型，返回 `{ action: "finalize", reason? }` 强制最终确定，或省略结果以继续。Codex 原生 `Stop` Hook 作为 OpenClaw `before_agent_finalize` 决策中继到此 Hook。
 
-需要 `llm_input`、`llm_output`、`before_agent_finalize` 或 `agent_end` 的非 Bundle Plugin 必须设置：
+返回 `action: "revise"` 时，Plugin 可以包含 `retry` 元数据，使额外的模型传递有界且可安全重放：
+
+```typescript
+type BeforeAgentFinalizeRetry = {
+  instruction: string;
+  idempotencyKey?: string;
+  maxAttempts?: number;
+};
+```
+
+`instruction` 附加到发送给线束的修订原因。`idempotencyKey` 让宿主跨等效的最终确定决策为同一 Plugin 请求计数重试，而 `maxAttempts` 限制宿主在继续使用自然最终答案之前允许的额外传递次数。
+
+需要原始对话 Hook（`before_model_resolve`、`before_agent_reply`、`llm_input`、`llm_output`、`before_agent_finalize`、`agent_end` 或 `before_agent_run`）的非打包 Plugin 必须设置：
 
 ```json
 {

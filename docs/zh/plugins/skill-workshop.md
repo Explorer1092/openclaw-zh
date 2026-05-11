@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4ebae44ee56f3b9c08176f9a5fc4abcb"
+mmh3_hash: "7a7f69f0456852c2059396f9dc120855"
 summary: "实验性的将可复用程序捕获为工作区 Skill，支持审核、批准、隔离和热刷新"
 title: "Skill Workshop 插件"
 read_when:
@@ -339,7 +339,7 @@ skill_workshop
 ```
 
 <AccordionGroup>
-  <Accordion title="强制安全写入 (apply: true)">
+  <Accordion title="在 auto 模式下请求立即写入 (apply: true)">
 
 ```json
 {
@@ -350,6 +350,8 @@ skill_workshop
   "body": "## Workflow\n\n- Verify true animation.\n- Record attribution."
 }
 ```
+
+使用 `approvalPolicy: "pending"` 时，`apply: true` 仍然将提案排队。审阅后，使用 `apply` 操作进行批准。
 
   </Accordion>
 
@@ -398,6 +400,8 @@ skill_workshop
 ### `apply`
 
 应用 pending 提案。
+
+使用 `approvalPolicy: "pending"` 时，此操作在写入工作区 Skill 之前会请求操作员批准。
 
 ```json
 {

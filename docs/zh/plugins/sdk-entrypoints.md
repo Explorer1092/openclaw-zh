@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "83ca23e5dccecfb8605e058f0b85fb72"
+mmh3_hash: "d23b0954ec2e5b48e521e675cc53b58e"
 title: "Plugin 入口点"
 sidebarTitle: "入口点"
 summary: "definePluginEntry、defineChannelPluginEntry 和 defineSetupPluginEntry 的参考文档"
@@ -8,8 +8,6 @@ read_when:
   - 您想了解注册模式（full vs setup vs CLI metadata）
   - 您正在查找入口点选项
 ---
-
-# Plugin 入口点
 
 每个 Plugin 导出一个默认入口对象。SDK 提供三个辅助工具来创建它们。
 
@@ -26,7 +24,7 @@ read_when:
 }
 ```
 
-`extensions` 和 `setupEntry` 对于工作区和 git checkout 开发仍然是有效的源入口。当 OpenClaw 加载已安装的包时，优先使用 `runtimeExtensions` 和 `runtimeSetupEntry`，让 npm 包避免运行时 TypeScript 编译。如果已安装的包仅声明了 TypeScript 源入口，OpenClaw 将在存在匹配的已构建 `dist/*.js` 对等文件时使用它，然后回退到 TypeScript 源。
+`extensions` 和 `setupEntry` 对于工作区和 git checkout 开发仍然是有效的源入口。当 OpenClaw 加载已安装的包时，优先使用 `runtimeExtensions` 和 `runtimeSetupEntry`，让 npm 包避免运行时 TypeScript 编译。显式运行时入口是必需的：`runtimeSetupEntry` 需要 `setupEntry`，缺少 `runtimeExtensions` 或 `runtimeSetupEntry` 构件会导致安装/发现失败，而不是静默回退到源。如果已安装的包仅声明了 TypeScript 源入口，OpenClaw 将在存在匹配的已构建 `dist/*.js` 对等文件时使用它，然后回退到 TypeScript 源。
 
 所有入口路径必须保留在 Plugin 包目录内。运行时入口和推断的已构建 JavaScript 对等文件不会使逸出的 `extensions` 或 `setupEntry` 源路径有效。
 
@@ -112,7 +110,7 @@ export default defineChannelPluginEntry({
 - 发现注册是非激活的，但不是无导入的。OpenClaw 可以评估受信任的 Plugin 入口和 Channel Plugin 模块来构建快照，因此保持顶级导入无副作用，并将 Socket、客户端、工作器和服务放在仅 `"full"` 路径之后。
 - `registerFull` 仅在 `api.registrationMode === "full"` 时运行。在仅设置加载期间会被跳过。
 - 与 `definePluginEntry` 一样，`configSchema` 可以是延迟工厂函数，OpenClaw 在第一次访问时记忆解析后的 Schema。
-- 对于 Plugin 自有的根 CLI 命令，当您希望命令保持延迟加载而不从根 CLI 解析树中消失时，优先使用 `api.registerCli(..., { descriptors: [...] })`。对于 Channel Plugin，优先从 `registerCliMetadata(...)` 注册这些描述符，并让 `registerFull(...)` 专注于仅运行时的工作。
+- 对于 Plugin 自有的根 CLI 命令，当您希望命令保持延迟加载而不从根 CLI 解析树中消失时，优先使用 `api.registerCli(..., { descriptors: [...] })`。对于配对节点功能命令，优先使用 `api.registerNodeCliFeature(...)`，以便命令落在 `openclaw nodes` 下。对于其他嵌套 Plugin 命令，添加 `parentPath` 并在传递给注册器的 `program` 对象上注册命令；OpenClaw 在调用 Plugin 之前将其解析为父命令。对于 Channel Plugin，优先从 `registerCliMetadata(...)` 注册这些描述符，并让 `registerFull(...)` 专注于仅运行时的工作。
 - 如果 `registerFull(...)` 也注册 Gateway RPC 方法，请将它们保持在 Plugin 特定的前缀下。保留的核心管理员命名空间（`config.*`、`exec.approvals.*`、`wizard.*`、`update.*`）始终被强制转换为 `operator.admin`。
 
 ## `defineSetupPluginEntry`

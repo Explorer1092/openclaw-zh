@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "af20448f451e3420d0d5633db4a4b982"
+mmh3_hash: "6d8456761e57eade66d5b3c885e12bb2"
 summary: "Plugin 清单 + JSON Schema 要求（严格配置验证）"
 read_when:
   - 您正在构建 OpenClaw Plugin
@@ -141,12 +141,13 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 | `id`                                | 是   | `string`                         | 规范 Plugin id，用于 `plugins.entries.<id>` 中。                                                                                                                                                                                        |
 | `configSchema`                      | 是   | `object`                         | 此 Plugin 配置的内联 JSON Schema。                                                                                                                                                                                                      |
 | `enabledByDefault`                  | 否   | `true`                           | 将打包 Plugin 标记为默认启用。省略或设置任何非 `true` 值，Plugin 默认禁用。                                                                                                                                                             |
+| `enabledByDefaultOnPlatforms`       | 否   | `string[]`                       | 仅在列出的 Node.js 平台上将打包 Plugin 标记为默认启用，例如 `["darwin"]`。显式配置仍然优先。                                                                                                                                            |
 | `legacyPluginIds`                   | 否   | `string[]`                       | 规范化到此规范 Plugin id 的旧版 id。                                                                                                                                                                                                    |
 | `autoEnableWhenConfiguredProviders` | 否   | `string[]`                       | 当身份验证、配置或模型引用提到这些 Provider id 时应自动启用此 Plugin 的 Provider id。                                                                                                                                                   |
 | `kind`                              | 否   | `"memory"` \| `"context-engine"` | 声明 `plugins.slots.*` 使用的专有 Plugin 类型。                                                                                                                                                                                         |
 | `channels`                          | 否   | `string[]`                       | 此 Plugin 拥有的 Channel id，用于发现和配置验证。                                                                                                                                                                                       |
 | `providers`                         | 否   | `string[]`                       | 此 Plugin 拥有的 Provider id。                                                                                                                                                                                                          |
-| `providerDiscoveryEntry`            | 否   | `string`                         | 轻量级 Provider 发现模块路径（相对于 Plugin 根目录），用于可在不激活完整 Plugin 运行时的情况下加载的清单范围 Provider 目录元数据。                                                                                                       |
+| `providerCatalogEntry`              | 否   | `string`                         | 轻量级 Provider 目录模块路径（相对于 Plugin 根目录），用于可在不激活完整 Plugin 运行时的情况下加载的清单范围 Provider 目录元数据。                                                                                                       |
 | `modelSupport`                      | 否   | `object`                         | 清单拥有的简写模型系列元数据，用于在运行时之前自动加载 Plugin。                                                                                                                                                                         |
 | `modelCatalog`                      | 否   | `object`                         | 此 Plugin 拥有 Provider 的声明式模型目录元数据。这是用于未来只读列表、入门、模型选择器、别名和抑制的控制平面契约，无需加载 Plugin 运行时。                                                                                              |
 | `modelPricing`                      | 否   | `object`                         | Provider 拥有的外部定价查找策略。用于将本地/自托管 Provider 排除在远程定价目录之外，或将 Provider 引用映射到 OpenRouter/LiteLLM 目录 id，而无需在核心中硬编码 Provider id。                                                             |
@@ -166,6 +167,10 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 | `qaRunners`                         | 否   | `object[]`                       | 共享 `openclaw qa` 主机在 Plugin 运行时加载之前使用的廉价 QA 运行器描述符。                                                                                                                                                             |
 | `contracts`                         | 否   | `object`                         | 用于外部身份验证 Hook、语音、实时转录、实时语音、媒体理解、图像生成、音乐生成、视频生成、Web 抓取、Web 搜索和 Tool 所有权的静态打包能力快照。                                                                                           |
 | `mediaUnderstandingProviderMetadata`| 否   | `Record<string, object>`         | 在 `contracts.mediaUnderstandingProviders` 中声明的 Provider id 的廉价媒体理解默认值。                                                                                                                                                  |
+| `imageGenerationProviderMetadata`   | 否   | `Record<string, object>`         | 在 `contracts.imageGenerationProviders` 中声明的 Provider id 的廉价图像生成身份验证元数据，包括 Provider 拥有的身份验证别名和基础 URL 保护。                                                                                             |
+| `videoGenerationProviderMetadata`   | 否   | `Record<string, object>`         | 在 `contracts.videoGenerationProviders` 中声明的 Provider id 的廉价视频生成身份验证元数据，包括 Provider 拥有的身份验证别名和基础 URL 保护。                                                                                             |
+| `musicGenerationProviderMetadata`   | 否   | `Record<string, object>`         | 在 `contracts.musicGenerationProviders` 中声明的 Provider id 的廉价音乐生成身份验证元数据，包括 Provider 拥有的身份验证别名和基础 URL 保护。                                                                                             |
+| `toolMetadata`                      | 否   | `Record<string, object>`         | 在 `contracts.tools` 中声明的 Plugin 拥有 Tool 的廉价可用性元数据。当 Tool 不应在配置、环境变量或身份验证证据存在之前加载运行时时使用它。                                                                                                |
 | `channelConfigs`                    | 否   | `Record<string, object>`         | 在运行时加载之前合并到发现和验证接口的清单拥有 Channel 配置元数据。                                                                                                                                                                     |
 | `skills`                            | 否   | `string[]`                       | 要加载的 Skill 目录，相对于 Plugin 根目录。                                                                                                                                                                                             |
 | `name`                              | 否   | `string`                         | 人类可读的 Plugin 名称。                                                                                                                                                                                                                |
@@ -228,9 +233,12 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 
 此块仅为元数据。它不注册运行时行为，也不替换 `register(...)`、`setupEntry` 或其他运行时/Plugin 入口点。当前使用者在更广泛的 Plugin 加载之前将其用作缩小提示，因此缺少激活元数据通常只影响性能；在旧版清单所有权回退仍然存在的情况下，不应改变正确性。
 
+每个 Plugin 都应有意设置 `activation.onStartup`。仅当 Plugin 必须在 Gateway 启动期间运行时，才将其设置为 `true`。当 Plugin 在启动时处于惰性状态，且应仅从更窄的触发器加载时，将其设置为 `false`。省略 `onStartup` 不再隐式触发 Plugin 的启动加载；对启动、Channel、配置、Agent 测试框架、内存或其他更窄的激活触发器使用显式激活元数据。
+
 ```json
 {
   "activation": {
+    "onStartup": false,
     "onProviders": ["openai"],
     "onCommands": ["models"],
     "onChannels": ["web"],
@@ -243,6 +251,7 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 
 | 字段               | 必需 | 类型                                                 | 含义                                                                                                                                 |
 | ------------------ | ---- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `onStartup`        | 否   | `boolean`                                            | 显式 Gateway 启动激活。每个 Plugin 都应设置此项。`true` 在启动时导入 Plugin；`false` 使其保持启动惰性，除非另一个匹配的触发器需要加载。|
 | `onProviders`      | 否   | `string[]`                                           | 应将此 Plugin 包含在激活/加载计划中的 Provider id。                                                                                  |
 | `onAgentHarnesses` | 否   | `string[]`                                           | 应将此 Plugin 包含在激活/加载计划中的嵌入式 Agent 测试框架运行时 id。对于 CLI 后端别名，使用顶级 `cliBackends`。                      |
 | `onCommands`       | 否   | `string[]`                                           | 应将此 Plugin 包含在激活/加载计划中的命令 id。                                                                                       |
@@ -253,6 +262,7 @@ OpenClaw 也会自动检测这些 Bundle 布局，但不会针对此处描述的
 
 当前活跃的使用者：
 
+- Gateway 启动规划对显式启动导入使用 `activation.onStartup`
 - 命令触发的 CLI 规划回退到旧版 `commandAliases[].cliCommand` 或 `commandAliases[].name`
 - Agent 运行时启动规划对嵌入式测试框架使用 `activation.onAgentHarnesses`，对 CLI 运行时别名使用顶级 `cliBackends[]`
 - Channel 触发的设置/Channel 规划在缺少显式 Channel 激活元数据时回退到旧版 `channels[]` 所有权
@@ -899,7 +909,7 @@ OpenClaw 从多个根发现 Plugin（打包的、全局安装的、工作区的�
 - 原生清单使用 JSON5 解析，因此只要最终值仍然是对象，注释、尾随逗号和不带引号的键都是允许的。
 - 清单加载器只读取已记录的清单字段。避免自定义顶级键。
 - `channels`、`providers`、`cliBackends` 和 `skills` 在 Plugin 不需要它们时都可以省略。
-- `providerDiscoveryEntry` 必须保持轻量级，不应导入广泛的运行时代码；将其用于静态 Provider 目录元数据或窄发现描述符，而不是请求时执行。
+- `providerCatalogEntry` 必须保持轻量级，不应导入广泛的运行时代码；将其用于静态 Provider 目录元数据或窄发现描述符，而不是请求时执行。`providerDiscoveryEntry` 是旧版拼写，现有 Plugin 仍然有效。
 - 专属 Plugin 类型通过 `plugins.slots.*` 选择：`kind: "memory"` 通过 `plugins.slots.memory`，`kind: "context-engine"` 通过 `plugins.slots.contextEngine`（默认 `legacy`）。
 - 环境变量元数据（`setup.providers[].envVars`、已弃用的 `providerAuthEnvVars` 和 `channelEnvVars`）仅是声明性的。状态、审计、Cron 投递验证和其他只读接口在将环境变量视为已配置之前仍然应用 Plugin 信任和有效激活策略。
 - 关于需要 Provider 代码的运行时向导元数据，请参见 [Provider 运行时 Hook](/plugins/architecture-internals#provider-runtime-hooks)。

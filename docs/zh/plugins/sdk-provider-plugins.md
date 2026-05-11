@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "10e5c493ac1d3d7d0e5a222d2bf006d4"
+mmh3_hash: "29cf82df9c0721aa879eca685a258964"
 title: "构建 Provider Plugin"
 sidebarTitle: "Provider Plugin"
 summary: "构建 OpenClaw 模型 Provider Plugin 的分步指南"
@@ -8,8 +8,6 @@ read_when:
   - 您想向 OpenClaw 添加 OpenAI 兼容代理或自定义 LLM
   - 您需要了解 Provider 身份验证、目录和运行时 Hook
 ---
-
-# 构建 Provider Plugin
 
 本指南演示如何构建向 OpenClaw 添加模型 Provider (LLM) 的 Provider Plugin。完成后，您将拥有一个具有模型目录、API 密钥身份验证和动态模型解析的 Provider。
 
@@ -88,7 +86,7 @@ read_when:
   </Step>
 
   <Step title="注册 Provider">
-    最小 Provider 需要 `id`、`label`、`auth` 和 `catalog`：
+    最小文本 Provider 需要 `id`、`label`、`auth` 和 `catalog`。`catalog` 是 Provider 自有的运行时/配置 Hook；它可以调用实时厂商 API 并返回 `models.providers` 条目。
 
     ```typescript index.ts
     import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
@@ -155,9 +153,29 @@ read_when:
             },
           },
         });
+
+        api.registerModelCatalogProvider({
+          provider: "acme-ai",
+          kinds: ["text"],
+          liveCatalog: async (ctx) => {
+            const apiKey = ctx.resolveProviderApiKey("acme-ai").apiKey;
+            if (!apiKey) return null;
+            return [
+              {
+                kind: "text",
+                provider: "acme-ai",
+                model: "acme-large",
+                label: "Acme Large",
+                source: "live",
+              },
+            ];
+          },
+        });
       },
     });
     ```
+
+    `registerModelCatalogProvider` 是列表/帮助/选择器 UI 的新型控制平面目录界面。将其用于文本、图像生成、视频生成和音乐生成行。将厂商端点调用和响应映射保留在 Plugin 中；OpenClaw 拥有共享行形状、来源标签和帮助渲染。
 
     这是一个可工作的 Provider。用户现在可以使用 `openclaw onboard --acme-ai-api-key <key>` 并选择 `acme-ai/acme-large` 作为模型。
 
@@ -303,7 +321,7 @@ read_when:
       每个家族构建器由来自同一个包的较低级别公共辅助工具组成，当 Provider 需要偏离通用模式时可以使用这些辅助工具：
 
       - `openclaw/plugin-sdk/provider-model-shared` — `ProviderReplayFamily`、`buildProviderReplayFamilyHooks(...)`，以及原始重播构建器（`buildOpenAICompatibleReplayPolicy`、`buildAnthropicReplayPolicyForModel`、`buildGoogleGeminiReplayPolicy`、`buildHybridAnthropicOrOpenAIReplayPolicy`）。还导出 Gemini 重播辅助工具（`sanitizeGoogleGeminiReplayHistory`、`resolveTaggedReasoningOutputMode`）和端点/模型辅助工具（`resolveProviderEndpoint`、`normalizeProviderId`、`normalizeGooglePreviewModelId`、`normalizeNativeXaiModelId`）。
-      - `openclaw/plugin-sdk/provider-stream` — `ProviderStreamFamily`、`buildProviderStreamFamilyHooks(...)`、`composeProviderStreamWrappers(...)`，以及共享 OpenAI/Codex 包装器（`createOpenAIAttributionHeadersWrapper`、`createOpenAIFastModeWrapper`、`createOpenAIServiceTierWrapper`、`createOpenAIResponsesContextManagementWrapper`、`createCodexNativeWebSearchWrapper`）、DeepSeek V4 OpenAI 兼容包装器（`createDeepSeekV4OpenAICompatibleThinkingWrapper`）以及共享代理/Provider 包装器（`createOpenRouterWrapper`、`createToolStreamWrapper`、`createMinimaxFastModeWrapper`）。
+      - `openclaw/plugin-sdk/provider-stream` — `ProviderStreamFamily`、`buildProviderStreamFamilyHooks(...)`、`composeProviderStreamWrappers(...)`，以及共享 OpenAI/Codex 包装器（`createOpenAIAttributionHeadersWrapper`、`createOpenAIFastModeWrapper`、`createOpenAIServiceTierWrapper`、`createOpenAIResponsesContextManagementWrapper`、`createCodexNativeWebSearchWrapper`）、DeepSeek V4 OpenAI 兼容包装器（`createDeepSeekV4OpenAICompatibleThinkingWrapper`）、Anthropic Messages 思维预填充清理（`createAnthropicThinkingPrefillPayloadWrapper`），以及共享代理/Provider 包装器（`createOpenRouterWrapper`、`createToolStreamWrapper`、`createMinimaxFastModeWrapper`）。
       - `openclaw/plugin-sdk/provider-tools` — `ProviderToolCompatFamily`、`buildProviderToolCompatFamilyHooks("gemini")`、底层 Gemini Schema 辅助工具（`normalizeGeminiToolSchemas`、`inspectGeminiToolSchemas`）以及 xAI 兼容辅助工具（`resolveXaiModelCompatPatch()`、`applyXaiModelCompat(model)`）。捆绑的 xAI Plugin 使用 `normalizeResolvedModel` 加上 `contributeResolvedModelCompat` 来让 xAI 规则由 Provider 拥有。
 
       一些流辅助工具有意保留在 Provider 本地。`@openclaw/anthropic-provider` 在其自己的公共 `api.ts` / `contract-api.ts` 接缝中保留 `wrapAnthropicProviderStream`、`resolveAnthropicBetas`、`resolveAnthropicFastMode`、`resolveAnthropicServiceTier` 和底层 Anthropic 包装构建器，因为它们编码了 Claude OAuth beta 处理和 `context1m` 门控。xAI Plugin 类似地在其自己的 `wrapStreamFn` 中保留原生 xAI Responses 整形（`/fast` 别名、默认 `tool_stream`、不支持的严格工具清理、xAI 特定的推理有效载荷删除）。
@@ -381,7 +399,8 @@ read_when:
     </Tabs>
 
     <Accordion title="所有可用的 Provider Hook">
-      OpenClaw 按此顺序调用 Hook。大多数 Provider 只使用 2-3 个：
+      OpenClaw 按此顺序调用 Hook。大多数 Provider 只使用 2-3 个。
+      OpenClaw 不再调用的仅限兼容性的 Provider 字段（例如 `ProviderPlugin.capabilities` 和 `suppressBuiltInModel`）不在此列表中。
 
       | # | Hook | 何时使用 |
       | --- | --- | --- |
@@ -398,37 +417,35 @@ read_when:
       | 11 | `prepareDynamicModel` | 解析前的异步元数据获取 |
       | 12 | `normalizeResolvedModel` | 到达运行器前的传输重写 |
       | 13 | `contributeResolvedModelCompat` | 在另一个兼容传输后面的厂商模型的兼容标志 |
-      | 14 | `capabilities` | 旧版静态能力包；仅用于兼容性 |
-      | 15 | `normalizeToolSchemas` | 注册前 Provider 自有的工具 Schema 清理 |
-      | 16 | `inspectToolSchemas` | Provider 自有的工具 Schema 诊断 |
-      | 17 | `resolveReasoningOutputMode` | 标记与原生推理输出契约 |
-      | 18 | `prepareExtraParams` | 默认请求参数 |
-      | 19 | `createStreamFn` | 完全自定义 StreamFn 传输 |
-      | 20 | `wrapStreamFn` | 正常流路径上的自定义标头/正文包装器 |
-      | 21 | `resolveTransportTurnState` | 原生每轮标头/元数据 |
-      | 22 | `resolveWebSocketSessionPolicy` | 原生 WS Session 标头/冷却 |
-      | 23 | `formatApiKey` | 自定义运行时令牌形状 |
-      | 24 | `refreshOAuth` | 自定义 OAuth 刷新 |
-      | 25 | `buildAuthDoctorHint` | 认证修复指导 |
-      | 26 | `matchesContextOverflowError` | Provider 自有的溢出检测 |
-      | 27 | `classifyFailoverReason` | Provider 自有的速率限制/过载分类 |
-      | 28 | `isCacheTtlEligible` | Prompt 缓存 TTL 门控 |
-      | 29 | `buildMissingAuthMessage` | 自定义缺失认证提示 |
-      | 30 | `suppressBuiltInModel` | 隐藏过时的上游行 |
-      | 31 | `augmentModelCatalog` | 合成前向兼容行 |
-      | 32 | `resolveThinkingProfile` | 模型特定的 `/think` 选项集 |
-      | 33 | `isBinaryThinking` | 二进制思维开/关兼容性 |
-      | 34 | `supportsXHighThinking` | `xhigh` 推理支持兼容性 |
-      | 35 | `resolveDefaultThinkingLevel` | 默认 `/think` 策略兼容性 |
-      | 36 | `isModernModelRef` | 实时/冒烟模型匹配 |
-      | 37 | `prepareRuntimeAuth` | 推理前的令牌交换 |
-      | 38 | `resolveUsageAuth` | 自定义使用凭证解析 |
-      | 39 | `fetchUsageSnapshot` | 自定义使用端点 |
-      | 40 | `createEmbeddingProvider` | 用于内存/搜索的 Provider 自有嵌入适配器 |
-      | 41 | `buildReplayPolicy` | 自定义对话重播/压缩策略 |
-      | 42 | `sanitizeReplayHistory` | 通用清理后的 Provider 特定重播重写 |
-      | 43 | `validateReplayTurns` | 嵌入运行器前的严格重播轮次验证 |
-      | 44 | `onModelSelected` | 选择后回调（例如遥测） |
+      | 14 | `normalizeToolSchemas` | 注册前 Provider 自有的工具 Schema 清理 |
+      | 15 | `inspectToolSchemas` | Provider 自有的工具 Schema 诊断 |
+      | 16 | `resolveReasoningOutputMode` | 标记与原生推理输出契约 |
+      | 17 | `prepareExtraParams` | 默认请求参数 |
+      | 18 | `createStreamFn` | 完全自定义 StreamFn 传输 |
+      | 19 | `wrapStreamFn` | 正常流路径上的自定义标头/正文包装器 |
+      | 20 | `resolveTransportTurnState` | 原生每轮标头/元数据 |
+      | 21 | `resolveWebSocketSessionPolicy` | 原生 WS Session 标头/冷却 |
+      | 22 | `formatApiKey` | 自定义运行时令牌形状 |
+      | 23 | `refreshOAuth` | 自定义 OAuth 刷新 |
+      | 24 | `buildAuthDoctorHint` | 认证修复指导 |
+      | 25 | `matchesContextOverflowError` | Provider 自有的溢出检测 |
+      | 26 | `classifyFailoverReason` | Provider 自有的速率限制/过载分类 |
+      | 27 | `isCacheTtlEligible` | Prompt 缓存 TTL 门控 |
+      | 28 | `buildMissingAuthMessage` | 自定义缺失认证提示 |
+      | 29 | `augmentModelCatalog` | 合成前向兼容行 |
+      | 30 | `resolveThinkingProfile` | 模型特定的 `/think` 选项集 |
+      | 31 | `isBinaryThinking` | 二进制思维开/关兼容性 |
+      | 32 | `supportsXHighThinking` | `xhigh` 推理支持兼容性 |
+      | 33 | `resolveDefaultThinkingLevel` | 默认 `/think` 策略兼容性 |
+      | 34 | `isModernModelRef` | 实时/冒烟模型匹配 |
+      | 35 | `prepareRuntimeAuth` | 推理前的令牌交换 |
+      | 36 | `resolveUsageAuth` | 自定义使用凭证解析 |
+      | 37 | `fetchUsageSnapshot` | 自定义使用端点 |
+      | 38 | `createEmbeddingProvider` | 用于内存/搜索的 Provider 自有嵌入适配器 |
+      | 39 | `buildReplayPolicy` | 自定义对话重播/压缩策略 |
+      | 40 | `sanitizeReplayHistory` | 通用清理后的 Provider 特定重播重写 |
+      | 41 | `validateReplayTurns` | 嵌入运行器前的严格重播轮次验证 |
+      | 42 | `onModelSelected` | 选择后回调（例如遥测） |
 
       运行时回退说明：
 
@@ -530,6 +547,13 @@ read_when:
         api.registerRealtimeVoiceProvider({
           id: "acme-ai",
           label: "Acme Realtime Voice",
+          capabilities: {
+            transports: ["gateway-relay"],
+            inputAudioFormats: [{ encoding: "pcm16", sampleRateHz: 24000, channels: 1 }],
+            outputAudioFormats: [{ encoding: "pcm16", sampleRateHz: 24000, channels: 1 }],
+            supportsBargeIn: true,
+            supportsToolCalls: true,
+          },
           isConfigured: ({ providerConfig }) => Boolean(providerConfig.apiKey),
           createBridge: (req) => ({
             // 仅当 Provider 接受一个调用的多个工具响应时才设置此项，
@@ -538,6 +562,7 @@ read_when:
             connect: async () => {},
             sendAudio: () => {},
             setMediaTimestamp: () => {},
+            handleBargeIn: () => {},
             submitToolResult: () => {},
             acknowledgeMark: () => {},
             close: () => {},
@@ -545,6 +570,8 @@ read_when:
           }),
         });
         ```
+
+        声明 `capabilities` 使 `talk.catalog` 能够向浏览器和原生 Talk 客户端暴露有效模式、传输、音频格式和功能标志。当传输能检测到人类正在打断助手播放且 Provider 支持截断或清除活动音频响应时，实现 `handleBargeIn`。
       </Tab>
       <Tab title="媒体理解">
         ```typescript

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "48498d953b4d38e3353981c13d6c2ea0"
+mmh3_hash: "26af0928da35066f13a9f2446f04cc41"
 summary: "Plugin 内部架构：能力模型、所有权、契约、加载管道和运行时辅助工具"
 read_when:
   - 构建或调试原生 OpenClaw Plugin
@@ -124,7 +124,7 @@ OpenClaw 的 Plugin 系统有四层：
     核心决定已发现的 Plugin 是启用、禁用、阻止还是选择为专有槽（如内存）。
   </Step>
   <Step title="运行时加载">
-    原生 OpenClaw Plugin 通过 jiti 在进程内加载并将能力注册到中央注册表。兼容的 Bundle 被规范化为注册表记录，而不导入运行时代码。
+    原生 OpenClaw Plugin 在进程内加载并将能力注册到中央注册表。已打包的 JavaScript 通过原生 `require` 加载；第三方本地源 TypeScript 是紧急 Jiti 回退方案。兼容的 Bundle 被规范化为注册表记录，而不导入运行时代码。
   </Step>
   <Step title="接口消费">
     OpenClaw 的其余部分读取注册表以暴露 Tool、Channel、Provider 设置、Hook、HTTP 路由、CLI 命令和服务。
@@ -146,19 +146,29 @@ OpenClaw 的 Plugin 系统有四层：
 
 这种分离允许 OpenClaw 在完整运行时激活之前验证配置、解释缺失/禁用的 Plugin 并构建 UI/模式提示。
 
-### Plugin 查找表
+### Plugin 元数据快照和查找表
 
-Gateway 启动时从已安装 Plugin 索引和当前配置快照的清单注册表构建 `PluginLookUpTable`。该表仅包含元数据：存储 Plugin id、清单记录、诊断、所有者映射、Plugin id 规范化器以及启动 Plugin 计划。它不保存已加载的 Plugin 模块、Provider SDK、包内容或运行时导出。
+Gateway 启动时为当前配置快照构建一个 `PluginMetadataSnapshot`。快照仅包含元数据：存储已安装的 Plugin 索引、清单注册表、清单诊断、所有者映射、Plugin id 规范化器以及清单记录。它不保存已加载的 Plugin 模块、Provider SDK、包内容或运行时导出。
 
-查找表使重复的启动决策保持在快速路径上：
+Plugin 感知的配置验证、启动自动启用和 Gateway Plugin 引导使用该快照，而不是独立重建清单/索引元数据。`PluginLookUpTable` 从同一快照派生，并添加当前运行时配置的启动 Plugin 计划。
+
+Gateway 启动后，将当前元数据快照保留为可替换的运行时产品。重复的运行时 Provider 发现可以借用该快照，而不是为每次 Provider 目录传递重建已安装索引和清单注册表。在 Gateway 关闭、配置/Plugin 清单变更、安装记录写入和持久化索引策略变更时清除或替换快照；当不存在兼容的当前快照时，调用方回退到冷清单/索引路径。兼容性检查必须包括 Plugin 发现根（如 `plugins.load.paths` 和默认 Agent 工作区），因为工作区 Plugin 是元数据范围的一部分。
+
+快照和查找表使重复的启动决策保持在快速路径上：
 
 - Channel 所有权
 - 延迟 Channel 启动
 - 启动 Plugin id
 - Provider 和 CLI 后端所有权
 - 设置 Provider、命令别名、模型目录 Provider 和清单契约所有权
+- Plugin 配置模式和 Channel 配置模式验证
+- 启动自动启用决策
 
-安全边界是快照替换，而非变更。当配置、Plugin 清单、安装记录或持久化索引策略发生变化时重建表。不要将其视为宽泛的可变全局注册表，也不要保留无限的历史表。运行时 Plugin 加载与查找表元数据保持分离，以便陈旧的运行时状态不会隐藏在元数据缓存后面。
+安全边界是快照替换，而非变更。当配置、Plugin 清单、安装记录或持久化索引策略发生变化时重建快照。不要将其视为宽泛的可变全局注册表，也不要保留无限的历史快照。运行时 Plugin 加载与元数据快照保持分离，以便陈旧的运行时状态不会隐藏在元数据缓存后面。
+
+缓存规则记录在 [Plugin 架构内部机制](/plugins/architecture-internals#plugin-cache-boundary) 中：除非调用方为当前流程持有显式快照、查找表或清单注册表，否则清单和发现元数据是新鲜的。隐藏的元数据缓存和挂钟 TTL 不属于 Plugin 加载的一部分。只有运行时加载器、模块和依赖工件缓存可以在代码或已安装工件实际加载后保留。
+
+部分冷路径调用方仍然直接从持久化的已安装 Plugin 索引重建清单注册表，而不是接收 Gateway `PluginLookUpTable`。该路径现在按需重建注册表；当调用方已经拥有一个时，优先通过运行时流程传递当前查找表或显式清单注册表。
 
 ### 激活规划
 
@@ -464,7 +474,7 @@ OpenClaw 导出能力，而不是实现便利性。
 - 厂商特定的便利辅助工具
 - 作为实现细节的设置/入门辅助工具
 
-某些打包 Plugin 辅助子路径仍然保留在生成的 SDK 导出映射中以供兼容性和打包 Plugin 维护。当前示例包括 `plugin-sdk/feishu`、`plugin-sdk/feishu-setup`、`plugin-sdk/zalo`、`plugin-sdk/zalo-setup` 和几个 `plugin-sdk/matrix*` 接缝。将这些视为保留的实现细节导出，而不是新第三方 Plugin 的推荐 SDK 模式。
+保留的打包 Plugin 辅助子路径已从生成的 SDK 导出映射中撤回。将所有者特定的辅助工具保留在所属 Plugin 包内；仅将可重用的宿主行为提升为通用 SDK 契约，例如 `plugin-sdk/gateway-runtime`、`plugin-sdk/security-runtime` 和 `plugin-sdk/plugin-config-runtime`。
 
 ## 内部机制和参考
 

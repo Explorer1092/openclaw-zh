@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "26921bbc2598765f7914bb731a8a3222"
+mmh3_hash: "59b2f11289390585b363c3cee8afe3c0"
 summary: "社区维护的 OpenClaw Plugin：浏览、安装和提交您自己的 Plugin"
 read_when:
   - 您想查找第三方 OpenClaw Plugin
@@ -9,15 +9,15 @@ title: "社区 Plugin"
 
 # 社区 Plugin
 
-社区 Plugin 是扩展 OpenClaw 功能的第三方包，可添加新的 Channel、Tool、Provider 或其他能力。它们由社区构建和维护，发布在 [ClawHub](/tools/clawhub) 或 npm 上，并可以通过单个命令安装。
+社区 Plugin 是扩展 OpenClaw 功能的第三方包，可添加新的 Channel、Tool、Provider 或其他能力。它们由社区构建和维护，通常发布在 [ClawHub](/clawhub) 上，并可以通过单个命令安装。npm 在 ClawHub 包安装推出期间仍是裸包规范的启动默认值。
 
 ClawHub 是社区 Plugin 的规范发现入口。请不要仅仅为了在此处增加可发现性而打开文档 PR；请改为在 ClawHub 上发布。
 
 ```bash
-openclaw plugins install <package-name>
+openclaw plugins install clawhub:<package-name>
 ```
 
-OpenClaw 首先检查 ClawHub，然后自动回退到 npm。
+对于托管在 npm 上的包，使用 `openclaw plugins install <package-name>`。
 
 ## 已收录 Plugin
 
@@ -111,13 +111,24 @@ openclaw plugins install @tencent-connect/openclaw-qqbot
 openclaw plugins install @wecom/wecom-openclaw-plugin
 ```
 
+### Yuanbao
+
+腾讯元宝团队出品的 OpenClaw 元宝 Channel Plugin。由 WebSocket 持久连接驱动，支持私信和群聊、流式回复、主动消息、图片/文件/音频/视频处理、Markdown 格式化、内置访问控制以及斜杠命令菜单。
+
+- **npm：** `openclaw-plugin-yuanbao`
+- **仓库：** [github.com/YuanbaoTeam/yuanbao-openclaw-plugin](https://github.com/YuanbaoTeam/yuanbao-openclaw-plugin)
+
+```bash
+openclaw plugins install openclaw-plugin-yuanbao
+```
+
 ## 提交您的 Plugin
 
 我们欢迎实用、有文档且安全可操作的社区 Plugin。
 
 <Steps>
   <Step title="发布到 ClawHub 或 npm">
-    您的 Plugin 必须可通过 `openclaw plugins install <package-name>` 安装。发布到 [ClawHub](/tools/clawhub)（首选）或 npm。完整指南请参见 [构建 Plugin](/plugins/building-plugins)。
+    您的 Plugin 必须可通过 `openclaw plugins install <package-name>` 安装。发布到 [ClawHub](/clawhub)（除非您特别需要仅限 npm 的分发）。完整指南请参见 [构建 Plugin](/plugins/building-plugins)。
 
   </Step>
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f535d12e083c42bd368b69184f2f86d2"
+mmh3_hash: "c745b63edf6a2e0c51fd6b697fe6a2f2"
 title: "Plugin 运行时辅助工具"
 sidebarTitle: "运行时辅助工具"
 summary: "api.runtime -- 注入到 Plugin 的运行时辅助工具"
@@ -26,6 +26,26 @@ register(api) {
 }
 ```
 
+## 配置加载和写入
+
+优先使用已经传入活跃调用路径的配置，例如注册期间的 `api.config` 或 Channel/Provider 回调上的 `cfg` 参数。这样可以让一个进程快照在整个工作流中流转，而不是在热路径上重新解析配置。
+
+仅当长期存活的处理程序需要当前进程快照且该函数没有传入配置时，才使用 `api.runtime.config.current()`。返回值是只读的；在编辑之前请克隆或使用变更辅助工具。
+
+Tool 工厂接收 `ctx.runtimeConfig` 以及 `ctx.getRuntimeConfig()`。当配置在 Tool 定义创建后可能更改时，在长期存活 Tool 的 `execute` 回调内使用 getter。
+
+使用 `api.runtime.config.mutateConfigFile(...)` 或 `api.runtime.config.replaceConfigFile(...)` 持久化更改。每次写入都必须选择明确的 `afterWrite` 策略：
+
+- `afterWrite: { mode: "auto" }` 让 Gateway 重载计划程序来决定。
+- `afterWrite: { mode: "restart", reason: "..." }` 当写入者知道热重载不安全时强制清洁重启。
+- `afterWrite: { mode: "none", reason: "..." }` 仅当调用者拥有后续操作时才抑制自动重载/重启。
+
+变更辅助工具返回 `afterWrite` 加上类型化的 `followUp` 摘要，以便调用者可以记录或测试是否请求了重启。Gateway 仍然拥有该重启实际发生的时机。
+
+`api.runtime.config.loadConfig()` 和 `api.runtime.config.writeConfigFile(...)` 是 `runtime-config-load-write` 下的已弃用兼容性辅助工具。它们在运行时警告一次，并在迁移窗口期间对旧版外部 Plugin 保持可用。捆绑 Plugin 不得使用它们；如果 Plugin 代码调用它们或从 Plugin SDK 子路径导入这些辅助工具，配置边界守护会失败。
+
+对于直接 SDK 导入，请使用聚焦的配置子路径，而不是宽泛的 `openclaw/plugin-sdk/config-runtime` 兼容性桶：`config-contracts` 用于类型，`plugin-config-runtime` 用于已加载配置断言和 Plugin 条目查找，`runtime-config-snapshot` 用于当前进程快照，`config-mutation` 用于写入。捆绑 Plugin 测试应直接模拟这些聚焦子路径，而不是模拟宽泛的兼容性桶。
+
 ## 运行时命名空间
 
 <AccordionGroup>
@@ -43,7 +63,18 @@ register(api) {
     const identity = api.runtime.agent.resolveAgentIdentity(cfg);
 
     // 获取默认思考级别
-    const thinking = api.runtime.agent.resolveThinkingDefault(cfg, provider, model);
+    const thinking = api.runtime.agent.resolveThinkingDefault({
+      cfg,
+      provider,
+      model,
+    });
+
+    // 根据活跃 Provider 配置文件验证用户提供的思考级别
+    const policy = api.runtime.agent.resolveThinkingPolicy({ provider, model });
+    const level = api.runtime.agent.normalizeThinkingLevel("extra high");
+    if (level && policy.levels.some((entry) => entry.id === level)) {
+      // 将 level 传递给嵌入式运行
+    }
 
     // 获取 Agent 超时
     const timeoutMs = api.runtime.agent.resolveAgentTimeoutMs(cfg);
@@ -67,14 +98,23 @@ register(api) {
 
     `runEmbeddedPiAgent(...)` 作为兼容性别名保留。
 
+    `resolveThinkingPolicy(...)` 返回 Provider/模型支持的思考级别和可选默认值。Provider Plugin 通过其思考 Hook 拥有模型特定的配置文件，因此 Tool Plugin 应调用此运行时辅助工具，而不是导入或复制 Provider 列表。
+
+    `normalizeThinkingLevel(...)` 将 `on`、`x-high` 或 `extra high` 等用户文本转换为规范存储级别，然后再对照已解析的策略检查它。
+
     **会话存储辅助工具**在 `api.runtime.agent.session` 下：
 
     ```typescript
     const storePath = api.runtime.agent.session.resolveStorePath(cfg);
-    const store = api.runtime.agent.session.loadSessionStore(cfg);
-    await api.runtime.agent.session.saveSessionStore(cfg, store);
+    const store = api.runtime.agent.session.loadSessionStore(storePath);
+    await api.runtime.agent.session.updateSessionStore(storePath, (nextStore) => {
+      // 在不从旧状态替换整个文件的情况下修补一个条目。
+      nextStore[sessionKey] = { ...nextStore[sessionKey], thinkingLevel: "high" };
+    });
     const filePath = api.runtime.agent.session.resolveSessionFilePath(cfg, sessionId);
     ```
+
+    对于运行时写入，优先使用 `updateSessionStore(...)` 或 `updateSessionStoreEntry(...)`。它们通过 Gateway 拥有的会话存储写入器路由，保留并发更新，并重用热缓存。`saveSessionStore(...)` 仍可用于兼容性和离线维护式重写。
 
   </Accordion>
   <Accordion title="api.runtime.agent.defaults">
@@ -84,6 +124,26 @@ register(api) {
     const model = api.runtime.agent.defaults.model; // 例如 "anthropic/claude-sonnet-4-6"
     const provider = api.runtime.agent.defaults.provider; // 例如 "anthropic"
     ```
+
+  </Accordion>
+
+  <Accordion title="api.runtime.llm">
+    在不导入 Provider 内部或复制 OpenClaw 模型/认证/基础 URL 准备的情况下运行宿主拥有的文本补全。
+
+    ```typescript
+    const result = await api.runtime.llm.complete({
+      messages: [{ role: "user", content: "Summarize this transcript." }],
+      purpose: "my-plugin.summary",
+      maxTokens: 512,
+      temperature: 0.2,
+    });
+    ```
+
+    该辅助工具使用与 OpenClaw 内置运行时相同的简单补全准备路径和宿主拥有的运行时配置快照。上下文引擎接收会话绑定的 `llm.complete` 能力，因此模型调用使用活跃会话的 Agent，不会静默回退到默认 Agent。结果包括 Provider/模型/Agent 归因，以及标准化的令牌、缓存和估算成本使用量（如果可用）。
+
+    <Warning>
+    模型覆盖需要操作员通过配置中的 `plugins.entries.<id>.llm.allowModelOverride: true` 选择加入。使用 `plugins.entries.<id>.llm.allowedModels` 将受信任 Plugin 限制到特定的规范 `provider/model` 目标。跨 Agent 补全需要 `plugins.entries.<id>.llm.allowAgentIdOverride: true`。
+    </Warning>
 
   </Accordion>
   <Accordion title="api.runtime.subagent">
@@ -135,14 +195,18 @@ register(api) {
     });
     ```
 
-    在 Gateway 内部，此运行时是进程内的。在 Plugin CLI 命令中，它通过 RPC 调用已配置的 Gateway，因此 `openclaw googlemeet recover-tab` 等命令可以从终端检查配对节点。节点命令仍然通过正常的 Gateway 节点配对、命令允许列表和节点本地命令处理。
+    在 Gateway 内部，此运行时是进程内的。在 Plugin CLI 命令中，它通过 RPC 调用已配置的 Gateway，因此 `openclaw googlemeet recover-tab` 等命令可以从终端检查配对节点。节点命令仍然通过正常的 Gateway 节点配对、命令允许列表、Plugin 节点调用策略和节点本地命令处理。
+
+    暴露危险节点宿主命令的 Plugin 应使用 `api.registerNodeInvokePolicy(...)` 注册节点调用策略。该策略在 Gateway 的命令允许列表检查之后、命令转发到节点之前运行，因此直接的 `node.invoke` 调用和更高层的 Plugin Tool 共享相同的执行路径。
 
   </Accordion>
-  <Accordion title="api.runtime.taskFlow">
+  <Accordion title="api.runtime.tasks.managedFlows">
     将 Task Flow 运行时绑定到现有 OpenClaw Session 键或受信任的 Tool 上下文，然后创建和管理 Task Flow 而无需在每次调用时传递所有者。
 
+    Task Flow 跟踪持久的多步骤工作流状态。它不是调度器：使用 Cron 或 `api.session.workflow.scheduleSessionTurn(...)` 进行未来唤醒，然后在该工作需要流状态、子任务、等待或取消时，从已调度的轮次中使用 `managedFlows`。
+
     ```typescript
-    const taskFlow = api.runtime.taskFlow.fromToolContext(ctx);
+    const taskFlow = api.runtime.tasks.managedFlows.fromToolContext(ctx);
 
     const created = taskFlow.createManaged({
       controllerId: "my-plugin/review-batch",
@@ -224,6 +288,34 @@ register(api) {
       filePath: "/tmp/inbound-file.pdf",
       cfg: api.config,
     });
+
+    // 通过特定 Provider/模型进行结构化图像提取。
+    // 至少包含一张图像；文本输入是补充上下文。
+    const evidence = await api.runtime.mediaUnderstanding.extractStructuredWithModel({
+      provider: "codex",
+      model: "gpt-5.5",
+      input: [
+        {
+          type: "image",
+          buffer: receiptImageBuffer,
+          fileName: "receipt.png",
+          mime: "image/png",
+        },
+        { type: "text", text: "Prefer the printed total over handwritten notes." },
+      ],
+      instructions: "Extract vendor, total, and searchable tags.",
+      schemaName: "receipt.evidence",
+      jsonSchema: {
+        type: "object",
+        properties: {
+          vendor: { type: "string" },
+          total: { type: "number" },
+          tags: { type: "array", items: { type: "string" } },
+        },
+        required: ["vendor", "total"],
+      },
+      cfg: api.config,
+    });
     ```
 
     当没有产生输出时（例如跳过的输入），返回 `{ text: undefined }`。
@@ -285,12 +377,19 @@ register(api) {
 
   </Accordion>
   <Accordion title="api.runtime.config">
-    配置加载和写入。
+    当前运行时配置快照和事务性配置写入。优先使用已经传入活跃调用路径的配置；仅当处理程序需要直接获取进程快照时才使用 `current()`。
 
     ```typescript
-    const cfg = await api.runtime.config.loadConfig();
-    await api.runtime.config.writeConfigFile(cfg);
+    const cfg = api.runtime.config.current();
+    await api.runtime.config.mutateConfigFile({
+      afterWrite: { mode: "auto" },
+      mutate(draft) {
+        draft.plugins ??= {};
+      },
+    });
     ```
+
+    `mutateConfigFile(...)` 和 `replaceConfigFile(...)` 返回一个 `followUp` 值，例如 `{ mode: "restart", requiresRestart: true, reason }`，它记录了写入者意图，而不将重启控制权从 Gateway 中移走。
 
   </Accordion>
   <Accordion title="api.runtime.system">
@@ -298,7 +397,12 @@ register(api) {
 
     ```typescript
     await api.runtime.system.enqueueSystemEvent(event);
-    api.runtime.system.requestHeartbeatNow();
+    api.runtime.system.requestHeartbeat({
+      source: "other",
+      intent: "event",
+      reason: "plugin-event",
+    });
+    api.runtime.system.requestHeartbeatNow({ reason: "plugin-event" }); // 已弃用的兼容性别名。
     const output = await api.runtime.system.runCommandWithTimeout(cmd, args, opts);
     const hint = api.runtime.system.formatNativeDependencyHint(pkg);
     ```
@@ -339,11 +443,28 @@ register(api) {
 
   </Accordion>
   <Accordion title="api.runtime.state">
-    状态目录解析。
+    状态目录解析和 SQLite 支持的键值存储。
 
     ```typescript
-    const stateDir = api.runtime.state.resolveStateDir();
+    const stateDir = api.runtime.state.resolveStateDir(process.env);
+    const store = api.runtime.state.openKeyedStore<MyRecord>({
+      namespace: "my-feature",
+      maxEntries: 200,
+      defaultTtlMs: 15 * 60_000,
+    });
+
+    await store.register("key-1", { value: "hello" });
+    const claimed = await store.registerIfAbsent("dedupe-key", { value: "first" });
+    const value = await store.lookup("key-1");
+    await store.consume("key-1");
+    await store.clear();
     ```
+
+    键值存储在重启后仍然存在，并按运行时绑定的 Plugin id 隔离。使用 `registerIfAbsent(...)` 进行原子去重声明：当键缺失或已过期并注册时返回 `true`，当活跃值已存在时返回 `false` 而不覆盖其值、创建时间或 TTL。限制：每个命名空间 `maxEntries` 条，每个 Plugin 1,000 条活跃行，JSON 值不超过 64KB，以及可选的 TTL 过期。
+
+    <Warning>
+    此版本仅限捆绑 Plugin 使用。
+    </Warning>
 
   </Accordion>
   <Accordion title="api.runtime.tools">

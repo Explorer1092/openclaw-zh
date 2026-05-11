@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a6e70a17afbe079a899b3a037ba2feeb"
+mmh3_hash: "4b4b4eb89de38759f9bd153e226016fb"
 summary: "安装和使用 Codex、Claude 和 Cursor Bundle 作为 OpenClaw Plugin"
 read_when:
   - 您想安装 Codex、Claude 或 Cursor 兼容的 Bundle
@@ -136,6 +136,7 @@ MCP 服务器可以使用 stdio 或 HTTP 传输：
 ```
 
 - `transport` 可以设置为 `"streamable-http"` 或 `"sse"`；当省略时，OpenClaw 使用 `sse`
+- `type: "http"` 是 CLI 原生的下游形状；在 OpenClaw 配置中使用 `transport: "streamable-http"`。`openclaw mcp set` 和 `openclaw doctor --fix` 会规范化常见别名。
 - 仅允许 `http:` 和 `https:` URL 方案
 - `headers` 值支持 `${ENV_VAR}` 插值
 - 同时具有 `command` 和 `url` 的服务器条目会被拒绝
@@ -147,6 +148,7 @@ MCP 服务器可以使用 stdio 或 HTTP 传输：
 OpenClaw 以 `serverName__toolName` 格式使用 Provider 安全名称注册 Bundle MCP Tool。例如，键为 `"vigil-harbor"` 并暴露 `memory_search` Tool 的服务器会注册为 `vigil-harbor__memory_search`。
 
 - `A-Za-z0-9_-` 以外的字符替换为 `-`
+- 以非字母开头的片段会加上字母前缀，因此像 `12306` 这样的数字服务器键会变成 Provider 安全的工具前缀
 - 服务器前缀上限为 30 个字符
 - 完整 Tool 名称上限为 64 个字符
 - 空服务器名称回退到 `mcp`
@@ -230,7 +232,9 @@ OpenClaw 首先检查原生 Plugin 格式：
 
 ## 运行时依赖和清理
 
-- 打包 Plugin 运行时依赖随 OpenClaw 包一起发布在 `dist/*` 下。OpenClaw 在启动时**不**为打包 Plugin 运行 `npm install`；发布管道负责提供完整的打包依赖有效载荷（参见 [发布](/reference/RELEASING) 中的发布后验证规则）。
+- 第三方兼容 Bundle 在启动时不会获得 `npm install` 修复。它们应通过 `openclaw plugins install` 安装，并在已安装的 Plugin 目录中附带所需的一切。
+- OpenClaw 自有的打包 Plugin 要么以轻量方式随核心发布，要么可通过 Plugin 安装器下载。Gateway 启动时从不为它们运行包管理器。
+- `openclaw doctor --fix` 会移除遗留的暂存依赖目录，并在配置引用的可下载 Plugin 从本地 Plugin 索引中缺失时恢复它们。
 
 ## 安全性
 

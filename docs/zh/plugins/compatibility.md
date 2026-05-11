@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9ab0f881b010c6a82f1d08ec607532de"
+mmh3_hash: "4a970cfd7a881bd6c6c14c7539b34dce"
 summary: "Plugin 兼容性契约、弃用元数据和迁移预期"
 title: "Plugin 兼容性"
 read_when:
@@ -49,6 +49,18 @@ openclaw-plugin-inspector ./my-plugin
 
 对 CI 注释使用 `--json` 以获得稳定的机器可读输出。OpenClaw 核心应公开检查器可以消费的契约和固定装置，但不应从主 `openclaw` 包发布检查器二进制文件。
 
+### 维护者验收通道
+
+在针对 OpenClaw Plugin 包验证外部检查器时，使用基于 Crabbox 的 Blacksmith Testbox 作为可安装包验收通道。在构建包之后，从干净的 OpenClaw 检出中运行它：
+
+```sh
+pnpm crabbox:run -- --provider blacksmith-testbox --timing-json --shell -- "pnpm install && pnpm build && npm exec --yes @openclaw/plugin-inspector@0.1.0 -- ./extensions/telegram --json"
+pnpm crabbox:run -- --provider blacksmith-testbox --timing-json --shell -- "npm exec --yes @openclaw/plugin-inspector@0.1.0 -- ./extensions/discord --json"
+pnpm crabbox:run -- --provider blacksmith-testbox --timing-json --shell -- "npm exec --yes @openclaw/plugin-inspector@0.1.0 -- <clawhub-plugin-dir> --json"
+```
+
+将此通道保持为维护者选择加入，因为它会安装外部 npm 包，并且可能会检查在仓库外克隆的 Plugin 包。本地仓库守护涵盖 SDK 导出映射、兼容性注册表元数据、已弃用 SDK 导入的减少以及打包扩展导入边界；Testbox 检查器证明以外部 Plugin 作者消费包的方式覆盖包。
+
 ## 弃用策略
 
 OpenClaw 不应在引入替换的同一版本中删除记录的 Plugin 契约。
@@ -72,13 +84,14 @@ OpenClaw 不应在引入替换的同一版本中删除记录的 Plugin 契约。
 - 旧版广泛 SDK 导入，如 `openclaw/plugin-sdk/compat`
 - 旧版仅 Hook Plugin 形态和 `before_agent_start`
 - 旧版 `activate(api)` Plugin 入口点，同时 Plugin 迁移到 `register(api)`
-- 旧版 SDK 别名，如 `openclaw/extension-api`、`openclaw/plugin-sdk/channel-runtime`、`openclaw/plugin-sdk/command-auth` 状态构建器、`openclaw/plugin-sdk/test-utils` 以及 `ClawdbotConfig`/`OpenClawSchemaType` 类型别名
+- 旧版 SDK 别名，如 `openclaw/extension-api`、`openclaw/plugin-sdk/channel-runtime`、`openclaw/plugin-sdk/command-auth` 状态构建器、`openclaw/plugin-sdk/test-utils`（由专注的 `openclaw/plugin-sdk/*` 测试子路径替换）以及 `ClawdbotConfig`/`OpenClawSchemaType` 类型别名
 - Bundle Plugin 允许列表和启用行为
 - 旧版 Provider/Channel 环境变量 Manifest 元数据
 - 旧版 Provider Plugin Hook 和类型别名，同时 Provider 迁移到显式目录、身份验证、思考、重放和传输 Hook
-- 旧版运行时别名，如 `api.runtime.taskFlow`、`api.runtime.subagent.getSession` 和 `api.runtime.stt`
+- 旧版运行时别名，如 `api.runtime.taskFlow`、`api.runtime.subagent.getSession`、`api.runtime.stt` 以及已弃用的 `api.runtime.config.loadConfig()` / `api.runtime.config.writeConfigFile(...)`
 - 旧版内存 Plugin 分割注册，同时内存 Plugin 迁移到 `registerMemoryCapability`
 - 旧版 Channel SDK 助手，用于原生消息 Schema、提及门控、入站包络格式化和审批能力嵌套
+- 旧版 Channel 路由键和可比较目标辅助别名，同时 Plugin 迁移到 `openclaw/plugin-sdk/channel-route`
 - 被 Manifest 贡献所有权替换的激活提示
 - `setup-api` 运行时回退，同时设置描述符迁移到冷 `setup.requiresRuntime: false` 元数据
 - Provider `discovery` Hook，同时 Provider 目录 Hook 迁移到 `catalog.run(...)`

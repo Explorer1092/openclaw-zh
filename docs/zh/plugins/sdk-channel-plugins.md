@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9b6d770c939d280183c300f810dabce7"
+mmh3_hash: "676acc5166f9a984fee6b7c159048e8c"
 title: "构建 Channel Plugin"
 sidebarTitle: "Channel Plugin"
 summary: "构建 OpenClaw 消息 Channel Plugin 的分步指南"
@@ -8,8 +8,6 @@ read_when:
   - 您想将 OpenClaw 连接到消息平台
   - 您需要了解 ChannelPlugin 适配器接口
 ---
-
-# 构建 Channel Plugin
 
 本指南演示如何构建将 OpenClaw 连接到消息平台的 Channel Plugin。完成后，您将拥有一个具有 DM 安全性、配对、回复线程和出站消息功能的工作 Channel。
 
@@ -31,6 +29,12 @@ Channel Plugin 不需要自己的发送/编辑/反应 Tool。OpenClaw 在核心�
 - **心跳打字** — 心跳投递目标的可选打字/忙碌信号
 
 核心拥有共享消息 Tool、Prompt 连接、外部 Session 键形状、通用 `:thread:` 记录和分发。
+
+新 Channel Plugin 还应使用来自 `openclaw/plugin-sdk/channel-message` 的 `defineChannelMessageAdapter` 暴露 `message` 适配器。适配器声明原生传输实际支持的持久最终发送能力，并将文本/媒体发送指向与旧版 `outbound` 适配器相同的传输函数。仅在合约测试证明原生副作用和返回的收据时声明能力。有关完整的 API 合约、示例、能力矩阵、收据规则、实时预览最终化、接收确认策略、测试和迁移表，请参见 [Channel message API](/plugins/sdk-channel-message)。如果现有的 `outbound` 适配器已经具有正确的发送方法和能力元数据，请改用 `createChannelMessageAdapterFromOutbound(...)` 派生 `message` 适配器，而不是手动编写另一个桥接器。适配器发送应返回 `MessageReceipt` 值。当兼容性代码仍需要旧版 id 时，使用 `listMessageReceiptPlatformIds(...)` 或 `resolveMessageReceiptPrimaryId(...)` 派生它们，而不是在新生命周期代码中保留并行 `messageIds` 字段。支持预览的 Channel 还应声明 `message.live.capabilities`，包含其拥有的确切实时生命周期，如 `draftPreview`、`previewFinalization`、`progressUpdates`、`nativeStreaming` 或 `quietFinalization`。在原地最终化草稿预览的 Channel 还应声明 `message.live.finalizer.capabilities`（如 `finalEdit`、`normalFallback`、`discardPending`、`previewReceipt` 和 `retainOnAmbiguousFailure`），并通过 `defineFinalizableLivePreviewAdapter(...)` 加 `deliverWithFinalizableLivePreviewAdapter(...)` 路由运行时逻辑。使用 `verifyChannelMessageLiveCapabilityAdapterProofs(...)` 和 `verifyChannelMessageLiveFinalizerProofs(...)` 测试支撑这些能力，以防原生预览、进度、编辑、回退/保留、清理和收据行为静默漂移。延迟平台确认的入站接收器应声明 `message.receive.defaultAckPolicy` 和 `supportedAckPolicies`，而不是将确认时间隐藏在监控器本地状态中。每个声明的策略都应覆盖 `verifyChannelMessageReceiveAckPolicyAdapterProofs(...)`。
+
+用于兼容性分发器的旧版回复/轮次辅助工具（如 `createChannelTurnReplyPipeline`、`dispatchInboundReplyWithBase` 和 `recordInboundSessionAndDispatchReply`）仍然可用。不要将这些名称用于新 Channel 代码；新 Plugin 应从 `message` 适配器、收据和 `openclaw/plugin-sdk/channel-message` 上的接收/发送生命周期辅助工具开始。
+
+迁移入站授权的 Channel 可以从运行时接收路径使用实验性的 `openclaw/plugin-sdk/channel-ingress-runtime` 子路径。该子路径将平台查找和副作用保留在 Plugin 中，同时共享允许列表状态解析、路由/发送者/命令/事件/激活决策、已编辑诊断和轮次准入映射。将 Plugin 身份规范化保留在传递给解析器的描述符中；不要从已解析的状态或决策中序列化原始匹配值。有关 API 设计、所有权边界和测试期望，请参见 [Channel ingress API](/plugins/sdk-channel-ingress)。
 
 如果您的 Channel 支持入站回复以外的打字指示器，在 Channel Plugin 上暴露 `heartbeat.sendTyping(...)`。核心在心跳模型运行开始前使用解析的心跳投递目标调用它，并使用共享的打字保活/清理生命周期。当平台需要明确的停止信号时，添加 `heartbeat.clearTyping(...)`。
 
@@ -87,12 +91,12 @@ Channel Plugin 不需要自己的发送/编辑/反应 Tool。OpenClaw 在核心�
 - `openclaw/plugin-sdk/approval-reply-runtime`
 - `openclaw/plugin-sdk/channel-runtime-context`
 
-同样，当您不需要更宽泛的综合界面时，优先使用 `openclaw/plugin-sdk/setup-runtime`、`openclaw/plugin-sdk/setup-adapter-runtime`、`openclaw/plugin-sdk/reply-runtime`、`openclaw/plugin-sdk/reply-dispatch-runtime`、`openclaw/plugin-sdk/reply-reference` 和 `openclaw/plugin-sdk/reply-chunking`。
+同样，当您不需要更宽泛的综合界面时，优先使用 `openclaw/plugin-sdk/setup-runtime`、`openclaw/plugin-sdk/reply-runtime`、`openclaw/plugin-sdk/reply-dispatch-runtime`、`openclaw/plugin-sdk/reply-reference` 和 `openclaw/plugin-sdk/reply-chunking`。
 
 对于设置具体而言：
 
 - `openclaw/plugin-sdk/setup-runtime` 涵盖运行时安全的设置辅助工具：导入安全的设置补丁适配器（`createPatchedAccountSetupAdapter`、`createEnvPatchedAccountSetupAdapter`、`createSetupInputPresenceValidator`）、查找说明输出、`promptResolvedAllowFrom`、`splitSetupEntries` 和委托设置代理构建器
-- `openclaw/plugin-sdk/setup-adapter-runtime` 是 `createEnvPatchedAccountSetupAdapter` 的窄向环境感知适配器接缝
+- `openclaw/plugin-sdk/setup-runtime` 包含 `createEnvPatchedAccountSetupAdapter` 的环境感知适配器接缝
 - `openclaw/plugin-sdk/channel-setup` 涵盖可选安装的设置构建器以及一些设置安全的原语：`createOptionalChannelSetupSurface`、`createOptionalChannelSetupAdapter`、`createOptionalChannelSetupWizard`、`DEFAULT_ACCOUNT_ID`、`createTopLevelChannelDmPolicy`、`setSetupChannelEnabled` 和 `splitSetupEntries`
 - 仅当您还需要更重量级的共享设置/配置辅助工具（如 `moveSingleAccountChannelSectionToDefaultAccount(...)`）时，才使用更宽泛的 `openclaw/plugin-sdk/setup` 接缝
 
@@ -538,6 +542,9 @@ if (decision.shouldSkip) return;
   </Card>
   <Card title="运行时辅助工具" icon="settings" href="/plugins/sdk-runtime">
     通过 api.runtime 使用 TTS、STT、媒体、子 Agent
+  </Card>
+  <Card title="Channel 轮次内核" icon="bolt" href="/plugins/sdk-channel-turn">
+    共享入站轮次生命周期：摄取、解析、记录、分发、最终化
   </Card>
 </CardGroup>
 
