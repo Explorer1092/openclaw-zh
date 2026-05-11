@@ -1,12 +1,10 @@
 ---
 title: "音频与语音笔记"
-mmh3_hash: "6fe1d76b5acb39f46112900c83e7b99e"
+mmh3_hash: "2de81f721b5fdd7f478f709c6e34589c"
 summary: "入站音频/语音笔记如何下载、转录并注入到回复中"
 read_when:
   - 更改音频转录或媒体处理时
 ---
-
-# 音频与语音笔记 (2026-01-17)
 
 ## 功能现状
 
@@ -164,6 +162,7 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 - `tools.media.audio.echoTranscript` 默认关闭；启用它可在 Agent 处理之前将转录确认发送回原始聊天。
 - `tools.media.audio.echoFormat` 自定义回显文本（占位符：`{transcript}`）。
 - CLI 标准输出有上限（5MB）；保持 CLI 输出简洁。
+- CLI `args` 应使用 `{{MediaPath}}` 作为本地音频文件路径。运行 `openclaw doctor --fix` 迁移旧版 `audio.transcription.command` 配置中已弃用的 `{input}` 占位符。
 
 ### 代理环境支持
 
@@ -171,8 +170,10 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
 
 - `HTTPS_PROXY`
 - `HTTP_PROXY`
+- `ALL_PROXY`
 - `https_proxy`
 - `http_proxy`
+- `all_proxy`
 
 如果未设置代理环境变量，则使用直接出口。如果代理配置格式错误，OpenClaw 会记录警告并回退到直接获取。
 

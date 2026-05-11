@@ -1,53 +1,63 @@
 ---
 title: "对讲模式"
 sidebarTitle: "对讲模式"
-mmh3_hash: "0700aea0ab9c56a93db06f68b8e56064"
-summary: "对讲模式: 使用配置的 TTS provider 的连续语音对话"
+mmh3_hash: "8b79b89b07690d985046b4675c2a2efa"
+summary: "对讲模式：通过本地 STT/TTS 和实时语音实现的持续语音对话"
 read_when:
   - 在 macOS/iOS/Android 上实现对讲模式
-  - 更改语音/TTS/打断行为
+  - 更改语音/TTS/中断行为
 ---
 
-对讲模式是一个连续的语音对话循环:
+对讲模式有两种运行时形态：
+
+- 原生 macOS/iOS/Android 对讲使用本地语音识别、Gateway 聊天和 `talk.speak` TTS。Node 公开 `talk` 能力并声明它们支持的 `talk.*` 命令。
+- 浏览器对讲使用 `talk.client.create` 处理客户端拥有的 `webrtc` 和 `provider-websocket` 会话，或使用 `talk.session.create` 处理 Gateway 拥有的 `gateway-relay` 会话。`managed-room` 保留用于 Gateway 切换和对讲机房间。
+- 仅转录客户端使用 `talk.session.create({ mode: "transcription", transport: "gateway-relay", brain: "none" })`，然后使用 `talk.session.appendAudio`、`talk.session.cancelTurn` 和 `talk.session.close`，当它们需要字幕或听写而不需要助手语音回应时。
+
+原生对讲是持续的语音对话循环：
 
 1. 监听语音
-2. 发送转录给模型（主 Session，chat.send）
-3. 等待回复
-4. 通过配置的 Talk provider（`talk.speak`）朗读
+2. 通过活动会话将转录发送给模型
+3. 等待回应
+4. 通过配置的对讲 provider（`talk.speak`）朗读回应
 
-## 行为 (macOS)
+浏览器实时对讲通过 `talk.client.toolCall` 转发 provider 工具调用；浏览器客户端不直接调用 `chat.send` 进行实时咨询。
 
-- 当对讲模式启用时，**始终开启叠加层**。
-- **监听 (Listening) → 思考 (Thinking) → 说话 (Speaking)** 阶段转换。
-- 在 **短暂暂停**（静默窗口）时，发送当前转录。
-- 回复被 **写入 WebChat**（与打字相同）。
-- **说话时打断**（默认开启）：如果用户在助手说话时开始说话，我们停止播放并记录打断时间戳以用于下一个提示。
+仅转录对讲与实时和 STT/TTS 会话发出相同的通用对讲事件信封，但使用 `mode: "transcription"` 和 `brain: "none"`。它用于字幕、听写和仅观察语音捕获；一次性上传的语音笔记仍然使用媒体/音频路径。
+
+## 行为（macOS）
+
+- 对讲模式启用时始终显示**叠加层**。
+- **监听 → 思考 → 说话**阶段转换。
+- **短暂停顿**（静音窗口）时，发送当前转录。
+- 回复被**写入 WebChat**（与打字相同）。
+- **检测到语音时中断**（默认开启）：如果用户在助手说话时开始说话，我们停止播放并为下一个提示记录中断时间戳。
 
 ## 回复中的语音指令
 
-助手可以在其回复前加上 **单行 JSON** 来控制语音:
+助手可以在其回复前面加上**单个 JSON 行**来控制语音：
 
 ```json
 { "voice": "<voice-id>", "once": true }
 ```
 
-规则:
+规则：
 
-- 仅限第一个非空行。
+- 仅第一个非空行。
 - 未知键被忽略。
-- `once: true` 仅适用于当前回复。
-- 没有 `once`，语音将成为对讲模式的新默认语音。
-- JSON 行在 TTS 播放前被剥离。
+- `once: true` 仅应用于当前回复。
+- 没有 `once` 时，语音成为对讲模式的新默认值。
+- JSON 行在 TTS 播放之前被剥离。
 
-支持的键:
+支持的键：
 
 - `voice` / `voice_id` / `voiceId`
 - `model` / `model_id` / `modelId`
-- `speed`, `rate` (WPM), `stability`, `similarity`, `style`, `speakerBoost`
-- `seed`, `normalize`, `lang`, `output_format`, `latency_tier`
+- `speed`、`rate`（WPM）、`stability`、`similarity`、`style`、`speakerBoost`
+- `seed`、`normalize`、`lang`、`output_format`、`latency_tier`
 - `once`
 
-## 配置 (`~/.openclaw/openclaw.json`)
+## 配置（`~/.openclaw/openclaw.json`）
 
 ```json5
 {
@@ -68,48 +78,73 @@ read_when:
     speechLocale: "ru-RU",
     silenceTimeoutMs: 1500,
     interruptOnSpeech: true,
+    realtime: {
+      provider: "openai",
+      providers: {
+        openai: {
+          apiKey: "openai_api_key",
+          model: "gpt-realtime-2",
+          voice: "cedar",
+        },
+      },
+      instructions: "Speak warmly and keep answers brief.",
+      mode: "realtime",
+      transport: "webrtc",
+      brain: "agent-consult",
+    },
   },
 }
 ```
 
-默认值:
+默认值：
 
-- `interruptOnSpeech`: true
-- `silenceTimeoutMs`: 未设置时，Talk 保持平台默认暂停窗口后再发送转录（macOS 和 Android 上为 `700 ms`，iOS 上为 `900 ms`）
-- `provider`: 选择活动 Talk provider。使用 `elevenlabs`、`mlx` 或 `system` 作为 macOS 本地播放路径。
-- `providers.<provider>.voiceId`: 回退到 `ELEVENLABS_VOICE_ID` / `SAG_VOICE_ID`（或当 API 密钥可用时的第一个 ElevenLabs 语音）。
-- `providers.elevenlabs.modelId`: 未设置时默认为 `eleven_v3`。
-- `providers.mlx.modelId`: 未设置时默认为 `mlx-community/Soprano-80M-bf16`。
-- `providers.elevenlabs.apiKey`: 回退到 `ELEVENLABS_API_KEY`（或 Gateway shell 配置文件，如果可用）。
-- `speechLocale`: 可选的 BCP 47 语言区域 id，用于 iOS/macOS 上的设备端 Talk 语音识别。留空使用设备默认值。
-- `outputFormat`: macOS/iOS 上默认为 `pcm_44100`，Android 上默认为 `pcm_24000`（设置 `mp3_*` 以强制 MP3 流式传输）
+- `interruptOnSpeech`：true
+- `silenceTimeoutMs`：未设置时，对讲使用平台默认的停顿窗口后发送转录（`macOS 和 Android 上为 700 ms，iOS 上为 900 ms`）
+- `provider`：选择活动的对讲 provider。对 macOS 本地播放路径使用 `elevenlabs`、`mlx` 或 `system`。
+- `providers.<provider>.voiceId`：对 ElevenLabs 回退到 `ELEVENLABS_VOICE_ID` / `SAG_VOICE_ID`（或 API 密钥可用时的第一个 ElevenLabs 语音）。
+- `providers.elevenlabs.modelId`：未设置时默认为 `eleven_v3`。
+- `providers.mlx.modelId`：未设置时默认为 `mlx-community/Soprano-80M-bf16`。
+- `providers.elevenlabs.apiKey`：回退到 `ELEVENLABS_API_KEY`（或 Gateway shell 配置文件，如果可用）。
+- `consultThinkingLevel`：实时 `openclaw_agent_consult` 调用的完整 OpenClaw agent 运行的可选思考级别覆盖。
+- `consultFastMode`：实时 `openclaw_agent_consult` 调用的可选快速模式覆盖。
+- `realtime.provider`：选择活动的浏览器/服务器实时语音 provider。对 WebRTC 使用 `openai`，对 provider WebSocket 使用 `google`，或通过 Gateway relay 使用仅桥接的 provider。
+- `realtime.providers.<provider>` 存储 provider 拥有的实时配置。浏览器只接收临时或受限的会话凭据，而不是标准 API 密钥。
+- `realtime.providers.openai.voice`：内置 OpenAI Realtime 语音 ID。当前 `gpt-realtime-2` 语音有 `alloy`、`ash`、`ballad`、`coral`、`echo`、`sage`、`shimmer`、`verse`、`marin` 和 `cedar`；推荐 `marin` 和 `cedar` 以获得最佳质量。
+- `realtime.brain`：`agent-consult` 通过 Gateway 策略路由实时工具调用；`direct-tools` 是仅所有者的兼容性行为；`none` 用于转录或外部编排。
+- `realtime.instructions`：向 OpenClaw 内置的实时提示附加面向 provider 的系统指令。用于语音风格和语气；OpenClaw 保留默认的 `openclaw_agent_consult` 指导。
+- `talk.catalog` 公开每个 provider 的有效模式、传输、brain 策略、实时音频格式和能力标志，以便第一方对讲客户端可以避免不支持的组合。
+- 流式转录 provider 通过 `talk.catalog.transcription` 发现。当前 Gateway relay 使用语音通话流式传输 provider 配置，直到添加专用对讲转录配置界面。
+- `speechLocale`：iOS/macOS 上设备端对讲语音识别的可选 BCP 47 语言标识符。不设置则使用设备默认值。
+- `outputFormat`：在 macOS/iOS 上默认为 `pcm_44100`，在 Android 上默认为 `pcm_24000`（设置 `mp3_*` 以强制 MP3 流式传输）
 
 ## macOS UI
 
-- 菜单栏切换: **Talk**
-- 配置标签页: **Talk Mode** 组（语音 id + 打断开关）
-- 叠加层:
-  - **监听**: 云朵随麦克风电平脉动
-  - **思考**: 下沉动画
-  - **说话**: 辐射环
-  - 点击云朵: 停止说话
-  - 点击 X: 退出对讲模式
+- 菜单栏切换：**对讲**
+- 配置标签：**对讲模式**组（语音 ID + 中断切换）
+- 叠加层：
+  - **监听**：云随麦克风级别脉冲
+  - **思考**：下沉动画
+  - **说话**：辐射环
+  - 点击云：停止说话
+  - 点击 X：退出对讲模式
 
 ## Android UI
 
-- Voice 标签页切换: **Talk**
-- 手动**麦克风**和 **Talk** 是互斥的运行时捕获模式。
-- 手动麦克风在应用离开前台或用户离开 Voice 标签页时停止。
-- 对讲模式保持运行直到切换关闭或 Android node 断开连接，并在活跃时使用 Android 的麦克风前台服务类型。
+- 语音标签切换：**对讲**
+- 手动**麦克风**和**对讲**是互斥的运行时捕获模式。
+- 当应用离开前台或用户离开语音标签时，手动麦克风停止。
+- 对讲模式保持运行直到切换关闭或 Android node 断开连接，并在活动时使用 Android 的麦克风前台服务类型。
 
 ## 说明
 
 - 需要语音 + 麦克风权限。
-- 对 Session 键 `main` 使用 `chat.send`。
-- Gateway 通过 `talk.speak` 使用活动 Talk provider 解析对讲模式播放。当该 RPC 不可用时，Android 回退到本地系统 TTS。
-- macOS 本地 MLX 播放在存在时使用捆绑的 `openclaw-mlx-tts` 助手，或使用 `PATH` 上的可执行文件。设置 `OPENCLAW_MLX_TTS_BIN` 以在开发期间指向自定义助手二进制文件。
+- 原生对讲使用活动 Gateway 会话，只有在响应事件不可用时才回退到历史轮询。
+- 浏览器实时对讲使用 `talk.client.toolCall` 处理 `openclaw_agent_consult`，而不是向 provider 拥有的浏览器会话公开 `chat.send`。
+- 仅转录对讲使用 `talk.session.create`、`talk.session.appendAudio`、`talk.session.cancelTurn` 和 `talk.session.close`；客户端订阅 `talk.event` 以获取部分/最终转录更新。
+- Gateway 通过使用活动对讲 provider 的 `talk.speak` 解析对讲播放。当该 RPC 不可用时，Android 仅回退到本地系统 TTS。
+- macOS 本地 MLX 播放在存在时使用捆绑的 `openclaw-mlx-tts` 辅助工具，或 `PATH` 上的可执行文件。在开发过程中，设置 `OPENCLAW_MLX_TTS_BIN` 指向自定义辅助工具二进制文件。
 - `eleven_v3` 的 `stability` 验证为 `0.0`、`0.5` 或 `1.0`；其他模型接受 `0..1`。
-- `latency_tier` 设置时验证为 `0..4`。
+- 设置时 `latency_tier` 验证为 `0..4`。
 - Android 支持 `pcm_16000`、`pcm_22050`、`pcm_24000` 和 `pcm_44100` 输出格式，用于低延迟 AudioTrack 流式传输。
 
 ## 相关文档

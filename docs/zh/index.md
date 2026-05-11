@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "58780d5cd37baa2b0f1a47c8b63d560d"
+mmh3_hash: "ffc38d70a18e1ec03863312593dced8f"
 summary: "OpenClaw 是一个可在任何操作系统上运行的 AI agent 多通道 gateway。"
 read_when:
   - 向新人介绍 OpenClaw
@@ -55,7 +55,7 @@ OpenClaw 是一个**自托管 gateway**，它将您最喜欢的聊天应用和 C
 - **原生 Agent**：专为具有工具使用、会话、内存和多 agent 路由的编码 agent 而构建
 - **开源**：MIT 许可证，社区驱动
 
-**需要什么？** Node 24（推荐），或 Node 22 LTS（`22.14+`）以保持兼容性，来自您选择的 Provider 的 API 密钥，以及 5 分钟时间。为了最佳质量和安全性，请使用可用的最强最新一代模型。
+**需要什么？** Node 24（推荐），或 Node 22 LTS（`22.16+`）以保持兼容性，来自您选择的 Provider 的 API 密钥，以及 5 分钟时间。为了最佳质量和安全性，请使用可用的最强最新一代模型。
 
 ## 工作原理
 
