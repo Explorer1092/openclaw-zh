@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b49088039b64bf2251a106a5680f25ac"
+mmh3_hash: "78637d5b821c062d36020b00acb0fcaa"
 summary: "使用 Ansible、Tailscale VPN 和防火墙隔离实现自动化、强化的 OpenClaw 安装"
 read_when:
   - 你想要带有安全加固的自动化服务器部署
@@ -8,9 +8,7 @@ read_when:
 title: "Ansible"
 ---
 
-# Ansible 安装
-
-使用 **[openclaw-ansible](https://github.com/openclaw/openclaw-ansible)** 将 OpenClaw 部署到生产服务器 — 这是一个具有安全优先架构的自动化安装程序。
+使用 **[openclaw-ansible](https://github.com/openclaw/openclaw-ansible)** 将 OpenClaw 部署到生产服务器 -- 这是一个具有安全优先架构的自动化安装程序。
 
 <Info>
 [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) 仓库是 Ansible 部署的事实来源。本页面是快速概述。
@@ -27,12 +25,12 @@ title: "Ansible"
 
 ## 你将获得什么
 
-- **防火墙优先的安全** — UFW + Docker 隔离（仅 SSH + Tailscale 可访问）
-- **Tailscale VPN** — 安全的远程访问，无需公开服务
-- **Docker** — 隔离的沙箱容器，仅绑定到 localhost
-- **纵深防御** — 4 层安全架构
-- **Systemd 集成** — 开机自动启动并进行加固
-- **一键式设置** — 几分钟内完成完整部署
+- **防火墙优先的安全** -- UFW + Docker 隔离（仅 SSH + Tailscale 可访问）
+- **Tailscale VPN** -- 安全的远程访问，无需公开服务
+- **Docker** -- 隔离的沙箱容器，仅绑定到 localhost
+- **纵深防御** -- 4 层安全架构
+- **Systemd 集成** -- 开机自动启动并进行加固
+- **一键式设置** -- 几分钟内完成完整部署
 
 ## 快速入门
 
@@ -46,12 +44,12 @@ curl -fsSL https://raw.githubusercontent.com/openclaw/openclaw-ansible/main/inst
 
 Ansible playbook 安装并配置：
 
-1. **Tailscale** — 用于安全远程访问的网格 VPN
-2. **UFW 防火墙** — 仅允许 SSH + Tailscale 端口
-3. **Docker CE + Compose V2** — 用于默认 agent 沙箱后端
-4. **Node.js 24 + pnpm** — 运行时依赖（Node 22 LTS，当前 `22.14+`，仍受支持）
-5. **OpenClaw** — 基于主机运行，不进行容器化
-6. **Systemd 服务** — 带安全加固的自动启动
+1. **Tailscale** -- 用于安全远程访问的网格 VPN
+2. **UFW 防火墙** -- 仅允许 SSH + Tailscale 端口
+3. **Docker CE + Compose V2** -- 用于默认 agent 沙箱后端
+4. **Node.js 24 + pnpm** -- 运行时依赖（Node 22 LTS，当前 `22.16+`，仍受支持）
+5. **OpenClaw** -- 基于主机运行，不进行容器化
+6. **Systemd 服务** -- 带安全加固的自动启动
 
 <Note>
 Gateway 直接在主机上运行（不在 Docker 中）。Agent 沙箱是可选的；此 playbook 安装 Docker 是因为它是默认的沙箱后端。详情请参阅 [Sandboxing](/gateway/sandboxing)。
@@ -106,10 +104,10 @@ openclaw channels login
 
 部署使用 4 层防御模型：
 
-1. **防火墙（UFW）** — 仅公开 SSH (22) + Tailscale (41641/udp)
-2. **VPN（Tailscale）** — Gateway 仅通过 VPN 网格访问
-3. **Docker 隔离** — DOCKER-USER iptables 链防止外部端口暴露
-4. **Systemd 加固** — NoNewPrivileges、PrivateTmp、非特权用户
+1. **防火墙（UFW）** -- 仅公开 SSH (22) + Tailscale (41641/udp)
+2. **VPN（Tailscale）** -- Gateway 仅通过 VPN 网格访问
+3. **Docker 隔离** -- DOCKER-USER iptables 链防止外部端口暴露
+4. **Systemd 加固** -- NoNewPrivileges、PrivateTmp、非特权用户
 
 验证你的外部攻击面：
 
@@ -176,6 +174,7 @@ cd openclaw-ansible
     - 确保你可以先通过 Tailscale VPN 访问
     - 始终允许 SSH 访问（端口 22）
     - 按设计，Gateway 仅通过 Tailscale 访问
+
   </Accordion>
   <Accordion title="服务无法启动">
     ```bash
@@ -200,9 +199,11 @@ cd openclaw-ansible
     # 检查沙箱镜像
     sudo docker images | grep openclaw-sandbox
 
-    # 如果镜像缺失，构建沙箱镜像
+    # 如果镜像缺失，构建沙箱镜像（需要源码检出）
     cd /opt/openclaw/openclaw
     sudo -u openclaw ./scripts/sandbox-setup.sh
+    # 对于没有源码检出的 npm 安装，请参阅
+    # https://docs.openclaw.ai/gateway/sandboxing#images-and-setup
     ```
 
   </Accordion>
@@ -225,7 +226,7 @@ cd openclaw-ansible
 
 ## 相关
 
-- [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) — 完整部署指南
-- [Docker](/install/docker) — 容器化 gateway 设置
-- [Sandboxing](/gateway/sandboxing) — agent 沙箱配置
-- [Multi-Agent Sandbox and Tools](/tools/multi-agent-sandbox-tools) — 每个 agent 的隔离
+- [openclaw-ansible](https://github.com/openclaw/openclaw-ansible) -- 完整部署指南
+- [Docker](/install/docker) -- 容器化 gateway 设置
+- [Sandboxing](/gateway/sandboxing) -- agent 沙箱配置
+- [Multi-Agent Sandbox and Tools](/tools/multi-agent-sandbox-tools) -- 每个 agent 的隔离
