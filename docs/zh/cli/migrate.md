@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e2e35859e8b626a3652fea849a4ea188"
+mmh3_hash: "0652b33ffa8f5d545639866ac0f2f951"
 summary: "`openclaw migrate` 的 CLI 参考（从其他 Agent 系统导入状态）"
 read_when:
   - 您想从 Hermes 或其他 Agent 系统迁移到 OpenClaw
@@ -9,10 +9,10 @@ title: "Migrate"
 
 # `openclaw migrate`
 
-通过 Plugin 拥有的迁移 Provider 从其他 Agent 系统导入状态。
+通过 Plugin 拥有的迁移 Provider 从其他 Agent 系统导入状态。捆绑的 Provider 涵盖 Codex CLI 状态、[Claude](/install/migrating-claude) 和 [Hermes](/install/migrating-hermes)；第三方 Plugin 可以注册其他 Provider。
 
 <Tip>
-有关从 Hermes 迁移的用户指南，请参阅[从 Hermes 迁移](/install/migrating-hermes)。
+有关面向用户的演练，请参阅[从 Claude 迁移](/install/migrating-claude)和[从 Hermes 迁移](/install/migrating-hermes)。[迁移中心](/install/migrating)列出了所有路径。
 </Tip>
 
 ## 命令
@@ -20,8 +20,14 @@ title: "Migrate"
 ```bash
 openclaw migrate list
 openclaw migrate claude --dry-run
+openclaw migrate codex --dry-run
+openclaw migrate codex --skill gog-vault77-google-workspace
+openclaw migrate codex --plugin google-calendar --dry-run
 openclaw migrate hermes --dry-run
 openclaw migrate hermes
+openclaw migrate apply codex --yes --skill gog-vault77-google-workspace
+openclaw migrate apply codex --yes --plugin google-calendar
+openclaw migrate apply codex --yes
 openclaw migrate apply claude --yes
 openclaw migrate apply hermes --yes
 openclaw migrate apply hermes --include-secrets --yes
@@ -31,98 +37,145 @@ openclaw onboard --import-from hermes --import-source ~/.hermes
 ```
 
 <ParamField path="<provider>" type="string">
-  已注册的迁移 Provider 名称，例如 `hermes`。运行 `openclaw migrate list` 查看已安装的 Provider。
+  已注册迁移 Provider 的名称，例如 `hermes`。运行 `openclaw migrate list` 查看已安装的 Provider。
 </ParamField>
 <ParamField path="--dry-run" type="boolean">
-  构建计划并退出，不更改任何状态。
+  构建计划并退出，不更改状态。
 </ParamField>
 <ParamField path="--from <path>" type="string">
   覆盖源状态目录。Hermes 默认为 `~/.hermes`。
 </ParamField>
 <ParamField path="--include-secrets" type="boolean">
-  导入受支持的凭据。默认关闭。
+  导入支持的凭据。默认关闭。
 </ParamField>
 <ParamField path="--overwrite" type="boolean">
-  当计划报告冲突时，允许 apply 替换已有目标。
+  当计划报告冲突时，允许应用替换现有目标。
 </ParamField>
 <ParamField path="--yes" type="boolean">
-  跳过确认提示。在非交互模式下必须提供。
+  跳过确认提示。在非交互模式下必需。
+</ParamField>
+<ParamField path="--skill <name>" type="string">
+  按技能名称或条目 ID 选择一个技能复制条目。重复此标志以迁移多个技能。省略时，交互式 Codex 迁移显示复选框选择器，非交互式迁移保留所有计划技能。
+</ParamField>
+<ParamField path="--plugin <name>" type="string">
+  按 Plugin 名称或条目 ID 选择一个 Codex Plugin 安装条目。重复此标志以迁移多个 Codex Plugin。省略时，交互式 Codex 迁移显示原生 Codex Plugin 复选框选择器，非交互式迁移保留所有计划 Plugin。这仅适用于 Codex 应用服务器库存发现的源安装 `openai-curated` Codex Plugin。
 </ParamField>
 <ParamField path="--no-backup" type="boolean">
-  跳过 apply 前的备份。当本地 OpenClaw 状态已存在时，需要同时传入 `--force`。
+  跳过预应用备份。当本地 OpenClaw 状态存在时，需要 `--force`。
 </ParamField>
 <ParamField path="--force" type="boolean">
-  当 apply 否则会拒绝跳过备份时，与 `--no-backup` 一起使用。
+  当应用否则会拒绝跳过备份时，需要与 `--no-backup` 一起使用。
 </ParamField>
 <ParamField path="--json" type="boolean">
-  以 JSON 格式打印计划或 apply 结果。与 `--json` 且不带 `--yes` 时，apply 打印计划而不修改状态。
+  将计划或应用结果打印为 JSON。使用 `--json` 且无 `--yes` 时，apply 打印计划且不改变状态。
 </ParamField>
 
 ## 安全模型
 
-`openclaw migrate` 以预览优先的方式运行。
+`openclaw migrate` 以预览优先。
 
 <AccordionGroup>
-  <Accordion title="先预览再应用">
-    Provider 在任何更改发生之前返回逐项计划，包括冲突、跳过的项目和敏感项目。JSON 计划、apply 输出和迁移报告会对嵌套的疑似密钥（如 API 密钥、令牌、授权标头、Cookie 和密码）进行脱敏处理。
+  <Accordion title="应用前预览">
+    Provider 在任何更改发生之前返回逐项计划，包括冲突、跳过的条目和敏感条目。JSON 计划、应用输出和迁移报告会脱敏嵌套的密钥类字段，如 API 密钥、令牌、授权标头、Cookie 和密码。
 
-    `openclaw migrate apply <provider>` 会预览计划并在更改状态前提示确认，除非设置了 `--yes`。在非交互模式下，apply 需要 `--yes`。
+    `openclaw migrate apply <provider>` 在更改状态之前预览计划并提示，除非设置了 `--yes`。在非交互模式下，apply 需要 `--yes`。
 
   </Accordion>
   <Accordion title="备份">
-    Apply 在应用迁移之前会创建并验证 OpenClaw 备份。如果尚无本地 OpenClaw 状态，则跳过备份步骤，迁移可继续进行。如需在状态已存在时跳过备份，请同时传入 `--no-backup` 和 `--force`。
+    Apply 在应用迁移之前创建并验证 OpenClaw 备份。如果尚不存在本地 OpenClaw 状态，则跳过备份步骤，迁移可以继续。要在状态存在时跳过备份，请同时传递 `--no-backup` 和 `--force`。
   </Accordion>
   <Accordion title="冲突">
-    当计划存在冲突时，apply 拒绝继续。查看计划后，如果有意替换已有目标，请加上 `--overwrite` 重新运行。Provider 仍可能在迁移报告目录中为被覆盖的文件写入逐项备份。
+    当计划存在冲突时，Apply 拒绝继续。审查计划，然后在有意替换现有目标时使用 `--overwrite` 重新运行。Provider 可能仍会在迁移报告目录中为覆盖的文件写入条目级备份。
   </Accordion>
   <Accordion title="密钥">
-    默认情况下绝不导入密钥。使用 `--include-secrets` 导入受支持的凭据。
+    默认情况下永远不导入密钥。使用 `--include-secrets` 导入支持的凭据。
   </Accordion>
 </AccordionGroup>
 
 ## Claude Provider
 
-内置的 Claude Provider 默认在 `~/.claude` 检测 Claude Code 状态。使用 `--from <path>` 导入特定的 Claude Code 主目录或项目根目录。
+捆绑的 Claude Provider 默认检测 `~/.claude` 处的 Claude Code 状态。使用 `--from <path>` 导入特定的 Claude Code 主目录或项目根目录。
 
 <Tip>
-有关用户指南，请参阅[从 Claude 迁移](/install/migrating-claude)。
+有关面向用户的演练，请参阅[从 Claude 迁移](/install/migrating-claude)。
 </Tip>
 
 ### Claude 导入的内容
 
-- 项目 `CLAUDE.md` 和 `.claude/CLAUDE.md` 导入到 OpenClaw Agent 工作区。
-- 用户 `~/.claude/CLAUDE.md` 追加到工作区 `USER.md`。
+- 项目 `CLAUDE.md` 和 `.claude/CLAUDE.md` 到 OpenClaw Agent 工作空间。
+- 用户 `~/.claude/CLAUDE.md` 附加到工作空间 `USER.md`。
 - 来自项目 `.mcp.json`、Claude Code `~/.claude.json` 和 Claude Desktop `claude_desktop_config.json` 的 MCP 服务器定义。
-- 包含 `SKILL.md` 的 Claude Skill 目录。
-- Claude 命令 Markdown 文件转换为仅手动调用的 OpenClaw Skill。
+- 包含 `SKILL.md` 的 Claude 技能目录。
+- 转换为仅手动调用的 OpenClaw 技能的 Claude 命令 Markdown 文件。
 
 ### 归档和手动审查状态
 
-Claude Hooks、权限、环境默认值、本地内存、路径范围规则、子 Agent、缓存、计划和项目历史被保存在迁移报告中或标记为手动审查项目。OpenClaw 不会自动执行 Hooks、复制宽泛的许可列表或导入 OAuth/Desktop 凭据状态。
+Claude hooks、权限、环境默认值、本地内存、路径范围规则、子 Agent、缓存、计划和项目历史记录保留在迁移报告中或报告为手动审查条目。OpenClaw 不会自动执行 hooks、复制广泛的允许列表或导入 OAuth/Desktop 凭据状态。
+
+## Codex Provider
+
+捆绑的 Codex Provider 默认检测 `~/.codex` 处的 Codex CLI 状态，或在设置了 `CODEX_HOME` 环境变量时检测该路径。使用 `--from <path>` 清点特定的 Codex 主目录。
+
+当您迁移到 OpenClaw Codex 运行时并希望有意保留有用的个人 Codex CLI 资源时，请使用此 Provider。本地 Codex 应用服务器启动使用每个 Agent 的 `CODEX_HOME` 和 `HOME` 目录，因此默认不读取您的个人 Codex CLI 状态。
+
+在交互式终端中运行 `openclaw migrate codex` 会预览完整计划，然后在最终应用确认之前打开复选框选择器。技能复制条目首先提示。使用"全部切换开启"或"全部切换关闭"进行批量选择；计划的技能开始时已勾选，冲突技能开始时未勾选，"暂时跳过"在继续 Plugin 选择时跳过此运行的技能复制。当源安装的精选 Codex Plugin 可迁移且未提供 `--plugin` 时，迁移会按 Plugin 名称提示原生 Codex Plugin 激活。Plugin 条目开始时已勾选，除非目标 OpenClaw Codex Plugin 配置已包含该 Plugin。现有目标 Plugin 开始时未勾选，并显示冲突提示，如 `conflict: plugin exists`；选择"全部切换关闭"以在该运行中不迁移原生 Codex Plugin，或"暂时跳过"以在应用前停止。对于脚本或精确运行，每个技能传递一次 `--skill <name>`，例如：
+
+```bash
+openclaw migrate codex --dry-run --skill gog-vault77-google-workspace
+openclaw migrate apply codex --yes --skill gog-vault77-google-workspace
+```
+
+使用 `--plugin <name>` 非交互式地将原生 Codex Plugin 迁移限制为一个或多个源安装的精选 Plugin：
+
+```bash
+openclaw migrate codex --dry-run --plugin google-calendar
+openclaw migrate apply codex --yes --plugin google-calendar
+```
+
+### Codex 导入的内容
+
+- `$CODEX_HOME/skills` 下的 Codex CLI 技能目录，排除 Codex 的 `.system` 缓存。
+- `$HOME/.agents/skills` 下的个人 AgentSkills，在您希望每个 Agent 拥有所有权时复制到当前 OpenClaw Agent 工作空间。
+- 通过 Codex 应用服务器 `plugin/list` 发现的源安装 `openai-curated` Codex Plugin。Apply 为每个选定的 Plugin 调用应用服务器 `plugin/install`，即使目标应用服务器已将该 Plugin 报告为已安装且已启用。迁移的 Codex Plugin 仅在选择原生 Codex 运行时的 Session 中可用；它们不对 Pi、正常 OpenAI Provider 运行、ACP 会话绑定或其他运行时公开。
+
+### 手动审查的 Codex 状态
+
+Codex `config.toml`、原生 `hooks/hooks.json`、非精选 marketplace 和不是源安装精选 Plugin 的缓存 Plugin 包不会自动激活。它们被复制或报告在迁移报告中供手动审查。
+
+对于迁移的源安装精选 Plugin，apply 写入：
+
+- `plugins.entries.codex.enabled: true`
+- `plugins.entries.codex.config.codexPlugins.enabled: true`
+- `plugins.entries.codex.config.codexPlugins.allow_destructive_actions: false`
+- 每个选定 Plugin 的一个显式 Plugin 条目，包含 `marketplaceName: "openai-curated"` 和 `pluginName`
+
+迁移永远不会写入 `plugins["*"]`，也不会存储本地 marketplace 缓存路径。需要身份验证的安装在受影响的 Plugin 条目上报告，状态为 `"skipped"`、原因为 `"auth_required"`，以及清理过的应用标识符。它们的显式配置条目被写入为禁用，直到您重新授权并启用它们。其他安装失败是条目范围的 `error` 结果。
+
+如果在计划期间 Codex 应用服务器 Plugin 清单不可用，迁移会回退到缓存的包建议条目，而不是使整个迁移失败。
 
 ## Hermes Provider
 
-内置的 Hermes Provider 默认在 `~/.hermes` 检测状态。如果 Hermes 在其他位置，请使用 `--from <path>`。
+捆绑的 Hermes Provider 默认检测 `~/.hermes` 处的状态。当 Hermes 位于其他位置时，使用 `--from <path>`。
 
 ### Hermes 导入的内容
 
 - `config.yaml` 中的默认模型配置。
-- `providers` 和 `custom_providers` 中配置的模型 Provider 和自定义 OpenAI 兼容端点。
-- `mcp_servers` 或 `mcp.servers` 中的 MCP 服务器定义。
-- `SOUL.md` 和 `AGENTS.md` 导入到 OpenClaw Agent 工作区。
-- `memories/MEMORY.md` 和 `memories/USER.md` 追加到工作区内存文件。
-- OpenClaw 文件内存的内存配置默认值，以及外部内存 Provider（如 Honcho）的归档或手动审查项目。
-- `skills/<name>/` 下包含 `SKILL.md` 文件的 Skill。
-- `skills.config` 中的每个 Skill 配置值。
-- `.env` 中受支持的 API 密钥（仅当使用 `--include-secrets` 时）。
+- 来自 `providers` 和 `custom_providers` 的已配置模型 Provider 和自定义 OpenAI 兼容端点。
+- 来自 `mcp_servers` 或 `mcp.servers` 的 MCP 服务器定义。
+- `SOUL.md` 和 `AGENTS.md` 到 OpenClaw Agent 工作空间。
+- `memories/MEMORY.md` 和 `memories/USER.md` 附加到工作空间内存文件。
+- OpenClaw 文件内存的内存配置默认值，以及外部内存 Provider（如 Honcho）的归档或手动审查条目。
+- 在 `skills/<name>/` 下包含 `SKILL.md` 文件的技能。
+- 来自 `skills.config` 的每个技能配置值。
+- 仅在使用 `--include-secrets` 时，来自 `.env` 的支持的 API 密钥。
 
-### 支持的 `.env` 键
+### 支持的 `.env` 密钥
 
 `OPENAI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENROUTER_API_KEY`、`GOOGLE_API_KEY`、`GEMINI_API_KEY`、`GROQ_API_KEY`、`XAI_API_KEY`、`MISTRAL_API_KEY`、`DEEPSEEK_API_KEY`。
 
 ### 仅归档状态
 
-OpenClaw 无法安全解释的 Hermes 状态会被复制到迁移报告以供手动审查，但不会加载到实时 OpenClaw 配置或凭据中。这样可以在不假装 OpenClaw 能自动执行或信任这些内容的情况下保留不透明或不安全的状态：
+OpenClaw 无法安全解释的 Hermes 状态被复制到迁移报告供手动审查，但不会加载到实时 OpenClaw 配置或凭据中。这在不假装 OpenClaw 可以自动执行或信任它的情况下保留了不透明或不安全的状态：
 
 - `plugins/`
 - `sessions/`
@@ -150,22 +203,22 @@ openclaw doctor
 }
 ```
 
-在运行时，Plugin 调用 `api.registerMigrationProvider(...)`。Provider 实现 `detect`、`plan` 和 `apply`。核心负责 CLI 编排、备份策略、提示、JSON 输出和冲突预检。核心将已审查的计划传入 `apply(ctx, plan)`，Provider 仅在该参数缺失时出于兼容性原因才可重建计划。
+在运行时，Plugin 调用 `api.registerMigrationProvider(...)`。Provider 实现 `detect`、`plan` 和 `apply`。核心拥有 CLI 编排、备份策略、提示、JSON 输出和冲突预检。核心将审查过的计划传递给 `apply(ctx, plan)`，Provider 只有在该参数缺失时才重新构建计划以保持兼容性。
 
-Provider Plugin 可以使用 `openclaw/plugin-sdk/migration` 进行项目构建和摘要统计，以及 `openclaw/plugin-sdk/migration-runtime` 进行感知冲突的文件复制、仅归档报告复制和迁移报告生成。
+Provider Plugin 可以使用 `openclaw/plugin-sdk/migration` 进行条目构建和摘要计数，以及 `openclaw/plugin-sdk/migration-runtime` 进行感知冲突的文件复制、仅归档报告复制、缓存配置运行时包装器和迁移报告。
 
-## 引导程序集成
+## 入职集成
 
-当 Provider 检测到已知来源时，引导程序可以提供迁移选项。`openclaw onboard --flow import` 和 `openclaw setup --wizard --import-from hermes` 都使用相同的 Plugin 迁移 Provider，并在应用前仍会显示预览。
+当 Provider 检测到已知源时，入职可以提供迁移。`openclaw onboard --flow import` 和 `openclaw setup --wizard --import-from hermes` 都使用相同的 Plugin 迁移 Provider，并且在应用之前仍会显示预览。
 
 <Note>
-引导程序导入需要全新的 OpenClaw 设置。如果您已有本地状态，请先重置配置、凭据、Session 和工作区。现有设置的备份加覆盖或合并导入为功能门控功能。
+入职导入需要全新的 OpenClaw 设置。如果您已有本地状态，请先重置配置、凭据、Session 和工作空间，然后再导入。针对现有设置的备份加覆盖或合并导入是功能门控的。
 </Note>
 
-## 相关链接
+## 相关
 
-- [从 Hermes 迁移](/install/migrating-hermes)：用户指南。
-- [从 Claude 迁移](/install/migrating-claude)：用户指南。
-- [迁移](/install/migrating)：将 OpenClaw 迁移到新机器。
+- [从 Hermes 迁移](/install/migrating-hermes)：面向用户的演练。
+- [从 Claude 迁移](/install/migrating-claude)：面向用户的演练。
+- [迁移](/install/migrating)：将 OpenClaw 移至新机器。
 - [Doctor](/gateway/doctor)：应用迁移后的健康检查。
-- [Plugin](/tools/plugin)：Plugin 安装和注册。
+- [Plugins](/tools/plugin)：Plugin 安装和注册。

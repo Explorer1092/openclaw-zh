@@ -1,41 +1,43 @@
 ---
-mmh3_hash: "001134ea7ef2b240365c75e68d96dc3e"
-title: "`openclaw configure`"
-sidebarTitle: "openclaw configure"
-summary: "`openclaw configure` 的 CLI 参考(交互式配置提示)"
+summary: "`openclaw configure` 的 CLI 参考（交互式配置提示）"
 read_when:
   - 您想以交互方式调整凭据、设备或 Agent 默认值
+title: "Configure"
 ---
 
 # `openclaw configure`
 
-交互式提示以设置凭据、设备和 Agent 默认值。
+针对现有设置进行有针对性更改的交互式提示：凭据、设备、Agent 默认值、Gateway、Channel、Plugin、Skill 和健康检查。
+
+使用 `openclaw onboard` 进行完整的引导式首次运行体验，使用 `openclaw setup` 仅进行基础配置/工作区，使用 `openclaw channels add` 仅需要 Channel 账户设置时。
 
 <Note>
-**Model** 部分包括一个多选项,用于 `agents.defaults.models` 允许列表(在 `/model` 和模型选择器中显示的内容)。Provider 范围的设置选项将其所选模型合并到现有允许列表中，而非替换配置中已有的其他 Provider。从 configure 重新运行 Provider 认证会保留现有的 `agents.defaults.model.primary`。若要有意更改默认模型，请使用 `openclaw models auth login --provider <id> --set-default` 或 `openclaw models set <model>`。
+**Model** 部分包含 `agents.defaults.models` 允许列表（在 `/model` 和模型选择器中显示的内容）的多选。Provider 范围的设置选择将其选定的模型合并到现有允许列表中，而不是替换配置中已有的不相关 Provider。
+
+从 configure 重新运行 Provider 身份验证会保留现有的 `agents.defaults.model.primary`，即使 Provider 的身份验证步骤返回带有其自己推荐默认模型的配置补丁也是如此。这意味着添加或重新验证 xAI、OpenRouter 或其他 Provider 应使新模型可用，而不会取代您当前的主要模型。当您有意想要更改默认模型时，请使用 `openclaw models auth login --provider <id> --set-default` 或 `openclaw models set <model>`。
 </Note>
 
-当 configure 从 Provider 认证选择启动时,默认模型和允许列表选择器会自动优先选择该 Provider。对于配对的 Provider（如 Volcengine 和 BytePlus），同样的优先选择也匹配其编码计划变体(`volcengine-plan/*`、`byteplus-plan/*`)。如果优先 Provider 过滤器会产生空列表,configure 会回退到未过滤的目录,而不是显示空白选择器。
+当 configure 从 Provider 身份验证选择开始时，默认模型和允许列表选择器会自动优先选择该 Provider。对于配对的 Provider，如 Volcengine 和 BytePlus，相同的偏好也匹配其编码计划变体（`volcengine-plan/*`、`byteplus-plan/*`）。如果首选 Provider 过滤器会产生空列表，configure 会回退到未过滤的目录，而不是显示空选择器。
 
 <Tip>
 不带子命令的 `openclaw config` 打开相同的向导。使用 `openclaw config get|set|unset` 进行非交互式编辑。
 </Tip>
 
-对于网络搜索,`openclaw configure --section web` 允许您选择提供商并配置其凭据。某些提供商还会显示提供商特定的后续提示:
+对于网络搜索，`openclaw configure --section web` 允许您选择 Provider 并配置其凭据。一些 Provider 还显示特定于 Provider 的后续提示：
 
-- **Grok** 可以使用相同的 `XAI_API_KEY` 提供可选的 `x_search` 设置,并让您选择 `x_search` 模型。
-- **Kimi** 可以询问 Moonshot API 区域(`api.moonshot.ai` 与 `api.moonshot.cn`)以及默认的 Kimi 网络搜索模型。
+- **Grok** 可以提供使用相同 `XAI_API_KEY` 的可选 `x_search` 设置，并让您选择 `x_search` 模型。
+- **Kimi** 可以询问 Moonshot API 区域（`api.moonshot.ai` 与 `api.moonshot.cn`）和默认的 Kimi 网络搜索模型。
 
-相关:
+相关：
 
-- Gateway 配置参考:[Configuration](/gateway/configuration)
-- Config CLI:[Config](/cli/config)
+- Gateway 配置参考：[Configuration](/gateway/configuration)
+- Config CLI：[Config](/cli/config)
 
 ## 选项
 
-- `--section <section>`:可重复的部分过滤器
+- `--section <section>`：可重复的部分过滤器
 
-可用部分:
+可用部分：
 
 - `workspace`
 - `model`
@@ -47,13 +49,14 @@ read_when:
 - `skills`
 - `health`
 
-说明:
+注意：
 
-- 选择 Gateway 运行位置始终更新 `gateway.mode`。如果这是您唯一需要的,您可以选择"Continue"而不选择其他部分。
-- 面向 Channel 的服务(Slack/Discord/Matrix/Microsoft Teams)在设置期间提示 Channel/房间允许列表。您可以输入名称或 ID;向导在可能的情况下将名称解析为 ID。
-- 如果您运行 daemon 安装步骤,令牌身份验证需要令牌,且 `gateway.auth.token` 由 SecretRef 管理,configure 会验证 SecretRef 但不会将已解析的明文令牌值持久化到监督服务环境元数据中。
-- 如果令牌身份验证需要令牌且配置的令牌 SecretRef 未解析,configure 会阻止 daemon 安装并提供可操作的修复指引。
-- 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置,configure 会阻止 daemon 安装直到明确设置模式。
+- 选择 Gateway 运行位置始终更新 `gateway.mode`。如果这就是您所需要的，您可以在不选择其他部分的情况下选择"继续"。
+- 在本地配置写入后，configure 在所选设置路径需要时安装选定的可下载 Plugin。远程 Gateway 配置不安装本地 Plugin 包。
+- 面向 Channel 的服务（Slack/Discord/Matrix/Microsoft Teams）在设置期间提示 Channel/房间允许列表。您可以输入名称或 ID；向导尽可能将名称解析为 ID。
+- 如果您运行守护进程安装步骤，token 身份验证需要 token，且 `gateway.auth.token` 是 SecretRef 管理的，configure 会验证 SecretRef，但不会将已解析的明文 token 值持久化到监控服务环境元数据中。
+- 如果 token 身份验证需要 token 但配置的 token SecretRef 未解析，configure 会在有可行补救指南的情况下阻止守护进程安装。
+- 如果 `gateway.auth.token` 和 `gateway.auth.password` 都已配置且 `gateway.auth.mode` 未设置，configure 会阻止守护进程安装，直到明确设置模式。
 
 ## 示例
 
@@ -67,4 +70,4 @@ openclaw configure --section gateway --section daemon
 ## 相关
 
 - [CLI 参考](/cli)
-- [Configuration](/gateway/configuration)
+- [配置](/gateway/configuration)
