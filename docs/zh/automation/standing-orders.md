@@ -1,90 +1,88 @@
 ---
-mmh3_hash: "7269c3768c7bc07cd5549ce86506d6f4"
+mmh3_hash: "0ab20e103e5c0e588178240868625515"
 summary: "为自主 Agent 程序定义永久操作权限"
 read_when:
   - 设置无需逐任务提示即可运行的自主 Agent 工作流时
-  - 定义 Agent 可以独立执行的操作与需要人工审批的操作时
-  - 为多程序 Agent 构建具有明确边界和上报规则的结构时
-title: "常设指令"
+  - 定义 Agent 可以独立做什么以及什么需要人工批准时
+  - 构建具有清晰边界和升级规则的多程序 Agent 时
+title: "Standing Orders"
 ---
 
-# 常设指令
+Standing Orders 为你的 Agent 授予针对已定义程序的**永久操作权限**。你不需要每次给出单独的任务指令，而是定义具有明确范围、触发器和升级规则的程序——Agent 在这些边界内自主执行。
 
-常设指令为 Agent 赋予已定义程序的**永久操作权限**。与每次都给出具体任务指令不同，你定义具有清晰范围、触发条件和上报规则的程序，Agent 在这些边界内自主执行。
+这就像是告诉你的助手"发送每周报告"与授予常驻权限的区别："你负责每周报告。每周五编写它、发送它，只有在出现异常时才升级。"
 
-这就像告诉助理"发送每周报告"（每次单独指令），与授予常设权限（"你负责每周报告。每周五编制并发送，只有在出现问题时才上报。"）之间的区别。
+## 为什么需要 Standing Orders
 
-## 为什么要使用常设指令？
+**没有 Standing Orders 时：**
 
-**没有常设指令时：**
-
-- 每个任务都需要你提示 Agent
-- Agent 在请求之间处于空闲状态
-- 例行工作被遗忘或延误
+- 你必须为每个任务提示 Agent
+- Agent 在请求之间保持空闲
+- 日常工作被遗忘或延迟
 - 你成为瓶颈
 
-**有常设指令时：**
+**有了 Standing Orders 后：**
 
-- Agent 在定义的边界内自主执行
-- 例行工作按计划进行，无需提示
-- 只有在例外情况和审批时才需要你介入
-- Agent 在空闲时间内高效完成工作
+- Agent 在已定义的边界内自主执行
+- 日常工作按计划进行，无需提示
+- 你只在出现例外和需要批准时介入
+- Agent 充分利用空闲时间
 
 ## 工作原理
 
-常设指令定义在你的 [Agent 工作空间](/concepts/agent-workspace) 文件中。推荐的方式是直接写入 `AGENTS.md`（每次会话都会自动注入），这样 Agent 始终能在上下文中看到它们。对于更大的配置，也可以放在专用文件（如 `standing-orders.md`）中，并在 `AGENTS.md` 中引用。
+Standing Orders 定义在你的 [Agent 工作区](/concepts/agent-workspace) 文件中。推荐的方式是直接包含在 `AGENTS.md` 中（每个 Session 自动注入），确保 Agent 始终将其保留在上下文中。对于更大的配置，你也可以将它们放在专用文件（如 `standing-orders.md`）中，并从 `AGENTS.md` 引用它。
 
 每个程序指定：
 
-1. **范围** — Agent 被授权执行的操作
-2. **触发器** — 何时执行（计划、事件或条件）
-3. **审批门** — 在行动前需要人工批准的内容
-4. **上报规则** — 何时停止并寻求帮助
+1. **范围** - Agent 被授权做什么
+2. **触发器** - 何时执行（计划、事件或条件）
+3. **批准门控** - 什么需要人工签字才能行动
+4. **升级规则** - 何时停止并寻求帮助
 
-Agent 通过工作空间引导文件在每次会话中加载这些指令（参见 [Agent 工作空间](/concepts/agent-workspace) 了解自动注入文件的完整列表），并结合 [Cron 作业](/automation/cron-jobs) 进行基于时间的强制执行。
+Agent 通过工作区引导文件（完整的自动注入文件列表见 [Agent 工作区](/concepts/agent-workspace)）在每个 Session 加载这些指令，并与[Cron 任务](/automation/cron-jobs)结合执行基于时间的强制执行。
 
 <Tip>
-将常设指令放在 `AGENTS.md` 中以确保每次会话都能加载。工作空间引导会自动注入 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md` 和 `MEMORY.md`，但不会注入子目录中的任意文件。
+将 Standing Orders 放入 `AGENTS.md` 以保证每个 Session 都加载它们。工作区引导自动注入 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md` 和 `MEMORY.md`，但不注入子目录中的任意文件。
 </Tip>
 
-## 常设指令的结构
+## Standing Order 的结构
 
 ```markdown
-## 程序：每周状态报告
+## Program: Weekly Status Report
 
-**权限：** 整理数据、生成报告、向相关人员发送
-**触发器：** 每周五下午 4 点（通过 Cron 作业强制执行）
-**审批门：** 标准报告无需审批。异常情况需标记供人工审查。
-**上报条件：** 数据源不可用或指标异常（超过正常值 2σ）
+**Authority:** Compile data, generate report, deliver to stakeholders
+**Trigger:** Every Friday at 4 PM (enforced via cron job)
+**Approval gate:** None for standard reports. Flag anomalies for human review.
+**Escalation:** If data source is unavailable or metrics look unusual (>2σ from norm)
 
-### 执行步骤
+### Execution steps
 
-1. 从配置的来源获取指标
-2. 与上周数据和目标进行比较
-3. 在 Reports/weekly/YYYY-MM-DD.md 中生成报告
-4. 通过配置的 Channel 发送摘要
-5. 将完成记录到 Agent/Logs/
+1. Pull metrics from configured sources
+2. Compare to prior week and targets
+3. Generate report in Reports/weekly/YYYY-MM-DD.md
+4. Deliver summary via configured channel
+5. Log completion to Agent/Logs/
 
-### 不应做的事情
+### What NOT to do
 
-- 不向外部人员发送报告
-- 不修改源数据
-- 即使指标不好也不跳过发送——如实报告
+- Do not send reports to external parties
+- Do not modify source data
+- Do not skip delivery if metrics look bad - report accurately
 ```
 
-## 常设指令 + Cron 作业
+## Standing Orders 与 Cron 任务
 
-常设指令定义 Agent **有权做什么**。[Cron 作业](/automation/cron-jobs) 定义**何时**发生。它们协同工作：
+Standing Orders 定义 Agent **有权**做什么。[Cron 任务](/automation/cron-jobs)定义**何时**发生。它们协同工作：
 
 ```
-常设指令："你负责每日收件箱分类"
+Standing Order: "你负责每日收件箱分类"
     ↓
-Cron 作业（每天上午 8 点）："按常设指令执行收件箱分类"
+Cron 任务（每天 8 AM）："按照 Standing Orders 执行收件箱分类"
     ↓
-Agent：读取常设指令 → 执行步骤 → 报告结果
+Agent：读取 Standing Orders → 执行步骤 → 报告结果
 ```
 
-Cron 作业提示应引用常设指令，而不是重复其内容：
+Cron 任务提示词应引用 Standing Order 而非复制它：
 
 ```bash
 openclaw cron add \
@@ -93,163 +91,161 @@ openclaw cron add \
   --tz America/New_York \
   --timeout-seconds 300 \
   --announce \
-  --channel bluebubbles \
+  --channel imessage \
   --to "+1XXXXXXXXXX" \
   --message "Execute daily inbox triage per standing orders. Check mail for new alerts. Parse, categorize, and persist each item. Report summary to owner. Escalate unknowns."
 ```
 
 ## 示例
 
-### 示例 1：内容与社交媒体（每周循环）
+### 示例 1：内容和社交媒体（每周循环）
 
 ```markdown
-## 程序：内容与社交媒体
+## Program: Content & Social Media
 
-**权限：** 起草内容、安排发布、编制互动报告
-**审批门：** 前 30 天所有帖子需要所有者审查，之后为常设审批
-**触发器：** 每周循环（周一审查 → 周中起草 → 周五简报）
+**Authority:** Draft content, schedule posts, compile engagement reports
+**Approval gate:** All posts require owner review for first 30 days, then standing approval
+**Trigger:** Weekly cycle (Monday review → mid-week drafts → Friday brief)
 
-### 每周循环
+### Weekly cycle
 
-- **周一：** 审查平台指标和受众互动
-- **周二至周四：** 起草社交帖子，创建博客内容
-- **周五：** 编制每周营销简报 → 发送给所有者
+- **Monday:** Review platform metrics and audience engagement
+- **Tuesday-Thursday:** Draft social posts, create blog content
+- **Friday:** Compile weekly marketing brief → deliver to owner
 
-### 内容规则
+### Content rules
 
-- 声音必须符合品牌（参见 SOUL.md 或品牌声音指南）
-- 在面向公众的内容中不得自我介绍为 AI
-- 有指标时包含指标
-- 聚焦于对受众的价值，而非自我推广
+- Voice must match the brand (see SOUL.md or brand voice guide)
+- Never identify as AI in public-facing content
+- Include metrics when available
+- Focus on value to audience, not self-promotion
 ```
 
-### 示例 2：财务运营（事件触发）
+### 示例 2：财务操作（事件触发）
 
 ```markdown
-## 程序：财务处理
+## Program: Financial Processing
 
-**权限：** 处理交易数据、生成报告、发送摘要
-**审批门：** 分析无需审批。建议需要所有者批准。
-**触发器：** 检测到新数据文件 OR 计划的月度周期
+**Authority:** Process transaction data, generate reports, send summaries
+**Approval gate:** None for analysis. Recommendations require owner approval.
+**Trigger:** New data file detected OR scheduled monthly cycle
 
-### 新数据到达时
+### When new data arrives
 
-1. 检测指定输入目录中的新文件
-2. 解析并分类所有交易
-3. 与预算目标进行比较
-4. 标记：异常项目、阈值突破、新的周期性费用
-5. 在指定输出目录中生成报告
-6. 通过配置的 Channel 向所有者发送摘要
+1. Detect new file in designated input directory
+2. Parse and categorize all transactions
+3. Compare against budget targets
+4. Flag: unusual items, threshold breaches, new recurring charges
+5. Generate report in designated output directory
+6. Deliver summary to owner via configured channel
 
-### 上报规则
+### Escalation rules
 
-- 单笔金额 > $500：立即警报
-- 类别超出预算 20%：在报告中标记
-- 无法识别的交易：向所有者询问分类
-- 2 次重试后处理失败：报告失败，不要猜测
+- Single item > $500: immediate alert
+- Category > budget by 20%: flag in report
+- Unrecognizable transaction: ask owner for categorization
+- Failed processing after 2 retries: report failure, do not guess
 ```
 
-### 示例 3：监控与警报（持续运行）
+### 示例 3：监控和告警（持续）
 
 ```markdown
-## 程序：系统监控
+## Program: System Monitoring
 
-**权限：** 检查系统健康状况、重启服务、发送警报
-**审批门：** 自动重启服务。如果重启失败两次，则上报。
-**触发器：** 每次 Heartbeat 周期
+**Authority:** Check system health, restart services, send alerts
+**Approval gate:** Restart services automatically. Escalate if restart fails twice.
+**Trigger:** Every heartbeat cycle
 
-### 检查项
+### Checks
 
-- 服务健康端点是否响应
-- 磁盘空间是否高于阈值
-- 待处理任务是否陈旧（>24 小时）
-- 传递 Channel 是否正常运行
+- Service health endpoints responding
+- Disk space above threshold
+- Pending tasks not stale (>24 hours)
+- Delivery channels operational
 
-### 响应矩阵
+### Response matrix
 
-| 条件             | 操作                     | 是否上报？               |
+| Condition        | Action                   | Escalate?                |
 | ---------------- | ------------------------ | ------------------------ |
-| 服务宕机         | 自动重启                 | 仅在重启失败 2 次时      |
-| 磁盘空间 < 10%   | 警告所有者               | 是                       |
-| 陈旧任务 > 24h   | 提醒所有者               | 否                       |
-| Channel 离线     | 记录并在下次周期重试     | 离线超过 2 小时时        |
+| Service down     | Restart automatically    | Only if restart fails 2x |
+| Disk space < 10% | Alert owner              | Yes                      |
+| Stale task > 24h | Remind owner             | No                       |
+| Channel offline  | Log and retry next cycle | If offline > 2 hours     |
 ```
 
 ## 执行-验证-报告模式
 
-常设指令与严格的执行纪律结合时效果最好。常设指令中的每个任务都应遵循以下循环：
+与严格的执行纪律相结合，Standing Orders 效果最佳。Standing Order 中的每个任务都应遵循这个循环：
 
-1. **执行** — 完成实际工作（不仅仅是确认指令）
-2. **验证** — 确认结果正确（文件存在、消息已发送、数据已解析）
-3. **报告** — 告知所有者做了什么以及验证了什么
+1. **执行** - 完成实际工作（不只是确认指令）
+2. **验证** - 确认结果正确（文件存在、消息已交付、数据已解析）
+3. **报告** - 告知负责人完成了什么以及已验证了什么
 
 ```markdown
-### 执行规则
+### Execution rules
 
-- 每个任务遵循执行-验证-报告。没有例外。
-- "我会去做"不是执行。做完之后再报告。
-- 没有验证的"完成"不可接受。请证明它。
-- 如果执行失败：用调整后的方式重试一次。
-- 如果仍然失败：报告失败并附上诊断。绝不静默失败。
-- 不要无限重试——最多 3 次，然后上报。
+- Every task follows Execute-Verify-Report. No exceptions.
+- "I'll do that" is not execution. Do it, then report.
+- "Done" without verification is not acceptable. Prove it.
+- If execution fails: retry once with adjusted approach.
+- If still fails: report failure with diagnosis. Never silently fail.
+- Never retry indefinitely - 3 attempts max, then escalate.
 ```
 
-这种模式能防止最常见的 Agent 失败模式：确认了任务但没有完成它。
+这种模式防止了最常见的 Agent 失败模式：确认任务而不实际完成它。
 
 ## 多程序架构
 
-对于管理多个关注点的 Agent，将常设指令组织为具有明确边界的独立程序：
+对于管理多个关注点的 Agent，将 Standing Orders 组织为具有清晰边界的独立程序：
 
 ```markdown
-# 常设指令
-
-## 程序 1：[领域 A]（每周）
+## Program 1: [Domain A] (Weekly)
 
 ...
 
-## 程序 2：[领域 B]（每月 + 按需）
+## Program 2: [Domain B] (Monthly + On-Demand)
 
 ...
 
-## 程序 3：[领域 C]（按需）
+## Program 3: [Domain C] (As-Needed)
 
 ...
 
-## 上报规则（所有程序）
+## Escalation Rules (All Programs)
 
-- [共同的上报标准]
-- [适用于所有程序的审批门]
+- [Common escalation criteria]
+- [Approval gates that apply across programs]
 ```
 
 每个程序应有：
 
-- 自己的**触发节奏**（每周、每月、事件驱动、持续运行）
-- 自己的**审批门**（有些程序需要更多监督）
-- 清晰的**边界**（Agent 应该知道一个程序在哪里结束，另一个程序在哪里开始）
+- 自己的**触发节奏**（每周、每月、事件驱动、持续）
+- 自己的**批准门控**（某些程序需要更多监督）
+- 清晰的**边界**（Agent 应该知道一个程序在哪里结束，另一个在哪里开始）
 
 ## 最佳实践
 
-### 应该做的
+### 应该
 
-- 从狭窄的权限开始，随着信任的建立而扩展
-- 为高风险操作定义明确的审批门
-- 包含"不应做的事情"部分——边界与权限同样重要
-- 结合 Cron 作业实现可靠的基于时间的执行
-- 每周审查 Agent 日志，验证常设指令是否被遵守
-- 随着需求的变化更新常设指令——它们是活文档
+- 从窄权限开始，随着信任的建立而扩展
+- 为高风险操作定义明确的批准门控
+- 包含"不应该做什么"部分——边界与权限同样重要
+- 与 Cron 任务结合以实现可靠的基于时间的执行
+- 每周回顾 Agent 日志以验证 Standing Orders 是否被遵守
+- 随着需求的演变更新 Standing Orders——它们是活动文档
 
-### 应该避免的
+### 避免
 
-- 第一天就授予宽泛的权限（"做你认为最好的"）
-- 跳过上报规则——每个程序都需要"何时停止并寻求帮助"的条款
-- 假设 Agent 会记住口头指令——把一切都写入文件
-- 在单个程序中混合关注点——不同领域使用不同程序
-- 忘记用 Cron 作业强制执行——没有触发器的常设指令只是建议
+- 第一天就授予广泛权限（"做你认为最好的事"）
+- 跳过升级规则——每个程序都需要"何时停止和询问"条款
+- 假设 Agent 会记住口头指令——把所有内容写入文件
+- 在单个程序中混合关注点——不同领域使用独立程序
+- 忘记用 Cron 任务强制执行——没有触发器的 Standing Orders 变成了建议
 
 ## 相关
 
-- [自动化与任务](/automation)：所有自动化机制一览。
-- [Cron 作业](/automation/cron-jobs)：常设指令的计划强制执行。
+- [自动化与任务](/automation)：所有自动化机制概览。
+- [Cron 任务](/automation/cron-jobs)：Standing Orders 的计划执行。
 - [Hooks](/automation/hooks)：Agent 生命周期事件的事件驱动脚本。
 - [Webhooks](/automation/cron-jobs#webhooks)：入站 HTTP 事件触发器。
-- [Agent 工作空间](/concepts/agent-workspace)：常设指令的存放位置，包括自动注入引导文件的完整列表（AGENTS.md、SOUL.md 等）。
+- [Agent 工作区](/concepts/agent-workspace)：Standing Orders 存放的地方，包括自动注入引导文件的完整列表（`AGENTS.md`、`SOUL.md` 等）。
