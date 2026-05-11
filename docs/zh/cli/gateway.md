@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "7dd393264bf8d08ada08585d20c59824"
 summary: "OpenClaw Gateway CLI（`openclaw gateway`）— 运行、查询和发现 Gateway"
 read_when:
   - 从 CLI 运行 Gateway（开发或服务器）

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "37d62e9c9fd9b2d3c801063e3d550c99"
 summary: "`openclaw docs` 的 CLI 参考（搜索实时文档索引）"
 read_when:
   - 您想从终端搜索实时 OpenClaw 文档

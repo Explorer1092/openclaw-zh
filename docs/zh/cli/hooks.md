@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "87bf8a88a28346995b8f197cd1b276d1"
 summary: "`openclaw hooks` 的 CLI 参考（Agent Hook）"
 read_when:
   - 您想管理 Agent Hook

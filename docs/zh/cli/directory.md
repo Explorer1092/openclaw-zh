@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "217faee49f1108b70c4a844c3c89de5f"
 summary: "`openclaw directory` 的 CLI 参考（自己、对等方、群组）"
 read_when:
   - 您想查找 Channel 的联系人/群组/自己的 ID

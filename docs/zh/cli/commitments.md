@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "78dad7c393d73d62f3731fd590821f02"
 summary: "`openclaw commitments` 的 CLI 参考（检查和取消推断出的后续跟进）"
 read_when:
   - 您想检查推断出的后续跟进 Commitment

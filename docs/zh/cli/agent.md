@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "667c701fdbce28ab2b3edf5e961c0688"
 summary: "`openclaw agent` 的 CLI 参考（通过 Gateway 发送一轮 Agent）"
 read_when:
   - 您想从脚本运行一轮 Agent（可选择传递回复）

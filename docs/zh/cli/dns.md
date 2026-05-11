@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "2efacf492f1f34a99263a41b13c5ee45"
 summary: "`openclaw dns` 的 CLI 参考（广域发现助手）"
 read_when:
   - 您想通过 Tailscale + CoreDNS 进行广域发现（DNS-SD）

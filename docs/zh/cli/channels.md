@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "0cb59ab0b1a3774c954603ed1268ce14"
 summary: "`openclaw channels` 的 CLI 参考（账户、状态、登录/登出、日志）"
 read_when:
   - 您想添加/删除 Channel 账户（WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost（插件）/Signal/iMessage/Matrix）

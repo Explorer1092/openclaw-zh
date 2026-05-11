@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "313366345e293e77dab47ee9826dd358"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:
   - 设置基于 ACP 的 IDE 集成

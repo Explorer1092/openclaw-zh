@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "ac12c80b605b0865bd2d8d0d823045a9"
 summary: "`openclaw devices` 的 CLI 参考（设备配对 + token 轮换/撤销）"
 read_when:
   - 您正在批准设备配对请求

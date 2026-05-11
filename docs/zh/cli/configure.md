@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "b95c5a0f16cd5556253bf24a400928c8"
 summary: "`openclaw configure` 的 CLI 参考（交互式配置提示）"
 read_when:
   - 您想以交互方式调整凭据、设备或 Agent 默认值

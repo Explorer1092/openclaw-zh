@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "e3e91159fde4dbbc6b3a9a0fa262dbe4"
 summary: "`openclaw dashboard` 的 CLI 参考（打开控制 UI）"
 read_when:
   - 您想使用当前 token 打开控制 UI

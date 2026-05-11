@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "6b6c54f40992a29c1b5df860d50668ac"
 summary: "`openclaw daemon` 的 CLI 参考（Gateway 服务管理的旧版别名）"
 read_when:
   - 您仍在脚本中使用 `openclaw daemon ...`

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "27204dff05d1cd6b2ee6bf391a62a2c6"
 summary: "重定向：flow 命令位于 `openclaw tasks flow` 下"
 read_when:
   - 您在旧版文档或发布说明中遇到 `openclaw flows`

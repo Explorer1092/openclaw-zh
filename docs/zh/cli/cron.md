@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "b0194eda3f8c74135042b5150773dd38"
 summary: "`openclaw cron` 的 CLI 参考（安排和运行后台作业）"
 read_when:
   - 您想安排定时作业和唤醒

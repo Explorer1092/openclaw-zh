@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "f0fd7f72a6bd26e3b7abf56121e7ba88"
 summary: "`openclaw backup` 的 CLI 参考（创建本地备份归档）"
 read_when:
   - 您想为本地 OpenClaw 状态创建一流的备份归档

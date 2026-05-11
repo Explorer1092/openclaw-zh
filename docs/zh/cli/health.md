@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "002710f94b16a6553a94ff8e1155d7d0"
 summary: "`openclaw health` 的 CLI 参考（通过 RPC 获取 Gateway 健康快照）"
 read_when:
   - 您想快速检查运行中 Gateway 的健康状况

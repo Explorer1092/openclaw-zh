@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "9889132b47ee645356bd58db13e7bd55"
 summary: "`openclaw agents` 的 CLI 参考（列出/添加/删除/绑定/解绑/设置身份）"
 read_when:
   - 您想要多个隔离的 Agent（工作区 + 路由 + 身份验证）
