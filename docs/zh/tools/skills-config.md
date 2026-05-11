@@ -1,7 +1,7 @@
 ---
 title: "Skill 配置"
 sidebarTitle: "Skill 配置"
-mmh3_hash: "9854d6c719008b4d4ec8086cd7ba846c"
+mmh3_hash: "1a0e1e288df04bfc6670e0629838d5ad"
 summary: "Skill 配置架构和示例"
 read_when:
   - 添加或修改 Skill 配置

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ad1f1707e160b19a97abc93505b9a464"
+mmh3_hash: "4ccfefa96ff5355284afc856648dd3c6"
 title: "PDF 工具"
 summary: "使用原生 Provider 支持和提取回退分析一个或多个 PDF 文档"
 read_when:

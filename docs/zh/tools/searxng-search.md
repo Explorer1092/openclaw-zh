@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "93377e95a52f8a915f3df5a8a5cb5d38"
+mmh3_hash: "7b39e0608a2e0eb1d299699cbb12c0c5"
 summary: "SearXNG 网页搜索 -- 自托管、无需密钥的元搜索提供商"
 read_when:
   - 希望使用自托管的网页搜索提供商

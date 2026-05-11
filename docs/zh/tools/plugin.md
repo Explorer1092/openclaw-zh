@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "48f22965ed26d017b0c947d10d8ebc1b"
+mmh3_hash: "2857a4daf715b21c43f68fa31f6fd913"
 summary: "安装、配置和管理 OpenClaw Plugin"
 read_when:
   - 安装或配置 Plugin

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2beffc3778a1782554b2932a5d6b0d26"
+mmh3_hash: "ff627f9db406a219f6c886aee914c7b7"
 summary: "每个 Agent 的沙箱 + 工具限制、优先级和示例"
 title: "多 Agent 沙箱和工具"
 sidebarTitle: "多 Agent 沙箱和工具"
