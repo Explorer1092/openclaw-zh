@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "7eff91331b07adb377b5b81f87453fe2"
+mmh3_hash: "1f8bb0bb8fe2cb5917b4f5870eb0e13f"
 summary: "将 OpenClaw 作为带有安全警告的个人助手运行的端到端指南"
 read_when:
   - 引导新的助手实例
   - 审查安全/权限影响
 title: "个人助手设置"
 ---
-
-# 使用 OpenClaw 构建个人助手
 
 OpenClaw 是一个自托管的 Gateway，可将 Discord、Google Chat、iMessage、Matrix、Microsoft Teams、Signal、Slack、Telegram、WhatsApp、Zalo 等连接到 AI Agent。本指南介绍"个人助手"设置：一个专用的 WhatsApp 号码，表现得像你永远在线的 AI 助手。
 
@@ -123,13 +121,24 @@ OpenClaw 默认为良好的助手设置，但你通常需要调整：
 ```json5
 {
   logging: { level: "info" },
-  agent: {
-    model: "anthropic/claude-opus-4-6",
-    workspace: "~/.openclaw/workspace",
-    thinkingDefault: "high",
-    timeoutSeconds: 1800,
-    // 从 0 开始；稍后启用。
-    heartbeat: { every: "0m" },
+  agents: {
+    defaults: {
+      model: { primary: "anthropic/claude-opus-4-6" },
+      workspace: "~/.openclaw/workspace",
+      thinkingDefault: "high",
+      timeoutSeconds: 1800,
+      // 从 0 开始；稍后启用。
+      heartbeat: { every: "0m" },
+    },
+    list: [
+      {
+        id: "main",
+        default: true,
+        groupChat: {
+          mentionPatterns: ["@openclaw", "openclaw"],
+        },
+      },
+    ],
   },
   channels: {
     whatsapp: {
@@ -137,11 +146,6 @@ OpenClaw 默认为良好的助手设置，但你通常需要调整：
       groups: {
         "*": { requireMention: true },
       },
-    },
-  },
-  routing: {
-    groupChat: {
-      mentionPatterns: ["@openclaw", "openclaw"],
     },
   },
   session: {
@@ -160,7 +164,7 @@ OpenClaw 默认为良好的助手设置，但你通常需要调整：
 
 - Session 文件：`~/.openclaw/agents/<agentId>/sessions/{{SessionId}}.jsonl`
 - Session 元数据（Token 使用情况、最后路由等）：`~/.openclaw/agents/<agentId>/sessions/sessions.json`（旧版：`~/.openclaw/sessions/sessions.json`）
-- `/new` 或 `/reset` 为该聊天启动一个新的 Session（通过 `resetTriggers` 配置）。如果是单独发送，Agent 会回复一个简短的问候以确认重置。
+- `/new` 或 `/reset` 为该聊天启动一个新的 Session（通过 `resetTriggers` 配置）。如果单独发送，OpenClaw 不会调用模型，而是直接确认重置。
 - `/compact [instructions]` 压缩 Session 上下文并报告剩余的上下文预算。
 
 ## 心跳（主动模式）
@@ -177,8 +181,10 @@ OpenClaw 默认为良好的助手设置，但你通常需要调整：
 
 ```json5
 {
-  agent: {
-    heartbeat: { every: "30m" },
+  agents: {
+    defaults: {
+      heartbeat: { every: "30m" },
+    },
   },
 }
 ```
@@ -204,6 +210,7 @@ OpenClaw 提取这些并作为媒体与文本一起发送。
 
 - 如果 `tools.fs.workspaceOnly` 为 `true`，出站 `MEDIA:` 本地路径仅限于 OpenClaw 临时根目录、媒体缓存、Agent 工作区路径和沙箱生成的文件。
 - 如果 `tools.fs.workspaceOnly` 为 `false`，出站 `MEDIA:` 可以使用 Agent 已被允许读取的主机本地文件。
+- 本地路径可以是绝对路径、工作区相对路径，或使用 `~/` 的主目录相对路径。
 - 主机本地发送仍然只允许媒体和安全文档类型（图像、音频、视频、PDF 和 Office 文档）。纯文本和类似密钥的文件不被视为可发送媒体。
 
 这意味着当你的文件系统策略已经允许这些读取时，工作区之外生成的图像/文件现在可以发送，而无需重新开放任意主机文本附件的泄露风险。

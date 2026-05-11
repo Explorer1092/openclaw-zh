@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f4bd983e65eb867a26a63a20e7f433eb"
+mmh3_hash: "b05daf4d6afe5bcbe3ec1b04d6c3342c"
 summary: "CLI 引导流程、认证/模型设置、输出和内部的完整参考"
 read_when:
   - 您需要 openclaw onboard 的详细行为
@@ -17,7 +17,7 @@ sidebarTitle: "CLI 参考"
 - 模型和认证设置（OpenAI Code 订阅 OAuth、Anthropic Claude CLI 或 API 密钥，以及 MiniMax、GLM、Ollama、Moonshot、StepFun 和 AI Gateway 选项）
 - 工作区位置和引导文件
 - Gateway 设置（端口、绑定、认证、Tailscale）
-- Channel 和 Provider（Telegram、WhatsApp、Discord、Google Chat、Mattermost、Signal、BlueBubbles 及其他捆绑 Channel 插件）
+- Channel 和 Provider（Telegram、WhatsApp、Discord、Google Chat、Mattermost、Signal、iMessage 及其他捆绑 Channel 插件）
 - 守护程序安装（LaunchAgent、systemd 用户单元，或原生 Windows 计划任务，带 Startup 文件夹回退）
 - 健康检查
 - Skill 设置
@@ -65,8 +65,7 @@ sidebarTitle: "CLI 参考"
     - [Google Chat](/channels/googlechat)：服务账号 JSON + Webhook 受众
     - [Mattermost](/channels/mattermost)：机器人令牌 + Base URL
     - [Signal](/channels/signal)：可选的 `signal-cli` 安装 + 账号配置
-    - [BlueBubbles](/channels/bluebubbles)：推荐用于 iMessage；服务器 URL + 密码 + Webhook
-    - [iMessage](/channels/imessage)：旧版 `imsg` CLI 路径 + DB 访问
+    - [iMessage](/channels/imessage)：`imsg` CLI 路径 + Messages DB 访问；Gateway 在非 Mac 机器运行时使用 SSH 包装器
     - DM 安全性：默认为配对。第一个 DM 发送代码；通过 `openclaw pairing approve <channel> <code>` 批准或使用白名单。
   </Step>
   <Step title="守护程序安装">
@@ -128,13 +127,13 @@ sidebarTitle: "CLI 参考"
   <Accordion title="OpenAI Code 订阅（OAuth）">
     浏览器流程；粘贴 `code#state`。
 
-    当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.5`。
+    当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
 
   </Accordion>
   <Accordion title="OpenAI Code 订阅（设备配对）">
     带短期设备码的浏览器配对流程。
 
-    当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.5`。
+    当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
 
   </Accordion>
   <Accordion title="OpenAI API 密钥">
@@ -200,6 +199,7 @@ sidebarTitle: "CLI 参考"
     - `--custom-api-key`（可选；回退到 `CUSTOM_API_KEY`）
     - `--custom-provider-id`（可选）
     - `--custom-compatibility <openai|anthropic>`（可选；默认 `openai`）
+    - `--custom-image-input` / `--custom-text-input`（可选；覆盖推断的模型输入能力）
 
   </Accordion>
   <Accordion title="Skip">

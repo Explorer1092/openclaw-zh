@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4566fda78b331f8ac343c8090bce3dd4"
+mmh3_hash: "a3561f1079bdf20774a993e7db7e937e"
 summary: "OpenClaw CLI 的脚本化引导和 Agent 设置"
 read_when:
   - 您在脚本或 CI 中自动化引导
@@ -167,11 +167,13 @@ openclaw onboard --non-interactive \
       --custom-api-key "$CUSTOM_API_KEY" \
       --custom-provider-id "my-custom" \
       --custom-compatibility anthropic \
+      --custom-image-input \
       --gateway-port 18789 \
       --gateway-bind loopback
     ```
 
     `--custom-api-key` 是可选的。如果省略，引导会检查 `CUSTOM_API_KEY`。
+    OpenClaw 会自动将常见的视觉模型 ID 标记为支持图像输入。对于未知的自定义视觉模型 ID，请添加 `--custom-image-input`，或使用 `--custom-text-input` 强制指定为纯文本元数据。
 
     Ref 模式变体：
 
@@ -185,6 +187,7 @@ openclaw onboard --non-interactive \
       --secret-input-mode ref \
       --custom-provider-id "my-custom" \
       --custom-compatibility anthropic \
+      --custom-image-input \
       --gateway-port 18789 \
       --gateway-bind loopback
     ```

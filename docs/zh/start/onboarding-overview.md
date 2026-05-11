@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8f011fc94a7dc97ff551c84c96b8f690"
+mmh3_hash: "8a45d7224b1fd4e482e6fba693dec0b1"
 summary: "OpenClaw 引导选项和流程概述"
 read_when:
   - 选择引导路径
@@ -30,7 +30,7 @@ OpenClaw 有两种引导路径。两者都会配置认证、Gateway 和可选 Ch
 2. **工作区** — Agent 文件、引导模板和记忆的目录
 3. **Gateway** — 端口、绑定地址、认证模式
 4. **Channel**（可选）— 内置和捆绑的聊天 Channel，如
-   BlueBubbles、Discord、Feishu、Google Chat、Mattermost、Microsoft Teams、
+   iMessage、Discord、Feishu、Google Chat、Mattermost、Microsoft Teams、
    Telegram、WhatsApp 等
 5. **守护程序**（可选）— 后台服务，使 Gateway 自动启动
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "aa474e19a8d2a95a203d1f38d4e1f7e8"
+mmh3_hash: "2ebe31f5d4d425b589357d4741ce1b55"
 summary: "从零开始安装 OpenClaw，在几分钟内完成第一次聊天。"
 read_when:
   - 首次从零开始设置
@@ -11,7 +11,7 @@ title: "快速开始"
 
 ## 所需条件
 
-- **Node.js** — 推荐 Node 24（也支持 Node 22.14+）
+- **Node.js** — 推荐 Node 24（也支持 Node 22.16+）
 - 来自模型提供商（Anthropic、OpenAI、Google 等）的 **API 密钥** — 引导向导会提示您输入
 
 <Tip>

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3cc1d171c6b4f79d5412a855c22573d5"
+mmh3_hash: "89649668bd1edcfd02f56166c39214a1"
 summary: "OpenClaw 的首次运行入门流程（macOS 应用）"
 read_when:
   - 设计 macOS 入门助手

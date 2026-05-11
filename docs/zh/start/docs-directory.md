@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b7cca5b9ced12fa2d9a78b7b335e91ab"
+mmh3_hash: "55a63a581e132cc3132b7b55b655e183"
 summary: "精选的最常用 OpenClaw 文档链接。"
 read_when:
   - 您想快速访问关键文档页面
@@ -39,9 +39,8 @@ title: "文档目录"
 - [Telegram](/channels/telegram)
 - [Discord](/channels/discord)
 - [Mattermost](/channels/mattermost)
-- [BlueBubbles（iMessage）](/channels/bluebubbles)
+- [iMessage](/channels/imessage)
 - [QQ Bot](/channels/qqbot)
-- [iMessage（旧版）](/channels/imessage)
 - [群组](/channels/groups)
 - [WhatsApp 群组消息](/channels/group-messages)
 - [媒体图像](/nodes/images)

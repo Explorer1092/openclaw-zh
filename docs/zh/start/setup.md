@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "222f3880dad10b79c868d4fb04531b5f"
+mmh3_hash: "f80cbe87aef48782f6349ae680b3efb3"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器
@@ -22,8 +22,8 @@ title: "设置"
 
 ## 前提条件（从源码）
 
-- 推荐 Node 24（Node 22 LTS，当前为 `22.14+`，仍受支持）
-- `pnpm` 优先（或者如果你有意使用 [Bun 工作流](/install/bun) 则用 Bun）
+- 推荐 Node 24（Node 22 LTS，当前为 `22.16+`，仍受支持）
+- 源码检出需要 `pnpm`。OpenClaw 在开发模式下从 `extensions/*` pnpm 工作区包加载捆绑插件，因此根目录 `npm install` 不能准备完整的源码树。
 - Docker（可选；仅用于容器化设置/端到端测试 — 参见 [Docker](/install/docker)）
 
 ## 定制策略（使更新不造成破坏）
@@ -45,7 +45,7 @@ openclaw setup
 openclaw setup
 ```
 
-如果你还没有全局安装，通过 `pnpm openclaw setup` 运行它（或者如果你在使用 Bun 工作流，则用 `bun run openclaw setup`）。
+如果你还没有全局安装，通过 `pnpm openclaw setup` 运行它。
 
 ## 从此仓库运行 Gateway
 
@@ -97,18 +97,9 @@ pnpm openclaw setup
 pnpm gateway:watch
 ```
 
-`gateway:watch` 在监视模式下运行 Gateway，并在相关源码、配置和捆绑插件元数据变更时重新加载。
+`gateway:watch` 在指定的 tmux 会话中启动或重启 Gateway 监视进程，并在交互式终端中自动附加。非交互式 Shell 保持分离状态并打印 `tmux attach -t openclaw-gateway-watch-main`；使用 `OPENCLAW_GATEWAY_WATCH_ATTACH=0 pnpm gateway:watch` 保持交互式运行分离，或使用 `pnpm gateway:watch:raw` 进行前台监视模式。监视器在相关源码、配置和捆绑插件元数据变更时重新加载。如果被监视的 Gateway 在启动期间退出，`gateway:watch` 会运行一次 `openclaw doctor --fix --non-interactive` 并重试；设置 `OPENCLAW_GATEWAY_WATCH_AUTO_DOCTOR=0` 可禁用该仅限开发的修复过程。
 `pnpm openclaw setup` 是全新检出时一次性的本地配置/工作区初始化步骤。
 `pnpm gateway:watch` 不会重建 `dist/control-ui`，因此在 `ui/` 变更后需重新运行 `pnpm ui:build`，或在开发 Control UI 时使用 `pnpm ui:dev`。
-
-如果你有意使用 Bun 工作流，等效命令为：
-
-```bash
-bun install
-# 仅限首次运行（或重置本地 OpenClaw 配置/工作区后）
-bun run openclaw setup
-bun run gateway:watch
-```
 
 ### 2) 将 macOS 应用程序指向正在运行的 Gateway
 
@@ -154,7 +145,7 @@ openclaw health
 ## 更新（不破坏你的设置）
 
 - 将 `~/.openclaw/workspace` 和 `~/.openclaw/` 作为"你的东西"；不要将个人提示词/配置放入 `openclaw` 仓库。
-- 更新源码：`git pull` + 你选择的包管理器安装步骤（默认 `pnpm install`；Bun 工作流用 `bun install`）+ 继续使用匹配的 `gateway:watch` 命令。
+- 更新源码：`git pull` + `pnpm install` + 继续使用 `pnpm gateway:watch`。
 
 ## Linux（systemd 用户服务）
 

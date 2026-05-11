@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6afb462c3c06ce1911dbaf027374bb59"
+mmh3_hash: "8c9bdb32c53f2ea2b7a90e67ab9e95a4"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图
@@ -74,9 +74,8 @@ title: "文档中心"
 - [Discord](/channels/discord)
 - [Mattermost](/channels/mattermost)
 - [Signal](/channels/signal)
-- [BlueBubbles（iMessage）](/channels/bluebubbles)
+- [iMessage](/channels/imessage)
 - [QQ Bot](/channels/qqbot)
-- [iMessage（旧版）](/channels/imessage)
 - [位置解析](/channels/location)
 - [WebChat](/web/webchat)
 - [Webhook](/automation/cron-jobs#webhooks)
@@ -85,7 +84,7 @@ title: "文档中心"
 ## Gateway 和运维
 
 - [Gateway 运维手册](/gateway)
-- [网络模型](/gateway/network-model)
+- [网络模型](/network#core-model)
 - [Gateway 配对](/gateway/pairing)
 - [Gateway 锁](/gateway/gateway-lock)
 - [后台进程](/gateway/background-process)
@@ -169,7 +168,7 @@ title: "文档中心"
 - [插件清单](/plugins/manifest)
 - [Agent 工具](/plugins/building-plugins#registering-agent-tools)
 - [插件包](/plugins/bundles)
-- [社区插件](/plugins/community)
+- [ClawHub](/clawhub)
 - [能力手册](/tools/capability-cookbook)
 - [语音通话插件](/plugins/voice-call)
 - [Zalo 用户插件](/plugins/zalouser)
@@ -177,7 +176,7 @@ title: "文档中心"
 ## 工作区和模板
 
 - [Skills](/tools/skills)
-- [ClawHub](/tools/clawhub)
+- [ClawHub](/clawhub)
 - [Skills 配置](/tools/skills-config)
 - [默认 AGENTS](/reference/AGENTS.default)
 - [模板：AGENTS](/reference/templates/AGENTS)

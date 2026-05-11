@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3422fb9763bc1febac7d6d1974270f2c"
+mmh3_hash: "887f249929a7c4b72ae9e65d6caf9da1"
 summary: "Agent 引导仪式，播种工作空间和身份文件"
 read_when:
   - 了解第一次 Agent 运行时发生的事情
@@ -19,6 +19,8 @@ sidebarTitle: "引导"
 - 运行简短的问答仪式（一次一个问题）。
 - 将身份 + 偏好写入 `IDENTITY.md`、`USER.md`、`SOUL.md`。
 - 完成后删除 `BOOTSTRAP.md`，使其仅运行一次。
+
+对于嵌入式/本地模型运行，OpenClaw 将 `BOOTSTRAP.md` 排除在特权系统上下文之外。在主要的交互式首次运行时，仍会在用户提示中传递文件内容，以便不能可靠调用 `read` 工具的模型也能完成仪式。如果当前运行无法安全访问工作区，Agent 将收到有限的引导说明，而不是通用问候。
 
 ## 跳过引导
 
