@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "0cd7f003d5bcec0d9b0431997e076d02"
 summary: "为 OpenClaw 添加 Kimi、Kimi Coding 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 kimi Plugin

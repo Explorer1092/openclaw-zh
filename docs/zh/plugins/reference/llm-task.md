@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "4ff6b0eb3b8c8f98d200af4074a2e9ae"
 summary: "通用 JSON 专用 LLM 工具，用于可从工作流调用的结构化任务。"
 read_when:
   - 你正在安装、配置或审计 llm-task Plugin

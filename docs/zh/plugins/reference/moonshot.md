@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "6e19689eca9317c1413c755b3052e4da"
 summary: "为 OpenClaw 添加 Moonshot 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 moonshot Plugin

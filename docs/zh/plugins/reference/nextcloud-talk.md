@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "ea305e8f1a6881283da32214004dbc1e"
 summary: "添加 Nextcloud Talk Channel 界面，用于发送和接收 OpenClaw 消息。"
 read_when:
   - 你正在安装、配置或审计 nextcloud-talk Plugin

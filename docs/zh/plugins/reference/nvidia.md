@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1c8cf04ee5d458633691440ec6e28c4d"
 summary: "为 OpenClaw 添加 NVIDIA 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 nvidia Plugin

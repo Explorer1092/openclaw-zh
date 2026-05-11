@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "0511803edb9bc1ca7a7ca166a18c0a23"
 summary: "为 OpenClaw 添加 Groq 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 groq Plugin

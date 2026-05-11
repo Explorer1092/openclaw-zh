@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "ab4014b07d59c228b5882841b6351adb"
 summary: "添加文本转语音 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 microsoft Plugin

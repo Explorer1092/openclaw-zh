@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "fe0950a0c369a340c7560e4c1c1414a1"
 summary: "添加 Nostr Channel 界面，用于发送和接收 OpenClaw 消息。"
 read_when:
   - 你正在安装、配置或审计 nostr Plugin

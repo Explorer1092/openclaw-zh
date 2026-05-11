@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "849dd2f5bb78147b8579a136992c537e"
 summary: "添加文本转语音 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 gradium Plugin

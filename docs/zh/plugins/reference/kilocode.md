@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "3bf1d30c8a0106db9db640e51eea2b9e"
 summary: "为 OpenClaw 添加 Kilocode 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 kilocode Plugin

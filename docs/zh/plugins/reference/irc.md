@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "0360644220930d26b03a7c1cbc5b6bf4"
 summary: "添加 IRC Channel 界面，用于发送和接收 OpenClaw 消息。"
 read_when:
   - 你正在安装、配置或审计 irc Plugin

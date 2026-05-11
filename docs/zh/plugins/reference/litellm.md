@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "0fa7d29b4d7150848095eae46ba733e3"
 summary: "为 OpenClaw 添加 LiteLLM 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 litellm Plugin

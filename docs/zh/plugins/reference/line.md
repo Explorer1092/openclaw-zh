@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "3b8f8404650151cf7c52536e04bbfcd6"
 summary: "添加 LINE Channel 界面，用于发送和接收 OpenClaw 消息。"
 read_when:
   - 你正在安装、配置或审计 line Plugin

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "15a93e75a88b0ca0cd36da43bf079714"
 summary: "添加 Mattermost Channel 界面，用于发送和接收 OpenClaw 消息。"
 read_when:
   - 你正在安装、配置或审计 mattermost Plugin

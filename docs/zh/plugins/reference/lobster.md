@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "11809e0a647cf2222045d35e1b4b420e"
 summary: "具备可恢复审批功能的类型化工作流工具。"
 read_when:
   - 你正在安装、配置或审计 lobster Plugin

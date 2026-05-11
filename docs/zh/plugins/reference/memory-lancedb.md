@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "e52a570acb266669817165f5b58d303d"
 summary: "添加 Agent 可调用工具。"
 read_when:
   - 你正在安装、配置或审计 memory-lancedb Plugin

@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "94fac17a5abb2a49dbe66644d0be62d6"
 summary: "添加 Matrix Channel 界面，用于发送和接收 OpenClaw 消息。"
 read_when:
   - 你正在安装、配置或审计 matrix Plugin

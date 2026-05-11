@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "425d3a0c75ebb2a7582d95a1a6d81936"
 summary: "为 OpenClaw 添加 Mistral 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 mistral Plugin

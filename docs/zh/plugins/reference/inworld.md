@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1c3a0ba2d2ec4361133d62c1ee11a84f"
 summary: "Inworld 流式文本转语音（MP3、OGG_OPUS、PCM 电话）。"
 read_when:
   - 你正在安装、配置或审计 inworld Plugin
