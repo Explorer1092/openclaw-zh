@@ -1,6 +1,6 @@
 ---
 title: "工具和 Plugin"
-mmh3_hash: "0e7de821be16ea194276d585201fd7af"
+mmh3_hash: "3da2674ebee3ba8e938d1caad6289f4c"
 summary: "OpenClaw 工具和 Plugin 概览：Agent 可以做什么以及如何扩展它"
 read_when:
   - 了解 OpenClaw 提供哪些工具

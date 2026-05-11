@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "911ebfc702603343d607aa11c4e5d9f5"
+mmh3_hash: "697448e7c6dfce86bace74fb5ed0ade1"
 summary: "图像、视频、音乐、语音和媒体理解能力一览"
 read_when:
   - 寻找 OpenClaw 媒体能力的概述

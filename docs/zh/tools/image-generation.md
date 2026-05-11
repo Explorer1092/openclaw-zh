@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5bfe94e665bbc9f469e980e8af1e00cd"
+mmh3_hash: "a77d5a6eca94ffdf4159a3399c56a710"
 summary: "通过 image_generate 使用 OpenAI、Google、fal、MiniMax、ComfyUI、DeepInfra、OpenRouter、LiteLLM、xAI、Vydra 生成和编辑图像"
 read_when:
   - 通过 Agent 生成或编辑图像

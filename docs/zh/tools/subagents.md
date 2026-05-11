@@ -1,7 +1,7 @@
 ---
 title: "子 Agent"
 sidebarTitle: "子 Agent"
-mmh3_hash: "ed1e88c3adcc70c343a1e850bebe2d50"
+mmh3_hash: "adea598201bac283df83962663620944"
 summary: "子 Agent：生成隔离的 Agent 运行，将结果公告回请求者聊天"
 read_when:
   - 您想通过 Agent 进行后台/并行工作

@@ -1,7 +1,7 @@
 ---
 title: "思考级别（/think 指令）"
 sidebarTitle: "思考级别"
-mmh3_hash: "04ea5ad4568228a18646596eed2e00f0"
+mmh3_hash: "e1b71eec10ce1b86c49a4cd362e03817"
 summary: "/think、/fast、/verbose、/trace 和推理可见性的指令语法"
 read_when:
   - 调整 thinking、fast 模式或 verbose 指令解析或默认值

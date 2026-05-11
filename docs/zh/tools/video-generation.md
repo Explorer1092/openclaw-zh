@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "34cf527497c63d011d0dda61a50a3fbc"
+mmh3_hash: "f50c23fe39765ec5c35c3d85ae443e16"
 summary: "通过 video_generate 从文本、图像或视频参考使用 16 个提供商后端生成视频"
 read_when:
   - 通过 Agent 生成视频

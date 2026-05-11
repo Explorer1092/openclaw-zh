@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f7a061537fca898352273c86f97a87fc"
+mmh3_hash: "a2b5b4825189f2e23f8512d9ce3e3c36"
 summary: "Plugin 架构内部机制：加载流程、注册表、运行时 Hook、HTTP 路由和参考表"
 read_when:
   - 实现 Provider 运行时 Hook、Channel 生命周期或 Package Pack

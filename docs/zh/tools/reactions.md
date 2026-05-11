@@ -1,6 +1,6 @@
 ---
 title: "Reactions"
-mmh3_hash: "1490edc0bc1181dd5e5bbf06805ebc1c"
+mmh3_hash: "6f37c78a20d8fe3f2e50dbab39db5abf"
 summary: "跨所有支持 Channel 的 Reaction 工具语义"
 read_when:
   - 在任何 Channel 中处理 Reaction

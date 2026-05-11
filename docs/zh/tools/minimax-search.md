@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ec83046452e8b2ddbe6e7b14d9531851"
+mmh3_hash: "0d619ef52cd7954b1e1cb5670b721a2d"
 summary: "通过 Coding Plan 搜索 API 使用 MiniMax Search"
 read_when:
   - 希望将 MiniMax 用于 web_search

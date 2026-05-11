@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7017a369f1fcf6b9c09e17ee0990d2f4"
+mmh3_hash: "6bf10191d13a1a40e5d4883a10d8aa5a"
 summary: "web_fetch 工具 -- HTTP 抓取与可读内容提取"
 read_when:
   - 需要抓取 URL 并提取可读内容

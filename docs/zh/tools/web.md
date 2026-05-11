@@ -1,7 +1,7 @@
 ---
 title: "Web Search"
 sidebarTitle: "Web Search"
-mmh3_hash: "d77b6ce3e3c4cc98dba201fbaf8c8a61"
+mmh3_hash: "58d1a34517b9ff0d988e315f7977e8a6"
 summary: "web_search、x_search 和 web_fetch — 搜索网络、搜索 X 帖子或获取页面内容"
 read_when:
   - 您想启用或配置 web_search

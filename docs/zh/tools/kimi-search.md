@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "29c1e089b5923028c0076a806dae2ac5"
+mmh3_hash: "5d367e7f3c72b6330b576dc7c688f609"
 summary: "Kimi 网页搜索，通过 Moonshot 网页搜索"
 read_when:
   - 希望将 Kimi 用于 web_search
