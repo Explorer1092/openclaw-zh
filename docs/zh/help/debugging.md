@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5f67cbf2221ddcfa768db27d8885fc72"
+mmh3_hash: "79814e7ff07d528ad15cce542429268d"
 title: "调试"
 summary: "调试工具：监视模式、原始模型流和追踪推理泄漏"
 read_when:
@@ -39,130 +39,51 @@ read_when:
 
 使用 `/trace` 进行插件诊断，例如 Active Memory 调试摘要。继续使用 `/verbose` 查看普通的详细状态/工具输出，继续使用 `/debug` 进行仅运行时的配置覆盖。
 
-## 临时 CLI 调试计时
+## Plugin 生命周期追踪
 
-OpenClaw 在 `src/cli/debug-timing.ts` 中保留了一个用于本地调查的小型辅助工具。它有意不接入 CLI 启动、命令路由或任何默认命令。仅在调试慢速命令时使用它，然后在提交行为变更前删除导入和 span。
+当 Plugin 生命周期命令感觉缓慢，且你需要对 Plugin 元数据、发现、注册表、运行时镜像、配置变更和刷新工作进行内置阶段分解时，使用 `OPENCLAW_PLUGIN_LIFECYCLE_TRACE=1`。该追踪是可选入的，写入 stderr，因此 JSON 命令输出保持可解析。
 
-当命令缓慢且你在决定是否使用 CPU 性能分析器或修复特定子系统之前需要快速的阶段分解时，使用此工具。
-
-### 添加临时 span
-
-在你正在调查的代码附近添加辅助工具。例如，在调试 `openclaw models list` 时，`src/commands/models/list.list-command.ts` 中的临时补丁可能如下所示：
-
-```ts
-// 仅用于临时调试。提交前请删除。
-import { createCliDebugTiming } from "../../cli/debug-timing.js";
-
-const timing = createCliDebugTiming({ command: "models list" });
-
-const authStore = timing.time("debug:models:list:auth_store", () => ensureAuthProfileStore());
-
-const loaded = await timing.timeAsync(
-  "debug:models:list:registry",
-  () => loadListModelRegistry(cfg, { sourceConfig }),
-  (result) => ({
-    models: result.models.length,
-    discoveredKeys: result.discoveredKeys.size,
-  }),
-);
-```
-
-指南：
-
-- 临时阶段名称以 `debug:` 为前缀。
-- 只在疑似慢速的部分添加少量 span。
-- 优先使用 `registry`、`auth_store` 或 `rows` 等宽泛阶段名，而非辅助函数名。
-- 对同步工作使用 `time()`，对 Promise 使用 `timeAsync()`。
-- 保持 stdout 干净。辅助工具写入 stderr，因此命令 JSON 输出保持可解析。
-- 在提交最终修复 PR 之前删除临时导入和 span。
-- 在解释优化的 issue 或 PR 中包含计时输出或简短摘要。
-
-### 使用可读输出运行
-
-可读模式最适合实时调试：
+示例：
 
 ```bash
-OPENCLAW_DEBUG_TIMING=1 pnpm openclaw models list --all --provider moonshot
+OPENCLAW_PLUGIN_LIFECYCLE_TRACE=1 openclaw plugins install tokenjuice --force
 ```
 
-临时 `models list` 调查的示例输出：
+示例输出：
 
 ```text
-OpenClaw CLI debug timing: models list
-     0ms     +0ms start all=true json=false local=false plain=false provider="moonshot"
-     2ms     +2ms debug:models:list:import_runtime duration=2ms
-    17ms    +14ms debug:models:list:load_config duration=14ms sourceConfig=true
-  20.3s  +20.3s debug:models:list:auth_store duration=20.3s
-  20.3s     +0ms debug:models:list:resolve_agent_dir duration=0ms agentDir=true
-  20.3s     +0ms debug:models:list:resolve_provider_filter duration=0ms
-  25.3s   +5.0s debug:models:list:ensure_models_json duration=5.0s
-  31.2s   +5.9s debug:models:list:load_model_registry duration=5.9s models=869 availableKeys=38 discoveredKeys=868 availabilityError=false
-  31.2s     +0ms debug:models:list:resolve_configured_entries duration=0ms entries=1
-  31.2s     +0ms debug:models:list:build_configured_lookup duration=0ms entries=1
-  33.6s   +2.4s debug:models:list:read_registry_models duration=2.4s models=871
-  35.2s   +1.5s debug:models:list:append_discovered_rows duration=1.5s seenKeys=0 rows=0
-  36.9s   +1.7s debug:models:list:append_catalog_supplement_rows duration=1.7s seenKeys=5 rows=5
-
-Model                                      Input       Ctx   Local Auth  Tags
-moonshot/kimi-k2-thinking                  text        256k  no    no
-moonshot/kimi-k2-thinking-turbo            text        256k  no    no
-moonshot/kimi-k2-turbo                     text        250k  no    no
-moonshot/kimi-k2.5                         text+image  256k  no    no
-moonshot/kimi-k2.6                         text+image  256k  no    no
-
-  36.9s     +0ms debug:models:list:print_model_table duration=0ms rows=5
-  36.9s     +0ms complete rows=5
+[plugins:lifecycle] phase="config read" ms=6.83 status=ok command="install"
+[plugins:lifecycle] phase="slot selection" ms=94.31 status=ok command="install" pluginId="tokenjuice"
+[plugins:lifecycle] phase="registry refresh" ms=51.56 status=ok command="install" reason="source-changed"
 ```
 
-此输出的发现：
+在使用 CPU 性能分析器之前，先用此工具进行 Plugin 生命周期调查。如果命令从源码检出运行，优先使用 `pnpm build` 后的 `node dist/entry.js ...` 测量已构建的运行时；`pnpm openclaw ...` 也会测量源码运行器的开销。
 
-| 阶段                                     |       耗时 | 含义                                                                           |
-| ---------------------------------------- | ---------: | ------------------------------------------------------------------------------ |
-| `debug:models:list:auth_store`           |      20.3s | 认证配置文件存储加载是最大开销，应首先调查。                                   |
-| `debug:models:list:ensure_models_json`   |       5.0s | 同步 `models.json` 的开销足够大，值得检查缓存或跳过条件。                      |
-| `debug:models:list:load_model_registry`  |       5.9s | 注册表构建和 Provider 可用性工作也是有意义的开销。                             |
-| `debug:models:list:read_registry_models` |       2.4s | 读取所有注册表模型并非免费，对 `--all` 可能很重要。                            |
-| row append 阶段                          | 总计 3.2s  | 构建五个显示行仍需几秒，因此过滤路径值得仔细检查。                             |
-| `debug:models:list:print_model_table`    |        0ms | 渲染不是瓶颈。                                                                 |
+## CLI 启动和命令性能分析
 
-这些发现足以指导下一个补丁，无需在生产路径中保留计时代码。
-
-### 使用 JSON 输出运行
-
-当你想保存或比较计时数据时，使用 JSON 模式：
+当命令感觉缓慢时，使用内置的启动基准测试：
 
 ```bash
-OPENCLAW_DEBUG_TIMING=json pnpm openclaw models list --all --provider moonshot \
-  2> .artifacts/models-list-timing.jsonl
+pnpm test:startup:bench:smoke
+pnpm tsx scripts/bench-cli-startup.ts --preset real --case status --runs 3
+pnpm tsx scripts/bench-cli-startup.ts --preset real --cpu-prof-dir .artifacts/cli-cpu
 ```
 
-每一行 stderr 是一个 JSON 对象：
-
-```json
-{
-  "command": "models list",
-  "phase": "debug:models:list:registry",
-  "elapsedMs": 31200,
-  "deltaMs": 5900,
-  "durationMs": 5900,
-  "models": 869,
-  "discoveredKeys": 868
-}
-```
-
-### 提交前清理
-
-在提交最终 PR 之前：
+对于通过普通源码运行器的一次性性能分析，设置 `OPENCLAW_RUN_NODE_CPU_PROF_DIR`：
 
 ```bash
-rg 'createCliDebugTiming|debug:[a-z0-9_-]+:' src/commands src/cli \
-  --glob '!src/cli/debug-timing.*' \
-  --glob '!*.test.ts'
+OPENCLAW_RUN_NODE_CPU_PROF_DIR=.artifacts/cli-cpu pnpm openclaw status
 ```
 
-该命令应返回无临时插桩调用点，除非 PR 明确添加永久诊断界面。对于正常的性能修复，只保留行为变更、测试和带有计时证据的简短说明。
+源码运行器添加 Node CPU 性能分析标志，并为命令写入 `.cpuprofile` 文件。在向命令代码添加临时插桩之前先使用此方法。
 
-对于更深层的 CPU 热点，使用 Node 性能分析（`--cpu-prof`）或外部性能分析器，而不是添加更多计时包装器。
+对于看起来像同步文件系统或模块加载器工作的启动停顿，通过源码运行器添加 Node 的同步 I/O 追踪标志：
+
+```bash
+OPENCLAW_TRACE_SYNC_IO=1 pnpm openclaw gateway --force
+```
+
+`pnpm gateway:watch` 默认对被监视的 Gateway 子进程禁用此标志。当你明确需要监视模式中的 Node 同步 I/O 追踪输出时，设置 `OPENCLAW_TRACE_SYNC_IO=1`。
 
 ## Gateway 监视模式
 
@@ -172,15 +93,51 @@ rg 'createCliDebugTiming|debug:[a-z0-9_-]+:' src/commands src/cli \
 pnpm gateway:watch
 ```
 
-这映射到：
+默认情况下，这会启动或重启名为 `openclaw-gateway-watch-main` 的 tmux 会话（或特定配置文件/端口变体，如 `openclaw-gateway-watch-dev-19001`），并从交互式终端自动附加。非交互式 shell、CI 和 agent exec 调用保持分离并打印附加说明。需要时手动附加：
+
+```bash
+tmux attach -t openclaw-gateway-watch-main
+```
+
+tmux 面板运行原始监视器：
 
 ```bash
 node scripts/watch-node.mjs gateway --force
 ```
 
+不需要 tmux 时使用前台模式：
+
+```bash
+pnpm gateway:watch:raw
+# 或
+OPENCLAW_GATEWAY_WATCH_TMUX=0 pnpm gateway:watch
+```
+
+保持 tmux 管理的同时禁用自动附加：
+
+```bash
+OPENCLAW_GATEWAY_WATCH_ATTACH=0 pnpm gateway:watch
+```
+
+调试启动/运行时热点时对被监视的 Gateway CPU 时间进行性能分析：
+
+```bash
+pnpm gateway:watch --benchmark
+```
+
+监视包装器在 `--benchmark` 到达 Gateway 之前消耗它，并在 `.artifacts/gateway-watch-profiles/` 下为每次 Gateway 子进程退出写入一个 V8 `.cpuprofile` 文件。停止或重启被监视的 Gateway 以刷新当前配置文件，然后用 Chrome DevTools 或 Speedscope 打开它：
+
+```bash
+npx speedscope .artifacts/gateway-watch-profiles/*.cpuprofile
+```
+
+当你想将配置文件存放在其他位置时使用 `--benchmark-dir <path>`。当你希望被测子进程跳过默认的 `--force` 端口清理并在 Gateway 端口已被占用时快速失败时使用 `--benchmark-no-force`。基准模式默认抑制同步 I/O 追踪输出。当你明确希望同时获得 CPU 配置文件和 Node 同步 I/O 堆栈追踪时，在 `--benchmark` 中设置 `OPENCLAW_TRACE_SYNC_IO=1`。在基准模式下，这些追踪块写入基准目录下的 `gateway-watch-output.log`，并从终端面板过滤；普通 Gateway 日志仍然可见。
+
+tmux 包装器将常见的非敏感运行时选择器（如 `OPENCLAW_PROFILE`、`OPENCLAW_CONFIG_PATH`、`OPENCLAW_STATE_DIR`、`OPENCLAW_GATEWAY_PORT` 和 `OPENCLAW_SKIP_CHANNELS`）携带到面板中。将 Provider 凭据放在普通的配置文件/配置中，或使用原始前台模式处理一次性的临时密钥。如果被监视的 Gateway 在启动期间退出，监视器会运行一次 `openclaw doctor --fix --non-interactive` 并重启 Gateway 子进程。当你想要不带仅开发修复通道的原始启动失败时，使用 `OPENCLAW_GATEWAY_WATCH_AUTO_DOCTOR=0`。托管的 tmux 面板也默认使用彩色 Gateway 日志以提高可读性；在启动 `pnpm gateway:watch` 时设置 `FORCE_COLOR=0` 以禁用 ANSI 输出。
+
 监视器在 `src/` 下的构建相关文件、扩展源文件、扩展 `package.json` 和 `openclaw.plugin.json` 元数据、`tsconfig.json`、`package.json` 以及 `tsdown.config.ts` 更改时重启。扩展元数据更改会在不强制执行 `tsdown` 重建的情况下重启 Gateway；源码和配置更改仍会先重建 `dist`。
 
-在 `gateway:watch` 后添加任何 Gateway CLI 标志，它们将在每次重启时传递。为同一仓库/标志集重新运行相同的监视命令现在会替换旧的监视器，而不是留下重复的监视器父级。
+在 `gateway:watch` 后添加任何 Gateway CLI 标志，它们将在每次重启时传递。重新运行相同的监视命令会重新创建命名的 tmux 面板，原始监视器仍保持其单监视器锁，因此重复的监视器父级会被替换而不是堆积。
 
 ## 开发配置文件 + 开发 Gateway（--dev）
 
@@ -292,6 +249,38 @@ PI_RAW_STREAM_PATH=~/.pi-mono/logs/raw-openai-completions.jsonl
 - 原始流日志可能包含完整的提示、工具输出和用户数据。
 - 将日志保留在本地并在调试后删除。
 - 如果共享日志，请先清除密钥和个人信息。
+
+## 在 VSCode 中调试
+
+由于构建过程的一部分，许多生成的文件最终会使用哈希名称，因此在基于 VSCode 的 IDE 中启用调试需要 Source Map。内置的 `launch.json` 配置以 Gateway 服务为目标，但可以快速适配到其他用途：
+
+1. **重建并调试 Gateway** - 创建新构建后调试 Gateway 服务
+2. **调试 Gateway** - 调试已有构建的 Gateway 服务
+
+### 设置
+
+默认的**重建并调试 Gateway** 配置是开箱即用的，它会自动删除 `/dist` 文件夹，并在启用调试的情况下重建项目：
+
+1. 从活动栏打开**运行和调试**面板，或按 `Ctrl`+`Shift`+`D`
+2. 在 IDE 中，确保配置下拉菜单中选择了**重建并调试 Gateway**，然后按**开始调试**按钮
+
+或者，如果你希望手动管理构建和调试过程：
+
+1. 打开终端并启用 Source Map：
+   - **Linux/macOS**: `export OUTPUT_SOURCE_MAPS=1`
+   - **Windows (PowerShell)**: `$env:OUTPUT_SOURCE_MAPS="1"`
+   - **Windows (CMD)**: `set OUTPUT_SOURCE_MAPS=1`
+2. 在同一终端中重建项目：`pnpm clean:dist && pnpm build`
+3. 在 IDE 中，在**运行和调试**配置下拉菜单中选择**调试 Gateway** 选项，然后按**开始调试**按钮
+
+现在你可以在 TypeScript 源文件（`src/` 目录）中设置断点，调试器将通过 Source Map 正确将断点映射到编译后的 JavaScript。你将能够检查变量、单步执行代码并检查调用堆栈。
+
+### 说明
+
+- 如果使用**"重建并调试 Gateway"**选项——每次启动调试器时，它都会完全删除 `/dist` 文件夹，并在启动 Gateway 之前运行完整的启用 Source Map 的 `pnpm build`
+- 如果使用**"调试 Gateway"**选项——可以随时启动和停止调试会话而不影响 `/dist` 文件夹，但必须使用单独的终端进程来启用调试和管理构建周期
+- 修改 `launch.json` 的 `args` 设置以调试项目的其他部分
+- 如果需要将构建的 OpenClaw CLI 用于其他任务（即如果你的调试会话生成新的 auth token，则使用 `dashboard --no-open`），可以在另一个终端中以 `node ./openclaw.mjs` 运行它，或创建一个 shell 别名，如 `alias openclaw-build="node $(pwd)/openclaw.mjs"`
 
 ## 相关
 

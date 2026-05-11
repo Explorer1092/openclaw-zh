@@ -1,14 +1,12 @@
 ---
-mmh3_hash: "c69a48e382dc93e213cacc64ae564747"
+mmh3_hash: "635398974796116854f0ecfe777b8fde"
 summary: "OpenClaw 如何弥合 GPT-5.5 和 Codex 风格模型的智能体执行差距"
 title: "GPT-5.5 / Codex 智能体对等"
 read_when:
-  - 调试 GPT-5.5 或 Codex 智能体行为
+  - 调试 GPT-5.5 或 Codex Agent 行为
   - 比较 OpenClaw 跨前沿模型的智能体行为
   - 审查严格智能体、工具 schema、提权和重放修复
 ---
-
-# OpenClaw 中的 GPT-5.5 / Codex 智能体对等
 
 OpenClaw 已经与使用工具的前沿模型配合良好，但 GPT-5.5 和 Codex 风格的模型在一些实际方面仍然表现不足：
 
@@ -107,34 +105,34 @@ pnpm openclaw qa parity-report \
 
 ```mermaid
 flowchart TD
-    A["用户请求"] --> B["嵌入式 Pi 运行时"]
-    B --> C["严格智能体执行合约"]
-    B --> D["Provider 拥有的工具兼容性"]
-    B --> E["运行时真实性"]
-    B --> F["重放和活跃性状态"]
-    C --> G["工具调用或显式阻塞状态"]
+    A["User request"] --> B["Embedded Pi runtime"]
+    B --> C["Strict-agentic execution contract"]
+    B --> D["Provider-owned tool compatibility"]
+    B --> E["Runtime truthfulness"]
+    B --> F["Replay and liveness state"]
+    C --> G["Tool call or explicit blocked state"]
     D --> G
     E --> G
     F --> G
-    G --> H["QA 实验室对等包"]
-    H --> I["场景报告和对等门控"]
+    G --> H["QA-lab parity pack"]
+    H --> I["Scenario report and parity gate"]
 ```
 
 ## 发布流程
 
 ```mermaid
 flowchart LR
-    A["已合并运行时切片（PR A-C）"] --> B["运行 GPT-5.5 对等包"]
-    A --> C["运行 Opus 4.6 对等包"]
+    A["Merged runtime slices (PR A-C)"] --> B["Run GPT-5.5 parity pack"]
+    A --> C["Run Opus 4.6 parity pack"]
     B --> D["qa-suite-summary.json"]
     C --> E["qa-suite-summary.json"]
     D --> F["openclaw qa parity-report"]
     E --> F
     F --> G["qa-agentic-parity-report.md"]
     F --> H["qa-agentic-parity-summary.json"]
-    H --> I{"门控通过？"}
-    I -- "是" --> J["有证据支持的对等声明"]
-    I -- "否" --> K["保持运行时/审查循环开放"]
+    H --> I{"Gate pass?"}
+    I -- "yes" --> J["Evidence-backed parity claim"]
+    I -- "no" --> K["Keep runtime/review loop open"]
 ```
 
 ## 场景包
@@ -197,13 +195,13 @@ flowchart LR
 
 ## 目标到证据矩阵
 
-| 完成门控项目                                  | 负责 PR    | 证据来源                                                          | 通过信号                                                                                 |
-| --------------------------------------------- | ---------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| GPT-5.5 不再在规划后停滞                       | PR A       | `approval-turn-tool-followthrough` 加 PR A 运行时套件             | 批准轮次触发真实工作或显式阻塞状态                                                       |
-| GPT-5.5 不再伪造进度或假工具完成               | PR A + PR D | 对等报告场景结果和假成功计数                                     | 没有可疑的通过结果，没有仅注释的完成                                                     |
-| GPT-5.5 不再给出错误的 `/elevated full` 指导   | PR B       | 确定性真实性套件                                                  | 阻塞原因和完全访问提示保持运行时准确                                                     |
-| 重放/活跃性失败保持显式                        | PR C + PR D | PR C 生命周期/重放套件加 `compaction-retry-mutating-tool`        | 变异工作保持重放不安全性显式，而不是静默消失                                             |
-| GPT-5.5 在商定指标上匹配或优于 Opus 4.6        | PR D       | `qa-agentic-parity-report.md` 和 `qa-agentic-parity-summary.json` | 相同的场景覆盖，完成、停止行为或有效工具使用没有回归                                     |
+| 完成门控项目                                  | 负责 PR     | 证据来源                                                          | 通过信号                                                                                 |
+| --------------------------------------------- | ----------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| GPT-5.5 不再在规划后停滞                       | PR A        | `approval-turn-tool-followthrough` 加 PR A 运行时套件             | 批准轮次触发真实工作或显式阻塞状态                                                       |
+| GPT-5.5 不再伪造进度或假工具完成               | PR A + PR D | 对等报告场景结果和假成功计数                                      | 没有可疑的通过结果，没有仅注释的完成                                                     |
+| GPT-5.5 不再给出错误的 `/elevated full` 指导   | PR B        | 确定性真实性套件                                                  | 阻塞原因和完全访问提示保持运行时准确                                                     |
+| 重放/活跃性失败保持显式                        | PR C + PR D | PR C 生命周期/重放套件加 `compaction-retry-mutating-tool`         | 变异工作保持重放不安全性显式，而不是静默消失                                             |
+| GPT-5.5 在商定指标上匹配或优于 Opus 4.6        | PR D        | `qa-agentic-parity-report.md` 和 `qa-agentic-parity-summary.json` | 相同的场景覆盖，完成、停止行为或有效工具使用没有回归                                     |
 
 ## 如何阅读对等判决
 

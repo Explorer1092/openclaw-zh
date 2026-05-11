@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "acd5f8af1d29f70671d852c111cea23c"
+mmh3_hash: "a1016cb24fdefe2bb4fbdc2574f19c6b"
 summary: Node + tsx "__name is not a function" 崩溃说明和解决方法
 read_when:
   - 调试仅 Node 的开发脚本或监视模式故障
@@ -7,7 +7,7 @@ read_when:
 title: "Node + tsx 崩溃"
 ---
 
-# Node + tsx "__name is not a function" 崩溃
+# Node + tsx "\_\_name is not a function" 崩溃
 
 ## 摘要
 
