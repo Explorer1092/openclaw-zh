@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e67d388e574d2c2cbb9ba64173d999e8"
+mmh3_hash: "7f62efd90d5647e80a34f152983c5791"
 summary: "每个 Channel（WhatsApp、Telegram、Discord、Slack）的路由规则和共享上下文"
 read_when:
   - 更改 Channel 路由或收件箱行为
@@ -18,6 +18,12 @@ OpenClaw 将回复**路由回消息来源的 Channel**。模型不选择 Channel
   - 在多账户设置中，当配置了两个或更多账户时，请设置显式默认账户（`defaultAccount` 或 `accounts.default`）。没有它，回退路由可能会选择第一个规范化的账户 ID。
 - **AgentId**：隔离的工作空间 + Session 存储（"大脑"）。
 - **SessionKey**：用于存储上下文和控制并发的存储桶键。
+
+## 出站目标前缀
+
+显式出站目标可能包含 Provider 前缀，例如 `telegram:123` 或 `tg:123`。仅当所选 Channel 为 `last` 或未解析时，且已加载的 Plugin 宣传该前缀时，Core 才将该前缀视为 Channel 选择提示。如果调用者已经选择了显式 Channel，则 Provider 前缀必须与该 Channel 匹配；跨 Channel 组合（例如将 WhatsApp 消息投递到 `telegram:123`）在 Plugin 特定的目标规范化之前会失败。
+
+目标类型和服务前缀（如 `channel:<id>`、`user:<id>`、`room:<id>`、`thread:<id>`、`imessage:<handle>` 和 `sms:<number>`）保留在所选 Channel 的语法中。它们本身不选择 Provider。
 
 ## Session 键形状（示例）
 
@@ -53,6 +59,10 @@ OpenClaw 将回复**路由回消息来源的 Channel**。模型不选择 Channel
 - 入站私信发送者与该固定所有者不匹配。
 
 在不匹配的情况下，OpenClaw 仍记录入站会话元数据，但跳过更新主会话的 `lastRoute`。
+
+## 受保护入站记录
+
+Channel Plugin 可以在受保护路径不得创建新 OpenClaw Session 时，将入站 Session 记录标记为 `createIfMissing: false`。在该模式下，OpenClaw 可以更新现有 Session 的元数据和 `lastRoute`，但不会仅因为观察到消息就创建纯路由 Session 条目。
 
 ## 路由规则（如何选择 Agent）
 

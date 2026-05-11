@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2177de4893fd4375355fa84a82802089"
+mmh3_hash: "cfb50244bcb19e1bb7ceb31f1986343b"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
@@ -13,13 +13,23 @@ title: "WhatsApp"
 - 新手引导（`openclaw onboard`）和 `openclaw channels add --channel whatsapp` 在首次选择 WhatsApp 插件时会提示安装。
 - `openclaw channels login --channel whatsapp` 在插件尚未存在时也会提供安装流程。
 - 开发版 Channel + git 检出：默认使用本地插件路径。
-- 稳定版/测试版：默认使用 npm 包 `@openclaw/whatsapp`。
+- 稳定版/测试版：使用 npm 包 `@openclaw/whatsapp`（当前官方发布标签）。
 
 手动安装仍然可用：
 
 ```bash
 openclaw plugins install @openclaw/whatsapp
 ```
+
+使用裸包名称可跟随当前官方发布标签。仅在需要可复现安装时才固定确切版本。
+
+在 Windows 上，WhatsApp 插件在 npm 安装时需要 `PATH` 中有 Git，因为其中一个 Baileys/libsignal 依赖项从 git URL 获取。安装 Git for Windows，然后重启 shell 并重新运行安装：
+
+```powershell
+winget install --id Git.Git -e
+```
+
+Portable Git 只要其 `bin` 目录在 `PATH` 中也可以使用。
 
 <CardGroup cols={3}>
   <Card title="配对" icon="link" href="/channels/pairing">
@@ -145,11 +155,14 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 ## 运行时模型
 
 - Gateway 拥有 WhatsApp socket 和重连循环。
-- 重连 watchdog 使用 WhatsApp Web 传输活动，而不仅仅是入站应用消息量，因此安静的关联设备会话不会仅因为最近没有人发送消息而重启。如果传输帧持续到达但在 watchdog 窗口内没有处理任何应用消息，较长的应用静默上限仍会强制重连。
+- 重连 watchdog 使用 WhatsApp Web 传输活动，而不仅仅是入站应用消息量，因此安静的关联设备会话不会仅因为最近没有人发送消息而重启。如果传输帧持续到达但在 watchdog 窗口内没有处理任何应用消息，较长的应用静默上限仍会强制重连；对于最近活跃的会话，在短暂重连后，第一个恢复窗口使用正常消息超时进行应用静默检查。
+- Baileys socket 计时通过 `web.whatsapp.*` 显式配置：`keepAliveIntervalMs` 控制 WhatsApp Web 应用 ping，`connectTimeoutMs` 控制开启握手超时，`defaultQueryTimeoutMs` 控制 Baileys 查询超时。
 - 出站发送需要目标账户有活动的 WhatsApp 监听器。
+- 出站发送在文本和媒体标题中对 `@+<digits>` 和 `@<digits>` 令牌附加原生提及元数据（匹配当前 WhatsApp 参与者元数据，包括基于 LID 的群组）。
 - 状态和广播聊天被忽略（`@status`、`@broadcast`）。
 - 直接聊天使用私信会话规则（`session.dmScope`；默认 `main` 将私信折叠到 agent 主会话）。
 - 群组会话是隔离的（`agent:<agentId>:whatsapp:group:<jid>`）。
+- WhatsApp Channels/Newsletters 可以作为显式出站目标，使用其原生 `@newsletter` JID。出站 newsletter 发送使用频道会话元数据（`agent:<agentId>:whatsapp:channel:<jid>`），而非私信会话语义。
 - WhatsApp Web 传输遵循 Gateway 主机上的标准代理环境变量（`HTTPS_PROXY`、`HTTP_PROXY`、`NO_PROXY` / 小写变体）。优先使用主机级代理配置，而非特定于 Channel 的 WhatsApp 代理设置。
 - 启用 `messages.removeAckAfterReply` 后，OpenClaw 在传递可见回复后会清除 WhatsApp ack reaction。
 
@@ -202,11 +215,14 @@ WhatsApp 入站消息可能包含个人消息内容、电话号码、群组标�
 
     `allowFrom` 接受 E.164 格式号码（内部规范化）。
 
+    `allowFrom` 是私信发送者访问控制列表。它不阻止对 WhatsApp 群组 JID 或 `@newsletter` 频道 JID 的显式出站发送。
+
     多账户覆盖：`channels.whatsapp.accounts.<id>.dmPolicy`（和 `allowFrom`）优先于该账户的频道级默认值。
 
     运行时行为细节：
 
     - 配对持久化在频道 allow-store 中，并与配置的 `allowFrom` 合并
+    - 定时自动化和心跳接收者回退使用显式传递目标或配置的 `allowFrom`；私信配对批准不是隐式的 cron 或心跳接收者
     - 如果未配置 allowlist，关联的自身号码默认被允许
     - OpenClaw 从不自动配对出站 `fromMe` 私信（您从关联设备发送给自己的消息）
 
@@ -280,7 +296,7 @@ WhatsApp 入站消息可能包含个人消息内容、电话号码、群组标�
     [/Replying]
     ```
 
-    回复元数据字段在可用时也会填充（`ReplyToId`、`ReplyToBody`、`ReplyToSender`、发送者 JID/E.164）。
+    回复元数据字段在可用时也会填充（`ReplyToId`、`ReplyToBody`、`ReplyToSender`、发送者 JID/E.164）。当引用回复目标是可下载媒体时，OpenClaw 通过正常入站媒体存储保存它，并将其作为 `MediaPath`/`MediaType` 公开，使 agent 可以检查被引用的图像，而不仅仅看到 `<media:image>`。
 
   </Accordion>
 
@@ -471,6 +487,8 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
   <Accordion title="登出行为">
     `openclaw channels logout --channel whatsapp [--account <id>]` 清除该账户的 WhatsApp 认证状态。
 
+    当 Gateway 可达时，登出会先停止所选账户的实时 WhatsApp 监听器，使关联的会话不会在下次重启前继续接收消息。`openclaw channels remove --channel whatsapp` 在禁用或删除账户配置前也会停止实时监听器。
+
     在旧版认证目录中，`oauth.json` 被保留，而 Baileys 认证文件被删除。
 
   </Accordion>
@@ -504,6 +522,20 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
 
     安静的账户可以在正常消息超时之后保持连接；当 WhatsApp Web 传输活动停止、socket 关闭或应用级活动在较长安全窗口内保持静默时，watchdog 会重启。
 
+    如果日志显示重复的 `status=408 Request Time-out Connection was lost`，请在 `web.whatsapp` 下调整 Baileys socket 计时。首先将 `keepAliveIntervalMs` 缩短至低于您网络的空闲超时，并在慢速或丢包链路上增加 `connectTimeoutMs`：
+
+    ```json5
+    {
+      web: {
+        whatsapp: {
+          keepAliveIntervalMs: 15000,
+          connectTimeoutMs: 60000,
+          defaultQueryTimeoutMs: 60000,
+        },
+      },
+    }
+    ```
+
     修复：
 
     ```bash
@@ -511,7 +543,16 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
     openclaw logs --follow
     ```
 
+    如果 `~/.openclaw/logs/whatsapp-health.log` 显示 `Gateway inactive`，但 `openclaw gateway status` 和 `openclaw channels status --probe` 显示 gateway 和 WhatsApp 正常，请运行 `openclaw doctor`。在 Linux 上，doctor 会警告仍调用 `~/.openclaw/bin/ensure-whatsapp.sh` 的旧版 crontab 条目；使用 `crontab -e` 删除那些陈旧条目，因为 cron 可能缺少 systemd 用户总线环境，使旧脚本误报 gateway 健康状态。
+
     如需要，通过 `channels login` 重新关联。
+
+  </Accordion>
+
+  <Accordion title="代理后面的二维码登录超时">
+    症状：`openclaw channels login --channel whatsapp` 在显示可用的二维码前失败，提示 `status=408 Request Time-out` 或 TLS socket 断开。
+
+    WhatsApp Web 登录使用 gateway 主机的标准代理环境（`HTTPS_PROXY`、`HTTP_PROXY`、小写变体和 `NO_PROXY`）。验证 gateway 进程继承了代理环境，且 `NO_PROXY` 不匹配 `mmg.whatsapp.net`。
 
   </Accordion>
 
@@ -519,6 +560,15 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
     当目标账户没有活动的 gateway 监听器时，出站发送快速失败。
 
     确保 gateway 正在运行且账户已关联。
+
+  </Accordion>
+
+  <Accordion title="回复出现在记录中但未出现在 WhatsApp 中">
+    记录行记录的是 agent 生成的内容。WhatsApp 传递单独检查：只有在 Baileys 对至少一条可见文本或媒体发送返回出站消息 ID 后，OpenClaw 才将自动回复视为已发送。
+
+    Ack reaction 是独立的回复前接收确认。成功的 reaction 不能证明后续的文本或媒体回复已被 WhatsApp 接受。
+
+    检查 gateway 日志中的 `auto-reply delivery failed` 或 `auto-reply was not accepted by WhatsApp provider`。
 
   </Accordion>
 
@@ -620,7 +670,7 @@ WhatsApp 高优先级字段：
 - 访问：`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`
 - 传递：`textChunkLimit`、`chunkMode`、`mediaMaxMb`、`sendReadReceipts`、`ackReaction`、`reactionLevel`
 - 多账户：`accounts.<id>.enabled`、`accounts.<id>.authDir`、账户级覆盖
-- 运维：`configWrites`、`debounceMs`、`web.enabled`、`web.heartbeatSeconds`、`web.reconnect.*`
+- 运维：`configWrites`、`debounceMs`、`web.enabled`、`web.heartbeatSeconds`、`web.reconnect.*`、`web.whatsapp.*`
 - 会话行为：`session.dmScope`、`historyLimit`、`dmHistoryLimit`、`dms.<id>.historyLimit`
 - prompts：`groups.<id>.systemPrompt`、`groups["*"].systemPrompt`、`direct.<id>.systemPrompt`、`direct["*"].systemPrompt`
 

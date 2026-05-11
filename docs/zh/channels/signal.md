@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "65939f59fc305789cbd1938efe6550a9"
+mmh3_hash: "16e94428a30a6e7b762152b94281075f"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置路径和号码模型"
 read_when:
   - 设置 Signal 支持
@@ -7,12 +7,14 @@ read_when:
 title: "Signal"
 ---
 
-状态：外部 CLI 集成。Gateway 通过 HTTP JSON-RPC + SSE 与 `signal-cli` 通信。
+状态：外部 CLI 集成。Gateway 通过 HTTP 与 `signal-cli` 通信——原生守护进程（JSON-RPC + SSE）或 bbernhard/signal-cli-rest-api 容器（REST + WebSocket）。
 
 ## 先决条件
 
 - 在服务器上安装 OpenClaw（以下 Linux 流程在 Ubuntu 24 上测试）。
-- `signal-cli` 在 Gateway 运行的主机上可用。
+- 以下之一：
+  - 主机上可用的 `signal-cli`（原生模式），**或**
+  - `bbernhard/signal-cli-rest-api` Docker 容器（容器模式）。
 - 一个可以接收验证短信的电话号码（用于 SMS 注册路径）。
 - 浏览器访问 Signal 验证码（`signalcaptchas.org`）用于注册。
 
@@ -180,6 +182,63 @@ openclaw channels status --probe
 
 这会跳过 OpenClaw 内部的自动生成和启动等待。对于自动生成时启动缓慢的情况，请设置 `channels.signal.startupTimeoutMs`。
 
+## 容器模式（bbernhard/signal-cli-rest-api）
+
+除了原生运行 `signal-cli`，您也可以使用 [bbernhard/signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) Docker 容器。它将 `signal-cli` 包装在 REST API 和 WebSocket 接口后面。
+
+要求：
+
+- 容器**必须**以 `MODE=json-rpc` 运行以实现实时消息接收。
+- 在连接 OpenClaw 之前，在容器内注册或链接您的 Signal 账号。
+
+示例 `docker-compose.yml` 服务：
+
+```yaml
+signal-cli:
+  image: bbernhard/signal-cli-rest-api:latest
+  environment:
+    MODE: json-rpc
+  ports:
+    - "8080:8080"
+  volumes:
+    - signal-cli-data:/home/.local/share/signal-cli
+```
+
+OpenClaw 配置：
+
+```json5
+{
+  channels: {
+    signal: {
+      enabled: true,
+      account: "+15551234567",
+      httpUrl: "http://signal-cli:8080",
+      autoStart: false,
+      apiMode: "container", // 或 "auto" 自动检测
+    },
+  },
+}
+```
+
+`apiMode` 字段控制 OpenClaw 使用的协议：
+
+| 值             | 行为                                                                                   |
+| -------------- | -------------------------------------------------------------------------------------- |
+| `"auto"`       | （默认）探测两种传输；流式传输验证容器 WebSocket 接收                                  |
+| `"native"`     | 强制原生 signal-cli（`/api/v1/rpc` 的 JSON-RPC，`/api/v1/events` 的 SSE）              |
+| `"container"`  | 强制 bbernhard 容器（`/v2/send` 的 REST，`/v1/receive/{account}` 的 WebSocket）        |
+
+`apiMode` 为 `"auto"` 时，OpenClaw 将检测到的模式缓存 30 秒以避免重复探测。只有在 `/v1/receive/{account}` 升级到 WebSocket 后才为流式传输选择容器接收模式，这需要 `MODE=json-rpc`。
+
+容器模式支持与原生模式相同的 Signal Channel 操作（其中容器暴露匹配 API）：发送、接收、附件、输入指示、已读/已查看回执、反应、群组和样式文本。OpenClaw 将其原生 Signal RPC 调用转换为容器的 REST 载荷，包括 `group.{base64(internal_id)}` 群组 ID 和格式化文本的 `text_mode: "styled"`。
+
+操作注意事项：
+
+- 使用容器模式时请设置 `autoStart: false`。当选择 `apiMode: "container"` 时，OpenClaw 不应生成原生守护进程。
+- 使用 `MODE=json-rpc` 进行接收。`MODE=normal` 可能使 `/v1/about` 看起来正常，但 `/v1/receive/{account}` 不会升级为 WebSocket，因此 OpenClaw 不会在 `auto` 模式中选择容器接收流。
+- 当您知道 `httpUrl` 指向 bbernhard 的 REST API 时设置 `apiMode: "container"`；当指向原生 `signal-cli` JSON-RPC/SSE 时设置 `apiMode: "native"`；部署可能不同时使用 `"auto"`。
+- 容器附件下载遵循与原生模式相同的媒体字节限制。
+
 ## 访问控制（DM + 群组）
 
 DM：
@@ -195,14 +254,15 @@ DM：
 群组：
 
 - `channels.signal.groupPolicy = open | allowlist | disabled`。
-- 当设置为 `allowlist` 时，`channels.signal.groupAllowFrom` 控制谁可以在群组中触发。
+- `channels.signal.groupAllowFrom` 控制当设置 `allowlist` 时哪些群组或发送者可以触发群组回复；条目可以是 Signal 群组 ID（原始、`group:<id>` 或 `signal:group:<id>`）、发送者电话号码、`uuid:<id>` 值或 `*`。
 - `channels.signal.groups["<group-id>" | "*"]` 可以用 `requireMention`、`tools` 和 `toolsBySender` 覆盖群组行为。
 - 对于多账户设置中的每账户覆盖，使用 `channels.signal.accounts.<id>.groups`。
 - 运行时注意：如果 `channels.signal` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组检查（即使 `channels.defaults.groupPolicy` 已设置）。
 
 ## 工作原理（行为）
 
-- `signal-cli` 作为守护进程运行；Gateway 通过 SSE 读取事件。
+- 原生模式：`signal-cli` 作为守护进程运行；Gateway 通过 SSE 读取事件。
+- 容器模式：Gateway 通过 REST API 发送，通过 WebSocket 接收。
 - 入站消息被规范化为共享 Channel 信封。
 - 回复始终路由回相同的号码或群组。
 
@@ -302,6 +362,7 @@ grep -i "signal" "/tmp/openclaw/openclaw-$(date +%Y-%m-%d).log" | tail -20
 Provider 选项：
 
 - `channels.signal.enabled`：启用/禁用 Channel 启动。
+- `channels.signal.apiMode`：`auto | native | container`（默认：auto）。参见[容器模式](#容器模式bbernhardsignal-cli-rest-api)。
 - `channels.signal.account`：bot 账号的 E.164。
 - `channels.signal.cliPath`：`signal-cli` 的路径。
 - `channels.signal.httpUrl`：完整守护进程 URL（覆盖 host/port）。
@@ -315,7 +376,7 @@ Provider 选项：
 - `channels.signal.dmPolicy`：`pairing | allowlist | open | disabled`（默认：pairing）。
 - `channels.signal.allowFrom`：DM allowlist（E.164 或 `uuid:<id>`）。`open` 需要 `"*"`。Signal 没有用户名；使用电话/UUID id。
 - `channels.signal.groupPolicy`：`open | allowlist | disabled`（默认：allowlist）。
-- `channels.signal.groupAllowFrom`：群组发送者 allowlist。
+- `channels.signal.groupAllowFrom`：群组 allowlist；接受 Signal 群组 ID（原始、`group:<id>` 或 `signal:group:<id>`）、发送者 E.164 号码或 `uuid:<id>` 值。
 - `channels.signal.groups`：按 Signal 群组 id（或 `"*"`）键入的每群组覆盖。支持的字段：`requireMention`、`tools`、`toolsBySender`。
 - `channels.signal.accounts.<id>.groups`：多账户设置中 `channels.signal.groups` 的每账户版本。
 - `channels.signal.historyLimit`：作为上下文包含的最大群组消息数（0 禁用）。

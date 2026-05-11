@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fcea0b75c6da6a9d311dd07aa14974ac"
+mmh3_hash: "4cdac787d0d7404f6e694ab87701fd01"
 title: "Matrix"
 summary: "Matrix 支持状态、设置和配置示例"
 read_when:
@@ -7,18 +7,22 @@ read_when:
   - 配置 Matrix E2EE 和验证
 ---
 
-Matrix 是 OpenClaw 的内置 Channel Plugin。
+Matrix 是 OpenClaw 的可下载 Channel Plugin。
 它使用官方 `matrix-js-sdk`，支持私信、房间、话题串、媒体、表情反应、投票、位置和 E2EE。
 
-## 内置插件
+## 安装
 
-当前打包的 OpenClaw 版本已内置 Matrix Plugin。您无需安装任何内容；配置 `channels.matrix.*`（参见[设置](#setup)）即可激活它。
-
-如果您使用的是旧版本或不包含 Matrix 的自定义安装，请先手动安装：
+在配置 Channel 之前，从 ClawHub 安装 Matrix：
 
 ```bash
 openclaw plugins install @openclaw/matrix
-# 或从本地检出安装
+```
+
+裸 Plugin 规格优先尝试 ClawHub，然后回退到 npm。要强制指定来源，使用 `openclaw plugins install clawhub:@openclaw/matrix` 或 `openclaw plugins install npm:@openclaw/matrix`。
+
+从本地检出：
+
+```bash
 openclaw plugins install ./path/to/local/matrix-plugin
 ```
 
@@ -107,8 +111,9 @@ OpenClaw 在邀请时无法判断被邀请的房间是私信还是群组，因�
 
 私信和房间 allowlist 最好使用稳定 ID：
 
-- 私信（`dm.allowFrom`、`groupAllowFrom`、`groups.<room>.users`）：使用 `@user:server`。显示名称只在 Homeserver 目录返回唯一精确匹配时才能解析。
-- 房间（`groups`、`autoJoinAllowlist`）：使用 `!room:server` 或 `#alias:server`。名称在已加入房间上尽力解析；未解析的条目在运行时被忽略。
+- 私信（`dm.allowFrom`、`groupAllowFrom`、`groups.<room>.users`）：使用 `@user:server`。显示名称默认被忽略，因为它们是可变的；仅在明确需要与显示名称条目兼容时才设置 `dangerouslyAllowNameMatching: true`。
+- 房间 allowlist 键（`groups`、旧版 `rooms`）：使用 `!room:server` 或 `#alias:server`。普通房间名称默认被忽略；仅在明确需要与已加入房间名称查找兼容时才设置 `dangerouslyAllowNameMatching: true`。
+- 邀请 allowlist（`autoJoinAllowlist`）：使用 `!room:server`、`#alias:server` 或 `*`。普通房间名称会被拒绝。
 
 ### 账户 ID 规范化
 
@@ -191,6 +196,23 @@ Matrix 回复流式传输是可选的。`streaming` 控制 OpenClaw 如何传递
 }
 ```
 
+要保留实时答案预览但隐藏中间的工具/进度行，使用对象形式：
+
+```json5
+{
+  channels: {
+    matrix: {
+      streaming: {
+        mode: "partial",
+        preview: {
+          toolProgress: false,
+        },
+      },
+    },
+  },
+}
+```
+
 | `streaming`        | 行为                                                                                                        |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | `"off"`（默认）    | 等待完整回复，一次性发送。`true` ↔ `"partial"`，`false` ↔ `"off"`。                                         |
@@ -208,11 +230,18 @@ Matrix 回复流式传输是可选的。`streaming` 控制 OpenClaw 如何传递
 
 - 如果预览超出 Matrix 每事件大小限制，OpenClaw 停止预览流式传输并回退到仅最终传递。
 - 媒体回复仍正常发送附件。如果过时的预览无法安全重用，OpenClaw 在发送最终媒体回复之前将其撤回。
+- Matrix 预览流式传输激活时，工具进度预览更新默认启用。设置 `streaming.preview.toolProgress: false` 可保留答案文本的预览编辑，但让工具进度走正常传递路径。
 - 预览编辑会消耗额外的 Matrix API 调用。如果您需要最保守的速率限制行为，请将 `streaming` 设为 `"off"`。
 
 ### 为静默最终预览配置自托管推送规则
 
 `streaming: "quiet"` 仅在块或轮次最终确定时通知接收者——每用户推送规则必须匹配最终化的预览标记。参见 [Matrix 静默预览推送规则](/channels/matrix-push-rules) 获取完整方案（接收者令牌、推送器检查、规则安装、每 Homeserver 说明）。
+
+## 审批元数据
+
+Matrix 原生审批提示是普通的 `m.room.message` 事件，在 `com.openclaw.approval` 下带有 OpenClaw 特定的自定义事件内容。Matrix 允许自定义事件内容键，因此标准客户端仍然渲染文本正文，而支持 OpenClaw 的客户端可以读取结构化的审批 ID、类型、状态、可用决策以及 exec/Plugin 详情。
+
+当审批提示对于单个 Matrix 事件来说太长时，OpenClaw 会分块显示文本，并将 `com.openclaw.approval` 仅附加到第一个块。allow/deny 决策的表情反应绑定到该第一个事件，因此长提示与单事件提示保持相同的审批目标。
 
 ## 机器人对机器人房间
 
@@ -403,7 +432,7 @@ openclaw matrix verify request --user-id @ops:example.org --device-id ABCDEF
 
     启动还运行保守的加密引导流程，复用当前密钥存储和交叉签名身份。如果引导状态损坏，OpenClaw 即使没有 `channels.matrix.password` 也会尝试受保护的修复；如果 Homeserver 要求密码 UIA，启动记录警告并保持非致命。已由所有者签名的设备被保留。
 
-    参见 [Matrix 迁移](/install/migrating-matrix) 获取完整升级流程。
+    参见 [Matrix 迁移](/channels/matrix-migration) 获取完整升级流程。
 
   </Accordion>
 
@@ -501,7 +530,7 @@ Matrix 支持原生 Matrix 话题串，用于自动回复和消息工具发送�
 - 消息工具发送在目标为相同房间或相同私信用户目标时自动继承当前 Matrix 话题串，除非提供了明确的 `threadId`。
 - 相同会话私信用户目标复用仅在当前会话元数据证明同一 Matrix 账户上的相同私信对等体时触发；否则 OpenClaw 回退到正常的用户范围路由。
 - `/focus`、`/unfocus`、`/agents`、`/session idle`、`/session max-age` 和话题串绑定的 `/acp spawn` 在 Matrix 房间和私信中均可使用。
-- 顶层 `/focus` 在 `threadBindings.spawnSubagentSessions: true` 时创建新的 Matrix 话题串并将其绑定到目标 Session。
+- 顶层 `/focus` 在 `threadBindings.spawnSessions` 启用时创建新的 Matrix 话题串并将其绑定到目标 Session。
 - 在现有 Matrix 话题串内运行 `/focus` 或 `/acp spawn --thread here` 会就地绑定该话题串。
 
 当 OpenClaw 检测到 Matrix 私信房间与另一个私信房间在相同共享 Session 上发生冲突时，它会在该房间中发布一次性 `m.notice`，指向 `/focus` 退出路径并建议更改 `dm.sessionScope`。该通知仅在话题串绑定已启用时出现。
@@ -521,7 +550,7 @@ Matrix 房间、私信和现有 Matrix 话题串可以变成持久的 ACP 工作
 注意：
 
 - `--bind here` 不创建子 Matrix 话题串。
-- `threadBindings.spawnAcpSessions` 仅对 `/acp spawn --thread auto|here` 是必需的，其中 OpenClaw 需要创建或绑定子 Matrix 话题串。
+- `threadBindings.spawnSessions` 用于管控 `/acp spawn --thread auto|here`，其中 OpenClaw 需要创建或绑定子 Matrix 话题串。
 
 ### 话题串绑定配置
 
@@ -530,13 +559,13 @@ Matrix 从 `session.threadBindings` 继承全局默认值，并支持每个 Chan
 - `threadBindings.enabled`
 - `threadBindings.idleHours`
 - `threadBindings.maxAgeHours`
-- `threadBindings.spawnSubagentSessions`
-- `threadBindings.spawnAcpSessions`
+- `threadBindings.spawnSessions`
+- `threadBindings.defaultSpawnContext`
 
-Matrix 话题串绑定的生成标志是可选的：
+Matrix 话题串绑定的生成功能默认开启：
 
-- 设置 `threadBindings.spawnSubagentSessions: true` 以允许顶层 `/focus` 创建并绑定新的 Matrix 话题串。
-- 设置 `threadBindings.spawnAcpSessions: true` 以允许 `/acp spawn --thread auto|here` 将 ACP 会话绑定到 Matrix 话题串。
+- 设置 `threadBindings.spawnSessions: false` 以阻止顶层 `/focus` 和 `/acp spawn --thread auto|here` 创建/绑定 Matrix 话题串。
+- 设置 `threadBindings.defaultSpawnContext: "isolated"` 以在原生子 Agent 话题串生成时不 fork 父对话记录。
 
 ## 表情反应
 
@@ -797,7 +826,9 @@ Matrix 房间 ID 区分大小写。在配置明确的传递目标、cron 任务�
 
 ## 配置参考
 
-Allowlist 类型字段（`groupAllowFrom`、`dm.allowFrom`、`groups.<room>.users`）接受完整的 Matrix 用户 ID（最安全）。精确目录匹配在启动时以及 monitor 运行期间 allowlist 更改时解析；无法解析的条目在运行时被忽略。房间 allowlist 出于同样原因优先使用房间 ID 或别名。
+Allowlist 类型字段（`groupAllowFrom`、`dm.allowFrom`、`groups.<room>.users`）接受完整的 Matrix 用户 ID（最安全）。非 ID 用户条目默认被忽略。如果设置了 `dangerouslyAllowNameMatching: true`，精确的 Matrix 目录显示名称匹配会在启动时以及 monitor 运行期间 allowlist 更改时解析；无法解析的条目在运行时被忽略。
+
+房间 allowlist 键（`groups`、旧版 `rooms`）应为房间 ID 或别名。普通房间名称键默认被忽略；`dangerouslyAllowNameMatching: true` 可恢复针对已加入房间名称的尽力查找。
 
 ### 账户和连接
 
@@ -842,7 +873,7 @@ Allowlist 类型字段（`groupAllowFrom`、`dm.allowFrom`、`groups.<room>.user
 - `replyToMode`：`"off"`、`"first"`、`"all"` 或 `"batched"`。
 - `threadReplies`：`"off"`、`"inbound"` 或 `"always"`。
 - `threadBindings`：话题串绑定会话路由和生命周期的每 Channel 覆盖。
-- `streaming`：`"off"`（默认）、`"partial"`、`"quiet"`。`true` ↔ `"partial"`，`false` ↔ `"off"`。
+- `streaming`：`"off"`（默认）、`"partial"`、`"quiet"` 或对象形式 `{ mode, preview: { toolProgress } }`。`true` ↔ `"partial"`，`false` ↔ `"off"`。
 - `blockStreaming`：为 `true` 时，已完成的助手块保留为独立的进度消息。
 - `markdown`：出站文本的可选 Markdown 渲染配置。
 - `responsePrefix`：出站回复的可选前缀字符串。

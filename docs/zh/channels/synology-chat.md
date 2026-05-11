@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9604fb99c46616a7039c0267e1208482"
+mmh3_hash: "0c823cf57e2db484288f26a2273c7453"
 summary: "Synology Chat webhook 设置与 OpenClaw 配置"
 read_when:
   - 使用 OpenClaw 配置 Synology Chat
@@ -88,7 +88,7 @@ Webhook 认证详情：
 - `dmPolicy: "allowlist"` 是推荐的默认设置。
 - `allowedUserIds` 接受 Synology 用户 ID 的列表（或逗号分隔的字符串）。
 - 在 `allowlist` 模式下，空的 `allowedUserIds` 列表被视为配置错误，webhook 路由将不会启动（使用 `dmPolicy: "open"` 允许所有人）。
-- `dmPolicy: "open"` 允许任何发送者。
+- `dmPolicy: "open"` 仅当 `allowedUserIds` 包含 `"*"` 时允许公开私信；有限制性条目时，仅匹配用户可以聊天。
 - `dmPolicy: "disabled"` 阻止私信。
 - 回复接收者绑定默认使用稳定的数字 `user_id`。`channels.synology-chat.dangerouslyAllowNameMatching: true` 是一个应急兼容模式，重新启用可变用户名/昵称查找用于回复投递。
 - 配对审批方式：
@@ -104,6 +104,7 @@ Webhook 认证详情：
 ```bash
 openclaw message send --channel synology-chat --target 123456 --text "Hello from OpenClaw"
 openclaw message send --channel synology-chat --target synology-chat:123456 --text "Hello again"
+openclaw message send --channel synology-chat --target synology:123456 --text "Short prefix"
 ```
 
 支持通过基于 URL 的文件传递发送媒体。出站文件 URL 必须使用 `http` 或 `https`，私有或其他被阻止的网络目标在 OpenClaw 将 URL 转发到 NAS webhook 之前会被拒绝。
@@ -157,7 +158,7 @@ openclaw message send --channel synology-chat --target synology-chat:123456 --te
 - `Rate limit exceeded`：
   - 来自同一来源的过多无效 token 尝试可能会暂时锁定该来源
   - 已认证的发送者也有单独的每用户消息频率限制
-- `Allowlist is empty. Configure allowedUserIds or use dmPolicy=open.`：
+- `Allowlist is empty. Configure allowedUserIds or use dmPolicy=open with allowedUserIds=["*"].`：
   - 启用了 `dmPolicy="allowlist"` 但未配置任何用户
 - `User not authorized`：
   - 发送者的数字 `user_id` 不在 `allowedUserIds` 中

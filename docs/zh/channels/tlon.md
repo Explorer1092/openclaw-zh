@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b2fe2a3213487c9cb490ea73ec800ff8"
+mmh3_hash: "f7289b4485a9743bda0a90ebb2da85fe"
 summary: "Tlon/Urbit 支持状态、功能和配置"
 read_when:
   - Working on Tlon/Urbit channel features
@@ -8,7 +8,7 @@ title: "Tlon"
 
 Tlon 是一个基于 Urbit 构建的去中心化通讯工具。OpenClaw 可以连接到您的 Urbit ship 并响应私信和群组聊天消息。群组回复默认需要 @ 提及，并且可以通过 allowlist 进一步限制。
 
-状态：内置插件。支持私信、群组提及、帖子回复、富文本格式化和图片上传。通过[捆绑技能](#bundled-skill)支持 Reaction。尚不支持投票。
+状态：内置插件。支持私信、群组提及、帖子回复、富文本格式化和图片上传。尚不支持 Reaction 和投票。
 
 ## 内置插件
 
@@ -21,6 +21,8 @@ Tlon 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打�
 ```bash
 openclaw plugins install @openclaw/tlon
 ```
+
+使用裸包名称可跟随当前官方发布标签。仅在需要可复现安装时才固定确切版本。
 
 本地检出（从 git 仓库运行时）：
 
@@ -180,17 +182,20 @@ DM allowlist（空 = 不允许 DM，使用 `ownerShip` 进行审批流程）：
 }
 ```
 
-自动接受群组邀请：
+自动接受来自受信任 ship 的群组邀请：
 
 ```json5
 {
   channels: {
     tlon: {
       autoAcceptGroupInvites: true,
+      groupInviteAllowlist: ["~zod"],
     },
   },
 }
 ```
+
+当 `groupInviteAllowlist` 为空时，`autoAcceptGroupInvites` 失败关闭。将 allowlist 设置为应自动接受其群组邀请的 ship。
 
 ## 投递目标（CLI/cron）
 
@@ -221,7 +226,7 @@ Tlon 插件包含一个捆绑技能（[`@tloncorp/tlon-skill`](https://github.co
 | 帖子         | ✅ 支持（自动在帖子内回复）                |
 | 富文本       | ✅ Markdown 转换为 Tlon 格式              |
 | 图片         | ✅ 上传到 Tlon 存储                       |
-| Reaction    | ✅ 通过[捆绑技能](#bundled-skill)支持     |
+| Reaction    | ❌ 尚不支持                               |
 | 投票         | ❌ 尚不支持                               |
 | 原生命令     | ✅ 支持（默认仅所有者）                   |
 
@@ -257,7 +262,8 @@ Provider 选项：
 - `channels.tlon.ownerShip`：用于审批系统的所有者 ship（始终被授权）。
 - `channels.tlon.dmAllowlist`：允许私信的 ship（空 = 无）。
 - `channels.tlon.autoAcceptDmInvites`：自动接受来自 allowlist 中 ship 的私信。
-- `channels.tlon.autoAcceptGroupInvites`：自动接受所有群组邀请。
+- `channels.tlon.autoAcceptGroupInvites`：自动接受来自 allowlist 中 ship 的群组邀请。
+- `channels.tlon.groupInviteAllowlist`：群组邀请可以自动接受的 ship。
 - `channels.tlon.autoDiscoverChannels`：自动发现群组频道（默认：true）。
 - `channels.tlon.groupChannels`：手动固定的 Channel 嵌套。
 - `channels.tlon.defaultAuthorizedShips`：在所有 Channel 中授权的 ship。

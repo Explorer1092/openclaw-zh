@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bf30424c04a7e88760d1c2966a825a76"
+mmh3_hash: "4d9409352c859bf256dfcf6140c73bf8"
 summary: "QQ Bot 设置、配置和使用"
 read_when:
   - 想将 OpenClaw 连接到 QQ
@@ -10,11 +10,15 @@ title: QQ bot
 
 QQ Bot 通过官方 QQ Bot API（WebSocket 网关）连接到 OpenClaw。该插件支持 C2C 私聊、群组 @消息和公会频道消息，支持丰富媒体（图片、语音、视频、文件）。
 
-状态：内置插件。支持私信、群聊、公会频道和媒体。不支持反应和线程。
+状态：可下载 Plugin。支持私信、群聊、公会频道和媒体。不支持反应和线程。
 
-## 内置插件
+## 安装
 
-当前 OpenClaw 版本内置了 QQ Bot，因此正常打包的版本无需单独的 `openclaw plugins install` 步骤。
+在设置之前安装 QQ Bot：
+
+```bash
+openclaw plugins install @openclaw/qqbot
+```
 
 ## 设置
 
@@ -74,11 +78,26 @@ openclaw configure --section channels
 }
 ```
 
+Env SecretRef AppSecret：
+
+```json5
+{
+  channels: {
+    qqbot: {
+      enabled: true,
+      appId: "YOUR_APP_ID",
+      clientSecret: { source: "env", provider: "default", id: "QQBOT_CLIENT_SECRET" },
+    },
+  },
+}
+```
+
 注意：
 
 - 环境变量回退仅适用于默认 QQ Bot 账户。
 - `openclaw channels add --channel qqbot --token-file ...` 仅提供 AppSecret；AppID 必须已在配置或 `QQBOT_APP_ID` 中设置。
 - `clientSecret` 也接受 SecretRef 输入，不仅限于明文字符串。
+- 旧版 `secretref:/...` 标记字符串不是有效的 `clientSecret` 值；使用如上例所示的结构化 SecretRef 对象。
 
 ### 多账户设置
 
@@ -110,6 +129,48 @@ openclaw configure --section channels
 ```bash
 openclaw channels add --channel qqbot --account bot2 --token "222222222:secret-of-bot-2"
 ```
+
+### 群聊
+
+QQ Bot 群聊支持使用 QQ 群组 OpenID，而非显示名称。将 bot 添加到群组，然后提及它，或配置群组无需提及即可运行。
+
+```json5
+{
+  channels: {
+    qqbot: {
+      groupPolicy: "allowlist",
+      groupAllowFrom: ["member_openid"],
+      groups: {
+        "*": {
+          requireMention: true,
+          historyLimit: 50,
+          toolPolicy: "restricted",
+        },
+        GROUP_OPENID: {
+          name: "Release room",
+          requireMention: false,
+          ignoreOtherMentions: true,
+          historyLimit: 20,
+          prompt: "Keep replies short and operational.",
+        },
+      },
+    },
+  },
+}
+```
+
+`groups["*"]` 为每个群组设置默认值，而具体的 `groups.GROUP_OPENID` 条目会覆盖单个群组的默认值。群组设置包括：
+
+- `requireMention`：bot 回复前是否需要 @提及。默认：`true`。
+- `ignoreOtherMentions`：丢弃提及他人但未提及 bot 的消息。
+- `historyLimit`：保留最近的非提及群组消息作为下一个提及回合的上下文。设置 `0` 可禁用。
+- `toolPolicy`：`full`、`restricted` 或 `none`，用于群组范围的工具。
+- `name`：日志和群组上下文中使用的友好标签。
+- `prompt`：附加到 Agent 上下文的每群组行为提示。
+
+激活模式为 `mention` 和 `always`。`requireMention: true` 映射到 `mention`；`requireMention: false` 映射到 `always`。会话级激活覆盖（若存在）优先于配置。
+
+入站队列按对等方划分。群组对等方获得更大的队列容量，在队列满时优先处理人类消息而非 bot 生成的内容，并将普通群组消息的突发合并为一个有归因的回合。Slash 命令仍逐条运行。
 
 ### 语音（STT / TTS）
 
@@ -173,14 +234,17 @@ STT 和 TTS 支持两级配置，带优先级回退：
 
 | 命令           | 描述                                                         |
 | -------------- | ------------------------------------------------------------ |
-| `/bot-ping`    | 延迟测试                                                     |
-| `/bot-version` | 显示 OpenClaw 框架版本                                       |
-| `/bot-help`    | 列出所有命令                                                 |
-| `/bot-upgrade` | 显示 QQBot 升级指南链接                                      |
-| `/bot-logs`    | 将最近的 Gateway 日志导出为文件                              |
-| `/bot-approve` | 通过原生流程批准待处理的 QQ Bot 操作（例如确认 C2C 或群组上传）。|
+| `/bot-ping`    | 延迟测试                                                                    |
+| `/bot-version` | 显示 OpenClaw 框架版本                                                      |
+| `/bot-help`    | 列出所有命令                                                                |
+| `/bot-me`      | 显示发送者的 QQ 用户 ID（openid），用于 `allowFrom`/`groupAllowFrom` 设置   |
+| `/bot-upgrade` | 显示 QQBot 升级指南链接                                                     |
+| `/bot-logs`    | 将最近的 Gateway 日志导出为文件                                             |
+| `/bot-approve` | 通过原生流程批准待处理的 QQ Bot 操作（例如确认 C2C 或群组上传）             |
 
 在任何命令后附加 `?` 可获取使用帮助（例如 `/bot-upgrade ?`）。
+
+管理员命令（`/bot-me`、`/bot-upgrade`、`/bot-logs`、`/bot-clear-storage`、`/bot-streaming`、`/bot-approve`）仅限私信，且发送者的 openid 必须在明确的非通配符 `allowFrom` 列表中。通配符 `allowFrom: ["*"]` 允许聊天，但不授予管理员命令访问权限。群组消息首先与 `groupAllowFrom` 匹配，然后回退到 `allowFrom`。在群组中运行管理员命令会返回提示而不是静默丢弃。
 
 ## 引擎架构
 
@@ -189,6 +253,7 @@ QQ Bot 作为插件内部的自包含引擎提供：
 - 每个账户拥有独立的资源栈（WebSocket 连接、API 客户端、token 缓存、媒体存储根目录），以 `appId` 为键。账户之间永不共享入站/出站状态。
 - 多账户日志记录器为日志行标记所属账户，以便在单个 Gateway 下运行多个机器人时诊断信息保持可区分。
 - 入站、出站和 Gateway 桥接路径共享 `~/.openclaw/media` 下的单一媒体负载根目录，因此上传、下载和转码缓存位于一个受保护的目录下，而非每个子系统各自的目录树。
+- 富媒体投递通过一条 `sendMedia` 路径进行，适用于 C2C 和群组目标。超过大文件阈值的本地文件和 buffer 使用 QQ 的分块上传端点，而较小的载荷使用一次性媒体 API。
 - 凭据可以作为标准 OpenClaw 凭据快照的一部分进行备份和还原；引擎在还原时重新附加每个账户的资源栈，无需重新进行二维码配对。
 
 ## 二维码引导

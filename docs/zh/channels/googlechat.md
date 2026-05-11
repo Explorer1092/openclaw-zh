@@ -1,12 +1,26 @@
 ---
-mmh3_hash: "aecf8b9f20df130d75275e74fbd65abe"
+mmh3_hash: "69b7771e762aa75fd35a8121e16773d4"
 summary: "Google Chat 应用支持状态、功能和配置"
 read_when:
   - 使用 Google Chat channel 功能时
 title: "Google Chat"
 ---
 
-状态：通过 Google Chat API Webhook（仅 HTTP）支持私信 + 群组空间。
+状态：通过 Google Chat API Webhook（仅 HTTP）的私信 + 群组空间可下载 Plugin。
+
+## 安装
+
+在配置 Channel 之前安装 Google Chat：
+
+```bash
+openclaw plugins install @openclaw/googlechat
+```
+
+本地检出（从 git 仓库运行时）：
+
+```bash
+openclaw plugins install ./path/to/local/googlechat-plugin
+```
 
 ## 快速设置（新手）
 
@@ -179,7 +193,7 @@ your-domain.com {
       groupPolicy: "allowlist",
       groups: {
         "spaces/AAAA": {
-          allow: true,
+          enabled: true,
           requireMention: true,
           users: ["users/1234567890"],
           systemPrompt: "Short answers only.",

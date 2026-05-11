@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b5ff11ac91184cca22ed431b376384c5"
+mmh3_hash: "b33a2f735837c6d109a2f2f26f72808f"
 summary: "Zalo bot 支持状态、功能和配置"
 read_when:
   - 开发 Zalo 功能或 webhook
@@ -15,6 +15,7 @@ Zalo 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打�
 如果您使用的是较旧的构建版本或不包含 Zalo 的自定义安装，请手动安装：
 
 - 通过 CLI 安装：`openclaw plugins install @openclaw/zalo`
+- 固定版本：`openclaw plugins install @openclaw/zalo@2026.5.2`
 - 或从源代码检出：`openclaw plugins install ./path/to/local/zalo-plugin`
 - 详情：[插件](/tools/plugin)
 

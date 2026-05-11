@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bedaf668006bd06e70b2e7b43f1007b2"
+mmh3_hash: "78649bc254e34e4fb071934c0dfd7138"
 title: "Mattermost"
 sidebarTitle: "Mattermost"
 summary: "Mattermost bot 设置和 OpenClaw 配置"
@@ -8,17 +8,13 @@ read_when:
   - 调试 Mattermost 路由
 ---
 
-状态：内置插件（bot token + WebSocket 事件）。支持 Channel、群组和私信。
+状态：可下载 Plugin（bot token + WebSocket 事件）。支持 Channel、群组和私信。
 Mattermost 是一个可自托管的团队消息平台；产品详情和下载请访问官方网站
 [mattermost.com](https://mattermost.com)。
 
-## 内置插件
+## 安装
 
-<Note>
-Mattermost 作为内置插件随当前 OpenClaw 版本提供，正常打包的构建无需单独安装。
-</Note>
-
-如果您使用的是旧版本或不包含 Mattermost 的自定义安装，请手动安装：
+在配置 Channel 之前安装 Mattermost：
 
 <Tabs>
   <Tab title="npm registry">
@@ -92,7 +88,9 @@ Mattermost 作为内置插件随当前 OpenClaw 版本提供，正常打包的�
     - 如果省略 `callbackUrl`，OpenClaw 根据 Gateway 主机/端口 + `callbackPath` 派生。
     - 在多账户设置中，`commands` 可以在顶层或 `channels.mattermost.accounts.<id>.commands` 下设置（账户值覆盖顶层字段）。
     - 命令回调通过每个命令注册时 Mattermost 返回的 token 进行验证。
-    - 当注册失败、启动不完整或回调 token 不匹配已注册命令时，slash 回调失败关闭。
+    - OpenClaw 在接受每个回调之前会刷新当前 Mattermost 命令注册，以避免在不重启 Gateway 的情况下接受来自已删除或重新生成的 slash 命令的过期 token。
+    - 如果 Mattermost API 无法确认命令仍然有效，回调验证失败关闭；失败的验证会被短暂缓存，并发查找会被合并，每个命令的新查找启动受到速率限制以限制重放压力。
+    - 当注册失败、启动不完整或回调 token 不匹配已解析命令的注册 token 时，slash 回调失败关闭（一个命令的有效 token 不能到达另一个命令的上游验证）。
   </Accordion>
   <Accordion title="可达性要求">
     回调端点必须可以从 Mattermost 服务器访问。
@@ -193,11 +191,13 @@ Mattermost 会自动响应私信。Channel 行为由 `chatmode` 控制：
   - `openclaw pairing list mattermost`
   - `openclaw pairing approve mattermost <CODE>`
 - 公开私信：`channels.mattermost.dmPolicy="open"` 加上 `channels.mattermost.allowFrom=["*"]`。
+- `channels.mattermost.allowFrom` 接受 `accessGroup:<name>` 条目。参见[访问组](/channels/access-groups)。
 
 ## Channel（群组）
 
 - 默认：`channels.mattermost.groupPolicy = "allowlist"`（需提及才能触发）。
 - 使用 `channels.mattermost.groupAllowFrom` 将发送者加入 allowlist（推荐使用用户 ID）。
+- `channels.mattermost.groupAllowFrom` 接受 `accessGroup:<name>` 条目。参见[访问组](/channels/access-groups)。
 - 每 Channel 提及覆盖位于 `channels.mattermost.groups.<channelId>.requireMention` 下，或使用 `channels.mattermost.groups["*"].requireMention` 设置默认值。
 - `@username` 匹配是可变的，仅在 `channels.mattermost.dangerouslyAllowNameMatching: true` 时启用。
 - 公开 Channel：`channels.mattermost.groupPolicy="open"`（需提及才能触发）。

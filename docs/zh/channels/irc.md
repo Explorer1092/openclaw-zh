@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5da0524ccfdc707822e919589b25b657"
+mmh3_hash: "e16b14a500f2e7f877ac975c413feb84"
 title: IRC
 summary: "IRC 插件设置、访问控制和故障排除"
 read_when:
@@ -39,6 +39,7 @@ openclaw gateway run
 
 ## 安全默认值
 
+- IRC 使用原始 TCP/TLS Socket，不经过 OpenClaw 运营商管理的正向代理路由。在要求所有出站流量通过该正向代理的部署中，除非明确批准直接 IRC 出站流量，否则请设置 `channels.irc.enabled=false`。
 - `channels.irc.dmPolicy` 默认为 `"pairing"`。
 - `channels.irc.groupPolicy` 默认为 `"allowlist"`。
 - 使用 `groupPolicy="allowlist"` 时，设置 `channels.irc.groups` 以定义允许的 Channels。

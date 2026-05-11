@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b020c9dd0ca10af92690d2907c97b62d"
+mmh3_hash: "6790502731166b4e000baefaa81c9321"
 summary: "通过外部 openclaw-weixin 插件设置 WeChat Channel"
 read_when:
   - 您想将 OpenClaw 连接到 WeChat 或微信
@@ -130,6 +130,8 @@ npm view @tencent-weixin/openclaw-weixin version
 openclaw plugins install "@tencent-weixin/openclaw-weixin" --force
 openclaw gateway restart
 ```
+
+如果启动时报告已安装的插件包 `requires compiled runtime output for TypeScript entry`，则该 npm 包发布时缺少 OpenClaw 所需的编译后 JavaScript 运行时文件。在插件发布者修复后更新/重新安装，或临时禁用/卸载该插件。
 
 临时禁用：
 

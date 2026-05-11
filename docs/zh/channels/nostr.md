@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6ecb17a3d8408d0ceb16c35afc1c271e"
+mmh3_hash: "ec73c96ebfe1567955ef08e05aa54cfa"
 summary: "通过 NIP-04 加密消息实现的 Nostr DM Channel"
 read_when:
   - 您希望 OpenClaw 通过 Nostr 接收私信
@@ -23,6 +23,8 @@ Nostr 是一个去中心化的社交网络协议。此 Channel 使 OpenClaw 能�
 ```bash
 openclaw plugins install @openclaw/nostr
 ```
+
+使用裸包名称可跟随当前官方发布标签。仅在需要可复现安装时才固定确切版本。
 
 使用本地检出（开发工作流）：
 

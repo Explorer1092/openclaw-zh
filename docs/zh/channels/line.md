@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "58c998a21988d8c57ef851df5a1031db"
+mmh3_hash: "e872e23177e78f7a813b6645d747a12f"
 summary: "LINE Messaging API 插件设置、配置和使用"
 read_when:
   - 连接 OpenClaw 到 LINE
@@ -10,13 +10,11 @@ title: LINE
 
 LINE 通过 LINE Messaging API 连接到 OpenClaw。该插件在 Gateway 上作为 Webhook 接收器运行，并使用您的 Channel access token + Channel secret 进行身份验证。
 
-状态：内置插件。支持私聊、群聊、媒体、位置、Flex 消息、模板消息和快速回复。不支持反应和主题。
+状态：可下载 Plugin。支持私聊、群聊、媒体、位置、Flex 消息、模板消息和快速回复。不支持 reaction 和线程。
 
-## 内置插件
+## 安装
 
-LINE 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打包构建不需要单独安装。
-
-如果您使用的是旧版构建或不包含 LINE 的自定义安装，请手动安装：
+在配置 Channel 之前安装 LINE：
 
 ```bash
 openclaw plugins install @openclaw/line
@@ -62,6 +60,22 @@ Gateway 会响应 LINE 的 Webhook 验证（GET）和入站事件（POST）。
       channelAccessToken: "LINE_CHANNEL_ACCESS_TOKEN",
       channelSecret: "LINE_CHANNEL_SECRET",
       dmPolicy: "pairing",
+    },
+  },
+}
+```
+
+公开 DM 配置：
+
+```json5
+{
+  channels: {
+    line: {
+      enabled: true,
+      channelAccessToken: "LINE_CHANNEL_ACCESS_TOKEN",
+      channelSecret: "LINE_CHANNEL_SECRET",
+      dmPolicy: "open",
+      allowFrom: ["*"],
     },
   },
 }
@@ -117,10 +131,11 @@ openclaw pairing approve line <CODE>
 Allowlist 和策略：
 
 - `channels.line.dmPolicy`: `pairing | allowlist | open | disabled`
-- `channels.line.allowFrom`: 私信 allowlist 中的 LINE 用户 ID
+- `channels.line.allowFrom`: 私信 allowlist 中的 LINE 用户 ID；`dmPolicy: "open"` 需要 `["*"]`
 - `channels.line.groupPolicy`: `allowlist | open | disabled`
 - `channels.line.groupAllowFrom`: 群组 allowlist 中的 LINE 用户 ID
 - 每个群组的覆盖设置：`channels.line.groups.<groupId>.allowFrom`
+- 静态发送者访问组可以在 `allowFrom`、`groupAllowFrom` 和每群组 `allowFrom` 中通过 `accessGroup:<name>` 引用。
 - 运行时注意：如果 `channels.line` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组检查（即使设置了 `channels.defaults.groupPolicy`）。
 
 LINE ID 区分大小写。有效 ID 格式如下：
@@ -135,6 +150,7 @@ LINE ID 区分大小写。有效 ID 格式如下：
 - Markdown 格式会被剥离；代码块和表格会在可能的情况下转换为 Flex 卡片。
 - 流式响应会被缓冲；LINE 在 Agent 工作时接收完整的分块并显示加载动画。
 - 媒体下载受 `channels.line.mediaMaxMb`（默认 10）限制。
+- 入站媒体在传递给 Agent 之前会保存在 `~/.openclaw/media/inbound/` 下，与其他内置 Channel Plugin 使用的共享媒体存储相匹配。
 
 ## Channel data（富消息）
 

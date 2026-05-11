@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "67efeb5cd42ff536bb6ba354be304497"
+mmh3_hash: "a7f3e60a02bf0289819a2428eb9a4141"
 summary: "通过原生 zca-js（二维码登录）的 Zalo 个人账户支持、功能和配置"
 read_when:
   - 为 OpenClaw 设置 Zalo 个人号
@@ -20,6 +20,7 @@ Zalo Personal 作为内置插件随当前 OpenClaw 版本提供，正常打包�
 如果您使用的是旧版本或不包含 Zalo Personal 的自定义安装，请手动安装：
 
 - 通过 CLI 安装：`openclaw plugins install @openclaw/zalouser`
+- 固定版本：`openclaw plugins install @openclaw/zalouser@2026.5.2`
 - 或从源码检出安装：`openclaw plugins install ./path/to/local/zalouser-plugin`
 - 详情：[插件](/tools/plugin)
 
@@ -79,7 +80,9 @@ openclaw directory groups list --channel zalouser --query "work"
 
 `channels.zalouser.dmPolicy` 支持：`pairing | allowlist | open | disabled`（默认：`pairing`）。
 
-`channels.zalouser.allowFrom` 接受用户 ID 或名称。初始化配置时，名称通过插件的进程内联系人查找解析为 ID。
+`channels.zalouser.allowFrom` 应使用稳定的 Zalo 用户 ID。也可以引用静态发送者访问组（`accessGroup:<name>`）。在交互式设置过程中，输入的名称可通过插件的进程内联系人查找解析为 ID。
+
+如果原始名称保留在配置中，仅当启用 `channels.zalouser.dangerouslyAllowNameMatching: true` 时，启动时才会解析。未启用此选项，运行时发送者检查仅基于 ID，原始名称在授权时被忽略。
 
 通过以下方式批准：
 
@@ -91,13 +94,13 @@ openclaw directory groups list --channel zalouser --query "work"
 - 默认：`channels.zalouser.groupPolicy = "open"`（允许群组）。使用 `channels.defaults.groupPolicy` 在未设置时覆盖默认值。
 - 使用 allowlist 限制：
   - `channels.zalouser.groupPolicy = "allowlist"`
-  - `channels.zalouser.groups`（键应为稳定的群组 ID；名称在启动时尽可能解析为 ID）
-  - `channels.zalouser.groupAllowFrom`（控制允许的群组中哪些发送者可以触发 bot）
+  - `channels.zalouser.groups`（键应为稳定的群组 ID；仅当启用 `channels.zalouser.dangerouslyAllowNameMatching: true` 时，名称才在启动时解析为 ID）
+  - `channels.zalouser.groupAllowFrom`（控制允许的群组中哪些发送者可以触发 bot；可使用 `accessGroup:<name>` 引用静态发送者访问组）
 - 阻止所有群组：`channels.zalouser.groupPolicy = "disabled"`。
 - 配置向导可以提示输入群组 allowlist。
-- 启动时，OpenClaw 将 allowlist 中的群组/用户名称解析为 ID 并记录映射。
+- 启动时，仅当启用 `channels.zalouser.dangerouslyAllowNameMatching: true` 时，OpenClaw 才将 allowlist 中的群组/用户名称解析为 ID 并记录映射。
 - 群组 allowlist 匹配默认仅使用 ID。未解析的名称在授权时被忽略，除非启用 `channels.zalouser.dangerouslyAllowNameMatching: true`。
-- `channels.zalouser.dangerouslyAllowNameMatching: true` 是一个应急兼容模式，重新启用可变群组名称匹配。
+- `channels.zalouser.dangerouslyAllowNameMatching: true` 是一个应急兼容模式，重新启用可变启动名称解析和运行时群组名称匹配。
 - 如果未设置 `groupAllowFrom`，运行时回退到 `allowFrom` 进行群组发送者检查。
 - 发送者检查同时适用于普通群组消息和控制命令（例如 `/new`、`/reset`）。
 
@@ -179,7 +182,7 @@ openclaw directory groups list --channel zalouser --query "work"
 
 **Allowlist/群组名称未解析：**
 
-- 在 `allowFrom`/`groupAllowFrom`/`groups` 中使用数字 ID 或精确的好友/群组名称。
+- 在 `allowFrom`/`groupAllowFrom` 中使用数字 ID，在 `groups` 中使用稳定的群组 ID。如果确实需要精确的好友/群组名称，请启用 `channels.zalouser.dangerouslyAllowNameMatching: true`。
 
 **从旧的基于 CLI 的设置升级：**
 

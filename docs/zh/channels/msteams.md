@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "80eb0d3abcb8a1a0cc32635394ca814b"
+mmh3_hash: "339e9b6080142273a2813e2a25d8707a"
 summary: "Microsoft Teams bot 支持状态、功能和配置"
 read_when:
   - 开发 Microsoft Teams Channel 功能
@@ -142,14 +142,14 @@ teams app doctor <teamsAppId>
 **DM 访问**
 
 - 默认：`channels.msteams.dmPolicy = "pairing"`。未知发送者被忽略，直到批准。
-- `channels.msteams.allowFrom` 应使用稳定的 AAD 对象 ID。
+- `channels.msteams.allowFrom` 应使用稳定的 AAD 对象 ID 或静态发送者访问组（如 `accessGroup:core-team`）。
 - UPN/显示名称是可变的；直接匹配默认禁用，仅在 `channels.msteams.dangerouslyAllowNameMatching: true` 时启用。
 - 当凭据允许时，向导通过 Microsoft Graph 将名称解析为 ID。
 
 **群组访问**
 
 - 默认：`channels.msteams.groupPolicy = "allowlist"`（阻止，除非添加 `groupAllowFrom`）。使用 `channels.defaults.groupPolicy` 在未设置时覆盖默认值。
-- `channels.msteams.groupAllowFrom` 控制哪些发送者可以在群聊/Channel 中触发（回退到 `channels.msteams.allowFrom`）。
+- `channels.msteams.groupAllowFrom` 控制哪些发送者或静态发送者访问组可以在群聊/Channel 中触发（回退到 `channels.msteams.allowFrom`）。
 - 设置 `groupPolicy: "open"` 以允许任何成员（仍然默认需要提及）。
 - 要**不允许任何 Channel**，设置 `channels.msteams.groupPolicy: "disabled"`。
 
@@ -160,7 +160,7 @@ teams app doctor <teamsAppId>
   channels: {
     msteams: {
       groupPolicy: "allowlist",
-      groupAllowFrom: ["user@org.com"],
+      groupAllowFrom: ["00000000-0000-0000-0000-000000000000", "accessGroup:core-team"],
     },
   },
 }
@@ -283,7 +283,7 @@ teams app doctor <teamsAppId>
 
 ## 联合认证（证书 + 托管身份）
 
-> 2026.3.24 版本新增
+> 2026.4.11 版本新增
 
 对于生产部署，OpenClaw 支持**联合认证**，作为客户端密钥的更安全替代方案。提供两种方法：
 
@@ -746,6 +746,27 @@ Teams 最近在同一底层数据模型上引入了两种 Channel UI 样式：
 }
 ```
 
+### 解析优先级
+
+当 bot 向 Channel 发送回复时，`replyStyle` 从最具体的覆盖一直解析到默认值。第一个非 `undefined` 的值胜出：
+
+1. **每 Channel** — `channels.msteams.teams.<teamId>.channels.<conversationId>.replyStyle`
+2. **每团队** — `channels.msteams.teams.<teamId>.replyStyle`
+3. **全局** — `channels.msteams.replyStyle`
+4. **隐式默认** — 从 `requireMention` 派生：
+   - `requireMention: true` → `thread`
+   - `requireMention: false` → `top-level`
+
+如果您在全局设置了 `requireMention: false` 但没有显式的 `replyStyle`，Posts 样式 Channel 中的提及将显示为顶级帖子，即使入站消息是话题串回复。在全局、团队或 Channel 级别固定 `replyStyle: "thread"` 以避免意外情况。
+
+### 话题串上下文保留
+
+当 `replyStyle: "thread"` 生效且 bot 被从 Channel 话题串内部 @提及时，OpenClaw 将原始话题串根重新附加到出站对话引用（`19:…@thread.tacv2;messageid=<root>`），使回复落在同一话题串内。这适用于实时（在回合内）发送和在 Bot Framework 回合上下文过期后进行的主动发送（例如，长时间运行的 Agent、通过 `mcp__openclaw__message` 排队的工具调用回复）。
+
+话题串根取自对话引用上存储的 `threadId`。早于 `threadId` 的旧存储引用回退到 `activityId`（最后一个为对话播种的入站活动），因此现有部署无需重新播种即可继续工作。
+
+当 `replyStyle: "top-level"` 生效时，Channel 话题串入站消息会故意作为新的顶级帖子回复——不附加话题串后缀。这是 Threads 样式 Channel 的正确行为；如果您看到顶级帖子而期望的是话题串回复，说明该 Channel 的 `replyStyle` 设置有误。
+
 ## 附件和图像
 
 **当前限制：**
@@ -950,9 +971,9 @@ https://teams.microsoft.com/l/channel/19%3A15bc...%40thread.tacv2/ChannelName?gr
 
 **对于配置：**
 
-- 团队 ID = `/team/` 之后的路径段（URL 解码，例如 `19:Bk4j...@thread.tacv2`）
+- 团队 ID = `/team/` 之后的路径段（URL 解码，例如 `19:Bk4j...@thread.tacv2`；较旧的租户可能显示 `@thread.skype`，同样有效）
 - Channel ID = `/channel/` 之后的路径段（URL 解码）
-- **忽略** `groupId` 查询参数
+- **忽略** `groupId` 查询参数——它是 Microsoft Entra 组 ID，而非 Bot Framework 对话 ID
 
 ## 私有 Channel
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dc3122e256c056fad02c60b9b397c745"
+mmh3_hash: "42c4e46f670957361373015a2942b599"
 summary: "Twitch 聊天机器人配置和设置"
 read_when:
   - 为 OpenClaw 配置 Twitch 聊天集成
@@ -29,6 +29,8 @@ Twitch 在当前 OpenClaw 版本中作为内置插件提供，因此正常的打
     ```
   </Tab>
 </Tabs>
+
+使用裸包名称可跟随当前官方发布标签。仅在需要可复现安装时才固定确切版本。
 
 详情：[插件](/tools/plugin)
 

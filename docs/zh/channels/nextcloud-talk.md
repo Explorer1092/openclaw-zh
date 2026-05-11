@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0577ae8566e2aa83a2903dd6213ce304"
+mmh3_hash: "9c3cee5190c81577aba66db3f8fa6a1f"
 summary: "Nextcloud Talk 支持状态、功能和配置"
 read_when:
   - 开发 Nextcloud Talk Channel 功能
@@ -36,7 +36,7 @@ openclaw plugins install ./path/to/local/nextcloud-talk-plugin
 2. 在您的 Nextcloud 服务器上创建一个 bot：
 
    ```bash
-   ./occ talk:bot:install "OpenClaw" "<shared-secret>" "<webhook-url>" --feature reaction
+   ./occ talk:bot:install "OpenClaw" "<shared-secret>" "<webhook-url>" --feature webhook --feature response --feature reaction
    ```
 
 3. 在目标聊天室设置中启用该 bot。
@@ -153,6 +153,7 @@ Provider 选项：
 - `channels.nextcloud-talk.groupPolicy`：`allowlist | open | disabled`。
 - `channels.nextcloud-talk.groupAllowFrom`：群组 allowlist（用户 ID）。
 - `channels.nextcloud-talk.rooms`：每个聊天室的设置和 allowlist。
+- 静态发送者访问组可以在 `allowFrom` 和 `groupAllowFrom` 中通过 `accessGroup:<name>` 引用。
 - `channels.nextcloud-talk.historyLimit`：群组历史记录限制（0 禁用）。
 - `channels.nextcloud-talk.dmHistoryLimit`：私信历史记录限制（0 禁用）。
 - `channels.nextcloud-talk.dms`：每个私信的覆盖设置（historyLimit）。

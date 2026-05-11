@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "6903462b3c7d9b4ee76fa707f0da0308"
+mmh3_hash: "eba3477fe84e122965d6aee0248feb1a"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
   - 您正在配置 Feishu Channel
 title: Feishu
 ---
-
-# Feishu / Lark
 
 Feishu（Lark）是一体化协作平台，团队可在其中聊天、共享文档、管理日历并协同完成工作。
 
@@ -46,7 +44,7 @@ Feishu（Lark）是一体化协作平台，团队可在其中聊天、共享文�
 
 - `"pairing"` — 未知用户收到配对码；通过 CLI 批准
 - `"allowlist"` — 只有 `allowFrom` 中列出的用户可以聊天（默认：仅机器人所有者）
-- `"open"` — 允许所有用户
+- `"open"` — 仅当 `allowFrom` 包含 `"*"` 时允许公开私信；若有限制性条目，则只有匹配的用户才能聊天
 - `"disabled"` — 禁用所有私信
 
 **批准配对请求：**
@@ -62,9 +60,9 @@ openclaw pairing approve feishu <CODE>
 
 | 值            | 行为                          |
 | ------------- | ----------------------------- |
-| `"open"`      | 响应群组中的所有消息          |
-| `"allowlist"` | 仅响应 `groupAllowFrom` 中的群组 |
-| `"disabled"`  | 禁用所有群组消息              |
+| `"open"`      | 响应群组中的所有消息                                                                              |
+| `"allowlist"` | 仅响应 `groupAllowFrom` 中或在 `groups.<chat_id>` 下显式配置的群组                                |
+| `"disabled"`  | 禁用所有群组消息；显式的 `groups.<chat_id>` 条目不能覆盖此设置                                    |
 
 默认：`allowlist`
 
@@ -113,6 +111,23 @@ openclaw pairing approve feishu <CODE>
       groupPolicy: "allowlist",
       // 群组 ID 格式如：oc_xxx
       groupAllowFrom: ["oc_xxx", "oc_yyy"],
+    },
+  },
+}
+```
+
+在 `allowlist` 模式下，也可以通过添加显式 `groups.<chat_id>` 条目来准入群组。显式条目不会覆盖 `groupPolicy: "disabled"`。`groups.*` 下的通配符默认值配置匹配的群组，但它们本身不准入群组。
+
+```json5
+{
+  channels: {
+    feishu: {
+      groupPolicy: "allowlist",
+      groups: {
+        oc_xxx: {
+          requireMention: false,
+        },
+      },
     },
   },
 }
@@ -252,13 +267,13 @@ Feishu/Lark 通过交互式卡片支持流式回复。启用后，机器人在�
   channels: {
     feishu: {
       streaming: true, // 启用流式卡片输出（默认：true）
-      blockStreaming: true, // 启用块级流式传输（默认：true）
+      blockStreaming: true, // 启用块级流式传输
     },
   },
 }
 ```
 
-设置 `streaming: false` 以在一条消息中发送完整回复。
+设置 `streaming: false` 以在一条消息中发送完整回复。`blockStreaming` 默认关闭；仅在想要在最终回复前刷新已完成的 assistant 块时才启用。
 
 ### 配额优化
 
@@ -402,12 +417,12 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 | `channels.feishu.groupPolicy`                     | 群组策略                                | `allowlist`      |
 | `channels.feishu.groupAllowFrom`                  | 群组 allowlist                          | —                |
 | `channels.feishu.requireMention`                  | 群组中需要 @提及                        | `true`           |
-| `channels.feishu.groups.<chat_id>.requireMention` | 每群组 @提及覆盖                        | 继承             |
+| `channels.feishu.groups.<chat_id>.requireMention` | 每群组 @提及覆盖；显式 ID 在 allowlist 模式下也会准入该群组 | 继承 |
 | `channels.feishu.groups.<chat_id>.enabled`        | 启用/禁用特定群组                       | `true`           |
 | `channels.feishu.textChunkLimit`                  | 消息块大小                              | `2000`           |
 | `channels.feishu.mediaMaxMb`                      | 媒体大小限制                            | `30`             |
 | `channels.feishu.streaming`                       | 流式卡片输出                            | `true`           |
-| `channels.feishu.blockStreaming`                  | 块级流式传输                            | `true`           |
+| `channels.feishu.blockStreaming`                  | 块级流式传输                            | `false`          |
 | `channels.feishu.typingIndicator`                 | 发送输入状态 reaction                   | `true`           |
 | `channels.feishu.resolveSenderNames`              | 解析发送者显示名称                      | `true`           |
 

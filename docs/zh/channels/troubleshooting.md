@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0633691ffeac642754a7bc3df210a4b4"
+mmh3_hash: "08cef3ceb002df284b2429ce01576d38"
 summary: "快速频道级故障排除，含各频道故障特征和修复方法"
 read_when:
   - 频道传输显示已连接但回复失败
@@ -36,7 +36,9 @@ openclaw channels status --probe
 | --- | --- | --- |
 | 已连接但无私信回复 | `openclaw pairing list whatsapp` | 批准发送者或切换私信策略/allowlist。 |
 | 群组消息被忽略 | 检查配置中的 `requireMention` 和提及模式 | 提及 bot 或放宽该群组的提及策略。 |
-| 随机断开/重新登录循环 | `openclaw channels status --probe` + 日志 | 重新登录并验证凭据目录是否正常。 |
+| QR 登录超时（408） | 检查 gateway 的 `HTTPS_PROXY` / `HTTP_PROXY` 环境变量 | 设置可达的代理；仅在需要绕过时使用 `NO_PROXY`。 |
+| 随机断开/重新登录循环 | `openclaw channels status --probe` + 日志 | 最近的重连即使当前已连接也会被标记；观察日志，重启 gateway，如持续抖动则重新关联。 |
+| 回复延迟数秒或数分钟 | `openclaw doctor --fix` | Doctor 会在本地 TUI 客户端验证陈旧并降低 Gateway 事件循环性能时将其停止。 |
 
 完整故障排除：[WhatsApp 故障排除](/channels/whatsapp#troubleshooting)
 
@@ -49,6 +51,7 @@ openclaw channels status --probe
 | `/start` 但无可用回复流程 | `openclaw pairing list telegram` | 批准配对或更改私信策略。 |
 | Bot 在线但群组保持沉默 | 验证提及要求和 bot 隐私模式 | 禁用隐私模式以提高群组可见性，或提及 bot。 |
 | 网络错误导致发送失败 | 检查日志中的 Telegram API 调用失败 | 修复到 `api.telegram.org` 的 DNS/IPv6/代理路由。 |
+| 启动时报告 `getMe returned 401` | 检查已配置的 token 来源 | 重新复制或重新生成 BotFather token，并更新 `botToken`、`tokenFile` 或默认账户的 `TELEGRAM_BOT_TOKEN`。 |
 | 轮询停滞或重连缓慢 | `openclaw logs --follow` 查看轮询诊断 | 升级；如果重启是误报，调整 `pollingStallThresholdMs`。持续停滞仍指向代理/DNS/IPv6 问题。 |
 | `setMyCommands` 启动时被拒绝 | 检查日志中的 `BOT_COMMANDS_TOO_MUCH` | 减少插件/技能/自定义 Telegram 命令或禁用原生菜单。 |
 | 升级后 allowlist 阻止您 | `openclaw security audit` 和配置 allowlist | 运行 `openclaw doctor --fix` 或将 `@username` 替换为数字发送者 ID。 |
@@ -63,6 +66,7 @@ openclaw channels status --probe
 | --- | --- | --- |
 | Bot 在线但无服务器回复 | `openclaw channels status --probe` | 允许服务器/频道并验证消息内容意图。 |
 | 群组消息被忽略 | 检查日志中的提及门控丢弃 | 提及 bot 或设置服务器/频道 `requireMention: false`。 |
+| 有 typing 指示和 token 消耗但无 Discord 消息 | Session 日志显示助手文本中有 `didSendViaMessagingTool: false` | 模型私下回答而未调用消息工具。使用工具调用可靠的模型，或设置 `messages.groupChat.visibleReplies: "automatic"` 以自动发布。 |
 | 私信回复缺失 | `openclaw pairing list discord` | 批准私信配对或调整私信策略。 |
 
 完整故障排除：[Discord 故障排除](/channels/discord#troubleshooting)
@@ -79,20 +83,19 @@ openclaw channels status --probe
 
 完整故障排除：[Slack 故障排除](/channels/slack#troubleshooting)
 
-## iMessage 和 BlueBubbles
+## iMessage
 
-### iMessage 和 BlueBubbles 故障特征
+### iMessage 故障特征
 
 | 症状 | 最快检查方法 | 修复方法 |
 | --- | --- | --- |
-| 无入站事件 | 验证 webhook/服务器可达性和应用权限 | 修复 webhook URL 或 BlueBubbles 服务器状态。 |
+| 非 macOS 上 `imsg` 缺失或失败 | `openclaw channels status --probe --channel imessage` | 在 Messages Mac 上运行 OpenClaw，或使用 SSH wrapper 配置 `cliPath`。 |
 | macOS 上可发送但无法接收 | 检查 Messages 自动化的 macOS 隐私权限 | 重新授予 TCC 权限并重启频道进程。 |
-| 私信发送者被阻止 | `openclaw pairing list imessage` 或 `openclaw pairing list bluebubbles` | 批准配对或更新 allowlist。 |
+| 私信发送者被阻止 | `openclaw pairing list imessage` | 批准配对或更新 allowlist。 |
 
 完整故障排除：
 
 - [iMessage 故障排除](/channels/imessage#troubleshooting)
-- [BlueBubbles 故障排除](/channels/bluebubbles#troubleshooting)
 
 ## Signal
 
