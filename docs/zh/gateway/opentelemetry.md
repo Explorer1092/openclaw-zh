@@ -1,7 +1,7 @@
 ---
-mmh3_hash: "002d76ac20828f55d31eed925f2853c0"
+mmh3_hash: "409244922ceefb91dfb052f8468ad9a4"
 summary: "通过 diagnostics-otel Plugin（OTLP/HTTP）将 OpenClaw 诊断导出到任何 OpenTelemetry 收集器"
-title: "OpenTelemetry 导出"
+title: "OpenTelemetry export"
 read_when:
   - 你想将 OpenClaw model 使用情况、消息流或 Session 指标发送到 OpenTelemetry 收集器
   - 你正在将 traces、metrics 或 logs 接入 Grafana、Datadog、Honeycomb、New Relic、Tempo 或其他 OTLP 后端

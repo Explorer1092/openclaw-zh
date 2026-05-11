@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "cf1bbb9e8eacdd869b9b5f4a3e177b48"
+mmh3_hash: "168314f383fc4d13ff7577c019652d54"
 summary: "日志表面、文件日志、WS 日志样式和控制台格式化"
 read_when:
   - 更改日志输出或格式
   - 调试 CLI 或 Gateway 输出
-title: "Logging"
+title: "Gateway logging"
 ---
-
-# Logging
 
 有关面向用户的概述(CLI + Control UI + 配置),请参见 [/logging](/logging)。
 
@@ -15,6 +13,14 @@ OpenClaw 有两个日志"表面":
 
 - **控制台输出**(您在终端/调试 UI 中看到的内容)。
 - **文件日志**(JSON 行)由 Gateway logger 写入。
+
+启动时,Gateway 记录已解析的默认 Agent 模型以及影响新 Session 的模式默认值,例如:
+
+```text
+agent model: openai-codex/gpt-5.5 (thinking=medium, fast=on)
+```
+
+`thinking` 来自默认 Agent、模型参数或全局 Agent 默认值；未设置时,启动摘要显示 `medium`。`fast` 来自默认 Agent 或模型 `fastMode` 参数。
 
 ## 基于文件的 logger
 
@@ -27,6 +33,8 @@ OpenClaw 有两个日志"表面":
 
 文件格式是每行一个 JSON 对象。
 
+Talk、实时语音和托管室代码路径使用共享文件 logger 进行有界生命周期记录。这些记录用于操作调试和 OTLP 日志导出；transcript 文本、音频负载、turn id、call id 和 Provider 项目 id 不会被复制到日志记录中。
+
 Control UI 日志选项卡通过 Gateway 追踪此文件(`logs.tail`)。CLI 也可以这样做:
 
 ```bash
@@ -38,6 +46,7 @@ openclaw logs --follow
 - **文件日志**仅由 `logging.level` 控制。
 - `--verbose` 仅影响**控制台详细程度**(和 WS 日志样式);它**不会**提高文件日志级别。
 - 要在文件日志中捕获仅 verbose 的详细信息,请将 `logging.level` 设置为 `debug` 或 `trace`。
+- Trace 日志还包括所选热路径的诊断计时摘要,例如 Plugin 工具工厂准备。参见 [/tools/plugin#slow-plugin-tool-setup](/tools/plugin#slow-plugin-tool-setup)。
 
 ## 控制台捕获
 
@@ -56,7 +65,9 @@ OpenClaw 可以在日志或 transcript 输出离开进程之前屏蔽敏感令�
 - `logging.redactPatterns`:正则表达式字符串数组(覆盖默认值)
   - 使用原始正则表达式字符串(自动 `gi`),或如果需要自定义标志则使用 `/pattern/flags`。
   - 匹配项通过保留前 6 + 后 4 个字符(长度 >= 18)进行屏蔽,否则为 `***`。
-  - 默认值涵盖常见的密钥赋值、CLI 标志、JSON 字段、bearer 标头、PEM 块和流行的令牌前缀。
+  - 默认值涵盖常见的密钥赋值、CLI 标志、JSON 字段、bearer 标头、PEM 块、流行的令牌前缀以及支付凭证字段名称，如卡号、CVC/CVV、共享支付令牌和支付凭证。
+
+某些安全边界无论 `logging.redactSensitive` 如何都始终脱敏。这包括 Control UI 工具调用事件、`sessions_history` 工具输出、诊断支持导出、Provider 错误观察、exec 审批命令显示和 Gateway WebSocket 协议日志。这些表面可能仍使用 `logging.redactPatterns` 作为额外模式，但 `redactSensitive: "off"` 不会使它们发出原始密钥。
 
 ## Gateway WebSocket 日志
 

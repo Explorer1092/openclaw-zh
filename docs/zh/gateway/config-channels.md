@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "36aa3544522aae8c2dc8e3b39004708e"
+mmh3_hash: "9955592b90beeb90bac88fefaa701082"
 summary: "Channel 配置：Slack、Discord、Telegram、WhatsApp、Matrix、iMessage 等的访问控制、配对和每 Channel 键"
 read_when:
   - 配置 Channel Plugin（认证、访问控制、多账户）
   - 排查每 Channel 配置键
   - 审计 DM 策略、群组策略或提及门控
-title: "配置 — channels"
+title: "Configuration — channels"
 ---
 
 `channels.*` 下的每 Channel 配置键。涵盖 DM 和群组访问、多账户设置、提及门控，以及 Slack、Discord、Telegram、WhatsApp、Matrix、iMessage 和其他捆绑 Channel Plugin 的每 Channel 键。
@@ -537,31 +537,13 @@ Mattermost 作为 Plugin 提供：`openclaw plugins install @openclaw/mattermost
 - `channels.signal.configWrites`：允许或拒绝 Signal 发起的配置写入。
 - 可选的 `channels.signal.defaultAccount` 在匹配配置的账户 id 时覆盖默认账户选择。
 
-### BlueBubbles
-
-BlueBubbles 是推荐的 iMessage 路径（Plugin 支持，在 `channels.bluebubbles` 下配置）。
-
-```json5
-{
-  channels: {
-    bluebubbles: {
-      enabled: true,
-      dmPolicy: "pairing",
-      // serverUrl, password, webhookPath, 群组控制和高级操作：
-      // 请参见 /channels/bluebubbles
-    },
-  },
-}
-```
-
-- 此处涵盖的核心键路径：`channels.bluebubbles`、`channels.bluebubbles.dmPolicy`。
-- 可选的 `channels.bluebubbles.defaultAccount` 在匹配配置的账户 id 时覆盖默认账户选择。
-- 带 `type: "acp"` 的顶级 `bindings[]` 条目可以将 BlueBubbles 对话绑定到持久 ACP Session。在 `match.peer.id` 中使用 BlueBubbles 句柄或目标字符串（`chat_id:*`、`chat_guid:*`、`chat_identifier:*`）。共享字段语义：[ACP Agent](/tools/acp-agents#channel-specific-settings)。
-- 完整 BlueBubbles Channel 配置记录在 [BlueBubbles](/channels/bluebubbles) 中。
-
 ### iMessage
 
-OpenClaw 生成 `imsg rpc`（通过 stdio 的 JSON-RPC）。不需要守护进程或端口。
+OpenClaw 生成 `imsg rpc`（通过 stdio 的 JSON-RPC）。不需要守护进程或端口。这是新的 OpenClaw iMessage 设置的首选路径，前提是主机可以授予 Messages 数据库和自动化权限。
+
+BlueBubbles 支持已移除。将 `channels.bluebubbles` 配置迁移到 `channels.imessage`；OpenClaw 仅通过 `imsg` 支持 iMessage。
+
+如果 Gateway 不在已登录 Messages 的 Mac 上运行，保持 `channels.imessage.enabled=true` 并将 `channels.imessage.cliPath` 设置为在该 Mac 上运行 `imsg "$@"` 的 SSH 包装器。默认的本地 `imsg` 路径仅限 macOS。
 
 ```json5
 {

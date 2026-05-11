@@ -1,14 +1,13 @@
 ---
-mmh3_hash: "4758ee63a5d2ac65002a5780a38c40c4"
+mmh3_hash: "7586881d750e8d5512f283de02a95021"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:
   - 学习如何配置 OpenClaw
   - 寻找配置示例
   - 首次设置 OpenClaw
-title: "配置示例"
+title: "Configuration examples"
 ---
 
-# 配置示例
 
 以下示例与当前配置 schema 对齐。有关详尽的参考和每个字段的注释，请参见 [Configuration](/gateway/configuration)。
 

@@ -1,14 +1,13 @@
 ---
-mmh3_hash: "de568ce7f92943cb9797c9bb23a5dde0"
+mmh3_hash: "242b4b5efa71ec494ade37f8c3031dbe"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
   - 查找常见配置模式
   - 导航到特定配置部分
-title: "配置"
+title: "Configuration"
 ---
 
-# 配置
 
 OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSON5 支持注释和尾随逗号">**JSON5**</Tooltip> 配置文件。
 活动配置路径必须是普通文件。带符号链接的 `openclaw.json` 布局不支持 OpenClaw 所有写入；原子写入可能替换路径而不是保留符号链接。如果您将配置保存在默认状态目录之外，请将 `OPENCLAW_CONFIG_PATH` 直接指向真实文件。

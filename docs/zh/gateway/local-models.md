@@ -1,18 +1,16 @@
 ---
-mmh3_hash: "ff319bf8ee1003960ca83a7dcc899bf5"
+mmh3_hash: "b8ffa4176fdd2a915d2242ea7744d9bc"
 summary: "在本地 LLM 上运行 OpenClaw(LM Studio、vLLM、LiteLLM、自定义 OpenAI 端点)"
 read_when:
   - 您想从自己的 GPU 机器提供模型
   - 您正在连接 LM Studio 或兼容 OpenAI 的代理
   - 您需要最安全的本地模型指导
-title: "本地模型"
+title: "Local models"
 ---
 
-# 本地模型
+本地模型是可行的。但它们也对硬件、上下文大小和防提示注入防御提出了更高的要求——小型或激进量化的模型会截断上下文并泄漏安全防护。本页是针对高端本地堆栈和自定义 OpenAI 兼容本地服务器的意见指南。如需最简单的本地设置，请从 [LM Studio](/providers/lmstudio) 或 [Ollama](/providers/ollama) 和 `openclaw onboard` 开始。
 
-本地运行是可行的,但 OpenClaw 需要大上下文 + 强大的防提示注入防御。小卡截断上下文并泄漏安全。目标要高:**≥2 个满配 Mac Studio 或等效 GPU 设备(约 3 万美元以上)**。单个 **24 GB** GPU 仅适用于较轻的提示,延迟较高。使用**您能运行的最大/完整尺寸模型变体**;激进量化或"小型"检查点会增加提示注入风险(参见[安全](/gateway/security))。
-
-如果您想要最简单的本地设置,从 [LM Studio](/providers/lmstudio) 或 [Ollama](/providers/ollama) 和 `openclaw onboard` 开始。本页是针对高端本地堆栈和自定义 OpenAI 兼容本地服务器的意见指南。
+如需仅在所选模型需要时才启动的本地服务器，请参见 [Local model services](/gateway/local-model-services)。
 
 ## 推荐:LM Studio + 大型本地模型(Responses API)
 

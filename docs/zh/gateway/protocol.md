@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "f34f86a28f6b6892fee25dd2a1ca9e68"
+mmh3_hash: "6a6f7c4b2c17bdbc8fb74e0d2a3974de"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 Gateway WS 客户端
   - 调试协议不匹配或连接失败
   - 重新生成协议 schema/models
-title: "Gateway 协议"
+title: "Gateway protocol"
 ---
 
 # Gateway 协议(WebSocket)

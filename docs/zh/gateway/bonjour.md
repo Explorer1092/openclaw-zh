@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "623e80df1acd1645b45c108bb4984627"
+mmh3_hash: "2fc0f6c387f889977acc946c07d7511e"
 summary: "Bonjour/mDNS 发现 + 调试(Gateway beacon、客户端和常见故障模式)"
 read_when:
   - 在 macOS/iOS 上调试 Bonjour 发现问题
@@ -7,9 +7,7 @@ read_when:
 title: "Bonjour Discovery"
 ---
 
-# Bonjour / mDNS 发现
-
-OpenClaw 使用 Bonjour（mDNS / DNS‑SD）来发现活动的 Gateway（WebSocket 端点）。多播 `local.` 浏览是一种**仅限 LAN 的便利功能**。对于跨网络发现，同一 beacon 也可以通过配置的广域 DNS-SD 域发布。发现仍然是尽力而为的，**不能**替代基于 SSH 或 Tailnet 的连接。
+OpenClaw 使用 Bonjour（mDNS / DNS-SD）来发现活动的 Gateway（WebSocket 端点）。多播 `local.` 浏览是一种**仅限 LAN 的便利功能**。捆绑的 `bonjour` Plugin 拥有 LAN 广播。它在 macOS 主机上自动启动，在 Linux、Windows 和容器化 Gateway 部署上为可选启用。对于跨网络发现，同一 beacon 也可以通过配置的广域 DNS-SD 域发布。发现仍然是尽力而为的，**不能**替代基于 SSH 或 Tailnet 的连接。
 
 ## Wide-area Bonjour（单播 DNS-SD）通过 Tailscale
 
@@ -123,9 +121,12 @@ Gateway 广播小的非机密提示，以使 UI 流程更方便：
 Gateway 写入滚动日志文件（在启动时打印为 `gateway log file: ...`）。查找 `bonjour:` 行，特别是：
 
 - `bonjour: advertise failed ...`
+- `bonjour: suppressing ciao cancellation ...`
 - `bonjour: ... name conflict resolved` / `hostname conflict resolved`
 - `bonjour: watchdog detected non-announced service ...`
 - `bonjour: disabling advertiser after ... failed restarts ...`
+
+Bonjour 在系统主机名是有效 DNS 标签时使用其作为广播的 `.local` 主机。如果系统主机名包含空格、下划线或其他无效 DNS 标签字符，OpenClaw 回退到 `openclaw.local`。需要显式主机标签时，在启动 Gateway 前设置 `OPENCLAW_MDNS_HOSTNAME=<name>`。
 
 ## 在 iOS 节点上调试
 
@@ -138,9 +139,21 @@ iOS 节点使用 `NWBrowser` 发现 `_openclaw-gw._tcp`。
 
 日志包括浏览器状态转换和结果集更改。
 
+## 何时启用 Bonjour
+
+macOS 主机上空配置启动 Gateway 时，Bonjour 自动启动，因为本地应用和附近的 iOS/Android 节点通常依赖同一 LAN 的发现。
+
+在 Linux、Windows 或其他非 macOS 主机上，当同 LAN 自动发现有用时，请显式启用 Bonjour：
+
+```bash
+openclaw plugins enable bonjour
+```
+
+启用后，Bonjour 使用 `discovery.mdns.mode` 决定发布多少 TXT 元数据。默认模式为 `minimal`；仅当本地客户端需要 `cliPath` 或 `sshPort` 提示时才使用 `full`，使用 `off` 在不改变 Plugin 启用状态的情况下抑制 LAN 多播。
+
 ## 何时禁用 Bonjour
 
-仅当 LAN 多播广播不可用或有害时才禁用 Bonjour。常见情况是 Gateway 在 Docker bridge 网络、WSL 或丢弃 mDNS 多播的网络策略后面运行。在这些环境中，Gateway 仍然可以通过其发布的 URL、SSH、Tailnet 或 wide-area DNS-SD 访问，但 LAN 自动发现不可靠。
+当 LAN 多播广播不必要、不可用或有害时，保持 Bonjour 禁用。常见情况是非 macOS 服务器、Docker bridge 网络、WSL 或丢弃 mDNS 多播的网络策略。在这些环境中，Gateway 仍然可以通过其发布的 URL、SSH、Tailnet 或 wide-area DNS-SD 访问，但 LAN 自动发现不可靠。
 
 当问题是部署范围时，优先使用现有的环境变量覆盖：
 
@@ -213,13 +226,14 @@ Bonjour/DNS‑SD 通常将服务实例名称中的字节转义为十进制 `\DDD
 - 这在协议级别是正常的。
 - UI 应该解码以供显示（iOS 使用 `BonjourEscapes.decode`）。
 
-## 禁用/配置
+## 启用/禁用/配置
 
-- `openclaw plugins disable bonjour` 通过禁用捆绑插件来禁用 LAN 多播广播。
-- `openclaw plugins enable bonjour` 恢复默认的 LAN 发现插件。
+- macOS 主机默认自动启动捆绑的 LAN 发现 Plugin。
+- `openclaw plugins enable bonjour` 在非默认启用的主机上启用捆绑的 LAN 发现 Plugin。
+- `openclaw plugins disable bonjour` 通过禁用捆绑 Plugin 来禁用 LAN 多播广播。
 - `OPENCLAW_DISABLE_BONJOUR=1` 在不更改插件配置的情况下禁用 LAN 多播广播；接受的真值为 `1`、`true`、`yes` 和 `on`（旧版：`OPENCLAW_DISABLE_BONJOUR`）。
 - `OPENCLAW_DISABLE_BONJOUR=0` 强制开启 LAN 多播广播，包括在检测到的容器内；接受的假值为 `0`、`false`、`no` 和 `off`。
-- 当 `OPENCLAW_DISABLE_BONJOUR` 未设置时，Bonjour 在普通主机上广播，在检测到的容器内自动禁用。
+- 当 Bonjour Plugin 已启用且 `OPENCLAW_DISABLE_BONJOUR` 未设置时，Bonjour 在普通主机上广播，在检测到的容器内自动禁用。
 - `~/.openclaw/openclaw.json` 中的 `gateway.bind` 控制 Gateway 绑定模式。
 - `OPENCLAW_SSH_PORT` 覆盖广播 `sshPort` 时使用的 SSH 端口（旧版：`OPENCLAW_SSH_PORT`）。
 - `OPENCLAW_TAILNET_DNS` 在 mDNS 完整模式启用时在 TXT 中发布 MagicDNS 提示（旧版：`OPENCLAW_TAILNET_DNS`）。

@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "fce8da7b29ef50ffef31d67703192a24"
+mmh3_hash: "c035eb57dfc153f58888137b0a0e5791"
 summary: "健康检查命令和 Gateway 健康监控"
 read_when:
   - 诊断 Channel 连接性或 Gateway 健康
   - 了解健康检查 CLI 命令和选项
-title: "Health Checks"
+title: "Health checks"
 ---
-
-# Health Checks(CLI)
 
 验证 Channel 连接性的简短指南,无需猜测。
 
@@ -22,12 +20,17 @@ title: "Health Checks"
 - 在 WhatsApp/WebChat 中作为独立消息发送 `/status` 以获取状态回复而不调用 Agent。
 - 日志：tail `/tmp/openclaw/openclaw-*.log` 并过滤 `web-heartbeat`、`web-reconnect`、`web-auto-reply`、`web-inbound`。
 
+对于 Discord 和其他聊天 Provider，Session 行不是 socket 活跃性。
+`openclaw sessions`、Gateway `sessions.list` 和 Agent `sessions_list` 工具
+读取存储的对话状态。Provider 可以在任何新 Session 行被具体化之前重新连接并显示健康的 Channel
+状态。使用上面的 Channel 状态和健康命令进行实时连接性检查。
+
 ## 深度诊断
 
 - 磁盘上的凭证:`ls -l ~/.openclaw/credentials/whatsapp/<accountId>/creds.json`(mtime 应该是最近的)。
 - Session 存储:`ls -l ~/.openclaw/agents/<agentId>/sessions/sessions.json`(路径可以在配置中覆盖)。计数和最近的接收者通过 `status` 显示。
 - 重新链接流程:当日志中出现状态代码 409–515 或 `loggedOut` 时,`openclaw channels logout && openclaw channels login --verbose`。(注意:QR 登录流程在配对后为状态 515 自动重启一次。)
-- 默认情况下启用诊断。Gateway 记录操作事实，除非设置了 `diagnostics.enabled: false`。内存事件记录 RSS/heap 字节数、阈值压力和增长压力。超大负载事件记录被拒绝、截断或分块的内容，加上可用时的大小和限制。它们不记录消息文本、附件内容、webhook 正文、原始请求或响应正文、令牌、cookie 或密钥值。同一个 heartbeat 启动有界稳定性记录器，可通过 `openclaw gateway stability` 或 `diagnostics.stability` Gateway RPC 获取。Gateway 致命退出、关闭超时和重启启动失败会在事件存在时将最新的记录器快照持久化到 `~/.openclaw/logs/stability/` 下；使用 `openclaw gateway stability --bundle latest` 检查最新保存的包。
+- 默认情况下启用诊断。Gateway 记录操作事实，除非设置了 `diagnostics.enabled: false`。内存事件记录 RSS/heap 字节数、阈值压力和增长压力。活跃度警告记录事件循环延迟、事件循环利用率、CPU 核心比率以及当进程运行但饱和时的活跃/等待/排队 Session 计数。超大负载事件记录被拒绝、截断或分块的内容，加上可用时的大小和限制。它们不记录消息文本、附件内容、webhook 正文、原始请求或响应正文、令牌、cookie 或密钥值。同一个 heartbeat 启动有界稳定性记录器，可通过 `openclaw gateway stability` 或 `diagnostics.stability` Gateway RPC 获取。Gateway 致命退出、关闭超时和重启启动失败会在事件存在时将最新的记录器快照持久化到 `~/.openclaw/logs/stability/` 下；使用 `openclaw gateway stability --bundle latest` 检查最新保存的包。
 - 对于错误报告，运行 `openclaw gateway diagnostics export` 并附上生成的 zip。导出结合了 Markdown 摘要、最新的稳定性包、已清理的日志元数据、已清理的 Gateway 状态/健康快照和配置形状。它旨在共享：聊天文本、webhook 正文、工具输出、凭证、cookie、账户/消息标识符和密钥值会被省略或删除。参见 [诊断导出](/gateway/diagnostics)。
 
 ## 健康监控配置

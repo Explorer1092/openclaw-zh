@@ -1,14 +1,11 @@
 ---
-title: "网关锁定"
-sidebarTitle: "网关锁定"
-mmh3_hash: "89c95e96d59d24cf7256aff02b6f6878"
+mmh3_hash: "b093edb36f70360881faeb3af315724c"
 summary: "使用 WebSocket 监听器绑定的 Gateway 单例守护"
 read_when:
   - 运行或调试 gateway 进程
   - 调查单实例强制执行
+title: "Gateway 锁定"
 ---
-
-# 网关锁定
 
 ## 为什么
 
@@ -18,10 +15,11 @@ read_when:
 
 ## 机制
 
-- Gateway 在启动时立即使用独占 TCP 监听器绑定 WebSocket 监听器（默认 `ws://127.0.0.1:18789`）。
+- Gateway 首先在状态锁目录下获取每个配置的锁文件，并探测已配置端口是否有现有监听器。
+- 如果记录的锁持有者已消失、端口空闲或锁已过期，则启动重新获取锁并继续。
+- Gateway 随后使用独占 TCP 监听器绑定 HTTP/WebSocket 监听器（默认 `ws://127.0.0.1:18789`）。
 - 如果绑定失败并出现 `EADDRINUSE`，启动会抛出 `GatewayLockError("another gateway instance is already listening on ws://127.0.0.1:<port>")`。
-- 操作系统在任何进程退出时自动释放监听器，包括崩溃和 SIGKILL——不需要单独的锁文件或清理步骤。
-- 关闭时，gateway 关闭 WebSocket 服务器和底层 HTTP 服务器以立即释放端口。
+- 关闭时，gateway 关闭 HTTP/WebSocket 服务器并删除锁文件。
 
 ## 错误 surface
 
@@ -31,7 +29,8 @@ read_when:
 ## 操作注意事项
 
 - 如果端口被_另一个_进程占用，错误是相同的；释放端口或使用 `openclaw gateway --port <port>` 选择另一个端口。
-- macOS 应用程序在生成 gateway 之前仍然维护自己的轻量级 PID 守护；运行时锁由 WebSocket 绑定强制执行。
+- 在服务监督器下，看到现有健康 `/healthz` 响应器的新 gateway 进程会让该进程保持控制。在 systemd 上，重复启动器以代码 78 退出，以便默认的 `RestartPreventExitStatus=78` 在锁或 `EADDRINUSE` 冲突上阻止 `Restart=always` 循环。如果现有进程始终不变为健康状态，重试有界限，启动以明确的锁定错误失败，而不是永久循环。
+- macOS 应用程序在生成 gateway 之前仍然维护自己的轻量级 PID 守护；运行时锁由锁文件加上 HTTP/WebSocket 绑定强制执行。
 
 ## 相关
 

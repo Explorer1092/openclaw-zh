@@ -1,11 +1,11 @@
 ---
-title: "Tailscale (网关仪表板)"
-sidebarTitle: "Tailscale"
-mmh3_hash: "4e795bc6d9e94828bd6b0bd815e5b9eb"
+mmh3_hash: "06bc0d55e2f31b5f068dc8d2e71e302e"
 summary: "网关仪表板的集成 Tailscale Serve/Funnel"
-read_when: ["在 localhost 外暴露网关控制 UI","自动化 tailnet 或公共仪表板访问"]
+read_when:
+  - 在 localhost 外暴露 Gateway Control UI
+  - 自动化 tailnet 或公共仪表板访问
+title: "Tailscale"
 ---
-# Tailscale (网关仪表板)
 
 OpenClaw 可以为网关仪表板和 WebSocket 端口自动配置 Tailscale **Serve**(tailnet)或 **Funnel**(公共)。这使网关保持绑定到环回,而 Tailscale 提供 HTTPS、路由和(对于 Serve)身份头。
 
@@ -93,8 +93,9 @@ openclaw gateway --tailscale funnel --auth password
 
 - Tailscale Serve/Funnel 需要安装并登录 `tailscale` CLI。
 - `tailscale.mode: "funnel"` 拒绝启动,除非身份验证模式为 `password` 以避免公共暴露。
-- 如果您希望 OpenClaw 在关闭时撤消 `tailscale serve` 或 `tailscale funnel` 配置,请设置 `gateway.tailscale.resetOnExit`。
-- `gateway.bind: "tailnet"` 是直接 Tailnet 绑定(无 HTTPS,无 Serve/Funnel)。
+- 如果您希望 OpenClaw 在关闭时撤消 `tailscale serve` 或 `tailscale funnel` 配置，请设置 `gateway.tailscale.resetOnExit`。
+- 设置 `gateway.tailscale.preserveFunnel: true` 可在 Gateway 重启时保持外部配置的 `tailscale funnel` 路由存活。启用后且 Gateway 在 `mode: "serve"` 下运行时，OpenClaw 在重新应用 Serve 前检查 `tailscale funnel status`，若 Funnel 路由已覆盖 Gateway 端口则跳过。OpenClaw 管理的 Funnel 密码专用策略不变。
+- `gateway.bind: "tailnet"` 是直接 Tailnet 绑定（无 HTTPS，无 Serve/Funnel）。
 - `gateway.bind: "auto"` 优先选择环回;如果需要仅 Tailnet,请使用 `tailnet`。
 - Serve/Funnel 仅暴露**网关控制 UI + WS**。节点通过相同的网关 WS 端点连接,因此 Serve 可以用于节点访问。
 

@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "46a0421e5e1763baf030af244824922c"
+mmh3_hash: "7b965ac84a6a40a314d60fa0d8faec04"
 summary: "后台 exec 执行和进程管理"
 read_when:
   - 添加或修改后台 exec 行为
   - 调试长时间运行的 exec 任务
 title: "Background Exec 和 Process 工具"
 ---
-
-# Background Exec + Process 工具
 
 OpenClaw 通过 `exec` 工具运行 shell 命令，并在内存中保留长时间运行的任务。`process` 工具管理这些后台 Session。
 
@@ -18,7 +16,7 @@ OpenClaw 通过 `exec` 工具运行 shell 命令，并在内存中保留长时�
 - `command`（必需）
 - `yieldMs`（默认 10000）：在此延迟后自动后台化
 - `background`（bool）：立即后台化
-- `timeout`（秒，默认 1800）：在此超时后终止进程
+- `timeout`（秒，默认 `tools.exec.timeoutSec`）：在此超时后终止进程；仅当该调用需要禁用 exec 进程超时时才设置 `timeout: 0`
 - `elevated`（bool）：如果启用/允许 elevated 模式，则在沙箱外运行（默认为 `gateway`，或当 exec 目标为 `node` 时为 `node`）
 - 需要真实的 TTY？设置 `pty: true`。
 - `workdir`、`env`
@@ -44,6 +42,7 @@ OpenClaw 通过 `exec` 工具运行 shell 命令，并在内存中保留长时�
 - `PI_BASH_MAX_OUTPUT_CHARS`：内存输出上限（字符）
 - `OPENCLAW_BASH_PENDING_MAX_OUTPUT_CHARS`：每个流的待处理 stdout/stderr 上限（字符）
 - `PI_BASH_JOB_TTL_MS`：已完成 Session 的 TTL（毫秒，限制为 1 分钟–3 小时）
+- `OPENCLAW_PROCESS_INPUT_WAIT_IDLE_MS`：在将可写后台 Session 标记为可能正在等待输入之前的空闲输出阈值（默认 15000 毫秒）
 
 配置（推荐）：
 
@@ -75,8 +74,10 @@ OpenClaw 通过 `exec` 工具运行 shell 命令，并在内存中保留长时�
 - Session 日志仅在您运行 `process poll/log` 且工具结果被记录时才保存到聊天历史。
 - `process` 的作用域为每个 Agent；它只能看到该 Agent 启动的 Session。
 - 使用 `poll` / `log` 进行状态查看、日志查看、安静成功确认，或在自动完成唤醒不可用时进行完成确认。
-- 使用 `write` / `send-keys` / `submit` / `paste` / `kill` 进行输入或干预操作。
+- 在恢复交互式 CLI 之前使用 `log`，以便当前转录、stdin 状态和输入等待提示同时可见。
+- 需要输入或干预时使用 `write` / `send-keys` / `submit` / `paste` / `kill`。
 - `process list` 包含一个派生的 `name`（命令动词 + 目标），用于快速扫描。
+- `process list`、`poll` 和 `log` 仅在 Session 仍有可写 stdin 且空闲时间超过输入等待阈值时才报告 `waitingForInput`。
 - `process log` 使用基于行的 `offset`/`limit`。
 - 当 `offset` 和 `limit` 都省略时，它返回最后 200 行并包含分页提示。
 - 当提供 `offset` 而省略 `limit` 时，它从 `offset` 返回到末尾（不限制为 200）。
@@ -92,6 +93,12 @@ OpenClaw 通过 `exec` 工具运行 shell 命令，并在内存中保留长时�
 
 ```json
 { "tool": "process", "action": "poll", "sessionId": "<id>" }
+```
+
+在发送输入前检查交互式 Session：
+
+```json
+{ "tool": "process", "action": "log", "sessionId": "<id>" }
 ```
 
 立即在后台启动：

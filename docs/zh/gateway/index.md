@@ -1,12 +1,10 @@
 ---
-mmh3_hash: "764d280a6ee8295c332c42c231be7f9e"
+mmh3_hash: "71702773b72e77ef8d907f0600320efe"
 summary: "Gateway 服务、生命周期和操作手册"
 read_when:
   - 运行或调试 Gateway 进程
-title: "Gateway 服务手册"
+title: "Gateway runbook"
 ---
-
-# Gateway 服务手册
 
 使用此页面进行 Gateway 服务的第一天启动和第二天操作。
 
@@ -110,6 +108,10 @@ OpenClaw 最高价值的兼容接口现在是:
 | Gateway 端口 | `--port` → `OPENCLAW_GATEWAY_PORT` → `gateway.port` → `18789` |
 | 绑定模式     | CLI/覆盖 → `gateway.bind` → `loopback`                        |
 
+已安装的 Gateway 服务在 supervisor 元数据中记录解析的 `--port`。更改 `gateway.port` 后，运行 `openclaw doctor --fix` 或 `openclaw gateway install --force`，以便 launchd/systemd/schtasks 在新端口上启动进程。
+
+Gateway 启动时使用相同的有效端口和绑定为非 loopback 绑定植入本地 Control UI 来源。例如，`--bind lan --port 3000` 在运行时验证之前植入 `http://localhost:3000` 和 `http://127.0.0.1:3000`。将任何远程浏览器来源（如 HTTPS 代理 URL）明确添加到 `gateway.controlUi.allowedOrigins`。
+
 ### 热重载模式
 
 | `gateway.reload.mode` | 行为                              |
@@ -156,30 +158,6 @@ openclaw gateway probe
 
 详细设置:[/gateway/multiple-gateways](/gateway/multiple-gateways)。
 
-## VoiceClaw 实时 Brain 端点
-
-OpenClaw 在 `/voiceclaw/realtime` 暴露了一个 VoiceClaw 兼容的实时 WebSocket 端点。当 VoiceClaw 桌面客户端应该直接与实时 OpenClaw Brain 对话而不是通过单独的中继进程时，使用它。
-
-该端点使用 Gemini Live 进行实时音频，并通过直接向 Gemini Live 公开 OpenClaw 工具来将 OpenClaw 作为 Brain 调用。工具调用立即返回 `working` 结果以保持语音轮次响应，然后 OpenClaw 异步执行实际工具并将结果注入回实时 Session。在 Gateway 进程环境中设置 `GEMINI_API_KEY`。如果启用了 Gateway 认证，桌面客户端在其第一条 `session.config` 消息中发送 Gateway token 或 password。
-
-实时 Brain 访问运行拥有者授权的 OpenClaw Agent 命令。将 `gateway.auth.mode: "none"` 限制在仅回环的测试实例中。非本地实时 Brain 连接需要 Gateway 认证。
-
-对于隔离的测试 Gateway，使用其自己的端口、配置和状态运行单独的实例：
-
-```bash
-OPENCLAW_CONFIG_PATH=/path/to/openclaw-realtime/openclaw.json \
-OPENCLAW_STATE_DIR=/path/to/openclaw-realtime/state \
-OPENCLAW_SKIP_CHANNELS=1 \
-GEMINI_API_KEY=... \
-openclaw gateway --port 19789
-```
-
-然后将 VoiceClaw 配置为使用：
-
-```text
-ws://127.0.0.1:19789/voiceclaw/realtime
-```
-
 ## 远程访问
 
 首选:Tailscale/VPN。
@@ -211,7 +189,9 @@ openclaw gateway restart
 openclaw gateway stop
 ```
 
-使用 `openclaw gateway restart` 进行重启。不要连锁使用 `openclaw gateway stop` 和 `openclaw gateway start`；在 macOS 上，`gateway stop` 会在停止之前有意禁用 LaunchAgent。
+使用 `openclaw gateway restart` 进行重启。不要连锁使用 `openclaw gateway stop` 和 `openclaw gateway start` 作为重启替代。
+
+在 macOS 上，`gateway stop` 默认使用 `launchctl bootout`——这会从当前启动 Session 中删除 LaunchAgent，而不会持久禁用，因此 KeepAlive 自动恢复在意外崩溃后仍然有效，`gateway start` 重新启用时干净。要在重启后持久抑制自动重生，传递 `--disable`：`openclaw gateway stop --disable`。
 
 LaunchAgent 标签为 `ai.openclaw.gateway`（默认）或 `ai.openclaw.<profile>`（命名配置文件）。`openclaw doctor` 审计和修复服务配置漂移。
 
@@ -277,6 +257,8 @@ sudo systemctl enable --now openclaw-gateway[-<profile>].service
 ```
 
 使用与用户单元相同的服务主体,但将其安装在 `/etc/systemd/system/openclaw-gateway[-<profile>].service` 下,如果您的 `openclaw` 二进制文件在其他地方,请调整 `ExecStart=`。
+
+不要同时让 `openclaw doctor --fix` 为相同的 profile/端口安装用户级 Gateway 服务。当找到系统级 OpenClaw Gateway 服务时，Doctor 拒绝该自动安装；当系统单元拥有生命周期时，使用 `OPENCLAW_SERVICE_REPAIR_POLICY=external`。
 
   </Tab>
 </Tabs>

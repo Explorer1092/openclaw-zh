@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1663e6df54d04135d3224c97ab1ed4f0"
+mmh3_hash: "6c316ce35fd726c08bb3dd208dbfe4ab"
 summary: "Doctor 命令:健康检查、配置迁移和修复步骤"
 read_when:
   - 添加或修改 doctor 迁移
@@ -7,8 +7,6 @@ read_when:
 title: "Doctor"
 sidebarTitle: "Doctor"
 ---
-
-# Doctor
 
 `openclaw doctor` 是 OpenClaw 的修复 + 迁移工具。它修复过时的配置/状态,检查健康状况,并提供可操作的修复步骤。
 
@@ -88,11 +86,13 @@ cat ~/.openclaw/openclaw.json
     - 旧版磁盘状态迁移（sessions/agent dir/WhatsApp 认证）。
     - 旧版插件清单合同键迁移（`speechProviders`、`realtimeTranscriptionProviders`、`realtimeVoiceProviders`、`mediaUnderstandingProviders`、`imageGenerationProviders`、`videoGenerationProviders`、`webFetchProviders`、`webSearchProviders` → `contracts`）。
     - 旧版 cron 存储迁移（`jobId`、`schedule.cron`、顶级 delivery/payload 字段、payload `provider`、简单 `notify: true` webhook 回退作业）。
-    - 旧版 agent 运行时策略迁移到 `agents.defaults.agentRuntime` 和 `agents.list[].agentRuntime`。
+    - 旧版整 Agent 运行时策略清理；provider/model 运行时策略是活跃的路由选择器。
+    - 当插件启用时的陈旧插件配置清理；当 `plugins.enabled=false` 时，陈旧插件引用被视为惰性包含配置并保留。
   </Accordion>
   <Accordion title="状态和完整性">
     - Session 锁文件检查和陈旧锁清理。
     - Session transcript 分支修复，用于修复受影响的 2026.4.24 版本创建的重复提示重写分支。
+    - 楔入子 Agent 重启恢复逻辑检测，`--fix` 支持清除陈旧的已中止恢复标志，使启动不再持续将子进程视为重启已中止。
     - 状态完整性和权限检查（sessions、transcripts、state dir）。
     - 本地运行时的配置文件权限检查（chmod 600）。
     - 模型认证健康：检查 OAuth 过期，可以刷新即将过期的令牌，并报告 auth-profile 冷却/禁用状态。
@@ -104,6 +104,9 @@ cat ~/.openclaw/openclaw.json
     - Matrix Channel 旧版状态迁移（在 `--fix` / `--repair` 模式下）。
     - Gateway 运行时检查（已安装服务但未运行；缓存的 launchd 标签）。
     - Channel 状态警告（从正在运行的 Gateway 探测）。
+    - Channel 特定权限检查位于 `openclaw channels capabilities` 下；例如，Discord 语音频道权限通过 `openclaw channels capabilities --channel discord --target channel:<channel-id>` 审计。
+    - WhatsApp 响应性检查用于本地 TUI 客户端仍在运行时 Gateway 事件循环健康降级；`--fix` 仅停止经过验证的本地 TUI 客户端。
+    - Codex 路由修复：修复主要模型、回退、heartbeat/subagent/compaction 覆盖、hooks、Channel 模型覆盖和 Session 路由固定中的旧版 `openai-codex/*` 模型引用；`--fix` 将它们重写为 `openai/*`，删除陈旧的 Session/整 Agent 运行时固定，并在默认 Codex 线束上保留规范 OpenAI Agent 引用。
     - Supervisor 配置审计（launchd/systemd/schtasks）带有可选修复。
     - 嵌入的代理环境清理，针对在安装或更新期间捕获了 shell `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` 值的 Gateway 服务。
     - Gateway 运行时最佳实践检查（Node vs Bun，version-manager 路径）。
@@ -169,7 +172,7 @@ openclaw memory rem-backfill --path ./memory --stage-short-term
     - 显示它应用的迁移。
     - 用更新的 schema 重写 `~/.openclaw/openclaw.json`。
 
-    Gateway 在启动时检测到旧版配置格式时也会自动运行 doctor 迁移,因此无需手动干预即可修复过时的配置。Cron 作业存储迁移由 `openclaw doctor --fix` 处理。
+    Gateway 启动拒绝旧版配置格式并要求您运行 `openclaw doctor --fix`；它不会在启动时重写 `openclaw.json`。Cron 作业存储迁移由 `openclaw doctor --fix` 处理。
 
     当前迁移:
 
@@ -177,6 +180,8 @@ openclaw memory rem-backfill --path ./memory --stage-short-term
     - `routing.groupChat.requireMention` → `channels.whatsapp/telegram/imessage.groups."*".requireMention`
     - `routing.groupChat.historyLimit` → `messages.groupChat.historyLimit`
     - `routing.groupChat.mentionPatterns` → `messages.groupChat.mentionPatterns`
+    - `channels.telegram.requireMention` → `channels.telegram.groups."*".requireMention`
+    - 缺少可见回复策略的已配置 Channel 配置 → `messages.groupChat.visibleReplies: "message_tool"`
     - `routing.queue` → `messages.queue`
     - `routing.bindings` → 顶级 `bindings`
     - `routing.agents`/`routing.defaultAgentId` → `agents.list` + `agents.list[].default`
@@ -205,6 +210,7 @@ openclaw memory rem-backfill --path ./memory --stage-short-term
     - `browser.profiles.*.driver: "extension"` → `"existing-session"`
     - 移除 `browser.relayBindHost`（旧版扩展中继设置）
     - 旧版 `models.providers.*.api: "openai"` → `"openai-completions"`（Gateway 启动时对 `api` 设置为未来或未知枚举值的 provider 也跳过而不是失败关闭）
+    - 移除 `plugins.entries.codex.config.codexDynamicToolsProfile`；Codex 应用服务器始终保持 Codex 原生 workspace 工具原生
 
     Doctor 警告还包括多账户 Channel 的账户默认指导:
 
@@ -213,7 +219,7 @@ openclaw memory rem-backfill --path ./memory --stage-short-term
 
   </Accordion>
   <Accordion title="2b. OpenCode provider 覆盖">
-    如果您手动添加了 `models.providers.opencode`、`opencode-zen` 或 `opencode-go`,它会覆盖来自 `@mariozechner/pi-ai` 的内置 OpenCode 目录。这可能会强制模型使用错误的 API 或将成本清零。Doctor 会发出警告,以便您可以删除覆盖并恢复每个模型的 API 路由 + 成本。
+    如果您手动添加了 `models.providers.opencode`、`opencode-zen` 或 `opencode-go`,它会覆盖来自 `@earendil-works/pi-ai` 的内置 OpenCode 目录。这可能会强制模型使用错误的 API 或将成本清零。Doctor 会发出警告,以便您可以删除覆盖并恢复每个模型的 API 路由 + 成本。
   </Accordion>
   <Accordion title="2c. Browser 迁移和 Chrome MCP 就绪状态">
     如果您的 Browser 配置仍然指向已移除的 Chrome 扩展路径,doctor 会将其规范化为当前的主机本地 Chrome MCP 附加模型:
@@ -245,17 +251,25 @@ openclaw memory rem-backfill --path ./memory --stage-short-term
   <Accordion title="2e. Codex OAuth provider 覆盖">
     如果您之前在 `models.providers.openai-codex` 下手动添加了旧版 OpenAI 传输设置，它们可能会遮蔽较新版本自动使用的内置 Codex OAuth provider 路径。当 doctor 看到这些旧版传输设置与 Codex OAuth 并存时，会发出警告，以便您可以删除或重写陈旧的传输覆盖并恢复内置路由/回退行为。自定义代理和仅标头覆盖仍受支持，不会触发此警告。
   </Accordion>
-  <Accordion title="2f. Codex 插件路由警告">
-    当捆绑的 Codex 插件启用时，doctor 还会检查 `openai-codex/*` 主要模型引用是否仍通过默认 PI 运行器解析。当您希望通过 PI 使用 Codex OAuth/订阅认证时，该组合是有效的，但很容易与原生 Codex 应用服务器工具混淆。Doctor 会警告并指向明确的应用服务器形状：`openai/*` 加上 `agentRuntime.id: "codex"` 或 `OPENCLAW_AGENT_RUNTIME=codex`。
+  <Accordion title="2f. Codex 路由修复">
+    Doctor 检查旧版 `openai-codex/*` 模型引用。原生 Codex 线束路由使用规范 `openai/*` 模型引用；OpenAI Agent 轮次通过 Codex 应用服务器线束而不是 OpenClaw PI OpenAI 路径。
 
-    Doctor 不会自动修复此问题，因为两种路由都有效：
+    在 `--fix` / `--repair` 模式下，doctor 重写受影响的默认 Agent 和每个 Agent 引用，包括主要模型、回退、heartbeat/subagent/compaction 覆盖、hooks、Channel 模型覆盖和陈旧的持久 Session 路由状态：
 
-    - `openai-codex/*` + PI 表示"通过正常的 OpenClaw 运行器使用 Codex OAuth/订阅认证"。
-    - `openai/*` + `runtime: "codex"` 表示"通过原生 Codex 应用服务器运行嵌入的轮次"。
+    - `openai-codex/gpt-*` 变为 `openai/gpt-*`。
+    - Codex 意图移到 provider/model 范围的 `agentRuntime.id: "codex"` 条目，用于修复后的 Agent 模型引用，以便 `openai-codex:...` 认证配置文件在模型引用变为 `openai/*` 后仍可选择。
+    - 陈旧的整 Agent 运行时配置和持久 Session 运行时固定被删除，因为运行时选择是 provider/model 范围的。
+    - 现有 provider/model 运行时策略保留，除非修复后的旧版模型引用需要 Codex 路由以保持旧认证路径。
+    - 现有模型回退列表保留，旧版条目被重写；复制的每模型设置从旧版键移到规范 `openai/*` 键。
+    - 持久 Session `modelProvider`/`providerOverride`、`model`/`modelOverride`、回退通知和认证配置文件固定在所有发现的 Agent Session 存储中修复。
     - `/codex ...` 表示"从聊天中控制或绑定原生 Codex 对话"。
     - `/acp ...` 或 `runtime: "acp"` 表示"使用外部 ACP/acpx 适配器"。
 
-    如果出现警告，请选择您预期的路由并手动编辑配置。当 PI Codex OAuth 是有意为之时，保持警告不变。
+  </Accordion>
+  <Accordion title="2g. Session 路由清理">
+    Doctor 还扫描已发现的 Agent Session 存储中陈旧的自动创建路由状态，以便在您将配置的模型或运行时从插件拥有的路由（如 Codex）移走后进行清理。
+
+    `openclaw doctor --fix` 可以清除自动创建的陈旧状态，例如 `modelOverrideSource: "auto"` 模型固定、运行时模型元数据、固定的线束 ID、CLI Session 绑定以及当其拥有路由不再配置时的自动认证配置文件覆盖。明确的用户或旧版 Session 模型选择会被报告供手动审查并保持不变；当不再打算使用该路由时，使用 `/model ...`、`/new` 或重置 Session 来切换它们。
 
   </Accordion>
   <Accordion title="3. 旧版状态迁移（磁盘布局）">

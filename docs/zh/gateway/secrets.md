@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "609e6a7a6140296e8abe1de60927feca"
+mmh3_hash: "4d17ea513e0766c94837e0334df4ae3a"
 summary: "Secrets 管理:SecretRef 合约、运行时快照行为和安全单向清除"
 read_when:
   - 为 Provider 凭证和 `auth-profiles.json` refs 配置 SecretRefs
   - 在生产环境中安全地操作 secrets reload、audit、configure 和 apply
   - 了解启动快速失败、非活跃表面过滤和上一已知正常状态行为
-title: "Secrets 管理"
+title: "Secrets management"
 ---
 
 # Secrets 管理

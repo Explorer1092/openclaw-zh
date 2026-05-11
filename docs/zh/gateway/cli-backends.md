@@ -1,14 +1,12 @@
 ---
-mmh3_hash: "9c15330f2e188628532798dfe225e0be"
+mmh3_hash: "6ecfa3e51c164ed9e7010d7722b1a927"
 summary: "CLI backend：通过本地 AI CLI 的纯文本回退，以及可选的 MCP 工具桥接"
 read_when:
   - 您希望在 API 提供商失败时有一个可靠的回退
   - 您正在运行 Codex CLI 或其他本地 AI CLI 并希望重用它们
   - 您想了解 CLI backend 工具访问的 MCP 回环桥接
-title: "CLI Backends"
+title: "CLI backends"
 ---
-
-# CLI backend（回退运行时）
 
 当 API 提供商宕机、速率受限或暂时行为异常时，OpenClaw 可以运行**本地 AI CLI** 作为**纯文本回退**。这是有意保守的：
 
@@ -20,6 +18,10 @@ title: "CLI Backends"
 这被设计为**安全网**而不是主要路径。当您希望"始终有效"的文本响应而不依赖外部 API 时使用它。
 
 如果您想要带有 ACP Session 控制、后台任务、线程/对话绑定和持久外部编码 Session 的完整运行时，请改用 [ACP Agents](/tools/acp-agents)。CLI backend 不是 ACP。
+
+<Tip>
+  正在构建新的 backend 插件？请使用 [CLI backend 插件](/plugins/cli-backend-plugins)。本页面面向配置和操作已注册 backend 的用户。
+</Tip>
 
 ## 初学者友好的快速入门
 
@@ -113,12 +115,16 @@ agents.defaults.cliBackends
           sessionMode: "existing",
           sessionIdFields: ["session_id", "conversation_id"],
           systemPromptArg: "--system",
+          // 对于具有专用提示文件标志的 CLI：
+          // systemPromptFileArg: "--system-file",
           // Codex 风格的 CLI 可以指向提示文件：
           // systemPromptFileConfigArg: "-c",
           // systemPromptFileConfigKey: "model_instructions_file",
           systemPromptWhen: "first",
           imageArg: "--image",
           imageMode: "repeat",
+          // 仅在该 backend 可能在压缩前从有界原始 OpenClaw 转录历史重播安全失效 Session 时启用
+          reseedFromRawTranscriptWhenUncompacted: true,
           serialize: true,
         },
       },
@@ -143,6 +149,20 @@ agents.defaults.cliBackends
 
 捆绑的 Anthropic `claude-cli` backend 通过两种方式接收 OpenClaw Skills 快照：附加系统提示中的紧凑 OpenClaw Skills 目录，以及通过 `--plugin-dir` 传递的临时 Claude Code 插件。该插件仅包含该 Agent/Session 的符合条件的 Skills，因此 Claude Code 的原生 Skill 解析器看到的是 OpenClaw 在提示中会通告的同一过滤集。Skill 环境变量/API 密钥覆盖仍然由 OpenClaw 应用于运行的子进程环境。
 
+Claude CLI 也有自己的非交互式权限模式。OpenClaw 将其映射到现有的 exec 策略，而不是添加 Claude 特定配置：当有效请求的 exec 策略为 YOLO 时（`tools.exec.security: "full"` 且 `tools.exec.ask: "off"`），OpenClaw 添加 `--permission-mode bypassPermissions`。每个 Agent 的 `agents.list[].tools.exec` 设置会覆盖该 Agent 的全局 `tools.exec`。若要强制使用不同的 Claude 模式，请在 `agents.defaults.cliBackends.claude-cli.args` 和匹配的 `resumeArgs` 下设置明确的原始 backend 参数，例如 `--permission-mode default` 或 `--permission-mode acceptEdits`。
+
+捆绑的 Anthropic `claude-cli` backend 还将 OpenClaw `/think` 级别映射到 Claude Code 的原生 `--effort` 标志（非 off 级别）。`minimal` 和 `low` 映射到 `low`，`adaptive` 和 `medium` 映射到 `medium`，`high`、`xhigh` 和 `max` 直接映射。其他 CLI backend 需要其所属插件声明等效的 argv 映射器，`/think` 才能影响生成的 CLI。
+
+在 OpenClaw 可以使用捆绑的 `claude-cli` backend 之前，Claude Code 本身必须已在同一主机上登录：
+
+```bash
+claude auth login
+claude auth status --text
+openclaw models auth login --provider anthropic --method cli --set-default
+```
+
+仅当 `claude` 二进制文件尚未在 `PATH` 上时，才使用 `agents.defaults.cliBackends.claude-cli.command`。
+
 ## Session
 
 - 如果 CLI 支持 Session，设置 `sessionArg`（例如 `--session-id`）或 `sessionArgs`（占位符 `{sessionId}`），当 ID 需要插入多个标志时。
@@ -152,13 +172,24 @@ agents.defaults.cliBackends
   - `existing`：仅在之前存储了 Session ID 时发送。
   - `none`：从不发送 Session ID。
 - `claude-cli` 默认为 `liveSession: "claude-stdio"`、`output: "jsonl"` 和 `input: "stdin"`，以便后续轮次在活跃的 Claude 进程期间重用。热 stdio 现在是默认值，包括省略传输字段的自定义配置。如果 Gateway 重启或空闲进程退出，OpenClaw 将从存储的 Claude Session ID 恢复。存储的 Session ID 在恢复前会与现有的可读项目转录进行验证，因此幻影绑定会以 `reason=transcript-missing` 清除，而不是在 `--resume` 下静默启动新的 Claude CLI Session。
+- Claude 实时 Session 保持有界 JSONL 输出限制。默认每轮允许最多 8 MiB 和 20,000 行原始 JSONL。工具密集型 Claude 轮次可通过 `agents.defaults.cliBackends.claude-cli.reliability.outputLimits.maxTurnRawChars` 和 `maxTurnLines` 提高每个 backend 的限制；OpenClaw 将这些设置限制在 64 MiB 和 100,000 行。
 - 存储的 CLI Session 是提供商拥有的连续性。隐式每日 Session 重置不会中断它们；`/reset` 和显式 `session.reset` 策略仍然会中断。
+- 新的 CLI Session 通常只从 OpenClaw 的压缩摘要加上压缩后尾部重播。若要恢复在压缩前失效的短 Session，backend 可以通过 `reseedFromRawTranscriptWhenUncompacted: true` 选择加入。OpenClaw 仍然将原始转录重播保持在有界范围内，并将其限制在安全的失效情况（如缺失的 CLI 转录、系统提示/MCP 变更或 Session 过期重试）；auth profile 或凭证 epoch 变更永远不会重播原始转录历史。
 
 序列化说明：
 
 - `serialize: true` 保持同一通道运行有序。
 - 大多数 CLI 在一个 provider 通道上序列化。
 - 当所选认证身份更改时，OpenClaw 会丢弃存储的 CLI Session 复用，包括更改的 auth profile ID、静态 API 密钥、静态令牌，或 CLI 公开 OAuth 账户身份时。OAuth 访问和刷新令牌轮换不会中断存储的 CLI Session。如果 CLI 不公开稳定的 OAuth 账户 ID，OpenClaw 让该 CLI 强制执行恢复权限。
+
+## 从 claude-cli Session 的回退前导
+
+当 `claude-cli` 尝试失败并转移到 [`agents.defaults.model.fallbacks`](/concepts/model-failover) 中的非 CLI 候选时，OpenClaw 会从 `~/.claude/projects/` 的 Claude Code 本地 JSONL 转录中收集上下文前导，为下一次尝试提供种子。没有这个种子，回退提供商将从冷启动，因为 OpenClaw 自身的 Session 转录对于 `claude-cli` 运行是空的。
+
+- 前导优先使用最新的 `/compact` 摘要或 `compact_boundary` 标记，然后附加压缩边界后最近的轮次（最多字符预算）。边界前的轮次被丢弃，因为摘要已经代表了它们。
+- 工具块被合并为紧凑的 `(tool call: name)` 和 `(tool result: …)` 提示以保持提示预算准确。如果溢出，摘要会标记为 `(truncated)`。
+- 同提供商的 `claude-cli` 到 `claude-cli` 回退依赖 Claude 自己的 `--resume`，跳过前导。
+- 种子重用现有的 Claude Session 文件路径验证，因此无法读取任意路径。
 
 ## 图像（透传）
 

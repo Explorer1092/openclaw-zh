@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "a0f509a08ad97656bc83e7b8adfcf6ae"
+mmh3_hash: "55d7b37a9ddff54ca5aebc5b3aef49d3"
 summary: "工具配置（策略、实验性开关、Provider 支持的工具）和自定义 provider/base-URL 设置"
 read_when:
   - 配置 `tools.*` 策略、允许列表或实验性功能
   - 注册自定义 Provider 或覆盖 base URL
   - 设置 OpenAI 兼容的自托管端点
-title: "配置 — 工具和自定义 Provider"
+title: "Configuration — tools and custom providers"
 sidebarTitle: "工具和自定义 Provider"
 ---
 

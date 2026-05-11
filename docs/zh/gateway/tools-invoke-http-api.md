@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "cc829164d4d44bbbfa50d2f98d7a3cf2"
+mmh3_hash: "14e8d9f3a7a870c138cf572cf24bc6b0"
 summary: "通过 Gateway HTTP 端点直接调用单个工具"
 read_when:
   - 在不运行完整 Agent 轮次的情况下调用工具
   - 构建需要工具策略强制执行的自动化
-title: "Tools Invoke API"
+title: "Tools invoke API"
 ---
-
-# Tools Invoke (HTTP)
 
 OpenClaw 的 Gateway 暴露了一个简单的 HTTP 端点，用于直接调用单个工具。它始终启用，并使用 Gateway 身份验证加工具策略。与 OpenAI 兼容的 `/v1/*` 接口一样，共享密钥 Bearer 认证被视为整个 Gateway 的受信任 Operator 访问。
 
@@ -33,7 +31,7 @@ OpenClaw 的 Gateway 暴露了一个简单的 HTTP 端点，用于直接调用�
 
 - 当 `gateway.auth.mode="token"` 时，使用 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）。
 - 当 `gateway.auth.mode="password"` 时，使用 `gateway.auth.password`（或 `OPENCLAW_GATEWAY_PASSWORD`）。
-- 当 `gateway.auth.mode="trusted-proxy"` 时，HTTP 请求必须来自配置的非回环受信任代理来源；同一主机的回环代理不满足此模式。
+- 当 `gateway.auth.mode="trusted-proxy"` 时，HTTP 请求必须来自配置的受信任代理来源；同一主机的回环代理需要显式设置 `gateway.auth.trustedProxy.allowLoopback = true`。
 - 如果配置了 `gateway.auth.rateLimit` 且发生太多认证失败，端点返回 `429` 和 `Retry-After`。
 
 ## 安全边界（重要）
@@ -97,6 +95,7 @@ OpenClaw 的 Gateway 暴露了一个简单的 HTTP 端点，用于直接调用�
 重要边界说明：
 
 - Exec 审批是 Operator 护栏，不是此 HTTP 端点的单独授权边界。如果工具通过 Gateway 认证 + 工具策略可达，`/tools/invoke` 不会添加额外的每次调用审批提示。
+- 如果 `exec` 在此可达，将其视为可变更的 Shell 接口。拒绝 `write`、`edit`、`apply_patch` 或 HTTP 文件系统写入工具不会使 Shell 执行变为只读。
 - 不要与不受信任的调用者共享 Gateway Bearer 凭证。如果需要跨信任边界分隔，请运行独立的 Gateway（理想情况下是独立的 OS 用户/主机）。
 
 Gateway HTTP 还默认应用硬拒绝列表（即使 Session 策略允许工具）：

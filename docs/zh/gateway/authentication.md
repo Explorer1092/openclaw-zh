@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "f9dc7de862ffc6f36889382b81227860"
+mmh3_hash: "830ef50e887061e929f9ec56cc4597ee"
 summary: "模型认证:OAuth、API 密钥、Claude CLI 复用和 Anthropic setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
   - 记录认证或凭证存储相关内容
-title: "认证"
+title: "Authentication"
 ---
-
-# 认证（模型提供商）
 
 <Note>
 本页面涵盖**模型提供商**认证（API 密钥、OAuth 和 Claude CLI 复用及 Anthropic setup-token）。有关 **Gateway 连接**认证（token、密码、trusted-proxy），请参见 [Configuration](/gateway/configuration) 和 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)。
@@ -78,6 +76,25 @@ openclaw models auth login --provider anthropic --method cli --set-default
 ```bash
 openclaw models auth paste-token --provider openrouter
 ```
+
+`auth-profiles.json` 仅存储凭证。其规范格式为：
+
+```json
+{
+  "version": 1,
+  "profiles": {
+    "openrouter:default": {
+      "type": "api_key",
+      "provider": "openrouter",
+      "key": "OPENROUTER_API_KEY"
+    }
+  }
+}
+```
+
+OpenClaw 在运行时期望使用规范的 `version` + `profiles` 格式。如果旧安装仍有扁平格式文件（如 `{ "openrouter": { "apiKey": "..." } }`），请运行 `openclaw doctor --fix` 将其重写为 `openrouter:default` API 密钥 profile；doctor 会在原文件旁保留 `.legacy-flat.*.bak` 备份。`baseUrl`、`api`、模型 ID、标头和超时等端点详情属于 `openclaw.json` 或 `models.json` 中的 `models.providers.<id>`，而非 `auth-profiles.json`。
+
+Bedrock `auth: "aws-sdk"` 等外部认证路由也不是凭证。如需命名的 Bedrock 路由，请在 `openclaw.json` 中设置 `auth.profiles.<id>.mode: "aws-sdk"`；不要将 `type: "aws-sdk"` 写入 `auth-profiles.json`。`openclaw doctor --fix` 会将旧版 AWS SDK 标记从凭证存储移至配置元数据。
 
 Auth profile refs 也支持静态凭证：
 

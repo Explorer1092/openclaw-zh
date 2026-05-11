@@ -1,14 +1,12 @@
 ---
-mmh3_hash: "bc1b5f6edac3846d4f06ddced9e38b2d"
+mmh3_hash: "b184ff03dcae78ffb2f79d9df838c17d"
 summary: "节点发现和传输(Bonjour、Tailscale、SSH)用于查找 Gateway"
 read_when:
   - 实现或更改 Bonjour 发现/广播
   - 调整远程连接模式(直连 vs SSH)
   - 为远程节点设计节点发现 + 配对
-title: "发现与传输"
+title: "Discovery and transports"
 ---
-
-# 发现与传输
 
 OpenClaw 有两个表面上看起来相似的不同问题:
 
@@ -52,7 +50,7 @@ OpenClaw 有两个表面上看起来相似的不同问题:
 
 目标方向：
 
-- **Gateway** 通过 Bonjour 广播其 WS 端点。
+- **Gateway** 在启用捆绑的 `bonjour` Plugin 时通过 Bonjour 广播其 WS 端点。该 Plugin 在 macOS 主机上自动启动，在其他地方需要选择启用。
 - 客户端浏览并显示"选择 Gateway"列表，然后存储所选端点。
 
 故障排除和信标详情：[Bonjour](/gateway/bonjour)。
@@ -81,10 +79,11 @@ OpenClaw 有两个表面上看起来相似的不同问题:
 - TLS 固定绝不能允许广播的 `gatewayTlsSha256` 覆盖先前存储的固定。
 - iOS/Android 节点应将基于发现的直连视为 **TLS-only**,并在存储首次固定之前需要明确的"信任此指纹"确认(带外验证)。
 
-禁用/覆盖:
+启用/禁用/覆盖:
 
+- `openclaw plugins enable bonjour` 启用 LAN 多播广播。
 - `OPENCLAW_DISABLE_BONJOUR=1` 禁用广播。
-- 当 `OPENCLAW_DISABLE_BONJOUR` 未设置时，Bonjour 在普通主机上广播，在检测到的容器内自动禁用。仅对主机、macvlan 或其他支持 mDNS 的网络使用 `0`；使用 `1` 强制禁用。
+- 当 Bonjour Plugin 已启用且 `OPENCLAW_DISABLE_BONJOUR` 未设置时，Bonjour 在普通主机上广播，在检测到的容器内自动禁用。空配置 macOS Gateway 启动时自动启用该 Plugin；Linux、Windows 和容器化部署需要明确启用。仅对主机、macvlan 或其他支持 mDNS 的网络使用 `0`；使用 `1` 强制禁用。
 - `~/.openclaw/openclaw.json` 中的 `gateway.bind` 控制 Gateway 绑定模式。
 - `OPENCLAW_SSH_PORT` 覆盖发出 `sshPort` 时广播的 SSH 端口。
 - `OPENCLAW_TAILNET_DNS` 发布 `tailnetDns` 提示(MagicDNS)。

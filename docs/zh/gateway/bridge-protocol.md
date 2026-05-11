@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d41db38c310ef49e1d1c00e76c16fc14"
+mmh3_hash: "e4e10be7a0d017afdda09a005918e3bf"
 summary: "历史 Bridge 协议（旧版节点）：TCP JSONL、配对、作用域 RPC"
 read_when:
   - 构建或调试节点客户端（iOS/Android/macOS 节点模式）
@@ -36,7 +36,7 @@ TCP Bridge 已被**移除**。当前的 OpenClaw 版本不附带 Bridge 监听�
 3. 客户端发送 `pair-request`。
 4. Gateway 等待批准，然后发送 `pair-ok` 和 `hello-ok`。
 
-`hello-ok` 历史上返回 `serverName` 并可能包含 `canvasHostUrl`。
+历史上，`hello-ok` 返回 `serverName`；托管 Plugin 接口现在通过 `pluginSurfaceUrls` 广播。Canvas/A2UI 使用 `pluginSurfaceUrls.canvas`；已弃用的 `canvasHostUrl` 别名不属于重构后的协议。
 
 ## 帧
 

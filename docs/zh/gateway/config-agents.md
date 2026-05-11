@@ -1,14 +1,14 @@
 ---
-mmh3_hash: "cc06adfe2821d584a868e197b68b3447"
+mmh3_hash: "60261251931cd59afe28edbc9940ca8e"
 summary: "Agent 默认值、多 Agent 路由、Session、消息和 Talk 配置"
 read_when:
   - 调整 Agent 默认值（model、thinking、workspace、heartbeat、media、skills）
   - 配置多 Agent 路由和绑定
   - 调整 Session、消息投递和 Talk 模式行为
-title: "配置 — agents"
+title: "Configuration — agents"
 ---
 
-`agents.*`、`multiAgent.*`、`session.*`、`messages.*` 和 `talk.*` 下的 Agent 范围配置键。关于 Channel、工具、Gateway runtime 和其他顶级键，请参见 [配置参考](/gateway/configuration-reference)。
+Agent 范围的 `agents.*`、`multiAgent.*`、`session.*`、`messages.*` 和 `talk.*` 配置键。关于 Channel、工具、Gateway runtime 和其他顶级键，请参见 [Configuration reference](/gateway/configuration-reference)。
 
 ## Agent 默认值
 
@@ -293,14 +293,12 @@ skills prompt 预算的每 Agent 覆盖。
         fallbacks: ["openai/gpt-5.4-mini"],
       },
       params: { cacheRetention: "long" }, // 全局默认 provider 参数
-      agentRuntime: {
-        id: "pi", // pi | auto | 注册的 harness id，如 codex
-        fallback: "pi", // pi | none
-      },
       pdfMaxBytesMb: 10,
       pdfMaxPages: 20,
       thinkingDefault: "low",
       verboseDefault: "off",
+      toolProgressDetail: "explain",
+      reasoningDefault: "off",
       elevatedDefault: "on",
       timeoutSeconds: 600,
       mediaMaxMb: 5,
@@ -339,8 +337,10 @@ skills prompt 预算的每 Agent 覆盖。
 - `pdfMaxBytesMb`：`pdf` 工具调用时未传入 `maxBytesMb` 时的默认 PDF 大小限制。
 - `pdfMaxPages`：`pdf` 工具中提取回退模式考虑的默认最大页数。
 - `verboseDefault`：Agent 的默认详细级别。值：`"off"`、`"on"`、`"full"`。默认值：`"off"`。
+- `toolProgressDetail`：`/verbose` 工具摘要和进度草稿工具行的详细模式。值：`"explain"`（默认，紧凑人类标签）或 `"raw"`（可用时附加原始命令/详情）。每 Agent 的 `agents.list[].toolProgressDetail` 覆盖此默认值。
+- `reasoningDefault`：Agent 的默认推理可见性。值：`"off"`、`"on"`、`"stream"`。每 Agent 的 `agents.list[].reasoningDefault` 覆盖此默认值。配置的推理默认值仅在没有每消息或 Session 推理覆盖的情况下，为所有者、授权发送者或操作员管理 Gateway 上下文应用。
 - `elevatedDefault`：Agent 的默认提升输出级别。值：`"off"`、`"on"`、`"ask"`、`"full"`。默认值：`"on"`。
-- `model.primary`：格式 `provider/model`（例如，API 密钥访问使用 `openai/gpt-5.5`，Codex OAuth 使用 `openai-codex/gpt-5.5`）。如果省略 Provider，OpenClaw 先尝试别名，然后对该确切 model id 进行唯一配置 Provider 匹配，最后才回退到配置的默认 Provider（已弃用的兼容性行为，因此首选显式 `provider/model`）。如果该 Provider 不再公开配置的默认 model，OpenClaw 回退到第一个配置的 provider/model，而不是显示过时的已删除 Provider 默认值。
+- `model.primary`：格式 `provider/model`（例如，OpenAI API 密钥访问使用 `openai/gpt-5.5`）。如果省略 Provider，OpenClaw 先尝试别名，然后对该确切 model id 进行唯一配置 Provider 匹配，最后才回退到配置的默认 Provider（已弃用的兼容性行为，因此首选显式 `provider/model`）。如果该 Provider 不再公开配置的默认 model，OpenClaw 回退到第一个配置的 provider/model，而不是显示过时的已删除 Provider 默认值。
 - `models`：`/model` 的配置 model 目录和允许列表。每个条目可以包含 `alias`（快捷方式）和 `params`（Provider 特定参数，例如 `temperature`、`maxTokens`、`cacheRetention`、`context1m`、`responsesServerCompaction`、`responsesCompactThreshold`、`chat_template_kwargs`、`extra_body`/`extraBody`）。
   - 安全编辑：使用 `openclaw config set agents.defaults.models '<json>' --strict-json --merge` 添加条目。`config set` 拒绝会删除现有允许列表条目的替换，除非你传入 `--replace`。
   - Provider 范围的配置/入门流程将选定的 Provider model 合并到此映射中，并保留已配置的不相关 Provider。
@@ -350,22 +350,31 @@ skills prompt 预算的每 Agent 覆盖。
 - `params.extra_body`/`params.extraBody`：高级透传 JSON，合并到 `api: "openai-completions"` 请求体中，用于 OpenAI 兼容代理。如果与生成的请求键冲突，额外体优先；非原生 completions 路由仍会在之后剥离 OpenAI 专有的 `store`。
 - `params.chat_template_kwargs`：vLLM/OpenAI 兼容的聊天模板参数，合并到顶级 `api: "openai-completions"` 请求体中。对于 thinking 关闭的 `vllm/nemotron-3-*`，OpenClaw 自动发送 `enable_thinking: false` 和 `force_nonempty_content: true`；显式 `chat_template_kwargs` 覆盖这些默认值，`extra_body.chat_template_kwargs` 仍具有最终优先级。
 - `params.preserveThinking`：Z.AI 专有的保留 thinking 选项。启用且 thinking 开启时，OpenClaw 发送 `thinking.clear_thinking: false` 并重放之前的 `reasoning_content`；请参见 [Z.AI thinking 和保留 thinking](/providers/zai#thinking-and-preserved-thinking)。
-- `agentRuntime`：默认底层 Agent runtime 策略。省略 id 默认为 OpenClaw Pi。使用 `id: "pi"` 强制使用内置 PI harness，`id: "auto"` 让注册的 Plugin harness 声明支持的 model，注册的 harness id（如 `id: "codex"`），或支持的 CLI 后端别名（如 `id: "claude-cli"`）。设置 `fallback: "none"` 禁用自动 PI 回退。显式 Plugin runtime（如 `codex`）默认失败关闭，除非你在同一覆盖范围内设置 `fallback: "pi"`。保持 model 引用规范为 `provider/model`；通过 runtime 配置而非旧版 runtime Provider 前缀选择 Codex、Claude CLI、Gemini CLI 和其他执行后端。请参见 [Agent runtimes](/concepts/agent-runtimes) 了解这与 provider/model 选择的区别。
+- `compat.thinkingFormat`：OpenAI 兼容的 thinking 有效负载样式。对 Qwen 风格的顶级 `enable_thinking` 使用 `"qwen"`，对 vLLM 等支持请求级聊天模板 kwargs 的 Qwen 系列后端使用 `"qwen-chat-template"` 配合 `chat_template_kwargs.enable_thinking`。
+- `compat.supportedReasoningEfforts`：每 model 的 OpenAI 兼容推理力度列表。包含 `"xhigh"` 用于真正接受它的自定义端点。
+- `localService`：可选的 provider 级进程管理器，用于本地/自托管 model 服务器。详情请参见 [Local model services](/gateway/local-model-services)。
+- Runtime 策略属于 Provider 或 model，而非 `agents.defaults`。使用 `models.providers.<provider>.agentRuntime` 用于 Provider 范围规则，或使用 `agents.defaults.models["provider/model"].agentRuntime` / `agents.list[].models["provider/model"].agentRuntime` 用于 model 特定规则。
 - 改变这些字段的配置写入器（例如 `/models set`、`/models set-image` 和 fallback 添加/删除命令）保存规范的对象形式，并在可能时保留现有的 fallback 列表。
 - `maxConcurrent`：Session 间的最大并行 Agent 运行数（每个 Session 仍然序列化）。默认值：4。
 
-### `agents.defaults.agentRuntime`
-
-`agentRuntime` 控制哪个底层执行器运行 Agent 轮次。大多数部署应保留默认的 OpenClaw Pi runtime。当受信任的 Plugin 提供原生 harness（如捆绑的 Codex app-server harness）时，或当你想要受支持的 CLI 后端（如 Claude CLI）时使用它。关于心智模型，请参见 [Agent runtimes](/concepts/agent-runtimes)。
+### Runtime 策略
 
 ```json5
 {
+  models: {
+    providers: {
+      openai: {
+        agentRuntime: { id: "codex" },
+      },
+    },
+  },
   agents: {
     defaults: {
       model: "openai/gpt-5.5",
-      agentRuntime: {
-        id: "codex",
-        fallback: "none",
+      models: {
+        "anthropic/claude-opus-4-7": {
+          agentRuntime: { id: "claude-cli" },
+        },
       },
     },
   },
@@ -373,12 +382,10 @@ skills prompt 预算的每 Agent 覆盖。
 ```
 
 - `id`：`"auto"`、`"pi"`、注册的 Plugin harness id 或支持的 CLI 后端别名。捆绑的 Codex Plugin 注册 `codex`；捆绑的 Anthropic Plugin 提供 `claude-cli` CLI 后端。
-- `fallback`：`"pi"` 或 `"none"`。在 `id: "auto"` 中，省略 fallback 默认为 `"pi"`，因此旧配置在没有 Plugin harness 声明运行时可以继续使用 PI。在显式 Plugin runtime 模式下（如 `id: "codex"`），省略 fallback 默认为 `"none"`，因此缺少 harness 会失败而不是静默使用 PI。Runtime 覆盖不从更广泛的范围继承 fallback；在你有意想要该兼容性 fallback 时，将 `fallback: "pi"` 与显式 runtime 一起设置。选定的 Plugin harness 失败总是直接显示。
-- 环境变量覆盖：`OPENCLAW_AGENT_RUNTIME=<id|auto|pi>` 覆盖 `id`；`OPENCLAW_AGENT_HARNESS_FALLBACK=pi|none` 覆盖该进程的 fallback。
-- 对于仅 Codex 部署，设置 `model: "openai/gpt-5.5"` 和 `agentRuntime.id: "codex"`。也可以显式设置 `agentRuntime.fallback: "none"` 以提高可读性；这是显式 Plugin runtime 的默认值。
-- 对于 Claude CLI 部署，首选 `model: "anthropic/claude-opus-4-7"` 加 `agentRuntime.id: "claude-cli"`。旧版 `claude-cli/claude-opus-4-7` model 引用仍然有效以保持兼容性，但新配置应保持 provider/model 选择规范，并将执行后端放在 `agentRuntime.id` 中。
-- 旧版 runtime-policy 键由 `openclaw doctor --fix` 重写为 `agentRuntime`。
-- Harness 选择在第一次嵌入式运行后按 Session id 固定。配置/环境更改影响新 Session 或重置 Session，不影响现有转录。有转录历史但无记录固定的旧版 Session 被视为 PI 固定。`/status` 报告有效 runtime，例如 `Runtime: OpenClaw Pi Default` 或 `Runtime: OpenAI Codex`。
+- `id: "auto"` 让注册的 Plugin harness 声明支持的轮次，当没有 harness 匹配时使用 PI。显式 Plugin runtime（如 `id: "codex"`）需要该 harness，如果不可用或失败则直接失败。
+- 整 Agent runtime 键已是旧版。`agents.defaults.agentRuntime`、`agents.list[].agentRuntime`、Session runtime 固定和 `OPENCLAW_AGENT_RUNTIME` 在 runtime 选择中被忽略。运行 `openclaw doctor --fix` 删除旧版值。
+- OpenAI agent model 默认使用 Codex harness；当你想明确表达时，provider/model 的 `agentRuntime.id: "codex"` 仍然有效。
+- 对于 Claude CLI 部署，首选 `model: "anthropic/claude-opus-4-7"` 加 model 范围的 `agentRuntime.id: "claude-cli"`。旧版 `claude-cli/claude-opus-4-7` model 引用仍然有效以保持兼容性，但新配置应保持 provider/model 选择规范，并将执行后端放在 provider/model runtime 策略中。
 - 这只控制文本 Agent 轮次执行。Media 生成、视觉、PDF、音乐、视频和 TTS 仍使用其 provider/model 设置。
 
 **内置别名简写**（仅当 model 在 `agents.defaults.models` 中时适用）：
@@ -387,7 +394,7 @@ skills prompt 预算的每 Agent 覆盖。
 | ------------------- | ---------------------------------------------- |
 | `opus`              | `anthropic/claude-opus-4-6`                    |
 | `sonnet`            | `anthropic/claude-sonnet-4-6`                  |
-| `gpt`               | `openai/gpt-5.5` 或 `openai-codex/gpt-5.5`    |
+| `gpt`               | `openai/gpt-5.5`                               |
 | `gpt-mini`          | `openai/gpt-5.4-mini`                          |
 | `gpt-nano`          | `openai/gpt-5.4-nano`                          |
 | `gemini`            | `google/gemini-3.1-pro-preview`                |
@@ -434,6 +441,7 @@ Anthropic Claude 4.6 model 在未设置明确 thinking 级别时默认为 `adapt
 - CLI 后端以文本为优先；工具始终被禁用。
 - 设置 `sessionArg` 时支持 Session。
 - `imageArg` 接受文件路径时支持图像透传。
+- `reseedFromRawTranscriptWhenUncompacted: true` 允许 backend 从第一次压缩摘要存在之前的有界原始 OpenClaw 转录尾部恢复安全失效的 Session。auth profile 或凭证 epoch 变更永远不会原始重播。
 
 ### `agents.defaults.systemPromptOverride`
 
@@ -486,6 +494,7 @@ Anthropic Claude 4.6 model 在未设置明确 thinking 级别时默认为 `adapt
         includeSystemPromptSection: true, // 默认值：true；false 从系统 prompt 中省略 Heartbeat 部分
         lightContext: false, // 默认值：false；true 在 workspace 引导文件中只保留 HEARTBEAT.md
         isolatedSession: false, // 默认值：false；true 在新鲜 Session 中运行每次 heartbeat（无对话历史）
+        skipWhenBusy: false, // 默认值：false；true 也等待子 Agent/嵌套通道
         session: "main",
         to: "+15555550123",
         directPolicy: "allow", // allow（默认）| block
@@ -507,6 +516,7 @@ Anthropic Claude 4.6 model 在未设置明确 thinking 级别时默认为 `adapt
 - `directPolicy`：直接/DM 投递策略。`allow`（默认）允许直接目标投递。`block` 禁止直接目标投递并发出 `reason=dm-blocked`。
 - `lightContext`：为 true 时，heartbeat 运行使用轻量级引导上下文，在 workspace 引导文件中只保留 `HEARTBEAT.md`。
 - `isolatedSession`：为 true 时，每次 heartbeat 在没有之前对话历史的新鲜 Session 中运行。与 cron `sessionTarget: "isolated"` 的相同隔离模式。将每次 heartbeat 的 token 成本从约 10 万减少到约 2000-5000。
+- `skipWhenBusy`：为 true 时，heartbeat 运行在额外繁忙的通道推迟：子 Agent 或嵌套命令工作。即使没有此标志，Cron 通道也始终推迟 heartbeat。
 - 每 Agent：设置 `agents.list[].heartbeat`。当任何 Agent 定义 `heartbeat` 时，**只有这些 Agent** 运行 heartbeat。
 - Heartbeat 运行完整的 Agent 轮次——较短的间隔消耗更多 token。
 
@@ -525,6 +535,7 @@ Anthropic Claude 4.6 model 在未设置明确 thinking 级别时默认为 `adapt
         identifierPolicy: "strict", // strict | off | custom
         identifierInstructions: "精确保留部署 ID、工单 ID 和 host:port 对。", // identifierPolicy=custom 时使用
         qualityGuard: { enabled: true, maxRetries: 1 },
+        midTurnPrecheck: { enabled: false }, // 可选的 Pi 工具循环压力检查
         postCompactionSections: ["Session Startup", "Red Lines"], // [] 禁用重注入
         model: "openrouter/anthropic/claude-sonnet-4-6", // 可选的仅压缩 model 覆盖
         truncateAfterCompaction: true, // 压缩后轮换到较小的后继 JSONL
@@ -532,6 +543,7 @@ Anthropic Claude 4.6 model 在未设置明确 thinking 级别时默认为 `adapt
         notifyUser: true, // 压缩开始和完成时发送简短通知（默认值：false）
         memoryFlush: {
           enabled: true,
+          model: "ollama/qwen3:8b", // 可选的仅内存刷新 model 覆盖
           softThresholdTokens: 6000,
           systemPrompt: "Session 即将压缩。立即存储持久内存。",
           prompt: "将任何持久笔记写入 memory/YYYY-MM-DD.md；如果没有要存储的内容，请回复确切的静默 token NO_REPLY。",
@@ -549,11 +561,12 @@ Anthropic Claude 4.6 model 在未设置明确 thinking 级别时默认为 `adapt
 - `identifierPolicy`：`strict`（默认）、`off` 或 `custom`。`strict` 在压缩摘要期间在前面加上内置的不透明标识符保留指导。
 - `identifierInstructions`：`identifierPolicy=custom` 时使用的可选自定义标识符保留文本。
 - `qualityGuard`：针对格式错误输出的重试检查，用于 safeguard 摘要。在 safeguard 模式下默认启用；设置 `enabled: false` 跳过审计。
+- `midTurnPrecheck`：可选的 Pi 工具循环压力检查。当 `enabled: true` 时，OpenClaw 在追加工具结果后和下一次 model 调用之前检查上下文压力。如果上下文不再适合，它会在提交提示之前中止当前尝试，并重用现有的预检恢复路径来截断工具结果或压缩后重试。与 `default` 和 `safeguard` 压缩模式都能工作。默认：禁用。
 - `postCompactionSections`：压缩后重新注入的可选 AGENTS.md H2/H3 部分名称。默认为 `["Session Startup", "Red Lines"]`；设置 `[]` 禁用重注入。未设置或明确设置为该默认对时，也接受旧版 `Every Session`/`Safety` 标题作为旧版回退。
 - `model`：仅用于压缩摘要的可选 `provider/model-id` 覆盖。当主 Session 应保留一个 model 但压缩摘要应在另一个上运行时使用；未设置时，压缩使用 Session 的主 model。
 - `maxActiveTranscriptBytes`：可选字节阈值（`number` 或像 `"20mb"` 这样的字符串），当活跃 JSONL 超过该阈值时在运行前触发正常的本地压缩。需要 `truncateAfterCompaction`，以便成功的压缩可以轮换到较小的后继转录。未设置或 `0` 时禁用。
 - `notifyUser`：为 `true` 时，在压缩开始和完成时向用户发送简短通知（例如，"正在压缩上下文..."和"压缩完成"）。默认禁用以保持压缩静默。
-- `memoryFlush`：自动压缩前的静默 agentic 轮次，用于存储持久内存。当 workspace 只读时跳过。
+- `memoryFlush`：自动压缩前的静默 agentic 轮次，用于存储持久内存。将 `model` 设置为精确的 provider/model（如 `ollama/qwen3:8b`），当此内务轮次应保持在本地 model 上时；覆盖不继承活跃 Session 回退链。当 workspace 只读时跳过。
 
 ### `agents.defaults.contextPruning`
 
@@ -860,7 +873,6 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
         thinkingDefault: "high", // 每 Agent thinking 级别覆盖
         reasoningDefault: "on", // 每 Agent 推理可见性覆盖
         fastModeDefault: false, // 每 Agent 快速模式覆盖
-        agentRuntime: { id: "auto", fallback: "pi" },
         params: { cacheRetention: "none" }, // 按键覆盖匹配的 defaults.models 参数
         tts: {
           providers: {
@@ -907,7 +919,7 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
 - `thinkingDefault`：可选的每 Agent 默认 thinking 级别（`off | minimal | low | medium | high | xhigh | adaptive | max`）。在没有每消息或 Session 覆盖的情况下覆盖该 Agent 的 `agents.defaults.thinkingDefault`。所选 provider/model 配置文件控制哪些值有效；对于 Google Gemini，`adaptive` 保持 Provider 拥有的动态 thinking（在 Gemini 3/3.1 上省略 `thinkingLevel`，在 Gemini 2.5 上 `thinkingBudget: -1`）。
 - `reasoningDefault`：可选的每 Agent 默认推理可见性（`on | off | stream`）。在没有每消息或 Session 推理覆盖的情况下应用。
 - `fastModeDefault`：可选的每 Agent 快速模式默认值（`true | false`）。在没有每消息或 Session 快速模式覆盖的情况下应用。
-- `agentRuntime`：可选的每 Agent 底层 runtime 策略覆盖。使用 `{ id: "codex" }` 使一个 Agent 仅使用 Codex，而其他 Agent 在 `auto` 模式下保留默认 PI 回退。
+- `models`：可选的每 Agent model 目录/runtime 覆盖，以完整 `provider/model` id 为键。使用 `models["provider/model"].agentRuntime` 处理每 Agent runtime 例外。
 - `runtime`：可选的每 Agent runtime 描述符。当 Agent 应默认使用 ACP harness Session 时，使用 `type: "acp"` 配合 `runtime.acp` 默认值（`agent`、`backend`、`mode`、`cwd`）。
 - `identity.avatar`：workspace 相对路径、`http(s)` URL 或 `data:` URI。
 - `identity` 派生默认值：`ackReaction` 来自 `emoji`，`mentionPatterns` 来自 `name`/`emoji`。
@@ -1079,12 +1091,10 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
     },
     resetTriggers: ["/new", "/reset"],
     store: "~/.openclaw/agents/{agentId}/sessions/sessions.json",
-    parentForkMaxTokens: 100000, // 超过此 token 数量时跳过父线程 fork（0 禁用）
     maintenance: {
       mode: "warn", // warn | enforce
       pruneAfter: "30d",
       maxEntries: 500,
-      rotateBytes: "10mb",
       resetArchiveRetention: "30d", // 持续时间或 false
       maxDiskBytes: "500mb", // 可选硬盘预算
       highWaterBytes: "400mb", // 可选清理目标
@@ -1117,17 +1127,14 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
 - **`identityLinks`**：将规范 id 映射到带 Provider 前缀的 peer，用于跨 Channel Session 共享。
 - **`reset`**：主重置策略。`daily` 在本地时间 `atHour` 重置；`idle` 在 `idleMinutes` 后重置。两者都配置时，先到期的优先。每日重置新鲜度使用 Session 行的 `sessionStartedAt`；空闲重置新鲜度使用 `lastInteractionAt`。后台/系统事件写入（如 heartbeat、cron 唤醒、exec 通知和 gateway 记账）可以更新 `updatedAt`，但不会保持每日/空闲 Session 的新鲜度。
 - **`resetByType`**：每类型覆盖（`direct`、`group`、`thread`）。`dm` 接受为 `direct` 的旧版别名。
-- **`parentForkMaxTokens`**：创建分叉线程 Session 时允许的最大父 Session `totalTokens`（默认 `100000`）。
-  - 如果父 `totalTokens` 高于此值，OpenClaw 启动一个新鲜线程 Session 而不是继承父转录历史。
-  - 设置 `0` 禁用此保护并始终允许父 fork。
 - **`mainKey`**：旧版字段。Runtime 始终使用 `"main"` 作为主直接聊天桶。
-- **`agentToAgent.maxPingPongTurns`**：Agent 间交换期间 Agent 之间的最大回复轮次（整数，范围：`0`–`5`）。`0` 禁用 ping-pong 链接。
+- **`agentToAgent.maxPingPongTurns`**：Agent 间交换期间 Agent 之间的最大回复轮次（整数，范围：`0`-`20`，默认：`5`）。`0` 禁用 ping-pong 链接。
 - **`sendPolicy`**：通过 `channel`、`chatType`（`direct|group|channel`，旧版 `dm` 别名）、`keyPrefix` 或 `rawKeyPrefix` 匹配。第一个 deny 优先。
 - **`maintenance`**：Session 存储清理和保留控制。
   - `mode`：`warn` 仅发出警告；`enforce` 应用清理。
   - `pruneAfter`：过期条目的年龄截止日期（默认 `30d`）。
-  - `maxEntries`：`sessions.json` 中的最大条目数（默认 `500`）。
-  - `rotateBytes`：当 `sessions.json` 超过此大小时轮换（默认 `10mb`）。
+  - `maxEntries`：`sessions.json` 中的最大条目数（默认 `500`）。Runtime 写入以小型高水位缓冲区批量清理以用于生产级上限；`openclaw sessions cleanup --enforce` 立即应用上限。
+  - `rotateBytes`：已弃用且被忽略；`openclaw doctor --fix` 从旧配置中删除它。
   - `resetArchiveRetention`：`*.reset.<timestamp>` 转录存档的保留时间。默认为 `pruneAfter`；设置 `false` 禁用。
   - `maxDiskBytes`：可选的 sessions 目录磁盘预算。在 `warn` 模式下记录警告；在 `enforce` 模式下先删除最旧的工件/Session。
   - `highWaterBytes`：预算清理后的可选目标。默认为 `maxDiskBytes` 的 `80%`。
@@ -1135,6 +1142,8 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
   - `enabled`：主控默认开关（Provider 可以覆盖；Discord 使用 `channels.discord.threadBindings.enabled`）
   - `idleHours`：默认非活跃自动取消聚焦（小时）（`0` 禁用；Provider 可以覆盖）
   - `maxAgeHours`：默认硬性最大年龄（小时）（`0` 禁用；Provider 可以覆盖）
+  - `spawnSessions`：从 `sessions_spawn` 和 ACP 线程生成创建线程绑定工作 Session 的默认门控。当线程绑定启用时默认为 `true`；Provider/账户可以覆盖。
+  - `defaultSpawnContext`：线程绑定生成的默认原生子 Agent 上下文（`"fork"` 或 `"isolated"`）。默认为 `"fork"`。
 
 </Accordion>
 
@@ -1283,9 +1292,24 @@ Talk 模式（macOS/iOS/Android）的默认值。
       },
       system: {},
     },
+    consultThinkingLevel: "low",
+    consultFastMode: true,
     speechLocale: "ru-RU",
     silenceTimeoutMs: 1500,
     interruptOnSpeech: true,
+    realtime: {
+      provider: "openai",
+      providers: {
+        openai: {
+          model: "gpt-realtime-2",
+          voice: "cedar",
+        },
+      },
+      instructions: "Speak warmly and keep answers brief.",
+      mode: "realtime",
+      transport: "webrtc",
+      brain: "agent-consult",
+    },
   },
 }
 ```
@@ -1298,8 +1322,11 @@ Talk 模式（macOS/iOS/Android）的默认值。
 - `providers.*.voiceAliases` 让 Talk 指令使用友好名称。
 - `providers.mlx.modelId` 选择 macOS 本地 MLX 助手使用的 Hugging Face 仓库。如果省略，macOS 使用 `mlx-community/Soprano-80M-bf16`。
 - macOS MLX 播放通过捆绑的 `openclaw-mlx-tts` 助手（如果存在）或 `PATH` 上的可执行文件运行；`OPENCLAW_MLX_TTS_BIN` 覆盖助手路径用于开发。
+- `consultThinkingLevel` 控制 Control UI Talk 实时 `openclaw_agent_consult` 调用后面的完整 OpenClaw agent 运行的 thinking 级别。留空以保留正常 Session/model 行为。
+- `consultFastMode` 为 Control UI Talk 实时咨询设置一次性快速模式覆盖，而不更改 Session 的正常快速模式设置。
 - `speechLocale` 设置 iOS/macOS Talk 语音识别使用的 BCP 47 区域 id。留空使用设备默认值。
 - `silenceTimeoutMs` 控制 Talk 模式在用户沉默后等待多长时间再发送转录。未设置时保留平台默认暂停窗口（`macOS 和 Android 上 700ms，iOS 上 900ms`）。
+- `realtime.instructions` 向 OpenClaw 内置实时提示追加 Provider 面向的系统指令，因此可以配置声音风格而不丢失默认的 `openclaw_agent_consult` 指导。
 
 ---
 

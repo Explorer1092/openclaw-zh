@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "71f4d0e11cf03c72a676c54c6cc24f0c"
-title: "沙盒 vs 工具策略 vs 提升模式"
+mmh3_hash: "b9bb9b009949d1475bced02203243b9d"
+title: "Sandbox vs tool policy vs elevated"
 sidebarTitle: "沙盒与工具策略"
 summary: "工具被阻止的原因:sandbox runtime、工具允许/拒绝策略和提升 exec 门控"
 read_when: "你遇到'sandbox jail'或看到工具/elevated 拒绝,想要找到需要更改的确切配置键。"

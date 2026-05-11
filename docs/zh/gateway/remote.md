@@ -1,12 +1,10 @@
 ---
-mmh3_hash: "568949ba45638d9d468d1647a062a165"
+mmh3_hash: "4cb9c7a9ee0abe5eca1a64eb7e6a7b2c"
 summary: "使用 SSH 隧道(Gateway WS)和 Tailnet 进行远程访问"
 read_when:
   - 运行或故障排除远程 Gateway 设置
-title: "远程访问"
+title: "Remote access"
 ---
-
-# 远程访问(SSH、隧道和 Tailnet)
 
 本仓库通过在专用主机(桌面/服务器)上运行单个 Gateway(主)并将客户端连接到它来支持"通过 SSH 远程"。
 
@@ -18,12 +16,11 @@ title: "远程访问"
 - Gateway WebSocket 绑定到您配置端口上的**回环**(默认为 18789)。
 - 对于远程使用,您通过 SSH 转发该回环端口(或使用 tailnet/VPN 减少隧道需求)。
 
-## 常见 VPN/tailnet 设置(Agent 所在位置)
+## 常见 VPN 和 Tailnet 设置
 
-将 **Gateway 主机**视为"Agent 所在位置"。它拥有 Session、认证配置文件、Channel 和状态。
-您的笔记本/桌面(和节点)连接到该主机。
+将 **Gateway 主机**视为 Agent 所在的地方。它拥有 Session、认证配置文件、Channel 和状态。您的笔记本、桌面和节点连接到该主机。
 
-### 1) 在 tailnet 中始终在线的 Gateway(VPS 或家用服务器)
+### 在 tailnet 中始终在线的 Gateway
 
 在持久主机上运行 Gateway 并通过 **Tailscale** 或 SSH 访问它。
 
@@ -33,7 +30,7 @@ title: "远程访问"
 
 当您的笔记本经常休眠但您希望 Agent 始终在线时,这是理想的。
 
-### 2) 家用桌面运行 Gateway,笔记本是远程控制
+### 家用桌面运行 Gateway
 
 笔记本**不**运行 Agent。它远程连接:
 
@@ -42,7 +39,7 @@ title: "远程访问"
 
 运行手册:[macOS 远程访问](/platforms/mac/remote)。
 
-### 3) 笔记本运行 Gateway,从其他机器远程访问
+### 笔记本运行 Gateway
 
 保持 Gateway 在本地但安全地暴露它:
 
@@ -80,9 +77,13 @@ ssh -N -L 18789:127.0.0.1:18789 user@host
 - `openclaw health` 和 `openclaw status --deep` 现在通过 `ws://127.0.0.1:18789` 访问远程 Gateway。
 - `openclaw gateway status`、`openclaw gateway health`、`openclaw gateway probe` 和 `openclaw gateway call` 在需要时也可以通过 `--url` 定向到转发的 URL。
 
-注意:将 `18789` 替换为您配置的 `gateway.port`(或 `--port`/`OPENCLAW_GATEWAY_PORT`)。
-注意:当您传递 `--url` 时,CLI 不会回退到配置或环境凭证。
-明确包含 `--token` 或 `--password`。缺少明确凭证是错误。
+<Note>
+将 `18789` 替换为您配置的 `gateway.port`(或 `--port` 或 `OPENCLAW_GATEWAY_PORT`)。
+</Note>
+
+<Warning>
+当您传递 `--url` 时,CLI 不会回退到配置或环境凭证。明确包含 `--token` 或 `--password`。缺少明确凭证是错误。
+</Warning>
 
 ## CLI 远程默认值
 
@@ -101,6 +102,7 @@ ssh -N -L 18789:127.0.0.1:18789 user@host
 ```
 
 当 Gateway 仅回环时,保持 URL 为 `ws://127.0.0.1:18789` 并首先打开 SSH 隧道。
+在 macOS 应用的 SSH 隧道传输中,已发现的 Gateway 主机名属于 `gateway.remote.sshTarget`；`gateway.remote.url` 保持为本地隧道 URL。
 
 ## 凭证优先级
 
@@ -145,7 +147,7 @@ macOS 菜单栏应用可以端到端驱动相同的设置(远程状态检查、W
 - 如果 `gateway.auth.token` / `gateway.auth.password` 通过 SecretRef 明确配置且未解析,则解析会关闭失败(无远程回退掩盖)。
 - `gateway.remote.tlsFingerprint` 在使用 `wss://` 时固定远程 TLS 证书。
 - **Tailscale Serve** 可以在 `gateway.auth.allowTailscale: true` 时通过身份标头对 Control UI/WebSocket 流量进行认证；HTTP API 端点不使用该 Tailscale 标头认证，而是遵循 Gateway 正常的 HTTP 认证模式。此无令牌流程假设 Gateway 主机受信任。如果您希望所有地方都使用共享密钥认证，请将其设置为 `false`。
-- **受信任代理**认证仅适用于非回环身份感知代理设置。同一主机的回环反向代理不满足 `gateway.auth.mode: "trusted-proxy"`。
+- **受信任代理**认证默认情况下需要非回环身份感知代理设置。同一主机的回环反向代理需要明确的 `gateway.auth.trustedProxy.allowLoopback = true`。
 - 将 Browser 控制视为操作员访问:仅 tailnet + 刻意的节点配对。
 
 深入讨论:[安全](/gateway/security)。
@@ -215,7 +217,9 @@ launchctl bootstrap gui/$UID ~/Library/LaunchAgents/ai.openclaw.ssh-tunnel.plist
 
 隧道将在登录时自动启动，崩溃后重启，并保持转发端口活跃。
 
-注意：如果您有旧版设置中遗留的 `com.openclaw.ssh-tunnel` LaunchAgent，请卸载并删除它。
+<Note>
+如果您有旧版设置中遗留的 `com.openclaw.ssh-tunnel` LaunchAgent，请卸载并删除它。
+</Note>
 
 #### 故障排除
 

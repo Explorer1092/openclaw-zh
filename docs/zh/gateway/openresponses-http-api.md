@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "38f2b8fd241cd8efec16fa9dbf95ed58"
+mmh3_hash: "13dc033f16afac881c27ea5c82d1b976"
 summary: "从 Gateway 公开兼容 OpenResponses 的 /v1/responses HTTP 端点"
 read_when:
   - 集成使用 OpenResponses API 的客户端
@@ -7,7 +7,6 @@ read_when:
 title: "OpenResponses API"
 ---
 
-# OpenResponses API (HTTP)
 
 OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` 端点。
 

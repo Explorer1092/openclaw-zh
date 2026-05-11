@@ -1,7 +1,7 @@
 ---
-mmh3_hash: "8798743ba9ab0bc3c52abbc92ed11df5"
+mmh3_hash: "0ba05808516875752c8b18d3f7212c68"
 summary: "核心 OpenClaw 键、默认值以及专项子系统参考链接的 Gateway 配置参考"
-title: "配置参考"
+title: "Configuration reference"
 read_when:
   - 需要精确的字段级配置语义或默认值时
   - 验证 Channel、模型、Gateway 或工具配置块时

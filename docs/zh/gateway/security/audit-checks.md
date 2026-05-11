@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "5f5b7ee05752a66844eb1b974af4fff4"
+mmh3_hash: "fbf18b94540eafbb4401413082fef157"
 summary: "openclaw security audit 发出的 checkId 参考目录"
 read_when:
   - 你在 `openclaw security audit` 输出中看到特定的 `checkId`，想了解其含义
   - 你需要特定发现的修复键/路径
   - 你正在对整个安全审计运行的严重性进行分类
-title: "安全审计检查"
+title: "Security audit checks"
 ---
 
 `openclaw security audit` 发出按 `checkId` 键控的结构化发现。本页是这些 ID 的参考目录。关于高级威胁模型和加固指导，请参见 [安全](/gateway/security)。
@@ -54,6 +54,7 @@ title: "安全审计检查"
 | `gateway.trusted_proxy_no_proxies`                            | critical      | 没有受信任代理 IP 的受信任代理认证不安全                                             | `gateway.trustedProxies`                                                                             | 否       |
 | `gateway.trusted_proxy_no_user_header`                        | critical      | 受信任代理认证无法安全解析用户身份                                                   | `gateway.auth.trustedProxy.userHeader`                                                               | 否       |
 | `gateway.trusted_proxy_no_allowlist`                          | warn          | 受信任代理认证接受任何经过认证的上游用户                                             | `gateway.auth.trustedProxy.allowUsers`                                                               | 否       |
+| `gateway.trusted_proxy_allow_loopback`                        | warn          | Trusted-proxy 认证接受显式允许的回环代理来源                                        | `gateway.auth.trustedProxy.allowLoopback`                                                            | 否       |
 | `gateway.probe_auth_secretref_unavailable`                    | warn          | 深度探测无法在此命令路径中解析认证 SecretRef                                         | 深度探测认证来源 / SecretRef 可用性                                                                  | 否       |
 | `gateway.probe_failed`                                        | warn/critical | 实时 Gateway 探测失败                                                                | gateway 可达性/认证                                                                                  | 否       |
 | `discovery.mdns_full_mode`                                    | warn/critical | mDNS 完整模式在本地网络上公告 `cliPath`/`sshPort` 元数据                             | `discovery.mdns.mode`、`gateway.bind`                                                                | 否       |
@@ -88,6 +89,7 @@ title: "安全审计检查"
 | `tools.exec.host_sandbox_no_sandbox_defaults`                 | warn          | `exec host=sandbox` 在沙盒关闭时失败关闭                                             | `tools.exec.host`、`agents.defaults.sandbox.mode`                                                    | 否       |
 | `tools.exec.host_sandbox_no_sandbox_agents`                   | warn          | 每 Agent 的 `exec host=sandbox` 在沙盒关闭时失败关闭                                 | `agents.list[].tools.exec.host`、`agents.list[].sandbox.mode`                                        | 否       |
 | `tools.exec.security_full_configured`                         | warn/critical | 主机 exec 以 `security="full"` 运行                                                  | `tools.exec.security`、`agents.list[].tools.exec.security`                                           | 否       |
+| `tools.exec.fs_tools_disabled_but_exec_enabled`               | warn          | 文件系统工具策略不使 shell 执行只读                                                  | `tools.deny`、`agents.list[].tools.deny`、`agents.*.sandbox.workspaceAccess`                         | 否       |
 | `tools.exec.auto_allow_skills_enabled`                        | warn          | Exec 批准隐式信任 skill 二进制文件                                                   | `~/.openclaw/exec-approvals.json`                                                                    | 否       |
 | `tools.exec.allowlist_interpreter_without_strict_inline_eval` | warn          | 解释器允许列表允许内联 eval 而无需强制重新批准                                       | `tools.exec.strictInlineEval`、`agents.list[].tools.exec.strictInlineEval`、exec 批准允许列表        | 否       |
 | `tools.exec.safe_bins_interpreter_unprofiled`                 | warn          | `safeBins` 中没有显式配置文件的解释器/运行时二进制文件扩大了 exec 风险               | `tools.exec.safeBins`、`tools.exec.safeBinProfiles`、`agents.list[].tools.exec.*`                    | 否       |
@@ -115,8 +117,8 @@ title: "安全审计检查"
 | `models.small_params`                                         | critical/info | 小 model + 不安全的工具表面提高了注入风险                                            | model 选择 + 沙盒/工具策略                                                                           | 否       |
 | `summary.attack_surface`                                      | info          | 认证、Channel、工具和暴露态势的汇总摘要                                              | 多个键（见发现详情）                                                                                 | 否       |
 
-## 相关文档
+## 相关
 
-- [安全](/gateway/security)
-- [配置](/gateway/configuration)
-- [受信任代理认证](/gateway/trusted-proxy-auth)
+- [Security](/gateway/security)
+- [Configuration](/gateway/configuration)
+- [Trusted proxy auth](/gateway/trusted-proxy-auth)

@@ -1,12 +1,11 @@
 ---
-mmh3_hash: "dee5205af63fa36983b2f712ecc7f5fb"
+mmh3_hash: "dfb542253294029df8d4b5514dd4eb17"
 summary: "从 Gateway 公开兼容 OpenAI 的 /v1/chat/completions HTTP 端点"
 read_when:
   - 集成期望 OpenAI Chat Completions 的工具
-title: "OpenAI Chat Completions"
+title: "OpenAI chat completions"
 ---
 
-# OpenAI Chat Completions (HTTP)
 
 OpenClaw 的 Gateway 可以提供一个小的 OpenAI 兼容的 Chat Completions 端点。
 
