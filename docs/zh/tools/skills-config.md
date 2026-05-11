@@ -8,8 +8,6 @@ read_when:
   - 调整捆绑允许列表或安装行为
 ---
 
-# Skill 配置
-
 大多数 Skill 加载器/安装配置位于 `~/.openclaw/openclaw.json` 中的 `skills` 下。每个 Agent 的 Skill 可见性位于 `agents.defaults.skills` 和 `agents.list[].skills` 下。
 
 ```json5
@@ -18,12 +16,14 @@ read_when:
     allowBundled: ["gemini", "peekaboo"],
     load: {
       extraDirs: ["~/Projects/agent-scripts/skills", "~/Projects/oss/some-skill-pack/skills"],
+      allowSymlinkTargets: ["~/Projects/manager/skills"],
       watch: true,
       watchDebounceMs: 250,
     },
     install: {
       preferBrew: true,
       nodeManager: "npm", // npm | pnpm | yarn | bun (Gateway 运行时仍然是 Node;不推荐 bun)
+      allowUploadedArchives: false,
     },
     entries: {
       "image-lab": {
@@ -80,14 +80,35 @@ read_when:
 - 内置 Skill 根始终包括 `~/.openclaw/skills`、`~/.agents/skills`、`<workspace>/.agents/skills` 和 `<workspace>/skills`。
 - `allowBundled`：**仅捆绑** Skill 的可选允许列表。设置时，仅列表中的捆绑 Skill 符合条件（管理/Agent/工作区 Skill 不受影响）。
 - `load.extraDirs`：要扫描的其他 Skill 目录（最低优先级）。
+- `load.allowSymlinkTargets`：符号链接 Skill 文件夹即使符号链接本身位于该目标根之外，也可以解析进入的受信任真实目标目录。用于像 `~/.agents/skills/manager -> ~/Projects/manager/skills` 这样有意的兄弟仓库布局。
 - `load.watch`：监视 Skill 文件夹并刷新 Skill 快照（默认：true）。
 - `load.watchDebounceMs`：Skill 监视器事件的去抖动（毫秒）（默认：250）。
 - `install.preferBrew`：在可用时优先使用 brew 安装程序（默认：true）。
 - `install.nodeManager`：节点安装程序偏好（`npm` | `pnpm` | `yarn` | `bun`，默认：npm）。这仅影响 **Skill 安装**；Gateway 运行时仍应为 Node（不推荐 Bun 用于 WhatsApp/Telegram）。
   - `openclaw setup --node-manager` 范围更窄，目前接受 `npm`、`pnpm` 或 `bun`。如果你想要 Yarn 支持的 Skill 安装，请手动设置 `skills.install.nodeManager: "yarn"`。
+- `install.allowUploadedArchives`：允许受信任的 `operator.admin` Gateway 客户端安装通过 `skills.upload.*` 暂存的私有 zip 归档（默认：false）。这仅启用已上传归档路径；普通 ClawHub 安装不需要它。
 - `entries.<skillKey>`：每个 Skill 的覆盖。
 - `agents.defaults.skills`：被省略 `agents.list[].skills` 的 Agent 继承的可选默认 Skill 允许列表。
 - `agents.list[].skills`：可选的每 Agent 最终 Skill 允许列表；显式列表替换继承的默认值而非合并。
+
+## 符号链接兄弟仓库
+
+默认情况下，每个 Skill 根都是一个隔离边界。如果 `~/.agents/skills` 下的 Skill 文件夹是一个解析到 `~/.agents/skills` 之外的符号链接，OpenClaw 会跳过它并记录 `Skipping escaped skill path outside its configured root`。
+
+保持符号链接布局并仅允许受信任的目标根：
+
+```json5
+{
+  skills: {
+    load: {
+      extraDirs: ["~/Projects/manager/skills"],
+      allowSymlinkTargets: ["~/Projects/manager/skills"],
+    },
+  },
+}
+```
+
+有了此配置，像 `~/.agents/skills/manager -> ~/Projects/manager/skills` 这样的符号链接在 realpath 解析后被接受。`extraDirs` 也直接扫描兄弟仓库，而 `allowSymlinkTargets` 为现有的 Agent-Skill 布局保留了符号链接路径。保持目标条目范围较窄；不要指向像 `~` 或 `~/Projects` 这样的宽泛根目录，除非该根下的每个 Skill 树都是受信任的。
 
 每个 Skill 字段：
 
@@ -105,15 +126,28 @@ read_when:
 
 当 Session **被沙箱化**时，Skill 进程在已配置的沙箱后端内运行。沙箱**不**继承主机 `process.env`。
 
+<Warning>
+  全局 `env` 和 `skills.entries.<skill>.env`/`apiKey` 仅适用于**主机**运行。在沙箱内它们不起作用，因此依赖 `GEMINI_API_KEY` 的 Skill 将以 `apiKey not configured` 失败，除非沙箱单独获得该变量。
+</Warning>
+
 使用以下之一：
 
-- `agents.defaults.sandbox.docker.env` 用于 Docker 后端（或每个 Agent 的 `agents.list[].sandbox.docker.env`）
-- 将环境烘焙到您的自定义沙箱镜像或远程沙箱环境中
-
-全局 `env` 和 `skills.entries.<skill>.env/apiKey` 仅适用于**主机**运行。
+- `agents.defaults.sandbox.docker.env` 用于 Docker 后端（或每个 Agent 的 `agents.list[].sandbox.docker.env`）。
+- 将环境烘焙到你的自定义沙箱镜像或远程沙箱环境中。
 
 ## 相关
 
-- [技能](/tools/skills)
-- [创建技能](/tools/creating-skills)
-- [Slash 命令](/tools/slash-commands)
+<CardGroup cols={2}>
+  <Card title="技能" href="/tools/skills" icon="puzzle-piece">
+    技能的定义及其加载方式。
+  </Card>
+  <Card title="创建技能" href="/tools/creating-skills" icon="hammer">
+    编写自定义 Skill 包。
+  </Card>
+  <Card title="Slash 命令" href="/tools/slash-commands" icon="terminal">
+    原生命令目录和聊天指令。
+  </Card>
+  <Card title="配置参考" href="/gateway/configuration-reference" icon="gear">
+    完整的 `skills` 和 `agents.skills` Schema。
+  </Card>
+</CardGroup>

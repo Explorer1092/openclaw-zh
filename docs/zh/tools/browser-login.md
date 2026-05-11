@@ -1,32 +1,31 @@
 ---
-title: "浏览器登录与 X/Twitter 发帖"
-sidebarTitle: "浏览器登录"
-mmh3_hash: "60862a39a3a451887d7379dc43122187"
+mmh3_hash: "f3a44a77a70fa2c0a442089f623a74a0"
 summary: "浏览器自动化 + X/Twitter 发帖的手动登录"
 read_when:
-  - 需要登录网站以进行浏览器自动化
-  - 想要发布更新到 X/Twitter
+  - 需要为浏览器自动化登录站点
+  - 想发布更新到 X/Twitter
+title: "浏览器登录"
 ---
 
 ## 手动登录（推荐）
 
-当网站需要登录时，**在宿主**浏览器配置文件（openclaw 浏览器）中**手动登录**。
+当站点需要登录时，请在**主机**浏览器 Profile（即 openclaw 浏览器）中**手动登录**。
 
-**不要**将你的凭据提供给模型。自动登录通常会触发反机器人防御，可能导致账号被锁定。
+**不要**将您的凭据提供给模型。自动登录通常会触发反机器人防御并可能锁定账户。
 
-返回浏览器主文档：[Browser](/tools/browser)。
+返回主要浏览器文档：[浏览器](/tools/browser)。
 
-## 使用的是哪个 Chrome 配置文件？
+## 使用哪个 Chrome Profile？
 
-OpenClaw 控制一个**专用 Chrome 配置文件**（名为 `openclaw`，带橙色调 UI）。这与你日常使用的浏览器配置文件是分开的。
+OpenClaw 控制一个**专用的 Chrome Profile**（名为 `openclaw`，带橙色调 UI）。这与您的日常浏览器 Profile 是分开的。
 
 对于 Agent 浏览器工具调用：
 
 - 默认选择：Agent 应使用其隔离的 `openclaw` 浏览器。
-- 仅在现有已登录 Session 重要且用户在电脑旁可以点击/批准任何附加提示时，才使用 `profile="user"`。
-- 如果你有多个用户浏览器配置文件，请显式指定配置文件而非猜测。
+- 仅当现有的已登录 Session 很重要且用户在电脑前可以点击/批准任何附加提示时，才使用 `profile="user"`。
+- 如果您有多个用户浏览器 Profile，请明确指定 Profile 而不是猜测。
 
-两种简便访问方式：
+访问它的两种简便方式：
 
 1. **让 Agent 打开浏览器**，然后自己登录。
 2. **通过 CLI 打开**：
@@ -36,18 +35,18 @@ openclaw browser start
 openclaw browser open https://x.com
 ```
 
-如果你有多个配置文件，使用 `--browser-profile <name>`（默认为 `openclaw`）。
+如果您有多个 Profile，请传入 `--browser-profile <name>`（默认为 `openclaw`）。
 
 ## X/Twitter：推荐流程
 
-- **阅读/搜索/Threads：** 使用**宿主**浏览器（手动登录）。
-- **发布更新：** 使用**宿主**浏览器（手动登录）。
+- **阅读/搜索/线程：** 使用**主机**浏览器（手动登录）。
+- **发布更新：** 使用**主机**浏览器（手动登录）。
 
-## 沙盒 + 宿主浏览器访问
+## 沙箱化 + 主机浏览器访问
 
-沙盒浏览器 Session **更容易**触发机器人检测。对于 X/Twitter（以及其他严格的网站），优先使用**宿主**浏览器。
+沙箱化浏览器 Session **更容易**触发机器人检测。对于 X/Twitter（和其他严格的站点），优先使用**主机**浏览器。
 
-如果 Agent 处于沙盒中，浏览器工具默认使用沙盒。要允许宿主控制：
+如果 Agent 处于沙箱中，浏览器工具默认使用沙箱。要允许主机控制：
 
 ```json5
 {
@@ -64,13 +63,13 @@ openclaw browser open https://x.com
 }
 ```
 
-然后定向到宿主浏览器：
+然后自己打开主机浏览器（CLI 调用始终针对主机浏览器）：
 
 ```bash
-openclaw browser open https://x.com --browser-profile openclaw --target host
+openclaw browser open https://x.com --browser-profile openclaw
 ```
 
-或者为负责发帖更新的 Agent 禁用沙盒。
+设置 `sandbox.browser.allowHostControl: true` 后，Agent 的 `browser` 工具调用就可以针对主机了。或者，为发布更新的 Agent 禁用沙箱化。
 
 ## 相关
 

@@ -28,8 +28,12 @@ read_when:
   - Anthropic Claude Opus 4.7 不默认为自适应 thinking。其 API effort 默认值由 Provider 所有，除非您显式设置 thinking 级别。
   - Anthropic Claude Opus 4.7 将 `/think xhigh` 映射到自适应 thinking 加 `output_config.effort: "xhigh"`，因为 `/think` 是 thinking 指令，而 `xhigh` 是 Opus 4.7 的 effort 设置。
   - Anthropic Claude Opus 4.7 还开放 `/think max`；它映射到相同的 Provider 所有最大 effort 路径。
+  - 直接 DeepSeek V4 模型开放 `/think xhigh|max`；两者都映射到 DeepSeek `reasoning_effort: "max"`，较低的非 `off` 级别映射到 `high`。
+  - OpenRouter 路由的 DeepSeek V4 模型开放 `/think xhigh`，并发送 OpenRouter 支持的 `reasoning_effort` 值。存储的 `max` 覆盖回退到 `xhigh`。
   - 支持 thinking 的 Ollama 模型开放 `/think low|medium|high|max`；`max` 映射到原生 `think: "high"`，因为 Ollama 的原生 API 接受 `low`、`medium` 和 `high` effort 字符串。
   - OpenAI GPT 模型通过特定模型的 Responses API effort 支持映射 `/think`。`/think off` 仅在目标模型支持时发送 `reasoning.effort: "none"`；否则 OpenClaw 省略禁用的推理负载，而不是发送不支持的值。
+  - 自定义 OpenAI 兼容目录条目可通过将 `models.providers.<provider>.models[].compat.supportedReasoningEfforts` 设置为包含 `"xhigh"` 来选择开放 `/think xhigh`。这使用与映射出站 OpenAI reasoning effort 有效负载相同的兼容元数据，因此菜单、Session 验证、Agent CLI 和 `llm-task` 与传输行为保持一致。
+  - 过时的已配置 OpenRouter Hunter Alpha 引用跳过代理推理注入，因为该已停用路由可能通过推理字段返回最终答案文本。
   - Google Gemini 将 `/think adaptive` 映射到 Gemini 的 Provider 所有动态 thinking。Gemini 3 请求省略固定的 `thinkingLevel`，而 Gemini 2.5 请求发送 `thinkingBudget: -1`；固定级别仍然映射到该模型系列最近的 Gemini `thinkingLevel` 或预算。
   - MiniMax（`minimax/*`）在 Anthropic 兼容流式路径上默认为 `thinking: { type: "disabled" }`，除非您在模型参数或请求参数中显式设置 thinking。这避免了 MiniMax 非原生 Anthropic 流格式的 `reasoning_content` 增量泄漏。
   - Z.AI（`zai/*`）仅支持二进制 thinking（`on`/`off`）。任何非 `off` 级别都被视为 `on`（映射到 `low`）。
@@ -46,18 +50,20 @@ read_when:
 ## 设置 Session 默认值
 
 - 发送一条**仅**包含指令的消息（允许空格），例如 `/think:medium` 或 `/t high`。
-- 对于当前 Session（默认按发送者）持久化；通过 `/think:off` 或 Session 空闲重置清除。
+- 对于当前 Session（默认按发送者）持久化。使用 `/think default` 清除 Session 覆盖并继承配置/Provider 默认值；别名包括 `inherit`、`clear`、`reset` 和 `unpin`。
+- `/think off` 存储显式的关闭覆盖。它会禁用 thinking，直到您更改或清除 Session 覆盖。
 - 发送确认回复（`Thinking level set to high.` / `Thinking disabled.`）。如果级别无效（例如 `/thinking big`），命令被拒绝并带有提示，Session 状态保持不变。
 - 发送 `/think`（或 `/think:`）不带参数以查看当前思考级别。
 
 ## 按 Agent 应用
 
 - **嵌入式 Pi**：解析的级别传递给进程内 Pi Agent 运行时。
+- **Claude CLI 后端**：非 `off` 级别在使用 `claude-cli` 时作为 `--effort` 传递给 Claude Code；参见 [CLI 后端](/gateway/cli-backends)。
 
 ## 快速模式（/fast）
 
-- 级别：`on|off`。
-- 仅指令消息切换 Session 快速模式覆盖，并回复 `Fast mode enabled.` / `Fast mode disabled.`。
+- 级别：`on|off|default`。
+- 仅指令消息切换 Session 快速模式覆盖，并回复 `Fast mode enabled.` / `Fast mode disabled.`。使用 `/fast default` 清除 Session 覆盖并继承配置默认值；别名包括 `inherit`、`clear`、`reset` 和 `unpin`。
 - 发送 `/fast`（或 `/fast status`）不带模式参数以查看当前有效的快速模式状态。
 - OpenClaw 按以下顺序解析快速模式：
   1. 内联/仅指令 `/fast on|off`
@@ -115,13 +121,16 @@ read_when:
 
 - 网络聊天思考选择器在页面加载时从入站 Session 存储/配置中镜像 Session 的存储级别。
 - 选择另一个级别通过 `sessions.patch` 立即写入 Session 覆盖；它不等待下次发送，也不是一次性的 `thinkingOnce` 覆盖。
-- 第一个选项始终是 `Default (<resolved level>)`，其中解析的默认值来自活动 Session 模型的 Provider thinking 配置文件加上 `/status` 和 `session_status` 使用的相同回退逻辑。
+- 第一个选项始终是 clear-override 选项。当 Session 继承非 `off` 的有效默认值时显示 `Inherited: <resolved level>`，当继承的 thinking 被禁用时显示 `Off`。
 - 选择器使用 Gateway Session 行/默认值返回的 `thinkingLevels`，`thinkingOptions` 保留为遗留标签列表。浏览器 UI 不保留自己的 Provider 正则表达式列表；Plugin 拥有特定模型的级别集。
 - `/think:<level>` 仍然有效并更新相同的存储 Session 级别，因此聊天指令和选择器保持同步。
 
 ## Provider 配置文件
 
 - Provider Plugin 可以暴露 `resolveThinkingProfile(ctx)` 来定义模型支持的级别和默认值。
+- 代理 Claude 模型的 Provider Plugin 应复用 `openclaw/plugin-sdk/provider-model-shared` 中的 `resolveClaudeThinkingProfile(modelId)`，以使直接 Anthropic 和代理目录保持一致。
 - 每个配置文件级别都有存储的规范 `id`（`off`、`minimal`、`low`、`medium`、`high`、`xhigh`、`adaptive` 或 `max`），并可能包含显示 `label`。二进制 Provider 使用 `{ id: "low", label: "on" }`。
+- 需要验证显式 thinking 覆盖的工具 Plugin 应使用 `api.runtime.agent.resolveThinkingPolicy({ provider, model })` 加 `api.runtime.agent.normalizeThinkingLevel(...)`；它们不应保留自己的 Provider/模型级别列表。
+- 可访问已配置自定义模型元数据的工具 Plugin 可以将 `catalog` 传入 `resolveThinkingPolicy`，以便 `compat.supportedReasoningEfforts` 选择在 Plugin 端验证中得到反映。
 - 已发布的遗留钩子（`supportsXHighThinking`、`isBinaryThinking` 和 `resolveDefaultThinkingLevel`）保留为兼容性适配器，但新的自定义级别集应使用 `resolveThinkingProfile`。
 - Gateway 行/默认值暴露 `thinkingLevels`、`thinkingOptions` 和 `thinkingDefault`，以便 ACP/聊天客户端渲染运行时验证使用的相同配置文件 ID 和标签。

@@ -11,7 +11,7 @@ sidebarTitle: "Music generation"
 
 `music_generate` 工具让 Agent 能够通过已配置提供商（如 Google、MiniMax 和工作流配置的 ComfyUI）的共享音乐生成能力来创作音乐或音频。
 
-对于 Session 支持的 Agent 运行，OpenClaw 会将音乐生成作为后台任务启动，在任务账本中跟踪进度，然后在音轨准备好后重新唤醒 Agent，以便 Agent 将完成的音频发回原始 Channel。
+对于 Session 支持的 Agent 运行，OpenClaw 会将音乐生成作为后台任务启动，在任务账本中跟踪进度，然后在音轨准备好后重新唤醒 Agent，以便 Agent 告知用户并附上完成的音频。在使用仅 message 工具可见投递的群组/Channel 聊天中，Agent 通过 message 工具转达结果。如果完成 Agent 仅写了私有最终回复，OpenClaw 会回退到直接向原始 Channel 发送生成的媒体。完成唤醒时会明确提示 Agent 在这些路由中正常最终回复为私有。
 
 <Note>
 内置共享工具仅在至少一个音乐生成提供商可用时才会显示。如果你在 Agent 工具列表中看不到 `music_generate`，请配置 `agents.defaults.musicGenerationModel` 或设置提供商 API 密钥。
@@ -141,7 +141,7 @@ Generate an energetic chiptune loop about launching a rocket at sunrise.
   提供商支持时的输出格式提示。
 </ParamField>
 <ParamField path="filename" type="string">输出文件名提示。</ParamField>
-<ParamField path="timeoutMs" type="number">可选的提供商请求超时（毫秒）。</ParamField>
+<ParamField path="timeoutMs" type="number">可选的提供商请求超时（毫秒）。低于 10000ms 的值会被提升至 10000ms 并在工具结果中报告。</ParamField>
 
 <Note>
 并非所有提供商都支持所有参数。OpenClaw 在提交前仍会验证硬限制（如输入数量）。当提供商支持时长但其最大值小于请求值时，OpenClaw 会将其限制到最近支持的时长。当所选提供商或模型无法满足时，不受支持的可选提示会被忽略并显示警告。工具结果会报告应用的设置；`details.normalization` 记录请求到应用的映射。

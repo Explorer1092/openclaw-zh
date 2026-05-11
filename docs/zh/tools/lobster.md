@@ -95,14 +95,26 @@ gog.gmail.search --query 'newer_than:1d' \
     "list": [
       {
         "id": "main",
-        "tools": { "allow": ["llm-task"] }
+        "tools": { "alsoAllow": ["llm-task"] }
       }
     ]
   }
 }
 ```
 
-在管道中使用它：
+### 重要限制：嵌入式 Lobster 与 `openclaw.invoke`
+
+捆绑的 Lobster Plugin 在 Gateway **进程内**运行工作流。在该嵌入式模式下，`openclaw.invoke` **不会**自动继承 Gateway URL/认证上下文用于嵌套的 OpenClaw CLI 工具调用。
+
+这意味着以下模式在**嵌入式运行器中目前不可靠**：
+
+```lobster
+openclaw.invoke --tool llm-task --action json --args-json '{ ... }'
+```
+
+以下示例仅在**独立 Lobster CLI** 在 `openclaw.invoke` 已配置正确 Gateway/认证上下文的环境中运行时适用：
+
+在独立 Lobster CLI 管道中使用：
 
 ```lobster
 openclaw.invoke --tool llm-task --action json --args-json '{
@@ -120,6 +132,11 @@ openclaw.invoke --tool llm-task --action json --args-json '{
   }
 }'
 ```
+
+如果你今天使用的是嵌入式 Lobster Plugin，建议使用：
+
+- 在 Lobster 之外直接调用 `llm-task` 工具，或
+- Lobster 管道内不使用 `openclaw.invoke` 的步骤，直到支持嵌入式桥接方案。
 
 有关详细信息和配置选项，请参见 [LLM Task](/tools/llm-task)。
 

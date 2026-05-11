@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7a38885691caf5546af1f3501ade0bd3"
+mmh3_hash: "952daf12fc57d796ffe49b253559b97b"
 ---
 # 文档指南
 
@@ -18,6 +18,14 @@ mmh3_hash: "7a38885691caf5546af1f3501ade0bd3"
 
 - 对于文档、UI 文案和选择器列表，除非该章节明确描述运行时顺序或自动检测顺序，否则请按字母顺序排列服务/Provider。
 - 保持捆绑 Plugin 命名与根目录 `AGENTS.md` 中的 repo 范围 Plugin 术语规则一致。
+
+## 内部文档
+
+- 长期私有运维文档应存放在 `~/Projects/manager/docs/`。
+- 仓库本地的内部草稿/镜像文档可存放在被 git 忽略的 `docs/internal/` 下。
+- 永远不要将 `docs/internal/**` 页面添加到 `docs/docs.json` 导航，也不要从公开文档中链接它们。
+- `scripts/docs-sync-publish.mjs` 会排除并从公开的 `openclaw/docs` 发布仓库中清除 `docs/internal/**`，即使之后有页面被强制添加进来。
+- 内部文档可以提及仓库路径、私有应用名称、1Password 条目名称和运维手册，但绝不包含密钥值。
 
 ## 文档国际化
 

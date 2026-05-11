@@ -7,8 +7,6 @@ read_when:
 title: "Perplexity Search"
 ---
 
-# Perplexity Search API
-
 OpenClaw 支持将 Perplexity Search API 作为 `web_search` 提供商。它返回包含 `title`、`url` 和 `snippet` 字段的结构化结果。
 
 为了兼容性，OpenClaw 也支持旧版 Perplexity Sonar/OpenRouter 设置。
@@ -95,18 +93,45 @@ OpenClaw 支持将 Perplexity Search API 作为 `web_search` 提供商。它返�
 
 以下参数适用于原生 Perplexity Search API 路径。
 
-| 参数                  | 描述                                              |
-| --------------------- | ------------------------------------------------- |
-| `query`               | 搜索查询词（必填）                                |
-| `count`               | 返回结果数量（1-10，默认：5）                     |
-| `country`             | 2 位 ISO 国家代码（如 "US"、"DE"）                |
-| `language`            | ISO 639-1 语言代码（如 "en"、"de"、"fr"）         |
-| `freshness`           | 时间过滤：`day`（24h）、`week`、`month` 或 `year` |
-| `date_after`          | 仅返回此日期后发布的结果（YYYY-MM-DD）            |
-| `date_before`         | 仅返回此日期前发布的结果（YYYY-MM-DD）            |
-| `domain_filter`       | 域名允许/拒绝列表数组（最多 20 个）               |
-| `max_tokens`          | 总内容预算（默认：25000，最大：1000000）           |
-| `max_tokens_per_page` | 每页 token 限制（默认：2048）                     |
+<ParamField path="query" type="string" required>
+搜索查询词。
+</ParamField>
+
+<ParamField path="count" type="number" default="5">
+返回结果数量（1-10）。
+</ParamField>
+
+<ParamField path="country" type="string">
+2 位 ISO 国家代码（如 `US`、`DE`）。
+</ParamField>
+
+<ParamField path="language" type="string">
+ISO 639-1 语言代码（如 `en`、`de`、`fr`）。
+</ParamField>
+
+<ParamField path="freshness" type="'day' | 'week' | 'month' | 'year'">
+时间过滤 - `day` 为 24 小时。
+</ParamField>
+
+<ParamField path="date_after" type="string">
+仅返回此日期后发布的结果（`YYYY-MM-DD`）。
+</ParamField>
+
+<ParamField path="date_before" type="string">
+仅返回此日期前发布的结果（`YYYY-MM-DD`）。
+</ParamField>
+
+<ParamField path="domain_filter" type="string[]">
+域名允许/拒绝列表数组（最多 20 个）。
+</ParamField>
+
+<ParamField path="max_tokens" type="number" default="25000">
+总内容预算（最大 1000000）。
+</ParamField>
+
+<ParamField path="max_tokens_per_page" type="number" default="2048">
+每页 token 限制。
+</ParamField>
 
 对于旧版 Sonar/OpenRouter 兼容路径：
 
@@ -172,7 +197,17 @@ await web_search({
 
 ## 相关
 
-- [Web Search 概览](/tools/web) -- 所有提供商和自动检测
-- [Perplexity Search API 文档](https://docs.perplexity.ai/docs/search/quickstart) -- 官方 Perplexity 文档
-- [Brave Search](/tools/brave-search) -- 支持国家/语言过滤的结构化结果
-- [Exa Search](/tools/exa-search) -- 神经网络搜索与内容提取
+<CardGroup cols={2}>
+  <Card title="Web Search 概览" href="/tools/web" icon="globe">
+    所有提供商和自动检测规则。
+  </Card>
+  <Card title="Brave Search" href="/tools/brave-search" icon="shield">
+    支持国家/语言过滤的结构化结果。
+  </Card>
+  <Card title="Exa Search" href="/tools/exa-search" icon="magnifying-glass">
+    神经网络搜索与内容提取。
+  </Card>
+  <Card title="Perplexity Search API 文档" href="https://docs.perplexity.ai/docs/search/quickstart" icon="arrow-up-right-from-square">
+    Perplexity Search API 官方快速入门和参考文档。
+  </Card>
+</CardGroup>

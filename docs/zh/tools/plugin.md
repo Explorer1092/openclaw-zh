@@ -9,9 +9,11 @@ title: "Plugin"
 sidebarTitle: "安装和配置"
 ---
 
-Plugin 为 OpenClaw 扩展新能力：Channel、模型 Provider、Agent 运行时、工具、技能、语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取、Web 搜索等。某些 Plugin 是**核心**的（随 OpenClaw 附带），其他是**外部**的（由社区发布在 npm 上）。
+Plugin 为 OpenClaw 扩展新能力：Channel、模型 Provider、Agent 运行时、工具、技能、语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取、Web 搜索等。某些 Plugin 是**核心**的（随 OpenClaw 附带），其他是**外部**的。大多数外部 Plugin 通过 [ClawHub](/clawhub) 发布和发现。Npm 仍支持直接安装以及在迁移完成之前的一批 OpenClaw 自有 Plugin 包。
 
 ## 快速入门
+
+如需复制粘贴的安装、列出、卸载、更新和发布示例，参见[管理 Plugin](/plugins/manage-plugins)。
 
 <Steps>
   <Step title="查看已加载的内容">
@@ -22,8 +24,18 @@ Plugin 为 OpenClaw 扩展新能力：Channel、模型 Provider、Agent 运行�
 
   <Step title="安装 Plugin">
     ```bash
+    # 搜索 ClawHub Plugin
+    openclaw plugins search "calendar"
+
+    # 从 ClawHub
+    openclaw plugins install clawhub:openclaw-codex-app-server
+
     # 从 npm
-    openclaw plugins install @openclaw/voice-call
+    openclaw plugins install npm:@acme/openclaw-plugin
+    openclaw plugins install npm-pack:./openclaw-plugin-1.2.3.tgz
+
+    # 从 git
+    openclaw plugins install git:github.com/acme/openclaw-plugin@v1.0.0
 
     # 从本地目录或存档
     openclaw plugins install ./my-plugin
@@ -40,17 +52,34 @@ Plugin 为 OpenClaw 扩展新能力：Channel、模型 Provider、Agent 运行�
     然后在你的配置文件中的 `plugins.entries.\<id\>.config` 下进行配置。
 
   </Step>
+
+  <Step title="通过聊天管理">
+    在运行中的 Gateway 中，仅限所有者的 `/plugins enable` 和 `/plugins disable` 会触发 Gateway 配置重载器。Gateway 在进程内重载 Plugin 运行时表面，新 Agent 轮次从刷新后的注册表重建工具列表。`/plugins install` 更改 Plugin 源代码，因此 Gateway 请求重启，而不是假装当前进程可以安全重载已导入的模块。
+
+  </Step>
+
+  <Step title="验证 Plugin">
+    ```bash
+    openclaw plugins inspect <plugin-id> --runtime --json
+
+    # 如果 Plugin 注册了 CLI 根，从该根运行一个命令。
+    openclaw <plugin-command> --help
+    ```
+
+    当需要证明已注册的工具、服务、Gateway 方法、Hook 或 Plugin 自有 CLI 命令时，使用 `--runtime`。不带 `--runtime` 的 `inspect` 是冷 Manifest/注册表检查，有意避免导入 Plugin 运行时。
+
+  </Step>
 </Steps>
 
 如果你更喜欢通过聊天控制，启用 `commands.plugins: true` 并使用：
 
 ```text
-/plugin install clawhub:@openclaw/voice-call
-/plugin show voice-call
-/plugin enable voice-call
+/plugin install clawhub:<package>
+/plugin show <plugin-id>
+/plugin enable <plugin-id>
 ```
 
-安装路径使用与 CLI 相同的解析器：本地路径/存档、显式 `clawhub:<pkg>`、显式 `npm:<pkg>`，或裸包规格（ClawHub 优先，然后 npm 回退）。
+安装路径使用与 CLI 相同的解析器：本地路径/存档、显式 `clawhub:<pkg>`、显式 `npm:<pkg>`、显式 `npm-pack:<path.tgz>`、显式 `git:<repo>`，或通过 npm 的裸包规格。
 
 如果配置无效，安装通常会安全失败并指向 `openclaw doctor --fix`。唯一的恢复例外是针对选择加入 `openclaw.install.allowInvalidConfigRecovery` 的 Plugin 的窄范围捆绑 Plugin 重新安装路径。
 
@@ -91,16 +120,26 @@ OpenClaw 识别两种 Plugin 格式：
 
 ## 官方 Plugin
 
-### 可安装（npm）
+### 迁移期间的 OpenClaw 自有 npm 包
 
-| Plugin          | 包                     | 文档                                 |
-| --------------- | ---------------------- | ------------------------------------ |
-| Matrix          | `@openclaw/matrix`     | [Matrix](/channels/matrix)           |
-| Microsoft Teams | `@openclaw/msteams`    | [Microsoft Teams](/channels/msteams) |
-| Nostr           | `@openclaw/nostr`      | [Nostr](/channels/nostr)             |
-| Voice Call      | `@openclaw/voice-call` | [Voice Call](/plugins/voice-call)    |
-| Zalo            | `@openclaw/zalo`       | [Zalo](/channels/zalo)               |
-| Zalo Personal   | `@openclaw/zalouser`   | [Zalo Personal](/plugins/zalouser)   |
+ClawHub 是大多数 Plugin 的主要分发路径。当前打包的 OpenClaw 版本已经捆绑了许多官方 Plugin，因此在正常设置中不需要单独的 npm 安装。在每个 OpenClaw 自有 Plugin 完成迁移到 ClawHub 之前，OpenClaw 仍在 npm 上为旧版/自定义安装和直接 npm 工作流提供部分 `@openclaw/*` Plugin 包。
+
+如果 npm 将某个 `@openclaw/*` Plugin 包报告为已弃用，该包版本来自旧版外部包线。请使用当前 OpenClaw 的捆绑 Plugin 或本地检出，直到发布更新的 npm 包。
+
+| Plugin          | 包                         | 文档                                       |
+| --------------- | -------------------------- | ------------------------------------------ |
+| Discord         | `@openclaw/discord`        | [Discord](/channels/discord)               |
+| Feishu          | `@openclaw/feishu`         | [Feishu](/channels/feishu)                 |
+| Matrix          | `@openclaw/matrix`         | [Matrix](/channels/matrix)                 |
+| Mattermost      | `@openclaw/mattermost`     | [Mattermost](/channels/mattermost)         |
+| Microsoft Teams | `@openclaw/msteams`        | [Microsoft Teams](/channels/msteams)       |
+| Nextcloud Talk  | `@openclaw/nextcloud-talk` | [Nextcloud Talk](/channels/nextcloud-talk) |
+| Nostr           | `@openclaw/nostr`          | [Nostr](/channels/nostr)                   |
+| Synology Chat   | `@openclaw/synology-chat`  | [Synology Chat](/channels/synology-chat)   |
+| Tlon            | `@openclaw/tlon`           | [Tlon](/channels/tlon)                     |
+| WhatsApp        | `@openclaw/whatsapp`       | [WhatsApp](/channels/whatsapp)             |
+| Zalo            | `@openclaw/zalo`           | [Zalo](/channels/zalo)                     |
+| Zalo Personal   | `@openclaw/zalouser`       | [Zalo Personal](/plugins/zalouser)         |
 
 ### 核心（随 OpenClaw 附带）
 
@@ -128,7 +167,7 @@ OpenClaw 识别两种 Plugin 格式：
   </Accordion>
 </AccordionGroup>
 
-想找第三方 Plugin？参见 [社区 Plugin](/plugins/community)。
+想找第三方 Plugin？参见 [ClawHub](/clawhub)。
 
 ## 配置
 
@@ -146,23 +185,29 @@ OpenClaw 识别两种 Plugin 格式：
 }
 ```
 
-| 字段             | 描述                                                      |
-| ---------------- | --------------------------------------------------------- |
-| `enabled`        | 主开关（默认：`true`）                                    |
-| `allow`          | Plugin 允许列表（可选）                                   |
-| `deny`           | Plugin 拒绝列表（可选；拒绝优先）                         |
-| `load.paths`     | 额外的 Plugin 文件/目录                                   |
-| `slots`          | 独占槽位选择器（例如 `memory`、`contextEngine`）          |
-| `entries.\<id\>` | 每个 Plugin 的开关 + 配置                                 |
+| 字段                | 描述                                                      |
+| ------------------- | --------------------------------------------------------- |
+| `enabled`           | 主开关（默认：`true`）                                    |
+| `allow`             | Plugin 允许列表（可选）                                   |
+| `bundledDiscovery`  | 捆绑 Plugin 发现模式（默认 `allowlist`）                  |
+| `deny`              | Plugin 拒绝列表（可选；拒绝优先）                         |
+| `load.paths`        | 额外的 Plugin 文件/目录                                   |
+| `slots`             | 独占槽位选择器（例如 `memory`、`contextEngine`）          |
+| `entries.\<id\>`    | 每个 Plugin 的开关 + 配置                                 |
 
-配置更改**需要重启 Gateway**。如果 Gateway 运行时启用了配置监视 + 进程内重启（默认的 `openclaw gateway` 路径），通常会在配置写入后自动执行该重启。原生 Plugin 运行时代码或生命周期 Hook 没有受支持的热重载路径；在期望更新的 `register(api)` 代码、`api.on(...)` Hook、工具、服务或 Provider/运行时 Hook 运行之前，请重启服务于实时 Channel 的 Gateway 进程。
+`plugins.allow` 是独占的。当它非空时，只有列出的 Plugin 才能加载或暴露工具，即使 `tools.allow` 包含 `"*"` 或特定的 Plugin 自有工具名称。如果工具允许列表引用了 Plugin 工具，请将拥有该 Plugin 的 id 添加到 `plugins.allow`，或移除 `plugins.allow`；`openclaw doctor` 会对此形状发出警告。
+
+`plugins.bundledDiscovery` 对新配置默认为 `"allowlist"`，因此严格的 `plugins.allow` 清单也会阻止省略的捆绑 Provider Plugin，包括运行时 Web 搜索 Provider 发现。Doctor 在迁移期间会为旧版严格允许列表配置加上 `"compat"` 标记，以便升级保持旧版捆绑 Provider 行为，直到操作员选择进入更严格的模式。空的 `plugins.allow` 仍被视为未设置/开放。
+
+通过 `/plugins enable` 或 `/plugins disable` 进行的配置更改会触发进程内 Gateway Plugin 重载。新 Agent 轮次从刷新后的 Plugin 注册表重建工具列表。源更改操作（如安装、更新和卸载）仍然需要重启 Gateway 进程，因为已导入的 Plugin 模块无法安全地原地替换。
 
 `openclaw plugins list` 是本地 Plugin 注册表/配置快照。其中 `enabled` 的 Plugin 意味着持久化注册表和当前配置允许该 Plugin 参与。这不能证明已运行的远程 Gateway 子进程已重启到相同的 Plugin 代码。在带有包装进程的 VPS/容器设置中，请将重启信号发送给实际的 `openclaw gateway run` 进程，或对运行中的 Gateway 使用 `openclaw gateway restart`。
 
 <Accordion title="Plugin 状态：已禁用 vs 缺失 vs 无效">
   - **已禁用**：Plugin 存在，但启用规则关闭了它。配置被保留。
   - **缺失**：配置引用了发现未找到的 Plugin id。
-  - **无效**：Plugin 存在，但其配置与声明的 Schema 不匹配。
+  - **无效**：Plugin 存在，但其配置与声明的 Schema 不匹配。Gateway 启动跳过该 Plugin；`openclaw doctor --fix` 可通过禁用它并移除其配置负载来隔离无效条目。
+
 </Accordion>
 
 ## 发现和优先级
@@ -198,7 +243,8 @@ OpenClaw 按以下顺序扫描 Plugin（第一个匹配优先）：
 - 捆绑 Plugin 遵循内置默认启用集，除非被覆盖
 - 独占槽位可以强制启用该槽位的选定 Plugin
 - 某些捆绑的可选加入 Plugin 会在配置命名 Plugin 自有表面时自动启用，例如 Provider 模型引用、Channel 配置或 Agent 运行时
-- OpenAI 系列 Codex 路由保持独立的 Plugin 边界：`openai-codex/*` 属于 OpenAI Plugin，而捆绑的 Codex 应用服务器 Plugin 通过 `agentRuntime.id: "codex"` 或旧版 `codex/*` 模型引用选择
+- 过时的 Plugin 配置在 `plugins.enabled: false` 激活时保持不变；在需要删除过时 id 时，在运行 doctor 清理前重新启用 Plugin
+- OpenAI 系列 Codex 路由保持独立的 Plugin 边界：`openai-codex/*` 属于 OpenAI Plugin，而捆绑的 Codex 应用服务器 Plugin 通过规范的 `openai/*` Agent 引用、显式 Provider/模型 `agentRuntime.id: "codex"` 或旧版 `codex/*` 模型引用选择
 
 ## 运行时 Hook 故障排除
 
@@ -206,9 +252,36 @@ OpenClaw 按以下顺序扫描 Plugin（第一个匹配优先）：
 
 - 运行 `openclaw gateway status --deep --require-rpc`，确认活动 Gateway URL、配置文件、配置路径和进程是你正在编辑的那些。
 - 在 Plugin 安装/配置/代码更改后重启实时 Gateway。在包装容器中，PID 1 可能只是一个监督进程；重启或向子进程 `openclaw gateway run` 发送信号。
-- 使用 `openclaw plugins inspect <id> --json` 确认 Hook 注册和诊断信息。`llm_input`、`llm_output`、`before_agent_finalize` 和 `agent_end` 等非捆绑对话 Hook 需要 `plugins.entries.<id>.hooks.allowConversationAccess=true`。
+- 使用 `openclaw plugins inspect <id> --runtime --json` 确认 Hook 注册和诊断信息。`before_model_resolve`、`before_agent_reply`、`before_agent_run`、`llm_input`、`llm_output`、`before_agent_finalize` 和 `agent_end` 等非捆绑对话 Hook 需要 `plugins.entries.<id>.hooks.allowConversationAccess=true`。
 - 对于模型切换，优先使用 `before_model_resolve`。它在 Agent 轮次的模型解析之前运行；`llm_output` 仅在模型尝试产生 Assistant 输出后运行。
 - 对于有效 Session 模型的证明，使用 `openclaw sessions` 或 Gateway Session/状态表面，调试 Provider 负载时，用 `--raw-stream --raw-stream-path <path>` 启动 Gateway。
+
+### Plugin 工具设置缓慢
+
+如果 Agent 轮次在准备工具时似乎停滞，请启用 Trace 日志记录并检查 Plugin 工具工厂计时行：
+
+```bash
+openclaw config set logging.level trace
+openclaw logs --follow
+```
+
+查找：
+
+```text
+[trace:plugin-tools] factory timings ...
+```
+
+摘要列出总工厂时间和最慢的 Plugin 工具工厂，包括 Plugin id、声明的工具名称、结果形状以及工具是否为可选。当单个工厂至少花费 1 秒或总 Plugin 工具工厂准备时间至少 5 秒时，慢行会被提升为警告。
+
+OpenClaw 为具有相同有效请求上下文的重复解析缓存成功的 Plugin 工具工厂结果。缓存键包括有效运行时配置、工作区、Agent/Session id、沙箱策略、浏览器设置、投递上下文、请求者身份和所有权状态，因此依赖这些受信任字段的工厂在上下文改变时会重新运行。
+
+如果某个 Plugin 主导了计时，请检查其运行时注册：
+
+```bash
+openclaw plugins inspect <plugin-id> --runtime --json
+```
+
+然后更新、重新安装或禁用该 Plugin。Plugin 作者应将昂贵的依赖加载移到工具执行路径之后，而不是在工具工厂内部完成。
 
 ### Channel 或工具所有权冲突
 
@@ -260,7 +333,9 @@ openclaw plugins list                       # 紧凑清单
 openclaw plugins list --enabled            # 仅已启用的 Plugin
 openclaw plugins list --verbose            # 每个 Plugin 的详细行
 openclaw plugins list --json               # 机器可读清单
-openclaw plugins inspect <id>              # 深度详情
+openclaw plugins search <query>            # 搜索 ClawHub Plugin 目录
+openclaw plugins inspect <id>              # 静态详情
+openclaw plugins inspect <id> --runtime    # 已注册的 Hook/工具/CLI/Gateway 方法
 openclaw plugins inspect <id> --json       # 机器可读
 openclaw plugins inspect --all             # 全范围表格
 openclaw plugins info <id>                 # inspect 别名
@@ -269,9 +344,11 @@ openclaw plugins registry                  # 检查持久化注册表状态
 openclaw plugins registry --refresh        # 重建持久化注册表
 openclaw doctor --fix                      # 修复 Plugin 注册表状态
 
-openclaw plugins install <package>         # 安装（ClawHub 优先，然后 npm）
+openclaw plugins install <package>         # 默认从 npm 安装
 openclaw plugins install clawhub:<pkg>     # 仅从 ClawHub 安装
 openclaw plugins install npm:<pkg>         # 仅从 npm 安装
+openclaw plugins install git:<repo>        # 从 git 安装
+openclaw plugins install git:<repo>@<ref>  # 从 git ref 安装
 openclaw plugins install <spec> --force    # 覆盖现有安装
 openclaw plugins install <path>            # 从本地路径安装
 openclaw plugins install -l <path>         # 链接（不复制）用于开发
@@ -392,4 +469,4 @@ OpenClaw 加载入口对象并在 Plugin 激活期间调用 `register(api)`。�
 - [Plugin Manifest](/plugins/manifest) — Manifest Schema
 - [注册工具](/plugins/building-plugins#registering-agent-tools) — 在 Plugin 中添加 Agent 工具
 - [Plugin 内部](/plugins/architecture) — 能力模型和加载流水线
-- [社区 Plugin](/plugins/community) — 第三方列表
+- [ClawHub](/clawhub) — 第三方 Plugin 发现

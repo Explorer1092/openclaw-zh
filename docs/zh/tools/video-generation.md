@@ -1,6 +1,6 @@
 ---
 mmh3_hash: "34cf527497c63d011d0dda61a50a3fbc"
-summary: "使用 14 个提供商后端从文本、图像或现有视频生成视频"
+summary: "通过 video_generate 从文本、图像或视频参考使用 16 个提供商后端生成视频"
 read_when:
   - 通过 Agent 生成视频
   - 配置视频生成提供商和模型
@@ -10,7 +10,7 @@ title: "Video Generation"
 
 # Video Generation
 
-OpenClaw Agent 可以从文本提示词、参考图像或现有视频生成视频。支持 14 个提供商后端，每个后端具有不同的模型选项、输入模式和功能集。Agent 会根据你的配置和可用 API 密钥自动选择合适的提供商。
+OpenClaw Agent 可以从文本提示词、参考图像或现有视频生成视频。支持 16 个提供商后端，每个后端具有不同的模型选项、输入模式和功能集。Agent 会根据你的配置和可用 API 密钥自动选择合适的提供商。
 
 <Note>
 `video_generate` 工具仅在至少一个视频生成提供商可用时才会显示。如果你在 Agent 工具列表中看不到它，请设置提供商 API 密钥或配置 `agents.defaults.videoGenerationModel`。
@@ -85,15 +85,17 @@ openclaw tasks cancel <taskId>
 | BytePlus Seedance 1.5  | `seedance-1-5-pro-251215`       | 是   | 最多 2 张图像（通过 role 设置首帧+末帧） | 否               | `BYTEPLUS_API_KEY`                       |
 | BytePlus Seedance 2.0  | `dreamina-seedance-2-0-260128`  | 是   | 最多 9 张参考图像                        | 最多 3 段视频    | `BYTEPLUS_API_KEY`                       |
 | ComfyUI                | `workflow`                      | 是   | 1 张图像                                 | 否               | `COMFY_API_KEY` 或 `COMFY_CLOUD_API_KEY` |
-| fal                    | `fal-ai/minimax/video-01-live`  | 是   | 1 张图像                                 | 否               | `FAL_KEY`                                |
+| DeepInfra              | `Pixverse/Pixverse-T2V`         | 是   | 否                                       | 否               | `DEEPINFRA_API_KEY`                      |
+| fal                    | `fal-ai/minimax/video-01-live`  | 是   | 1 张图像；Seedance 参考转视频最多 9 张   | Seedance 参考转视频最多 3 段 | `FAL_KEY`              |
 | Google                 | `veo-3.1-fast-generate-preview` | 是   | 1 张图像                                 | 1 段视频         | `GEMINI_API_KEY`                         |
-| MiniMax                | `MiniMax-Hailuo-2.3`            | 是   | 1 张图像                                 | 否               | `MINIMAX_API_KEY`                        |
+| MiniMax                | `MiniMax-Hailuo-2.3`            | 是   | 1 张图像                                 | 否               | `MINIMAX_API_KEY` 或 MiniMax OAuth       |
 | OpenAI                 | `sora-2`                        | 是   | 1 张图像                                 | 1 段视频         | `OPENAI_API_KEY`                         |
+| OpenRouter             | `google/veo-3.1-fast`           | 是   | 最多 4 张图像（首帧/末帧或参考图像）     | 否               | `OPENROUTER_API_KEY`                     |
 | Qwen                   | `wan2.6-t2v`                    | 是   | 是（远程 URL）                           | 是（远程 URL）   | `QWEN_API_KEY`                           |
 | Runway                 | `gen4.5`                        | 是   | 1 张图像                                 | 1 段视频         | `RUNWAYML_API_SECRET`                    |
 | Together               | `Wan-AI/Wan2.2-T2V-A14B`        | 是   | 1 张图像                                 | 否               | `TOGETHER_API_KEY`                       |
 | Vydra                  | `veo3`                          | 是   | 1 张图像（`kling`）                      | 否               | `VYDRA_API_KEY`                          |
-| xAI                    | `grok-imagine-video`            | 是   | 1 张图像                                 | 1 段视频         | `XAI_API_KEY`                            |
+| xAI                    | `grok-imagine-video`            | 是   | 1 张首帧图像或最多 7 张 `reference_image` | 1 段视频        | `XAI_API_KEY`                            |
 
 部分提供商接受额外或替代的 API 密钥环境变量。详情请参见各[提供商页面](#相关)。
 
@@ -108,12 +110,14 @@ openclaw tasks cancel <taskId>
 | Alibaba               | 是         | 是             | 是             | `generate`、`imageToVideo`；`videoToVideo` 因需要远程 `http(s)` 视频 URL 而跳过                                                                  |
 | BytePlus              | 是         | 是             | 否             | `generate`、`imageToVideo`                                                                                                                       |
 | ComfyUI               | 是         | 是             | 否             | 不在共享扫描中；工作流特定覆盖位于 Comfy 测试中                                                                                                  |
-| fal                   | 是         | 是             | 否             | `generate`、`imageToVideo`                                                                                                                       |
+| DeepInfra             | 是         | 否             | 否             | `generate`；捆绑契约中 DeepInfra 原生视频 schema 为文本到视频                                                                                    |
+| fal                   | 是         | 是             | 是             | `generate`、`imageToVideo`；`videoToVideo` 仅在使用 Seedance 参考转视频时运行                                                                     |
 | Google                | 是         | 是             | 是             | `generate`、`imageToVideo`；共享 `videoToVideo` 因当前缓冲区支持的 Gemini/Veo 扫描不接受该输入而跳过                                             |
 | MiniMax               | 是         | 是             | 否             | `generate`、`imageToVideo`                                                                                                                       |
 | OpenAI                | 是         | 是             | 是             | `generate`、`imageToVideo`；共享 `videoToVideo` 因此组织/输入路径当前需要提供商端 inpaint/remix 访问而跳过                                        |
 | Qwen                  | 是         | 是             | 是             | `generate`、`imageToVideo`；`videoToVideo` 因需要远程 `http(s)` 视频 URL 而跳过                                                                  |
 | Runway                | 是         | 是             | 是             | `generate`、`imageToVideo`；`videoToVideo` 仅在选定模型为 `runway/gen4_aleph` 时运行                                                             |
+| OpenRouter            | 是         | 是             | 否             | `generate`、`imageToVideo`                                                                                                                       |
 | Together              | 是         | 是             | 否             | `generate`、`imageToVideo`                                                                                                                       |
 | Vydra                 | 是         | 是             | 否             | `generate`；共享 `imageToVideo` 因捆绑的 `veo3` 仅支持文本且捆绑的 `kling` 需要远程图像 URL 而跳过                                               |
 | xAI                   | 是         | 是             | 是             | `generate`、`imageToVideo`；`videoToVideo` 因此提供商当前需要远程 MP4 URL 而跳过                                                                 |
@@ -228,12 +232,14 @@ openclaw tasks cancel <taskId>
 | BytePlus Seedance 1.5 | 需要 [`@openclaw/byteplus-modelark`](https://www.npmjs.com/package/@openclaw/byteplus-modelark) Plugin。Provider id `byteplus-seedance15`。模型：`seedance-1-5-pro-251215`。使用统一 `content[]` API。最多支持 2 张输入图像（首帧+末帧）。所有输入必须是远程 `https://` URL。在每张图像上设置 `role: "first_frame"` / `"last_frame"`，或按位置传递图像。`aspectRatio: "adaptive"` 从输入图像自动检测比例。`audio: true` 映射到 `generate_audio`。`providerOptions.seed`（数字）被转发。 |
 | BytePlus Seedance 2.0 | 需要 [`@openclaw/byteplus-modelark`](https://www.npmjs.com/package/@openclaw/byteplus-modelark) Plugin。Provider id `byteplus-seedance2`。模型：`dreamina-seedance-2-0-260128`、`dreamina-seedance-2-0-fast-260128`。使用统一 `content[]` API。最多支持 9 张参考图像、3 段参考视频和 3 个参考音频。所有输入必须是远程 `https://` URL。在每个资源上设置 `role`——支持的值：`"first_frame"`、`"last_frame"`、`"reference_image"`、`"reference_video"`、`"reference_audio"`。`aspectRatio: "adaptive"` 从输入图像自动检测比例。`audio: true` 映射到 `generate_audio`。`providerOptions.seed`（数字）被转发。 |
 | ComfyUI               | 工作流驱动的本地或云端执行。通过已配置的图形支持文本到视频和图像到视频。                                                                                                                                                                                                                                                                                                                                                                      |
-| fal                   | 使用队列支持的流程处理长时间运行的任务。仅支持单张图像参考。                                                                                                                                                                                                                                                                                                                                                                                  |
+| DeepInfra             | 使用 DeepInfra 异步视频端点。仅支持文本到视频（捆绑契约中的原生 schema）。                                                                                                                                                                                                                                                                                                                                                                    |
+| fal                   | 使用队列支持的流程处理长时间运行的任务。支持单张图像参考；Seedance 参考转视频模型支持最多 9 张图像和 3 段视频。                                                                                                                                                                                                                                                                                                                                |
 | Google                | 使用 Gemini/Veo。支持一张图像或一段视频参考。                                                                                                                                                                                                                                                                                                                                                                                                 |
 | MiniMax               | 仅支持单张图像参考。                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | OpenAI                | 仅转发 `size` 覆盖。其他风格覆盖（`aspectRatio`、`resolution`、`audio`、`watermark`）会被忽略并显示警告。                                                                                                                                                                                                                                                                                                                                     |
 | Qwen                  | 与 Alibaba 使用相同的 DashScope 后端。参考输入必须是远程 `http(s)` URL；本地文件会被提前拒绝。                                                                                                                                                                                                                                                                                                                                                |
 | Runway                | 通过 data URI 支持本地文件。视频到视频需要 `runway/gen4_aleph`。纯文本运行支持 `16:9` 和 `9:16` 宽高比。                                                                                                                                                                                                                                                                                                                                      |
+| OpenRouter            | 使用 OpenRouter 的视频生成 API。支持最多 4 张图像参考（首帧/末帧或参考图像），通过 role 控制。                                                                                                                                                                                                                                                                                                                                                |
 | Together              | 仅支持单张图像参考。                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Vydra                 | 直接使用 `https://www.vydra.ai/api/v1` 以避免认证丢失重定向。`veo3` 捆绑为纯文本到视频；`kling` 需要远程图像 URL。                                                                                                                                                                                                                                                                                                                            |
 | xAI                   | 支持文本到视频、图像到视频和远程视频编辑/扩展流程。                                                                                                                                                                                                                                                                                                                                                                                           |

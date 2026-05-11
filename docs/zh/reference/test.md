@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b83514ed608887a033e017df83ff97c0"
+mmh3_hash: "e1c36c0bc83904c5a729c3a81f5a44db"
 summary: "如何在本地运行测试（vitest）以及何时使用 force/coverage 模式"
 read_when:
   - 运行或修复测试
@@ -7,6 +7,7 @@ title: "测试"
 ---
 
 - 完整测试套件（套件、实时、Docker）：[测试](/help/testing)
+- 更新和 Plugin 包验证：[测试更新和 Plugin](/help/testing-updates-plugins)
 
 - `pnpm test:force`：杀死任何占用默认控制端口的遗留 Gateway 进程，然后使用隔离的 Gateway 端口运行完整的 Vitest 套件，以便服务器测试不会与运行的实例冲突。当先前的 Gateway 运行占用端口 18789 时使用此选项。
 - `pnpm test:coverage`：使用 V8 覆盖率运行单元套件（通过 `vitest.unit.config.ts`）。这是加载文件的单元覆盖率关卡，而不是全仓库所有文件的覆盖率。阈值为 70% 行/函数/语句和 55% 分支。因为 `coverage.all` 为 false，关卡测量单元覆盖率套件加载的文件，而不是将每个拆分通道源文件视为未覆盖。
@@ -17,9 +18,12 @@ title: "测试"
 - `pnpm check:changed`：为针对 `origin/main` 差异运行智能变更检查关卡。它为受影响的架构通道运行类型检查、lint 和守护命令，但不运行 Vitest 测试。对于测试证明使用 `pnpm test:changed` 或显式 `pnpm test <target>`。
 - `pnpm test`：通过有作用域的 Vitest 通道路由显式文件/目录目标。无目标运行使用固定的分片组并扩展到叶配置以进行本地并行执行；扩展组始终扩展到每个扩展的分片配置，而不是一个大型根项目进程。
 - 测试包装器运行以简短的 `[test] passed|failed|skipped ... in ...` 摘要结束。Vitest 自己的持续时间行保持为每个分片的详细信息。
+- 共享 OpenClaw 测试状态：当测试需要隔离的 `HOME`、`OPENCLAW_STATE_DIR`、`OPENCLAW_CONFIG_PATH`、配置固件、工作区、Agent 目录或 auth-profile 存储时，从 Vitest 使用 `src/test-utils/openclaw-test-state.ts`。
+- 进程 E2E 辅助程序：当 Vitest 进程级 E2E 测试需要运行的 Gateway、CLI 环境、日志捕获和一站式清理时，使用 `test/helpers/openclaw-test-instance.ts`。
+- Docker/Bash E2E 辅助程序：来源 `scripts/lib/docker-e2e-image.sh` 的通道可以将 `docker_e2e_test_state_shell_b64 <label> <scenario>` 传递到容器，并用 `scripts/lib/openclaw-e2e-instance.sh` 解码；多主脚本可以传递 `docker_e2e_test_state_function_b64` 并在每个流中调用 `openclaw_test_state_create <label> <scenario>`。较低级别的调用者可以使用 `scripts/lib/openclaw-test-state.mjs shell --label <name> --scenario <name>` 获取容器内 shell 代码片段，或使用 `node scripts/lib/openclaw-test-state.mjs -- create --label <name> --scenario <name> --env-file <path> --json` 获取可加载的主机环境文件。`--` 在 `create` 之前防止较新的 Node 运行时将 `--env-file` 视为 Node 标志。启动 Gateway 的 Docker/Bash 通道可以在容器内来源 `scripts/lib/openclaw-e2e-instance.sh` 以获取入口点解析、模拟 OpenAI 启动、Gateway 前台/后台启动、就绪探测、状态环境导出、日志转储和进程清理。
 - 完整、扩展和包含模式分片运行更新 `.artifacts/vitest-shard-timings.json` 中的本地时间数据；之后的整个配置运行使用这些时间来平衡慢速和快速分片。包含模式 CI 分片将分片名称附加到时间键，这使得过滤的分片时间可见而不替换整体配置时间数据。设置 `OPENCLAW_TEST_PROJECTS_TIMINGS=0` 以忽略本地时间产物。
 - 选定的 `plugin-sdk` 和 `commands` 测试文件现在通过只保留 `test/setup.ts` 的专用轻量通道路由，将运行时密集型用例保留在其现有通道上。
-- 有同级测试的源文件在回退到更宽目录通配符之前会映射到该同级。`test/helpers/channels` 和 `test/helpers/plugins` 下的辅助函数编辑使用本地导入图来运行导入测试，而不是在依赖路径精确时广泛运行每个分片。
+- 有同级测试的源文件在回退到更宽目录通配符之前会映射到该同级。`src/channels/plugins/contracts/test-helpers`、`src/plugin-sdk/test-helpers` 和 `src/plugins/contracts` 下的辅助函数编辑使用本地导入图来运行导入测试，而不是在依赖路径精确时广泛运行每个分片。
 - `auto-reply` 现在还拆分为三个专用配置（`core`、`top-level`、`reply`），以便回复工具不会主导较轻量的顶层状态/token/辅助测试。
 - 基础 Vitest 配置现在默认使用 `pool: "threads"` 和 `isolate: false`，并在仓库配置中启用共享的非隔离运行器。
 - `pnpm test:channels` 运行 `vitest.channels.config.ts`。
@@ -40,6 +44,11 @@ title: "测试"
 - CLI 后端实时 Docker 探针可以作为专注通道运行，例如 `pnpm test:docker:live-cli-backend:codex`、`pnpm test:docker:live-cli-backend:codex:resume` 或 `pnpm test:docker:live-cli-backend:codex:mcp`。Claude 和 Gemini 有匹配的 `:resume` 和 `:mcp` 别名。
 - `pnpm test:docker:openwebui`：启动 Docker 化的 OpenClaw + Open WebUI，通过 Open WebUI 登录，检查 `/api/models`，然后通过 `/api/chat/completions` 运行真实的代理聊天。需要可用的实时模型密钥（例如 `~/.profile` 中的 OpenAI），拉取外部 Open WebUI 镜像，且不像正常的单元/e2e 套件那样期望 CI 稳定。
 - `pnpm test:docker:mcp-channels`：启动已种子的 Gateway 容器和第二个生成 `openclaw mcp serve` 的客户端容器，然后验证路由对话发现、转录读取、附件元数据、实时事件队列行为、出站发送路由以及通过真实 stdio 桥的 Claude 风格 Channel + 权限通知。Claude 通知断言直接读取原始 stdio MCP 帧，以便冒烟反映桥实际发出的内容。
+- `pnpm test:docker:upgrade-survivor`：将打包的 OpenClaw tarball 安装在旧用户脏固件上，无需实时 Provider 或 Channel 密钥即可运行包更新加非交互式 doctor，然后启动回环 Gateway 并检查 Agent、Channel 配置、Plugin 允许列表、工作区/Session 文件、过期旧 Plugin 依赖状态、启动和 RPC 状态是否存活。
+- `pnpm test:docker:published-upgrade-survivor`：默认安装 `openclaw@latest`，在没有实时 Provider 或 Channel 密钥的情况下播种真实的现有用户文件，使用烘焙的 `openclaw config set` 命令配方配置该基准线，将该已发布安装更新到打包的 OpenClaw tarball，运行非交互式 doctor，写入 `.artifacts/upgrade-survivor/summary.json`，然后启动回环 Gateway 并检查已配置的意图、工作区/Session 文件、过期 Plugin 配置和旧版依赖状态、启动、`/healthz`、`/readyz` 和 RPC 状态是否存活或干净修复。使用 `OPENCLAW_UPGRADE_SURVIVOR_BASELINE_SPEC` 覆盖一个基准线，使用 `OPENCLAW_UPGRADE_SURVIVOR_BASELINE_SPECS` 扩展精确的本地矩阵（如 `openclaw@2026.5.2 openclaw@2026.4.23 openclaw@2026.4.15`），或使用 `OPENCLAW_UPGRADE_SURVIVOR_SCENARIOS=reported-issues` 添加场景固件；reported-issues 集包括 `configured-plugin-installs`（验证已配置的外部 OpenClaw Plugin 在升级期间自动安装）和 `stale-source-plugin-shadow`（防止仅源 Plugin 影子破坏启动）。Package Acceptance 将这些公开为 `published_upgrade_survivor_baseline`、`published_upgrade_survivor_baselines` 和 `published_upgrade_survivor_scenarios`，并在将精确包规格传递给 Docker 通道之前解析元基准线 token（如 `last-stable-4` 或 `all-since-2026.4.23`）。
+- `pnpm test:docker:update-migration`：在 `plugin-deps-cleanup` 场景的清理密集型 published-upgrade survivor 工具中运行，默认从 `openclaw@2026.4.23` 开始。独立的 `Update Migration` 工作流通过 `baselines=all-since-2026.4.23` 扩展此通道，以便从 `.23` 以后的每个稳定已发布包更新到候选包，并在完整发布 CI 之外证明已配置的 Plugin 依赖清理。
+- `pnpm test:docker:plugins`：为本地路径、`file:`、带提升依赖的 npm 注册表包、git 移动引用、ClawHub 固件、市场更新和 Claude 包启用/检查运行安装/更新冒烟。
+- `pnpm test:docker:skill-install`：在裸 Docker 运行器中安装打包的 OpenClaw tarball，禁用 `skills.install.allowUploadedArchives`，从实时 ClawHub 搜索解析当前的 Skill slug，通过 `openclaw skills install` 安装它，并验证 `SKILL.md`、`.clawhub/origin.json`、`.clawhub/lock.json` 和 `skills info --json`。
 
 ## 本地 PR 门控
 
@@ -87,6 +96,7 @@ title: "测试"
 - `pnpm tsx scripts/bench-cli-startup.ts --runs 12`
 - `pnpm tsx scripts/bench-cli-startup.ts --preset real`
 - `pnpm tsx scripts/bench-cli-startup.ts --preset real --case status --case gatewayStatus --runs 3`
+- `pnpm tsx scripts/bench-cli-startup.ts --preset real --case tasksJson --case tasksListJson --case tasksAuditJson --runs 3`
 - `pnpm tsx scripts/bench-cli-startup.ts --entry openclaw.mjs --entry-secondary dist/entry.js --preset all`
 - `pnpm tsx scripts/bench-cli-startup.ts --preset all --output .artifacts/cli-startup-bench-all.json`
 - `pnpm tsx scripts/bench-cli-startup.ts --preset real --case gatewayStatusJson --output .artifacts/cli-startup-bench-smoke.json`
@@ -96,7 +106,7 @@ title: "测试"
 预设：
 
 - `startup`：`--version`、`--help`、`health`、`health --json`、`status --json`、`status`
-- `real`：`health`、`status`、`status --json`、`sessions`、`sessions --json`、`agents list --json`、`gateway status`、`gateway status --json`、`gateway health --json`、`config get gateway.port`
+- `real`：`health`、`status`、`status --json`、`sessions`、`sessions --json`、`tasks --json`、`tasks list --json`、`tasks audit --json`、`agents list --json`、`gateway status`、`gateway status --json`、`gateway health --json`、`config get gateway.port`
 - `all`：两个预设
 
 输出包括 `sampleCount`、avg、p50、p95、min/max、退出代码/信号分布，以及每个命令的最大 RSS 摘要。可选的 `--cpu-prof-dir` / `--heap-prof-dir` 按运行写入 V8 性能文件，以便计时和性能文件捕获使用相同的测试套件。
@@ -137,3 +147,4 @@ pnpm test:docker:qr
 
 - [测试](/help/testing)
 - [实时测试](/help/testing-live)
+- [测试更新和 Plugin](/help/testing-updates-plugins)

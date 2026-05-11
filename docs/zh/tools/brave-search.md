@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0d95a443b5b57fedf253a5bf8b0fec68"
+mmh3_hash: "741313e08c23a8eff525a00ee342d2df"
 summary: "Brave Search API 设置，用于 web_search"
 read_when:
   - 希望将 Brave Search 用于 web_search
@@ -26,6 +26,7 @@ OpenClaw 支持将 Brave Search API 作为 `web_search` 提供商。
           webSearch: {
             apiKey: "BRAVE_API_KEY_HERE",
             mode: "web", // 或 "llm-context"
+            baseUrl: "https://api.search.brave.com", // 可选的代理/base URL 覆盖
           },
         },
       },
@@ -50,6 +51,8 @@ OpenClaw 支持将 Brave Search API 作为 `web_search` 提供商。
 
 - `web`（默认）：普通 Brave 网页搜索，返回标题、URL 和摘要
 - `llm-context`：Brave LLM Context API，返回预提取的文本块和来源，用于信息溯源
+
+`webSearch.baseUrl` 可将 Brave 请求指向受信任的 Brave 兼容代理或网关。OpenClaw 会在配置的 base URL 后追加 `/res/v1/web/search` 或 `/res/v1/llm/context`，并在缓存键中保留 base URL。公共端点必须使用 `https://`；仅受信任的环回地址或私有网络代理主机才可接受 `http://`。
 
 ## 工具参数
 
@@ -119,9 +122,11 @@ await web_search({
 - 每个 Brave 套餐包含每月 **\$5 免费额度**（每月更新）。Search 套餐每 1,000 次请求收费 \$5，因此额度可覆盖每月 1,000 次查询。请在 Brave 控制面板中设置使用限额以避免意外费用。当前套餐详情请参见 [Brave API 门户](https://brave.com/search/api/)。
 - Search 套餐包含 LLM Context 端点和 AI 推理权限。存储结果以训练或微调模型需要具有明确存储权限的套餐。请参见 Brave [服务条款](https://api-dashboard.search.brave.com/terms-of-service)。
 - `llm-context` 模式返回溯源条目，而非普通网页搜索摘要形式。
-- `llm-context` 模式不支持 `ui_lang`、`freshness`、`date_after` 或 `date_before`。
+- `llm-context` 模式支持 `freshness` 以及有界的 `date_after` + `date_before` 范围。它不支持 `ui_lang`；没有 `date_after` 的 `date_before` 会被拒绝，因为 Brave 要求自定义时间范围必须同时包含开始和结束日期。
 - `ui_lang` 必须包含地区子标签，如 `en-US`。
 - 结果默认缓存 15 分钟（可通过 `cacheTtlMinutes` 配置）。
+- 自定义 `webSearch.baseUrl` 值包含在 Brave 缓存标识中，因此代理特定的响应不会发生冲突。
+- 启用 `brave.http` 诊断标志可在排查问题时记录 Brave 请求 URL/查询参数、响应状态/耗时以及搜索缓存命中/未命中/写入事件。该标志不会记录 API 密钥或响应正文，但搜索查询可能包含敏感信息。
 
 ## 相关
 

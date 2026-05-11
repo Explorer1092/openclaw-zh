@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "19a1260098800461a223058df5383e9e"
+mmh3_hash: "8a4d2af8f5e6c861eb9aaa05505c453f"
 summary: "全面的应用程序现代化计划，包含前端交付 Skill 更新"
 title: "应用程序现代化计划"
 read_when:

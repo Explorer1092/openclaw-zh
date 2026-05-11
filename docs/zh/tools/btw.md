@@ -1,13 +1,13 @@
 ---
+mmh3_hash: "47415c4d21cb80e7bf28c9f15fe8eeb9"
 summary: "使用 /btw 提出临时旁问"
 read_when:
   - 您想对当前 Session 提出一个快速的旁边问题
   - 您正在实现或调试 BTW 在不同 Client 上的行为
 title: "BTW 旁问"
-mmh3_hash: "3b41a41abbc2eb7c09d33c41e78cbdda"
 ---
 
-`/btw` 让您对**当前 Session** 提出一个快速的旁边问题，而不会将该问题变成普通的对话历史。
+`/btw` 让您对**当前 Session** 提出一个快速的旁边问题，而不会将该问题变成普通的对话历史。`/side` 是其别名。
 
 它以 Claude Code 的 `/btw` 行为为蓝本，但针对 OpenClaw 的 Gateway 和多 Channel 架构进行了适配。
 
@@ -108,6 +108,7 @@ Gateway 正确地将 BTW 作为 `chat.side_result` 发出，且 BTW 不包含在
 
 ```text
 /btw what file are we editing?
+/side what changed while the main run continued?
 /btw what does this error mean?
 /btw summarize the current task in one sentence
 /btw what is 17 * 19?
@@ -121,6 +122,17 @@ Gateway 正确地将 BTW 作为 `chat.side_result` 发出，且 BTW 不包含在
 
 ## 相关
 
-- [Slash 指令](/tools/slash-commands)
-- [思考级别](/tools/thinking)
-- [Session](/concepts/session)
+<CardGroup cols={2}>
+  <Card title="Slash 指令" href="/tools/slash-commands" icon="terminal">
+    原生命令目录和聊天指令。
+  </Card>
+  <Card title="思考级别" href="/tools/thinking" icon="brain">
+    旁问模型调用的推理努力级别。
+  </Card>
+  <Card title="Session" href="/concepts/session" icon="comments">
+    Session key、历史记录和持久化语义。
+  </Card>
+  <Card title="Steer 命令" href="/tools/steer" icon="arrow-right">
+    在不结束活跃运行的情况下注入引导消息。
+  </Card>
+</CardGroup>

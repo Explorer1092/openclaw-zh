@@ -100,11 +100,15 @@ OpenClaw 还包含用于搜索 X（前 Twitter）帖子的 `x_search` 和用于�
 | [Gemini](/tools/gemini-search)                    | AI 综合 + 引用         | --                                                 | `GEMINI_API_KEY`                                                                 |
 | [Grok](/tools/grok-search)                        | AI 综合 + 引用         | --                                                 | `XAI_API_KEY`                                                                    |
 | [Kimi](/tools/kimi-search)                        | AI 综合 + 引用         | --                                                 | `KIMI_API_KEY` / `MOONSHOT_API_KEY`                                              |
-| [MiniMax Search](/tools/minimax-search)           | 结构化摘要             | 地区（`global` / `cn`）                            | `MINIMAX_CODE_PLAN_KEY` / `MINIMAX_CODING_API_KEY`                               |
+| [MiniMax Search](/tools/minimax-search)           | 结构化摘要             | 地区（`global` / `cn`）                            | `MINIMAX_CODE_PLAN_KEY` / `MINIMAX_CODING_API_KEY` / `MINIMAX_OAUTH_TOKEN`       |
 | [Ollama Web Search](/tools/ollama-search)         | 结构化摘要             | --                                                 | 默认无需；需要 `ollama signin`，可复用 Ollama Provider 的 bearer 认证            |
 | [Perplexity](/tools/perplexity-search)            | 结构化摘要             | 国家、语言、时间、域名、内容限制                   | `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY`                                      |
 | [SearXNG](/tools/searxng-search)                  | 结构化摘要             | 类别、语言                                         | 无需（自托管）                                                                   |
 | [Tavily](/tools/tavily)                           | 结构化摘要             | 通过 `tavily_search` 工具                          | `TAVILY_API_KEY`                                                                 |
+
+## 原生 OpenAI 网络搜索
+
+当 OpenClaw 网络搜索已启用且未固定托管 Provider 时，直接 OpenAI Responses 模型会自动使用 OpenAI 托管的 `web_search` 工具。这是捆绑的 OpenAI Plugin 中的 Provider 拥有行为，仅适用于原生 OpenAI API 流量，不适用于兼容 OpenAI 的代理 base URL 或 Azure 路由。将 `tools.web.search.provider` 设置为其他 Provider（如 `brave`）以保持 OpenAI 模型使用托管的 `web_search` 工具，或设置 `tools.web.search.enabled: false` 以同时禁用托管搜索和原生 OpenAI 搜索。
 
 ## 原生 Codex 网络搜索
 
@@ -141,6 +145,12 @@ OpenClaw 还包含用于搜索 X（前 Twitter）帖子的 `x_search` 和用于�
 
 如果启用了原生 Codex 搜索但当前模型不支持 Codex，OpenClaw 保持正常的托管 `web_search` 行为。
 
+## 网络安全
+
+托管的 `web_search` Provider 调用使用 OpenClaw 的受保护抓取路径。对于受信任的 Provider API 主机，OpenClaw 仅对该 Provider 主机名允许 `198.18.0.0/15` 和 `fc00::/7` 中的 Surge、Clash 和 sing-box fake-IP DNS 答案。其他私有、回环、链路本地和元数据目标仍被阻止。
+
+此自动允许不适用于任意 `web_fetch` URL。对于 `web_fetch`，仅当您的受信任代理拥有这些合成范围并强制执行自己的目标策略时，才显式启用 `tools.web.fetch.ssrfPolicy.allowRfc2544BenchmarkRange` 和 `tools.web.fetch.ssrfPolicy.allowIpv6UniqueLocalRange`。
+
 ## 自动检测
 
 文档和设置流程中的 Provider 列表按字母顺序排列。自动检测保持独立的优先级顺序。
@@ -150,13 +160,13 @@ OpenClaw 还包含用于搜索 X（前 Twitter）帖子的 `x_search` 和用于�
 API 支持的 Provider 优先：
 
 1. **Brave** — `BRAVE_API_KEY` 或 `plugins.entries.brave.config.webSearch.apiKey`（顺序 10）
-2. **MiniMax Search** — `MINIMAX_CODE_PLAN_KEY` / `MINIMAX_CODING_API_KEY` 或 `plugins.entries.minimax.config.webSearch.apiKey`（顺序 15）
-3. **Gemini** — `GEMINI_API_KEY` 或 `plugins.entries.google.config.webSearch.apiKey`（顺序 20）
+2. **MiniMax Search** — `MINIMAX_CODE_PLAN_KEY` / `MINIMAX_CODING_API_KEY` / `MINIMAX_OAUTH_TOKEN` / `MINIMAX_API_KEY` 或 `plugins.entries.minimax.config.webSearch.apiKey`（顺序 15）
+3. **Gemini** — `plugins.entries.google.config.webSearch.apiKey`、`GEMINI_API_KEY` 或 `models.providers.google.apiKey`（顺序 20）
 4. **Grok** — `XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`（顺序 30）
 5. **Kimi** — `KIMI_API_KEY` / `MOONSHOT_API_KEY` 或 `plugins.entries.moonshot.config.webSearch.apiKey`（顺序 40）
 6. **Perplexity** — `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` 或 `plugins.entries.perplexity.config.webSearch.apiKey`（顺序 50）
 7. **Firecrawl** — `FIRECRAWL_API_KEY` 或 `plugins.entries.firecrawl.config.webSearch.apiKey`（顺序 60）
-8. **Exa** — `EXA_API_KEY` 或 `plugins.entries.exa.config.webSearch.apiKey`（顺序 65）
+8. **Exa** — `EXA_API_KEY` 或 `plugins.entries.exa.config.webSearch.apiKey`；可选的 `plugins.entries.exa.config.webSearch.baseUrl` 覆盖 Exa 端点（顺序 65）
 9. **Tavily** — `TAVILY_API_KEY` 或 `plugins.entries.tavily.config.webSearch.apiKey`（顺序 70）
 
 之后的无需密钥回退：
@@ -168,7 +178,7 @@ API 支持的 Provider 优先：
 如果未检测到任何 Provider，则回退到 Brave（您将收到缺少密钥错误，提示您配置一个）。
 
 <Note>
-  所有 Provider 密钥字段都支持 SecretRef 对象。在自动检测模式下，OpenClaw 仅解析所选 Provider 的密钥 — 未选中的 SecretRef 保持非活动状态。
+  所有 Provider 密钥字段都支持 SecretRef 对象。`plugins.entries.<plugin>.config.webSearch.apiKey` 下的 Plugin 范围 SecretRef 会为捆绑的 API 支持的网络搜索 Provider 解析，包括 Brave、Exa、Firecrawl、Gemini、Grok、Kimi、MiniMax、Perplexity 和 Tavily，无论 Provider 是通过 `tools.web.search.provider` 显式选择还是通过自动检测选择。在自动检测模式下，OpenClaw 仅解析所选 Provider 的密钥——未选中的 SecretRef 保持非活动状态，因此您可以配置多个 Provider 而无需为未使用的 Provider 付出解析成本。
 </Note>
 
 ## 配置
@@ -200,7 +210,7 @@ Provider 专属配置（API 密钥、base URL、模式）位于 `plugins.entries
 在 `openclaw onboard` 或 `openclaw configure --section web` 期间选择 **Kimi** 时，OpenClaw 还会询问：
 
 - Moonshot API 地区（`https://api.moonshot.ai/v1` 或 `https://api.moonshot.cn/v1`）
-- 默认 Kimi 网络搜索模型（默认为 `kimi-k2.5`）
+- 默认 Kimi 网络搜索模型（默认为 `kimi-k2.6`）
 
 对于 `x_search`，在 `plugins.entries.xai.config.xSearch.*` 下配置。它使用与 Grok 网络搜索相同的 `XAI_API_KEY` 回退。旧版 `tools.web.x_search.*` 配置由 `openclaw doctor --fix` 自动迁移。在 `openclaw onboard` 或 `openclaw configure --section web` 期间选择 Grok 时，OpenClaw 还会提供使用相同密钥的可选 `x_search` 设置。这是 Grok 路径内的独立后续步骤，而非独立的顶级网络搜索 Provider 选择。如果选择其他 Provider，OpenClaw 不会显示 `x_search` 提示。
 
@@ -280,13 +290,15 @@ Provider 专属配置（API 密钥、base URL、模式）位于 `plugins.entries
           xSearch: {
             enabled: true,
             model: "grok-4-1-fast-non-reasoning",
+            baseUrl: "https://api.x.ai/v1", // 可选，覆盖 webSearch.baseUrl
             inlineCitations: false,
             maxTurns: 2,
             timeoutSeconds: 30,
             cacheTtlMinutes: 15,
           },
           webSearch: {
-            apiKey: "xai-...", // 如果已设置 XAI_API_KEY 则可选
+            apiKey: "xai-...", // 如果已设置 xAI 认证配置文件或 XAI_API_KEY 则可选
+            baseUrl: "https://api.x.ai/v1", // 可选的共享 xAI Responses base URL
           },
         },
       },
@@ -294,6 +306,8 @@ Provider 专属配置（API 密钥、base URL、模式）位于 `plugins.entries
   },
 }
 ```
+
+`x_search` 在设置了 `plugins.entries.xai.config.xSearch.baseUrl` 时发布到 `<baseUrl>/responses`。如果省略该字段，则回退到 `plugins.entries.xai.config.webSearch.baseUrl`，然后是旧版 `tools.web.search.grok.baseUrl`，最后是公共 xAI 端点。
 
 ### x_search 参数
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "43671c15d86d248a61f5ae29865b7412"
+mmh3_hash: "60872ceebee61b6b86a999e52ab18b14"
 summary: "SecretRef 凭据界面的规范支持与不支持范围"
 read_when:
   - 验证 SecretRef 凭据覆盖范围
@@ -7,8 +7,6 @@ read_when:
   - 验证凭据为何在支持范围之外
 title: "SecretRef 凭据界面"
 ---
-
-# SecretRef 凭据界面
 
 本页定义了规范的 SecretRef 凭据界面。
 
@@ -38,8 +36,8 @@ title: "SecretRef 凭据界面"
 - `models.providers.*.request.tls.passphrase`
 - `skills.entries.*.apiKey`
 - `agents.defaults.memorySearch.remote.apiKey`
-- `agents.list[].memorySearch.remote.apiKey`
 - `agents.list[].tts.providers.*.apiKey`
+- `agents.list[].memorySearch.remote.apiKey`
 - `talk.providers.*.apiKey`
 - `messages.tts.providers.*.apiKey`
 - `tools.web.fetch.firecrawl.apiKey`
@@ -53,6 +51,8 @@ title: "SecretRef 凭据界面"
 - `plugins.entries.firecrawl.config.webSearch.apiKey`
 - `plugins.entries.minimax.config.webSearch.apiKey`
 - `plugins.entries.tavily.config.webSearch.apiKey`
+- `plugins.entries.voice-call.config.realtime.providers.*.apiKey`
+- `plugins.entries.voice-call.config.streaming.providers.*.apiKey`
 - `plugins.entries.voice-call.config.tts.providers.*.apiKey`
 - `plugins.entries.voice-call.config.twilio.authToken`
 - `tools.web.search.apiKey`
@@ -83,14 +83,14 @@ title: "SecretRef 凭据界面"
 - `channels.irc.nickserv.password`
 - `channels.irc.accounts.*.password`
 - `channels.irc.accounts.*.nickserv.password`
-- `channels.bluebubbles.password`
-- `channels.bluebubbles.accounts.*.password`
 - `channels.feishu.appSecret`
 - `channels.feishu.encryptKey`
 - `channels.feishu.verificationToken`
 - `channels.feishu.accounts.*.appSecret`
 - `channels.feishu.accounts.*.encryptKey`
 - `channels.feishu.accounts.*.verificationToken`
+- `channels.qqbot.clientSecret`
+- `channels.qqbot.accounts.*.clientSecret`
 - `channels.msteams.appPassword`
 - `channels.mattermost.botToken`
 - `channels.mattermost.accounts.*.botToken`
@@ -123,13 +123,13 @@ title: "SecretRef 凭据界面"
 - 身份验证配置文件 ref 包含在运行时解析和审计覆盖中。
 - 在 `openclaw.json` 中，SecretRef 必须使用结构化对象，例如 `{"source":"env","provider":"default","id":"DISCORD_BOT_TOKEN"}`。遗留的 `secretref-env:<ENV_VAR>` 标记字符串在 SecretRef 凭据路径上被拒绝；运行 `openclaw doctor --fix` 以迁移有效的标记。
 - OAuth 策略守卫：`auth.profiles.<id>.mode = "oauth"` 不能与该配置文件的 SecretRef 输入结合使用。当违反此策略时，启动/重新加载和身份验证配置文件解析会快速失败。
-- 对于 SecretRef 管理的模型提供商，生成的 `agents/*/agent/models.json` 条目为 `apiKey`/头部界面持久化非密钥标记（而非解析的密钥值）。
+- 对于 SecretRef 管理的模型 Provider，生成的 `agents/*/agent/models.json` 条目为 `apiKey`/头部界面持久化非密钥标记（而非解析的密钥值）。
 - 标记持久化以源为权威：OpenClaw 从活动源配置快照（预解析）写入标记，而非从解析的运行时密钥值写入。
 - 对于网络搜索：
-  - 在显式提供商模式（设置了 `tools.web.search.provider`）中，仅活动提供商密钥有效。
-  - 在自动模式（未设置 `tools.web.search.provider`）中，仅按优先级解析的第一个提供商密钥有效。
-  - 在自动模式中，未选择的提供商 ref 被视为非活动，直到被选择。
-  - 旧版 `tools.web.search.*` 提供商路径在兼容窗口期间仍会解析，但规范的 SecretRef 界面是 `plugins.entries.<plugin>.config.webSearch.*`。
+  - 在显式 Provider 模式（设置了 `tools.web.search.provider`）中，仅活动 Provider 密钥有效。
+  - 在自动模式（未设置 `tools.web.search.provider`）中，仅按优先级解析的第一个 Provider 密钥有效。
+  - 在自动模式中，未选择的 Provider ref 被视为非活动，直到被选择。
+  - 旧版 `tools.web.search.*` Provider 路径在兼容窗口期间仍会解析，但规范的 SecretRef 界面是 `plugins.entries.<plugin>.config.webSearch.*`。
 
 ## 不支持的凭据
 

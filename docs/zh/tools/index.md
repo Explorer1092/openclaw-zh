@@ -52,7 +52,6 @@ OpenClaw 有三个协同工作的层次：
 | `read` / `write` / `edit`                  | 工作区中的文件 I/O                                                    |                                             |
 | `apply_patch`                              | 多块文件补丁                                                          | [Apply Patch](/tools/apply-patch)           |
 | `message`                                  | 跨所有 Channel 发送消息                                               | [Agent Send](/tools/agent-send)             |
-| `canvas`                                   | 驱动节点 Canvas（present、eval、snapshot）                            |                                             |
 | `nodes`                                    | 发现和定位配对设备                                                    |                                             |
 | `cron` / `gateway`                         | 管理定时任务；检查、修补、重启或更新 Gateway                          |                                             |
 | `image` / `image_generate`                 | 分析或生成图像                                                        | [Image Generation](/tools/image-generation) |
@@ -86,12 +85,15 @@ OpenClaw 有三个协同工作的层次：
 
 Plugin 可以注册额外的工具。一些示例：
 
+- [Canvas](/plugins/reference/canvas) — 用于节点 Canvas 控制和 A2UI 渲染的实验性捆绑 Plugin
 - [Diffs](/tools/diffs) — diff 查看器和渲染器
 - [LLM Task](/tools/llm-task) — 用于结构化输出的仅 JSON LLM 步骤
 - [Lobster](/tools/lobster) — 带可恢复批准的类型化工作流运行时
 - [Music Generation](/tools/music-generation) — 带工作流支持 Provider 的共享 `music_generate` 工具
 - [OpenProse](/prose) — Markdown 优先的工作流编排
 - [Tokenjuice](/tools/tokenjuice) — 压缩嘈杂的 `exec` 和 `bash` 工具结果
+
+[Tool Search](/tools/tool-search) 是大型目录的紧凑入口。OpenClaw 不再将所有 OpenClaw、MCP 或客户端工具 schema 放入提示词，而是可以为模型提供一个隔离的 Node 运行时，内含 `openclaw.tools.search`、`openclaw.tools.describe` 和 `openclaw.tools.call`。调用仍通过 Gateway 回流，因此工具策略、批准、Hook 和 Session 日志保持权威性。
 
 ## 工具配置
 
@@ -116,12 +118,20 @@ Plugin 可以注册额外的工具。一些示例：
 
 | 配置文件    | 包含内容                                                                                                                                        |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `full`      | 无限制（与未设置相同）                                                                                                                          |
+| `full`      | 所有核心和可选 Plugin 工具；更广泛命令/控制访问的无限制基线                                                                                     |
 | `coding`    | `group:fs`、`group:runtime`、`group:web`、`group:sessions`、`group:memory`、`cron`、`image`、`image_generate`、`music_generate`、`video_generate` |
 | `messaging` | `group:messaging`、`sessions_list`、`sessions_history`、`sessions_send`、`session_status`                                                        |
 | `minimal`   | 仅 `session_status`                                                                                                                             |
 
+<Note>
+`tools.profile: "messaging"` 对于以 Channel 为中心的 Agent 来说是有意收窄的。它不包含更广泛的命令/控制工具，如文件系统、运行时、浏览器、canvas、nodes、cron 和 gateway 控制。使用 `tools.profile: "full"` 作为更广泛命令/控制访问的无限制基线，然后在需要时通过 `tools.allow` / `tools.deny` 修剪访问权限。
+</Note>
+
 `coding` 包含轻量级 Web 工具（`web_search`、`web_fetch`、`x_search`），但不包含完整的浏览器控制工具。浏览器自动化可以驱动真实的 Session 和已登录的配置文件，因此请使用 `tools.alsoAllow: ["browser"]` 或每个 Agent 的 `agents.list[].tools.alsoAllow: ["browser"]` 显式添加它。
+
+<Note>
+在限制性配置文件（`messaging`、`minimal`）下配置 `tools.exec` 或 `tools.fs` 并不会隐式扩展配置文件的允许列表。当你想要限制性配置文件使用这些已配置的部分时，请添加明确的 `tools.alsoAllow` 条目（例如，exec 用 `["exec", "process"]`，fs 用 `["read", "write", "edit"]`）。当配置部分存在但没有匹配的 `alsoAllow` 授权时，OpenClaw 会在启动时记录警告。
+</Note>
 
 `coding` 和 `messaging` 配置文件还允许在 Plugin 键 `bundle-mcp` 下配置的捆绑 MCP 工具。当你想要配置文件保留其正常内置工具但隐藏所有配置的 MCP 工具时，添加 `tools.deny: ["bundle-mcp"]`。`minimal` 配置文件不包含捆绑 MCP 工具。
 
@@ -136,11 +146,11 @@ Plugin 可以注册额外的工具。一些示例：
 | `group:sessions`   | sessions_list, sessions_history, sessions_send, sessions_spawn, sessions_yield, subagents, session_status |
 | `group:memory`     | memory_search, memory_get                                                                                 |
 | `group:web`        | web_search, x_search, web_fetch                                                                           |
-| `group:ui`         | browser, canvas                                                                                           |
-| `group:automation` | cron, gateway                                                                                             |
+| `group:ui`         | browser；启用捆绑 Canvas Plugin 时加上 canvas                                                            |
+| `group:automation` | heartbeat_respond, cron, gateway                                                                          |
 | `group:messaging`  | message                                                                                                   |
 | `group:nodes`      | nodes                                                                                                     |
-| `group:agents`     | agents_list                                                                                               |
+| `group:agents`     | agents_list, update_plan                                                                                  |
 | `group:media`      | image, image_generate, music_generate, video_generate, tts                                                |
 | `group:openclaw`   | 所有内置 OpenClaw 工具（不包括 Plugin 工具）                                                              |
 

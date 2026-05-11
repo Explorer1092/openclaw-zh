@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4c309b48847286e2cba83967305c9f75"
+mmh3_hash: "9623c80acf3f4243d76a6dd84fecc916"
 summary: "DuckDuckGo 网页搜索 -- 无需密钥的回退提供商（实验性，基于 HTML）"
 read_when:
   - 希望使用无需 API 密钥的网页搜索提供商

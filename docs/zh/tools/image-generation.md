@@ -1,6 +1,6 @@
 ---
 mmh3_hash: "5bfe94e665bbc9f469e980e8af1e00cd"
-summary: "通过 image_generate 使用 OpenAI、Google、fal、MiniMax、ComfyUI、OpenRouter、LiteLLM、xAI、Vydra 生成和编辑图像"
+summary: "通过 image_generate 使用 OpenAI、Google、fal、MiniMax、ComfyUI、DeepInfra、OpenRouter、LiteLLM、xAI、Vydra 生成和编辑图像"
 read_when:
   - 通过 Agent 生成或编辑图像
   - 配置图像生成提供商和模型
@@ -57,6 +57,7 @@ sidebarTitle: "Image generation"
 | OpenAI 图像生成（API 计费）           | `openai/gpt-image-2`                               | `OPENAI_API_KEY`                       |
 | OpenAI 图像生成（Codex 订阅认证）     | `openai/gpt-image-2`                               | OpenAI Codex OAuth                     |
 | OpenAI 透明背景 PNG/WebP              | `openai/gpt-image-1.5`                             | `OPENAI_API_KEY` 或 OpenAI Codex OAuth |
+| DeepInfra 图像生成                    | `deepinfra/black-forest-labs/FLUX-1-schnell`       | `DEEPINFRA_API_KEY`                    |
 | OpenRouter 图像生成                   | `openrouter/google/gemini-3.1-flash-image-preview` | `OPENROUTER_API_KEY`                   |
 | LiteLLM 图像生成                      | `litellm/gpt-image-2`                              | `LITELLM_API_KEY`                      |
 | Google Gemini 图像生成                | `google/gemini-3.1-flash-image-preview`            | `GEMINI_API_KEY` 或 `GOOGLE_API_KEY`   |
@@ -68,7 +69,8 @@ sidebarTitle: "Image generation"
 | 提供商     | 默认模型                                | 编辑支持                           | 认证                                                  |
 | ---------- | --------------------------------------- | ---------------------------------- | ----------------------------------------------------- |
 | ComfyUI    | `workflow`                              | 是（1 张图像，工作流配置）         | `COMFY_API_KEY` 或云端的 `COMFY_CLOUD_API_KEY`        |
-| fal        | `fal-ai/flux/dev`                       | 是                                 | `FAL_KEY`                                             |
+| DeepInfra  | `black-forest-labs/FLUX-1-schnell`      | 是（1 张图像）                     | `DEEPINFRA_API_KEY`                                   |
+| fal        | `fal-ai/flux/dev`                       | 是（模型特定限制）                 | `FAL_KEY`                                             |
 | Google     | `gemini-3.1-flash-image-preview`        | 是                                 | `GEMINI_API_KEY` 或 `GOOGLE_API_KEY`                  |
 | LiteLLM    | `gpt-image-2`                           | 是（最多 5 张输入图像）            | `LITELLM_API_KEY`                                     |
 | MiniMax    | `image-01`                              | 是（主体参考）                     | `MINIMAX_API_KEY` 或 MiniMax OAuth（`minimax-portal`） |
@@ -85,13 +87,13 @@ sidebarTitle: "Image generation"
 
 ## 提供商能力
 
-| 能力                  | ComfyUI            | fal               | Google         | MiniMax               | OpenAI         | Vydra | xAI            |
-| --------------------- | ------------------ | ----------------- | -------------- | --------------------- | -------------- | ----- | -------------- |
-| 生成（最大数量）      | 工作流定义         | 4                 | 4              | 9                     | 4              | 1     | 4              |
-| 编辑/参考             | 1 张图像（工作流） | 1 张图像          | 最多 5 张图像  | 1 张图像（主体参考）  | 最多 5 张图像  | —     | 最多 5 张图像  |
-| 尺寸控制              | —                  | ✓                 | ✓              | —                     | 最多 4K        | —     | —              |
-| 宽高比                | —                  | ✓（仅生成）       | ✓              | ✓                     | —              | —     | ✓              |
-| 分辨率（1K/2K/4K）    | —                  | ✓                 | ✓              | —                     | —              | —     | 1K、2K         |
+| 能力                  | ComfyUI            | DeepInfra | fal                        | Google         | MiniMax               | OpenAI         | Vydra | xAI            |
+| --------------------- | ------------------ | --------- | -------------------------- | -------------- | --------------------- | -------------- | ----- | -------------- |
+| 生成（最大数量）      | 工作流定义         | 4         | 4                          | 4              | 9                     | 4              | 1     | 4              |
+| 编辑/参考             | 1 张图像（工作流） | 1 张图像  | Flux：1；GPT：10；NB2：14  | 最多 5 张图像  | 1 张图像（主体参考）  | 最多 5 张图像  | —     | 最多 5 张图像  |
+| 尺寸控制              | —                  | ✓         | ✓                          | ✓              | —                     | 最多 4K        | —     | —              |
+| 宽高比                | —                  | —         | ✓                          | ✓              | ✓                     | —              | —     | ✓              |
+| 分辨率（1K/2K/4K）    | —                  | —         | ✓                          | ✓              | —                     | —              | —     | 1K、2K         |
 
 ## 工具参数
 
@@ -127,7 +129,7 @@ sidebarTitle: "Image generation"
   提供商支持时的背景提示。将 `transparent` 与 `outputFormat: "png"` 或 `"webp"` 结合用于支持透明度的提供商。
 </ParamField>
 <ParamField path="count" type="number">生成图像数量（1–4）。</ParamField>
-<ParamField path="timeoutMs" type="number">可选的提供商请求超时（毫秒）。</ParamField>
+<ParamField path="timeoutMs" type="number">可选的提供商请求超时（毫秒）。当 Codex 通过动态工具调用 `image_generate` 时，此每次调用值仍会覆盖已配置的默认值，并上限为 600000 ms。</ParamField>
 <ParamField path="filename" type="string">输出文件名提示。</ParamField>
 <ParamField path="openai" type="object">
   OpenAI 专属提示：`background`、`moderation`、`outputCompression` 和 `user`。
@@ -180,7 +182,7 @@ OpenClaw 按以下顺序尝试提供商：
     只有 OpenClaw 能够实际验证该提供商时，提供商默认值才会进入候选列表。设置 `agents.defaults.mediaGenerationAutoProviderFallback: false` 以仅使用显式 `model`、`primary` 和 `fallbacks` 条目。
   </Accordion>
   <Accordion title="超时">
-    为慢速图像后端设置 `agents.defaults.imageGenerationModel.timeoutMs`。每次调用的 `timeoutMs` 工具参数会覆盖已配置的默认值。
+    为慢速图像后端设置 `agents.defaults.imageGenerationModel.timeoutMs`。每次调用的 `timeoutMs` 工具参数会覆盖已配置的默认值。Codex 动态工具调用遵循相同的超时预算，以 OpenClaw 的 600000 ms 动态工具桥接最大值为上限。
   </Accordion>
   <Accordion title="运行时检查">
     使用 `action: "list"` 查看当前已注册的提供商、其默认模型及认证环境变量提示。
@@ -189,13 +191,13 @@ OpenClaw 按以下顺序尝试提供商：
 
 ### 图像编辑
 
-OpenAI、OpenRouter、Google、fal、MiniMax、ComfyUI 和 xAI 支持编辑参考图像。传入参考图像路径或 URL：
+OpenAI、OpenRouter、Google、DeepInfra、fal、MiniMax、ComfyUI 和 xAI 支持编辑参考图像。传入参考图像路径或 URL：
 
 ```text
 "Generate a watercolor version of this photo" + image: "/path/to/photo.jpg"
 ```
 
-OpenAI、OpenRouter、Google 和 xAI 通过 `images` 参数支持最多 5 张参考图像。fal、MiniMax 和 ComfyUI 支持 1 张。
+OpenAI、OpenRouter、Google 和 xAI 通过 `images` 参数支持最多 5 张参考图像。fal 的 Flux 图像到图像支持 1 张，GPT Image 2 编辑最多支持 10 张，Nano Banana 2 编辑最多支持 14 张。DeepInfra、MiniMax 和 ComfyUI 支持 1 张。
 
 ## 提供商深入介绍
 

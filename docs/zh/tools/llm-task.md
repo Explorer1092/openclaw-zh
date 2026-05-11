@@ -28,20 +28,17 @@ read_when:
 }
 ```
 
-2. 将工具加入允许列表（它以 `optional: true` 注册）：
+2. 允许可选工具：
 
 ```json
 {
-  "agents": {
-    "list": [
-      {
-        "id": "main",
-        "tools": { "allow": ["llm-task"] }
-      }
-    ]
+  "tools": {
+    "alsoAllow": ["llm-task"]
   }
 }
 ```
+
+仅当你想要限制性允许列表模式时才使用 `tools.allow`。
 
 ## 配置（可选）
 
@@ -87,6 +84,23 @@ read_when:
 返回包含解析后 JSON 的 `details.json`（在提供 `schema` 时进行验证）。
 
 ## 示例：Lobster 工作流步骤
+
+### 重要限制
+
+以下示例假设**独立的 Lobster CLI** 在 `openclaw.invoke` 已有正确 Gateway URL/认证上下文的环境中运行。
+
+对于 OpenClaw 内置的**嵌入式** Lobster 运行器，以下嵌套 CLI 模式**目前不可靠**：
+
+```lobster
+openclaw.invoke --tool llm-task --action json --args-json '{ ... }'
+```
+
+在嵌入式 Lobster 获得支持的桥接方案之前，建议使用：
+
+- 在 Lobster 之外直接调用 `llm-task` 工具，或
+- 不依赖嵌套 `openclaw.invoke` 调用的 Lobster 步骤。
+
+独立 Lobster CLI 示例：
 
 ```lobster
 openclaw.invoke --tool llm-task --action json --args-json '{

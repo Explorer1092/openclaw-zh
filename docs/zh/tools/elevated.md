@@ -1,15 +1,13 @@
 ---
-title: "Elevated Mode"
-mmh3_hash: "37411d1da2bd9458919d12711ffd6e5b"
+title: "Elevated mode"
+mmh3_hash: "ecc3afb0ebd2fcdd7db21d143b84225a"
 summary: "提升执行模式：在沙盒 Agent 中从沙盒外运行命令"
 read_when:
   - 调整提升模式默认值、允许列表或 Slash Command 行为
   - 了解沙盒 Agent 如何访问主机
 ---
 
-# 提升模式
-
-当 Agent 在沙盒内运行时，其 `exec` 命令被限制在沙盒环境中。**提升模式**让 Agent 突破限制，在 Gateway 主机上运行命令，并带有可配置的批准门控。
+当 Agent 在沙盒内运行时，其 `exec` 命令被限制在沙盒环境中。**提升模式**让 Agent 突破限制，在沙盒外运行命令，并带有可配置的批准门控。
 
 <Info>
   提升模式仅在 Agent **被沙盒化**时改变行为。对于未沙盒化的 Agent，exec 已经在主机上运行。
@@ -103,9 +101,23 @@ read_when:
 - **主机选择策略**：提升不会将 `auto` 变成自由的跨主机覆盖。它使用已配置/Session 的 exec 目标规则，仅在目标已经是 `node` 时才选择 `node`。
 - **与 `/exec` 分开**：`/exec` 指令为授权发送者调整每 Session 的 exec 默认值，不需要提升模式
 
+<Note>
+  Bash 聊天命令（`!` 前缀；`/bash` 别名）是一个单独的门控，除了其自身的 `tools.bash.enabled` 标志外，还需要启用 `tools.elevated`。禁用提升模式也会锁定 `!` Shell 命令。
+</Note>
+
 ## 相关
 
-- [Exec 工具](/tools/exec) — Shell 命令执行
-- [Exec 批准](/tools/exec-approvals) — 批准和允许列表系统
-- [沙盒化](/gateway/sandboxing) — 沙盒配置
-- [沙盒 vs 工具策略 vs 提升模式](/gateway/sandbox-vs-tool-policy-vs-elevated)
+<CardGroup cols={2}>
+  <Card title="Exec 工具" href="/tools/exec" icon="terminal">
+    从 Agent 执行 Shell 命令。
+  </Card>
+  <Card title="Exec 审批" href="/tools/exec-approvals" icon="shield">
+    `exec` 的审批和允许列表系统。
+  </Card>
+  <Card title="沙盒化" href="/gateway/sandboxing" icon="box">
+    Gateway 级别的沙盒配置。
+  </Card>
+  <Card title="沙盒 vs 工具策略 vs 提升模式" href="/gateway/sandbox-vs-tool-policy-vs-elevated" icon="scale-balanced">
+    三种门控在工具调用中的组合方式。
+  </Card>
+</CardGroup>

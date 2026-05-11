@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1982f24c98956d38fdcc8e24dcc28bb3"
+mmh3_hash: "ecfa2bf7d600980843cae88e1d8faa4c"
 title: "AGENTS.md 模板"
 summary: "AGENTS.md 的工作区模板"
 read_when:

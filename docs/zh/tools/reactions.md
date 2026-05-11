@@ -24,6 +24,7 @@ Agent 可以使用 `message` 工具的 `react` action 在消息上添加和移�
 - 添加反应时需要 `emoji`。
 - 将 `emoji` 设置为空字符串（`""`）以移除机器人的反应。
 - 设置 `remove: true` 以移除特定 emoji（需要非空 `emoji`）。
+- 在支持状态反应的 Channel 上，对反应设置 `trackToolCalls: true` 可让运行时在同一轮次后续工具进度反应时使用该已反应的消息。
 
 ## Channel 行为
 

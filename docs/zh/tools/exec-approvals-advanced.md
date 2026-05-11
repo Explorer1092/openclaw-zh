@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ebec2825c54cee2c0f864c375466c342"
+mmh3_hash: "e7c61b03cc900a94e716a0c70a42b018"
 summary: "高级 exec 审批：安全二进制文件、解释器绑定、审批转发、原生交付"
 read_when:
   - 配置安全二进制文件或自定义安全二进制文件配置文件
@@ -67,7 +67,7 @@ title: "Exec 审批 — 高级"
 | ------------ | -------------------------------------------- | -------------------------------------------------------------------------- |
 | 目标         | 自动允许狭窄的 stdin 过滤器                  | 显式信任特定可执行文件                                                     |
 | 匹配类型     | 可执行文件名 + 安全二进制文件 argv 策略      | 解析的可执行文件路径通配符，或 PATH 调用命令的裸命令名通配符              |
-| 参数范围     | 受安全二进制文件配置文件和字面 token 规则限制 | 仅路径匹配；参数否则由您负责                                               |
+| 参数范围     | 受安全二进制文件配置文件和字面 token 规则限制 | 默认为路径匹配；可选的 `argPattern` 可限制已解析的 argv                    |
 | 典型示例     | `head`、`tail`、`tr`、`wc`                   | `jq`、`python3`、`node`、`ffmpeg`、自定义 CLI                              |
 | 最佳用途     | 管道中的低风险文本转换                       | 任何具有更广泛行为或副作用的工具                                           |
 
@@ -196,6 +196,8 @@ Discord 和 Telegram 也支持同聊天 `/approve`，但这些 Channel 在禁用
 
 当原生审批卡片/按钮可用时，该原生 UI 是面向 Agent 的主要路径。Agent 不应再回显重复的纯聊天 `/approve` 命令，除非工具结果表示聊天审批不可用或手动审批是唯一剩余的路径。
 
+如果配置了原生审批客户端但发起 Channel 没有活跃的原生运行时，OpenClaw 保持本地确定性 `/approve` 提示可见。如果原生运行时处于活跃状态并尝试交付但没有目标收到卡片，OpenClaw 发送一条包含确切 `/approve <id> <decision>` 命令的同聊天回退通知，以便请求仍可解决。
+
 通用模型：
 
 - 主机 exec 策略仍然决定是否需要 exec 审批
@@ -224,10 +226,11 @@ FAQ：[为什么聊天审批有两个 exec 审批配置？](/help/faq-first-run#
 - 当原生审批客户端自动启用时，默认原生交付目标是审批者私信
 - 对于 Discord 和 Telegram，只有解析的审批者可以批准或拒绝
 - Discord 审批者可以是显式的（`execApprovals.approvers`）或从 `commands.ownerAllowFrom` 推断
-- Telegram 审批者可以是显式的（`execApprovals.approvers`）或从现有所有者配置推断（`allowFrom`，加上支持的直接消息 `defaultTo`）
+- Telegram 审批者可以是显式的（`execApprovals.approvers`）或从 `commands.ownerAllowFrom` 推断
 - Slack 审批者可以是显式的（`execApprovals.approvers`）或从 `commands.ownerAllowFrom` 推断
 - Slack 原生按钮保留审批 id 类型，因此 `plugin:` id 可以在没有第二个 Slack 本地回退层的情况下解析 Plugin 审批
 - Matrix 原生 DM/Channel 路由和反应快捷方式处理 exec 和 Plugin 审批两者；Plugin 授权仍然来自 `channels.matrix.dm.allowFrom`
+- Matrix 原生提示在第一个提示事件中包含 `com.openclaw.approval` 自定义事件内容，以便支持 OpenClaw 的 Matrix 客户端可以读取结构化审批状态，同时普通客户端保留纯文本 `/approve` 回退
 - 请求者不需要是审批者
 - 当该聊天已支持命令和回复时，发起聊天可以直接使用 `/approve` 批准
 - 原生 Discord 审批按钮按审批 id 类型路由：`plugin:` id 直接进入 Plugin 审批，其他所有内容进入 exec 审批

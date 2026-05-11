@@ -19,6 +19,8 @@ title: "轨迹包"
 - 哪些模型、Plugin、Skill 和运行时设置处于活跃状态？
 - Provider 返回了哪些使用量和提示缓存元数据？
 
+如果您要为实时 Gateway 问题提交宽泛的支持报告，请从 [`/diagnostics`](/gateway/diagnostics#chat-command) 开始。Diagnostics 收集已清理的 Gateway 包，对于 OpenAI Codex harness Session，还可以在获得批准后向 OpenAI 服务器发送 Codex 反馈。当您特别需要详细的每 Session 提示、工具和对话时间线时，请使用 `/export-trajectory`。
+
 ## 快速开始
 
 在活跃 Session 中发送以下内容：
@@ -47,6 +49,14 @@ OpenClaw 在工作区下写入包：
 
 自定义路径在 `.openclaw/trajectory-exports/` 内解析。绝对路径和 `~` 路径被拒绝。
 
+轨迹包可以包含提示、模型消息、工具 Schema、工具结果、运行时事件和本地路径。因此聊天斜杠命令每次都需要通过 exec 批准。在您打算创建包时批准一次导出；不要使用允许全部模式。在群聊中，OpenClaw 将批准提示和导出结果私信发送给所有者，而不是将轨迹详情发回共享房间。
+
+对于本地检查或支持工作流，您也可以直接运行已批准的命令路径：
+
+```bash
+openclaw sessions export-trajectory --session-key "agent:main:telegram:direct:123" --workspace .
+```
+
 ## 访问
 
 轨迹导出是所有者命令。发送者必须通过该 Channel 的正常命令授权检查和所有者检查。
@@ -61,6 +71,7 @@ OpenClaw 在工作区下写入包：
 - `trace.metadata`
 - `context.compiled`
 - `prompt.submitted`
+- `model.fallback_step`，包括来源模型、下一个模型、失败原因/详情、链位置，以及回退是推进、成功还是耗尽了链
 - `model.completed`
 - `trace.artifacts`
 - `session.ended`
@@ -145,7 +156,7 @@ export OPENCLAW_TRAJECTORY=0
 
 导出器还限制输入大小：
 
-- 运行时辅助文件：50 MiB
+- 运行时辅助文件：实时捕获在剩余空间时于 10 MiB 停止并记录截断事件；导出接受现有运行时辅助文件最多 50 MiB
 - Session 文件：50 MiB
 - 运行时事件：200,000
 - 总导出事件：250,000

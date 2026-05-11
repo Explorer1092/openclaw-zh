@@ -28,7 +28,7 @@ OpenClaw 通过 MiniMax Coding Plan 搜索 API 支持将 MiniMax 作为 `web_sea
   </Step>
 </Steps>
 
-OpenClaw 也接受 `MINIMAX_CODING_API_KEY` 作为环境变量别名。当 `MINIMAX_API_KEY` 已指向 coding-plan token 时，仍可作为兼容回退读取。
+OpenClaw 也接受 `MINIMAX_CODING_API_KEY`、`MINIMAX_OAUTH_TOKEN` 和 `MINIMAX_API_KEY` 作为环境变量别名。`MINIMAX_API_KEY` 应指向支持搜索的 Coding Plan 凭据；普通 MiniMax 模型 API 密钥可能不被 Coding Plan 搜索端点接受。
 
 ## 配置
 
@@ -56,7 +56,7 @@ OpenClaw 也接受 `MINIMAX_CODING_API_KEY` 作为环境变量别名。当 `MINI
 }
 ```
 
-**环境变量替代方案：** 在 Gateway 环境中设置 `MINIMAX_CODE_PLAN_KEY`。对于 Gateway 安装，将其放入 `~/.openclaw/.env`。
+**环境变量替代方案：** 在 Gateway 环境中设置 `MINIMAX_CODE_PLAN_KEY`、`MINIMAX_CODING_API_KEY`、`MINIMAX_OAUTH_TOKEN` 或 `MINIMAX_API_KEY`。对于 Gateway 安装，将其放入 `~/.openclaw/.env`。
 
 ## 地区选择
 

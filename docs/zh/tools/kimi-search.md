@@ -72,6 +72,8 @@ OpenClaw 支持将 Kimi 作为 `web_search` 提供商，使用 Moonshot 网页�
 
 Kimi 使用 Moonshot 网页搜索来合成带内联引用的答案，与 Gemini 和 Grok 的接地响应方式类似。
 
+OpenClaw 只有在 Moonshot 返回原生网页搜索接地证据（例如可重放的 `$web_search` 工具载荷、`search_results` 或引用 URL）后，才将 Kimi `web_search` 视为成功。如果 Kimi 立即给出类似"我无法浏览互联网"的普通聊天答案且没有接地证据，OpenClaw 会返回结构化的 `kimi_web_search_ungrounded` 错误，而不是将该文本包装为搜索结果。遇到此情况可重试查询、切换到 Brave 等结构化 Provider，或在已有目标 URL 时使用 `web_fetch` / 浏览器工具。
+
 ## 支持的参数
 
 Kimi 搜索支持 `query`。

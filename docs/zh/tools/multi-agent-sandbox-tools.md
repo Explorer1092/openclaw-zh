@@ -22,7 +22,7 @@ status: active
 </CardGroup>
 
 <Warning>
-身份验证是每个 Agent 的：每个 Agent 从其自己的 `agentDir` 身份验证存储读取，路径为 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json`。凭据**不**在 Agent 之间共享。永远不要在 Agent 之间重用 `agentDir`。如果你想共享凭据，请将 `auth-profiles.json` 复制到其他 Agent 的 `agentDir`。
+身份验证是每个 Agent 的：每个 Agent 在 `~/.openclaw/agents/<agentId>/agent/auth-profiles.json` 拥有自己的 `agentDir` 身份验证存储。永远不要在 Agent 之间重用 `agentDir`。Agent 在没有本地配置文件时可以透传读取默认/主 Agent 的身份验证配置文件，但 OAuth 刷新令牌不会被克隆到辅助 Agent 存储中。如果你手动复制凭据，只复制可移植的静态 `api_key` 或 `token` 配置文件。
 </Warning>
 
 ---
@@ -51,8 +51,14 @@ status: active
               "scope": "agent"
             },
             "tools": {
-              "allow": ["read"],
-              "deny": ["exec", "write", "edit", "apply_patch", "process", "browser"]
+              "allow": ["read", "message"],
+              "deny": ["exec", "write", "edit", "apply_patch", "process", "browser"],
+              "message": {
+                "crossContext": {
+                  "allowWithinProvider": false,
+                  "allowAcrossProviders": false
+                }
+              }
             }
           }
         ]
@@ -76,7 +82,7 @@ status: active
     **结果：**
 
     - `main` Agent：在主机上运行，完全工具访问。
-    - `family` Agent：在 Docker 中运行（每个 Agent 一个容器），仅 `read` 工具。
+    - `family` Agent：在 Docker 中运行（每个 Agent 一个容器），仅 `read` 工具和当前会话的消息发送。
 
   </Accordion>
   <Accordion title="示例 2：具有共享沙箱的工作 Agent">
@@ -300,7 +306,7 @@ agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
     }
     ```
   </Tab>
-  <Tab title="安全执行（无文件修改）">
+  <Tab title="禁用文件系统工具的 Shell 执行">
     ```json
     {
       "tools": {
@@ -309,6 +315,11 @@ agents.list[].sandbox.prune.* > agents.defaults.sandbox.prune.*
       }
     }
     ```
+
+    <Warning>
+    此策略禁用了 OpenClaw 文件系统工具，但 `exec` 仍然是一个 Shell，可以在所选主机或沙箱文件系统允许的任何位置写入文件。对于只读 Agent，请拒绝 `exec` 和 `process`，或将 Shell 访问与沙箱文件系统控制结合使用，例如 `agents.defaults.sandbox.workspaceAccess: "ro"` 或 `"none"`。
+    </Warning>
+
   </Tab>
   <Tab title="仅通信">
     ```json

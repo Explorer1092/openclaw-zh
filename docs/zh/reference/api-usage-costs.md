@@ -1,14 +1,12 @@
 ---
-mmh3_hash: "28851cb1296e410f0c172d6d1e050fa6"
+mmh3_hash: "9cbd3fc55558dd5678fa78a371edcf43"
+title: "API 使用量与费用"
 summary: "审计哪些功能可能花费资金、使用哪些密钥以及如何查看使用情况"
 read_when:
   - 您想了解哪些功能可能调用付费 API
   - 您需要审计密钥、费用和使用可见性
   - 您在解释 /status 或 /usage 费用报告
-title: "API 使用量与费用"
 ---
-
-# API 使用量与费用
 
 本文档列出了**可以调用 API 密钥的功能**以及它们的费用出现在哪里。它专注于可能产生提供商使用量或付费 API 调用的 OpenClaw 功能。
 
@@ -61,8 +59,8 @@ OpenClaw 可以从以下位置获取凭据：
 
 入站媒体可以在回复运行前进行摘要/转录。这使用模型/提供商 API。
 
-- 音频：OpenAI / Groq / Deepgram / Google / Mistral。
-- 图像：OpenAI / OpenRouter / Anthropic / Google / MiniMax / Moonshot / Qwen / Z.AI。
+- 音频：OpenAI / Groq / Deepgram / DeepInfra / Google / Mistral。
+- 图像：OpenAI / OpenRouter / Anthropic / DeepInfra / Google / MiniMax / Moonshot / Qwen / Z.AI。
 - 视频：Google / Qwen / Moonshot。
 
 请参见[媒体理解](/nodes/media-understanding)。
@@ -71,8 +69,8 @@ OpenClaw 可以从以下位置获取凭据：
 
 共享生成功能也可能消耗提供商密钥：
 
-- 图像生成：OpenAI / Google / fal / MiniMax
-- 视频生成：Qwen
+- 图像生成：OpenAI / Google / DeepInfra / fal / MiniMax
+- 视频生成：DeepInfra / Qwen
 
 当 `agents.defaults.imageGenerationModel` 未设置时，图像生成可以推断基于身份验证的提供商默认值。视频生成目前需要明确的 `agents.defaults.videoGenerationModel`，例如 `qwen/wan2.6-t2v`。
 
@@ -86,6 +84,7 @@ OpenClaw 可以从以下位置获取凭据：
 - `memorySearch.provider = "gemini"` → Gemini 嵌入
 - `memorySearch.provider = "voyage"` → Voyage 嵌入
 - `memorySearch.provider = "mistral"` → Mistral 嵌入
+- `memorySearch.provider = "deepinfra"` → DeepInfra 嵌入
 - `memorySearch.provider = "lmstudio"` → LM Studio 嵌入（本地/自托管）
 - `memorySearch.provider = "ollama"` → Ollama 嵌入（本地/自托管；通常无托管 API 计费）
 - 可选回退到远程提供商（如果本地嵌入失败）

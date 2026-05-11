@@ -1,6 +1,6 @@
 ---
 title: "创建技能"
-mmh3_hash: "6491614b30c6e54da83650beaabe33f1"
+mmh3_hash: "15e1142b81f8caaff5c55840e7dc6ecf"
 summary: "使用 SKILL.md 构建和测试自定义工作区技能"
 read_when:
   - 在工作区中创建新的自定义技能
@@ -28,7 +28,7 @@ read_when:
 
     ```markdown
     ---
-    name: hello_world
+    name: hello-world
     description: A simple skill that says hello.
     ---
 
@@ -82,7 +82,7 @@ YAML frontmatter 支持以下字段：
 
 | 字段                                | 必填 | 描述                                        |
 | ----------------------------------- | ---- | ------------------------------------------- |
-| `name`                              | 是   | 唯一标识符（snake_case）                    |
+| `name`                              | 是   | 使用小写字母、数字和连字符的唯一标识符      |
 | `description`                       | 是   | 向 Agent 显示的单行描述                     |
 | `metadata.openclaw.os`              | 否   | 操作系统过滤器（`["darwin"]`、`["linux"]` 等）|
 | `metadata.openclaw.requires.bins`   | 否   | PATH 上所需的二进制文件                     |
@@ -110,5 +110,5 @@ YAML frontmatter 支持以下字段：
 
 - [技能参考](/tools/skills) — 加载、优先级和限制规则
 - [技能配置](/tools/skills-config) — `skills.*` 配置 Schema
-- [ClawHub](/tools/clawhub) — 公共技能注册表
+- [ClawHub](/clawhub) — 公共技能注册表
 - [构建 Plugin](/plugins/building-plugins) — Plugin 可以打包技能

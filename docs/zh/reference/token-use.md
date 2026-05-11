@@ -1,10 +1,10 @@
 ---
-mmh3_hash: "775fcad73e8270ad1dd91a3633b17bfd"
-summary: "OpenClaw 如何构建提示词上下文并报告令牌使用情况 + 成本"
+mmh3_hash: "d49b4d36220ca78732cad1f3fdd4b0f6"
+summary: "OpenClaw 如何构建提示词上下文并报告 token 使用情况 + 成本"
 read_when:
-  - 解释令牌使用情况、成本或上下文窗口
+  - 解释 token 使用情况、成本或上下文窗口
   - 调试上下文增长或压缩行为
-title: "令牌使用和成本"
+title: "Token 使用和成本"
 ---
 
 # 令牌使用和成本
@@ -20,7 +20,7 @@ OpenClaw 在每次运行时组装自己的系统提示词。它包括：
   紧凑型 Skills 块由 `skills.limits.maxSkillsPromptChars` 限制，
   并在 `agents.list[].skillsLimits.maxSkillsPromptChars` 处有可选的每 Agent 覆盖。
 - 自我更新指令
-- 工作空间 + 引导文件（新建时为 `AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md`，存在时为 `MEMORY.md`，当 `MEMORY.md` 不存在时回退到小写 `memory.md`）。大型文件被 `agents.defaults.bootstrapMaxChars`（默认：12000）截断，总引导注入由 `agents.defaults.bootstrapTotalMaxChars`（默认：60000）限制。`memory/*.md` 日常文件不是普通引导提示词的一部分；在普通轮次中，它们通过记忆 Tools 按需提供，但裸 `/new` 和 `/reset` 可以为第一个轮次预置包含最近日常记忆的一次性启动上下文块。该启动前导由 `agents.defaults.startupContext` 控制。
+- 工作区 + 引导文件（`AGENTS.md`、`SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`，新建时为 `BOOTSTRAP.md`，存在时为 `MEMORY.md`）。小写根目录 `memory.md` 不会被注入；当与 `MEMORY.md` 配对时，它是 `openclaw doctor --fix` 的旧版修复输入。大型文件被 `agents.defaults.bootstrapMaxChars`（默认：12000）截断，总引导注入由 `agents.defaults.bootstrapTotalMaxChars`（默认：60000）限制。`memory/*.md` 日常文件不是普通引导提示词的一部分；在普通轮次中，它们通过记忆 Tools 按需提供，但重置/启动模型运行可以为第一个轮次预置包含最近日常记忆的一次性启动上下文块。裸聊天 `/new` 和 `/reset` 命令在不调用模型的情况下被确认。该启动前导由 `agents.defaults.startupContext` 控制。
 - 时间（UTC + 用户时区）
 - 回复标签 + 心跳行为
 - 运行时元数据（主机/OS/模型/思考）
@@ -81,6 +81,9 @@ Gemini CLI JSON 使用量同样被标准化：回复文本来自 `response`，
 对于原生 OpenAI 系 Responses 流量，WebSocket/SSE 使用量别名同样被标准化，当 `total_tokens` 缺失或为 `0` 时，合计退回到标准化的 input + output。
 当当前 Session 快照较稀疏时，`/status` 和 `session_status` 也可以从最近的转录使用量日志中恢复 token/缓存计数器和活跃运行时模型标签。现有非零实时值仍然优先于转录回退值，较大的面向提示词的转录合计在存储合计缺失或更小时可以胜出。
 Provider 配额窗口的使用量认证来自 Provider 特定的 Hooks（如果可用）；否则 OpenClaw 回退到来自身份验证配置文件、环境变量或配置的匹配 OAuth/API 密钥凭据。
+助手转录条目持久化相同的标准化使用量形状，包括 `usage.cost`（当活跃模型配置了定价且 Provider 返回使用量元数据时）。这为 `/usage cost` 和转录支持的 Session 状态提供了稳定的来源，即使在实时运行时状态消失之后。
+
+OpenClaw 将 Provider 使用量记账与当前上下文快照分开保存。Provider `usage.total` 可以包括缓存输入、输出和多个工具循环模型调用，因此它对成本和遥测很有用，但可能会高估实时上下文窗口。上下文显示和诊断使用最新的提示词快照（`promptTokens`，或当没有提示词快照时的最后一次模型调用）来显示 `context.used`。
 
 ## 成本估算（显示时）
 
@@ -90,7 +93,9 @@ Provider 配额窗口的使用量认证来自 Provider 特定的 Hooks（如果�
 models.providers.<provider>.models[].cost
 ```
 
-这些是 `input`、`output`、`cacheRead` 和 `cacheWrite` 的 **USD/百万令牌**。如果缺少定价，OpenClaw 仅显示令牌。OAuth 令牌永远不显示美元成本。
+这些是 `input`、`output`、`cacheRead` 和 `cacheWrite` 的 **USD/百万 token**。如果缺少定价，OpenClaw 仅显示 token。OAuth token 永远不显示美元成本。
+
+在辅助程序和 Channel 到达 Gateway 就绪路径后，OpenClaw 会为没有本地定价的已配置模型引用启动可选的后台定价引导。该引导获取远程 OpenRouter 和 LiteLLM 定价目录。在离线或受限网络上设置 `models.pricing.enabled: false` 以跳过这些目录获取；明确的 `models.providers.*.models[].cost` 条目继续驱动本地成本估算。
 
 ## 缓存 TTL 和修剪影响
 

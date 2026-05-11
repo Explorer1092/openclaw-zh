@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "32ab292f52b19c363f4f728b27546840"
+mmh3_hash: "b0b562f14f6a537574771a93caf2e023"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志
@@ -9,15 +9,13 @@ title: "引导向导参考"
 sidebarTitle: "向导参考"
 ---
 
-# 引导向导参考
-
 这是 `openclaw onboard` CLI 向导的完整参考。有关高级概述，请参阅[引导向导](/start/wizard)。
 
 ## 流程详细信息（本地模式）
 
 <Steps>
   <Step title="现有配置检测">
-    - 如果 `~/.openclaw/openclaw.json` 存在，选择 **Keep / Modify / Reset**。
+    - 如果 `~/.openclaw/openclaw.json` 存在，选择 **Keep current values**、**Review and update** 或 **Reset before setup**。
     - 重新运行向导**不会**清除任何内容，除非您明确选择 **Reset**（或传递 `--reset`）。
     - CLI `--reset` 默认为 `config+creds+sessions`；使用 `--reset-scope full` 也删除工作空间。
     - 如果配置无效或包含旧密钥，向导会停止并要求您在继续之前运行 `openclaw doctor`。
@@ -31,9 +29,9 @@ sidebarTitle: "向导参考"
     - **Anthropic API 密钥**：引导/配置中首选的 Anthropic 助手选项。
     - **Anthropic 安装令牌**：在引导/配置中仍然可用，但 OpenClaw 现在更倾向于在可用时重用 Claude CLI。
     - **OpenAI Code（Codex）订阅（OAuth）**：浏览器流程；粘贴 `code#state`。
-      - 当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.5`。
+      - 当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
     - **OpenAI Code（Codex）订阅（设备配对）**：带有短期设备码的浏览器配对流程。
-      - 当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai-codex/gpt-5.5`。
+      - 当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
     - **OpenAI API 密钥**：如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将其存储在身份验证配置文件中。
       - 当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
     - **xAI（Grok）API 密钥**：提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。
@@ -93,8 +91,7 @@ sidebarTitle: "向导参考"
     - [Google Chat](/channels/googlechat)：服务帐户 JSON + Webhook 受众。
     - [Mattermost](/channels/mattermost)（Plugin）：机器人令牌 + Base URL。
     - [Signal](/channels/signal)：可选的 `signal-cli` 安装 + 帐户配置。
-    - [BlueBubbles](/channels/bluebubbles)：**推荐用于 iMessage**；服务器 URL + 密码 + Webhook。
-    - [iMessage](/channels/imessage)：旧版 `imsg` CLI 路径 + DB 访问。
+    - [iMessage](/channels/imessage)：`imsg` CLI 路径 + Messages DB 访问；当 Gateway 在 Mac 以外运行时使用 SSH 包装器。
     - DM 安全性：默认为配对。第一个 DM 发送代码；通过 `openclaw pairing approve <channel> <code>` 批准或使用白名单。
   </Step>
   <Step title="Web 搜索">
@@ -124,7 +121,7 @@ sidebarTitle: "向导参考"
     - 安装可选依赖项（有些在 macOS 上使用 Homebrew）。
   </Step>
   <Step title="完成">
-    - 摘要 + 后续步骤，包括 iOS/Android/macOS 应用程序以获得额外功能。
+    - 摘要 + 后续步骤，包括 **How do you want to hatch your agent?** 提示（Terminal、Browser 或稍后）。
   </Step>
 </Steps>
 
@@ -230,5 +227,5 @@ WhatsApp 凭据位于 `~/.openclaw/credentials/whatsapp/<accountId>/` 下。Sess
 - 向导概述：[引导向导](/start/wizard)
 - macOS 应用程序引导：[引导](/start/onboarding)
 - 配置参考：[Gateway 配置](/gateway/configuration)
-- Providers：[WhatsApp](/channels/whatsapp)、[Telegram](/channels/telegram)、[Discord](/channels/discord)、[Google Chat](/channels/googlechat)、[Signal](/channels/signal)、[BlueBubbles](/channels/bluebubbles)（iMessage）、[iMessage](/channels/imessage)（旧版）
+- Providers：[WhatsApp](/channels/whatsapp)、[Telegram](/channels/telegram)、[Discord](/channels/discord)、[Google Chat](/channels/googlechat)、[Signal](/channels/signal)、[iMessage](/channels/imessage)
 - Skills：[Skills](/tools/skills)、[Skills 配置](/tools/skills-config)

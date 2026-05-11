@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d9642e4e4c02d50b64bc529e65f2c03c"
+mmh3_hash: "6180f61cd90d57c77dab3f6a08d349b9"
 title: "Diffs"
 sidebarTitle: "Diffs"
 summary: "供 Agent 使用的只读 diff 查看器与文件渲染器（可选插件工具）"
@@ -28,6 +28,11 @@ read_when:
 ## 快速开始
 
 <Steps>
+  <Step title="安装插件">
+    ```bash
+    openclaw plugins install diffs
+    ```
+  </Step>
   <Step title="启用插件">
     ```json5
     {
@@ -284,6 +289,7 @@ read_when:
             fileScale: 2,
             fileMaxWidth: 960,
             mode: "both",
+            ttlSeconds: 21600,
           },
         },
       },
@@ -308,6 +314,7 @@ read_when:
 - `fileScale`
 - `fileMaxWidth`
 - `mode`
+- `ttlSeconds`
 
 工具调用时的显式参数会覆盖这些默认值。
 
