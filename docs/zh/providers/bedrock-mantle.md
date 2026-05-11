@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "f06a592f392d07c156a36d93c6d5bcf8"
+mmh3_hash: "b1a4df87219d410c167163e03124a06f"
 summary: "在 OpenClaw 中使用 Amazon Bedrock Mantle（OpenAI 兼容）模型"
 read_when:
   - 您想在 OpenClaw 中使用 Bedrock Mantle 托管的开源模型
   - 您需要用于 GPT-OSS、Qwen、Kimi 或 GLM 的 Mantle OpenAI 兼容端点
 title: "Amazon Bedrock Mantle"
 ---
-
-# Amazon Bedrock Mantle
 
 OpenClaw 内置了 **Amazon Bedrock Mantle** Provider，连接到 Mantle OpenAI 兼容端点。Mantle 通过标准 `/v1/chat/completions` 接口托管开源和第三方模型（GPT-OSS、Qwen、Kimi、GLM 等），由 Bedrock 基础设施提供支持。
 
@@ -85,6 +83,12 @@ OpenClaw 内置了 **Amazon Bedrock Mantle** Provider，连接到 Mantle OpenAI 
 | ---------------- | ------------------------- |
 | 发现缓存         | 结果缓存 1 小时           |
 | IAM 令牌刷新     | 每小时                    |
+
+要保持 Mantle Plugin 启用但禁止自动发现和 IAM Bearer 令牌生成，请禁用 Plugin 自有的发现开关：
+
+```bash
+openclaw config set plugins.entries.amazon-bedrock-mantle.config.discovery.enabled false
+```
 
 <Note>
 Bearer 令牌与标准 [Amazon Bedrock](/providers/bedrock) Provider 使用的 `AWS_BEARER_TOKEN_BEDROCK` 相同。

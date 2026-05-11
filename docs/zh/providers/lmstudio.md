@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "e6f92f993200ad0e4c4366b62808f053"
+mmh3_hash: "643d81c4cbbc88b1b3516843e7c77ce5"
 summary: "在 LM Studio 中运行 OpenClaw"
 read_when:
   - 您想通过 LM Studio 使用开源模型运行 OpenClaw
   - 您想设置和配置 LM Studio
 title: "LM Studio"
 ---
-
-# LM Studio
 
 LM Studio 是一款友好而强大的应用程序，可在您自己的硬件上运行开放权重模型。它可以运行 llama.cpp（GGUF）或 MLX 模型（Apple Silicon）。提供 GUI 包或无界面守护进程（`llmster`）。有关产品和设置文档，请参见 [lmstudio.ai](https://lmstudio.ai/)。
 
@@ -113,6 +111,10 @@ LM Studio 与流式使用兼容。当它不发出 OpenAI 样式的 `usage` 对�
 - TabbyAPI
 - text-generation-webui
 
+### 思考兼容性
+
+当 LM Studio 的 `/api/v1/models` 发现接口报告模型特定的推理选项时，OpenClaw 会在模型兼容元数据中公开对应的 OpenAI 兼容 `reasoning_effort` 值。当前的 LM Studio 构建版本可能会公开二元 UI 选项（如 `allowed_options: ["off", "on"]`），但同时拒绝在 `/v1/chat/completions` 上使用这些值；OpenClaw 在发送请求之前，会将该二元发现形状规范化为 `none`、`minimal`、`low`、`medium`、`high` 和 `xhigh`。旧版 LM Studio 保存的配置中包含 `off`/`on` 推理映射时，在加载目录时也会以相同方式规范化。
+
 ### 显式配置
 
 ```json5
@@ -167,7 +169,22 @@ curl http://localhost:1234/api/v1/models
 
 ### 即时模型加载
 
-LM Studio 支持即时（JIT）模型加载，其中模型在第一次请求时加载。确保您已启用此功能以避免"模型未加载"错误。
+LM Studio 支持即时（JIT）模型加载，其中模型在第一次请求时加载。OpenClaw 默认通过 LM Studio 的原生加载端点预加载模型，这在 JIT 被禁用时很有帮助。若要让 LM Studio 的 JIT、空闲 TTL 和自动驱逐行为管理模型生命周期，请禁用 OpenClaw 的预加载步骤：
+
+```json5
+{
+  models: {
+    providers: {
+      lmstudio: {
+        baseUrl: "http://localhost:1234/v1",
+        api: "openai-completions",
+        params: { preload: false },
+        models: [{ id: "qwen/qwen3.5-9b" }],
+      },
+    },
+  },
+}
+```
 
 ### 局域网或 tailnet LM Studio 主机
 

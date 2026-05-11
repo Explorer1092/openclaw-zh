@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3a32b1110e9a66389c2e513b5b262c52"
+mmh3_hash: "e0bcf1c7b9bad2759fedbfd96556ac5a"
 title: "Chutes"
 summary: "Chutes 设置（OAuth 或 API 密钥、模型发现、别名）"
 read_when:

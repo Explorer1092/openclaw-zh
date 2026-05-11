@@ -1,14 +1,12 @@
 ---
 title: "GitHub Copilot"
 sidebarTitle: "GitHub Copilot"
-mmh3_hash: "d88ba12b5efffdfcbb698dd4ce4b2d56"
+mmh3_hash: "55ab28523731f8b082005dfd3550634f"
 summary: "使用设备流或非交互式令牌导入从 OpenClaw 登录 GitHub Copilot"
 read_when:
   - 您想将 GitHub Copilot 用作模型 Provider
   - 您需要 `openclaw models auth login-github-copilot` 流程
 ---
-
-# GitHub Copilot
 
 GitHub Copilot 是 GitHub 的 AI 编码助手。它为您的 GitHub 账户和计划提供对 Copilot 模型的访问。OpenClaw 可以通过两种不同的方式将 Copilot 用作模型 Provider。
 
@@ -90,6 +88,25 @@ openclaw onboard --non-interactive --accept-risk \
 
   <Accordion title="模型可用性取决于您的计划">
     Copilot 模型可用性取决于您的 GitHub 计划。如果模型被拒绝，请尝试另一个 ID（例如 `github-copilot/gpt-4.1`）。
+  </Accordion>
+
+  <Accordion title="从 Copilot API 实时刷新目录">
+    一旦设备登录（或环境变量）认证路径解析了 GitHub 令牌，OpenClaw 就会按需从 `${baseUrl}/models`（VS Code Copilot 使用的同一端点）刷新模型目录，以便运行时跟踪每账户权限和准确的上下文窗口，无需频繁更新清单。新发布的 Copilot 模型无需升级 OpenClaw 即可可见，上下文窗口反映真实的每模型限制（例如 gpt-5.x 系列为 400k，内部 `claude-opus-*-1m` 变体为 1M）。
+
+    当发现被禁用、用户没有 GitHub 认证配置文件、令牌交换失败或 `/models` HTTPS 调用出错时，捆绑的静态目录仍然作为可见的回退。若要完全依赖静态清单目录（离线/气闸场景），请选择退出：
+
+    ```json5
+    {
+      plugins: {
+        entries: {
+          "github-copilot": {
+            config: { discovery: { enabled: false } },
+          },
+        },
+      },
+    }
+    ```
+
   </Accordion>
 
   <Accordion title="传输选择">

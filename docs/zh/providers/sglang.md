@@ -1,18 +1,27 @@
 ---
-mmh3_hash: "206dce1dd56e66fa92bf76a009da4abb"
-title: "SGLang"
+mmh3_hash: "33ba1471a354a5fb57bbb9094ea5010d"
 summary: "使用 SGLang（OpenAI 兼容自托管服务器）运行 OpenClaw"
 read_when:
   - 您想针对本地 SGLang 服务器运行 OpenClaw
   - 您想使用 OpenAI 兼容的 /v1 端点运行自己的模型
+title: "SGLang"
 ---
 
-SGLang 可以通过 **OpenAI 兼容** HTTP API 提供开源模型服务。
-OpenClaw 可以使用 `openai-completions` API 连接到 SGLang。
+SGLang 通过 OpenAI 兼容 HTTP API 提供开源模型服务。OpenClaw 使用 `openai-completions` Provider 系列连接 SGLang，并自动发现可用模型。
 
-OpenClaw 还可以在您使用 `SGLANG_API_KEY` 选择加入时（如果您的服务器不强制身份验证，任何值都有效）且不定义显式的 `models.providers.sglang` 条目时，**自动发现** SGLang 中的可用模型。
+| 属性                    | 值                                                           |
+| ----------------------- | ------------------------------------------------------------ |
+| Provider id             | `sglang`                                                     |
+| Plugin                  | bundled, `enabledByDefault: true`                            |
+| 认证环境变量            | `SGLANG_API_KEY`（服务器无认证时填任意非空值）               |
+| Onboarding flag         | `--auth-choice sglang`                                       |
+| API                     | OpenAI 兼容（`openai-completions`）                          |
+| 默认 Base URL           | `http://127.0.0.1:30000/v1`                                  |
+| 默认模型占位符          | `sglang/Qwen/Qwen3-8B`                                       |
+| 流式使用                | 是（`supportsStreamingUsage: true`）                         |
+| 定价                    | 标记为外部免费（`modelPricing.external: false`）             |
 
-OpenClaw 将 `sglang` 视为支持流式使用计费的本地 OpenAI 兼容 Provider，因此状态/上下文 Token 计数可以从 `stream_options.include_usage` 响应中更新。
+当您设置了 `SGLANG_API_KEY` 且未定义显式的 `models.providers.sglang` 条目时，OpenClaw 还会**自动发现** SGLang 的可用模型——详见下方[模型发现（隐式 Provider）](#model-discovery-implicit-provider)。
 
 ## 快速开始
 
@@ -24,14 +33,14 @@ OpenClaw 将 `sglang` 视为支持流式使用计费的本地 OpenAI 兼容 Prov
 
   </Step>
   <Step title="设置 API 密钥">
-    如果服务器未配置身份验证，任何值都有效：
+    如果服务器未配置认证，任何值都有效：
 
     ```bash
     export SGLANG_API_KEY="sglang-local"
     ```
 
   </Step>
-  <Step title="运行入门或直接设置模型">
+  <Step title="运行引导程序或直接设置模型">
     ```bash
     openclaw onboard
     ```
@@ -53,7 +62,7 @@ OpenClaw 将 `sglang` 视为支持流式使用计费的本地 OpenAI 兼容 Prov
 
 ## 模型发现（隐式 Provider）
 
-当设置了 `SGLANG_API_KEY`（或存在身份验证配置文件）且您**不**
+当设置了 `SGLANG_API_KEY`（或存在认证配置文件）且您**未**
 定义 `models.providers.sglang` 时，OpenClaw 将查询：
 
 - `GET http://127.0.0.1:30000/v1/models`
@@ -71,7 +80,7 @@ OpenClaw 将 `sglang` 视为支持流式使用计费的本地 OpenAI 兼容 Prov
 
 - SGLang 在不同的主机/端口上运行。
 - 您想固定 `contextWindow`/`maxTokens` 值。
-- 您的服务器需要真实的 API 密钥（或您想控制标头）。
+- 您的服务器需要真实的 API 密钥（或您想控制请求头）。
 
 ```json5
 {
@@ -122,12 +131,12 @@ OpenClaw 将 `sglang` 视为支持流式使用计费的本地 OpenAI 兼容 Prov
     curl http://127.0.0.1:30000/v1/models
     ```
 
-    **身份验证错误**
+    **认证错误**
 
-    如果请求因身份验证错误而失败，请设置与您的服务器配置匹配的真实 `SGLANG_API_KEY`，或在 `models.providers.sglang` 下显式配置 Provider。
+    如果请求因认证错误而失败，请设置与您的服务器配置匹配的真实 `SGLANG_API_KEY`，或在 `models.providers.sglang` 下显式配置 Provider。
 
     <Tip>
-    如果您在没有身份验证的情况下运行 SGLang，`SGLANG_API_KEY` 的任何非空值都足以选择加入模型发现。
+    如果您在没有认证的情况下运行 SGLang，`SGLANG_API_KEY` 的任何非空值都足以选择加入模型发现。
     </Tip>
 
   </Accordion>

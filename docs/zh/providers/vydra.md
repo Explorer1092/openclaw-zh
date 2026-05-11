@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "621c562688d9b944b0c49024df6679f5"
+mmh3_hash: "5bbc293dd9724edccfe852514c7a5111"
 summary: "在 OpenClaw 中使用 Vydra 图像、视频和语音"
 read_when:
   - 您想在 OpenClaw 中使用 Vydra 媒体生成
   - 您需要 Vydra API 密钥设置指导
 title: "Vydra"
 ---
-
-# Vydra
 
 内置的 Vydra Plugin 添加了：
 
@@ -17,10 +15,18 @@ title: "Vydra"
 
 OpenClaw 对所有三种功能使用相同的 `VYDRA_API_KEY`。
 
-<Warning>
-使用 `https://www.vydra.ai/api/v1` 作为 Base URL。
+| 属性            | 值                                                                        |
+| --------------- | ------------------------------------------------------------------------- |
+| Provider id     | `vydra`                                                                   |
+| Plugin          | bundled, `enabledByDefault: true`                                         |
+| 认证环境变量    | `VYDRA_API_KEY`                                                           |
+| Onboarding flag | `--auth-choice vydra-api-key`                                             |
+| 直接 CLI 标志   | `--vydra-api-key <key>`                                                   |
+| 合约            | `imageGenerationProviders`, `videoGenerationProviders`, `speechProviders` |
+| Base URL        | `https://www.vydra.ai/api/v1`（使用 `www` 主机）                          |
 
-Vydra 的顶级域名（`https://vydra.ai/api/v1`）目前重定向到 `www`。某些 HTTP 客户端在跨主机重定向时会丢弃 `Authorization` 标头，这会将有效的 API 密钥变成误导性的身份验证失败。内置 Plugin 直接使用 `www` Base URL 来避免这个问题。
+<Warning>
+  使用 `https://www.vydra.ai/api/v1` 作为 Base URL。Vydra 的顶级域名（`https://vydra.ai/api/v1`）目前重定向到 `www`。某些 HTTP 客户端在跨主机重定向时会丢弃 `Authorization` 标头，这会将有效的 API 密钥变成误导性的认证失败。内置 Plugin 直接使用 `www` Base URL 来避免这个问题。
 </Warning>
 
 ## 设置
@@ -169,7 +175,7 @@ Vydra 的顶级域名（`https://vydra.ai/api/v1`）目前重定向到 `www`。�
   <Card title="视频生成" href="/tools/video-generation" icon="video">
     共享视频工具参数和 Provider 选择。
   </Card>
-  <Card title="配置参考" href="/gateway/configuration-reference#agent-defaults" icon="gear">
+  <Card title="配置参考" href="/gateway/config-agents#agent-defaults" icon="gear">
     Agent 默认值和模型配置。
   </Card>
 </CardGroup>

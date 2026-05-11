@@ -1,20 +1,18 @@
 ---
 title: "Google (Gemini)"
-mmh3_hash: "f5986fea00618ff3a0c2e61afef0dcbe"
+mmh3_hash: "af9d5eee9cec78b815a5813c2b285b74"
 summary: "Google Gemini 设置（API 密钥 + OAuth、图像生成、媒体理解、TTS、Web 搜索）"
 read_when:
   - 您想在 OpenClaw 中使用 Google Gemini 模型
   - 您需要 API 密钥或 OAuth 身份验证流程
 ---
 
-# Google (Gemini)
-
 Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及图像生成、媒体理解（图像/音频/视频）、文本转语音和通过 Gemini Grounding 实现的 Web 搜索。
 
 - Provider：`google`
 - 身份验证：`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`
 - API：Google Gemini API
-- 运行时选项：`agents.defaults.agentRuntime.id: "google-gemini-cli"` 复用 Gemini CLI OAuth，同时将模型引用保持为规范的 `google/*` 形式。
+- 运行时选项：Provider/模型 `agentRuntime.id: "google-gemini-cli"` 复用 Gemini CLI OAuth，同时将模型引用保持为规范的 `google/*` 形式。
 
 ## 快速开始
 
@@ -100,6 +98,8 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
     - 运行时：`google-gemini-cli`
     - 别名：`gemini-cli`
 
+    Gemini 3.1 Pro 的 Gemini API 模型 id 为 `gemini-3.1-pro-preview`。OpenClaw 接受较短的 `google/gemini-3.1-pro` 作为便捷别名，并在调用 Provider 前将其规范化。
+
     **环境变量：**
 
     - `OPENCLAW_GEMINI_OAUTH_CLIENT_ID`
@@ -135,6 +135,30 @@ Google 插件通过 Google AI Studio 提供对 Gemini 模型的访问，以及�
 | Web 搜索（Grounding）  | 是                            |
 | 思考/推理              | 是（Gemini 2.5+ / Gemini 3+） |
 | Gemma 4 模型           | 是                            |
+
+## Web 搜索
+
+内置的 `gemini` Web 搜索 Provider 使用 Gemini Google Search Grounding。在 `plugins.entries.google.config.webSearch` 下配置专用搜索密钥，或让其在 `GEMINI_API_KEY` 之后复用 `models.providers.google.apiKey`：
+
+```json5
+{
+  plugins: {
+    entries: {
+      google: {
+        config: {
+          webSearch: {
+            apiKey: "AIza...", // 如果已设置 GEMINI_API_KEY 或 models.providers.google.apiKey，则此项可选
+            baseUrl: "https://generativelanguage.googleapis.com/v1beta", // 回退到 models.providers.google.baseUrl
+            model: "gemini-2.5-flash",
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+凭据优先级依次为：专用 `webSearch.apiKey`、`GEMINI_API_KEY`、`models.providers.google.apiKey`。`webSearch.baseUrl` 可选，适用于运营商代理或兼容的 Gemini API 端点；省略时，Gemini Web 搜索将复用 `models.providers.google.baseUrl`。有关 Provider 特定的工具行为，请参见 [Gemini 搜索](/tools/gemini-search)。
 
 <Tip>
 Gemini 3 模型使用 `thinkingLevel` 而非 `thinkingBudget`。OpenClaw 将 Gemini 3、Gemini 3.1 及 `gemini-*-latest` 别名的推理控制映射到 `thinkingLevel`，以便默认/低延迟运行不发送已禁用的 `thinkingBudget` 值。
@@ -177,8 +201,8 @@ Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将
 
 - 默认视频模型：`google/veo-3.1-fast-generate-preview`
 - 模式：文本到视频、图像到视频和单视频参考流程
-- 支持 `aspectRatio`、`resolution` 和 `audio`
-- 当前时长限制：**4 到 8 秒**
+- 支持 `aspectRatio`（`16:9`、`9:16`）和 `resolution`（`720P`、`1080P`）；Veo 目前不支持音频输出
+- 支持的时长：**4、6 或 8 秒**（其他值将自动对齐到最近的允许值）
 
 将 Google 设置为默认视频 Provider：
 
@@ -236,6 +260,8 @@ Gemma 4 模型（例如 `gemma-4-26b-a4b-it`）支持思考模式。OpenClaw 将
 - 输出：常规 TTS 附件为 WAV，语音笔记目标为 Opus，Talk/电话为 PCM
 - 语音笔记输出：Google PCM 被封装为 WAV，并使用 `ffmpeg` 转码为 48 kHz Opus
 
+Google 的批量 Gemini TTS 路径在已完成的 `generateContent` 响应中返回生成的音频。对于延迟最低的语音对话，请使用由 Gemini Live API 支持的 Google 实时语音 Provider，而非批量 TTS。
+
 将 Google 设置为默认 TTS Provider：
 
 ```json5
@@ -285,6 +311,8 @@ Here is the clean reply text.
 | 活动处理            | `...google.activityHandling`                                        | Google 默认，`start-of-activity-interrupts`                                           |
 | 轮次覆盖            | `...google.turnCoverage`                                            | Google 默认，`only-activity`                                                          |
 | 禁用自动 VAD        | `...google.automaticActivityDetectionDisabled`                      | `false`                                                                               |
+| 会话恢复            | `...google.sessionResumption`                                       | `true`                                                                                |
+| 上下文压缩          | `...google.contextWindowCompression`                                | `true`                                                                                |
 | API 密钥            | `...google.apiKey`                                                  | 回退到 `models.providers.google.apiKey`、`GEMINI_API_KEY` 或 `GOOGLE_API_KEY`        |
 
 Voice Call 实时配置示例：
@@ -320,8 +348,12 @@ Google Live API 通过 WebSocket 使用双向音频和函数调用。OpenClaw �
 </Note>
 
 <Note>
-Control UI Talk 浏览器会话仍需要具有浏览器 WebRTC 会话实现的实时语音 Provider。目前该路径为 OpenAI Realtime；Google Provider 用于后端实时桥接。
+Control UI Talk 支持带有受限一次性令牌的 Google Live 浏览器会话。仅后端实时语音 Provider 也可以通过通用 Gateway 中继传输运行，从而将 Provider 凭据保留在 Gateway 上。
 </Note>
+
+如需维护者实时验证，请运行
+`OPENAI_API_KEY=... GEMINI_API_KEY=... node --import tsx scripts/dev/realtime-talk-live-smoke.ts`。
+该脚本同时覆盖 OpenAI 后端/WebRTC 路径；Google 部分将创建与 Control UI Talk 使用的相同受限 Live API 令牌形状，打开浏览器 WebSocket 端点，发送初始设置载荷，并等待 `setupComplete`。
 
 ## 高级配置
 

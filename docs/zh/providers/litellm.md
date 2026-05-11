@@ -1,13 +1,11 @@
 ---
 title: "LiteLLM"
-mmh3_hash: "98415298ca247d4ef6ada47d733ebd2f"
+mmh3_hash: "040ab52d1a18657b9dc116566d319566"
 summary: "通过 LiteLLM Proxy 运行 OpenClaw 以实现统一的模型访问和成本跟踪"
 read_when:
   - 您想要通过 LiteLLM 代理路由 OpenClaw
   - 您需要通过 LiteLLM 进行成本跟踪、日志记录或模型路由
 ---
-
-# LiteLLM
 
 [LiteLLM](https://litellm.ai) 是一个开源 LLM 网关，为 100 多个模型 Provider 提供统一 API。通过 LiteLLM 路由 OpenClaw，可以实现集中的成本跟踪、日志记录，以及无需更改 OpenClaw 配置即可切换后端的灵活性。
 
@@ -31,6 +29,12 @@ read_when:
       <Step title="运行入门">
         ```bash
         openclaw onboard --auth-choice litellm-api-key
+        ```
+
+        对于针对远程代理的非交互式设置，请显式传递代理 URL：
+
+        ```bash
+        openclaw onboard --non-interactive --auth-choice litellm-api-key --litellm-api-key "$LITELLM_API_KEY" --custom-base-url "https://litellm.example/v1"
         ```
       </Step>
     </Steps>

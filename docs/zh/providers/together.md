@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4e491879811ee3f040731339bc7b0a00"
+mmh3_hash: "06107145d0870614ed5adfdd44546006"
 title: "Together AI"
 summary: "Together AI 设置（身份验证 + 模型选择）"
 read_when:

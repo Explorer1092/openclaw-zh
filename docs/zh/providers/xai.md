@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "702ec52463e915a6a3d1494b014df6a0"
+mmh3_hash: "5a3039a9408c8a3d313839082d639259"
 title: "xAI"
 summary: "在 OpenClaw 中使用 xAI Grok 模型"
 read_when:
@@ -26,7 +26,7 @@ OpenClaw 内置了 `xai` Provider Plugin，用于 Grok 模型。
   <Step title="选择模型">
     ```json5
     {
-      agents: { defaults: { model: { primary: "xai/grok-4" } } },
+      agents: { defaults: { model: { primary: "xai/grok-4.3" } } },
     }
     ```
   </Step>
@@ -48,6 +48,7 @@ OpenClaw 开箱即包含以下 xAI 模型系列：
 | 系列           | 模型 ID                                                                  |
 | -------------- | ------------------------------------------------------------------------ |
 | Grok 3         | `grok-3`、`grok-3-fast`、`grok-3-mini`、`grok-3-mini-fast`               |
+| Grok 4.3       | `grok-4.3`                                                               |
 | Grok 4         | `grok-4`、`grok-4-0709`                                                  |
 | Grok 4 Fast    | `grok-4-fast`、`grok-4-fast-non-reasoning`                               |
 | Grok 4.1 Fast  | `grok-4-1-fast`、`grok-4-1-fast-non-reasoning`                           |
@@ -57,8 +58,8 @@ OpenClaw 开箱即包含以下 xAI 模型系列：
 Plugin 还会前向解析遵循相同 API 形态的新版 `grok-4*` 和 `grok-code-fast*` ID。
 
 <Tip>
-`grok-4-fast`、`grok-4-1-fast` 和 `grok-4.20-beta-*` 变体是
-内置目录中当前支持图像的 Grok 引用。
+`grok-4.3`、`grok-4-fast`、`grok-4-1-fast` 和 `grok-4.20-beta-*`
+变体是内置目录中当前支持图像的 Grok 引用。
 </Tip>
 
 ## OpenClaw 功能覆盖
@@ -304,6 +305,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
     | ------------------ | ------- | ------------------ | ------------------------------------ |
     | `enabled`          | boolean | —                  | 启用或禁用 x_search                  |
     | `model`            | string  | `grok-4-1-fast`    | 用于 x_search 请求的模型             |
+    | `baseUrl`          | string  | —                  | xAI Responses Base URL 覆盖          |
     | `inlineCitations`  | boolean | —                  | 在结果中包含内联引用                 |
     | `maxTurns`         | number  | —                  | 最大对话轮次                         |
     | `timeoutSeconds`   | number  | —                  | 请求超时（秒）                       |
@@ -318,6 +320,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
               xSearch: {
                 enabled: true,
                 model: "grok-4-1-fast",
+                baseUrl: "https://api.x.ai/v1",
                 inlineCitations: true,
               },
             },

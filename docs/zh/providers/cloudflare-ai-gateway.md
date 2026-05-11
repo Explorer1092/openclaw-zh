@@ -1,13 +1,11 @@
 ---
-mmh3_hash: "23bc559ca5c071c487ee2edcf2c49146"
-title: "Cloudflare AI Gateway"
+mmh3_hash: "c65b17b126858ddd79df00e5a0b7bc73"
+title: "Cloudflare AI gateway"
 summary: "Cloudflare AI Gateway 设置（身份验证 + 模型选择）"
 read_when:
   - 您想要在 OpenClaw 中使用 Cloudflare AI Gateway
   - 您需要帐户 ID、Gateway ID 或 API 密钥环境变量
 ---
-
-# Cloudflare AI Gateway
 
 Cloudflare AI Gateway 位于 Provider API 前面，让您可以添加分析、缓存和控制。对于 Anthropic，OpenClaw 通过您的 Gateway 端点使用 Anthropic Messages API。
 
@@ -21,6 +19,8 @@ Cloudflare AI Gateway 位于 Provider API 前面，让您可以添加分析、�
 <Note>
 对于通过 Cloudflare AI Gateway 路由的 Anthropic 模型，请使用您的 **Anthropic API 密钥**作为 Provider 密钥。
 </Note>
+
+当 Anthropic Messages 模型启用思考时，OpenClaw 在通过 Cloudflare AI Gateway 发送请求之前会去除末尾的 Assistant 预填充轮次。Anthropic 拒绝扩展思考的响应预填充，而普通的非思考预填充仍然可用。
 
 ## 快速开始
 

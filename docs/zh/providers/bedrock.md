@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ca247b3fdfc7a486c21acafb0cb6142e"
+mmh3_hash: "a5845f1bd6ba64e7ce62c1f4876ca6ac"
 summary: "在 OpenClaw 中使用 Amazon Bedrock（Converse API）模型"
 read_when:
   - 您想要在 OpenClaw 中使用 Amazon Bedrock 模型
@@ -233,6 +233,45 @@ openclaw models list
 
     无需额外配置。只要发现已启用且 IAM 主体具有 `bedrock:ListInferenceProfiles`，配置文件就会与基础模型一起出现在 `openclaw models list` 中。
 
+  </Accordion>
+
+  <Accordion title="服务层级">
+    某些 Bedrock 模型支持 `service_tier` 参数，用于优化成本或延迟。以下层级可用：
+
+    | 层级 | 描述 |
+    |------|-------------|
+    | `default` | 标准 Bedrock 层级 |
+    | `flex` | 针对可容忍较高延迟的工作负载提供折扣处理 |
+    | `priority` | 针对对延迟敏感的工作负载提供优先处理 |
+    | `reserved` | 针对稳定状态工作负载的预留容量 |
+
+    通过 `agents.defaults.params` 为 Bedrock 模型请求设置 `serviceTier`（或 `service_tier`），或在 `agents.defaults.models["<model-key>"].params` 中按模型设置：
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          params: {
+            serviceTier: "flex", // 应用于所有模型
+          },
+          models: {
+            "amazon-bedrock/mistral.mistral-large-3-675b-instruct": {
+              params: {
+                serviceTier: "priority", // 按模型覆盖
+              },
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    有效值为 `default`、`flex`、`priority` 和 `reserved`。并非所有模型都支持所有层级——如果请求不支持的层级，Bedrock 将返回验证错误。注意：错误消息可能有些误导；可能会显示"提供的模型标识符无效"，而不是指示不支持的服务层级。如果看到此错误，请检查模型是否支持所请求的层级。
+
+  </Accordion>
+
+  <Accordion title="Claude Opus 4.7 温度参数">
+    Bedrock 拒绝 Claude Opus 4.7 的 `temperature` 参数。OpenClaw 自动为所有 Opus 4.7 Bedrock 引用省略 `temperature`，包括基础模型 id、命名推理配置文件、通过 `bedrock:GetInferenceProfile` 解析到 Opus 4.7 的应用推理配置文件，以及带有可选区域前缀（`us.`、`eu.`、`ap.`、`apac.`、`au.`、`jp.`、`global.`）的点分 `opus-4.7` 变体。无需配置，省略适用于请求选项对象和 `inferenceConfig` 有效载荷字段。
   </Accordion>
 
   <Accordion title="护栏（Guardrails）">

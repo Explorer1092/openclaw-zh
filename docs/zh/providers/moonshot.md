@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ddf8429a63f6abec0896ff47587638f9"
+mmh3_hash: "5018fd85a541d9858b29aba9999419ae"
 title: "Moonshot AI"
 summary: "配置 Moonshot K2 vs Kimi Coding（单独的 Provider + 密钥）"
 read_when:
@@ -8,9 +8,7 @@ read_when:
   - 您想要复制/粘贴任一 Provider 的配置
 ---
 
-# Moonshot AI (Kimi)
-
-Moonshot 提供 Kimi API，具有 OpenAI 兼容的端点。配置 Provider 并将默认模型设置为 `moonshot/kimi-k2.6`，或使用 Kimi Coding 的 `kimi/kimi-code`。
+Moonshot 提供 Kimi API，具有 OpenAI 兼容的端点。配置 Provider 并将默认模型设置为 `moonshot/kimi-k2.6`，或使用 Kimi Coding 的 `kimi/kimi-for-coding`。
 
 <Warning>
 Moonshot 和 Kimi Coding 是**独立的 Provider**。密钥不可互换，端点不同，模型引用也不同（`moonshot/...` vs `kimi/...`）。
@@ -178,7 +176,7 @@ Moonshot 和 Kimi Coding 是**独立的 Provider**。密钥不可互换，端点
     **适合：** 通过 Kimi Coding 端点进行代码专注任务。
 
     <Note>
-    Kimi Coding 使用与 Moonshot（`moonshot/...`）不同的 API 密钥和 Provider 前缀（`kimi/...`）。旧版模型引用 `kimi/k2p5` 作为兼容性 ID 仍被接受。
+    Kimi Coding 使用与 Moonshot（`moonshot/...`）不同的 API 密钥和 Provider 前缀（`kimi/...`）。稳定的 API 模型引用为 `kimi/kimi-for-coding`；旧版引用 `kimi/kimi-code` 和 `kimi/k2p5` 仍被接受并归一化为该 API 模型 id。
     </Note>
 
     <Steps>
@@ -192,7 +190,7 @@ Moonshot 和 Kimi Coding 是**独立的 Provider**。密钥不可互换，端点
         {
           agents: {
             defaults: {
-              model: { primary: "kimi/kimi-code" },
+              model: { primary: "kimi/kimi-for-coding" },
             },
           },
         }
@@ -212,9 +210,9 @@ Moonshot 和 Kimi Coding 是**独立的 Provider**。密钥不可互换，端点
       env: { KIMI_API_KEY: "sk-..." },
       agents: {
         defaults: {
-          model: { primary: "kimi/kimi-code" },
+          model: { primary: "kimi/kimi-for-coding" },
           models: {
-            "kimi/kimi-code": { alias: "Kimi" },
+            "kimi/kimi-for-coding": { alias: "Kimi" },
           },
         },
       },

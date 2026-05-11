@@ -1,14 +1,11 @@
 ---
 title: "MiniMax"
-sidebarTitle: "MiniMax"
-mmh3_hash: "cfb5d4c066a16ba0856f9e98475f6776"
+mmh3_hash: "888c8b3d851c15a140040e12b9188b86"
 summary: "在 OpenClaw 中使用 MiniMax 模型"
 read_when:
   - 您想在 OpenClaw 中使用 MiniMax 模型
   - 您需要 MiniMax 设置指导
 ---
-
-# MiniMax
 
 OpenClaw 的 MiniMax Provider 默认使用 **MiniMax M2.7**。
 
@@ -340,10 +337,10 @@ MiniMax 插件也通过 MiniMax Coding Plan 搜索 API 注册 `web_search`。
 - Provider id：`minimax`
 - 结构化结果：标题、URL、摘要、相关查询
 - 首选环境变量：`MINIMAX_CODE_PLAN_KEY`
-- 接受的环境别名：`MINIMAX_CODING_API_KEY`
+- 接受的环境别名：`MINIMAX_CODING_API_KEY`、`MINIMAX_OAUTH_TOKEN`
 - 兼容回退：`MINIMAX_API_KEY`（当它已指向 Coding Plan 令牌时）
 - 区域复用：`plugins.entries.minimax.config.webSearch.region`，然后是 `MINIMAX_API_HOST`，然后是 MiniMax Provider Base URL
-- 搜索保持在 Provider id `minimax` 上；OAuth CN/全球设置仍可通过 `models.providers.minimax-portal.baseUrl` 间接控制区域
+- 搜索保持在 Provider id `minimax` 上；OAuth CN/全球设置仍可通过 `models.providers.minimax-portal.baseUrl` 间接控制区域，并可通过 `MINIMAX_OAUTH_TOKEN` 提供 Bearer 身份验证
 
 配置位于 `plugins.entries.minimax.config.webSearch.*` 下。
 
@@ -400,7 +397,8 @@ MiniMax 插件也通过 MiniMax Coding Plan 搜索 API 注册 `web_search`。
   </Accordion>
 
   <Accordion title="Coding Plan 使用详情">
-    - Coding Plan 使用量 API：`https://api.minimaxi.com/v1/api/openplatform/coding_plan/remains`（需要 Coding Plan 密钥）。
+    - Coding Plan 使用量 API：`https://api.minimaxi.com/v1/token_plan/remains` 或 `https://api.minimax.io/v1/token_plan/remains`（需要 Coding Plan 密钥）。
+    - 使用量轮询从 `models.providers.minimax-portal.baseUrl` 或 `models.providers.minimax.baseUrl` 派生主机（如果已配置），因此使用 `https://api.minimax.io/anthropic` 的全球设置会轮询 `api.minimax.io`。缺失或格式错误的 Base URL 保持 CN 回退以确保兼容性。
     - OpenClaw 将 MiniMax Coding Plan 使用量归一化为其他 Provider 使用的相同 `% left` 显示。MiniMax 的原始 `usage_percent` / `usagePercent` 字段是剩余配额，而不是已消耗配额，因此 OpenClaw 将其反转。当存在基于计数的字段时优先使用。
     - 当 API 返回 `model_remains` 时，OpenClaw 优先使用聊天模型条目，在需要时从 `start_time` / `end_time` 派生窗口标签，并在计划标签中包含所选模型名称，以便更容易区分 Coding Plan 窗口。
     - 使用快照将 `minimax`、`minimax-cn` 和 `minimax-portal` 视为相同的 MiniMax 配额界面，并在回退到 Coding Plan 密钥环境变量之前优先使用存储的 MiniMax OAuth。

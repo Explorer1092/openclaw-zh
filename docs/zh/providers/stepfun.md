@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7ff630f41db12f96f2336a242fe2e533"
+mmh3_hash: "9680abb02fe27e2b22d52cf7e69f8930"
 summary: "在 OpenClaw 中使用 StepFun 模型"
 read_when:
   - 您想在 OpenClaw 中使用 StepFun 模型

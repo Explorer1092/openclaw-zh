@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "154e9ebedd89d57eb79f37b163a78e93"
+mmh3_hash: "a806908c5d68b94a1bef11044da26a24"
 summary: "在 OpenClaw 中使用 NVIDIA 的 OpenAI 兼容 API"
 read_when:
   - 您想要在 OpenClaw 中免费使用开源模型
@@ -18,7 +18,7 @@ NVIDIA 在 `https://integrate.api.nvidia.com/v1` 为开源模型提供免费的 
   <Step title="导出密钥并运行入门">
     ```bash
     export NVIDIA_API_KEY="nvapi-..."
-    openclaw onboard --auth-choice skip
+    openclaw onboard --auth-choice nvidia-api-key
     ```
   </Step>
   <Step title="设置 NVIDIA 模型">
@@ -29,8 +29,14 @@ NVIDIA 在 `https://integrate.api.nvidia.com/v1` 为开源模型提供免费的 
 </Steps>
 
 <Warning>
-如果您传递 `--token` 而非环境变量，该值会出现在 Shell 历史和 `ps` 输出中。请尽可能优先使用 `NVIDIA_API_KEY` 环境变量。
+如果您传递 `--nvidia-api-key` 而非环境变量，该值会出现在 Shell 历史和 `ps` 输出中。请尽可能优先使用 `NVIDIA_API_KEY` 环境变量。
 </Warning>
+
+对于非交互式设置，您也可以直接传递密钥：
+
+```bash
+openclaw onboard --auth-choice nvidia-api-key --nvidia-api-key "nvapi-..."
+```
 
 ## 配置示例
 
@@ -75,6 +81,35 @@ NVIDIA 在 `https://integrate.api.nvidia.com/v1` 为开源模型提供免费的 
 
   <Accordion title="OpenAI 兼容端点">
     NVIDIA 使用标准的 `/v1` completions 端点。任何 OpenAI 兼容工具都可以直接使用 NVIDIA Base URL。
+  </Accordion>
+
+  <Accordion title="慢速自定义 Provider 响应">
+    某些 NVIDIA 托管的自定义模型在发出第一个响应块之前可能超过默认模型空闲看门狗时间。对于自定义 NVIDIA Provider 条目，请提高 Provider 超时时间，而不是提高整个 Agent 运行时超时时间：
+
+    ```json5
+    {
+      models: {
+        providers: {
+          "custom-integrate-api-nvidia-com": {
+            baseUrl: "https://integrate.api.nvidia.com/v1",
+            api: "openai-completions",
+            apiKey: "NVIDIA_API_KEY",
+            timeoutSeconds: 300,
+          },
+        },
+      },
+      agents: {
+        defaults: {
+          models: {
+            "custom-integrate-api-nvidia-com/meta/llama-3.1-70b-instruct": {
+              params: { thinking: "off" },
+            },
+          },
+        },
+      },
+    }
+    ```
+
   </Accordion>
 </AccordionGroup>
 

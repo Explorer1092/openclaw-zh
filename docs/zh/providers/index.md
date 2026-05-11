@@ -1,13 +1,11 @@
 ---
-title: "Provider Directory"
-mmh3_hash: "2340515f490108bfa09536be1dffc7ea"
+title: "Provider directory"
+mmh3_hash: "fa31758f6a0da40d94e2c5f44d42668c"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
   - 您想选择一个模型 Provider
   - 您需要支持的 LLM 后端的快速概述
 ---
-
-# 模型 Provider
 
 OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份验证，然后将默认模型设置为 `provider/model`。
 
@@ -42,9 +40,9 @@ OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份�
 - [fal](/providers/fal)
 - [Fireworks](/providers/fireworks)
 - [GitHub Copilot](/providers/github-copilot)
-- [Gradium](/providers/gradium)
 - [GLM 模型](/providers/glm)
 - [Google (Gemini)](/providers/google)
+- [Gradium](/providers/gradium)
 - [Groq（LPU 推理）](/providers/groq)
 - [Hugging Face (Inference)](/providers/huggingface)
 - [inferrs（本地模型）](/providers/inferrs)

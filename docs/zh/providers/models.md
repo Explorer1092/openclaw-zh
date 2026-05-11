@@ -1,13 +1,11 @@
 ---
-title: "Model Provider Quickstart"
-mmh3_hash: "4956c906a46a6c718c0a191981100cbb"
+title: "Model provider quickstart"
+mmh3_hash: "199dc00c46aa3c5325623de89acc6990"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
   - 您想选择一个模型 Provider
   - 您需要 LLM 身份验证 + 模型选择的快速设置示例
 ---
-
-# 模型 Provider
 
 OpenClaw 可以使用多个 LLM Provider。选择一个，进行身份验证，然后将默认模型设置为 `provider/model`。
 
@@ -31,6 +29,7 @@ OpenClaw 可以使用多个 LLM Provider。选择一个，进行身份验证，�
 - [Chutes](/providers/chutes)
 - [ComfyUI](/providers/comfy)
 - [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
+- [DeepInfra](/providers/deepinfra)
 - [fal](/providers/fal)
 - [Fireworks](/providers/fireworks)
 - [GLM 模型](/providers/glm)

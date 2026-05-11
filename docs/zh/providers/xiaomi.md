@@ -1,6 +1,6 @@
 ---
 title: "Xiaomi MiMo"
-mmh3_hash: "91c4d2f1816e00ee652b62882231b931"
+mmh3_hash: "a8deb4ae4b93c0c02e2a51e0a0a1fbbf"
 summary: "将 Xiaomi MiMo 模型与 OpenClaw 一起使用"
 read_when:
   - 您想在 OpenClaw 中使用 Xiaomi MiMo 模型

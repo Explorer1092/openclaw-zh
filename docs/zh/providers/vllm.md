@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f1bc768dfb95d84314322aa24359db44"
+mmh3_hash: "b823342991948f26147aee404a809fe9"
 summary: "使用 vLLM 运行 OpenClaw（OpenAI 兼容的本地服务器）"
 read_when:
   - 您想要针对本地 vLLM 服务器运行 OpenClaw
@@ -124,6 +124,25 @@ GET http://127.0.0.1:8000/v1/models
     | 提示缓存提示 | 不发送 |
     | OpenAI 推理兼容负载塑形 | 不适用 |
     | 隐藏 OpenClaw 归因标头 | 不注入到自定义 Base URL 上 |
+
+  </Accordion>
+
+  <Accordion title="Qwen 思维控制">
+    对于通过 vLLM 提供服务的 Qwen 模型，当服务器需要 Qwen chat-template kwargs 时，请在模型条目上设置
+    `params.qwenThinkingFormat: "chat-template"`。OpenClaw 将 `/think off` 映射为：
+
+    ```json
+    {
+      "chat_template_kwargs": {
+        "enable_thinking": false,
+        "preserve_thinking": true
+      }
+    }
+    ```
+
+    非 `off` 的思维级别发送 `enable_thinking: true`。如果您的端点需要 DashScope 风格的顶层标志，
+    请使用 `params.qwenThinkingFormat: "top-level"` 在请求根发送 `enable_thinking`。
+    也接受蛇形命名的 `params.qwen_thinking_format`。
 
   </Accordion>
 

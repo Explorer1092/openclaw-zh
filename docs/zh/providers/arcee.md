@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c2aaa326253396912329572c6e0d3a6f"
+mmh3_hash: "34c53ead0c2e5c68a7d398c3fe02c7ec"
 title: "Arcee AI"
 summary: "Arcee AI 设置（认证 + 模型选择）"
 read_when:
@@ -111,12 +111,12 @@ OpenClaw 目前包含以下捆绑的 Arcee 目录：
 
 ## 支持的功能
 
-| 功能                                    | 是否支持                     |
-| --------------------------------------- | ---------------------------- |
-| 流式传输                                | 是                           |
-| 工具使用/函数调用                       | 是                           |
-| 结构化输出（JSON 模式和 JSON Schema）   | 是                           |
-| 扩展思考                               | 是（Trinity Large Thinking） |
+| 功能                                    | 是否支持                                            |
+| --------------------------------------- | --------------------------------------------------- |
+| 流式传输                                | 是                                                  |
+| 工具使用/函数调用                       | 是（Trinity Mini、Trinity Large Preview）           |
+| 结构化输出（JSON 模式和 JSON Schema）   | 是                                                  |
+| 扩展思考                               | 是（Trinity Large Thinking；工具已禁用）             |
 
 <AccordionGroup>
   <Accordion title="环境说明">

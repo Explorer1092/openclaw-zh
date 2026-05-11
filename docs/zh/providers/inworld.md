@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "244b1c09a12f0f9df311d968345714be"
+mmh3_hash: "5447c69efb1b2baa5909e8ee1cc644f5"
 summary: "Inworld 流式文字转语音，用于 OpenClaw 回复"
 read_when:
   - 您希望使用 Inworld 语音合成功能处理出站回复
@@ -11,13 +11,18 @@ Inworld 是一个流式文字转语音 (TTS) Provider。在 OpenClaw 中，它�
 
 OpenClaw 向 Inworld 的流式 TTS 端点发送请求，将返回的 base64 音频块拼接成单个缓冲区，并将结果交给标准的回复音频管道。
 
-| 详情        | 值                                                          |
-| ----------- | ----------------------------------------------------------- |
-| 网站        | [inworld.ai](https://inworld.ai)                            |
-| 文档        | [docs.inworld.ai/tts/tts](https://docs.inworld.ai/tts/tts)  |
-| 认证        | `INWORLD_API_KEY`（HTTP Basic，Base64 仪表板凭据）          |
-| 默认语音    | `Sarah`                                                     |
-| 默认模型    | `inworld-tts-1.5-max`                                       |
+| 属性          | 值                                                            |
+| ------------- | ------------------------------------------------------------- |
+| Provider id   | `inworld`                                                     |
+| Plugin        | bundled, `enabledByDefault: true`                             |
+| Contract      | `speechProviders`（仅 TTS）                                   |
+| 认证环境变量  | `INWORLD_API_KEY`（HTTP Basic，Base64 仪表板凭据）            |
+| Base URL      | `https://api.inworld.ai`                                      |
+| 默认语音      | `Sarah`                                                       |
+| 默认模型      | `inworld-tts-1.5-max`                                         |
+| 输出          | MP3（默认）、OGG_OPUS（语音笔记）、PCM 22050 Hz（电话）       |
+| 网站          | [inworld.ai](https://inworld.ai)                              |
+| 文档          | [docs.inworld.ai/tts/tts](https://docs.inworld.ai/tts/tts)   |
 
 ## 入门
 

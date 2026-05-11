@@ -1,6 +1,6 @@
 ---
 title: "Qwen"
-mmh3_hash: "d1f9a6d088dca4643b95a260d40cae54"
+mmh3_hash: "0e62062096344343f52bd72a2ccfe820"
 summary: "通过 OpenClaw 内置 qwen Provider 使用 Qwen Cloud"
 read_when:
   - 您想在 OpenClaw 中使用 Qwen
@@ -70,7 +70,7 @@ OpenClaw 现在将 Qwen 作为一级内置 Provider，规范 ID 为 `qwen`。内
     </Steps>
 
     <Note>
-    旧版 `modelstudio-*` auth-choice ID 和 `modelstudio/...` 模型引用仍可作为兼容别名使用，但新设置流程应优先使用规范的 `qwen-*` auth-choice ID 和 `qwen/...` 模型引用。
+    旧版 `modelstudio-*` auth-choice ID 和 `modelstudio/...` 模型引用仍可作为兼容别名使用，但新设置流程应优先使用规范的 `qwen-*` auth-choice ID 和 `qwen/...` 模型引用。如果您定义了具有其他 `api` 值的精确自定义 `models.providers.modelstudio` 条目，该自定义 Provider 将拥有 `modelstudio/...` 引用，而非 Qwen 兼容别名。
     </Note>
 
   </Tab>
@@ -114,7 +114,7 @@ OpenClaw 现在将 Qwen 作为一级内置 Provider，规范 ID 为 `qwen`。内
     </Steps>
 
     <Note>
-    旧版 `modelstudio-*` auth-choice ID 和 `modelstudio/...` 模型引用仍可作为兼容别名使用，但新设置流程应优先使用规范的 `qwen-*` auth-choice ID 和 `qwen/...` 模型引用。
+    旧版 `modelstudio-*` auth-choice ID 和 `modelstudio/...` 模型引用仍可作为兼容别名使用，但新设置流程应优先使用规范的 `qwen-*` auth-choice ID 和 `qwen/...` 模型引用。如果您定义了具有其他 `api` 值的精确自定义 `models.providers.modelstudio` 条目，该自定义 Provider 将拥有 `modelstudio/...` 引用，而非 Qwen 兼容别名。
     </Note>
 
   </Tab>
@@ -156,6 +156,10 @@ OpenClaw 目前内置以下 Qwen 目录。已配置的目录具有端点感知�
 即使模型在内置目录中，其可用性仍可能因端点和计费方案而异。
 </Note>
 
+## 思考控件
+
+对于支持推理的 Qwen Cloud 模型，内置 Provider 会将 OpenClaw 思考级别映射到 DashScope 的顶级 `enable_thinking` 请求标志。禁用思考时发送 `enable_thinking: false`；其他思考级别发送 `enable_thinking: true`。
+
 ## 多模态附加功能
 
 `qwen` 扩展还在**标准** DashScope 端点（非 Coding Plan 端点）上提供多模态功能：
@@ -179,7 +183,7 @@ OpenClaw 目前内置以下 Qwen 目录。已配置的目录具有端点感知�
 有关共享工具参数、Provider 选择和故障转移行为，请参见[视频生成](/tools/video-generation)。
 </Note>
 
-## 高级
+## 高级配置
 
 <AccordionGroup>
   <Accordion title="图像和视频理解">
@@ -201,6 +205,8 @@ OpenClaw 目前内置以下 Qwen 目录。已配置的目录具有端点感知�
     - 全球：`dashscope-intl.aliyuncs.com/compatible-mode/v1`
 
     如果 Coding Plan 端点对 `qwen3.6-plus` 返回"不支持的模型"错误，请切换到标准（按量付费）端点/密钥对。
+
+    OpenClaw 内置 Qwen 目录不在 Coding Plan 端点上发布 `qwen3.6-plus`，但在 `models.providers.qwen.models` 下显式配置的 `qwen/qwen3.6-plus` 条目会在 Coding Plan baseUrl 上生效，因此如果阿里云为您的订阅启用了该模型，您可以选择加入。上游 API 仍决定调用是否成功。
 
   </Accordion>
 

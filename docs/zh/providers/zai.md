@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8315b629628c4eb18dabda3d58d6578c"
+mmh3_hash: "8bfcf50d677d3273e5449541af238e17"
 title: "Z.AI"
 summary: "将 Z.AI (GLM 模型) 与 OpenClaw 一起使用"
 read_when:

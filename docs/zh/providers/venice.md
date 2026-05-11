@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4c4ef5dd7a4d3c90f3c166b1cde4ba42"
+mmh3_hash: "2bb1dbf20ea628712e5696ea73232115"
 title: "Venice AI"
 summary: "在 OpenClaw 中使用 Venice AI 注重隐私的模型"
 read_when:
@@ -104,7 +104,7 @@ openclaw models set venice/claude-opus-4-6
 列出所有可用模型：
 
 ```bash
-openclaw models list | grep venice
+openclaw models list --all --provider venice
 ```
 
 您也可以运行 `openclaw configure`，选择 **Model/auth**，然后选择 **Venice AI**。
@@ -185,9 +185,9 @@ openclaw models list | grep venice
 
 ## 模型发现
 
-当设置 `VENICE_API_KEY` 时，OpenClaw 自动从 Venice API 发现模型。如果 API 无法访问，它会回退到静态目录。
+OpenClaw 内置了一个基于清单的 Venice 种子目录，用于只读模型列表。运行时刷新仍可从 Venice API 发现模型，如果 API 不可访问则回退到清单目录。
 
-`/models` 端点是公开的（列出不需要身份验证），但推理需要有效的 API 密钥。
+`/models` 端点是公开的（列出不需要认证），但推理需要有效的 API 密钥。
 
 ## 流式传输和工具支持
 

@@ -1,18 +1,18 @@
 ---
-mmh3_hash: "371b5ecb70eaa2b8af748eef454b202e"
-title: "Vercel AI Gateway"
-summary: "Vercel AI Gateway 设置（身份验证 + 模型选择）"
+mmh3_hash: "a29d7e82c563bafd930f957bd9c36ddd"
+title: "Vercel AI gateway"
+summary: "Vercel AI Gateway 设置（认证 + 模型选择）"
 read_when:
   - 您想将 Vercel AI Gateway 与 OpenClaw 一起使用
-  - 您需要 API 密钥环境变量或 CLI 身份验证选项
+  - 您需要 API 密钥环境变量或 CLI 认证选项
 ---
 
 [Vercel AI Gateway](https://vercel.com/ai-gateway) 提供统一的 API，通过单个端点访问数百个模型。
 
-| 属性         | 值                               |
+| 属性          | 值                               |
 | ------------- | -------------------------------- |
 | Provider      | `vercel-ai-gateway`              |
-| 身份验证      | `AI_GATEWAY_API_KEY`             |
+| 认证          | `AI_GATEWAY_API_KEY`             |
 | API           | Anthropic Messages 兼容          |
 | 模型目录      | 通过 `/v1/models` 自动发现       |
 
@@ -27,7 +27,7 @@ OpenClaw 自动发现 Gateway `/v1/models` 目录，因此
 
 <Steps>
   <Step title="设置 API 密钥">
-    运行入门并选择 AI Gateway 身份验证选项：
+    运行引导程序并选择 AI Gateway 认证选项：
 
     ```bash
     openclaw onboard --auth-choice ai-gateway-api-key
@@ -79,7 +79,7 @@ OpenClaw 接受 Vercel Claude 简写模型引用，并在运行时将其标准�
 您可以在配置中使用简写或完全限定的模型引用。OpenClaw 会自动解析规范形式。
 </Tip>
 
-## 高级说明
+## 高级配置
 
 <AccordionGroup>
   <Accordion title="守护进程的环境变量">
@@ -92,7 +92,10 @@ OpenClaw 接受 Vercel Claude 简写模型引用，并在运行时将其标准�
   </Accordion>
 
   <Accordion title="Provider 路由">
-    Vercel AI Gateway 根据模型引用前缀将请求路由到上游 Provider。例如，`vercel-ai-gateway/anthropic/claude-opus-4.6` 通过 Anthropic 路由，`vercel-ai-gateway/openai/gpt-5.5` 通过 OpenAI 路由，`vercel-ai-gateway/moonshotai/kimi-k2.6` 通过 MoonshotAI 路由。您的单个 `AI_GATEWAY_API_KEY` 处理所有上游 Provider 的身份验证。
+    Vercel AI Gateway 根据模型引用前缀将请求路由到上游 Provider。例如，`vercel-ai-gateway/anthropic/claude-opus-4.6` 通过 Anthropic 路由，`vercel-ai-gateway/openai/gpt-5.5` 通过 OpenAI 路由，`vercel-ai-gateway/moonshotai/kimi-k2.6` 通过 MoonshotAI 路由。您的单个 `AI_GATEWAY_API_KEY` 处理所有上游 Provider 的认证。
+  </Accordion>
+  <Accordion title="思考级别">
+    `/think` 选项遵循受信任的上游模型前缀（当 OpenClaw 知道上游 Provider 合约时）。`vercel-ai-gateway/anthropic/...` 使用 Claude 思考配置文件，包括 Claude 4.6 模型的自适应默认值。`vercel-ai-gateway/openai/gpt-5.4`、`gpt-5.5` 和 Codex 风格引用与直接 OpenAI/OpenAI Codex Provider 一样公开 `/think xhigh`。其他带命名空间的引用保持正常推理级别，除非其目录元数据声明了更多。
   </Accordion>
 </AccordionGroup>
 

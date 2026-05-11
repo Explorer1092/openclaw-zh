@@ -1,13 +1,11 @@
 ---
-title: "Kilocode"
-mmh3_hash: "2de38422ae3efc59b57c77f8719c0216"
+title: "Kilo Gateway"
+mmh3_hash: "d793221e43ba448c58779a821995df47"
 summary: "在 OpenClaw 中使用 Kilo Gateway 的统一 API 访问多种模型"
 read_when:
   - 您希望用一个 API 密钥访问多种 LLM
   - 您想通过 Kilo Gateway 在 OpenClaw 中运行模型
 ---
-
-# Kilo Gateway
 
 Kilo Gateway 提供**统一 API**，通过单一端点和 API 密钥将请求路由到多种模型。它与 OpenAI 兼容，因此大多数 OpenAI SDK 只需切换 Base URL 即可工作。
 
@@ -62,7 +60,7 @@ Gateway 上可用的任何模型都可以使用 `kilocode/` 前缀：
 | `kilocode/kilo/auto`                   | 默认 — 智能路由                    |
 | `kilocode/anthropic/claude-sonnet-4`   | 通过 Kilo 的 Anthropic             |
 | `kilocode/openai/gpt-5.5`              | 通过 Kilo 的 OpenAI                |
-| `kilocode/google/gemini-3-pro-preview` | 通过 Kilo 的 Google                |
+| `kilocode/google/gemini-3.1-pro-preview` | 通过 Kilo 的 Google              |
 | ...以及更多                            | 使用 `/models kilocode` 列出所有   |
 
 <Tip>

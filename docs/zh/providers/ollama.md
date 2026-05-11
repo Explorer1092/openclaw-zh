@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4d4a0a1531ee4db02b3dcc400ea61a6f"
+mmh3_hash: "3b0ecc386c42358aae1e41036cf522c1"
 title: "Ollama"
 summary: "使用 Ollama 运行 OpenClaw（云端和本地模型）"
 read_when:
@@ -26,7 +26,10 @@ Ollama Provider 配置使用 `baseUrl` 作为规范键。OpenClaw 也接受 `bas
     远程公共主机和 Ollama Cloud（`https://ollama.com`）需要通过 `OLLAMA_API_KEY`、身份验证配置文件或 Provider 的 `apiKey` 提供真实凭据。
   </Accordion>
   <Accordion title="自定义 Provider ID">
-    设置 `api: "ollama"` 的自定义 Provider ID 遵循相同的规则。例如，指向私有局域网 Ollama 主机的 `ollama-remote` Provider 可以使用 `apiKey: "ollama-local"`，子 Agent 将通过 Ollama Provider 钩子解析该标记，而不会将其视为缺失的凭据。
+    设置 `api: "ollama"` 的自定义 Provider ID 遵循相同的规则。例如，指向私有局域网 Ollama 主机的 `ollama-remote` Provider 可以使用 `apiKey: "ollama-local"`，子 Agent 将通过 Ollama Provider 钩子解析该标记，而不会将其视为缺失的凭据。Memory 搜索也可以将 `agents.defaults.memorySearch.provider` 设置为该自定义 Provider ID，以便嵌入使用匹配的 Ollama 端点。
+  </Accordion>
+  <Accordion title="身份验证配置文件">
+    `auth-profiles.json` 存储 Provider ID 的凭据。将端点设置（`baseUrl`、`api`、模型 ID、标头、超时）放在 `models.providers.<id>` 中。旧版扁平身份验证配置文件（如 `{ "ollama-windows": { "apiKey": "ollama-local" } }`）不是运行时格式；运行 `openclaw doctor --fix` 可将其重写为规范的 `ollama-windows:default` API 密钥配置文件并进行备份。该文件中的 `baseUrl` 是兼容性噪声，应移至 Provider 配置中。
   </Accordion>
   <Accordion title="Memory 嵌入范围">
     当 Ollama 用于 Memory 嵌入时，Bearer 身份验证的范围限定在声明它的主机：
@@ -186,12 +189,37 @@ Ollama Provider 配置使用 `baseUrl` 作为规范键。OpenClaw 也接受 `bas
 | Token 限制       | 将 `maxTokens` 设置为 OpenClaw 使用的默认 Ollama 最大 Token 上限                                                                                                   |
 | 成本             | 将所有成本设置为 `0`                                                                                                                                                |
 
-这样可以避免手动模型条目，同时保持目录与本地 Ollama 实例对齐。
+这样可以避免手动模型条目，同时保持目录与本地 Ollama 实例对齐。您可以在本地 `infer model run` 中使用完整引用（如 `ollama/<pulled-model>:latest`）；OpenClaw 从 Ollama 的实时目录解析已安装的模型，无需手写 `models.json` 条目。
+
+对于已登录的 Ollama 主机，某些 `:cloud` 模型可能在出现在 `/api/tags` 之前就可以通过 `/api/chat` 和 `/api/show` 使用。当您显式选择完整的 `ollama/<model>:cloud` 引用时，OpenClaw 会通过 `/api/show` 验证该缺失的模型，仅在 Ollama 确认模型元数据后才将其添加到运行时目录。拼写错误仍会以未知模型的形式失败，而不是自动创建。
 
 ```bash
 # 查看可用模型
 ollama list
 openclaw models list
+```
+
+对于避免完整 Agent 工具接口的窄文本生成冒烟测试，请使用本地 `infer model run`：
+
+```bash
+OLLAMA_API_KEY=ollama-local \
+  openclaw infer model run \
+    --local \
+    --model ollama/llama3.2:latest \
+    --prompt "Reply with exactly: pong" \
+    --json
+```
+
+对于视觉模型冒烟测试，添加图像文件：
+
+```bash
+OLLAMA_API_KEY=ollama-local \
+  openclaw infer model run \
+    --local \
+    --model ollama/qwen2.5vl:7b \
+    --prompt "Describe this image in one sentence." \
+    --file ./photo.jpg \
+    --json
 ```
 
 要添加新模型，只需用 Ollama 拉取它：
@@ -789,7 +817,7 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
   </Accordion>
 
   <Accordion title="思维控制">
-    对于原生 Ollama 模型，OpenClaw 按照 Ollama 期望的方式转发思维控制：顶层 `think`，而非 `options.think`。
+    对于原生 Ollama 模型，OpenClaw 按照 Ollama 期望的方式转发思维控制：顶层 `think`，而非 `options.think`。自动发现的模型（其 `/api/show` 响应包含 `thinking` 能力）会公开 `/think low`、`/think medium`、`/think high` 和 `/think max`；非思维模型仅公开 `/think off`。
 
     ```bash
     openclaw agent --model ollama/gemma4 --thinking off
@@ -812,7 +840,7 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
     }
     ```
 
-    每模型的 `params.think` 或 `params.thinking` 可以禁用或强制特定已配置模型的 Ollama API 思维。运行时命令（如 `/think off`）仍适用于当前运行。
+    每模型的 `params.think` 或 `params.thinking` 可以禁用或强制特定已配置模型的 Ollama API 思维。OpenClaw 在活动运行仅有隐式默认 `off` 时保留这些显式模型参数；非 off 的运行时命令（如 `/think medium`）仍会覆盖活动运行。
 
   </Accordion>
 
@@ -841,13 +869,21 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
     | 默认模型      | `nomic-embed-text`  |
     | 自动拉取      | 是——如果本地不存在，嵌入模型会自动拉取 |
 
+    查询时嵌入对需要或推荐检索前缀的模型使用该前缀，包括 `nomic-embed-text`、`qwen3-embedding` 和 `mxbai-embed-large`。Memory 文档批次保持原始格式，因此现有索引无需格式迁移。
+
     要选择 Ollama 作为 Memory 搜索嵌入 Provider：
 
     ```json5
     {
       agents: {
         defaults: {
-          memorySearch: { provider: "ollama" },
+          memorySearch: {
+            provider: "ollama",
+            remote: {
+              // Ollama 默认值。在较大主机上如果重新索引太慢可适当提高。
+              nonBatchConcurrency: 1,
+            },
+          },
         },
       },
     }
@@ -861,10 +897,11 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
         defaults: {
           memorySearch: {
             provider: "ollama",
+            model: "nomic-embed-text",
             remote: {
               baseUrl: "http://gpu-box.local:11434",
-              model: "nomic-embed-text",
               apiKey: "ollama-local",
+              nonBatchConcurrency: 2,
             },
           },
         },
@@ -889,6 +926,39 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
 ## 故障排除
 
 <AccordionGroup>
+  <Accordion title="WSL2 崩溃循环（反复重启）">
+    在 WSL2 与 NVIDIA/CUDA 上，官方 Ollama Linux 安装程序创建了带 `Restart=always` 的 `ollama.service` systemd 单元。如果该服务在 WSL2 启动时自动启动并加载 GPU 支持的模型，Ollama 可能会在模型加载时固定主机内存。Hyper-V 内存回收无法始终回收这些固定页面，因此 Windows 可能会终止 WSL2 VM，systemd 再次启动 Ollama，循环往复。
+
+    常见证据：
+
+    - WSL2 从 Windows 侧反复重启或终止
+    - WSL2 启动后 `app.slice` 或 `ollama.service` 中 CPU 占用高
+    - 来自 systemd 的 SIGTERM，而非 Linux OOM-killer 事件
+
+    缓解方法：
+
+    ```bash
+    sudo systemctl disable ollama
+    ```
+
+    在 Windows 侧的 `%USERPROFILE%\.wslconfig` 中添加以下内容，然后运行 `wsl --shutdown`：
+
+    ```ini
+    [experimental]
+    autoMemoryReclaim=disabled
+    ```
+
+    在 Ollama 服务环境中设置更短的 keep-alive，或仅在需要时手动启动 Ollama：
+
+    ```bash
+    export OLLAMA_KEEP_ALIVE=5m
+    ollama serve
+    ```
+
+    参见 [ollama/ollama#11317](https://github.com/ollama/ollama/issues/11317)。
+
+  </Accordion>
+
   <Accordion title="未检测到 Ollama">
     确保 Ollama 正在运行，并且您设置了 `OLLAMA_API_KEY`（或身份验证配置文件），且**未**定义显式 `models.providers.ollama` 条目：
 
@@ -965,6 +1035,18 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
     ```
 
     如果小型本地模型仍然在工具 Schema 上失败，请在该模型条目上设置 `compat.supportsTools: false` 并重新测试。
+
+  </Accordion>
+
+  <Accordion title="Kimi 或 GLM 返回乱码符号">
+    托管的 Kimi/GLM 响应中如果出现长串非语言符号，会被视为 Provider 输出失败，而非成功的助手回答。这样可以让正常的重试、故障转移或错误处理接管，而不会将损坏的文本持久化到 Session 中。
+
+    如果反复发生，请记录原始模型名称、当前 Session 文件以及运行是否使用了 `Cloud + Local` 或 `Cloud only`，然后尝试新 Session 和备用模型：
+
+    ```bash
+    openclaw infer model run --model ollama/kimi-k2.5:cloud --prompt "Reply with exactly: ok" --json
+    openclaw models set ollama/gemma4
+    ```
 
   </Accordion>
 

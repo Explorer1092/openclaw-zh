@@ -1,6 +1,6 @@
 ---
 title: "DeepSeek"
-mmh3_hash: "424865a5fef11c7ea8125b5888a3013d"
+mmh3_hash: "f69fa073de01d37698459ffbf4c90ea9"
 summary: "DeepSeek 设置（身份验证 + 模型选择）"
 read_when:
   - 您想在 OpenClaw 中使用 DeepSeek
@@ -76,6 +76,7 @@ read_when:
 
 <Tip>
 V4 模型支持 DeepSeek 的 `thinking` 控制。OpenClaw 还会在后续轮次中重放 DeepSeek `reasoning_content`，以便带有工具调用的思考会话可以继续进行。
+使用 `/think xhigh` 或 `/think max` 与 DeepSeek V4 模型，以请求 DeepSeek 的最大 `reasoning_effort`。
 </Tip>
 
 ## 思考与工具

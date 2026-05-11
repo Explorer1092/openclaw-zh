@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "56d5cfea863be670964d716365e10848"
+mmh3_hash: "5538bcdbbcf636611693b483eb52cc07"
 summary: "通过 inferrs（OpenAI 兼容本地服务器）运行 OpenClaw"
 read_when:
   - 您想针对本地 inferrs 服务器运行 OpenClaw
@@ -8,11 +8,19 @@ read_when:
 title: "inferrs"
 ---
 
-# inferrs
-
 [inferrs](https://github.com/ericcurtin/inferrs) 可以在 OpenAI 兼容的 `/v1` API 后面提供本地模型。OpenClaw 通过通用的 `openai-completions` 路径与 `inferrs` 配合使用。
 
-目前，`inferrs` 最好被视为自定义自托管 OpenAI 兼容后端，而不是专用的 OpenClaw Provider Plugin。
+| 属性               | 值                                                               |
+| ------------------ | ---------------------------------------------------------------- |
+| Provider id        | `inferrs`（自定义；在 `models.providers.inferrs` 下配置）        |
+| Plugin             | 无 — `inferrs` 不是 OpenClaw 捆绑的 Provider Plugin              |
+| 认证环境变量       | 可选。如果您的 inferrs 服务器无需身份验证，任意值均可             |
+| API                | OpenAI 兼容（`openai-completions`）                              |
+| 建议 Base URL      | `http://127.0.0.1:8080/v1`（或您的 inferrs 服务器地址）          |
+
+<Note>
+  目前，`inferrs` 最好被视为自定义自托管 OpenAI 兼容后端，而不是专用的 OpenClaw Provider Plugin。您通过 `models.providers.inferrs` 而非入门选项标志来配置它。如果您需要具有自动发现功能的真正捆绑 Plugin，请参见 [SGLang](/providers/sglang) 或 [vLLM](/providers/vllm)。
+</Note>
 
 ## 快速开始
 
@@ -78,6 +86,57 @@ title: "inferrs"
   },
 }
 ```
+
+## 按需启动
+
+inferrs 也可以由 OpenClaw 在选择 `inferrs/...` 模型时按需启动。在同一 Provider 条目中添加 `localService`：
+
+```json5
+{
+  models: {
+    providers: {
+      inferrs: {
+        baseUrl: "http://127.0.0.1:8080/v1",
+        apiKey: "inferrs-local",
+        api: "openai-completions",
+        timeoutSeconds: 300,
+        localService: {
+          command: "/opt/homebrew/bin/inferrs",
+          args: [
+            "serve",
+            "google/gemma-4-E2B-it",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            "8080",
+            "--device",
+            "metal",
+          ],
+          healthUrl: "http://127.0.0.1:8080/v1/models",
+          readyTimeoutMs: 180000,
+          idleStopMs: 0,
+        },
+        models: [
+          {
+            id: "google/gemma-4-E2B-it",
+            name: "Gemma 4 E2B (inferrs)",
+            reasoning: false,
+            input: ["text"],
+            cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+            contextWindow: 131072,
+            maxTokens: 4096,
+            compat: {
+              requiresStringContent: true,
+            },
+          },
+        ],
+      },
+    },
+  },
+}
+```
+
+`command` 必须是绝对路径。在 Gateway 主机上使用 `which inferrs` 获取路径并填入配置。有关完整字段参考，请参见[本地模型服务](/gateway/local-model-services)。
 
 ## 高级配置
 
@@ -194,10 +253,13 @@ title: "inferrs"
   <Card title="本地模型" href="/gateway/local-models" icon="server">
     针对本地模型服务器运行 OpenClaw。
   </Card>
+  <Card title="本地模型服务" href="/gateway/local-model-services" icon="play">
+    为已配置的 Provider 按需启动本地模型服务器。
+  </Card>
   <Card title="Gateway 故障排除" href="/gateway/troubleshooting#local-openai-compatible-backend-passes-direct-probes-but-agent-runs-fail" icon="wrench">
     调试通过直接探测但 Agent 运行失败的本地 OpenAI 兼容后端。
   </Card>
-  <Card title="Model Provider" href="/concepts/model-providers" icon="layers">
+  <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     所有 Provider、模型引用和故障转移行为的概述。
   </Card>
 </CardGroup>

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "76464640a13d563ab7ac34d9e52dc906"
+mmh3_hash: "c657474f2661f2bd8878f5416a29511a"
 summary: "使用 Qianfan 的统一 API 在 OpenClaw 中访问许多模型"
 read_when:
   - 您想要单个 API 密钥用于许多 LLM

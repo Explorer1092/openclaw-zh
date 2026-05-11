@@ -1,6 +1,6 @@
 ---
 title: "fal"
-mmh3_hash: "2c4d8b31383884f0483a0a5c83e74c9d"
+mmh3_hash: "b3f15a18051efee47f2ca69b1fb01f09"
 summary: "在 OpenClaw 中设置 fal 图像和视频生成"
 read_when:
   - 您想在 OpenClaw 中使用 fal 图像生成
@@ -43,17 +43,17 @@ OpenClaw 内置了一个 `fal` Provider，用于托管的图像和视频生成�
 
 内置的 `fal` 图像生成 Provider 默认使用 `fal/fal-ai/flux/dev`。
 
-| 能力         | 值                         |
-| ------------ | -------------------------- |
-| 最大图像数   | 每次请求 4 张              |
-| 编辑模式     | 已启用，支持 1 张参考图像  |
-| 尺寸覆盖     | 支持                       |
-| 宽高比       | 支持                       |
-| 分辨率       | 支持                       |
-| 输出格式     | `png` 或 `jpeg`            |
+| 能力         | 值                                                                  |
+| ------------ | ------------------------------------------------------------------- |
+| 最大图像数   | 每次请求 4 张                                                       |
+| 编辑模式     | Flux：1 张参考图像；GPT Image 2：10 张；Nano Banana 2：14 张        |
+| 尺寸覆盖     | 支持                                                                |
+| 宽高比       | 支持生成及 GPT Image 2/Nano Banana 2 编辑                           |
+| 分辨率       | 支持                                                                |
+| 输出格式     | `png` 或 `jpeg`                                                     |
 
 <Warning>
-fal 图像编辑端点**不**支持 `aspectRatio` 覆盖。
+Flux 图像到图像请求**不**支持 `aspectRatio` 覆盖。GPT Image 2 和 Nano Banana 2 编辑请求使用 fal 的 `/edit` 端点，并接受宽高比提示。
 </Warning>
 
 当您需要 PNG 输出时，使用 `outputFormat: "png"`。fal 在 OpenClaw 中未声明明确的透明背景控制，因此 `background: "transparent"` 对 fal 模型将报告为被忽略的覆盖。
