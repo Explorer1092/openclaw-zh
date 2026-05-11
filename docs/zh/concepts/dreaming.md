@@ -1,8 +1,8 @@
 ---
-mmh3_hash: "8967eb2af0b8d8c5af2e60257d0433aa"
+mmh3_hash: "8e3b819924f1983fc7af4c45208c26c1"
+summary: "后台内存整合系统，包含轻度、深度和 REM 阶段以及梦境日记"
 title: "Dreaming"
 sidebarTitle: "Dreaming"
-summary: "后台内存整合系统，包含轻度、深度和 REM 阶段以及梦境日记"
 read_when:
   - 您希望内存升级自动运行
   - 您想了解每个 dreaming 阶段的作用
@@ -19,8 +19,8 @@ Dreaming 是**可选开启**的，默认禁用。
 
 Dreaming 保存两类输出：
 
-- **机器状态**，位于 `memory/.dreams/`（召回存储、阶段信号、摄取检查点、锁文件）。
-- **人类可读输出**，位于 `DREAMS.md`（或已有的 `dreams.md`），以及 `memory/dreaming/<phase>/YYYY-MM-DD.md` 下的可选阶段报告文件。
+- **机器状态**：位于 `memory/.dreams/`（召回存储、阶段信号、摄入检查点、锁）。
+- **人类可读输出**：位于 `DREAMS.md`（或已有的 `dreams.md`），以及 `memory/dreaming/<phase>/YYYY-MM-DD.md` 下的可选阶段报告文件。
 
 长期升级仍仅写入 `MEMORY.md`。
 
@@ -28,30 +28,30 @@ Dreaming 保存两类输出：
 
 Dreaming 使用三个协作阶段：
 
-| 阶段   | 用途                           | 持久写入          |
-| ------ | ------------------------------ | ----------------- |
-| 轻度   | 排序并暂存近期短期材料         | 否                |
-| 深度   | 评分并升级持久候选项           | 是（`MEMORY.md`） |
-| REM    | 反映主题和反复出现的想法       | 否                |
+| 阶段 | 目的 | 持久写入 |
+| ----- | ----------------------------------------- | ----------------- |
+| Light | 排序并暂存近期短期材料 | 否 |
+| Deep | 评分并升级持久候选项 | 是（`MEMORY.md`）|
+| REM | 反思主题和反复出现的想法 | 否 |
 
-这些阶段是内部实现细节，不是单独的用户可配置"模式"。
+这些阶段是内部实现细节，不是用户可配置的独立"模式"。
 
 <AccordionGroup>
-  <Accordion title="轻度阶段">
-    轻度阶段摄取最近的每日内存信号和召回痕迹，去重后暂存候选行。
+  <Accordion title="Light 阶段">
+    Light 阶段摄入近期每日内存信号和召回追踪，对其去重并暂存候选行。
 
-    - 从短期召回状态、最近的每日内存文件和可用时的已脱敏 Session 记录中读取。
-    - 当存储包含内联输出时，写入一个托管的 `## Light Sleep` 块。
-    - 记录强化信号，供后续深度排名使用。
-    - 永不写入 `MEMORY.md`。
+    - 从短期召回状态、近期每日内存文件以及（当可用时）已脱敏的 Session 记录中读取。
+    - 当存储包含内联输出时，写入托管的 `## Light Sleep` 块。
+    - 记录强化信号供后续深度排名使用。
+    - 绝不写入 `MEMORY.md`。
 
   </Accordion>
-  <Accordion title="深度阶段">
-    深度阶段决定什么成为长期内存。
+  <Accordion title="Deep 阶段">
+    Deep 阶段决定哪些内容成为长期内存。
 
     - 使用加权评分和阈值门控对候选项排名。
     - 需要通过 `minScore`、`minRecallCount` 和 `minUniqueQueries`。
-    - 在写入前从实时每日文件重新加载片段，跳过已过时/已删除的片段。
+    - 在写入前从实时每日文件重新注水代码段，以跳过过时/已删除的代码段。
     - 将升级条目追加到 `MEMORY.md`。
     - 向 `DREAMS.md` 写入 `## Deep Sleep` 摘要，并可选地写入 `memory/dreaming/deep/YYYY-MM-DD.md`。
 
@@ -59,63 +59,67 @@ Dreaming 使用三个协作阶段：
   <Accordion title="REM 阶段">
     REM 阶段提取模式和反思信号。
 
-    - 从最近的短期痕迹中构建主题和反思摘要。
-    - 当存储包含内联输出时，写入一个托管的 `## REM Sleep` 块。
-    - 记录用于深度排名的 REM 强化信号。
-    - 永不写入 `MEMORY.md`。
+    - 从近期短期追踪构建主题和反思摘要。
+    - 当存储包含内联输出时，写入托管的 `## REM Sleep` 块。
+    - 记录供深度排名使用的 REM 强化信号。
+    - 绝不写入 `MEMORY.md`。
 
   </Accordion>
 </AccordionGroup>
 
-## Session 记录摄取
+## Session 记录摄入
 
-Dreaming 可以将已脱敏的 Session 记录摄取到 dreaming 语料库中。当记录可用时，它们与每日内存信号和召回痕迹一起被送入轻度阶段。个人和敏感内容在摄取前会被脱敏处理。
+Dreaming 可将已脱敏的 Session 记录摄入到 dreaming 语料库中。当记录可用时，它们会与每日内存信号和召回追踪一起被送入 Light 阶段。个人和敏感内容在摄入前会被脱敏。
 
 ## 梦境日记
 
-Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶段积累足够材料后，`memory-core` 会运行一个尽力而为的后台子 Agent 回合（使用默认运行时模型）并追加一条简短的日记条目。
+Dreaming 还在 `DREAMS.md` 中保存一份叙事性**梦境日记**。每个阶段积累足够材料后，`memory-core` 会运行一个尽力而为的后台子 Agent 轮次并追加一条简短的日记条目。它使用默认运行时模型，除非配置了 `dreaming.model`。如果配置的模型不可用，梦境日记会使用 Session 默认模型重试一次。
 
 <Note>
-此日记供人类在 Dreams UI 中阅读，不作为升级来源。Dreaming 生成的日记/报告工件被排除在短期升级之外。只有有依据的内存片段才有资格升级到 `MEMORY.md`。
+此日记用于在 Dreams UI 中供人类阅读，而非升级来源。由 Dreaming 生成的日记/报告产物被排除在短期升级之外。只有有据可查的内存代码段才有资格升级到 `MEMORY.md`。
 </Note>
 
-还有一个用于审阅和恢复工作的有依据的历史回填通道：
+还有一个用于审查和恢复工作的有据可查的历史回填通道：
 
 <AccordionGroup>
   <Accordion title="回填命令">
-    - `memory rem-harness --path ... --grounded` 从历史 `YYYY-MM-DD.md` 笔记预览有依据的日记输出。
-    - `memory rem-backfill --path ...` 将可逆的有依据日记条目写入 `DREAMS.md`。
-    - `memory rem-backfill --path ... --stage-short-term` 将有依据的持久候选项暂存到正常深度阶段已使用的同一短期证据存储中。
-    - `memory rem-backfill --rollback` 和 `--rollback-short-term` 删除这些暂存的回填工件，不影响普通日记条目或实时短期召回。
+    - `memory rem-harness --path ... --grounded` 从历史 `YYYY-MM-DD.md` 笔记预览有据可查的日记输出。
+    - `memory rem-backfill --path ...` 将可逆的有据可查的日记条目写入 `DREAMS.md`。
+    - `memory rem-backfill --path ... --stage-short-term` 将有据可查的持久候选项暂存到普通 Deep 阶段已使用的相同短期证据存储中。
+    - `memory rem-backfill --rollback` 和 `--rollback-short-term` 删除那些暂存的回填产物，而不影响普通日记条目或实时短期召回。
+
   </Accordion>
 </AccordionGroup>
 
-控制 UI 提供相同的日记回填/重置流程，您可以在决定有依据的候选项是否值得升级之前，在 Dreams 场景中检查结果。该场景还显示一个独特的有依据通道，让您能看到哪些暂存的短期条目来自历史重放，哪些升级项目是有依据引导的，并仅清除有依据的暂存条目而不影响普通实时短期状态。
+Control UI 公开了相同的日记回填/重置流程，您可以在梦境场景中检查结果，然后决定有据可查的候选项是否值得升级。该场景还显示一个独特的有据可查的通道，您可以查看哪些暂存的短期条目来自历史重放，哪些升级的项目是有据可查主导的，并仅清除有据可查的暂存条目而不影响普通的实时短期状态。
 
 ## 深度排名信号
 
-深度排名使用六个加权基础信号加阶段强化：
+深度排名使用六个加权基础信号加上阶段强化：
 
-| 信号         | 权重 | 描述                                     |
-| ------------ | ---- | ---------------------------------------- |
-| 频率         | 0.24 | 条目累积的短期信号数量                   |
-| 相关性       | 0.30 | 条目的平均检索质量                       |
-| 查询多样性   | 0.15 | 出现该条目的不同查询/日期上下文数        |
-| 近期性       | 0.15 | 时间衰减的新鲜度分数                     |
-| 整合度       | 0.10 | 多日复现强度                             |
-| 概念丰富度   | 0.06 | 片段/路径的概念标签密度                  |
+| 信号 | 权重 | 描述 |
+| ------------------- | ------ | ------------------------------------------------- |
+| 频率 | 0.24 | 条目累积的短期信号数量 |
+| 相关性 | 0.30 | 条目的平均检索质量 |
+| 查询多样性 | 0.15 | 浮现该条目的不同查询/日期上下文 |
+| 时效性 | 0.15 | 时间衰减的新鲜度评分 |
+| 整合性 | 0.10 | 多日复现强度 |
+| 概念丰富度 | 0.06 | 来自代码段/路径的概念标签密度 |
 
-来自 `memory/.dreams/phase-signals.json` 的轻度和 REM 阶段命中会添加一个小的近期性衰减加成。
+Light 和 REM 阶段命中从 `memory/.dreams/phase-signals.json` 添加小幅时间衰减增益。
 
 ## 调度
 
-启用后，`memory-core` 自动管理一个完整 dreaming 扫描的定时任务。每次扫描按顺序运行各阶段：轻度 → REM → 深度。
+启用后，`memory-core` 自动管理一个用于完整 dreaming 扫描的 Cron 任务。每次扫描按顺序运行各阶段：light → REM → deep。
+
+扫描包括主要运行时工作区和任何已配置的 Agent 工作区（按路径去重），因此子 Agent 工作区扇出不会排除主 Agent 的 `DREAMS.md` 和内存状态。
 
 默认节奏行为：
 
-| 设置                 | 默认值        |
+| 设置 | 默认值 |
 | -------------------- | ------------- |
-| `dreaming.frequency` | `0 3 * * *`   |
+| `dreaming.frequency` | `0 3 * * *` |
+| `dreaming.model` | 默认模型 |
 
 ## 快速开始
 
@@ -178,11 +182,11 @@ Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶
     openclaw memory status --deep
     ```
 
-    手动 `memory promote` 默认使用深度阶段阈值，除非使用 CLI 参数覆盖。
+    手动 `memory promote` 默认使用 Deep 阶段阈值，除非使用 CLI 标志覆盖。
 
   </Tab>
   <Tab title="解释升级">
-    解释特定候选项是否会升级的原因：
+    解释特定候选项为何会或不会升级：
 
     ```bash
     openclaw memory promote-explain "router vlan"
@@ -190,7 +194,7 @@ Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶
     ```
 
   </Tab>
-  <Tab title="REM harness 预览">
+  <Tab title="REM 工具预览">
     预览 REM 反思、候选真相和深度升级输出，不写入任何内容：
 
     ```bash
@@ -211,25 +215,36 @@ Dreaming 还在 `DREAMS.md` 中保留一份叙述性**梦境日记**。每个阶
 <ParamField path="frequency" type="string" default="0 3 * * *">
   完整 dreaming 扫描的 Cron 节奏。
 </ParamField>
+<ParamField path="model" type="string">
+  可选的梦境日记子 Agent 模型覆盖。同时设置子 Agent `allowedModels` 允许列表时，请使用规范的 `provider/model` 值。
+</ParamField>
+
+<Warning>
+`dreaming.model` 需要 `plugins.entries.memory-core.subagent.allowModelOverride: true`。要限制它，还需设置 `plugins.entries.memory-core.subagent.allowedModels`。信任或允许列表失败时保持可见，而不是静默回退；重试仅涵盖模型不可用的错误。
+</Warning>
 
 <Note>
-阶段策略、阈值和存储行为是内部实现细节（非用户可配置项）。参见 [Memory 配置参考](/reference/memory-config#dreaming) 了解完整键列表。
+阶段策略、阈值和存储行为是内部实现细节（非用户可见配置）。完整键列表请参阅[内存配置参考](/reference/memory-config#dreaming)。
 </Note>
 
 ## Dreams UI
 
-启用后，Gateway 的 **Dreams** 标签页显示：
+启用后，Gateway **Dreams** 标签显示：
 
 - 当前 dreaming 启用状态
-- 阶段级别状态和托管扫描是否存在
-- 短期、有依据、信号和今日已升级计数
+- 阶段级状态和托管扫描是否存在
+- 短期、有据可查、信号和今日升级的计数
 - 下次计划运行时间
-- 用于暂存历史重放条目的独特有依据场景通道
+- 用于暂存历史重放条目的独特有据可查的场景通道
 - 由 `doctor.memory.dreamDiary` 支持的可展开梦境日记阅读器
 
-## 相关链接
+## Dreaming 从不运行：状态显示已阻止
 
-- [Memory](/concepts/memory)
-- [Memory CLI](/cli/memory)
-- [Memory 配置参考](/reference/memory-config)
-- [Memory Search](/concepts/memory-search)
+如果 `openclaw memory status` 报告 `Dreaming status: blocked`，则托管 Cron 任务存在但默认 Agent 心跳未触发。检查默认 Agent 是否启用了心跳，以及其目标是否不是 `none`，然后在下一个心跳间隔后再次运行 `openclaw memory status --deep`。
+
+## 相关
+
+- [内存](/concepts/memory)
+- [内存 CLI](/cli/memory)
+- [内存配置参考](/reference/memory-config)
+- [内存搜索](/concepts/memory-search)

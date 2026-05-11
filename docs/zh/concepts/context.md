@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7a7e751b88880f7eb62fc2d653f4ce9f"
+mmh3_hash: "27aac4ea3b37a5faf74d52c1abfd8a97"
 summary: "Context：model 看到什么、如何构建以及如何检查"
 read_when:
   - 您想了解 OpenClaw 中"context"的含义
@@ -23,6 +23,7 @@ Context 与"内存"不同：内存可以存储在磁盘上并稍后重新加载�
 - `/status` → 快速"我的窗口有多满？"视图 + Session 设置。
 - `/context list` → 注入了什么 + 大致大小（每个文件 + 总计）。
 - `/context detail` → 更深入的细分：每个文件、每个工具 schema 大小、每个 Skill 条目大小和 system prompt 大小。
+- `/context map` → 当前 Session 追踪的 context 贡献者的 WinDirStat 风格树形图图像。
 - `/usage tokens` → 向正常回复附加每个回复的 usage footer。
 - `/compact` → 将较旧的历史记录总结为紧凑条目以释放窗口空间。
 
@@ -74,6 +75,17 @@ Top tools (schema size):
 - exec: 6,240 chars (~1,560 tok)
 … (+N more tools)
 ```
+
+### `/context map`
+
+发送从最新缓存运行报告生成的图像。在正常消息在 Session 中产生运行报告之前，`/context map` 返回不可用消息，而不是渲染估算。矩形面积与追踪的 prompt 字符数成正比：
+
+- 注入的 workspace 文件
+- 基础 system prompt 文本
+- Skill prompt 条目
+- Tool JSON schemas
+
+`/context list`、`/context detail` 和 `/context json` 在没有缓存运行报告时仍然可以检查按需估算。
 
 ## 什么计入 context window
 
@@ -165,7 +177,17 @@ Slash commands 由 Gateway 处理。有几种不同的行为：
 
 ## 相关
 
-- [Context Engine](/concepts/context-engine) — 通过 Plugins 自定义 context 注入
-- [Compaction](/concepts/compaction) — 总结长对话
-- [System Prompt](/concepts/system-prompt) — system prompt 如何构建
-- [Agent Loop](/concepts/agent-loop) — 完整的 Agent 执行周期
+<CardGroup cols={2}>
+  <Card title="Context Engine" href="/concepts/context-engine" icon="puzzle-piece">
+    通过 Plugin 自定义 context 注入。
+  </Card>
+  <Card title="Compaction" href="/concepts/compaction" icon="compress">
+    总结长对话以保持在 model 窗口内。
+  </Card>
+  <Card title="System Prompt" href="/concepts/system-prompt" icon="message-lines">
+    system prompt 如何构建以及每次轮次注入什么。
+  </Card>
+  <Card title="Agent Loop" href="/concepts/agent-loop" icon="arrows-rotate">
+    从入站消息到最终回复的完整 Agent 执行周期。
+  </Card>
+</CardGroup>

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d22ce70c169e9bea58b26a251b2ae773"
+mmh3_hash: "676788bc9edaba169f1c8295748c3f7e"
 title: "Active Memory"
 summary: "Plugin 拥有的阻塞式 Memory 子 Agent，在交互式聊天 Session 中注入相关 Memory"
 read_when:
@@ -225,6 +225,22 @@ allowedChatTypes: ["direct", "group"]
 allowedChatTypes: ["direct", "group", "channel"]
 ```
 
+如需更窄的推出范围，选好允许的 Session 类型后再使用 `config.allowedChatIds` 和 `config.deniedChatIds`。
+
+`allowedChatIds` 是已解析对话 ID 的明确白名单。非空时，Active Memory 只在 Session 的对话 ID 位于该列表中时才运行。这会同时收窄所有允许的聊天类型，包括直接消息。如果您希望所有直接消息加上特定群组，请将直接消息对端 ID 包含在 `allowedChatIds` 中，或者让 `allowedChatTypes` 专注于您正在测试的群组/Channel 推出。
+
+`deniedChatIds` 是明确黑名单。它始终优先于 `allowedChatTypes` 和 `allowedChatIds`，因此即使 Session 类型在其他方面被允许，匹配的对话也会被跳过。
+
+ID 来自持久 Channel Session 键：例如 Feishu 的 `chat_id`/`open_id`、Telegram 聊天 ID 或 Slack 频道 ID。匹配不区分大小写。如果 `allowedChatIds` 非空但 OpenClaw 无法解析该 Session 的对话 ID，Active Memory 会跳过该轮次而不是猜测。
+
+示例：
+
+```json5
+allowedChatTypes: ["direct", "group"],
+allowedChatIds: ["ou_operator_open_id", "oc_small_ops_group"],
+deniedChatIds: ["oc_large_public_group"]
+```
+
 ## 运行位置
 
 Active Memory 是一个对话丰富功能，而不是平台范围的推理功能。
@@ -396,6 +412,92 @@ modelFallback: "google/gemini-3-flash"
 
 `config.modelFallbackPolicy` 仅作为旧版配置的已弃用兼容性字段保留。它不再改变运行时行为。
 
+## Memory 工具
+
+默认情况下，Active Memory 允许阻塞式召回子 Agent 调用 `memory_search` 和 `memory_get`。这匹配内置的 `memory-core` 合约。当 `plugins.slots.memory` 选择 `memory-lancedb` 且 `config.toolsAllow` 未设置时，Active Memory 保持现有的 LanceDB 行为并改用 `memory_recall`。
+
+如果您使用其他 Memory Plugin，将 `config.toolsAllow` 设置为该 Plugin 注册的确切工具名称。Active Memory 在召回提示中列出这些工具，并将相同列表传递给嵌入的子 Agent。如果没有已配置的工具可用，或 Memory 子 Agent 失败，Active Memory 将跳过该轮次的召回，主回复继续进行，不带 Memory 上下文。`toolsAllow` 只接受具体的 Memory 工具名称。通配符、`group:*` 条目以及 `read`、`exec`、`message` 和 `web_search` 等核心 Agent 工具在隐藏的 Memory 子 Agent 启动前会被忽略。
+
+默认行为注意事项：Active Memory 不再将 `memory_recall` 包含在 `memory-core` 默认白名单中。设置了 `plugins.slots.memory` 为 `memory-lancedb` 的现有安装仍然可以正常工作。显式的 `toolsAllow` 始终覆盖自动默认值。
+
+### 内置 memory-core
+
+默认设置不需要显式的 `toolsAllow`：
+
+```json5
+{
+  plugins: {
+    entries: {
+      "active-memory": {
+        enabled: true,
+        config: {
+          agents: ["main"],
+          // 默认：["memory_search", "memory_get"]
+        },
+      },
+    },
+  },
+}
+```
+
+### LanceDB memory
+
+捆绑的 `memory-lancedb` Plugin 公开 `memory_recall`。选择 memory slot 即可让 Active Memory 使用该召回工具：
+
+```json5
+{
+  plugins: {
+    slots: {
+      memory: "memory-lancedb",
+    },
+    entries: {
+      "memory-lancedb": {
+        enabled: true,
+        config: {
+          embedding: {
+            provider: "openai",
+            model: "text-embedding-3-small",
+          },
+        },
+      },
+      "active-memory": {
+        enabled: true,
+        config: {
+          agents: ["main"],
+          promptAppend: "Use memory_recall for long-term user preferences, past decisions, and previously discussed topics. If recall finds nothing useful, return NONE.",
+        },
+      },
+    },
+  },
+}
+```
+
+### Lossless Claw
+
+Lossless Claw 是一个带有自己召回工具的上下文引擎 Plugin。先将其作为上下文引擎安装配置；参见[上下文引擎](/concepts/context-engine)。然后让 Active Memory 使用 Lossless Claw 的召回工具：
+
+```json5
+{
+  plugins: {
+    entries: {
+      "lossless-claw": {
+        enabled: true,
+      },
+      "active-memory": {
+        enabled: true,
+        config: {
+          agents: ["main"],
+          toolsAllow: ["lcm_grep", "lcm_describe", "lcm_expand_query"],
+          promptAppend: "Use lcm_grep first for compacted conversation recall. Use lcm_describe to inspect a specific summary. Use lcm_expand_query only when the latest user message needs exact details that may have been compacted away. Return NONE if the retrieved context is not clearly useful.",
+        },
+      },
+    },
+  },
+}
+```
+
+不要在主 Active Memory 子 Agent 的 `toolsAllow` 中包含 `lcm_expand`。Lossless Claw 将其用作较低级别的委托扩展工具。
+
 ## 高级逃生舱
 
 这些选项有意不作为推荐设置的一部分。
@@ -483,32 +585,39 @@ plugins.entries.active-memory
 
 最重要的字段：
 
-| 键                          | 类型                                                                                                  | 含义                                                                                         |
-| --------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `enabled`                   | `boolean`                                                                                             | 启用 Plugin 本身                                                                             |
-| `config.agents`             | `string[]`                                                                                            | 可以使用 Active Memory 的 Agent ID                                                           |
-| `config.model`              | `string`                                                                                              | 可选的阻塞式 Memory 子 Agent 模型引用；未设置时，Active Memory 使用当前 Session 模型         |
-| `config.queryMode`          | `"message" \| "recent" \| "full"`                                                                     | 控制阻塞式 Memory 子 Agent 看到多少对话                                                      |
-| `config.promptStyle`        | `"balanced" \| "strict" \| "contextual" \| "recall-heavy" \| "precision-heavy" \| "preference-only"` | 控制阻塞式 Memory 子 Agent 在决定是否返回 Memory 时的积极程度或严格程度                     |
-| `config.thinking`           | `"off" \| "minimal" \| "low" \| "medium" \| "high" \| "xhigh" \| "adaptive" \| "max"`                | 阻塞式 Memory 子 Agent 的高级思考覆盖；默认 `off` 以保证速度                                |
-| `config.promptOverride`     | `string`                                                                                              | 高级完整提示替换；不建议正常使用                                                             |
-| `config.promptAppend`       | `string`                                                                                              | 追加到默认或覆盖提示的高级额外指令                                                           |
-| `config.timeoutMs`          | `number`                                                                                              | 阻塞式 Memory 子 Agent 的硬超时，上限为 120000 毫秒                                         |
-| `config.maxSummaryChars`    | `number`                                                                                              | Active Memory 摘要中允许的最大总字符数                                                       |
-| `config.logging`            | `boolean`                                                                                             | 调整时发出 Active Memory 日志                                                                |
-| `config.persistTranscripts` | `boolean`                                                                                             | 将阻塞式 Memory 子 Agent 转录保留在磁盘上，而不是删除临时文件                               |
-| `config.transcriptDir`      | `string`                                                                                              | Agent Session 文件夹下的相对阻塞式 Memory 子 Agent 转录目录                                 |
+| 键                           | 类型                                                                                                  | 含义                                                                                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `enabled`                    | `boolean`                                                                                             | 启用 Plugin 本身                                                                                                                                             |
+| `config.agents`              | `string[]`                                                                                            | 可以使用 Active Memory 的 Agent ID                                                                                                                           |
+| `config.model`               | `string`                                                                                              | 可选的阻塞式 Memory 子 Agent 模型引用；未设置时，Active Memory 使用当前 Session 模型                                                                         |
+| `config.allowedChatTypes`    | `("direct" \| "group" \| "channel")[]`                                                                | 可以运行 Active Memory 的 Session 类型；默认为直接消息式 Session                                                                                             |
+| `config.allowedChatIds`      | `string[]`                                                                                            | 可选的按对话白名单，在 `allowedChatTypes` 之后应用；非空列表采用关闭失败策略                                                                                 |
+| `config.deniedChatIds`       | `string[]`                                                                                            | 可选的按对话黑名单，覆盖允许的 Session 类型和允许的 ID                                                                                                       |
+| `config.queryMode`           | `"message" \| "recent" \| "full"`                                                                     | 控制阻塞式 Memory 子 Agent 看到多少对话                                                                                                                      |
+| `config.promptStyle`         | `"balanced" \| "strict" \| "contextual" \| "recall-heavy" \| "precision-heavy" \| "preference-only"` | 控制阻塞式 Memory 子 Agent 在决定是否返回 Memory 时的积极程度或严格程度                                                                                     |
+| `config.toolsAllow`          | `string[]`                                                                                            | 阻塞式 Memory 子 Agent 可调用的具体 Memory 工具名称；默认 `["memory_search", "memory_get"]`，或当 `plugins.slots.memory` 为 `memory-lancedb` 时为 `["memory_recall"]`；通配符、`group:*` 条目和核心 Agent 工具会被忽略 |
+| `config.thinking`            | `"off" \| "minimal" \| "low" \| "medium" \| "high" \| "xhigh" \| "adaptive" \| "max"`                | 阻塞式 Memory 子 Agent 的高级思考覆盖；默认 `off` 以保证速度                                                                                                |
+| `config.promptOverride`      | `string`                                                                                              | 高级完整提示替换；不建议正常使用                                                                                                                             |
+| `config.promptAppend`        | `string`                                                                                              | 追加到默认或覆盖提示的高级额外指令                                                                                                                           |
+| `config.timeoutMs`           | `number`                                                                                              | 阻塞式 Memory 子 Agent 的硬超时，上限为 120000 毫秒                                                                                                         |
+| `config.setupGraceTimeoutMs` | `number`                                                                                              | 召回超时到期前的高级额外设置预算；默认为 0，上限为 30000 毫秒。参见[冷启动宽限期](#cold-start-grace)了解 v2026.4.x 升级指导                                  |
+| `config.maxSummaryChars`     | `number`                                                                                              | Active Memory 摘要中允许的最大总字符数                                                                                                                       |
+| `config.logging`             | `boolean`                                                                                             | 调整时发出 Active Memory 日志                                                                                                                                |
+| `config.persistTranscripts`  | `boolean`                                                                                             | 将阻塞式 Memory 子 Agent 转录保留在磁盘上，而不是删除临时文件                                                                                               |
+| `config.transcriptDir`       | `string`                                                                                              | Agent Session 文件夹下的相对阻塞式 Memory 子 Agent 转录目录                                                                                                 |
 
 有用的调整字段：
 
-| 键                            | 类型     | 含义                                           |
-| ----------------------------- | -------- | ---------------------------------------------- |
-| `config.maxSummaryChars`      | `number` | Active Memory 摘要中允许的最大总字符数         |
-| `config.recentUserTurns`      | `number` | `queryMode` 为 `recent` 时包含的之前用户轮次   |
-| `config.recentAssistantTurns` | `number` | `queryMode` 为 `recent` 时包含的之前助手轮次   |
-| `config.recentUserChars`      | `number` | 每个最近用户轮次的最大字符数                   |
-| `config.recentAssistantChars` | `number` | 每个最近助手轮次的最大字符数                   |
-| `config.cacheTtlMs`           | `number` | 重复相同查询的缓存复用                         |
+| 键                                 | 类型     | 含义                                                                                                                          |
+| ---------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `config.maxSummaryChars`           | `number` | Active Memory 摘要中允许的最大总字符数                                                                                        |
+| `config.recentUserTurns`           | `number` | `queryMode` 为 `recent` 时包含的之前用户轮次                                                                                  |
+| `config.recentAssistantTurns`      | `number` | `queryMode` 为 `recent` 时包含的之前助手轮次                                                                                  |
+| `config.recentUserChars`           | `number` | 每个最近用户轮次的最大字符数                                                                                                  |
+| `config.recentAssistantChars`      | `number` | 每个最近助手轮次的最大字符数                                                                                                  |
+| `config.cacheTtlMs`                | `number` | 重复相同查询的缓存复用（范围：1000-120000 毫秒；默认：15000）                                                                 |
+| `config.circuitBreakerMaxTimeouts` | `number` | 同一 Agent/模型连续超时这么多次后跳过召回。成功召回或冷却期到期后重置（范围：1-20；默认：3）。                                |
+| `config.circuitBreakerCooldownMs`  | `number` | 断路器触发后跳过召回的时长，单位毫秒（范围：5000-600000；默认：60000）。                                                      |
 
 ## 推荐设置
 
@@ -541,6 +650,33 @@ plugins.entries.active-memory
 - `message` 如果您想要更低的延迟
 - `full` 如果您决定额外上下文值得更慢的阻塞式 Memory 子 Agent
 
+### 冷启动宽限期 {#cold-start-grace}
+
+在 v2026.5.2 之前，该 Plugin 在冷启动期间静默地将您配置的 `timeoutMs` 延长额外 30000 毫秒，以便模型预热、嵌入索引加载和第一次召回可以共享一个更大的预算。v2026.5.2 将该宽限期移至显式的 `setupGraceTimeoutMs` 配置——您配置的 `timeoutMs` 现在是默认预算，除非您选择启用。
+
+如果您从 v2026.4.x 升级，并且将 `timeoutMs` 设置为针对旧的隐式宽限期世界调整的值（推荐的起始值 `timeoutMs: 15000` 就是一个例子），请设置 `setupGraceTimeoutMs: 30000` 将提示构建 Hook 和外部看门狗预算恢复到 v5.2 之前的有效值：
+
+```json5
+{
+  plugins: {
+    entries: {
+      "active-memory": {
+        config: {
+          timeoutMs: 15000,
+          setupGraceTimeoutMs: 30000,
+        },
+      },
+    },
+  },
+}
+```
+
+根据 v2026.5.2 变更日志：_"默认将配置的召回超时用作阻塞提示构建 Hook 预算，并将冷启动设置宽限期移至显式 `setupGraceTimeoutMs` 配置，这样 Plugin 不再在主通道上静默地将 15000 毫秒配置延长到 45000 毫秒。"_
+
+嵌入式召回运行器使用相同的有效超时预算，因此 `setupGraceTimeoutMs` 同时覆盖外部提示构建看门狗和内部阻塞式召回运行。
+
+对于资源紧张的 Gateway（冷启动延迟是已知权衡），较低的值（5000-15000 毫秒）也可以使用——权衡是 Gateway 重启后第一次召回返回空结果的概率更高，因为预热还没完成。
+
 ## 调试
 
 如果 Active Memory 没有在您期望的位置出现：
@@ -564,7 +700,7 @@ plugins.entries.active-memory
 
 ## 常见问题
 
-Active Memory 在 `agents.defaults.memorySearch` 下使用正常的 `memory_search` 管道，因此大多数召回异常是嵌入 Provider 问题，而不是 Active Memory 的错误。
+Active Memory 依赖配置的 Memory Plugin 的召回管道，因此大多数召回异常是嵌入 Provider 问题，而不是 Active Memory 的错误。默认的 `memory-core` 路径使用 `memory_search` 和 `memory_get`；`memory-lancedb` slot 使用 `memory_recall`。如果您使用其他 Memory Plugin，确认 `config.toolsAllow` 命名的工具是该 Plugin 实际注册的工具。
 
 <AccordionGroup>
   <Accordion title="嵌入 Provider 切换或停止工作">
@@ -580,6 +716,13 @@ Active Memory 在 `agents.defaults.memorySearch` 下使用正常的 `memory_sear
     - 查看 Gateway 日志，查找 `active-memory: ... start|done`、`memory sync failed (search-bootstrap)` 或 Provider 嵌入错误。
     - 运行 `openclaw memory status --deep` 以检查 Memory 搜索后端和索引健康状况。
     - 如果您使用 `ollama`，确认嵌入模型已安装（`ollama list`）。
+  </Accordion>
+
+  <Accordion title="Gateway 重启后第一次召回返回 status=timeout">
+    在 v2026.5.2 及更高版本上，如果冷启动设置（模型预热 + 嵌入索引加载）在第一次召回触发时还没完成，运行可能会达到配置的 `timeoutMs` 预算并返回带有空输出的 `status=timeout`。Gateway 日志在重启后第一次符合条件的回复前后显示 `active-memory timeout after Nms`。
+
+    参见推荐设置下的[冷启动宽限期](#cold-start-grace)了解推荐的 `setupGraceTimeoutMs` 值。
+
   </Accordion>
 </AccordionGroup>
 
