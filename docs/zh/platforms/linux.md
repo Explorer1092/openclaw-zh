@@ -1,23 +1,22 @@
 ---
 title: "Linux 应用"
 sidebarTitle: "Linux"
-mmh3_hash: "655d6dcf64781f041fc2775c80a9e863"
+mmh3_hash: "2bf4e5196075aa0129d36324ad8cbd40"
 summary: "Linux 支持 + 伴侣应用状态"
 read_when:
-  - 查找 Linux 伴侣应用状态
+  - 查找 Linux 配套应用状态
   - 规划平台覆盖或贡献
+  - 调试 VPS 或容器上的 Linux OOM 终止或 exit 137
 ---
-
-# Linux 应用
 
 Gateway 在 Linux 上完全受支持。**Node 是推荐的运行时**。
 不推荐 Bun 用于 Gateway（WhatsApp/Telegram 问题）。
 
-原生 Linux 伴侣应用正在计划中。如果你想帮助构建，欢迎贡献。
+原生 Linux 配套应用已在计划中。如果你想帮助构建，欢迎贡献。
 
 ## 初学者快速路径（VPS）
 
-1. 安装 Node 24（推荐；Node 22 LTS，当前 `22.14+`，仍然用于兼容性）
+1. 安装 Node 24（推荐；Node 22 LTS，当前 `22.16+`，仍然用于兼容性）
 2. `npm i -g openclaw@latest`
 3. `openclaw onboard --install-daemon`
 4. 从你的笔记本：`ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`

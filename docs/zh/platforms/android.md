@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e66d9f898ea77c347395ec0fa72be000"
+mmh3_hash: "15e301d05f9679c18b43ea49eb2cdd55"
 title: "Android 应用 (节点)"
 summary: "Android 应用（节点）：连接手册 + Connect/Chat/Voice/Canvas 命令接口"
 read_when:
@@ -8,9 +8,9 @@ read_when:
   - 验证跨客户端的聊天历史一致性
 ---
 
-# Android 应用（节点）
-
-> **注意：** Android 应用尚未公开发布。源代码在 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 的 `apps/android` 下可用。你可以使用 Java 17 和 Android SDK 自行构建（`./gradlew :app:assemblePlayDebug`）。构建说明见 [apps/android/README.md](https://github.com/openclaw/openclaw/blob/main/apps/android/README.md)。
+<Note>
+Android 应用尚未公开发布。源代码在 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 的 `apps/android` 下可用。你可以使用 Java 17 和 Android SDK 自行构建（`./gradlew :app:assemblePlayDebug`）。构建说明见 [apps/android/README.md](https://github.com/openclaw/openclaw/blob/main/apps/android/README.md)。
+</Note>
 
 ## 支持快照
 
@@ -107,6 +107,12 @@ Android NSD/mDNS 发现不会跨网络。如果你的 Android 节点和 gateway 
 - 手动端点（如果启用），否则
 - 最后发现的 gateway（尽力而为）。
 
+### 在线信标
+
+经认证的节点 session 连接后，以及当应用在前台服务仍处于连接状态时移至后台，Android 会调用 `node.event`，传入 `event: "node.presence.alive"`。只有在已知认证节点设备身份后，gateway 才会将此记录为配对节点/设备元数据上的 `lastSeenAtMs`/`lastSeenReason`。
+
+只有当 gateway 响应包含 `handled: true` 时，应用才将信标视为已成功记录。旧版 gateway 可能以 `{ "ok": true }` 确认 `node.event`；该响应兼容，但不计为持久的最后在线更新。
+
 ### 4) 批准配对（CLI）
 
 在 gateway 机器上：
@@ -118,6 +124,22 @@ openclaw devices reject <requestId>
 ```
 
 配对详情：[配对](/channels/pairing)。
+
+可选：如果 Android 节点始终从严格控制的子网连接，你可以通过明确的 CIDR 或精确 IP 选择加入首次节点自动批准：
+
+```json5
+{
+  gateway: {
+    nodes: {
+      pairing: {
+        autoApproveCidrs: ["192.168.1.0/24"],
+      },
+    },
+  },
+}
+```
+
+此选项默认禁用。仅适用于没有请求 scope 的全新 `role: node` 配对。Operator/browser 配对以及任何 role、scope、元数据或公钥更改仍需要手动批准。
 
 ### 5) 验证节点已连接
 
@@ -147,7 +169,9 @@ Android Chat 选项卡支持 session 选择（默认 `main`，加上其他现有
 
 如果你想让节点显示 agent 可以在磁盘上编辑的真实 HTML/CSS/JS，将节点指向 Gateway canvas host。
 
-注意：节点从 Gateway HTTP 服务器（与 `gateway.port` 相同端口，默认 `18789`）加载 canvas。
+<Note>
+节点从 Gateway HTTP 服务器（与 `gateway.port` 相同端口，默认 `18789`）加载 canvas。
+</Note>
 
 1. 在 gateway 主机上创建 `~/.openclaw/workspace/canvas/index.html`。
 
@@ -176,8 +200,10 @@ Canvas 命令（仅前台）：
 
 ### 8) Voice + 扩展 Android 命令接口
 
-- Voice：Android 在 Voice 选项卡中使用单一麦克风开/关流程，带转录捕获和 `talk.speak` 播放。仅当 `talk.speak` 不可用时才使用本地系统 TTS。当应用离开前台时 Voice 停止。
-- Voice wake/talk-mode 切换目前已从 Android UX/运行时中删除。
+- Voice 选项卡：Android 有两种明确的捕获模式。**Mic** 是手动 Voice 选项卡 session，将每次停顿作为聊天轮发送，当应用离开前台或用户离开 Voice 选项卡时停止。**Talk** 是持续 Talk 模式，持续监听直到关闭或节点断开连接。
+- Talk 模式在捕获开始前将现有前台服务从 `dataSync` 提升为 `dataSync|microphone`，Talk 模式停止时再降级。Android 14+ 需要 `FOREGROUND_SERVICE_MICROPHONE` 声明、`RECORD_AUDIO` 运行时授权以及运行时的麦克风服务类型。
+- 语音回复通过已配置的 gateway Talk provider 使用 `talk.speak`。仅当 `talk.speak` 不可用时才使用本地系统 TTS。
+- Voice wake 在 Android UX/运行时中保持禁用。
 - 其他 Android 命令系列（可用性取决于设备 + 权限）：
   - `device.status`、`device.info`、`device.permissions`、`device.health`
   - `notifications.list`、`notifications.actions`（参见下方[通知转发](#通知转发)）

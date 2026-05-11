@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "630cf3b2150ffac26052fb2e59dfd7c6"
+mmh3_hash: "47b96050544a3df3b159d8c4c6ea8a42"
 title: "OpenClaw macOS 配套应用 (菜单栏 + Gateway 代理)"
 sidebarTitle: "macOS 配套应用"
 summary: "OpenClaw macOS 配套应用（菜单栏 + Gateway 代理）"
@@ -97,7 +97,7 @@ Gateway -> Node Service (WS)
 
 注意：
 
-- `allowlist` 条目是已解析二进制路径的 glob 模式。
+- `allowlist` 条目是已解析二进制路径的 glob 模式，或 PATH 调用命令的裸命令名称。
 - 包含 shell 控制或展开语法（`&&`、`||`、`;`、`|`、`` ` ``、`$`、`<`、`>`、`(`、`)`）的原始 shell 命令文本被视为允许列表未命中，需要明确批准（或将 shell 二进制文件添加到允许列表）。
 - 在提示中选择"Always Allow"会将该命令添加到允许列表。
 - `system.run` 环境覆盖会被过滤（删除 `PATH`、`DYLD_*`、`LD_*`、`NODE_OPTIONS`、`PYTHON*`、`PERL*`、`RUBYOPT`、`SHELLOPTS`、`PS4`），然后与应用的环境合并。

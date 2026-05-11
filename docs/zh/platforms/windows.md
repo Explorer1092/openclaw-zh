@@ -1,19 +1,17 @@
 ---
 title: "Windows"
 sidebarTitle: "Windows"
-mmh3_hash: "98728e60a7d61b7ebee8be95f7b0862d"
+mmh3_hash: "51220c54b2990253892e8bdc6e207595"
 summary: "Windows 支持：原生和 WSL2 安装路径、守护进程及当前注意事项"
 read_when:
   - 在 Windows 上安装 OpenClaw
-  - 选择原生 Windows 和 WSL2
-  - 查找 Windows 伴侣应用状态
+  - 在原生 Windows 和 WSL2 之间选择
+  - 查找 Windows 配套应用状态
 ---
-
-# Windows
 
 OpenClaw 同时支持**原生 Windows** 和 **WSL2**。WSL2 是更稳定的路径，推荐用于完整体验——CLI、Gateway 和工具链在 Linux 内部运行，具有完整的兼容性。原生 Windows 适用于核心 CLI 和 Gateway 使用，但有以下注意事项。
 
-原生 Windows 伴侣应用正在计划中。
+原生 Windows 配套应用已在计划中。
 
 ## WSL2（推荐）
 
@@ -237,9 +235,35 @@ pnpm gateway:watch
 
 完整指南：[入门](/start/getting-started)
 
-## Windows 伴侣应用
+## Windows 配套应用
 
-我们还没有 Windows 伴侣应用。如果你想贡献力量使其实现，欢迎贡献。
+我们还没有 Windows 配套应用。如果你想贡献力量使其实现，欢迎贡献。
+
+## Git 和 GitHub 连接（贡献者）
+
+某些网络会阻止或限速到 GitHub 的 HTTPS 连接。如果 `git clone` 因超时或连接重置而失败，请尝试其他网络、VPN 或你的组织提供的 HTTP/HTTPS 代理。
+
+如果 `gh auth login` 在浏览器设备流程中失败（例如访问 `github.com:443` 超时），请改用个人访问 token 进行认证：
+
+1. 创建一个至少具有 `repo` scope（经典 PAT）或同等细粒度访问权限的 token。
+2. 在 PowerShell 中针对当前会话：
+
+```powershell
+$env:GH_TOKEN="<your-token>"
+gh auth status
+gh auth setup-git
+```
+
+3. 如果 `gh auth status` 警告缺少 `read:org`，请创建包含该 scope 的 token 并重新赋值：
+
+```powershell
+$env:GH_TOKEN="<your-token-with-repo-and-read:org>"
+gh auth status
+```
+
+`gh auth refresh -s read:org` 仅适用于通过 `gh auth login` 认证并有存储凭据可刷新的情况（而非使用 `GH_TOKEN` 时）。
+
+切勿在 issue 或 pull request 中提交或粘贴 token。
 
 ## 相关文档
 

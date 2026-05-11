@@ -1,7 +1,7 @@
 ---
 title: "远程 OpenClaw (macOS ⇄ 远程主机)"
 sidebarTitle: "远程 OpenClaw"
-mmh3_hash: "430945a40e7293911c0e1b5b03a3f1b0"
+mmh3_hash: "577544ccb23ee3a6db4c9b3e4ca978e2"
 summary: "macOS 应用通过 SSH 控制远程 OpenClaw gateway 的流程"
 read_when:
   - 设置或调试远程 mac 控制
@@ -77,6 +77,7 @@ read_when:
 - **Health probe failed**: 检查 SSH 可访问性、PATH 以及 Baileys 是否已登录（`openclaw status --json`）。
 - **Web Chat stuck**: 确认 gateway 在远程主机上运行，转发的端口匹配 gateway WS 端口；UI 需要健康的 WS 连接。
 - **Node IP shows 127.0.0.1**: SSH 隧道的预期行为。如果你希望 gateway 看到真实的客户端 IP，请将 **Transport** 切换到 **Direct (ws/wss)**（参见 [macOS 远程访问](/platforms/mac/remote)）。
+- **Dashboard works but Mac capabilities are offline**（仪表板正常但 Mac 功能离线）：这意味着应用的 operator/控制连接正常，但配套节点连接未连接或缺少其命令界面。打开菜单栏设备部分，检查 Mac 是否显示为 `paired · disconnected`。对于 `wss://*.ts.net` Tailscale Serve 端点，应用会在证书轮换后检测到过时的旧版 TLS 叶证书 pin，在 macOS 信任新证书时清除过时 pin 并自动重试。如果证书不受系统信任或主机不是 Tailscale Serve 名称，请检查证书或切换到 **Remote over SSH**。
 - **Voice Wake**: 触发短语在远程模式下自动转发；不需要单独的转发器。
 
 ## 通知声音
