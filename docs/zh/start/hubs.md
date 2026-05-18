@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8c9bdb32c53f2ea2b7a90e67ab9e95a4"
+mmh3_hash: "cc105347a4e292ed38c1b8794649c5b5"
 summary: "链接到所有 OpenClaw 文档的中心页面"
 read_when:
   - 您想要获取完整的文档地图
@@ -110,7 +110,7 @@ title: "文档中心"
 - [PDF 工具](/tools/pdf)
 - [提升模式](/tools/elevated)
 - [Cron 任务](/automation/cron-jobs)
-- [自动化与任务](/automation)
+- [自动化](/automation)
 - [Thinking + verbose](/tools/thinking)
 - [模型](/concepts/models)
 - [子 Agent](/tools/subagents)

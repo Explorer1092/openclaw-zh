@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f80cbe87aef48782f6349ae680b3efb3"
+mmh3_hash: "021999e39dbb1af1d4bec0c9796e2a34"
 summary: "OpenClaw 的高级设置和开发工作流"
 read_when:
   - 设置新机器
@@ -22,7 +22,7 @@ title: "设置"
 
 ## 前提条件（从源码）
 
-- 推荐 Node 24（Node 22 LTS，当前为 `22.16+`，仍受支持）
+- 推荐 Node 24（Node 22 LTS，当前为 `22.19+`，仍受支持）
 - 源码检出需要 `pnpm`。OpenClaw 在开发模式下从 `extensions/*` pnpm 工作区包加载捆绑插件，因此根目录 `npm install` 不能准备完整的源码树。
 - Docker（可选；仅用于容器化设置/端到端测试 — 参见 [Docker](/install/docker)）
 

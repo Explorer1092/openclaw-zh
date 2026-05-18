@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "185399e6cb8a6b82cf6ac1ba613e0c7b"
+mmh3_hash: "01b8483911aad627a05c9475ce10b462"
 summary: "CLI 引导向导：Gateway、工作区、Channel 和 Skill 的引导式设置"
 read_when:
   - 运行或配置 CLI 引导向导
@@ -14,6 +14,16 @@ CLI 引导向导是在 macOS、Linux 或 Windows（通过 WSL2；强烈推荐）
 ```bash
 openclaw onboard
 ```
+
+## 语言区域设置
+
+CLI 向导会对固定的 onboarding 文案进行本地化。它按以下顺序解析语言区域：`OPENCLAW_LOCALE`、`LC_ALL`、`LC_MESSAGES`、`LANG`，若均未设置则回退到英语。支持的向导语言区域为 `en`、`zh-CN` 和 `zh-TW`。
+
+```bash
+OPENCLAW_LOCALE=zh-CN openclaw onboard
+```
+
+名称和稳定标识符保持字面量：`OpenClaw`、`Gateway`、`Tailscale`、命令、配置键、URL、Provider ID、模型 ID 以及 Plugin/Channel 标签不进行翻译。
 
 <Info>
 最快的第一次聊天：打开 Control UI（无需 Channel 设置）。运行
@@ -72,7 +82,7 @@ Ollama Web Search、Perplexity、SearXNG 或 Tavily。部分 Provider 需要 API
 3. **Gateway** — 端口、绑定地址、认证模式、Tailscale 暴露。
    在交互式 Token 模式下，选择默认明文 Token 存储或选择加入 SecretRef。
    非交互式 Token SecretRef 路径：`--gateway-token-ref-env <ENV_VAR>`。
-4. **Channel** — 内置和捆绑的聊天 Channel，如 iMessage、Discord、Feishu、Google Chat、Mattermost、Microsoft Teams、QQ Bot、Signal、Slack、Telegram、WhatsApp 等。
+4. **Channel** — 内置和官方 Plugin 聊天 Channel，如 iMessage、Discord、Feishu、Google Chat、Mattermost、Microsoft Teams、QQ Bot、Signal、Slack、Telegram、WhatsApp 等。
 5. **Daemon** — 安装 LaunchAgent（macOS）、systemd 用户单元（Linux/WSL2），或原生 Windows 计划任务，带每用户 Startup 文件夹回退。
    如果 Token 认证需要 Token 且 `gateway.auth.token` 由 SecretRef 管理，守护程序安装会验证它，但不会将解析的 Token 保存到守护进程服务环境元数据中。
    如果 Token 认证需要 Token 且配置的 Token SecretRef 未解析，守护程序安装将被阻止，并提供可操作的指导。
