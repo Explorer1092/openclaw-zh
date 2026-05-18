@@ -1,14 +1,13 @@
 ---
 title: "fal"
-mmh3_hash: "b3f15a18051efee47f2ca69b1fb01f09"
-summary: "在 OpenClaw 中设置 fal 图像和视频生成"
+summary: "在 OpenClaw 中设置 fal 图像、视频和音乐生成"
 read_when:
   - 您想在 OpenClaw 中使用 fal 图像生成
   - 您需要 FAL_KEY 身份验证流程
-  - 您想要 fal 的 image_generate 或 video_generate 默认配置
+  - 您想要 fal 的 image_generate、video_generate 或 music_generate 默认配置
 ---
 
-OpenClaw 内置了一个 `fal` Provider，用于托管的图像和视频生成。
+OpenClaw 内置了一个 `fal` Provider，用于托管的图像、视频和音乐生成。
 
 | 属性     | 值                                                            |
 | -------- | ------------------------------------------------------------- |
@@ -144,6 +143,32 @@ Flux 图像到图像请求**不**支持 `aspectRatio` 覆盖。GPT Image 2 和 N
   </Accordion>
 </AccordionGroup>
 
+## 音乐生成
+
+内置的 `fal` 插件还为共享的 `music_generate` 工具注册了一个音乐生成 Provider。
+
+| 能力       | 值                                                                                                   |
+| ---------- | ---------------------------------------------------------------------------------------------------- |
+| 默认模型   | `fal/fal-ai/minimax-music/v2.6`                                                                      |
+| 模型       | `fal-ai/minimax-music/v2.6`、`fal-ai/ace-step/prompt-to-audio`、`fal-ai/stable-audio-25/text-to-audio` |
+| 运行时     | 同步请求加生成音频下载                                                                               |
+
+将 fal 设置为默认音乐 Provider：
+
+```json5
+{
+  agents: {
+    defaults: {
+      musicGenerationModel: {
+        primary: "fal/fal-ai/minimax-music/v2.6",
+      },
+    },
+  },
+}
+```
+
+`fal-ai/minimax-music/v2.6` 支持明确歌词和纯音乐模式。ACE-Step 和 Stable Audio 是文本到音频端点；在需要这些模型系列时通过 `model` 覆盖选择它们。
+
 <Tip>
 使用 `openclaw models list --provider fal` 查看可用 fal 模型的完整列表，包括最近添加的条目。
 </Tip>
@@ -157,7 +182,10 @@ Flux 图像到图像请求**不**支持 `aspectRatio` 覆盖。GPT Image 2 和 N
   <Card title="视频生成" href="/tools/video-generation" icon="video">
     共享视频工具参数和 Provider 选择。
   </Card>
+  <Card title="音乐生成" href="/tools/music-generation" icon="music">
+    共享音乐工具参数和 Provider 选择。
+  </Card>
   <Card title="配置参考" href="/gateway/config-agents#agent-defaults" icon="gear">
-    包括图像和视频模型选择的 Agent 默认值。
+    包括图像、视频和音乐模型选择的 Agent 默认值。
   </Card>
 </CardGroup>

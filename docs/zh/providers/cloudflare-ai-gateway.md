@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c65b17b126858ddd79df00e5a0b7bc73"
+mmh3_hash: "d96a7b70200c3128f1101a14bb86c101"
 title: "Cloudflare AI gateway"
 summary: "Cloudflare AI Gateway 设置（身份验证 + 模型选择）"
 read_when:
@@ -99,7 +99,7 @@ openclaw onboard --non-interactive \
     如果 Gateway 作为守护程序（launchd/systemd）运行，请确保 `CLOUDFLARE_AI_GATEWAY_API_KEY` 对该进程可用。
 
     <Warning>
-    仅存在于 `~/.profile` 中的密钥不会帮助 launchd/systemd 守护进程，除非该环境也被导入其中。在 `~/.openclaw/.env` 中或通过 `env.shellEnv` 设置密钥，以确保 Gateway 进程可以读取它。
+    仅在交互式 shell 中导出的密钥不会对 launchd/systemd 守护进程生效，除非该环境也被显式导入其中。在 `~/.openclaw/.env` 中或通过 `env.shellEnv` 设置密钥，以确保 Gateway 进程可以读取它。
     </Warning>
 
   </Accordion>

@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "fb809c4d73262802c6d3cf0b4bc19d19"
 title: "OpenAI"
 summary: "在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI"
 read_when:

@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "5a3039a9408c8a3d313839082d639259"
 title: "xAI"
 summary: "在 OpenClaw 中使用 xAI Grok 模型"
 read_when:
@@ -12,14 +11,16 @@ OpenClaw 内置了 `xai` Provider Plugin，用于 Grok 模型。
 ## 快速开始
 
 <Steps>
-  <Step title="创建 API 密钥">
-    在 [xAI 控制台](https://console.x.ai/)中创建 API 密钥。
+  <Step title="选择认证方式">
+    使用 [xAI 控制台](https://console.x.ai/)的 API 密钥，或通过符合条件的 xAI 账号进行 xAI OAuth 浏览器登录。OAuth 无需 xAI API 密钥，OpenClaw 也不需要 Grok Build 应用。xAI 可能仍将授权应用标记为 Grok Build，因为 OpenClaw 使用 xAI 的共享 OAuth 客户端。
   </Step>
-  <Step title="设置 API 密钥">
-    设置 `XAI_API_KEY`，或运行：
+  <Step title="登录">
+    设置 `XAI_API_KEY`，运行 API 密钥向导，或启动 OAuth 流程：
 
     ```bash
     openclaw onboard --auth-choice xai-api-key
+    openclaw onboard --auth-choice xai-oauth
+    openclaw models auth login --provider xai --method oauth
     ```
 
   </Step>
@@ -33,33 +34,22 @@ OpenClaw 内置了 `xai` Provider Plugin，用于 Grok 模型。
 </Steps>
 
 <Note>
-OpenClaw 使用 xAI Responses API 作为内置 xAI 传输。同一个
-`XAI_API_KEY` 还可以驱动 Grok 支持的 `web_search`、一级 `x_search`
-和远程 `code_execution`。
-如果您在 `plugins.entries.xai.config.webSearch.apiKey` 下存储了 xAI 密钥，
-内置 xAI 模型 Provider 也会将其作为回退密钥。
-`code_execution` 调优在 `plugins.entries.xai.config.codeExecution` 下配置。
+OpenClaw 使用 xAI Responses API 作为内置 xAI 传输。同样的 `openclaw onboard --auth-choice xai-api-key` 或 `openclaw onboard --auth-choice xai-oauth` 凭据还可以驱动一级 `x_search`、远程 `code_execution` 以及 xAI 图像/视频生成。语音和转录目前需要 `XAI_API_KEY` 或 Provider 配置。`XAI_API_KEY` 或插件 Web 搜索配置也可以驱动 Grok 支持的 `web_search`。如果您在 `plugins.entries.xai.config.webSearch.apiKey` 下存储了 xAI 密钥，内置 xAI 模型 Provider 也会将其作为回退密钥。设置 `plugins.entries.xai.config.webSearch.baseUrl` 可以通过运营者 xAI Responses 代理路由 Grok `web_search` 以及默认情况下的 `x_search`。`code_execution` 调优在 `plugins.entries.xai.config.codeExecution` 下配置。
 </Note>
 
 ## 内置目录
 
-OpenClaw 开箱即包含以下 xAI 模型系列：
+OpenClaw 开箱即包含当前 xAI 聊天模型，在模型选择器中按最新优先排列：
 
 | 系列           | 模型 ID                                                                  |
 | -------------- | ------------------------------------------------------------------------ |
-| Grok 3         | `grok-3`、`grok-3-fast`、`grok-3-mini`、`grok-3-mini-fast`               |
 | Grok 4.3       | `grok-4.3`                                                               |
-| Grok 4         | `grok-4`、`grok-4-0709`                                                  |
-| Grok 4 Fast    | `grok-4-fast`、`grok-4-fast-non-reasoning`                               |
-| Grok 4.1 Fast  | `grok-4-1-fast`、`grok-4-1-fast-non-reasoning`                           |
 | Grok 4.20 Beta | `grok-4.20-beta-latest-reasoning`、`grok-4.20-beta-latest-non-reasoning` |
-| Grok Code      | `grok-code-fast-1`                                                       |
 
-Plugin 还会前向解析遵循相同 API 形态的新版 `grok-4*` 和 `grok-code-fast*` ID。
+该插件仍会前向解析旧版 Grok 3、Grok 4、Grok 4 Fast、Grok 4.1 Fast 和 Grok Code 别名以兼容现有配置，但 OpenClaw 不再在可选目录中显示这些已退役的上游别名。
 
 <Tip>
-`grok-4.3`、`grok-4-fast`、`grok-4-1-fast` 和 `grok-4.20-beta-*`
-变体是内置目录中当前支持图像的 Grok 引用。
+对于新的聊天和编程工作负载，请使用 `grok-4.3`，除非您明确需要 Grok 4.20 beta 别名。
 </Tip>
 
 ## OpenClaw 功能覆盖

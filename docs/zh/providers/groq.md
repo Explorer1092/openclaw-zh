@@ -1,6 +1,5 @@
 ---
 title: "Groq"
-mmh3_hash: "2001ef893297b7be3e3799bdcf875315"
 summary: "Groq 设置（身份验证 + 模型选择 + Whisper 转录）"
 read_when:
   - 您想在 OpenClaw 中使用 Groq
@@ -13,7 +12,7 @@ read_when:
 | 属性                  | 值                                       |
 | --------------------- | ---------------------------------------- |
 | Provider id           | `groq`                                   |
-| Plugin                | bundled, `enabledByDefault: true`        |
+| Plugin                | 内置，`enabledByDefault: true`            |
 | 认证环境变量          | `GROQ_API_KEY`                           |
 | Onboarding flag       | `--auth-choice groq-api-key`             |
 | API                   | OpenAI 兼容（`openai-completions`）      |
@@ -30,7 +29,7 @@ read_when:
   <Step title="设置 API 密钥">
     <CodeGroup>
 
-```bash 引导程序
+```bash Onboarding
 openclaw onboard --auth-choice groq-api-key
 ```
 
@@ -142,7 +141,7 @@ Groq 捆绑的 Plugin 还注册了一个**音频媒体理解 Provider**，以便
     如果 Gateway 作为托管服务（launchd、systemd、Docker）运行，`GROQ_API_KEY` 必须对该进程可见，而不仅仅是对您的交互式 Shell。
 
     <Warning>
-      仅存在于 `~/.profile` 中的密钥不会帮助 launchd 或 systemd 守护进程，除非该环境也被导入其中。在 `~/.openclaw/.env` 中或通过 `env.shellEnv` 设置密钥，使其可从 Gateway 进程读取。
+      仅在交互式 shell 中导出的密钥不会对 launchd 或 systemd 守护进程生效，除非该环境也被导入其中。在 `~/.openclaw/.env` 中或通过 `env.shellEnv` 设置密钥，使其可从 Gateway 进程读取。
     </Warning>
 
   </Accordion>

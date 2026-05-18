@@ -1,6 +1,5 @@
 ---
 title: "Provider directory"
-mmh3_hash: "fa31758f6a0da40d94e2c5f44d42668c"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
   - 您想选择一个模型 Provider
@@ -36,6 +35,7 @@ OpenClaw 可以使用多个 LLM Provider。选择一个 Provider，进行身份�
 - [Cloudflare AI Gateway](/providers/cloudflare-ai-gateway)
 - [ComfyUI](/providers/comfy)
 - [DeepSeek](/providers/deepseek)
+- [ds4（本地 DeepSeek V4）](/providers/ds4)
 - [ElevenLabs](/providers/elevenlabs)
 - [fal](/providers/fal)
 - [Fireworks](/providers/fireworks)

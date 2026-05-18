@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "33ba1471a354a5fb57bbb9094ea5010d"
 summary: "使用 SGLang（OpenAI 兼容自托管服务器）运行 OpenClaw"
 read_when:
   - 您想针对本地 SGLang 服务器运行 OpenClaw
@@ -12,7 +11,7 @@ SGLang 通过 OpenAI 兼容 HTTP API 提供开源模型服务。OpenClaw 使用 
 | 属性                    | 值                                                           |
 | ----------------------- | ------------------------------------------------------------ |
 | Provider id             | `sglang`                                                     |
-| Plugin                  | bundled, `enabledByDefault: true`                            |
+| Plugin                  | 内置，`enabledByDefault: true`                               |
 | 认证环境变量            | `SGLANG_API_KEY`（服务器无认证时填任意非空值）               |
 | Onboarding flag         | `--auth-choice sglang`                                       |
 | API                     | OpenAI 兼容（`openai-completions`）                          |

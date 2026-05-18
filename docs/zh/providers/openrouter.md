@@ -1,11 +1,11 @@
 ---
-mmh3_hash: "1d5b65f67fa0ae47e184c8c0cb36cd9f"
 title: "OpenRouter"
 summary: "在 OpenClaw 中使用 OpenRouter 的统一 API 访问多种模型"
 read_when:
   - 您想要用一个 API 密钥访问多种 LLM
   - 您想通过 OpenRouter 在 OpenClaw 中运行模型
   - 您想使用 OpenRouter 进行图像生成
+  - 您想使用 OpenRouter 进行音乐生成
   - 您想使用 OpenRouter 进行视频生成
 ---
 
@@ -97,6 +97,45 @@ OpenRouter 也可以通过其异步 `/videos` API 支持 `video_generate` 工具
 ```
 
 OpenClaw 向 OpenRouter 提交文本到视频和图像到视频任务，轮询返回的 `polling_url`，并从 OpenRouter 的 `unsigned_urls` 或记录的任务内容端点下载完成的视频。参考图像默认作为首帧/尾帧图像发送；标记为 `reference_image` 的图像作为 OpenRouter 输入参考发送。内置的 `google/veo-3.1-fast` 默认支持目前支持的 4/6/8 秒时长、`720P`/`1080P` 分辨率和 `16:9`/`9:16` 宽高比。视频到视频未注册到 OpenRouter，因为上游视频生成 API 目前仅接受文本和图像参考。
+
+## 音乐生成
+
+OpenRouter 也可以通过聊天补全音频输出支持 `music_generate` 工具。在 `agents.defaults.musicGenerationModel` 下使用 OpenRouter 音频模型：
+
+```json5
+{
+  env: { OPENROUTER_API_KEY: "sk-or-..." },
+  agents: {
+    defaults: {
+      musicGenerationModel: {
+        primary: "openrouter/google/lyria-3-pro-preview",
+        timeoutMs: 180_000,
+      },
+    },
+  },
+}
+```
+
+内置的 OpenRouter 音乐 Provider 默认使用 `google/lyria-3-pro-preview`，同时提供 `google/lyria-3-clip-preview`。OpenClaw 发送 `modalities: ["text", "audio"]`，启用流式传输，收集流式音频块，并将结果保存为生成的媒体以供 Channel 传递。通过共享的 `music_generate image=...` 参数，Lyria 模型接受参考图像。
+
+## 语音转文本（入站音频）
+
+OpenRouter 可以通过共享的 `tools.media.audio` 路径使用其 STT 端点（`/audio/transcriptions`）对入站语音/音频附件进行转录。这适用于将入站语音/音频转发到媒体理解预处理的任何 Channel 插件。
+
+```json5
+{
+  tools: {
+    media: {
+      audio: {
+        enabled: true,
+        models: [{ provider: "openrouter", model: "openai/whisper-large-v3-turbo" }],
+      },
+    },
+  },
+}
+```
+
+OpenClaw 以 JSON 格式发送 OpenRouter STT 请求，在 `input_audio` 下使用 base64 音频（OpenRouter STT 规范），而非 OpenAI 分段表单上传格式。
 
 ## 文本转语音
 

@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "17e182340474acf7eaa8ce95dec7668c"
 title: "Perplexity"
 summary: "Perplexity Web 搜索 Provider 设置（API 密钥、搜索模式、过滤）"
 read_when:

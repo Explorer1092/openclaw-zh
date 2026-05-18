@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "89bda1bcc686a612d75141041f368231"
 summary: "Tencent Cloud TokenHub 设置，用于 Hy3 预览"
 title: "Tencent Cloud (TokenHub)"
 read_when:
@@ -12,7 +11,7 @@ Tencent Cloud 作为 OpenClaw 的捆绑 Provider Plugin 提供。它通过 Token
 | 属性             | 值                                                    |
 | ---------------- | ----------------------------------------------------- |
 | Provider id      | `tencent-tokenhub`                                    |
-| Plugin           | bundled, `enabledByDefault: true`                     |
+| Plugin           | 内置，`enabledByDefault: true`                         |
 | 认证环境变量     | `TOKENHUB_API_KEY`                                    |
 | Onboarding flag  | `--auth-choice tokenhub-api-key`                      |
 | 直接 CLI 标志    | `--tokenhub-api-key <key>`                            |

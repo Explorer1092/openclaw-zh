@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bb71b67976c0132cd4448b253e115152"
+mmh3_hash: "4dc7641e59b69d531d5ef2570bf6cfc8"
 summary: "Cerebras 设置（认证 + 模型选择）"
 title: "Cerebras"
 read_when:
@@ -12,12 +12,12 @@ read_when:
 | 属性             | 值                                       |
 | ---------------- | ---------------------------------------- |
 | Provider id      | `cerebras`                               |
-| Plugin           | bundled, `enabledByDefault: true`        |
+| Plugin           | 内置，`enabledByDefault: true`            |
 | 认证环境变量     | `CEREBRAS_API_KEY`                       |
 | Onboarding flag  | `--auth-choice cerebras-api-key`         |
 | 直接 CLI 标志    | `--cerebras-api-key <key>`               |
 | API              | OpenAI 兼容（`openai-completions`）      |
-| 默认 Base URL    | `https://api.cerebras.ai/v1`             |
+| Base URL         | `https://api.cerebras.ai/v1`             |
 | 默认模型         | `cerebras/zai-glm-4.7`                   |
 
 ## 快速开始
@@ -26,10 +26,10 @@ read_when:
   <Step title="获取 API 密钥">
     在 [Cerebras Cloud Console](https://cloud.cerebras.ai) 中创建 API 密钥。
   </Step>
-  <Step title="运行引导程序">
+  <Step title="运行 Onboarding">
     <CodeGroup>
 
-```bash 引导程序
+```bash Onboarding
 openclaw onboard --auth-choice cerebras-api-key
 ```
 
@@ -51,7 +51,7 @@ export CEREBRAS_API_KEY=csk-...
     openclaw models list --provider cerebras
     ```
 
-    列表应包含所有四个捆绑模型。如果 `CEREBRAS_API_KEY` 未解析，`openclaw models status --json` 会在 `auth.unusableProfiles` 下报告缺失的凭据。
+    列表应包含所有四个内置模型。如果 `CEREBRAS_API_KEY` 未解析，`openclaw models status --json` 会在 `auth.unusableProfiles` 下报告缺失的凭据。
 
   </Step>
 </Steps>
@@ -67,7 +67,7 @@ openclaw onboard --non-interactive \
 
 ## 内置目录
 
-OpenClaw 为公共 OpenAI 兼容端点提供了一个静态 Cerebras 目录。所有四个模型共享 128k 上下文和 8,192 最大输出 token。
+OpenClaw 附带一个静态 Cerebras 目录，对应公开的 OpenAI 兼容端点。所有四个模型共享 128k 上下文和 8,192 最大输出 token。
 
 | 模型引用                                  | 名称                 | 推理 | 说明                               |
 | ----------------------------------------- | -------------------- | ---- | ---------------------------------- |
@@ -77,12 +77,12 @@ OpenClaw 为公共 OpenAI 兼容端点提供了一个静态 Cerebras 目录。�
 | `cerebras/llama3.1-8b`                    | Llama 3.1 8B         | 否   | 以速度为重点的生产模型             |
 
 <Warning>
-Cerebras 将 `zai-glm-4.7` 和 `qwen-3-235b-a22b-instruct-2507` 标记为预览模型，`llama3.1-8b` 和 `qwen-3-235b-a22b-instruct-2507` 已记录为将于 2026 年 5 月 27 日弃用。在将其用于生产之前，请查看 Cerebras 的支持模型页面。
+  Cerebras 将 `zai-glm-4.7` 和 `qwen-3-235b-a22b-instruct-2507` 标记为预览模型，`llama3.1-8b` 和 `qwen-3-235b-a22b-instruct-2507` 已记录为将于 2026 年 5 月 27 日弃用。在将其用于生产工作负载之前，请查看 Cerebras 的已支持模型页面。
 </Warning>
 
 ## 手动配置
 
-捆绑的 Plugin 通常意味着您只需要 API 密钥。当您想要覆盖模型元数据或在 `mode: "merge"` 下针对静态目录运行时，请使用显式的 `models.providers.cerebras` 配置：
+内置插件通常只需要 API 密钥。当您想覆盖模型元数据或在 `mode: "merge"` 下针对静态目录运行时，请使用显式 `models.providers.cerebras` 配置：
 
 ```json5
 {
@@ -110,7 +110,7 @@ Cerebras 将 `zai-glm-4.7` 和 `qwen-3-235b-a22b-instruct-2507` 标记为预览�
 ```
 
 <Note>
-如果 Gateway 作为守护进程（launchd、systemd、Docker）运行，请确保 `CEREBRAS_API_KEY` 对该进程可用——例如在 `~/.openclaw/.env` 中或通过 `env.shellEnv`。仅存在于 `~/.profile` 中的密钥不会对托管服务生效，除非单独导入环境变量。
+  如果 Gateway 作为守护进程（launchd、systemd、Docker）运行，请确保 `CEREBRAS_API_KEY` 对该进程可用——例如在 `~/.openclaw/.env` 中或通过 `env.shellEnv`。仅在交互式 shell 中导出的密钥不会对托管服务生效，除非单独导入环境变量。
 </Note>
 
 ## 相关

@@ -1,6 +1,5 @@
 ---
 title: "Fireworks"
-mmh3_hash: "72b3f2d856863e454557b79e20d42699"
 summary: "Fireworks 设置（身份验证 + 模型选择）"
 read_when:
   - 您想在 OpenClaw 中使用 Fireworks
@@ -13,7 +12,7 @@ read_when:
 | 属性             | 值                                                     |
 | ---------------- | ------------------------------------------------------ |
 | Provider id      | `fireworks`（别名：`fireworks-ai`）                    |
-| Plugin           | bundled, `enabledByDefault: true`                      |
+| Plugin           | 内置，`enabledByDefault: true`                          |
 | 认证环境变量     | `FIREWORKS_API_KEY`                                    |
 | Onboarding flag  | `--auth-choice fireworks-api-key`                      |
 | 直接 CLI 标志    | `--fireworks-api-key <key>`                            |
@@ -28,7 +27,7 @@ read_when:
   <Step title="设置 Fireworks API 密钥">
     <CodeGroup>
 
-```bash 引导程序
+```bash Onboarding
 openclaw onboard --auth-choice fireworks-api-key
 ```
 
@@ -44,7 +43,7 @@ export FIREWORKS_API_KEY=fw-...
 
     </CodeGroup>
 
-    引导程序将密钥存储在您的认证配置文件中的 `fireworks` Provider 下，并将 **Fire Pass** Kimi K2.5 Turbo 路由器设置为默认模型。
+    Onboarding 将密钥存储在您的认证配置文件中的 `fireworks` Provider 下，并将 **Fire Pass** Kimi K2.5 Turbo 路由器设置为默认模型。
 
   </Step>
   <Step title="验证模型是否可用">

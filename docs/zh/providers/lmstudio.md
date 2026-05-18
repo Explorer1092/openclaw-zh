@@ -1,5 +1,4 @@
 ---
-mmh3_hash: "643d81c4cbbc88b1b3516843e7c77ce5"
 summary: "在 LM Studio 中运行 OpenClaw"
 read_when:
   - 您想通过 LM Studio 使用开源模型运行 OpenClaw
@@ -41,13 +40,13 @@ export LM_API_TOKEN="your-lm-studio-api-token"
 
 有关 LM Studio 认证设置的详细信息，请参见 [LM Studio 认证](https://lmstudio.ai/docs/developer/core/authentication)。
 
-4. 运行引导程序并选择 `LM Studio`：
+4. 运行 Onboarding 并选择 `LM Studio`：
 
 ```bash
 openclaw onboard
 ```
 
-5. 在引导程序中，使用 `Default model` 提示选择您的 LM Studio 模型。
+5. 在 Onboarding 中，使用 `Default model` 提示选择您的 LM Studio 模型。
 
 您也可以稍后设置或更改它：
 
@@ -58,7 +57,7 @@ openclaw models set lmstudio/qwen/qwen3.5-9b
 LM Studio 模型键遵循 `author/model-name` 格式（例如 `qwen/qwen3.5-9b`）。OpenClaw
 模型引用在前面加上 Provider 名称：`lmstudio/qwen/qwen3.5-9b`。您可以通过运行 `curl http://localhost:1234/api/v1/models` 并查看 `key` 字段来找到模型的确切键。
 
-## 非交互式引导
+## 非交互式 Onboarding
 
 当您想要脚本化设置（CI、配置、远程引导）时使用非交互式引导：
 

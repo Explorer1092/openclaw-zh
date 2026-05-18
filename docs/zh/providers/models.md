@@ -1,6 +1,5 @@
 ---
 title: "Model provider quickstart"
-mmh3_hash: "199dc00c46aa3c5325623de89acc6990"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
   - 您想选择一个模型 Provider
