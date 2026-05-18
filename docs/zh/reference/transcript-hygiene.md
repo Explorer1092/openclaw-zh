@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "93d7f4f1fc698a57387cccc618d8f234"
+mmh3_hash: "3396652f6dd5d7d84bb245eb527714c6"
 summary: "参考：Provider 特定的转录清理和修复规则"
 read_when:
   - 您正在调试与转录形状相关的 Provider 请求拒绝

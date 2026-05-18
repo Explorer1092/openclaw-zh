@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "17c79558dc1dd961f054b15e42c4e32f"
+mmh3_hash: "3b3c72c3c69e511f70d5c22648eb079f"
 title: "发布策略"
 summary: "发布通道、操作员检查清单、验证套件、版本命名和发布节奏"
 read_when:
@@ -171,7 +171,7 @@ gh workflow run full-release-validation.yml \
 
 不要在专注修复后将完整伞形工作流作为第一次重新运行。如果一个套件失败，对下一次证明使用失败的子工作流、任务、Docker 通道、包配置文件、模型提供商或 QA 通道。只有当修复更改了共享发布编排或使之前的全套证据失效时，才再次运行完整伞形工作流。伞形工作流的最终验证器重新检查记录的子工作流运行 ID，因此在子工作流成功重新运行后，只需重新运行失败的 `Verify full validation` 父任务。
 
-对于有界恢复，将 `rerun_group` 传递给伞形工作流。`all` 是真正的发布候选运行，`ci` 仅运行正常 CI 子任务，`plugin-prerelease` 仅运行发布专用插件子任务，`release-checks` 运行所有发布套件，较窄的发布组有 `install-smoke`、`cross-os`、`live-e2e`、`package`、`qa`、`qa-parity`、`qa-live` 和 `npm-telegram`。专注的 `npm-telegram` 重新运行需要 `release_package_spec` 或 `npm_telegram_package_spec`；full/all 运行使用 `release_profile=full` 时使用发布检查包产物。专注的跨 OS 重新运行可以添加 `cross_os_suite_filter=windows/packaged-upgrade` 或其他 OS/套件过滤器。QA 发布检查失败是建议性的；仅 QA 失败不阻塞发布验证。
+对于有界恢复，将 `rerun_group` 传递给伞形工作流。`all` 是真正的发布候选运行，`ci` 仅运行正常 CI 子任务，`plugin-prerelease` 仅运行发布专用插件子任务，`release-checks` 运行所有发布套件，较窄的发布组有 `install-smoke`、`cross-os`、`live-e2e`、`package`、`qa`、`qa-parity`、`qa-live` 和 `npm-telegram`。专注的 `npm-telegram` 重新运行需要 `release_package_spec` 或 `npm_telegram_package_spec`；full/all 运行使用 `release_profile=full` 时使用发布检查包产物。专注的跨 OS 重新运行可以添加 `cross_os_suite_filter=windows/packaged-upgrade` 或其他 OS/套件过滤器。QA 发布检查失败是建议性的，但标准运行时工具覆盖率关卡除外，当必需的 OpenClaw 动态工具在标准层摘要中发生漂移或消失时，该关卡会阻断发布验证。
 
 ### Vitest
 

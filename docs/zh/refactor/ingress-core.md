@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ed9e440653aa62fdc928e1031b359894"
+mmh3_hash: "df6d8274fe89c0d7e73ad09f83564794"
 summary: "将重复的 Channel 入口粘合代码移入核心的删除优先计划。"
 read_when:
   - 审计 Channel 入口重构为何增加了过多代码

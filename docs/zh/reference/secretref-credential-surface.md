@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "60872ceebee61b6b86a999e52ab18b14"
+mmh3_hash: "d5af20bea48fec0c584340cef88ec0d7"
 summary: "SecretRef 凭据界面的规范支持与不支持范围"
 read_when:
   - 验证 SecretRef 凭据覆盖范围
@@ -55,6 +55,7 @@ title: "SecretRef 凭据界面"
 - `plugins.entries.voice-call.config.streaming.providers.*.apiKey`
 - `plugins.entries.voice-call.config.tts.providers.*.apiKey`
 - `plugins.entries.voice-call.config.twilio.authToken`
+- `tools.web.search.*.apiKey`
 - `tools.web.search.apiKey`
 - `gateway.auth.password`
 - `gateway.auth.token`

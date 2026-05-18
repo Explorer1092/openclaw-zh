@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e3dec92cdaaa8bc37b53a9d5bca6c365"
+mmh3_hash: "224d97d2ce6f1815b0d483d12a569cbd"
 summary: "完整发布验证的各阶段、子工作流、发布 Profile、重新运行 Handle 和测试证据"
 title: "完整发布验证"
 read_when:
@@ -124,7 +124,7 @@ Package Acceptance 通常从解析的 `ref` 构建候选 tarball，包括使用 
 
 当某个跨 OS 通道失败时，配合 `rerun_group=cross-os` 使用 `cross_os_suite_filter`。该过滤器接受 OS ID、套件 ID 或 OS/套件对，例如 `windows/packaged-upgrade`、`windows` 或 `packaged-fresh`。跨 OS 摘要包含打包升级通道的每阶段计时，长时间运行的命令会打印心跳行，以便在 Job 超时前发现卡住的 Windows 更新。
 
-QA 发布检查通道为建议性质。仅 QA 失败会报告为警告，不阻断发布检查验证器；当需要新的 QA 测试证据时，重新运行 `rerun_group=qa`、`qa-parity` 或 `qa-live`。
+QA 发布检查通道为建议性质，但标准运行时工具覆盖率关卡除外。必需的 OpenClaw 动态工具在标准层发生漂移时会阻断发布检查验证器；其他仅 QA 失败会报告为警告。当需要新的 QA 测试证据时，重新运行 `rerun_group=qa`、`qa-parity` 或 `qa-live`。
 
 ## 需要保留的测试证据
 
