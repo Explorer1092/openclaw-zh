@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9955592b90beeb90bac88fefaa701082"
+mmh3_hash: "996d8944aa07e19273425a32b0d16d25"
 summary: "Channel 配置：Slack、Discord、Telegram、WhatsApp、Matrix、iMessage 等的访问控制、配对和每 Channel 键"
 read_when:
   - 配置 Channel Plugin（认证、访问控制、多账户）
@@ -213,7 +213,7 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 - 可选的 `channels.telegram.defaultAccount` 在匹配配置的账户 id 时覆盖默认账户选择。
 - 在多账户设置（2+ 个账户 id）中，设置明确的默认值（`channels.telegram.defaultAccount` 或 `channels.telegram.accounts.default`）以避免回退路由；缺少或无效时 `openclaw doctor` 会警告。
 - `configWrites: false` 阻止 Telegram 发起的配置写入（超级群组 ID 迁移、`/config set|unset`）。
-- 带 `type: "acp"` 的顶级 `bindings[]` 条目为论坛话题配置持久 ACP 绑定（在 `match.peer.id` 中使用规范 `chatId:topic:topicId`）。字段语义在 [ACP Agent](/tools/acp-agents#channel-specific-settings) 中共享。
+- 带 `type: "acp"` 的顶级 `bindings[]` 条目为论坛话题配置持久 ACP 绑定（在 `match.peer.id` 中使用规范 `chatId:topic:topicId`）。字段语义在 [ACP Agent](/tools/acp-agents#persistent-channel-bindings) 中共享。
 - Telegram 流预览使用 `sendMessage` + `editMessageText`（在直接聊天和群聊中有效）。
 - 重试策略：请参见 [重试策略](/concepts/retry)。
 
@@ -335,7 +335,9 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 - 投递目标使用 `user:<id>`（DM）或 `channel:<id>`（公会 Channel）；纯数字 ID 被拒绝。
 - 公会 slug 为小写，空格替换为 `-`；Channel 键使用 slug 名称（无 `#`）。首选公会 ID。
 - Bot 发送的消息默认被忽略。`allowBots: true` 启用它们；使用 `allowBots: "mentions"` 只接受提及 bot 的 bot 消息（自己的消息仍然被过滤）。
+- 支持 bot 发送的入站消息的 Channel 可以使用共享的 [bot 循环保护](/channels/bot-loop-protection)。为基准配对预算设置 `channels.defaults.botLoopProtection`，然后只在一个表面需要不同限制时覆盖 Channel 或账户。
 - `channels.discord.guilds.<id>.ignoreOtherMentions`（及 Channel 覆盖）丢弃提及了另一个用户或角色但没有提及 bot 的消息（不包括 @everyone/@here）。
+- `channels.discord.mentionAliases` 将稳定的出站 `@handle` 文本映射到 Discord 用户 ID，以便在瞬态目录缓存为空时也能确定性地提及已知队友。每账户覆盖位于 `channels.discord.accounts.<accountId>.mentionAliases`。
 - `maxLinesPerMessage`（默认 17）即使在 2000 字符以内也会分割高行数消息。
 - `channels.discord.suppressEmbeds` 默认为 `true`，因此出站 URL 不会展开为 Discord 链接预览，除非禁用。显式 `embeds` 负载仍会正常发送；每消息工具调用可以使用 `suppressEmbeds` 覆盖。
 - `channels.discord.threadBindings` 控制 Discord 线程绑定路由：
@@ -486,7 +488,7 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 
 **线程 Session 隔离：** `thread.historyScope` 是每线程（默认）或在 Channel 间共享。`thread.inheritParent` 将父 Channel 转录复制到新线程。
 
-- Slack 原生流式传输加上 Slack assistant 风格的"正在输入..."线程状态需要回复线程目标。顶级 DM 默认不在线程中，因此它们使用 `typingReaction` 或正常投递而不是线程风格预览。
+- Slack 原生流式传输加上 Slack assistant 风格的"正在输入..."线程状态需要回复线程目标。顶级 DM 默认不在线程中，因此它们仍然可以通过 Slack draft post-and-edit 预览进行流式传输，而不是显示线程风格的原生流/状态预览。
 - `typingReaction` 在运行回复时向入站 Slack 消息添加临时反应，完成时删除它。使用 Slack 表情代码，如 `"hourglass_flowing_sand"`。
 - `channels.slack.execApprovals`：Slack 原生 exec 批准投递和批准者授权。与 Discord 相同的架构：`enabled`（`true`/`false`/`"auto"`）、`approvers`（Slack 用户 ID）、`agentFilter`、`sessionFilter` 和 `target`（`"dm"`、`"channel"` 或 `"both"`）。
 
@@ -767,6 +769,14 @@ IRC 由 Plugin 支持，在 `channels.irc` 下配置。
 
 群组消息默认**需要提及**（元数据提及或安全正则表达式模式）。适用于 WhatsApp、Telegram、Discord、Google Chat 和 iMessage 群聊。
 
+可见回复单独控制。正常群组/Channel 请求默认使用 `messages.groupChat.visibleReplies: "automatic"`：最终助手文本通过旧版可见回复路径发送。在共享房间中如果只希望 Agent 调用 `message(action=send)` 后才发送可见输出，请设置 `"message_tool"`。如果模型返回最终文本而没有调用消息工具，该最终文本保持私有，Gateway 详细日志记录抑制的负载元数据。若要对直接聊天也应用相同的仅工具可见回复行为，设置 `messages.visibleReplies: "message_tool"`；Codex 运行时也将该仅工具行为作为其未设置的直接聊天默认值。
+
+仅工具可见回复需要能可靠调用工具的模型/运行时，建议在最新一代模型（如 GPT 5.5）的共享环境房间中使用。如果 Session 日志显示带有 `didSendViaMessagingTool: false` 的助手文本，说明模型生成了私有最终文本而不是调用消息工具。为该 Channel 切换到更强的工具调用模型，检查 Gateway 详细日志中的抑制负载摘要，或设置 `messages.groupChat.visibleReplies: "automatic"` 以对每个群组/Channel 请求使用可见最终回复。
+
+如果消息工具在当前工具策略下不可用，OpenClaw 回退到自动可见回复，而不是静默抑制响应。`openclaw doctor` 会对此不匹配发出警告。
+
+Gateway 在文件保存后热重载 `messages` 配置。仅在部署中禁用文件监视或配置重载时才需要重启。
+
 **提及类型：**
 
 - **元数据提及**：原生平台 @-提及。在 WhatsApp 自聊模式下被忽略。
@@ -776,7 +786,12 @@ IRC 由 Plugin 支持，在 `channels.irc` 下配置。
 ```json5
 {
   messages: {
-    groupChat: { historyLimit: 50 },
+    visibleReplies: "automatic", // 直接/源聊天的全局默认；Codex 运行时将未设置的直接聊天默认为 message_tool
+    groupChat: {
+      historyLimit: 50,
+      unmentionedInbound: "room_event", // 始终开启的未提及房间闲聊变成安静上下文
+      visibleReplies: "message_tool", // 选择加入；要求 message(action=send) 才能获得可见房间回复
+    },
   },
   agents: {
     list: [{ id: "main", groupChat: { mentionPatterns: ["@openclaw", "openclaw"] } }],
@@ -785,6 +800,10 @@ IRC 由 Plugin 支持，在 `channels.irc` 下配置。
 ```
 
 `messages.groupChat.historyLimit` 设置全局默认值。Channel 可以使用 `channels.<channel>.historyLimit`（或每账户）覆盖。设置 `0` 禁用。
+
+`messages.groupChat.unmentionedInbound: "room_event"` 在支持的 Channel 上将未提及的始终开启群组/Channel 消息作为安静房间上下文提交。被提及的消息、命令和直接消息仍为用户请求。参见 [环境房间事件](/channels/ambient-room-events) 获取完整的 Discord、Slack 和 Telegram 示例。
+
+`messages.visibleReplies` 是全局源事件默认；`messages.groupChat.visibleReplies` 为群组/Channel 源事件覆盖它。当 `messages.visibleReplies` 未设置时，运行时可以提供自己的直接/源默认；Codex 运行时默认为 `message_tool`。Channel 允许列表和提及门控仍然决定事件是否被处理。
 
 #### DM 历史记录限制
 
