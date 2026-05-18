@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7c8db44d672deead2cbdd80aa6aeca7b"
+mmh3_hash: "e81c33a70c9780a2db6403e09f195a3d"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -668,6 +668,7 @@ Modal 表单：
         progress: {
           label: "auto",
           maxLines: 8,
+          maxLineChars: 120,
           toolProgress: true,
         },
       },
@@ -1105,6 +1106,7 @@ OpenClaw 使用 Discord 组件 v2 进行 exec 审批和跨上下文标记。Disc
 - `channels.discord.ui.components.accentColor` 设置 Discord 组件容器使用的强调色（十六进制）。
 - 使用 `channels.discord.accounts.<id>.ui.components.accentColor` 按账户设置。
 - 当存在组件 v2 时，`embeds` 被忽略。
+- 纯 URL 预览默认被抑制。在消息操作上设置 `suppressEmbeds: false` 以允许单条出站链接展开。
 
 示例：
 
@@ -1166,6 +1168,12 @@ openclaw channels capabilities --channel discord --target channel:<voice-channel
             channelId: "234567890123456789",
           },
         ],
+        allowedChannels: [
+          {
+            guildId: "123456789012345678",
+            channelId: "234567890123456789",
+          },
+        ],
         daveEncryption: true,
         decryptionFailureTolerance: 24,
         connectTimeoutMs: 30000,
@@ -1187,18 +1195,33 @@ openclaw channels capabilities --channel discord --target channel:<voice-channel
 - `voice.mode` 控制对话路径。默认为 `agent-proxy`：实时语音前端处理轮次计时、打断和播放，通过 `openclaw_agent_consult` 将实质性工作委托给路由的 OpenClaw agent，并将结果视为来自该发言者的 Discord 提示。`stt-tts` 保留旧版批量 STT 加 TTS 流程。`bidi` 让实时模型直接对话，同时暴露 `openclaw_agent_consult` 作为 OpenClaw 大脑。
 - `voice.agentSession` 控制哪个 OpenClaw 对话接收语音轮次。留空时使用语音频道自己的会话，或设置 `{ mode: "target", target: "channel:<text-channel-id>" }` 使语音频道作为现有 Discord 文本频道会话（如 `#maintainers`）的麦克风/扬声器扩展。
 - `voice.model` 覆盖 Discord 语音响应和实时咨询的 OpenClaw agent 大脑。留空时继承路由的 agent 模型。它与 `voice.realtime.model` 是分开的。
-- `agent-proxy` 通过 `discord-voice` 路由语音，保留发言者和目标会话的正常所有者/工具授权，但隐藏 agent `tts` 工具，因为 Discord 语音拥有播放权。默认情况下，`agent-proxy` 为所有者发言者授予完整所有者级工具访问权限（`voice.realtime.toolPolicy: "owner"`），并强烈倾向于在给出实质性答案之前咨询 OpenClaw agent（`voice.realtime.consultPolicy: "always"`）。
+- `agent-proxy` 通过 `discord-voice` 路由语音，保留发言者和目标会话的正常所有者/工具授权，但隐藏 agent `tts` 工具，因为 Discord 语音拥有播放权。默认情况下，`agent-proxy` 为所有者发言者授予完整所有者级工具访问权限（`voice.realtime.toolPolicy: "owner"`），并强烈倾向于在给出实质性答案之前咨询 OpenClaw agent（`voice.realtime.consultPolicy: "always"`）。在该默认 `always` 模式下，实时层不会在咨询回复之前自动播放填充语；它会捕获和转录语音，然后播放路由的 OpenClaw 答案。如果在 Discord 仍在播放第一个回答时有多个强制咨询答案完成，后续的精确语音回答会排队等待播放空闲，而不是在播放中途替换。
 - 在 `stt-tts` 模式下，STT 使用 `tools.media.audio`；`voice.model` 不影响转录。
-- 在实时模式下，`voice.realtime.provider`、`voice.realtime.model` 和 `voice.realtime.voice` 配置实时音频会话。
-- `voice.realtime.bargeIn` 控制 Discord 发言者开始事件是否打断活跃实时播放。
-- `voice.realtime.minBargeInAudioEndMs` 控制 OpenAI 实时打断截断音频之前的最小 assistant 播放时长。默认：`250`。
+- 在实时模式下，`voice.realtime.provider`、`voice.realtime.model` 和 `voice.realtime.voice` 配置实时音频会话。对于 OpenAI Realtime 2 加 Codex 大脑，使用 `voice.realtime.model: "gpt-realtime-2"` 和 `voice.model: "openai-codex/gpt-5.5"`。
+- OpenAI 实时 Provider 接受当前的 Realtime 2 事件名称以及旧版 Codex 兼容别名，以便兼容的 provider 快照漂移时不会丢失 assistant 音频。
+- `voice.realtime.bargeIn` 控制 Discord 发言者开始事件是否打断活跃实时播放。未设置时遵循实时 provider 的输入音频打断设置。
+- `voice.realtime.minBargeInAudioEndMs` 控制 OpenAI 实时打断截断音频之前的最小 assistant 播放时长。默认：`250`。在低回声房间设置 `0` 以实现即时打断，或在回声严重的扬声器环境中提高该值。
+- 对于 Discord 播放的 OpenAI 语音，设置 `voice.tts.provider: "openai"` 并在 `voice.tts.openai.voice` 或 `voice.tts.providers.openai.voice` 下选择 Text-to-speech 声音。
+- 每频道 Discord `systemPrompt` 覆盖适用于该语音频道的语音转录轮次。
 - 语音转录轮次从 Discord `allowFrom`（或 `dm.allowFrom`）中推导所有者状态；非所有者发言者无法访问仅所有者工具（例如 `gateway` 和 `cron`）。
 - Discord 语音对仅文本配置为选择启用；设置 `channels.discord.voice.enabled=true` 以启用 `/vc` 命令、语音运行时和 `GuildVoiceStates` gateway intent。
 - `channels.discord.intents.voiceStates` 可以显式覆盖语音状态 intent 订阅。
+- 如果 `voice.autoJoin` 对同一公会有多个条目，OpenClaw 加入该公会最后配置的频道。
+- `voice.allowedChannels` 是可选的驻留 allowlist。留空时允许 `/vc join` 进入任何已授权的 Discord 语音频道。设置后，`/vc join`、启动自动加入和 bot 语音状态移动将限制在列出的 `{ guildId, channelId }` 条目中。设置为空数组以拒绝所有 Discord 语音加入。如果 Discord 将 bot 移出 allowlist 范围，OpenClaw 将离开该频道，并在有自动加入目标时重新加入。
 - `voice.daveEncryption` 和 `voice.decryptionFailureTolerance` 传递给 `@discordjs/voice` 加入选项。
-- OpenClaw 默认使用纯 JS `opusscript` 解码器。可以通过在安装原生插件后设置 `OPENCLAW_DISCORD_OPUS_DECODER=native` 启用原生 `@discordjs/opus`。
+- `@discordjs/voice` 默认值为 `daveEncryption=true` 和 `decryptionFailureTolerance=24`（未设置时）。
+- OpenClaw 默认使用纯 JS `opusscript` 解码器。可选的原生 `@discordjs/opus` 包被 repo pnpm 安装策略忽略，因此普通安装、Docker 通道和无关测试不会编译原生插件。专用语音性能主机可以在安装原生插件后通过 `OPENCLAW_DISCORD_OPUS_DECODER=native` 选择启用。
 - `voice.connectTimeoutMs` 控制 `/vc join` 和自动加入尝试的初始 `@discordjs/voice` Ready 等待时间。默认：`30000`。
 - `voice.reconnectGraceMs` 控制在销毁断开连接的语音会话之前等待开始重新连接的时间。默认：`15000`。
+- 在 `stt-tts` 模式下，语音播放不会因为另一个用户开始说话而停止。为避免反馈回路，OpenClaw 在 TTS 播放期间忽略新的语音捕获；播放结束后说话以进行下一轮。实时模式将发言者开始作为打断信号转发给实时 provider。
+- 在实时模式下，扬声器中的回声进入开放的麦克风可能看起来像打断并中止播放。对于回声严重的 Discord 房间，设置 `voice.realtime.providers.openai.interruptResponseOnInputAudio: false` 以阻止 OpenAI 在输入音频时自动打断。如果你仍然希望 Discord 发言者开始事件打断活跃播放，添加 `voice.realtime.bargeIn: true`。
+- `voice.captureSilenceGraceMs` 控制 Discord 报告发言者停止后 OpenClaw 等待多久才最终确定该音频片段用于 STT。默认：`2500`；如果 Discord 将正常停顿分割成断断续续的部分转录，请提高此值。
+- 当 ElevenLabs 是所选 TTS provider 时，Discord 语音播放使用流式 TTS 并从 provider 响应流开始。不支持流式传输的 provider 回退到合成临时文件路径。
+- OpenClaw 还监视接收解密失败，并在短时间内重复失败后通过离开/重新加入语音频道自动恢复。
+- 如果接收日志反复显示更新后出现 `DecryptionFailed(UnencryptedWhenPassthroughDisabled)`，请收集依赖项报告和日志。捆绑的 `@discordjs/voice` 版本包含来自 discord.js PR #11449 的上游 padding 修复，该修复关闭了 discord.js issue #11419。
+- `The operation was aborted` 接收事件在 OpenClaw 最终确定捕获的发言者片段时是预期的；它们是详细诊断，不是警告。
+- 详细 Discord 语音日志为每个被接受的发言者片段包含一行有界 STT 转录预览，因此调试时可以看到用户侧和 agent 回复侧，而无需转储无界的转录文本。
+- 在 `agent-proxy` 模式下，强制咨询回退会跳过可能不完整的转录片段，例如以 `...` 或后置连接词如 `and` 结尾的文本，以及明显无操作性的结束语如"be right back"或"bye"。日志在此类情况防止过时排队答案时显示 `forced agent consult skipped reason=...`。
 
 原生 opus 设置（源码检出）：
 
@@ -1207,11 +1230,15 @@ pnpm install
 mise exec node@22 -- pnpm discord:opus:install
 ```
 
-启动带原生插件的 Gateway：
+如果需要上游 macOS arm64 预构建原生插件，请使用 Node 22 运行 gateway。如果使用其他 Node 运行时，选择启用的安装程序可能需要本地 `node-gyp` 源码构建工具链。
+
+安装原生插件后，启动 Gateway：
 
 ```bash
 OPENCLAW_DISCORD_OPUS_DECODER=native pnpm gateway:watch
 ```
+
+详细语音日志应显示 `discord voice: opus decoder: @discordjs/opus`。未设置 env 选择启用，或原生插件缺失或无法在主机上加载时，OpenClaw 日志显示 `discord voice: opus decoder: opusscript` 并通过纯 JS 回退继续接收语音。
 
 STT 加 TTS 流程：
 
@@ -1241,6 +1268,8 @@ STT 加 TTS 流程：
 }
 ```
 
+没有 `voice.agentSession` 块时，每个语音频道有自己路由的 OpenClaw 会话。例如，`/vc join channel:234567890123456789` 与该 Discord 语音频道的会话对话。实时模型只是语音前端；实质性请求被移交给配置的 OpenClaw agent。如果实时模型在未调用咨询工具的情况下产生最终转录，OpenClaw 强制将咨询作为回退，使默认行为仍像与 agent 对话。
+
 旧版 STT 加 TTS 示例：
 
 ```json5
@@ -1257,6 +1286,29 @@ STT 加 TTS 流程：
             model: "gpt-4o-mini-tts",
             voice: "cedar",
           },
+        },
+      },
+    },
+  },
+}
+```
+
+实时 bidi 示例：
+
+```json5
+{
+  channels: {
+    discord: {
+      voice: {
+        enabled: true,
+        mode: "bidi",
+        model: "openai-codex/gpt-5.5",
+        realtime: {
+          provider: "openai",
+          model: "gpt-realtime-2",
+          voice: "cedar",
+          toolPolicy: "safe-read-only",
+          consultPolicy: "always",
         },
       },
     },
@@ -1289,7 +1341,91 @@ STT 加 TTS 流程：
 }
 ```
 
-各组件的凭据按各自解析：LLM 路由认证用于 `voice.model`，STT 认证用于 `tools.media.audio`，TTS 认证用于 `messages.tts`/`voice.tts`，实时提供者认证用于 `voice.realtime.providers` 或提供者的正常认证配置。
+在 `agent-proxy` 模式下，bot 加入配置的语音频道，但 OpenClaw agent 轮次使用目标频道的正常路由会话和 agent。实时语音会话将返回的结果播报回语音频道。监督 agent 仍然可以根据其工具策略使用正常的消息工具，包括在合适时发送单独的 Discord 消息。
+
+有用的目标形式：
+
+- `target: "channel:123456789012345678"` 通过 Discord 文本频道会话路由。
+- `target: "123456789012345678"` 被视为频道目标。
+- `target: "dm:123456789012345678"` 或 `target: "user:123456789012345678"` 通过该私信会话路由。
+
+回声严重的 OpenAI Realtime 示例：
+
+```json5
+{
+  channels: {
+    discord: {
+      voice: {
+        enabled: true,
+        mode: "bidi",
+        model: "openai-codex/gpt-5.5",
+        realtime: {
+          provider: "openai",
+          model: "gpt-realtime-2",
+          voice: "cedar",
+          bargeIn: true,
+          minBargeInAudioEndMs: 500,
+          consultPolicy: "always",
+          providers: {
+            openai: {
+              interruptResponseOnInputAudio: false,
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+当模型通过开放的麦克风听到自己的 Discord 播放，但你仍然希望通过说话来打断它时使用此配置。OpenClaw 阻止 OpenAI 在原始输入音频时自动打断，而 `bargeIn: true` 让 Discord 发言者开始事件和已激活的发言者音频在下一个捕获的轮次到达 OpenAI 之前取消活跃的实时响应。`audioEndMs` 低于 `minBargeInAudioEndMs` 的极早期打断信号被视为可能的回声/噪音而被忽略，以防止模型在第一个播放帧处被切断。
+
+预期的语音日志：
+
+- 加入时：`discord voice: joining ... voiceSession=... supervisorSession=... agentSessionMode=... voiceModel=... realtimeModel=...`
+- 实时启动时：`discord voice: realtime bridge starting ... autoRespond=false interruptResponse=false bargeIn=false minBargeInAudioEndMs=...`
+- 发言者音频时：`discord voice: realtime speaker turn opened ...`、`discord voice: realtime input audio started ... outputAudioMs=... outputActive=...` 和 `discord voice: realtime speaker turn closed ... chunks=... discordBytes=... realtimeBytes=... interruptedPlayback=...`
+- 跳过过时语音时：`discord voice: realtime forced agent consult skipped reason=incomplete-transcript ...` 或 `reason=non-actionable-closing ...`
+- 实时响应完成时：`discord voice: realtime audio playback finishing reason=response.done ... audioMs=... chunks=...`
+- 播放停止/重置时：`discord voice: realtime audio playback stopped reason=... audioMs=... elapsedMs=... chunks=...`
+- 实时咨询时：`discord voice: realtime consult requested ... voiceSession=... supervisorSession=... question=...`
+- agent 回答时：`discord voice: agent turn answer ...`
+- 排队精确语音时：`discord voice: realtime exact speech queued ... queued=... outputAudioMs=... outputActive=...`，随后 `discord voice: realtime exact speech dequeued reason=player-idle ...`
+- 打断检测时：`discord voice: realtime barge-in detected source=speaker-start ...` 或 `discord voice: realtime barge-in detected source=active-speaker-audio ...`，随后 `discord voice: realtime barge-in requested reason=... outputAudioMs=... outputActive=...`
+- 实时打断时：`discord voice: realtime model interrupt requested client:response.cancel reason=barge-in`，随后 `discord voice: realtime model audio truncated client:conversation.item.truncate reason=barge-in audioEndMs=...` 或 `discord voice: realtime model interrupt confirmed server:response.done status=cancelled ...`
+- 忽略回声/噪音时：`discord voice: realtime model interrupt ignored client:conversation.item.truncate.skipped reason=barge-in audioEndMs=0 minAudioEndMs=250`
+- 打断禁用时：`discord voice: realtime capture ignored during playback (barge-in disabled) ...`
+- 播放空闲时：`discord voice: realtime barge-in ignored reason=... outputActive=false ... playbackChunks=0`
+
+调试切断音频时，将实时语音日志作为时间线阅读：
+
+1. `realtime audio playback started` 表示 Discord 已开始播放 assistant 音频。bridge 从此点开始计数 assistant 输出块、Discord PCM 字节、provider 实时字节和合成音频时长。
+2. `realtime speaker turn opened` 标记 Discord 发言者变为活跃状态。如果播放已经活跃且启用了 `bargeIn`，这之后可能出现 `barge-in detected source=speaker-start`。
+3. `realtime input audio started` 标记该发言者轮次收到的第一个实际音频帧。此处 `outputActive=true` 或非零 `outputAudioMs` 表示麦克风在 assistant 播放仍活跃时发送输入。
+4. `barge-in detected source=active-speaker-audio` 表示 OpenClaw 在 assistant 播放活跃时看到了实时发言者音频。这有助于区分真实打断与没有有用音频的 Discord 发言者开始事件。
+5. `barge-in requested reason=...` 表示 OpenClaw 要求实时 provider 取消或截断活跃响应。包含 `outputAudioMs`、`outputActive` 和 `playbackChunks`，可以看到打断前实际播放了多少 assistant 音频。
+6. `realtime audio playback stopped reason=...` 是本地 Discord 播放重置点。reason 说明谁停止了播放：`barge-in`、`player-idle`、`provider-clear-audio`、`forced-agent-consult`、`stream-close` 或 `session-close`。
+7. `realtime speaker turn closed` 总结捕获的输入轮次。`chunks=0` 或 `hasAudio=false` 表示发言者轮次开始但没有可用音频到达实时 bridge。`interruptedPlayback=true` 表示该输入轮次与 assistant 输出重叠并触发了打断逻辑。
+
+有用字段：
+
+- `outputAudioMs`：日志行之前实时 provider 生成的 assistant 音频时长。
+- `audioMs`：OpenClaw 在播放停止之前计数的 assistant 音频时长。
+- `elapsedMs`：打开和关闭播放流或发言者轮次之间的挂钟时间。
+- `discordBytes`：发送到或从 Discord 语音接收的 48 kHz 立体声 PCM 字节。
+- `realtimeBytes`：发送到或从实时 provider 接收的 provider 格式 PCM 字节。
+- `playbackChunks`：为活跃响应转发给 Discord 的 assistant 音频块。
+- `sinceLastAudioMs`：最后一个捕获的发言者音频帧与发言者轮次关闭之间的间隔。
+
+常见模式：
+
+- `source=active-speaker-audio` 立即切断、小 `outputAudioMs`，以及附近相同用户通常指向发言者回声进入麦克风。提高 `voice.realtime.minBargeInAudioEndMs`，降低扬声器音量，使用耳机，或设置 `voice.realtime.providers.openai.interruptResponseOnInputAudio: false`。
+- `source=speaker-start` 后跟 `speaker turn closed ... hasAudio=false` 表示 Discord 报告了发言者开始但没有音频到达 OpenClaw。这可能是瞬时 Discord 语音事件、噪音门行为，或客户端短暂启用了麦克风。
+- 没有附近打断或 `provider-clear-audio` 的 `audio playback stopped reason=stream-close` 表示本地 Discord 播放流意外结束。检查前面的 provider 和 Discord 播放器日志。
+- `capture ignored during playback (barge-in disabled)` 表示 OpenClaw 在 assistant 音频活跃时故意丢弃了输入。如果希望语音打断播放，启用 `voice.realtime.bargeIn`。
+- `barge-in ignored ... outputActive=false` 表示 Discord 或 provider VAD 报告了语音，但 OpenClaw 没有活跃播放可以打断。这不应该切断音频。
+
+各组件的凭据按各自解析：LLM 路由认证用于 `voice.model`，STT 认证用于 `tools.media.audio`，TTS 认证用于 `messages.tts`/`voice.tts`，实时 provider 认证用于 `voice.realtime.providers` 或 provider 的正常认证配置。
 
 ### 语音消息
 
@@ -1422,10 +1558,38 @@ openclaw logs --follow
     如果你设置 `channels.discord.allowBots=true`，使用严格的提及和 allowlist 规则以避免循环行为。
     优先使用 `channels.discord.allowBots="mentions"` 仅接受提及了 bot 的 bot 消息。
 
+    OpenClaw 还附带共享 [bot 循环保护](/channels/bot-loop-protection)。每当 `allowBots` 让 bot 发出的消息到达调度时，Discord 将入站事件映射到 `(account, channel, bot pair)` 事实，通用配对守卫在配对跨越配置的事件预算后抑制该配对。守卫可防止之前必须依靠 Discord 限流才能停止的失控双 bot 循环；它不影响单 bot 部署或保持在预算内的一次性 bot 回复。
+
+    默认设置（`allowBots` 设置时激活）：
+
+    - `maxEventsPerWindow: 20` -- bot 配对在滑动窗口内可以交换 20 条消息
+    - `windowSeconds: 60` -- 滑动窗口长度
+    - `cooldownSeconds: 60` -- 一旦预算触发，任一方向的每条额外 bot 对 bot 消息都会被丢弃一分钟
+
+    在 `channels.defaults.botLoopProtection` 下配置一次共享默认值，然后在合法工作流需要更多空间时覆盖 Discord。优先级为：
+
+    - `channels.discord.accounts.<account>.botLoopProtection`
+    - `channels.discord.botLoopProtection`
+    - `channels.defaults.botLoopProtection`
+    - 内置默认值
+
+    Discord 使用通用的 `maxEventsPerWindow`、`windowSeconds` 和 `cooldownSeconds` 键。
+
 ```json5
 {
   channels: {
+    defaults: {
+      botLoopProtection: {
+        maxEventsPerWindow: 20,
+        windowSeconds: 60,
+        cooldownSeconds: 60,
+      },
+    },
     discord: {
+      // 可选的 Discord 范围覆盖。账户块覆盖单个字段，并从此处继承省略的字段。
+      botLoopProtection: {
+        maxEventsPerWindow: 4,
+      },
       accounts: {
         mantis: {
           // Mantis 只在其他 bot 提及她时才监听。
@@ -1437,6 +1601,12 @@ openclaw logs --follow
           mentionAliases: {
             // 让 Molty 写 "@Mantis" 并发送真正的 Discord 提及。
             Mantis: "MANTIS_DISCORD_USER_ID",
+          },
+          botLoopProtection: {
+            // 每分钟最多允许五条消息，然后抑制该配对。
+            maxEventsPerWindow: 5,
+            windowSeconds: 60,
+            cooldownSeconds: 90,
           },
         },
       },

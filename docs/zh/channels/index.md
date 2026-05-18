@@ -1,54 +1,50 @@
 ---
-mmh3_hash: "fe3623eae736b9fb8b8511a5f2eaf957"
+mmh3_hash: "8e785feaee55e9c333f1dd8b48426812"
 summary: "OpenClaw 可以连接的消息平台"
 read_when:
   - 选择 OpenClaw 的聊天 Channel
-  - 需要支持的消息平台快速概览
-title: "聊天 Channel"
+title: "Channels"
 ---
 
-OpenClaw 可以在你已经使用的任何聊天应用上与你对话。每个 Channel 通过 Gateway 连接。
-文本在所有平台都支持；媒体和反应功能因 Channel 而异。
+OpenClaw 可连接到多个消息平台（Channel）。每个 Channel 都有自己的插件、认证机制以及访问控制模型。
 
-## 投递说明
+## 核心 Channel
 
-- 包含 Markdown 图片语法（如 `![alt](url)`）的 Telegram 回复在可能的情况下会在最终出站路径上转换为媒体回复。
-- Slack 多人私信作为群聊路由，因此群组策略、提及行为和群组 Session 规则适用于 MPIM 对话。
-- WhatsApp 设置是按需安装的：在 Plugin 包安装之前，入门引导可以显示设置流程，并且 Gateway 只在 Channel 实际激活时才加载 WhatsApp 运行时。
+这些 Channel 内置于核心 OpenClaw 软件包中：
 
-## 支持的 Channel
+| Channel        | 说明                                                                 |
+| -------------- | -------------------------------------------------------------------- |
+| **Discord**    | 机器人 Token，支持服务器（Guild）和私信。                             |
+| **iMessage**   | 通过 `imsg`（macOS 专属）原生接入 iMessage。                         |
+| **Signal**     | 通过 `signal-cli` 守护进程接入。                                     |
+| **Slack**      | Socket Mode 或 HTTP Request URL，支持工作区和私信。                  |
+| **Telegram**   | 基于 grammY 的机器人，长轮询或 Webhook。                             |
+| **WhatsApp**   | 通过 WhatsApp Web（Baileys）按需安装。                               |
 
-- [Discord](/channels/discord) — Discord Bot API + Gateway；支持服务器、频道和私信。
-- [Feishu](/channels/feishu) — 通过 WebSocket 的 Feishu/Lark bot（捆绑 Plugin）。
-- [Google Chat](/channels/googlechat) — 通过 HTTP webhook 使用 Google Chat API 应用（可下载 Plugin）。
-- [iMessage](/channels/imessage) — 通过已登录 Mac 上的 `imsg` 桥接进行原生 macOS 集成（或 Gateway 运行在其他位置时使用 SSH 包装器），包括用于回复、tapback、效果、附件和群组管理的私有 API 操作。适合在主机权限和 Messages 访问条件满足时的新 OpenClaw iMessage 设置。
-- [IRC](/channels/irc) — 经典 IRC 服务器；频道 + 私信，具有配对/白名单控制。
-- [LINE](/channels/line) — LINE Messaging API bot（可下载 Plugin）。
-- [Matrix](/channels/matrix) — Matrix 协议（可下载 Plugin）。
-- [Mattermost](/channels/mattermost) — Bot API + WebSocket；频道、群组、私信（可下载 Plugin）。
-- [Microsoft Teams](/channels/msteams) — Bot Framework；企业支持（捆绑 Plugin）。
-- [Nextcloud Talk](/channels/nextcloud-talk) — 通过 Nextcloud Talk 自托管聊天（捆绑 Plugin）。
-- [Nostr](/channels/nostr) — 通过 NIP-04 去中心化私信（捆绑 Plugin）。
-- [QQ Bot](/channels/qqbot) — QQ Bot API；私聊、群聊和丰富媒体（捆绑 Plugin）。
-- [Signal](/channels/signal) — signal-cli；注重隐私。
-- [Slack](/channels/slack) — Bolt SDK；工作区应用。
-- [Synology Chat](/channels/synology-chat) — 通过 outgoing+incoming webhook 连接 Synology NAS Chat（捆绑 Plugin）。
-- [Telegram](/channels/telegram) — 通过 grammY 使用 Bot API；支持群组。
-- [Tlon](/channels/tlon) — 基于 Urbit 的即时通讯（捆绑 Plugin）。
-- [Twitch](/channels/twitch) — 通过 IRC 连接的 Twitch 聊天（捆绑 Plugin）。
-- [Voice Call](/plugins/voice-call) — 通过 Plivo 或 Twilio 的电话（Plugin，需单独安装）。
-- [WebChat](/web/webchat) — 通过 WebSocket 的 Gateway WebChat UI。
-- [WeChat](/channels/wechat) — 通过二维码登录的腾讯 iLink Bot Plugin；仅支持私聊（外部 Plugin）。
-- [WhatsApp](/channels/whatsapp) — 最流行；使用 Baileys 并需要二维码配对。
-- [元宝](/channels/yuanbao) — 腾讯元宝 bot（外部 Plugin）。
-- [Zalo](/channels/zalo) — Zalo Bot API；越南流行的即时通讯（捆绑 Plugin）。
-- [Zalo Personal](/channels/zalouser) — 通过二维码登录的 Zalo 个人账户（捆绑 Plugin）。
+## 可下载 Channel（Plugin）
 
-## 注意事项
+这些 Channel 作为单独的 Plugin 分发：
 
-- Channel 可以同时运行；配置多个后 OpenClaw 将按聊天路由。
-- 最快的设置通常是 **Telegram**（简单的 bot token）。WhatsApp 需要二维码配对并且在磁盘上存储更多状态。
-- 群组行为因 Channel 而异；参见 [Groups](/channels/groups)。
-- 为安全起见会强制执行私信配对和白名单；参见 [Security](/gateway/security)。
-- 故障排除：[Channel 故障排除](/channels/troubleshooting)。
-- 模型 Provider 单独记录；参见[模型 Provider](/providers/models)。
+| Channel              | 说明                                               |
+| -------------------- | -------------------------------------------------- |
+| **Feishu**           | Feishu/Lark 机器人，WebSocket 或 Webhook 模式。    |
+| **Google Chat**      | 通过服务账户 + Webhook 接入。                      |
+| **LINE**             | LINE Messaging API Webhook。                        |
+| **Matrix**           | 支持 E2EE 的 Matrix 协议，可自托管。               |
+| **Mattermost**       | Mattermost 机器人 Token，原生斜杠命令。            |
+| **Microsoft Teams**  | Bot Framework，支持联合认证。                      |
+| **QQ Bot**           | QQ 官方机器人 API。                                |
+
+## 传递说明
+
+- 每个 Channel 通过自身的 Plugin 运行，可独立启用/禁用。
+- 访问控制（`dmPolicy`、`groupPolicy`、`allowFrom`）在每个 Channel 单独配置。
+- 配对（DM 访问批准）适用于所有支持的 Channel。
+- 多账户在支持多个机器人身份的 Channel 中可用。
+
+## 相关
+
+- [Pairing](/channels/pairing) — DM 访问批准流程
+- [Groups](/channels/groups) — 跨 Channel 群组消息行为
+- [Channel routing](/channels/channel-routing) — 会话路由
+- [Gateway configuration](/gateway/configuration) — 完整 Channel 配置参考

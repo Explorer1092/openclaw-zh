@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6aba01f301dbcf14bf7bb3bfa3204665"
+mmh3_hash: "f663ff68fe7a37eea7f7ecc8613eff8a"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook
@@ -77,6 +77,7 @@ openclaw pairing approve telegram <CODE>
 
 <Note>
 Token 解析顺序为账户感知。实际上，配置值优先于环境变量回退，`TELEGRAM_BOT_TOKEN` 仅适用于默认账户。
+启动成功后，OpenClaw 将 bot 身份缓存在状态目录中最多 24 小时，以便重启时避免额外的 Telegram `getMe` 调用；更改或删除 token 会清除该缓存。
 </Note>
 
 ## Telegram 端设置
@@ -288,6 +289,7 @@ curl "https://api.telegram.org/bot<bot_token>/getUpdates"
 - 群组会话按群组 ID 隔离。论坛主题附加 `:topic:<threadId>` 保持主题隔离。
 - 私信消息可以携带 `message_thread_id`；默认情况下 OpenClaw 保留线程 ID 用于回复但将私信保持在平坦会话上。当您有意希望私信主题会话隔离时，配置 `channels.telegram.dm.threadReplies: "inbound"`、`channels.telegram.direct.<chatId>.threadReplies: "inbound"`、`requireTopic: true` 或匹配的主题配置。
 - 长轮询使用 grammY runner，按聊天/线程顺序处理。总并发由 `agents.defaults.maxConcurrent` 控制。
+- 多账户启动会限制并发 Telegram `getMe` 探测，使大型 bot 集群不会同时扇出所有账户探测。
 - 长轮询在每个 Gateway 进程内受到保护，确保同一时间只有一个活跃的轮询器可以使用 bot token。如果仍然出现 `getUpdates` 409 冲突，说明另一个 OpenClaw Gateway、脚本或外部轮询器可能在使用相同的 token。
 - 长轮询看门狗默认在 120 秒内没有完成 `getUpdates` 存活检查时触发重启。仅当您的部署在长时间运行的工作期间仍然出现误报轮询停滞重启时，才增大 `channels.telegram.pollingStallThresholdMs`。该值以毫秒为单位，允许范围为 `30000` 到 `600000`；支持每账户覆盖。
 - Telegram Bot API 不支持已读回执（`sendReadReceipts` 不适用）。
@@ -1002,6 +1004,7 @@ openclaw message poll --channel telegram --target -1001234567890:topic:42 \
     - `openclaw channels status --probe` 和 `openclaw doctor` 在以下情况发出警告：运行中的轮询账户在启动宽限期后未完成 `getUpdates`、运行中的 webhook 账户在启动宽限期后未完成 `setWebhook`，或最后一次成功的轮询传输活动已过期。
     - 仅当长时间运行的 `getUpdates` 调用正常但主机仍然报告误报轮询停滞重启时，才增大 `channels.telegram.pollingStallThresholdMs`。持续停滞通常指向主机与 `api.telegram.org` 之间的代理、DNS、IPv6 或 TLS 出口问题。
     - Telegram 还遵守进程代理环境变量用于 Bot API 传输，包括 `HTTP_PROXY`、`HTTPS_PROXY`、`ALL_PROXY` 及其小写变体。`NO_PROXY` / `no_proxy` 仍可绕过 `api.telegram.org`。
+    - 如果通过 `OPENCLAW_PROXY_URL` 为服务环境配置了 OpenClaw 托管代理且没有标准代理环境变量，Telegram 也会将该 URL 用于 Bot API 传输。
     - 在出口/TLS 不稳定的 VPS 主机上，通过 `channels.telegram.proxy` 路由 Telegram API 调用：
 
 ```yaml

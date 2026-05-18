@@ -1,35 +1,28 @@
 ---
-mmh3_hash: "cfb50244bcb19e1bb7ceb31f1986343b"
+mmh3_hash: "5216097beed8cee77d3f8bdf3828bb4a"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
 title: "WhatsApp"
 ---
 
-状态：通过 WhatsApp Web（Baileys）生产可用。Gateway 拥有关联的会话。
+状态：通过 WhatsApp Web（Baileys）生产可用。Gateway 拥有关联的 Session。
 
 ## 按需安装
 
-- 新手引导（`openclaw onboard`）和 `openclaw channels add --channel whatsapp` 在首次选择 WhatsApp 插件时会提示安装。
-- `openclaw channels login --channel whatsapp` 在插件尚未存在时也会提供安装流程。
-- 开发版 Channel + git 检出：默认使用本地插件路径。
-- 稳定版/测试版：使用 npm 包 `@openclaw/whatsapp`（当前官方发布标签）。
+- 新手引导（`openclaw onboard`）和 `openclaw channels add --channel whatsapp` 在首次选择 WhatsApp Plugin 时会提示安装。
+- `openclaw channels login --channel whatsapp` 在 Plugin 尚未存在时也会提供安装流程。
+- 开发版 Channel + git 检出：默认使用本地 Plugin 路径。
+- 稳定版/测试版：优先从 ClawHub 安装官方 `@openclaw/whatsapp` Plugin，以 npm 为备选。
+- WhatsApp 运行时作为独立 Plugin 分发，使 WhatsApp 专属运行时依赖项与外部 Plugin 保持一致。
 
 手动安装仍然可用：
 
 ```bash
-openclaw plugins install @openclaw/whatsapp
+openclaw plugins install clawhub:@openclaw/whatsapp
 ```
 
-使用裸包名称可跟随当前官方发布标签。仅在需要可复现安装时才固定确切版本。
-
-在 Windows 上，WhatsApp 插件在 npm 安装时需要 `PATH` 中有 Git，因为其中一个 Baileys/libsignal 依赖项从 git URL 获取。安装 Git for Windows，然后重启 shell 并重新运行安装：
-
-```powershell
-winget install --id Git.Git -e
-```
-
-Portable Git 只要其 `bin` 目录在 `PATH` 中也可以使用。
+仅在需要注册表备选时才使用裸 npm 包（`@openclaw/whatsapp`）。仅在需要可复现安装时才固定确切版本。
 
 <CardGroup cols={3}>
   <Card title="配对" icon="link" href="/channels/pairing">
@@ -469,6 +462,32 @@ WhatsApp 通过 `channels.whatsapp.ackReaction` 支持入站接收时的即时 a
 - 群组模式 `mentions` 在提及触发的轮次上 react；群组激活 `always` 作为此检查的绕过
 - WhatsApp 使用 `channels.whatsapp.ackReaction`（旧版 `messages.ackReaction` 不在此使用）
 
+## 生命周期状态 Reaction
+
+设置 `messages.statusReactions.enabled: true` 可让 WhatsApp 在轮次期间替换 ack reaction，而非留下静态接收确认 emoji。启用后，OpenClaw 将相同的入站消息 reaction 槽位用于排队、思考中、工具活动、压缩、完成和错误等生命周期状态。
+
+```json5
+{
+  messages: {
+    statusReactions: {
+      enabled: true,
+      emojis: {
+        deploy: "🛫",
+        build: "🏗️",
+        concierge: "💁",
+      },
+    },
+  },
+}
+```
+
+行为注意：
+
+- `channels.whatsapp.ackReaction` 仍控制状态 reaction 是否对私信和群组适用。
+- WhatsApp 每条消息只有一个 bot reaction 槽位，因此生命周期更新会就地替换当前 reaction。
+- `messages.removeAckAfterReply: true` 在配置的完成/错误保留期后清除最终状态 reaction。
+- 工具 emoji 类别包括 `tool`、`coding`、`web`、`deploy`、`build` 和 `concierge`。
+
 ## 多账户和凭据
 
 <AccordionGroup>
@@ -681,4 +700,3 @@ WhatsApp 高优先级字段：
 - [Security](/gateway/security)
 - [Channel 路由](/channels/channel-routing)
 - [多 Agent 路由](/concepts/multi-agent)
-- [故障排除](/channels/troubleshooting)

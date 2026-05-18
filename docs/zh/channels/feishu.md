@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eba3477fe84e122965d6aee0248feb1a"
+mmh3_hash: "80feffb4c425a48436f2d6eaccc94ba3"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
@@ -24,7 +24,7 @@ Feishu（Lark）是一体化协作平台，团队可在其中聊天、共享文�
   ```bash
   openclaw channels login --channel feishu
   ```
-  使用 Feishu/Lark 移动应用扫描二维码，自动创建 Feishu/Lark 机器人。
+  选择手动设置以粘贴来自 Feishu 开放平台的 App ID 和 App Secret，或选择二维码设置以自动创建机器人。如果国内的 Feishu 移动应用未响应二维码，请重新运行设置并选择手动设置。
   </Step>
   
   <Step title="设置完成后，重启 Gateway 以应用更改">
@@ -58,11 +58,11 @@ openclaw pairing approve feishu <CODE>
 
 **群组策略**（`channels.feishu.groupPolicy`）：
 
-| 值            | 行为                          |
-| ------------- | ----------------------------- |
-| `"open"`      | 响应群组中的所有消息                                                                              |
-| `"allowlist"` | 仅响应 `groupAllowFrom` 中或在 `groups.<chat_id>` 下显式配置的群组                                |
-| `"disabled"`  | 禁用所有群组消息；显式的 `groups.<chat_id>` 条目不能覆盖此设置                                    |
+| 值            | 行为                                                                                         |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| `"open"`      | 响应群组中的所有消息                                                                          |
+| `"allowlist"` | 仅响应 `groupAllowFrom` 中或在 `groups.<chat_id>` 下显式配置的群组                           |
+| `"disabled"`  | 禁用所有群组消息；显式的 `groups.<chat_id>` 条目不能覆盖此设置                               |
 
 默认：`allowlist`
 
@@ -154,6 +154,8 @@ openclaw pairing approve feishu <CODE>
 
 ---
 
+<a id="get-groupuser-ids"></a>
+
 ## 获取群组/用户 ID
 
 ### 群组 ID（`chat_id`，格式：`oc_xxx`）
@@ -180,10 +182,10 @@ openclaw pairing list feishu
 
 ## 常用命令
 
-| 命令      | 描述              |
-| --------- | ----------------- |
-| `/status` | 显示机器人状态    |
-| `/reset`  | 重置当前会话      |
+| 命令      | 描述               |
+| --------- | ------------------ |
+| `/status` | 显示机器人状态     |
+| `/reset`  | 重置当前会话       |
 | `/model`  | 显示或切换 AI 模型 |
 
 <Note>
@@ -209,6 +211,13 @@ Feishu/Lark 不支持原生斜杠命令菜单，因此这些命令作为纯文�
 4. 确保已授予所有必要的权限范围
 5. 确保 Gateway 正在运行：`openclaw gateway status`
 6. 检查日志：`openclaw logs --follow`
+
+### 二维码设置在 Feishu 移动应用中未响应
+
+1. 重新运行设置：`openclaw channels login --channel feishu`
+2. 选择手动设置
+3. 在 Feishu 开放平台中，创建自建应用并复制其 App ID 和 App Secret
+4. 将这些凭据粘贴到设置向导中
 
 ### App Secret 泄露
 
@@ -251,7 +260,7 @@ Feishu/Lark 不支持原生斜杠命令菜单，因此这些命令作为纯文�
 ```
 
 `defaultAccount` 控制当出站 API 未指定 `accountId` 时使用哪个账户。
-`accounts.<id>.tts` 使用与 `messages.tts` 相同的格式，并深度合并到全局 TTS 配置中，因此多机器人 Feishu 设置可以在全局保留共享的提供商凭据，同时只覆盖每个账户的语音、模型、角色或自动模式。
+`accounts.<id>.tts` 使用与 `messages.tts` 相同的格式，并深度合并到全局 TTS 配置中，因此多机器人 Feishu 设置可以在全局保留共享的 Provider 凭据，同时只覆盖每个账户的语音、模型、角色或自动模式。
 
 ### 消息限制
 
@@ -267,7 +276,7 @@ Feishu/Lark 通过交互式卡片支持流式回复。启用后，机器人在�
   channels: {
     feishu: {
       streaming: true, // 启用流式卡片输出（默认：true）
-      blockStreaming: true, // 启用块级流式传输
+      blockStreaming: true, // 启用已完成块的流式传输
     },
   },
 }
@@ -397,34 +406,34 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 
 完整配置：[Gateway 配置](/gateway/configuration)
 
-| 设置                                              | 描述                                    | 默认值           |
-| ------------------------------------------------- | --------------------------------------- | ---------------- |
-| `channels.feishu.enabled`                         | 启用/禁用 Channel                       | `true`           |
-| `channels.feishu.domain`                          | API 域名（`feishu` 或 `lark`）          | `feishu`         |
-| `channels.feishu.connectionMode`                  | 事件传输方式（`websocket` 或 `webhook`）| `websocket`      |
-| `channels.feishu.defaultAccount`                  | 出站路由的默认账户                      | `default`        |
-| `channels.feishu.verificationToken`               | Webhook 模式必填                        | —                |
-| `channels.feishu.encryptKey`                      | Webhook 模式必填                        | —                |
-| `channels.feishu.webhookPath`                     | Webhook 路由路径                        | `/feishu/events` |
-| `channels.feishu.webhookHost`                     | Webhook 绑定主机                        | `127.0.0.1`      |
-| `channels.feishu.webhookPort`                     | Webhook 绑定端口                        | `3000`           |
-| `channels.feishu.accounts.<id>.appId`             | App ID                                  | —                |
-| `channels.feishu.accounts.<id>.appSecret`         | App Secret                              | —                |
-| `channels.feishu.accounts.<id>.domain`            | 每账户域名覆盖                          | `feishu`         |
-| `channels.feishu.accounts.<id>.tts`               | 每账户 TTS 覆盖                         | `messages.tts`   |
-| `channels.feishu.dmPolicy`                        | 私信策略                                | `allowlist`      |
-| `channels.feishu.allowFrom`                       | 私信 allowlist（open_id 列表）          | [BotOwnerId]     |
-| `channels.feishu.groupPolicy`                     | 群组策略                                | `allowlist`      |
-| `channels.feishu.groupAllowFrom`                  | 群组 allowlist                          | —                |
-| `channels.feishu.requireMention`                  | 群组中需要 @提及                        | `true`           |
-| `channels.feishu.groups.<chat_id>.requireMention` | 每群组 @提及覆盖；显式 ID 在 allowlist 模式下也会准入该群组 | 继承 |
-| `channels.feishu.groups.<chat_id>.enabled`        | 启用/禁用特定群组                       | `true`           |
-| `channels.feishu.textChunkLimit`                  | 消息块大小                              | `2000`           |
-| `channels.feishu.mediaMaxMb`                      | 媒体大小限制                            | `30`             |
-| `channels.feishu.streaming`                       | 流式卡片输出                            | `true`           |
-| `channels.feishu.blockStreaming`                  | 块级流式传输                            | `false`          |
-| `channels.feishu.typingIndicator`                 | 发送输入状态 reaction                   | `true`           |
-| `channels.feishu.resolveSenderNames`              | 解析发送者显示名称                      | `true`           |
+| 设置                                              | 描述                                                   | 默认值           |
+| ------------------------------------------------- | ------------------------------------------------------ | ---------------- |
+| `channels.feishu.enabled`                         | 启用/禁用 Channel                                      | `true`           |
+| `channels.feishu.domain`                          | API 域名（`feishu` 或 `lark`）                         | `feishu`         |
+| `channels.feishu.connectionMode`                  | 事件传输方式（`websocket` 或 `webhook`）               | `websocket`      |
+| `channels.feishu.defaultAccount`                  | 出站路由的默认账户                                     | `default`        |
+| `channels.feishu.verificationToken`               | Webhook 模式必填                                       | —                |
+| `channels.feishu.encryptKey`                      | Webhook 模式必填                                       | —                |
+| `channels.feishu.webhookPath`                     | Webhook 路由路径                                       | `/feishu/events` |
+| `channels.feishu.webhookHost`                     | Webhook 绑定主机                                       | `127.0.0.1`      |
+| `channels.feishu.webhookPort`                     | Webhook 绑定端口                                       | `3000`           |
+| `channels.feishu.accounts.<id>.appId`             | App ID                                                 | —                |
+| `channels.feishu.accounts.<id>.appSecret`         | App Secret                                             | —                |
+| `channels.feishu.accounts.<id>.domain`            | 每账户域名覆盖                                         | `feishu`         |
+| `channels.feishu.accounts.<id>.tts`               | 每账户 TTS 覆盖                                        | `messages.tts`   |
+| `channels.feishu.dmPolicy`                        | 私信策略                                               | `allowlist`      |
+| `channels.feishu.allowFrom`                       | 私信 allowlist（open_id 列表）                         | [BotOwnerId]     |
+| `channels.feishu.groupPolicy`                     | 群组策略                                               | `allowlist`      |
+| `channels.feishu.groupAllowFrom`                  | 群组 allowlist                                         | —                |
+| `channels.feishu.requireMention`                  | 群组中需要 @提及                                       | `true`           |
+| `channels.feishu.groups.<chat_id>.requireMention` | 每群组 @提及覆盖；显式 ID 在 allowlist 模式下也会准入该群组 | 继承        |
+| `channels.feishu.groups.<chat_id>.enabled`        | 启用/禁用特定群组                                      | `true`           |
+| `channels.feishu.textChunkLimit`                  | 消息块大小                                             | `2000`           |
+| `channels.feishu.mediaMaxMb`                      | 媒体大小限制                                           | `30`             |
+| `channels.feishu.streaming`                       | 流式卡片输出                                           | `true`           |
+| `channels.feishu.blockStreaming`                  | 已完成块的回复流式传输                                 | `false`          |
+| `channels.feishu.typingIndicator`                 | 发送输入状态 reaction                                  | `true`           |
+| `channels.feishu.resolveSenderNames`              | 解析发送者显示名称                                     | `true`           |
 
 ---
 
@@ -440,7 +449,7 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 - ✅ 视频/媒体
 - ✅ 贴纸
 
-入站 Feishu/Lark 音频消息规范化为媒体占位符，而不是原始的 `file_key` JSON。当配置了 `tools.media.audio` 时，OpenClaw 下载语音备注资源并在 Agent 轮次之前运行共享音频转录，因此 Agent 接收到口语转录。如果 Feishu 在音频负载中直接包含转录文本，则使用该文本，而不进行另一次 ASR 调用。没有音频转录提供商时，Agent 仍然接收 `<media:audio>` 占位符和保存的附件，而不是原始的 Feishu 资源负载。
+入站 Feishu/Lark 音频消息规范化为媒体占位符，而不是原始的 `file_key` JSON。当配置了 `tools.media.audio` 时，OpenClaw 下载语音备注资源并在 Agent 轮次之前运行共享音频转录，因此 Agent 接收到口语转录。如果 Feishu 在音频负载中直接包含转录文本，则使用该文本，而不进行另一次 ASR 调用。没有音频转录 Provider 时，Agent 仍然接收 `<media:audio>` 占位符和保存的附件，而不是原始的 Feishu 资源负载。
 
 ### 发送
 
@@ -460,7 +469,7 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 - ✅ 话题回复
 - ✅ 回复话题消息时媒体回复保持话题感知
 
-对于 `groupSessionScope: "group_topic"` 和 `"group_topic_sender"`，原生 Feishu/Lark 话题群组使用事件 `thread_id`（`omt_*`）作为规范话题会话键。OpenClaw 将普通群组回复转换为线程时，仍使用回复根消息 ID（`om_*`），以便第一轮和后续轮次保持在同一会话中。
+对于 `groupSessionScope: "group_topic"` 和 `"group_topic_sender"`，原生 Feishu/Lark 话题群组使用事件 `thread_id`（`omt_*`）作为规范话题会话键。如果原生话题启动事件省略了 `thread_id`，OpenClaw 在路由该轮次前会从 Feishu 补充该值。OpenClaw 将普通群组回复转换为线程时，仍使用回复根消息 ID（`om_*`），以便第一轮和后续轮次保持在同一会话中。
 
 ---
 

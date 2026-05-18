@@ -1,34 +1,50 @@
 ---
-mmh3_hash: "e7d4450c5c79624ceb620bc69989c2f9"
-summary: "将旧版 BlueBubbles 配置迁移到捆绑的 iMessage Plugin，不丢失配对、白名单或群组绑定。"
+mmh3_hash: "93f6f067e374a4bead930a15d98a74d7"
+summary: "将旧版 BlueBubbles 配置迁移到捆绑的 iMessage Plugin，不丢失配对、allowlist 或群组绑定。"
 read_when:
   - 计划从 BlueBubbles 迁移到捆绑的 iMessage Plugin
-  - 将 BlueBubbles 配置键转换为 iMessage 等效项
+  - 将 BlueBubbles 配置键翻译为 iMessage 等效键
   - 在启用 iMessage Plugin 之前验证 imsg
 title: "从 BlueBubbles 迁移"
 ---
 
-捆绑的 `imessage` Plugin 现在通过 JSON-RPC 驱动 [`steipete/imsg`](https://github.com/steipete/imsg) 来访问与 BlueBubbles 相同的私有 API 接口（`react`、`edit`、`unsend`、`reply`、`sendWithEffect`、群组管理、附件）。如果您已经在 Mac 上运行了 `imsg`，可以停用 BlueBubbles 服务器，让 Plugin 直接与 Messages.app 通信。
+捆绑的 `imessage` Plugin 现在通过 JSON-RPC 驱动 [`steipete/imsg`](https://github.com/steipete/imsg) 来访问与 BlueBubbles 相同的私有 API 接口（`react`、`edit`、`unsend`、`reply`、`sendWithEffect`、群组管理、附件）。如果您已经在 Mac 上安装了 `imsg`，可以去掉 BlueBubbles 服务器，让 Plugin 直接与 Messages.app 通信。
 
-BlueBubbles 支持已被移除。OpenClaw 仅通过 `imsg` 支持 iMessage。本指南适用于将旧版 `channels.bluebubbles` 配置迁移到 `channels.imessage`；没有其他受支持的迁移路径。
+BlueBubbles 支持已被移除。OpenClaw 仅通过 `imsg` 支持 iMessage。本指南用于将旧版 `channels.bluebubbles` 配置迁移到 `channels.imessage`；没有其他受支持的迁移路径。
+
+<Note>
+有关简短公告和运维摘要，请参阅 [BlueBubbles 移除和 imsg iMessage 路径](/announcements/bluebubbles-imessage)。
+</Note>
+
+## 迁移检查清单
+
+当您已知道旧版 BlueBubbles 配置并想要最短安全路径时，使用此检查清单：
+
+1. 直接在运行 Messages.app 的 Mac 上验证 `imsg`（`imsg chats`、`imsg history`、`imsg send` 和 `imsg rpc --help`）。
+2. 将行为键从 `channels.bluebubbles` 复制到 `channels.imessage`：`dmPolicy`、`allowFrom`、`groupPolicy`、`groupAllowFrom`、`groups`、`includeAttachments`、`attachmentRoots`、`mediaMaxMb`、`textChunkLimit`、`coalesceSameSenderDms` 和 `actions`。
+3. 删除不再存在的传输键：`serverUrl`、`password`、webhook URL 和 BlueBubbles 服务器设置。
+4. 如果 Gateway 不在 Messages Mac 上运行，将 `channels.imessage.cliPath` 设置为 SSH 包装器，并设置 `remoteHost` 用于远程附件获取。
+5. 停止 Gateway 后，启用 `channels.imessage`，然后运行 `openclaw channels status --probe --channel imessage`。
+6. 测试一条私信、一个已允许的群组、附件（如果启用）以及您期望 Agent 使用的每个私有 API 操作。
+7. 在 iMessage 路径验证后删除 BlueBubbles 服务器和旧版 `channels.bluebubbles` 配置。
 
 ## 何时适合进行此迁移
 
-- 您已经在运行 Messages.app 的同一台 Mac 上（或通过 SSH 可访问的 Mac 上）运行了 `imsg`。
-- 您希望减少活动部件——无需单独的 BlueBubbles 服务器、无需验证的 REST 端点、无需 webhook 管道。只需一个 CLI 二进制文件，而不是服务器 + 客户端应用 + 辅助程序。
-- 您使用的是[受支持的 macOS / `imsg` 构建版本](/channels/imessage#requirements-and-permissions-macos)，其中私有 API 探测报告 `available: true`。
+- 您已在 Messages.app 登录的同一台 Mac（或通过 SSH 可访问的 Mac）上运行 `imsg`。
+- 您希望减少一个活动部件——不需要单独的 BlueBubbles 服务器、不需要认证的 REST 端点、不需要 webhook 管道。只需单个 CLI 二进制文件，而不是服务器 + 客户端应用 + 辅助程序。
+- 您在[支持的 macOS / `imsg` 构建](/channels/imessage#requirements-and-permissions-macos)上，私有 API 探测报告 `available: true`。
 
-## imsg 的功能
+## imsg 的作用
 
-`imsg` 是 Messages 的本地 macOS CLI。OpenClaw 将 `imsg rpc` 作为子进程启动，并通过 stdin/stdout 进行 JSON-RPC 通信。没有 HTTP 服务器、webhook URL、后台守护进程、启动代理或需要暴露的端口。
+`imsg` 是用于 Messages 的本地 macOS CLI。OpenClaw 将 `imsg rpc` 作为子进程启动，并通过 stdin/stdout 进行 JSON-RPC 通信。没有 HTTP 服务器、webhook URL、后台守护进程、launch agent 或需要暴露的端口。
 
-- 读取来自 `~/Library/Messages/chat.db`，使用只读 SQLite 句柄。
-- 实时入站消息来自 `imsg watch` / `watch.subscribe`，它通过文件系统事件跟踪 `chat.db`，并有轮询回退。
+- 读取来自使用只读 SQLite 句柄的 `~/Library/Messages/chat.db`。
+- 实时入站消息来自 `imsg watch` / `watch.subscribe`，它通过轮询回退跟随 `chat.db` 文件系统事件。
 - 发送使用 Messages.app 自动化进行普通文本和文件发送。
-- 高级操作使用 `imsg launch` 将 `imsg` 辅助程序注入 Messages.app。这解锁了已读回执、正在输入指示器、富文本发送、编辑、撤回、线程回复、tapback 和群组管理。
-- Linux 构建可以检查复制的 `chat.db`，但无法发送、监视实时 Mac 数据库或驱动 Messages.app。对于 OpenClaw iMessage，请在已登录的 Mac 上运行 `imsg` 或通过 SSH 包装器访问该 Mac。
+- 高级操作使用 `imsg launch` 将 `imsg` 辅助程序注入 Messages.app。这就是解锁已读回执、打字指示器、富媒体发送、编辑、撤回、线程回复、tapback 和群组管理的方式。
+- Linux 构建可以检查已复制的 `chat.db`，但无法发送、监视实时 Mac 数据库或驱动 Messages.app。对于 OpenClaw iMessage，在已登录的 Mac 上运行 `imsg`，或通过 SSH 包装器访问该 Mac。
 
-## 开始之前
+## 开始前
 
 1. 在运行 Messages.app 的 Mac 上安装 `imsg`：
 
@@ -38,9 +54,9 @@ BlueBubbles 支持已被移除。OpenClaw 仅通过 `imsg` 支持 iMessage。本
    imsg chats --limit 3
    ```
 
-   如果 `imsg chats` 失败并出现 `unable to open database file`、空输出或 `authorization denied`，请向启动 `imsg` 的终端、编辑器、Node 进程、Gateway 服务或 SSH 父进程授予完全磁盘访问权限，然后重新打开该父进程。
+   如果 `imsg chats` 以 `unable to open database file`、空输出或 `authorization denied` 失败，请向终端、编辑器、Node 进程、Gateway 服务或启动 `imsg` 的 SSH 父进程授予完全磁盘访问权限，然后重新打开该父进程。
 
-2. 在更改 OpenClaw 配置之前，验证读取、监视、发送和 RPC 接口：
+2. 在更改 OpenClaw 配置之前验证读取、监视、发送和 RPC 接口：
 
    ```bash
    imsg chats --limit 10 --json | jq -s
@@ -50,79 +66,79 @@ BlueBubbles 支持已被移除。OpenClaw 仅通过 `imsg` 支持 iMessage。本
    imsg rpc --help
    ```
 
-   将 `42` 替换为 `imsg chats` 中的真实聊天 id。发送需要 Messages.app 的自动化权限。如果 OpenClaw 将通过 SSH 运行，请通过 OpenClaw 将使用的相同 SSH 包装器或用户上下文运行这些命令。
+   将 `42` 替换为来自 `imsg chats` 的真实聊天 ID。发送需要 Messages.app 的自动化权限。如果 OpenClaw 将通过 SSH 运行，通过 OpenClaw 将使用的相同 SSH 包装器或用户上下文运行这些命令。
 
-3. 当您需要高级操作时，启用私有 API 桥接：
+3. 在需要高级操作时启用私有 API 桥接：
 
    ```bash
    imsg launch
    imsg status --json
    ```
 
-   `imsg launch` 需要禁用 SIP。基本发送、历史记录和监视无需 `imsg launch` 即可工作；高级操作则需要。
+   `imsg launch` 需要禁用 SIP。基本发送、历史和监视无需 `imsg launch`；高级操作则需要。
 
-4. 通过 OpenClaw 验证桥接：
+4. 添加已启用的 `channels.imessage` 配置后，通过 OpenClaw 验证桥接：
 
    ```bash
    openclaw channels status --probe
    ```
 
-   您需要 `imessage.privateApi.available: true`。如果报告 `false`，请先修复该问题——请参阅[功能检测](/channels/imessage#private-api-actions)。
+   您需要 `imessage.privateApi.available: true`。如果报告 `false`，请先修复——参见[能力检测](/channels/imessage#private-api-actions)。`channels status --probe` 仅探测已配置的已启用账户。
 
-5. 备份您的配置：
+5. 快照您的配置：
 
    ```bash
    cp ~/.openclaw/openclaw.json5 ~/.openclaw/openclaw.json5.bak
    ```
 
-## 配置转换
+## 配置对照
 
-iMessage 和 BlueBubbles 共享大量 channel 级别的配置。更改的键主要是传输部分（REST 服务器 vs 本地 CLI）。行为键（`dmPolicy`、`groupPolicy`、`allowFrom` 等）保持相同的含义。
+iMessage 和 BlueBubbles 共享许多 Channel 级别的配置。更改的键主要是传输相关的（REST 服务器与本地 CLI）。行为键（`dmPolicy`、`groupPolicy`、`allowFrom` 等）保持相同含义。
 
-| BlueBubbles                                                | 捆绑的 iMessage                                   | 说明                                                                                                                                                                                                                                                                                                                                                              |
-| ---------------------------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `channels.bluebubbles.enabled`                             | `channels.imessage.enabled`               | 相同语义。                                                                                                                                                                                                                                                                                                                                              |
-| `channels.bluebubbles.serverUrl`                           | _（已移除）_                               | 无 REST 服务器——Plugin 通过 stdio 生成 `imsg rpc`。                                                                                                                                                                                                                                                                                                    |
-| `channels.bluebubbles.password`                            | _（已移除）_                               | 无需 webhook 身份验证。                                                                                                                                                                                                                                                                                                                            |
-| _（隐式）_                                                  | `channels.imessage.cliPath`               | `imsg` 的路径（默认 `imsg`）；用于 SSH 的包装脚本。                                                                                                                                                                                                                                                                                               |
-| _（隐式）_                                                  | `channels.imessage.dbPath`                | 可选的 Messages.app `chat.db` 覆盖；省略时自动检测。                                                                                                                                                                                                                                                                                             |
-| _（隐式）_                                                  | `channels.imessage.remoteHost`            | `host` 或 `user@host`——仅当 `cliPath` 是 SSH 包装器且您需要 SCP 附件获取时才需要。                                                                                                                                                                                                                                                               |
-| `channels.bluebubbles.dmPolicy`                            | `channels.imessage.dmPolicy`              | 相同值（`pairing` / `allowlist` / `open` / `disabled`）。                                                                                                                                                                                                                                                                                         |
-| `channels.bluebubbles.allowFrom`                           | `channels.imessage.allowFrom`             | 配对批准按句柄传递，而不是按 token。                                                                                                                                                                                                                                                                                                              |
-| `channels.bluebubbles.groupPolicy`                         | `channels.imessage.groupPolicy`           | 相同值（`allowlist` / `open` / `disabled`）。                                                                                                                                                                                                                                                                                                     |
-| `channels.bluebubbles.groupAllowFrom`                      | `channels.imessage.groupAllowFrom`        | 相同。                                                                                                                                                                                                                                                                                                                                          |
-| `channels.bluebubbles.groups`                              | `channels.imessage.groups`                | **逐字复制此内容，包括任何 `groups: { "*": { ... } }` 通配符条目。** 每组的 `requireMention`、`tools`、`toolsBySender` 均传递。使用 `groupPolicy: "allowlist"` 时，空或缺失的 `groups` 块会静默丢弃所有群组消息——请参阅下面的"群组注册表陷阱"。                                                                                                   |
-| `channels.bluebubbles.sendReadReceipts`                    | `channels.imessage.sendReadReceipts`      | 默认 `true`。使用捆绑的 Plugin 时，仅当私有 API 探测正常运行时才触发。                                                                                                                                                                                                                                                                           |
-| `channels.bluebubbles.includeAttachments`                  | `channels.imessage.includeAttachments`    | 相同形状，**同样默认关闭**。如果您在 BlueBubbles 上启用了附件，则必须在 iMessage 块上重新显式设置此项——它不会隐式传递，在您执行此操作之前，入站照片/媒体将被静默丢弃，日志中不会出现 `Inbound message` 行。                                                                                                                                         |
-| `channels.bluebubbles.attachmentRoots`                     | `channels.imessage.attachmentRoots`       | 本地根目录；相同的通配符规则。                                                                                                                                                                                                                                                                                                                   |
-| _（不适用）_                                                | `channels.imessage.remoteAttachmentRoots` | 仅当 `remoteHost` 设置用于 SCP 获取时使用。                                                                                                                                                                                                                                                                                                      |
-| `channels.bluebubbles.mediaMaxMb`                          | `channels.imessage.mediaMaxMb`            | iMessage 默认 16 MB（BlueBubbles 默认为 8 MB）。如果您想保持较低上限，请显式设置。                                                                                                                                                                                                                                                               |
-| `channels.bluebubbles.textChunkLimit`                      | `channels.imessage.textChunkLimit`        | 两者默认均为 4000。                                                                                                                                                                                                                                                                                                                              |
-| `channels.bluebubbles.coalesceSameSenderDms`               | `channels.imessage.coalesceSameSenderDms` | 相同的选择加入。仅限私信——群聊在两个 channel 上都保持即时的逐消息分发。在未设置显式 `messages.inbound.byChannel.imessage` 的情况下启用时，将默认入站防抖扩展至 2500 毫秒。参见 [iMessage 文档 § 合并拆分发送的私信](/channels/imessage#coalescing-split-send-dms-command--url-in-one-composition)。                                               |
-| `channels.bluebubbles.enrichGroupParticipantsFromContacts` | _（不适用）_                               | iMessage 已从 `chat.db` 读取发送者显示名称。                                                                                                                                                                                                                                                                                                    |
-| `channels.bluebubbles.actions.*`                           | `channels.imessage.actions.*`             | 每个操作的开关：`reactions`、`edit`、`unsend`、`reply`、`sendWithEffect`、`renameGroup`、`setGroupIcon`、`addParticipant`、`removeParticipant`、`leaveGroup`、`sendAttachment`。                                                                                                                                                                   |
+| BlueBubbles                                                | 捆绑的 iMessage                           | 注意                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `channels.bluebubbles.enabled`                             | `channels.imessage.enabled`               | 相同语义。                                                                                                                                                                                                                                                                                                                                        |
+| `channels.bluebubbles.serverUrl`                           | _（已移除）_                              | 没有 REST 服务器——Plugin 通过 stdio 生成 `imsg rpc`。                                                                                                                                                                                                                                                                                            |
+| `channels.bluebubbles.password`                            | _（已移除）_                              | 不需要 webhook 认证。                                                                                                                                                                                                                                                                                                                             |
+| _（隐式）_                                                 | `channels.imessage.cliPath`               | `imsg` 的路径（默认 `imsg`）；使用 SSH 的包装器脚本。                                                                                                                                                                                                                                                                                            |
+| _（隐式）_                                                 | `channels.imessage.dbPath`                | 可选的 Messages.app `chat.db` 覆盖；省略时自动检测。                                                                                                                                                                                                                                                                                             |
+| _（隐式）_                                                 | `channels.imessage.remoteHost`            | `host` 或 `user@host`——仅在 `cliPath` 是 SSH 包装器且您需要 SCP 附件获取时才需要。                                                                                                                                                                                                                                                               |
+| `channels.bluebubbles.dmPolicy`                            | `channels.imessage.dmPolicy`              | 相同的值（`pairing` / `allowlist` / `open` / `disabled`）。                                                                                                                                                                                                                                                                                       |
+| `channels.bluebubbles.allowFrom`                           | `channels.imessage.allowFrom`             | 配对批准按句柄而非 Token 转移。                                                                                                                                                                                                                                                                                                                   |
+| `channels.bluebubbles.groupPolicy`                         | `channels.imessage.groupPolicy`           | 相同的值（`allowlist` / `open` / `disabled`）。                                                                                                                                                                                                                                                                                                   |
+| `channels.bluebubbles.groupAllowFrom`                      | `channels.imessage.groupAllowFrom`        | 相同。                                                                                                                                                                                                                                                                                                                                            |
+| `channels.bluebubbles.groups`                              | `channels.imessage.groups`                | **逐字复制，包括任何 `groups: { "*": { ... } }` 通配符条目。** 每群组的 `requireMention`、`tools`、`toolsBySender` 会转移。使用 `groupPolicy: "allowlist"` 时，空的或缺失的 `groups` 块会静默丢弃每条群组消息——参见下面的"群组注册表陷阱"。                                                                                                     |
+| `channels.bluebubbles.sendReadReceipts`                    | `channels.imessage.sendReadReceipts`      | 默认 `true`。使用捆绑 Plugin 时，这仅在私有 API 探测可用时触发。                                                                                                                                                                                                                                                                                 |
+| `channels.bluebubbles.includeAttachments`                  | `channels.imessage.includeAttachments`    | 相同格式，**同样默认关闭**。如果您在 BlueBubbles 上启用了附件流，必须在 iMessage 块上显式重新设置——它不会隐式转移，在您设置之前，入站照片/媒体将被静默丢弃，并且不会有 `Inbound message` 日志行。                                                                                                                                                  |
+| `channels.bluebubbles.attachmentRoots`                     | `channels.imessage.attachmentRoots`       | 本地根目录；相同的通配符规则。                                                                                                                                                                                                                                                                                                                    |
+| _（不适用）_                                               | `channels.imessage.remoteAttachmentRoots` | 仅在设置 `remoteHost` 进行 SCP 获取时使用。                                                                                                                                                                                                                                                                                                       |
+| `channels.bluebubbles.mediaMaxMb`                          | `channels.imessage.mediaMaxMb`            | iMessage 上默认 16 MB（BlueBubbles 默认为 8 MB）。如果要保持较低上限，请明确设置。                                                                                                                                                                                                                                                               |
+| `channels.bluebubbles.textChunkLimit`                      | `channels.imessage.textChunkLimit`        | 两者均默认 4000。                                                                                                                                                                                                                                                                                                                                 |
+| `channels.bluebubbles.coalesceSameSenderDms`               | `channels.imessage.coalesceSameSenderDms` | 相同的选择加入。仅私信——两个 Channel 上的群聊都保持即时的每消息分发。在没有明确 `messages.inbound.byChannel.imessage` 的情况下启用时，将默认入站防抖扩展到 2500 ms。参见 [iMessage 文档 § 合并拆分发送私信](/channels/imessage#coalescing-split-send-dms-command--url-in-one-composition)。                                                      |
+| `channels.bluebubbles.enrichGroupParticipantsFromContacts` | _（不适用）_                              | iMessage 已从 `chat.db` 读取发送者显示名称。                                                                                                                                                                                                                                                                                                      |
+| `channels.bluebubbles.actions.*`                           | `channels.imessage.actions.*`             | 每操作开关：`reactions`、`edit`、`unsend`、`reply`、`sendWithEffect`、`renameGroup`、`setGroupIcon`、`addParticipant`、`removeParticipant`、`leaveGroup`、`sendAttachment`。                                                                                                                                                                       |
 
-多账户配置（`channels.bluebubbles.accounts.*`）与 `channels.imessage.accounts.*` 一一对应。
+多账户配置（`channels.bluebubbles.accounts.*`）一对一转换为 `channels.imessage.accounts.*`。
 
 ## 群组注册表陷阱
 
-捆绑的 iMessage Plugin 会**依次**运行两个单独的群组白名单门控。两者都必须通过，群组消息才能到达 agent：
+捆绑的 iMessage Plugin 依次运行**两个**独立的群组 allowlist 门控。两个都必须通过才能让群组消息到达 Agent：
 
-1. **发送者 / 聊天目标白名单**（`channels.imessage.groupAllowFrom`）——由 `isAllowedIMessageSender` 检查。按发送者句柄、`chat_guid`、`chat_identifier` 或 `chat_id` 匹配入站消息。与 BlueBubbles 形状相同。
-2. **群组注册表**（`channels.imessage.groups`）——由 `inbound-processing.ts:199` 中的 `resolveChannelGroupPolicy` 检查。使用 `groupPolicy: "allowlist"` 时，此门控需要：
+1. **发送者/聊天目标 allowlist**（`channels.imessage.groupAllowFrom`）——由 `isAllowedIMessageSender` 检查。按发送者句柄、`chat_guid`、`chat_identifier` 或 `chat_id` 匹配入站消息。与 BlueBubbles 格式相同。
+2. **群组注册表**（`channels.imessage.groups`）——由 `inbound-processing.ts:199` 的 `resolveChannelGroupPolicy` 检查。使用 `groupPolicy: "allowlist"` 时，此门控需要以下之一：
    - 一个 `groups: { "*": { ... } }` 通配符条目（设置 `allowAll = true`），或
    - `groups` 下的显式每 `chat_id` 条目。
 
-如果门控 1 通过但门控 2 失败，消息将被丢弃。Plugin 会发出两个 `warn` 级别的信号，因此在默认日志级别下不再是静默的：
+如果门控 1 通过但门控 2 失败，消息将被丢弃。Plugin 发出两个 `warn` 级别的信号，因此在默认日志级别下不再是静默的：
 
-- 在默认日志级别下，如果设置了 `groupPolicy: "allowlist"` 但 `channels.imessage.groups` 为空（无 `"*"` 通配符，无每 `chat_id` 条目），则在每个账户首次启动时发出一次 `warn`——在任何消息到达之前触发。
-- 在运行时第一次为特定群组丢弃消息时，发出一次每 `chat_id` 的 `warn`，命名 chat_id 以及添加到 `groups` 以允许它的确切键。
+- 当设置了 `groupPolicy: "allowlist"` 但 `channels.imessage.groups` 为空（没有 `"*"` 通配符，没有每 `chat_id` 条目）时，每个账户在启动时发出一次 `warn`——在任何消息到达之前触发。
+- 当特定群组在运行时首次被丢弃时，每个 `chat_id` 发出一次 `warn`，命名 chat_id 和要添加到 `groups` 以允许它的确切键。
 
 私信继续工作，因为它们采用不同的代码路径。
 
-这是最常见的 BlueBubbles → 捆绑 iMessage 迁移失败模式：运营商复制了 `groupAllowFrom` 和 `groupPolicy` 但跳过了 `groups` 块，因为 BlueBubbles 的 `groups: { "*": { "requireMention": true } }` 看起来像一个不相关的提及设置。它实际上是注册表门控的关键部分。
+这是最常见的 BlueBubbles → 捆绑 iMessage 迁移失败模式：运维人员复制了 `groupAllowFrom` 和 `groupPolicy` 但跳过了 `groups` 块，因为 BlueBubbles 的 `groups: { "*": { "requireMention": true } }` 看起来像一个不相关的提及设置。实际上它对注册表门控起关键作用。
 
-使用 `groupPolicy: "allowlist"` 后保持群组消息流动的最小配置：
+`groupPolicy: "allowlist"` 后保持群组消息流动的最小配置：
 
 ```json5
 {
@@ -138,13 +154,13 @@ iMessage 和 BlueBubbles 共享大量 channel 级别的配置。更改的键主�
 }
 ```
 
-`"*"` 下的 `requireMention: true` 在没有配置提及模式时无害：运行时设置 `canDetectMention = false` 并在 `inbound-processing.ts:512` 短路提及丢弃。配置了提及模式（`agents.list[].groupChat.mentionPatterns`）时，它按预期工作。
+当没有配置提及模式时，`*` 下的 `requireMention: true` 是无害的：运行时设置 `canDetectMention = false` 并在 `inbound-processing.ts:512` 短路提及丢弃。配置了提及模式（`agents.list[].groupChat.mentionPatterns`）时，它按预期工作。
 
-如果 gateway 日志显示 `imessage: dropping group message from chat_id=<id>` 或启动行 `imessage: groupPolicy="allowlist" but channels.imessage.groups is empty`，则门控 2 正在丢弃消息——添加 `groups` 块。
+如果 Gateway 日志显示 `imessage: dropping group message from chat_id=<id>` 或启动行 `imessage: groupPolicy="allowlist" but channels.imessage.groups is empty`，则门控 2 正在丢弃消息——添加 `groups` 块。
 
-## 逐步操作
+## 分步骤操作
 
-1. 在现有 BlueBubbles 块旁边添加 iMessage 块。在验证新路径之前，仅将旧块作为复制来源保留：
+1. 在现有 BlueBubbles 块旁边添加 iMessage 块。在 Gateway 仍路由 BlueBubbles 流量时保持禁用：
 
    ```json5
    {
@@ -154,13 +170,13 @@ iMessage 和 BlueBubbles 共享大量 channel 级别的配置。更改的键主�
          // ... 现有配置 ...
        },
        imessage: {
-         enabled: false, // 在下面的演练之后启用
+         enabled: false,
          cliPath: "/opt/homebrew/bin/imsg",
          dmPolicy: "pairing",
          allowFrom: ["+15555550123"], // 从 bluebubbles.allowFrom 复制
          groupPolicy: "allowlist",
          groupAllowFrom: [], // 从 bluebubbles.groupAllowFrom 复制
-         groups: { "*": { requireMention: true } }, // 从 bluebubbles.groups 复制——如果缺失，会静默丢弃群组，参见上面的"群组注册表陷阱"
+         groups: { "*": { requireMention: true } }, // 从 bluebubbles.groups 复制——缺失时静默丢弃群组，参见上面的"群组注册表陷阱"
          actions: {
            reactions: true,
            edit: true,
@@ -174,17 +190,17 @@ iMessage 和 BlueBubbles 共享大量 channel 级别的配置。更改的键主�
    }
    ```
 
-2. **演练探测**——启动 gateway 并确认 iMessage 报告健康：
+2. **在流量影响之前探测**——停止 Gateway，临时启用 iMessage 块，并从 CLI 确认 iMessage 报告健康：
 
    ```bash
-   openclaw gateway
-   openclaw channels status
-   openclaw channels status --probe   # 期望 imessage.privateApi.available: true
+   openclaw gateway stop
+   # 编辑配置：channels.imessage.enabled = true
+   openclaw channels status --probe --channel imessage   # 期望 imessage.privateApi.available: true
    ```
 
-   因为 `imessage.enabled` 仍为 `false`，所以还没有入站 iMessage 流量被路由——但 `--probe` 会测试桥接，以便在切换之前发现权限/安装问题。
+   `channels status --probe` 仅探测已配置的已启用账户。除非您有意想要两个 Channel 监视器同时运行，否则不要在同时启用 BlueBubbles 和 iMessage 的情况下重启 Gateway。如果您不打算立即切换，在重启 Gateway 之前将 `channels.imessage.enabled` 设回 `false`。在启用 OpenClaw 流量之前，使用[开始前](#before-you-start)中的直接 `imsg` 命令验证 Mac。
 
-3. **切换。** 在一次配置编辑中删除 BlueBubbles 配置并启用 iMessage：
+3. **切换。** 一旦已启用的 iMessage 账户报告健康，删除 BlueBubbles 配置并保持 iMessage 启用：
 
    ```json5
    {
@@ -194,50 +210,51 @@ iMessage 和 BlueBubbles 共享大量 channel 级别的配置。更改的键主�
    }
    ```
 
-   重启 gateway。入站 iMessage 流量现在通过捆绑的 Plugin 流动。
+   重启 Gateway。入站 iMessage 流量现在通过捆绑 Plugin 流动。
 
-4. **验证私信。** 向 agent 发送私信；确认回复到达。
+4. **验证私信。** 向 Agent 发送一条私信；确认回复到达。
 
-5. **单独验证群组。** 私信和群组采用不同的代码路径——私信成功并不能证明群组正在路由。在已配对的群聊中向 agent 发送消息并确认回复到达。如果群组无响应（无 agent 回复，无错误），请检查 gateway 日志中的 `imessage: dropping group message from chat_id=<id>` 或启动行 `imessage: groupPolicy="allowlist" but channels.imessage.groups is empty`——两者都在默认日志级别触发。如果出现，您的 `groups` 块缺失或为空——请参阅上面的"群组注册表陷阱"。
+5. **单独验证群组。** 私信和群组采用不同的代码路径——私信成功不能证明群组正在路由。在已配对的群聊中向 Agent 发送消息，确认回复到达。如果群组沉默（没有 Agent 回复，没有错误），检查 Gateway 日志中的 `imessage: dropping group message from chat_id=<id>` 或启动时的 `imessage: groupPolicy="allowlist" but channels.imessage.groups is empty` 行——两者都在默认日志级别触发。如果出现任何一个，您的 `groups` 块缺失或为空——参见上面的"群组注册表陷阱"。
 
-6. **验证操作接口**——从已配对的私信中，请求 agent 进行反应、编辑、撤回、回复、发送照片，以及（在群组中）重命名群组 / 添加或删除参与者。每个操作都应在 Messages.app 中原生落地。如果任何操作抛出"iMessage `<action>` requires the imsg private API bridge"，请再次运行 `imsg launch` 并刷新 `channels status --probe`。
+6. **验证操作接口**——从已配对的私信中，让 Agent 进行 react、edit、unsend、reply、发送照片，以及（在群组中）重命名群组 / 添加或删除参与者。每个操作都应该在 Messages.app 中以原生方式生效。如果任何操作抛出"iMessage `<action>` requires the imsg private API bridge"，再次运行 `imsg launch` 并刷新 `channels status --probe`。
 
-7. 一旦 iMessage 私信、群组和操作都已验证，**删除 BlueBubbles 服务器和配置**。OpenClaw 不会使用 `channels.bluebubbles`。
+7. **在验证 iMessage 私信、群组和操作后，删除 BlueBubbles 服务器和配置。** OpenClaw 将不会使用 `channels.bluebubbles`。
 
-## 操作功能对比
+## 操作对等一览
 
-| 操作                                                        | 旧版 BlueBubbles                     | 捆绑的 iMessage                                                                                                          |
-| ---------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 发送文本 / SMS 回退                                           | ✅                                  | ✅                                                                                                                      |
-| 发送媒体（照片、视频、文件、语音）                              | ✅                                  | ✅                                                                                                                      |
-| 线程回复（`reply_to_guid`）                                  | ✅                                  | ✅（关闭 [#51892](https://github.com/openclaw/openclaw/issues/51892)）                                                  |
-| Tapback（`react`）                                          | ✅                                  | ✅                                                                                                                      |
-| 编辑 / 撤回（macOS 13+ 接收方）                               | ✅                                  | ✅                                                                                                                      |
-| 带屏幕效果发送                                               | ✅                                  | ✅（部分关闭 [#9394](https://github.com/openclaw/openclaw/issues/9394)）                                                |
-| 富文本粗体 / 斜体 / 下划线 / 删除线                            | ✅                                  | ✅（通过 attributedBody 的类型运行格式化）                                                                               |
-| 重命名群组 / 设置群组图标                                     | ✅                                  | ✅                                                                                                                      |
-| 添加 / 删除参与者，退出群组                                   | ✅                                  | ✅                                                                                                                      |
-| 已读回执和正在输入指示器                                      | ✅                                  | ✅（受私有 API 探测限制）                                                                                               |
-| 同发送者私信合并                                             | ✅                                  | ✅（仅限私信；通过 `channels.imessage.coalesceSameSenderDms` 选择加入）                                                  |
-| 捕获 gateway 停机时收到的入站消息                             | ✅（webhook 重放 + 历史获取）          | ✅（通过 `channels.imessage.catchup.enabled` 选择加入；关闭 [#78649](https://github.com/openclaw/openclaw/issues/78649)）|
+| 操作                                       | 旧版 BlueBubbles                  | 捆绑的 iMessage                                                                                                         |
+| ------------------------------------------ | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 发送文本 / SMS 回退                        | ✅                                | ✅                                                                                                                      |
+| 发送媒体（照片、视频、文件、语音）         | ✅                                | ✅                                                                                                                      |
+| 线程回复（`reply_to_guid`）                | ✅                                | ✅（关闭 [#51892](https://github.com/openclaw/openclaw/issues/51892)）                                                  |
+| Tapback（`react`）                         | ✅                                | ✅                                                                                                                      |
+| 编辑 / 撤回（macOS 13+ 接收方）            | ✅                                | ✅                                                                                                                      |
+| 带屏幕特效发送                             | ✅                                | ✅（部分关闭 [#9394](https://github.com/openclaw/openclaw/issues/9394)）                                                |
+| 富文本粗体/斜体/下划线/删除线              | ✅                                | ✅（通过 attributedBody 的类型化运行格式）                                                                              |
+| 重命名群组 / 设置群组图标                  | ✅                                | ✅                                                                                                                      |
+| 添加/删除参与者、离开群组                  | ✅                                | ✅                                                                                                                      |
+| 已读回执和打字指示器                       | ✅                                | ✅（依赖私有 API 探测）                                                                                                  |
+| 同一发送者私信合并                         | ✅                                | ✅（仅私信；通过 `channels.imessage.coalesceSameSenderDms` 选择加入）                                                   |
+| 追赶 Gateway 停机时收到的入站消息          | ✅（webhook 重放 + 历史获取）     | ✅（通过 `channels.imessage.catchup.enabled` 选择加入；关闭 [#78649](https://github.com/openclaw/openclaw/issues/78649)）|
 
-iMessage 追赶功能现在作为捆绑 Plugin 的选择加入功能提供。在 gateway 启动时，如果 `channels.imessage.catchup.enabled` 为 `true`，gateway 会对 `imsg watch` 使用的同一 JSON-RPC 客户端运行一次 `chats.list` + 每个聊天的 `messages.history` 遍历，通过实时分发路径（白名单、群组策略、防抖器、回声缓存）重放每个错过的入站行，并持久化每账户游标，以便后续启动从中断处继续。请参阅[在 gateway 停机后追赶](/channels/imessage#catching-up-after-gateway-downtime)了解调优。
+iMessage catchup 现在可作为捆绑 Plugin 上的选择加入功能使用。Gateway 启动时，如果 `channels.imessage.catchup.enabled` 为 `true`，Gateway 会针对 `imsg watch` 使用的同一 JSON-RPC 客户端运行一次 `chats.list` + 每聊天 `messages.history` 操作，通过实时分发路径（allowlist、群组策略、防抖、回声缓存）重放每条错过的入站行，并持久化每账户游标，以便后续启动从上次停止的地方继续。有关调优，请参阅 [Gateway 停机后追赶](/channels/imessage#catching-up-after-gateway-downtime)。
 
-## 配对、Session 和 ACP 绑定
+## 配对、会话和 ACP 绑定
 
-- **配对批准**按句柄传递。您无需重新批准已知发送者——`channels.imessage.allowFrom` 识别与 BlueBubbles 使用的相同 `+15555550123` / `user@example.com` 字符串。
-- **Session** 保持按 agent + 聊天为范围。私信在默认 `session.dmScope=main` 下折叠到 agent 主 Session；群组 Session 按 `chat_id` 保持隔离。Session 键不同（`agent:<id>:imessage:group:<chat_id>` vs BlueBubbles 等效项）——BlueBubbles Session 键下的旧对话历史不会传入 iMessage Session。
-- 引用 `match.channel: "bluebubbles"` 的 **ACP 绑定**需要更新为 `"imessage"`。`match.peer.id` 形状（`chat_id:`、`chat_guid:`、`chat_identifier:`、裸句柄）相同。
+- **配对批准**按句柄转移。您不需要重新批准已知发送者——`channels.imessage.allowFrom` 识别 BlueBubbles 使用的相同 `+15555550123` / `user@example.com` 字符串。
+- **会话**按 Agent + 聊天范围保持。私信在默认 `session.dmScope=main` 下折叠到 Agent 主会话；群组会话按 `chat_id` 保持隔离。会话键不同（`agent:<id>:imessage:group:<chat_id>` 与 BlueBubbles 等效键）——BlueBubbles 会话键下的旧会话历史不会转入 iMessage 会话。
+- 引用 `match.channel: "bluebubbles"` 的 **ACP 绑定**需要更新为 `"imessage"`。`match.peer.id` 形状（`chat_id:`、`chat_guid:`、`chat_identifier:`、裸句柄）是相同的。
 
-## 无回退 channel
+## 无回滚 Channel
 
-没有受支持的 BlueBubbles 运行时可以切换回去。如果 iMessage 验证失败，将 `channels.imessage.enabled: false`，重启 Gateway，修复 `imsg` 阻塞问题，然后重试切换。
+没有受支持的 BlueBubbles 运行时可以切换回去。如果 iMessage 验证失败，设置 `channels.imessage.enabled: false`，重启 Gateway，修复 `imsg` 阻碍，然后重试切换。
 
-回复缓存位于 `~/.openclaw/state/imessage/reply-cache.jsonl`（模式 `0600`，父目录 `0700`）。如果您需要全新开始，可以安全删除它。
+回复缓存位于 `~/.openclaw/state/imessage/reply-cache.jsonl`（模式 `0600`，父目录 `0700`）。如果您想要干净的状态，删除它是安全的。
 
 ## 相关
 
-- [iMessage](/channels/imessage)——完整的 iMessage channel 参考，包括 `imsg launch` 设置和功能检测。
-- `/channels/bluebubbles`——重定向到本迁移指南的旧版 URL。
-- [Pairing](/channels/pairing)——私信身份验证和配对流程。
-- [Channel Routing](/channels/channel-routing)——gateway 如何为出站回复选择 channel。
+- [BlueBubbles 移除和 imsg iMessage 路径](/announcements/bluebubbles-imessage) — 简短公告和运维摘要。
+- [iMessage](/channels/imessage) — 完整的 iMessage Channel 参考，包括 `imsg launch` 设置和能力检测。
+- `/channels/bluebubbles` — 重定向到此迁移指南的旧版 URL。
+- [Pairing](/channels/pairing) — 私信认证和配对流程。
+- [Channel Routing](/channels/channel-routing) — Gateway 如何为出站回复选择 Channel。
