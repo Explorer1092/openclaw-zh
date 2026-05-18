@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1930ae10536d3a051de77060a7999c11"
+mmh3_hash: "7fdc8c0f682d6e9235a538289fc030be"
 summary: "通过 ACP 后端运行外部编程 harness（Claude Code、Cursor、Gemini CLI、显式 Codex ACP、OpenClaw ACP、OpenCode）"
 read_when:
   - 通过 ACP 运行编程 harness
@@ -47,7 +47,7 @@ OpenClaw 仅在 ACP **真正可用**时才向 Agent 介绍 ACP 启动：ACP 必�
   <Accordion title="首次运行注意事项">
     - 如果设置了 `plugins.allow`，它是一个限制性 Plugin 列表，**必须**包含 `acpx`；否则已安装的 ACP 后端会被有意阻止，`/acp doctor` 会报告缺失的允许列表条目。
     - Codex ACP 适配器与 `acpx` Plugin 一起预置，并在可能时在本地启动。
-    - Codex ACP 使用隔离的 `CODEX_HOME` 运行；OpenClaw 仅从主机 Codex 配置复制可信的项目条目并信任活跃工作区，将认证、通知和 Hook 保留在主机配置中。
+    - Codex ACP 使用隔离的 `CODEX_HOME` 运行；OpenClaw 仅从主机 Codex 配置复制可信的项目条目和安全的模型/Provider 路由配置，将认证、通知和 Hook 保留在主机配置中。
     - 其他目标 harness 适配器在你首次使用时仍可能通过 `npx` 按需获取。
     - 该 harness 仍然需要在主机上存在供应商认证。
     - 如果主机没有 npm 或网络访问权限，首次运行的适配器获取会失败，直到缓存预热或以其他方式安装了适配器。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "697448e7c6dfce86bace74fb5ed0ade1"
+mmh3_hash: "5e008ab481d788b7d749a731e97ce381"
 summary: "图像、视频、音乐、语音和媒体理解能力一览"
 read_when:
   - 寻找 OpenClaw 媒体能力的概述
@@ -17,13 +17,13 @@ OpenClaw 生成图像、视频和音乐，理解入站媒体（图像、音频�
 
 <CardGroup cols={2}>
   <Card title="图像生成" href="/tools/image-generation" icon="image">
-    通过 `image_generate` 从文本提示或参考图像创建和编辑图像。同步——与回复内联完成。
+    通过 `image_generate` 从文本提示或参考图像创建和编辑图像。在聊天 Session 中异步——在后台运行并在就绪时发布结果。
   </Card>
   <Card title="视频生成" href="/tools/video-generation" icon="video">
     通过 `video_generate` 实现文本转视频、图像转视频和视频转视频。异步——在后台运行并在就绪时发布结果。
   </Card>
   <Card title="音乐生成" href="/tools/music-generation" icon="music">
-    通过 `music_generate` 生成音乐或音轨。共享提供商为异步；ComfyUI 工作流路径同步运行。
+    通过 `music_generate` 生成音乐或音轨。在聊天 Session 中基于共享媒体生成任务生命周期进行异步处理。
   </Card>
   <Card title="文本转语音" href="/tools/tts" icon="microphone">
     通过 `tts` 工具加 `messages.tts` 配置将出站回复转换为语音音频。同步。
@@ -46,7 +46,7 @@ OpenClaw 生成图像、视频和音乐，理解入站媒体（图像、音频�
 | DeepInfra    |  ✓   |  ✓   |      |  ✓  |  ✓  |          |    ✓     |
 | Deepgram     |      |      |      |     |  ✓  |    ✓     |          |
 | ElevenLabs   |      |      |      |  ✓  |  ✓  |          |          |
-| fal          |  ✓   |  ✓   |      |     |     |          |          |
+| fal          |  ✓   |  ✓   |  ✓   |     |     |          |          |
 | Google       |  ✓   |  ✓   |  ✓   |  ✓  |     |    ✓     |    ✓     |
 | Gradium      |      |      |      |  ✓  |     |          |          |
 | Local CLI    |      |      |      |  ✓  |     |          |          |
@@ -54,7 +54,7 @@ OpenClaw 生成图像、视频和音乐，理解入站媒体（图像、音频�
 | MiniMax      |  ✓   |  ✓   |  ✓   |  ✓  |     |          |          |
 | Mistral      |      |      |      |     |  ✓  |          |          |
 | OpenAI       |  ✓   |  ✓   |      |  ✓  |  ✓  |    ✓     |    ✓     |
-| OpenRouter   |  ✓   |  ✓   |      |  ✓  |     |          |    ✓     |
+| OpenRouter   |  ✓   |  ✓   |  ✓   |  ✓  |  ✓  |          |    ✓     |
 | Qwen         |      |  ✓   |      |     |     |          |          |
 | Runway       |      |  ✓   |      |     |     |          |          |
 | SenseAudio   |      |      |      |     |  ✓  |          |          |
@@ -69,21 +69,22 @@ OpenClaw 生成图像、视频和音乐，理解入站媒体（图像、音频�
 
 ## 异步 vs 同步
 
-| 能力           | 模式 | 原因                                                               |
-| -------------- | ---- | ------------------------------------------------------------------ |
-| 图像           | 同步 | 提供商响应在几秒内返回；与回复内联完成。                           |
-| 文本转语音     | 同步 | 提供商响应在几秒内返回；附加到回复音频。                           |
-| 视频           | 异步 | 提供商处理需要 30 秒到几分钟。                                     |
-| 音乐（共享）   | 异步 | 与视频相同的提供商处理特性。                                       |
-| 音乐（ComfyUI）| 同步 | 本地工作流针对已配置的 ComfyUI 服务器内联运行。                   |
+| 能力       | 模式 | 原因                                                                                             |
+| ---------- | ---- | ------------------------------------------------------------------------------------------------ |
+| 图像       | 异步 | 提供商处理时间可能超过一个聊天轮次；生成的附件使用共享完成路径。                                 |
+| 文本转语音 | 同步 | 提供商响应在几秒内返回；附加到回复音频。                                                         |
+| 视频       | 异步 | 提供商处理需要 30 秒到几分钟；慢速队列最长可运行到配置的超时时间。                               |
+| 音乐       | 异步 | 与视频相同的提供商处理特性。                                                                     |
 
-对于异步工具，OpenClaw 将请求提交给提供商，立即返回任务 ID，并在任务账本中跟踪作业。Agent 在作业运行期间继续响应其他消息。当提供商完成时，OpenClaw 唤醒 Agent，并携带生成的媒体路径，以便 Agent 告知用户并在源投递策略要求时通过 message 工具传递结果。对于仅限 message 工具的群组/Channel 路由，OpenClaw 将缺少 message 工具投递证据视为完成失败，并直接将生成的媒体发送到原始 Channel。
+对于异步工具，OpenClaw 将请求提交给提供商，立即返回任务 id，并在任务账本中跟踪作业。Agent 在作业运行期间继续响应其他消息。当提供商完成时，OpenClaw 唤醒 Agent，并携带生成的媒体路径，以便 Agent 告知用户并通过 message 工具传递结果。OpenClaw 将缺少 message 工具投递证据视为完成失败，不会自动发布生成的媒体作为回退。
 
 ## 语音转文字和 Voice Call
 
-Deepgram、DeepInfra、ElevenLabs、Mistral、OpenAI、SenseAudio 和 xAI 在配置后都可以通过批量 `tools.media.audio` 路径转录入站音频。在入站上下文中预检语音备注以进行提及门控或命令解析的 Channel 插件会标记已转录的附件，因此共享媒体理解通道会复用该转录，而不是对同一音频进行第二次 STT 调用。
+Deepgram、DeepInfra、ElevenLabs、Mistral、OpenAI、OpenRouter、SenseAudio 和 xAI 在配置后都可以通过批量 `tools.media.audio` 路径转录入站音频。在入站上下文中预检语音备注以进行提及门控或命令解析的 Channel 插件会标记已转录的附件，因此共享媒体理解通道会复用该转录，而不是对同一音频进行第二次 STT 调用。
 
 Deepgram、ElevenLabs、Mistral、OpenAI 和 xAI 还注册了 Voice Call 流式 STT 提供商，因此实时电话音频可以转发到所选供应商，而无需等待完整录音。
+
+对于实时用户对话，优先使用 [Talk 模式](/nodes/talk)。批量音频附件保留在媒体路径上；浏览器实时、原生按键通话、电话和会议音频应使用 Talk 事件和 Gateway 返回的 Session 范围目录。
 
 ## 提供商映射（供应商如何跨表面分布）
 

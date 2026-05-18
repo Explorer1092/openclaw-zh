@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f7447779b93298206e40be0d8d93c85e"
+mmh3_hash: "f8709d4b30b46a696bb18870a1565577"
 summary: "在不改变队列模式的情况下引导活跃运行"
 read_when:
   - 在 Agent 已运行时使用 /steer 或 /tell
@@ -9,7 +9,7 @@ title: "Steer"
 sidebarTitle: "Steer"
 ---
 
-`/steer` 向已激活的运行发送引导指令。它适用于"在运行过程中调整方向"的场景，而非用于开启新一轮对话。
+`/steer` 首先尝试向已激活的运行发送引导。它适用于"在运行过程中调整方向"的场景。如果当前运行时无法接受引导，OpenClaw 会将消息作为正常提示发送，而非丢弃它。
 
 ## 当前 Session
 
@@ -24,19 +24,19 @@ sidebarTitle: "Steer"
 
 - 仅针对当前 Session 的活跃运行。
 - 独立于 Session 的 `/queue` 模式运行。
-- 当 Session 空闲时不启动新运行。
-- 当没有可引导的活跃运行时，回复警告信息。
+- 当 Session 空闲或活跃运行无法接受引导时，使用相同消息开始正常轮次。
 - 使用活跃运行时的引导路径，因此模型会在下一个受支持的运行时边界处看到该引导。
 
 ## Steer 与 queue 的区别
 
-`/queue steer` 改变的是正常入站消息在运行活跃期间抵达时的行为方式。`/steer <message>` 是一个显式命令，无论存储的 `/queue` 设置如何，它都会尝试在下一个受支持的运行时边界将该命令的消息注入活跃运行。
+`/queue steer` 使正常入站消息在运行活跃期间抵达时尝试引导活跃运行。`/steer <message>` 是一个显式命令，无论存储的 `/queue` 设置如何，它都会尝试在下一个受支持的运行时边界将该命令的消息注入活跃运行。当注入不可用时，命令前缀被剥离，`<message>` 作为正常提示继续。
 
 使用场景：
 
 - `/steer <message>`：当你想立即引导活跃运行时。
 - `/queue steer`：当你希望未来的普通消息默认引导活跃运行时。
-- `/queue collect` 或 `/queue followup`：当新消息应该等待后续轮次而非引导活跃运行时。
+- `/queue collect` 或 `/queue followup`：当未来的普通消息应该等待后续轮次而非引导活跃运行时。
+- `/queue interrupt`：当最新消息应该替换活跃运行而非引导它时。
 
 有关队列模式和回退行为，请参见[命令队列](/concepts/queue)和[引导队列](/concepts/queue-steering)。
 

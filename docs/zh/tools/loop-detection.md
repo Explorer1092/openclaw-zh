@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d9d6fba0855284e7db8ec13d07bb76dd"
+mmh3_hash: "ae71d70592872216d7523a83320b7696"
 title: "工具循环检测"
 summary: "如何启用和调整检测重复工具调用循环的防护机制"
 read_when:
@@ -81,7 +81,7 @@ OpenClaw 有两个协作的防护机制，用于检测重复工具调用模式�
 | `criticalThreshold`              | `20`    | 阻断重复循环模式的阈值。                                                                                               |
 | `unknownToolThreshold`           | `10`    | 在相同不可用工具被调用此次数后阻断重复调用。                                                                           |
 | `globalCircuitBreakerThreshold`  | `30`    | 所有检测器的全局无进展断路器阈值。                                                                                     |
-| `detectors.genericRepeat`        | `true`  | 检测相同工具 + 相同参数的重复模式。                                                                                    |
+| `detectors.genericRepeat`        | `true`  | 对相同工具 + 相同参数的重复模式发出警告，当相同调用也返回相同结果时阻断。                                              |
 | `detectors.knownPollNoProgress`  | `true`  | 检测已知的无状态变化的轮询类模式。                                                                                     |
 | `detectors.pingPong`             | `true`  | 检测交替乒乓模式。                                                                                                     |
 | `postCompactionGuard.windowSize` | `3`     | 压缩后工具调用窗口大小——防护在此期间保持激活，相同三元组出现此次数后中止运行。                                         |

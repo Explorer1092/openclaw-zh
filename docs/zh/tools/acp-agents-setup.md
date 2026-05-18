@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0f3029079b6034b3bde18b19bad25d20"
+mmh3_hash: "7ccf13810c1f9f89f749fe89de9b278f"
 summary: "设置 ACP Agent：acpx harness 配置、Plugin 设置、权限"
 read_when:
   - 为 Claude Code / Codex / Gemini CLI 安装或配置 acpx harness
@@ -156,7 +156,7 @@ openclaw plugins install ./path/to/local/acpx-plugin
 
 ### acpx 命令和版本配置
 
-默认情况下，`acpx` Plugin 在 Gateway 启动期间探测嵌入式 ACP 后端，并在发出 Gateway `ready` 信号之前等待该探测完成。设置 `OPENCLAW_ACPX_RUNTIME_STARTUP_PROBE=0` 可跳过启动探测，改为懒加载注册后端。运行 `/acp doctor` 进行显式按需探测。
+默认情况下，`acpx` Plugin 在 Gateway 启动期间注册嵌入式 ACP 后端，并在发出 Gateway `ready` 信号之前等待嵌入式运行时启动探测完成。仅在脚本或有意禁用启动探测的环境中设置 `OPENCLAW_ACPX_RUNTIME_STARTUP_PROBE=0` 或 `OPENCLAW_SKIP_ACPX_RUNTIME_PROBE=1`。运行 `/acp doctor` 进行显式按需探测。
 
 在 Plugin 配置中覆盖命令或版本：
 

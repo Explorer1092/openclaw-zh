@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f4c2ffc795c771b896ab6c27be70283b"
+mmh3_hash: "f23495d8b375138934324349d21b0120"
 summary: "集成浏览器控制服务 + 操作命令"
 read_when:
   - 添加 Agent 控制的浏览器自动化
@@ -524,7 +524,7 @@ Agent 使用：
 
 - **截图** - 页面截图和 `--ref` 元素截图有效；CSS `--element` 选择器无效。`--full-page` 不能与 `--ref` 或 `--element` 组合。Playwright 不是页面或基于引用的元素截图所必需的。
 - **操作** - `click`、`type`、`hover`、`scrollIntoView`、`drag` 和 `select` 需要快照引用（不支持 CSS 选择器）。`click-coords` 点击可见视口坐标且不需要快照引用。`click` 仅为左键。`type` 不支持 `slowly=true`；请使用 `fill` 或 `press`。`press` 不支持 `delayMs`。`type`、`hover`、`scrollIntoView`、`drag`、`select`、`fill` 和 `evaluate` 不支持每次调用的超时。`select` 接受单个值。
-- **等待/上传/对话框** - `wait --url` 支持精确、子字符串和 glob 模式；不支持 `wait --load networkidle`。上传 Hook 需要 `ref` 或 `inputRef`，每次一个文件，不支持 CSS `element`。对话框 Hook 不支持超时覆盖。
+- **等待/上传/对话框** - `wait --url` 支持精确、子字符串和 glob 模式；不支持 `wait --load networkidle`。上传 Hook 需要 `ref` 或 `inputRef`，每次一个文件，不支持 CSS `element`。对话框 Hook 不支持超时覆盖或 `dialogId`。
 - **仅托管功能** - 批量操作、PDF 导出、下载拦截和 `responsebody` 仍需要托管浏览器路径。
 
 </Accordion>

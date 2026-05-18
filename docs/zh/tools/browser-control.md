@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fa02362c8b162301c2e6c1c47a31d85d"
+mmh3_hash: "c977f6e555a6efadc4ed20ace186a4c6"
 summary: "OpenClaw 浏览器控制 API、CLI 参考和脚本操作"
 read_when:
   - 通过本地控制 API 脚本化或调试 Agent 浏览器
@@ -171,6 +171,7 @@ openclaw browser waitfordownload report.pdf
 openclaw browser upload /tmp/openclaw/uploads/file.pdf
 openclaw browser fill --fields '[{"ref":"1","type":"text","value":"Ada"}]'
 openclaw browser dialog --accept
+openclaw browser dialog --dismiss --dialog-id d1
 openclaw browser wait --text "Done"
 openclaw browser wait "#main" --url "**/dash" --load networkidle --fn "window.ready===true"
 openclaw browser evaluate --fn '(el) => el.textContent' --ref 7

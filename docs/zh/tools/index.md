@@ -1,172 +1,130 @@
 ---
-title: "工具和 Plugin"
-mmh3_hash: "3da2674ebee3ba8e938d1caad6289f4c"
-summary: "OpenClaw 工具和 Plugin 概览：Agent 可以做什么以及如何扩展它"
+mmh3_hash: "a5f9635c8e1f90c90795d7fc2f7a47d8"
+doc-schema-version: 1
+summary: "OpenClaw 工具、技能和 Plugin 概览：Agent 可以调用什么以及如何扩展能力"
 read_when:
-  - 了解 OpenClaw 提供哪些工具
-  - 需要配置、允许或拒绝工具
-  - 在内置工具、技能和 Plugin 之间做决定
+  - 您想了解 OpenClaw 提供哪些工具
+  - 您正在选择内置工具、技能和 Plugin
+  - 您需要工具策略、自动化或 Agent 协调的文档入口
+title: "概览"
 ---
 
-# 工具和 Plugin
+使用本页选择合适的能力入口。**工具**是可调用的操作，**技能**教 Agent 如何工作，**Plugin** 添加运行时能力，例如工具、Provider、Channel、Hook 和打包的技能。
 
-Agent 除了生成文本之外的所有操作都通过**工具**完成。工具是 Agent 读取文件、运行命令、浏览网页、发送消息以及与设备交互的方式。
+本页是概览和路由页。如需完整的工具策略、默认值、组成员、Provider 限制和配置字段，请使用[工具和自定义 Provider](/gateway/config-tools)。
 
-## 工具、技能和 Plugin
+## 从这里开始
 
-OpenClaw 有三个协同工作的层次：
+对于大多数 Agent，从内置工具类别开始，仅在 Agent 应看到更少工具或需要显式主机访问时才调整策略。
+
+| 如果您需要...                        | 首先使用                                           | 然后阅读                                                                        |
+| ------------------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 让 Agent 使用现有能力执行操作        | [内置工具](#built-in-tool-categories)              | [工具类别](#built-in-tool-categories)                                           |
+| 控制 Agent 可以调用什么              | [工具策略](#configure-access-and-approvals)        | [工具和自定义 Provider](/gateway/config-tools)                                  |
+| 教 Agent 一个工作流                  | [技能](#choose-tools-skills-or-plugins)            | [技能](/tools/skills) 和 [创建技能](/tools/creating-skills)                     |
+| 添加新集成或运行时入口               | [Plugin](#extend-capabilities)                     | [Plugin](/tools/plugin) 和 [构建 Plugin](/plugins/building-plugins)             |
+| 稍后或在后台运行工作                 | [自动化](/automation)                              | [自动化概览](/automation)                                                        |
+| 协调多个 Agent 或运行框架            | [子 Agent](/tools/subagents)                       | [ACP Agent](/tools/acp-agents) 和 [Agent 发送](/tools/agent-send)               |
+| 搜索大型 PI 工具目录                 | [Tool Search](/tools/tool-search)                  | [Tool Search](/tools/tool-search)                                               |
+
+## 选择工具、技能或 Plugin
 
 <Steps>
-  <Step title="工具是 Agent 调用的内容">
-    工具是 Agent 可以调用的类型化函数（例如 `exec`、`browser`、`web_search`、`message`）。OpenClaw 附带一组**内置工具**，Plugin 可以注册额外的工具。
+  <Step title="当 Agent 需要执行操作时使用工具">
+    工具是 Agent 可以调用的类型化函数，例如 `exec`、`browser`、`web_search`、`message` 或 `image_generate`。当 Agent 需要读取数据、修改文件、发送消息、调用 Provider 或操作其他系统时使用工具。可见工具以结构化函数定义的形式发送给模型。
 
-    Agent 将工具视为发送到模型 API 的结构化函数定义。
-
-  </Step>
-
-  <Step title="技能教 Agent 何时以及如何使用工具">
-    技能是注入到系统提示中的 Markdown 文件（`SKILL.md`）。技能为 Agent 提供上下文、约束以及有效使用工具的逐步指导。技能存放在你的工作区、共享文件夹中，或随 Plugin 一起打包。
-
-    [技能参考](/tools/skills) | [创建技能](/tools/creating-skills)
+    模型只能看到通过活动配置文件、允许/拒绝策略、Provider 限制、沙盒状态、Channel 权限和 Plugin 可用性的工具。
 
   </Step>
 
-  <Step title="Plugin 将所有内容打包在一起">
-    Plugin 是一个可以注册任意组合能力的包：Channel、模型 Provider、工具、技能、语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取、Web 搜索等。某些 Plugin 是**核心**的（随 OpenClaw 附带），其他是**外部**的（由社区发布在 npm 上）。
+  <Step title="当 Agent 需要指令时使用技能">
+    技能是加载到 Agent 提示词中的 `SKILL.md` 指令包。当 Agent 已有所需工具，但需要可重复的工作流、审核规范、命令序列或操作约束时，使用技能。
 
-    [安装和配置 Plugin](/tools/plugin) | [构建自己的 Plugin](/plugins/building-plugins)
+    技能可以存放在工作区、共享技能目录、托管的 OpenClaw 技能根目录或 Plugin 包中。
+
+    [技能](/tools/skills) | [创建技能](/tools/creating-skills) | [技能配置](/tools/skills-config)
+
+  </Step>
+
+  <Step title="当 OpenClaw 需要新能力时使用 Plugin">
+    Plugin 可以添加工具、技能、Channel、模型 Provider、语音、实时语音、媒体生成、Web 搜索、Web 抓取、Hook 和其他运行时能力。当该能力包含代码、凭据、生命周期 Hook、清单元数据或可安装打包时，使用 Plugin。现有 Plugin 可从 ClawHub、npm、git、本地目录或归档文件安装。
+
+    [安装和配置 Plugin](/tools/plugin) | [构建 Plugin](/plugins/building-plugins) | [Plugin SDK](/plugins/sdk-overview)
 
   </Step>
 </Steps>
 
-## 内置工具
+## 内置工具类别
 
-这些工具随 OpenClaw 一起提供，无需安装任何 Plugin 即可使用：
+下表列出了代表性工具，以便您了解各入口。这不是完整的策略参考。如需精确的组、默认值和允许/拒绝语义，请使用[工具和自定义 Provider](/gateway/config-tools)。
 
-| 工具                                       | 功能                                                                  | 页面                                        |
-| ------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------- |
-| `exec` / `process`                         | 运行 Shell 命令，管理后台进程                                         | [Exec](/tools/exec)、[Exec 批准](/tools/exec-approvals) |
-| `code_execution`                           | 运行沙盒远程 Python 分析                                              | [Code Execution](/tools/code-execution)     |
-| `browser`                                  | 控制 Chromium 浏览器（导航、点击、截图）                              | [浏览器](/tools/browser)                    |
-| `web_search` / `x_search` / `web_fetch`    | 搜索网页，搜索 X 帖子，抓取页面内容                                   | [Web](/tools/web)、[Web Fetch](/tools/web-fetch) |
-| `read` / `write` / `edit`                  | 工作区中的文件 I/O                                                    |                                             |
-| `apply_patch`                              | 多块文件补丁                                                          | [Apply Patch](/tools/apply-patch)           |
-| `message`                                  | 跨所有 Channel 发送消息                                               | [Agent Send](/tools/agent-send)             |
-| `nodes`                                    | 发现和定位配对设备                                                    |                                             |
-| `cron` / `gateway`                         | 管理定时任务；检查、修补、重启或更新 Gateway                          |                                             |
-| `image` / `image_generate`                 | 分析或生成图像                                                        | [Image Generation](/tools/image-generation) |
-| `music_generate`                           | 生成音乐曲目                                                          | [Music Generation](/tools/music-generation) |
-| `video_generate`                           | 生成视频                                                              | [Video Generation](/tools/video-generation) |
-| `tts`                                      | 一次性文字转语音转换                                                  | [TTS](/tools/tts)                           |
-| `sessions_*` / `subagents` / `agents_list` | Session 管理、状态和子 Agent 编排                                     | [子 Agent](/tools/subagents)                |
-| `session_status`                           | 轻量级 `/status` 风格的回读和 Session 模型覆盖                        | [Session 工具](/concepts/session-tool)      |
-
-对于图像工作，使用 `image` 进行分析，使用 `image_generate` 进行生成或编辑。如果你针对 `openai/*`、`google/*`、`fal/*` 或其他非默认图像 Provider，请先配置该 Provider 的认证/API 密钥。
-
-对于音乐工作，使用 `music_generate`。如果你针对 `google/*`、`minimax/*` 或其他非默认音乐 Provider，请先配置该 Provider 的认证/API 密钥。
-
-对于视频工作，使用 `video_generate`。如果你针对 `qwen/*` 或其他非默认视频 Provider，请先配置该 Provider 的认证/API 密钥。
-
-对于工作流驱动的音频生成，当 ComfyUI 等 Plugin 注册时使用 `music_generate`。这与 `tts`（文字转语音）不同。
-
-`session_status` 是 sessions 组中的轻量级状态/回读工具。它回答有关当前 Session 的 `/status` 风格问题，并可选地设置每 Session 的模型覆盖；`model=default` 清除该覆盖。与 `/status` 一样，它可以从最新的转录使用条目中补充稀疏的令牌/缓存计数器和活跃运行时模型标签。
-
-`gateway` 是用于 Gateway 操作的仅所有者运行时工具：
-
-- `config.schema.lookup` 用于在编辑前查看一个路径范围的配置子树
-- `config.get` 用于当前配置快照 + 哈希
-- `config.patch` 用于带重启的部分配置更新
-- `config.apply` 仅用于完整配置替换
-- `update.run` 用于显式自我更新 + 重启
-
-对于部分更改，优先使用 `config.schema.lookup` 然后 `config.patch`。仅在有意替换整个配置时使用 `config.apply`。更广泛的配置文档请阅读 [配置](/gateway/configuration) 和 [配置参考](/gateway/configuration-reference)。该工具还拒绝更改 `tools.exec.ask` 或 `tools.exec.security`；旧版 `tools.bash.*` 别名规范化为相同的受保护 exec 路径。
-
-### Plugin 提供的工具
-
-Plugin 可以注册额外的工具。一些示例：
-
-- [Canvas](/plugins/reference/canvas) — 用于节点 Canvas 控制和 A2UI 渲染的实验性捆绑 Plugin
-- [Diffs](/tools/diffs) — diff 查看器和渲染器
-- [LLM Task](/tools/llm-task) — 用于结构化输出的仅 JSON LLM 步骤
-- [Lobster](/tools/lobster) — 带可恢复批准的类型化工作流运行时
-- [Music Generation](/tools/music-generation) — 带工作流支持 Provider 的共享 `music_generate` 工具
-- [OpenProse](/prose) — Markdown 优先的工作流编排
-- [Tokenjuice](/tools/tokenjuice) — 压缩嘈杂的 `exec` 和 `bash` 工具结果
-
-[Tool Search](/tools/tool-search) 是大型目录的紧凑入口。OpenClaw 不再将所有 OpenClaw、MCP 或客户端工具 schema 放入提示词，而是可以为模型提供一个隔离的 Node 运行时，内含 `openclaw.tools.search`、`openclaw.tools.describe` 和 `openclaw.tools.call`。调用仍通过 Gateway 回流，因此工具策略、批准、Hook 和 Session 日志保持权威性。
-
-## 工具配置
-
-### 允许和拒绝列表
-
-通过配置中的 `tools.allow` / `tools.deny` 控制 Agent 可以调用哪些工具。拒绝始终优先于允许。
-
-```json5
-{
-  tools: {
-    allow: ["group:fs", "browser", "web_search"],
-    deny: ["exec"],
-  },
-}
-```
-
-当显式允许列表解析为没有可调用的工具时，OpenClaw 会安全失败。例如，`tools.allow: ["query_db"]` 仅在已加载的 Plugin 实际注册了 `query_db` 时才有效。如果没有内置、Plugin 或捆绑的 MCP 工具匹配允许列表，运行会在模型调用之前停止，而不是继续进行可能产生幻觉工具结果的纯文本运行。
-
-### 工具配置文件
-
-`tools.profile` 在应用 `allow`/`deny` 之前设置基础允许列表。每个 Agent 覆盖：`agents.list[].tools.profile`。
-
-| 配置文件    | 包含内容                                                                                                                                        |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `full`      | 所有核心和可选 Plugin 工具；更广泛命令/控制访问的无限制基线                                                                                     |
-| `coding`    | `group:fs`、`group:runtime`、`group:web`、`group:sessions`、`group:memory`、`cron`、`image`、`image_generate`、`music_generate`、`video_generate` |
-| `messaging` | `group:messaging`、`sessions_list`、`sessions_history`、`sessions_send`、`session_status`                                                        |
-| `minimal`   | 仅 `session_status`                                                                                                                             |
+| 类别               | 当 Agent 需要...                                                              | 代表性工具                                                           | 下一步阅读                                                             |
+| ------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 运行时             | 运行命令、管理进程或使用 Provider 支持的 Python 分析                          | `exec`、`process`、`code_execution`                                  | [Exec](/tools/exec)、[代码执行](/tools/code-execution)                 |
+| 文件               | 读取和修改工作区文件                                                          | `read`、`write`、`edit`、`apply_patch`                               | [Apply Patch](/tools/apply-patch)                                      |
+| Web                | 搜索网页、搜索 X 帖子或抓取可读页面内容                                      | `web_search`、`x_search`、`web_fetch`                                | [Web 工具](/tools/web)、[Web Fetch](/tools/web-fetch)                  |
+| Browser            | 操作 Browser Session                                                          | `browser`                                                            | [Browser](/tools/browser)                                              |
+| 消息和 Channel     | 发送回复或 Channel 操作                                                       | `message`                                                            | [Agent 发送](/tools/agent-send)                                        |
+| Session 和 Agent   | 检查 Session、委派工作、引导另一个运行或报告状态                              | `sessions_*`、`subagents`、`agents_list`、`session_status`           | [子 Agent](/tools/subagents)、[Session 工具](/concepts/session-tool)   |
+| 自动化             | 调度工作或响应后台事件                                                        | `cron`、`heartbeat_respond`                                          | [自动化](/automation)                                                  |
+| Gateway 和节点     | 检查 Gateway 状态或配对的目标设备                                             | `gateway`、`nodes`                                                   | [Gateway 配置](/gateway/configuration)、[节点](/nodes)                 |
+| 媒体               | 分析、生成或播放媒体                                                          | `image`、`image_generate`、`music_generate`、`video_generate`、`tts` | [媒体概览](/tools/media-overview)                                      |
+| 大型 PI 目录       | 搜索和调用许多合适的工具，而无需将每个 schema 发送给模型                      | `tool_search_code`、`tool_search`、`tool_describe`                   | [Tool Search](/tools/tool-search)                                      |
 
 <Note>
-`tools.profile: "messaging"` 对于以 Channel 为中心的 Agent 来说是有意收窄的。它不包含更广泛的命令/控制工具，如文件系统、运行时、浏览器、canvas、nodes、cron 和 gateway 控制。使用 `tools.profile: "full"` 作为更广泛命令/控制访问的无限制基线，然后在需要时通过 `tools.allow` / `tools.deny` 修剪访问权限。
+Tool Search 是实验性的 PI Agent 入口。Codex 运行框架使用 Codex 原生代码模式、原生工具搜索、延迟动态工具和嵌套工具调用，而非 `tools.toolSearch`。
 </Note>
 
-`coding` 包含轻量级 Web 工具（`web_search`、`web_fetch`、`x_search`），但不包含完整的浏览器控制工具。浏览器自动化可以驱动真实的 Session 和已登录的配置文件，因此请使用 `tools.alsoAllow: ["browser"]` 或每个 Agent 的 `agents.list[].tools.alsoAllow: ["browser"]` 显式添加它。
+## Plugin 提供的工具
 
-<Note>
-在限制性配置文件（`messaging`、`minimal`）下配置 `tools.exec` 或 `tools.fs` 并不会隐式扩展配置文件的允许列表。当你想要限制性配置文件使用这些已配置的部分时，请添加明确的 `tools.alsoAllow` 条目（例如，exec 用 `["exec", "process"]`，fs 用 `["read", "write", "edit"]`）。当配置部分存在但没有匹配的 `alsoAllow` 授权时，OpenClaw 会在启动时记录警告。
-</Note>
+Plugin 可以注册额外的工具。Plugin 作者通过 `api.registerTool(...)` 和清单的 `contracts.tools` 注册工具；合约详情请使用 [Plugin SDK](/plugins/sdk-overview) 和 [Plugin 清单](/plugins/manifest)。
 
-`coding` 和 `messaging` 配置文件还允许在 Plugin 键 `bundle-mcp` 下配置的捆绑 MCP 工具。当你想要配置文件保留其正常内置工具但隐藏所有配置的 MCP 工具时，添加 `tools.deny: ["bundle-mcp"]`。`minimal` 配置文件不包含捆绑 MCP 工具。
+常见的 Plugin 提供工具包括：
 
-### 工具组
+- [Diffs](/tools/diffs)：用于渲染文件和 Markdown 差异
+- [LLM Task](/tools/llm-task)：用于仅 JSON 工作流步骤
+- [Lobster](/tools/lobster)：带可恢复批准的类型化工作流
+- [Tokenjuice](/tools/tokenjuice)：压缩嘈杂的 `exec` 和 `bash` 工具输出
+- [Tool Search](/tools/tool-search)：在不将每个 schema 放入提示词的情况下发现和调用大型工具目录
+- [Canvas](/plugins/reference/canvas)：用于节点 Canvas 控制和 A2UI 渲染
 
-在允许/拒绝列表中使用 `group:*` 简写：
+## 配置访问和批准
 
-| 组                 | 工具                                                                                                      |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `group:runtime`    | exec, process, code_execution（`bash` 作为 `exec` 的别名被接受）                                          |
-| `group:fs`         | read, write, edit, apply_patch                                                                            |
-| `group:sessions`   | sessions_list, sessions_history, sessions_send, sessions_spawn, sessions_yield, subagents, session_status |
-| `group:memory`     | memory_search, memory_get                                                                                 |
-| `group:web`        | web_search, x_search, web_fetch                                                                           |
-| `group:ui`         | browser；启用捆绑 Canvas Plugin 时加上 canvas                                                            |
-| `group:automation` | heartbeat_respond, cron, gateway                                                                          |
-| `group:messaging`  | message                                                                                                   |
-| `group:nodes`      | nodes                                                                                                     |
-| `group:agents`     | agents_list, update_plan                                                                                  |
-| `group:media`      | image, image_generate, music_generate, video_generate, tts                                                |
-| `group:openclaw`   | 所有内置 OpenClaw 工具（不包括 Plugin 工具）                                                              |
+工具策略在模型调用前执行。如果策略移除了某个工具，模型在该轮次不会收到该工具的 schema。运行可能因全局配置、每 Agent 配置、Channel 策略、Provider 限制、沙盒规则、仅所有者门控或 Plugin 可用性而失去工具。
 
-`sessions_history` 返回有界的、经安全过滤的回溯视图。它会去除 thinking 标签、`<relevant-memories>` 脚手架、纯文本工具调用 XML 负载（包括 `<tool_call>...</tool_call>`、`<function_call>...</function_call>` 等）、降级的工具调用脚手架、泄漏的 ASCII/全角模型控制令牌，以及来自助手文本的格式错误的 MiniMax 工具调用 XML，然后应用修订/截断，而不是作为原始转录导出。
+- [工具和自定义 Provider](/gateway/config-tools) 记录了工具配置文件、允许/拒绝列表、Provider 特定限制、循环检测和 Provider 支持的工具设置。
+- [Exec 批准](/tools/exec-approvals) 记录了主机命令批准策略。
+- [Elevated exec](/tools/elevated) 记录了沙盒外的受控执行。
+- [沙盒 vs 工具策略 vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) 解释了哪一层控制文件和进程访问。
+- [每 Agent 沙盒和工具限制](/tools/multi-agent-sandbox-tools) 记录了委派运行的 Agent 特定限制。
 
-### 特定 Provider 的限制
+## 扩展能力
 
-使用 `tools.byProvider` 为特定 Provider 限制工具，而无需更改全局默认值：
+根据您希望 OpenClaw 完成的任务选择扩展路径：
 
-```json5
-{
-  tools: {
-    profile: "coding",
-    byProvider: {
-      "google-antigravity": { profile: "minimal" },
-    },
-  },
-}
-```
+- 使用 [Plugin](/tools/plugin) 安装或管理现有 Plugin。
+- 使用[构建 Plugin](/plugins/building-plugins) 构建新的集成、Provider、Channel、工具或 Hook。
+- 使用[技能](/tools/skills)和[创建技能](/tools/creating-skills)添加或调整可复用的 Agent 指令。
+- 当工作流属于 Plugin 分发的技能包时，使用 [Skill workshop](/plugins/skill-workshop) 打包可复用的工作流材料。
+- 当您需要实现合约时，使用 [Plugin SDK](/plugins/sdk-overview) 和 [Plugin 清单](/plugins/manifest)。
+
+## 排查缺失工具
+
+如果模型无法看到或调用某个工具，从当前轮次的有效策略开始排查：
+
+1. 在[工具和自定义 Provider](/gateway/config-tools) 中检查活动配置文件、`tools.allow` 和 `tools.deny`。
+2. 在[工具和自定义 Provider](/gateway/config-tools) 中检查 Provider 特定限制，并确认所选[模型 Provider](/concepts/model-providers) 是否支持该工具形状。
+3. 使用[沙盒 vs 工具策略 vs Elevated](/gateway/sandbox-vs-tool-policy-vs-elevated) 和 [Elevated exec](/tools/elevated) 检查 Channel 权限、沙盒状态和 Elevated 访问。
+4. 在 [Plugin](/tools/plugin) 中检查拥有该工具的 Plugin 是否已安装并启用。
+5. 对于委派运行，在[每 Agent 沙盒和工具限制](/tools/multi-agent-sandbox-tools) 中检查每 Agent 限制。
+6. 对于大型 PI 目录，确认运行使用的是直接工具暴露还是 [Tool Search](/tools/tool-search)。
+
+## 相关
+
+- [自动化](/automation)：cron、任务、心跳、承诺、Hook、常驻命令和 Task Flow
+- [Agent](/concepts/agent)：Agent 模型、Session、记忆和多 Agent 协调
+- [工具和自定义 Provider](/gateway/config-tools)：规范的工具策略参考
+- [Plugin](/tools/plugin)：Plugin 安装和管理
+- [Plugin SDK](/plugins/sdk-overview)：Plugin 作者参考
+- [技能](/tools/skills)：技能加载顺序、门控和配置
+- [Tool Search](/tools/tool-search)：紧凑的 PI 工具目录发现

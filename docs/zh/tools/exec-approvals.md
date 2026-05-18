@@ -1,6 +1,6 @@
 ---
 title: "Exec 审批"
-mmh3_hash: "966d81fd50b5356347f1de2b841a0ef8"
+mmh3_hash: "97bf16e7d3a75f0209408c4f3c00ad06"
 summary: "主机 exec 审批：策略旋钮、允许列表和 YOLO/严格工作流"
 read_when:
   - 配置 exec 审批或允许列表
@@ -141,6 +141,14 @@ Exec 审批在执行主机上本地执行：
 - `osascript -e`
 
 在严格模式下，这些命令仍需要显式审批，且 `allow-always` 不会自动为它们持久化新的允许列表条目。
+
+### `tools.exec.commandHighlighting`
+
+<ParamField path="commandHighlighting" type="boolean" default="false">
+  仅控制 exec 审批提示中的呈现方式。启用后，OpenClaw 可能会附加解析器派生的命令 span，以便 Web 审批提示可以高亮显示命令 token。设置为 `true` 可启用命令文本高亮。
+</ParamField>
+
+此设置**不**更改 `security`、`ask`、允许列表匹配、严格内联 eval 行为、审批转发或命令执行。可在 `tools.exec.commandHighlighting` 下全局设置，或在 `agents.list[].tools.exec.commandHighlighting` 下按 Agent 设置。
 
 ## YOLO 模式（无审批）
 

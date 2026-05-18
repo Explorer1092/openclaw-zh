@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a77d5a6eca94ffdf4159a3399c56a710"
+mmh3_hash: "018cff7bd9a179dc3b89604ec63b2882"
 summary: "通过 image_generate 使用 OpenAI、Google、fal、MiniMax、ComfyUI、DeepInfra、OpenRouter、LiteLLM、xAI、Vydra 生成和编辑图像"
 read_when:
   - 通过 Agent 生成或编辑图像
@@ -9,7 +9,7 @@ title: "Image generation"
 sidebarTitle: "Image generation"
 ---
 
-`image_generate` 工具让 Agent 能够使用你已配置的提供商创建和编辑图像。生成的图像会作为媒体附件自动发送在 Agent 的回复中。
+`image_generate` 工具让 Agent 能够使用你已配置的提供商创建和编辑图像。在聊天 Session 中，图像生成以异步方式运行：OpenClaw 记录后台任务，立即返回任务 id，并在提供商完成时唤醒 Agent。完成 Agent 必须通过 `message` 工具发送生成的图像；OpenClaw 不会自动发布私有最终回复作为回退。
 
 <Note>
 该工具仅在至少一个图像生成提供商可用时才会显示。如果你在 Agent 工具列表中看不到 `image_generate`，请配置 `agents.defaults.imageGenerationModel`、设置提供商 API 密钥，或通过 OpenAI Codex OAuth 登录。
@@ -41,7 +41,7 @@ sidebarTitle: "Image generation"
   <Step title="向 Agent 提问">
     _"生成一张友好的机器人吉祥物图片。"_
 
-    Agent 会自动调用 `image_generate`。无需设置工具允许列表——当提供商可用时默认启用。
+    Agent 会自动调用 `image_generate`。无需设置工具允许列表——当提供商可用时默认启用。工具返回后台任务 id，完成 Agent 在图像准备好后通过 `message` 工具发送生成的附件。
 
   </Step>
 </Steps>
@@ -85,6 +85,12 @@ sidebarTitle: "Image generation"
 /tool image_generate action=list
 ```
 
+使用 `action: "status"` 查看当前 Session 的活跃图像生成任务：
+
+```text
+/tool image_generate action=status
+```
+
 ## 提供商能力
 
 | 能力                  | ComfyUI            | DeepInfra | fal                        | Google         | MiniMax               | OpenAI         | Vydra | xAI            |
@@ -100,8 +106,8 @@ sidebarTitle: "Image generation"
 <ParamField path="prompt" type="string" required>
   图像生成提示词。`action: "generate"` 时必填。
 </ParamField>
-<ParamField path="action" type='"generate" | "list"' default="generate">
-  使用 `"list"` 在运行时查看可用提供商和模型。
+<ParamField path="action" type='"generate" | "status" | "list"' default="generate">
+  使用 `"status"` 查看当前 Session 的活跃任务，或使用 `"list"` 在运行时查看可用提供商和模型。
 </ParamField>
 <ParamField path="model" type="string">
   提供商/模型覆盖（例如 `openai/gpt-image-2`）。使用 `openai/gpt-image-1.5` 获得透明 OpenAI 背景。
@@ -259,7 +265,7 @@ OpenAI、OpenRouter、Google 和 xAI 通过 `images` 参数支持最多 5 张参
   <Accordion title="xAI grok-imagine-image">
     捆绑的 xAI 提供商在仅提示词请求时使用 `/v1/images/generations`，在存在 `image` 或 `images` 时使用 `/v1/images/edits`。
 
-    - 模型：`xai/grok-imagine-image`、`xai/grok-imagine-image-pro`
+    - 模型：`xai/grok-imagine-image`、`xai/grok-imagine-image-quality`
     - 数量：最多 4 张
     - 参考：一张 `image` 或最多五张 `images`
     - 宽高比：`1:1`、`16:9`、`9:16`、`4:3`、`3:4`、`2:3`、`3:2`

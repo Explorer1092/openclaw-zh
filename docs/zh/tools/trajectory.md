@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "eb1be0e0740130f18ec3e69524a66f1f"
+mmh3_hash: "587b15f68d346b6faa5c6df1f5735892"
 summary: "导出经过编辑的轨迹包，用于调试 OpenClaw Agent Session"
 read_when:
   - 调试 Agent 为何以特定方式回答、失败或调用工具
@@ -134,6 +134,8 @@ export OPENCLAW_TRAJECTORY_DIR=/var/lib/openclaw/trajectories
 
 设置此变量后，OpenClaw 在该目录中为每个 Session id 写入一个 JSONL 文件。
 
+Session 维护在其拥有的 Session 条目被会话磁盘预算修剪、限制或驱逐时删除轨迹辅助文件。Session 目录之外的运行时文件仅在指针目标仍然证明它属于该 Session 时才会被删除。
+
 ## 禁用捕获
 
 在启动 OpenClaw 之前设置 `OPENCLAW_TRAJECTORY=0`：
@@ -143,6 +145,16 @@ export OPENCLAW_TRAJECTORY=0
 ```
 
 这会禁用运行时轨迹捕获。`/export-trajectory` 仍然可以导出对话分支，但仅运行时文件（如已编译的上下文、Provider 工件和提示元数据）可能缺失。
+
+## 调整刷新超时
+
+OpenClaw 在 Agent 清理期间刷新运行时轨迹辅助文件。默认清理超时为 10,000 ms。在慢速磁盘或大型存储上，在启动 OpenClaw 之前设置 `OPENCLAW_TRAJECTORY_FLUSH_TIMEOUT_MS`：
+
+```bash
+export OPENCLAW_TRAJECTORY_FLUSH_TIMEOUT_MS=30000
+```
+
+这控制 OpenClaw 何时记录 `pi-trajectory-flush` 超时并继续。它不更改轨迹大小上限。要调整所有未传递显式超时的 Agent 清理步骤，请设置 `OPENCLAW_AGENT_CLEANUP_TIMEOUT_MS`。
 
 ## 隐私和限制
 

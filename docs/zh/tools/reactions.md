@@ -1,13 +1,11 @@
 ---
 title: "Reactions"
-mmh3_hash: "6f37c78a20d8fe3f2e50dbab39db5abf"
+mmh3_hash: "9aa174dc0ffe75fffd22ab881d1b87e7"
 summary: "跨所有支持 Channel 的 Reaction 工具语义"
 read_when:
   - 在任何 Channel 中处理 Reaction
   - 了解 emoji 反应在不同平台间的差异
 ---
-
-# Reactions
 
 Agent 可以使用 `message` 工具的 `react` action 在消息上添加和移除 emoji 反应。Reaction 行为因 Channel 而异。
 
@@ -47,6 +45,7 @@ Agent 可以使用 `message` 工具的 `react` action 在消息上添加和移�
   <Accordion title="WhatsApp">
     - 空 `emoji` 移除机器人反应。
     - `remove: true` 在内部映射到空 emoji（工具调用中仍需要 `emoji`）。
+    - WhatsApp 每条消息只有一个机器人反应槽；状态反应更新会替换该槽，而非叠加多个 emoji。
   </Accordion>
 
   <Accordion title="Zalo Personal (zalouser)">
@@ -61,6 +60,11 @@ Agent 可以使用 `message` 工具的 `react` action 在消息上添加和移�
 
   <Accordion title="Signal">
     - 入站反应通知由 `channels.signal.reactionNotifications` 控制：`"off"` 禁用，`"own"`（默认）在用户对机器人消息做出反应时发出事件，`"all"` 对所有反应发出事件。
+  </Accordion>
+
+  <Accordion title="iMessage">
+    - 出站反应为 iMessage tapback（`love`、`like`、`dislike`、`laugh`、`emphasize` 和 `question`）。
+    - 入站 tapback 通知由 `channels.imessage.reactionNotifications` 控制：`"off"` 禁用，`"own"`（默认）在用户对机器人发送的消息做出反应时发出事件，`"all"` 对来自已授权发送者的所有 tapback 发出事件。
   </Accordion>
 </AccordionGroup>
 

@@ -1,7 +1,7 @@
 ---
 title: "技能"
 sidebarTitle: "技能"
-mmh3_hash: "4dc1c757bef1d5efbd2c56f5d514e3a6"
+mmh3_hash: "fc5f2d6c6f6730399fa5cb5bfbfdd39c"
 summary: "技能：管理 vs 工作区、门控规则、Agent 允许列表和配置接线"
 read_when:
   - 添加或修改技能
@@ -109,7 +109,7 @@ ClawHub Skill 页面在安装前显示最新的安全扫描状态，包含 Virus
 将第三方 Skill 视为**不受信任的代码**。在启用之前阅读它们。对于不受信任的输入和有风险的工具，优先使用沙箱运行。参见 [沙箱](/gateway/sandboxing) 了解 Agent 端控制。
 </Warning>
 
-- 工作区和额外目录的 Skill 发现只接受 Skill 根目录和 `SKILL.md` 文件，其解析的 realpath 须保持在配置的根目录内。
+- 工作区、项目 Agent 和 extra-dir Skill 发现只接受 Skill 根目录，其解析的 realpath 须保持在配置的根目录内，除非 `skills.load.allowSymlinkTargets` 显式信任某个目标根。捆绑 Skill 始终处于隔离状态。托管 `~/.openclaw/skills` 和个人 `~/.agents/skills` 根目录可以包含由 ClawHub 或其他本地 Skill 管理器安装的符号链接 Skill 文件夹，但每个 `SKILL.md` 的 realpath 仍必须保持在其解析的 Skill 目录内。
 - Gateway 私有归档安装默认关闭。当显式启用时，它们需要包含 `SKILL.md` 的已提交 zip 上传，并重用与 ClawHub Skill 安装相同的归档提取、路径遍历、符号链接、强制和回滚保护。通过 `skills.install.allowUploadedArchives` 进行门控；普通 ClawHub 安装不需要该设置。
 - Gateway 支持的 Skill 依赖安装（`skills.install`、引导向导和 Skills 设置 UI）在执行安装器元数据之前会运行内置的危险代码扫描器。`critical` 级发现默认会阻止安装，除非调用者显式设置了危险覆盖；`suspicious` 级发现仍然只会发出警告。
 - `openclaw skills install <slug>` 与此不同——它将 ClawHub Skill 文件夹下载到工作区，不使用上述安装器元数据路径。
@@ -253,6 +253,7 @@ metadata:
 
   </Accordion>
   <Accordion title="每个安装器的详情">
+    - **Homebrew 安装：**OpenClaw 不会自动安装 Homebrew，也不会将 brew formula 转换为系统包管理器命令。在没有 `brew` 的 Linux 容器中，引导向导会隐藏仅限 brew 的依赖安装器；使用自定义镜像或在启用该 Skill 之前手动安装依赖项。
     - **Go 安装：**如果 `go` 缺失且 `brew` 可用，Gateway 首先通过 Homebrew 安装 Go，并在可能时将 `GOBIN` 设置为 Homebrew 的 `bin`。
     - **下载安装：**`url`（必需）、`archive`（`tar.gz` | `tar.bz2` | `zip`）、`extract`（默认：检测到归档时自动）、`stripComponents`、`targetDir`（默认：`~/.openclaw/tools/<skillKey>`）。
 
@@ -348,7 +349,7 @@ Skill 在两种情况下可以在 Session 中刷新：
 }
 ```
 
-对于内置 Skill 根包含符号链接（例如 `~/.agents/skills/manager -> ~/Projects/manager/skills`）的有意兄弟仓库布局，使用 `allowSymlinkTargets`。目标列表在 realpath 解析后匹配，应保持范围较窄。
+对于工作区、项目 Agent 或 extra-dir Skill 根包含符号链接（例如 `<workspace>/skills/manager -> ~/Projects/manager/skills`）的有意兄弟仓库布局，使用 `allowSymlinkTargets`。托管 `~/.openclaw/skills` 和个人 `~/.agents/skills` 默认允许本地 Skill 管理器跟随 Skill 目录符号链接；目标列表在 realpath 解析后匹配，配置时应保持范围较窄。
 
 ### 远程 macOS 节点（Linux Gateway）
 

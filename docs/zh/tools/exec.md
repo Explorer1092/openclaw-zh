@@ -1,7 +1,7 @@
 ---
 title: "Exec 工具"
 sidebarTitle: "Exec 工具"
-mmh3_hash: "e9f5dca2585376f7d76229cac7058242"
+mmh3_hash: "2197e6e6b7864ffb38dc5e33d651b454"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
 read_when:
   - 使用或修改 exec 工具
@@ -47,7 +47,7 @@ read_when:
 </ParamField>
 
 <ParamField path="security" type="'deny' | 'allowlist' | 'full'">
-`gateway`/`node` 执行的强制模式。
+普通工具调用时忽略此参数。`gateway`/`node` 安全性由 `tools.exec.security` 和 `~/.openclaw/exec-approvals.json` 控制；仅当操作者明确授予提升访问权限时，提升模式才可强制 `security=full`。
 </ParamField>
 
 <ParamField path="ask" type="'off' | 'on-miss' | 'always'">
@@ -97,6 +97,7 @@ read_when:
 - 在 `security=full` 加 `ask=off` 模式下，主机 exec 直接遵循配置的策略；没有额外的启发式命令混淆预过滤器或脚本预检拒绝层。
 - `tools.exec.node`（默认：未设置）
 - `tools.exec.strictInlineEval`（默认：false）：为 true 时，内联解释器 eval 形式（如 `python -c`、`node -e`、`ruby -e`、`perl -e`、`php -r`、`lua -e` 和 `osascript -e`）始终需要显式审批。`allow-always` 仍可以持久化良性的解释器/脚本调用，但内联 eval 形式每次仍会提示。
+- `tools.exec.commandHighlighting`（默认：false）：为 true 时，审批提示可以高亮显示命令文本中解析器派生的命令 span。可在全局或每个 Agent 设置为 `true` 以启用命令文本高亮，而不更改 exec 审批策略。
 - `tools.exec.pathPrepend`：要为 exec 运行前置到 `PATH` 的目录列表（仅 Gateway + 沙盒）。
 - `tools.exec.safeBins`：可以在没有显式允许列表条目的情况下运行的仅 stdin 安全二进制文件。有关行为详细信息，请参见 [安全 bin](/tools/exec-approvals-advanced#safe-bins-stdin-only)。
 - `tools.exec.safeBinTrustedDirs`：用于 `safeBins` 路径检查的额外显式受信任目录。`PATH` 条目永远不会自动受信任。内置默认值为 `/bin` 和 `/usr/bin`。

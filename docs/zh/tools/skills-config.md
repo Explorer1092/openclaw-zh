@@ -1,7 +1,7 @@
 ---
 title: "Skill 配置"
 sidebarTitle: "Skill 配置"
-mmh3_hash: "1a0e1e288df04bfc6670e0629838d5ad"
+mmh3_hash: "06ccac0e997f5c1bea87cf93ed737a13"
 summary: "Skill 配置架构和示例"
 read_when:
   - 添加或修改 Skill 配置
@@ -80,7 +80,7 @@ read_when:
 - 内置 Skill 根始终包括 `~/.openclaw/skills`、`~/.agents/skills`、`<workspace>/.agents/skills` 和 `<workspace>/skills`。
 - `allowBundled`：**仅捆绑** Skill 的可选允许列表。设置时，仅列表中的捆绑 Skill 符合条件（管理/Agent/工作区 Skill 不受影响）。
 - `load.extraDirs`：要扫描的其他 Skill 目录（最低优先级）。
-- `load.allowSymlinkTargets`：符号链接 Skill 文件夹即使符号链接本身位于该目标根之外，也可以解析进入的受信任真实目标目录。用于像 `~/.agents/skills/manager -> ~/Projects/manager/skills` 这样有意的兄弟仓库布局。
+- `load.allowSymlinkTargets`：受信任的真实目标目录，符号链接的工作区、项目 Agent 或 extra-dir Skill 文件夹可以解析进入这些目录，即使符号链接本身位于该目标根之外。用于像 `<workspace>/skills/manager -> ~/Projects/manager/skills` 这样有意的兄弟仓库布局。托管 `~/.openclaw/skills` 和个人 `~/.agents/skills` 根目录默认允许本地 Skill 管理器跟随 Skill 目录符号链接，但每个 `SKILL.md` 仍然必须解析在其自身的 Skill 目录内。
 - `load.watch`：监视 Skill 文件夹并刷新 Skill 快照（默认：true）。
 - `load.watchDebounceMs`：Skill 监视器事件的去抖动（毫秒）（默认：250）。
 - `install.preferBrew`：在可用时优先使用 brew 安装程序（默认：true）。
@@ -93,7 +93,7 @@ read_when:
 
 ## 符号链接兄弟仓库
 
-默认情况下，每个 Skill 根都是一个隔离边界。如果 `~/.agents/skills` 下的 Skill 文件夹是一个解析到 `~/.agents/skills` 之外的符号链接，OpenClaw 会跳过它并记录 `Skipping escaped skill path outside its configured root`。
+默认情况下，工作区、项目 Agent、extra-dir 和捆绑 Skill 根都是隔离边界。如果 `<workspace>/skills` 下的 Skill 文件夹是一个解析到 `<workspace>/skills` 之外的符号链接，OpenClaw 会跳过它并记录 `Skipping escaped skill path outside its configured root`。
 
 保持符号链接布局并仅允许受信任的目标根：
 
@@ -108,7 +108,7 @@ read_when:
 }
 ```
 
-有了此配置，像 `~/.agents/skills/manager -> ~/Projects/manager/skills` 这样的符号链接在 realpath 解析后被接受。`extraDirs` 也直接扫描兄弟仓库，而 `allowSymlinkTargets` 为现有的 Agent-Skill 布局保留了符号链接路径。保持目标条目范围较窄；不要指向像 `~` 或 `~/Projects` 这样的宽泛根目录，除非该根下的每个 Skill 树都是受信任的。
+有了此配置，像 `<workspace>/skills/manager -> ~/Projects/manager/skills` 这样的符号链接在 realpath 解析后被接受。`extraDirs` 也直接扫描兄弟仓库，而 `allowSymlinkTargets` 为现有的工作区 Skill 布局保留了符号链接路径。托管 `~/.openclaw/skills` 和个人 `~/.agents/skills` 目录已默认允许 Skill 目录符号链接，因为这些根目录是用户自有的本地 Skill 管理器表面；每个 Skill 的 `SKILL.md` 隔离仍然适用。保持目标条目范围较窄；不要指向像 `~` 或 `~/Projects` 这样的宽泛根目录，除非该根下的每个 Skill 树都是受信任的。
 
 每个 Skill 字段：
 
@@ -134,6 +134,8 @@ read_when:
 
 - `agents.defaults.sandbox.docker.env` 用于 Docker 后端（或每个 Agent 的 `agents.list[].sandbox.docker.env`）。
 - 将环境烘焙到你的自定义沙箱镜像或远程沙箱环境中。
+
+对于 Docker 沙箱，配置的 `sandbox.docker.env` 值会成为显式的容器环境变量。拥有 Docker 守护进程访问权限的用户可以通过 Docker 元数据检查这些变量，因此如果该暴露不可接受，请使用挂载的 secret 文件、自定义镜像或其他投递路径。
 
 ## 相关
 
