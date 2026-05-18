@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5401f3dfac89db5dc3f92656bc436d2b"
+mmh3_hash: "13a5a2397d7f1b249406b45b326aa814"
 summary: "在 Raspberry Pi 上托管 OpenClaw，实现始终在线的自托管"
 read_when:
   - 在 Raspberry Pi 上设置 OpenClaw
@@ -145,6 +145,8 @@ export OPENCLAW_NO_RESPAWN=1
 EOF
 source ~/.bashrc
 ```
+
+`OPENCLAW_NO_RESPAWN=1` 将例行 Gateway 重启保持在进程内，避免额外的进程切换并在小型主机上保持 PID 跟踪简单。
 
 **减少内存使用** -- 对于无头设置，释放 GPU 内存并禁用未使用的服务：
 

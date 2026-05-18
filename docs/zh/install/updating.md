@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e9ebf341db48a288b9b5c5b738fcef27"
+mmh3_hash: "4719f1a51da0ef19bad1192d14429558"
 summary: "安全地更新 OpenClaw（全局安装或源码），以及回滚策略"
 read_when:
   - 更新 OpenClaw
@@ -33,6 +33,8 @@ openclaw update --dry-run   # 预览但不应用
 `openclaw update`。
 
 `--channel beta` 优先选择 beta，但当 beta 标签缺失或比最新稳定版旧时，运行时会回退到 stable/latest。如果你想一次性更新原始 npm beta dist-tag，请使用 `--tag beta`。
+
+对于受管理的 Plugin，beta channel 回退是一个警告：核心更新仍然可以成功，而 Plugin 使用其记录的默认/最新版本，因为没有可用的 Plugin beta。
 
 请参阅[开发 channel](/install/development-channels) 了解 channel 语义。
 
@@ -91,6 +93,8 @@ npm i -g openclaw@latest
 
 当 `openclaw update` 管理全局 npm 安装时，它首先将目标安装到临时 npm 前缀，验证打包的 `dist` 清单，然后将干净的包树交换到真实的全局前缀。这避免了 npm 将新包覆盖在旧包的陈旧文件上。如果安装命令失败，OpenClaw 会使用 `--omit=optional` 重试一次。这种重试有助于本地可选依赖无法编译的主机，同时在回退也失败时保持原始错误可见。
 
+OpenClaw 受管理的 npm 更新和 plugin 更新命令还会为子 npm 进程清除 npm `min-release-age` 隔离。npm 可能将该策略报告为派生的 `before` 截止时间；两者对于一般供应链隔离策略都有用，但明确的 OpenClaw 更新意味着"立即安装选定的 OpenClaw 版本"。
+
 ```bash
 pnpm add -g openclaw@latest
 ```
@@ -148,7 +152,7 @@ bun add -g openclaw@latest
 gateway 也会在启动时记录更新提示（使用 `update.checkOnStart: false` 禁用）。
 对于降级或事故恢复，在 gateway 环境中设置 `OPENCLAW_NO_AUTO_UPDATE=1` 以阻止自动应用，即使已配置 `update.auto.enabled`。启动更新提示仍可运行，除非同时禁用了 `update.checkOnStart`。
 
-通过实时 Gateway 控制平面处理器请求的包管理器更新会在包交换后强制执行非延迟、无冷却时间的更新重启。这避免了旧的内存进程在包树已被替换后仍然延迟加载块。Shell `openclaw update` 仍然是监督安装的首选路径，因为它可以在更新周围停止和重启服务。
+通过实时 Gateway 控制平面处理器请求的包管理器更新不会替换正在运行的 Gateway 进程内的包树。对于受管理的服务安装，Gateway 启动分离式切换，退出，并让正常的 `openclaw update --yes --json` CLI 路径停止服务、替换包、刷新服务元数据、重启、验证 Gateway 版本和可达性，并在可能时恢复已安装但未加载的 macOS LaunchAgent。如果 Gateway 无法安全地进行切换，`update.run` 将报告一个安全的 shell 命令，而不是在进程内运行包管理器。
 
 ## 更新后
 

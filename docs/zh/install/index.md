@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a883df63aaaee0111a29d73b9c4857da"
+mmh3_hash: "9b7dbea29a3b597d8c2a1a0799ce843b"
 summary: "安装 OpenClaw — 安装程序脚本、npm/pnpm、从源码、Docker 等"
 read_when:
   - 你需要入门快速入门之外的安装方法
@@ -10,7 +10,7 @@ title: "安装"
 
 ## 系统要求
 
-- **Node 24**（推荐）或 Node 22.16+ - 安装脚本会自动处理此项
+- **Node 24**（推荐）或 Node 22.19+ - 安装脚本会自动处理此项
 - **macOS、Linux 或 Windows** - 原生 Windows 和 WSL2 均受支持；WSL2 更稳定。请参阅 [Windows](/platforms/windows)。
 - 只有在从源码构建时才需要 `pnpm`
 
@@ -73,6 +73,11 @@ curl -fsSL https://openclaw.ai/install-cli.sh | bash
     npm install -g openclaw@latest
     openclaw onboard --install-daemon
     ```
+
+    <Note>
+    托管安装程序会为 OpenClaw 包安装清除 npm 新鲜度过滤器（如 `min-release-age`）。如果你手动使用 npm 安装，你自己的 npm 策略仍然适用。
+    </Note>
+
   </Tab>
   <Tab title="pnpm">
     ```bash

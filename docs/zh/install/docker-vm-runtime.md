@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f6985d6ff194e65956a7845338230ea"
+mmh3_hash: "a546a337efbbc9e01f0597d693d9c092"
 summary: "适用于长期运行 OpenClaw Gateway 主机的共享 Docker VM 运行时步骤"
 read_when:
   - 你正在使用 Docker 在云 VM 上部署 OpenClaw
@@ -127,6 +127,7 @@ OpenClaw 在 Docker 中运行，但 Docker 不是事实来源。
 | -------------- | ------------------------------------------------------ | ------------------- | ------------------------------------------------------------- |
 | Gateway 配置   | `/home/node/.openclaw/`                                | 主机卷挂载          | 包含 `openclaw.json`、`.env`                                  |
 | 模型认证配置   | `/home/node/.openclaw/agents/`                         | 主机卷挂载          | `agents/<agentId>/agent/auth-profiles.json`（OAuth、API 密钥） |
+| 认证配置文件密钥 | `/home/node/.config/openclaw/`                       | 主机卷挂载          | OAuth 认证配置文件令牌材料的本地加密密钥                      |
 | Skill 配置     | `/home/node/.openclaw/skills/`                         | 主机卷挂载          | Skill 级别状态                                                |
 | Agent 工作区   | `/home/node/.openclaw/workspace/`                      | 主机卷挂载          | 代码和 agent 产物                                             |
 | WhatsApp 会话  | `/home/node/.openclaw/`                                | 主机卷挂载          | 保留 QR 登录                                                  |

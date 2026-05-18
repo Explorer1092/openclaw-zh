@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3c9a41056fa467f32c6704ec304de7af"
+mmh3_hash: "2f7dec89ae2fa8c15b6f8b71a6e290e3"
 summary: "安装脚本的工作原理 (install.sh, install-cli.sh, install.ps1)、标志和自动化"
 read_when:
   - 你想了解 `openclaw.ai/install.sh`
@@ -72,7 +72,7 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
     支持 macOS 和 Linux（包括 WSL）。如果检测到 macOS，若 Homebrew 缺失则安装它。
   </Step>
   <Step title="确保默认安装 Node.js 24">
-    检查 Node 版本并在需要时安装 Node 24（macOS 使用 Homebrew，Linux apt/dnf/yum 使用 NodeSource 设置脚本）。OpenClaw 仍支持 Node 22 LTS（当前为 `22.16+`）以保持兼容性。
+    检查 Node 版本并在需要时安装 Node 24（macOS 使用 Homebrew，Linux apt/dnf/yum 使用 NodeSource 设置脚本）。OpenClaw 仍支持 Node 22 LTS（当前为 `22.19+`）以保持兼容性。
   </Step>
   <Step title="确保 Git">
     如果 Git 缺失则安装。
@@ -283,7 +283,7 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
     需要 PowerShell 5+。
   </Step>
   <Step title="确保默认安装 Node.js 24">
-    如果缺失，则尝试通过 winget，然后 Chocolatey，然后 Scoop 安装。Node 22 LTS（当前为 `22.16+`）仍然受支持以保持兼容性。
+    如果缺失，则尝试通过 winget，然后 Chocolatey，然后 Scoop 安装。Node 22 LTS（当前为 `22.19+`）仍然受支持以保持兼容性。
   </Step>
   <Step title="安装 OpenClaw">
     - `npm` 方法（默认）：使用选定的 `-Tag` 进行全局 npm 安装，从可写的安装程序临时目录启动，因此在受保护文件夹（如 `C:\`）中打开的 shell 仍然有效

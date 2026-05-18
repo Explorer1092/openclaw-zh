@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b5310d9ec7fe9ed89d8cf22febb54b2e"
+mmh3_hash: "26dd2721f087a801527904695b164224"
 title: "Docker（可选）"
 sidebarTitle: "Docker"
 summary: "OpenClaw 的可选 Docker 设置和引导"
@@ -122,8 +122,8 @@ docker compose up -d openclaw-gateway
 | 变量                                       | 用途                                                            |
 | ------------------------------------------ | --------------------------------------------------------------- |
 | `OPENCLAW_IMAGE`                           | 使用远程镜像而不是本地构建                                      |
-| `OPENCLAW_DOCKER_APT_PACKAGES`             | 构建时安装额外 apt 包（空格分隔）                               |
-| `OPENCLAW_EXTENSIONS`                      | 构建时包含所选的捆绑 plugin 辅助工具                            |
+| `OPENCLAW_IMAGE_APT_PACKAGES`              | 构建时安装额外 apt 包（空格分隔）                                     |
+| `OPENCLAW_EXTENSIONS`                      | 构建时预安装 plugin 依赖项（空格分隔的名称）                          |
 | `OPENCLAW_EXTRA_MOUNTS`                    | 额外主机绑定挂载（逗号分隔 `source:target[:opts]`）             |
 | `OPENCLAW_HOME_VOLUME`                     | 在命名 Docker 卷中持久化 `/home/node`                           |
 | `OPENCLAW_SANDBOX`                         | 选择加入沙箱引导（`1`、`true`、`yes`、`on`）                    |
@@ -137,6 +137,8 @@ docker compose up -d openclaw-gateway
 | `OTEL_SERVICE_NAME`                        | OpenTelemetry 资源使用的服务名称                                |
 | `OTEL_SEMCONV_STABILITY_OPT_IN`            | 选择加入最新的实验性 GenAI 语义属性                             |
 | `OPENCLAW_OTEL_PRELOADED`                  | 预加载 OpenTelemetry SDK 时跳过启动第二个                        |
+
+官方 Docker 镜像不附带 Homebrew。在引导过程中，当 OpenClaw 运行在没有 `brew` 的 Linux 容器中时，它会隐藏仅适用于 brew 的技能依赖项安装程序；这些依赖项必须由自定义镜像提供或手动安装。对于可从 Debian 包获取的依赖项，请在镜像构建时使用 `OPENCLAW_IMAGE_APT_PACKAGES`。旧版 `OPENCLAW_DOCKER_APT_PACKAGES` 名称仍然被接受。
 
 维护者可以通过将一个 plugin 源目录挂载到其打包源路径上来测试捆绑 plugin 源与打包镜像，例如
 `OPENCLAW_EXTRA_MOUNTS=/path/to/fork/extensions/synology-chat:/app/extensions/synology-chat:ro`。
@@ -249,11 +251,13 @@ Gateway 不会崩溃循环或反复重启广播。
 ### 存储和持久化
 
 Docker Compose 将 `OPENCLAW_CONFIG_DIR` 绑定挂载到 `/home/node/.openclaw`，
-将 `OPENCLAW_WORKSPACE_DIR` 绑定挂载到 `/home/node/.openclaw/workspace`，因此这些路径
-在容器替换后仍然保留。当任一变量未设置时，捆绑的
-`docker-compose.yml` 回退到 `${HOME}/.openclaw`（工作区挂载使用
-`${HOME}/.openclaw/workspace`），或在 `HOME` 本身也缺失时使用 `/tmp/.openclaw`。
+将 `OPENCLAW_WORKSPACE_DIR` 绑定挂载到 `/home/node/.openclaw/workspace`，以及
+将 `OPENCLAW_AUTH_PROFILE_SECRET_DIR` 绑定挂载到 `/home/node/.config/openclaw`，
+因此这些路径在容器替换后仍然保留。当任何变量未设置时，捆绑的
+`docker-compose.yml` 在 `${HOME}` 下回退，或在 `HOME` 本身也缺失时使用 `/tmp`。
 这避免了在裸环境中 `docker compose up` 发出空源卷规范。
+
+认证配置文件密钥目录存储用于 OAuth 支持的认证配置文件令牌材料的本地加密密钥。请将其与 Docker 主机状态一起保留，但与 `OPENCLAW_CONFIG_DIR` 分开。
 
 该挂载的配置目录是 OpenClaw 保存以下内容的地方：
 
@@ -303,7 +307,8 @@ echo 'source ~/.clawdock/clawdock-helpers.sh' >> ~/.zshrc && source ~/.zshrc
 
     脚本仅在沙箱前提条件通过后挂载 `docker.sock`。如果
     沙箱设置无法完成，脚本会将 `agents.defaults.sandbox.mode`
-    重置为 `off`。
+    重置为 `off`。当 OpenClaw 沙箱处于活跃状态时，Codex 代码模式轮次仍受限于
+    Codex `workspace-write`；不要将主机 Docker socket 挂载到 Agent 沙箱容器中。
 
   </Accordion>
 
@@ -392,7 +397,7 @@ echo 'source ~/.clawdock/clawdock-helpers.sh' >> ~/.zshrc && source ~/.zshrc
     默认镜像以安全为先，以非 root `node` 运行。对于功能更全面的容器：
 
     1. **持久化 `/home/node`**：`export OPENCLAW_HOME_VOLUME="openclaw_home"`
-    2. **烘焙系统依赖**：`export OPENCLAW_DOCKER_APT_PACKAGES="git curl jq"`
+    2. **烘焙系统依赖**：`export OPENCLAW_IMAGE_APT_PACKAGES="git curl jq"`
     3. **烘焙 Playwright Chromium**：`export OPENCLAW_INSTALL_BROWSER=1`
     4. **或将 Playwright 浏览器安装到持久化卷中**：
        ```bash
