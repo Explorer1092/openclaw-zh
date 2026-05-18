@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7659d2367e3825f1634ce7b68ddb7afb"
+mmh3_hash: "9da620471ca8f4ba586e18dce08ce1ba"
 summary: "在 Linux 服务器或云 VPS 上运行 OpenClaw — 提供商选择、架构和调优"
 read_when:
   - 您想在 Linux 服务器或云 VPS 上运行 Gateway
@@ -78,7 +78,7 @@ source ~/.bashrc
 ```
 
 - `NODE_COMPILE_CACHE` 改善重复命令的启动时间。
-- `OPENCLAW_NO_RESPAWN=1` 避免来自自我重生路径的额外启动开销。
+- `OPENCLAW_NO_RESPAWN=1` 使常规 Gateway 重启在进程内完成，避免额外的进程切换，并在小型主机上保持 PID 跟踪简洁。
 - 第一次命令运行会预热缓存；后续运行更快。
 - 有关 Raspberry Pi 的具体信息，请参阅 [Raspberry Pi](/install/raspberry-pi)。
 

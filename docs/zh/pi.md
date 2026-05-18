@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "66842935c314e1f8c582ac8c7cb0c92f"
+mmh3_hash: "2afa1a44ab4ea33e158507324ebfe1f7"
 title: "Pi 集成架构"
 summary: "OpenClaw 嵌入式 Pi Agent 集成的架构和会话生命周期"
 read_when:
@@ -24,10 +24,10 @@ OpenClaw 使用 pi SDK 将 AI 编码 agent 嵌入其消息 Gateway 架构中。O
 
 ```json
 {
-  "@earendil-works/pi-agent-core": "0.74.0",
-  "@earendil-works/pi-ai": "0.74.0",
-  "@earendil-works/pi-coding-agent": "0.74.0",
-  "@earendil-works/pi-tui": "0.74.0"
+  "@earendil-works/pi-agent-core": "0.75.1",
+  "@earendil-works/pi-ai": "0.75.1",
+  "@earendil-works/pi-coding-agent": "0.75.1",
+  "@earendil-works/pi-tui": "0.75.1"
 }
 ```
 
