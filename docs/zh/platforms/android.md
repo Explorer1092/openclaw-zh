@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "15e301d05f9679c18b43ea49eb2cdd55"
+mmh3_hash: "a0db3ad2d64029816ffa70c352878cc0"
 title: "Android 应用 (节点)"
 summary: "Android 应用（节点）：连接手册 + Connect/Chat/Voice/Canvas 命令接口"
 read_when:
@@ -9,14 +9,14 @@ read_when:
 ---
 
 <Note>
-Android 应用尚未公开发布。源代码在 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 的 `apps/android` 下可用。你可以使用 Java 17 和 Android SDK 自行构建（`./gradlew :app:assemblePlayDebug`）。构建说明见 [apps/android/README.md](https://github.com/openclaw/openclaw/blob/main/apps/android/README.md)。
+官方 Android 应用已在 [Google Play](https://play.google.com/store/apps/details?id=ai.openclaw.app&hl=en_IN) 上架。它是一个伴侣节点，需要一个正在运行的 OpenClaw Gateway。源代码也可在 [OpenClaw 仓库](https://github.com/openclaw/openclaw) 的 `apps/android` 下获取；构建说明见 [apps/android/README.md](https://github.com/openclaw/openclaw/blob/main/apps/android/README.md)。
 </Note>
 
 ## 支持快照
 
 - 角色：伴侣节点应用（Android 不托管 Gateway）。
 - 需要 Gateway：是（在 macOS、Linux 或 Windows 通过 WSL2 运行）。
-- 安装：[入门](/start/getting-started) + [配对](/channels/pairing)。
+- 安装：应用请访问 [Google Play](https://play.google.com/store/apps/details?id=ai.openclaw.app&hl=en_IN)，Gateway 请参阅[入门](/start/getting-started)，然后[配对](/channels/pairing)。
 - Gateway：[手册](/gateway) + [配置](/gateway/configuration)。
   - 协议：[Gateway 协议](/gateway/protocol)（节点 + 控制平面）。
 

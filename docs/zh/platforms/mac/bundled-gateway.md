@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d2ed496a122eda03d281e130db87bb89"
+mmh3_hash: "cecabecb028a9a4677ffc602e3a3e6b0"
 title: "macOS 上的 Gateway (外部 launchd)"
 summary: "macOS 上的 Gateway 运行时（外部 launchd 服务）"
 read_when:
@@ -14,7 +14,7 @@ OpenClaw.app 不再捆绑 Node/Bun 或 Gateway 运行时。macOS 应用期望一
 
 ## 安装 CLI（本地模式必需）
 
-Mac 上的默认运行时是 Node 24。Node 22 LTS，当前 `22.16+`，仍然用于兼容性。然后全局安装 `openclaw`：
+Mac 上的默认运行时是 Node 24。Node 22 LTS，当前 `22.19+`，仍然用于兼容性。然后全局安装 `openclaw`：
 
 ```bash
 npm install -g openclaw@<version>
@@ -46,7 +46,8 @@ Plist 位置（每用户）：
 
 日志：
 
-- launchd stdout/err：`/tmp/openclaw/openclaw-gateway.log`
+- launchd stdout：`~/Library/Logs/openclaw/gateway.log`（配置文件使用 `gateway-<profile>.log`）
+- launchd stderr：已抑制
 
 ## 版本兼容性
 

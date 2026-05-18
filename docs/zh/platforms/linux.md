@@ -1,7 +1,7 @@
 ---
 title: "Linux 应用"
 sidebarTitle: "Linux"
-mmh3_hash: "2bf4e5196075aa0129d36324ad8cbd40"
+mmh3_hash: "ab7f4eacccbd65a5510ade0e9e26646f"
 summary: "Linux 支持 + 伴侣应用状态"
 read_when:
   - 查找 Linux 配套应用状态
@@ -16,7 +16,7 @@ Gateway 在 Linux 上完全受支持。**Node 是推荐的运行时**。
 
 ## 初学者快速路径（VPS）
 
-1. 安装 Node 24（推荐；Node 22 LTS，当前 `22.16+`，仍然用于兼容性）
+1. 安装 Node 24（推荐；Node 22 LTS，当前 `22.19+`，仍然用于兼容性）
 2. `npm i -g openclaw@latest`
 3. `openclaw onboard --install-daemon`
 4. 从你的笔记本：`ssh -N -L 18789:127.0.0.1:18789 <user>@<host>`

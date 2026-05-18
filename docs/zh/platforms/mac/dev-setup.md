@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2d40d6f46a2fdd9904131f1f5c1f7d16"
+mmh3_hash: "78bd340fd46bd63a9c21e1aa4f614eff"
 title: "macOS 开发设置"
 summary: "在 OpenClaw macOS 应用上工作的开发者设置指南"
 read_when:
@@ -15,7 +15,7 @@ read_when:
 在构建应用之前，确保你已安装以下内容：
 
 1. **Xcode 26.2+**：Swift 开发必需。
-2. **Node.js 24 & pnpm**：推荐用于 gateway、CLI 和打包脚本。Node 22 LTS，当前 `22.16+`，仍然支持兼容性。
+2. **Node.js 24 & pnpm**：推荐用于 gateway、CLI 和打包脚本。Node 22 LTS，当前 `22.19+`，仍然支持兼容性。
 
 ## 1. 安装依赖
 
