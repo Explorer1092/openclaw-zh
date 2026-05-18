@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "4379f0e21d4869897ba169b5a9bb0c19"
 summary: "通过 ds4（本地 DeepSeek V4 Flash OpenAI 兼容服务器）运行 OpenClaw"
 read_when:
   - 你想通过 antirez/ds4 运行 OpenClaw 时
