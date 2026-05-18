@@ -1,11 +1,10 @@
 ---
-title: "System prompt"
-sidebarTitle: "System prompt"
-mmh3_hash: "19215bfbeffded8931c5d6be7f94cf95"
+mmh3_hash: "647a620e83c342b1dc5d6558588582a0"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
 read_when:
   - 编辑 system prompt 文本、工具列表或时间/心跳部分
   - 更改 workspace bootstrap 或 skills 注入行为
+title: "System prompt"
 ---
 
 OpenClaw 为每次 agent 运行构建自定义 system prompt。该 prompt 由 **OpenClaw 拥有**，不使用 pi-coding-agent 默认 prompt。
@@ -79,7 +78,7 @@ OpenClaw 可以为子 agent 渲染更小的 system prompt。运行时为每次�
 
 当 `promptMode=minimal` 时，额外注入的 prompt 标记为 **Subagent Context** 而非 **Group Chat Context**。
 
-对于 channel 自动回复运行，当直接/群组 chat context 已经包含解析的对话特定 `NO_REPLY` 行为时，OpenClaw 可以省略通用的 **Silent Replies** 部分。这避免在全局 system prompt 和 channel context 中重复 token 机制。
+对于 channel 自动回复运行，当直接、群组或仅消息工具的 context 拥有可见回复合约时，OpenClaw 省略通用的 **Silent Replies** 部分。只有旧的自动群组/channel 模式应该显示 `NO_REPLY`；直接聊天和仅消息工具的回复不接收静默令牌指导。
 
 ## Prompt 快照
 
@@ -112,7 +111,7 @@ Bootstrap 文件被裁剪并附加在 **Project Context** 下，以便 model 无
 `memory/*.md` 每日文件**不**是正常 bootstrap Project Context 的一部分。在普通轮次中，它们通过 `memory_search` 和 `memory_get` 工具按需访问，因此除非 model 显式读取它们，否则不会计入 context 窗口。裸 `/new` 和 `/reset` 轮次是例外：运行时可以将最近的每日 memory 作为一次性启动 context 块预置到该首次轮次。
 </Note>
 
-大文件会以标记截断。每文件最大大小由 `agents.defaults.bootstrapMaxChars`（默认：12000）控制。所有文件的总注入 bootstrap 内容受 `agents.defaults.bootstrapTotalMaxChars`（默认：60000）限制。缺失文件注入简短的缺失文件标记。当发生截断时，OpenClaw 可以注入简洁的 system prompt 警告通知；通过 `agents.defaults.bootstrapPromptTruncationWarning`（`off`、`once`、`always`；默认：`once`）控制此选项。详细的原始/注入计数保留在诊断中，如 `/context`、`/status`、doctor 和日志。
+大文件会以标记截断。每文件最大大小由 `agents.defaults.bootstrapMaxChars`（默认：12000）控制。所有文件的总注入 bootstrap 内容受 `agents.defaults.bootstrapTotalMaxChars`（默认：60000）限制。缺失文件注入简短的缺失文件标记。当发生截断时，OpenClaw 可以注入简洁的 system prompt 警告通知；通过 `agents.defaults.bootstrapPromptTruncationWarning`（`off`、`once`、`always`；默认：`always`）控制此选项。详细的原始/注入计数保留在诊断中，如 `/context`、`/status`、doctor 和日志。
 
 对于 memory 文件，截断不是数据丢失：文件在磁盘上保持完整，但 model 只看到缩短的注入副本，直到它直接读取或搜索 memory。如果 `MEMORY.md` 反复被截断，将其提炼为较短的持久摘要，并将详细历史移入 `memory/*.md`，或有意提高 bootstrap 限制。
 

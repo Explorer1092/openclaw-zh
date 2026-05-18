@@ -1,11 +1,10 @@
 ---
-title: "Command queue"
-sidebarTitle: "Command queue"
-mmh3_hash: "f975fbfd7048ff6d85803c1b4ab2e25a"
+mmh3_hash: "465876ffc8225b226c929f188871f16e"
 summary: "自动回复队列模式、默认值和 per-session 覆盖"
 read_when:
   - 更改自动回复执行或并发设置
   - 解释 /queue 模式或消息 steering 行为
+title: "Command queue"
 ---
 
 我们通过一个小型进程内队列对入站自动回复运行（所有 channel）进行序列化，以防止多个 agent 运行相互冲突，同时仍允许跨 session 的安全并行。
@@ -32,20 +31,16 @@ read_when:
 - `cap: 20`
 - `drop: "summarize"`
 
-`steer` 是默认值，因为它在不启动第二个 session 运行的情况下保持活跃 model 轮次的响应性。它在下一个 model 边界之前汇集所有到达的 steering 消息。如果当前运行无法接受 steering，OpenClaw 回退到 followup 队列条目。
+同轮次 steering 是默认行为。在运行进行中到达的提示会在运行能接受 steering 时注入到活跃运行时，因此不会启动第二个 session 运行。如果活跃运行无法接受 steering，OpenClaw 等待活跃运行结束后再启动该提示。
 
 ## 队列模式
 
-入站消息可以引导当前运行、等待后续轮次，或两者都做：
+`/queue` 控制当 session 已有活跃运行时正常入站消息的行为：
 
-- `steer`：将 steering 消息排入活跃运行时。Pi 在**当前 assistant 轮次完成其工具调用后**投递所有待处理的 steering 消息，在下一次 LLM 调用之前；Codex app-server 接收一个批量 `turn/steer`。如果运行没有在活跃 streaming 中或 steering 不可用，OpenClaw 回退到 followup 队列条目。
-- `queue`（传统）：旧的逐一 steering。Pi 在每个 model 边界投递一条排队的 steering 消息；Codex app-server 接收单独的 `turn/steer` 请求。除非需要之前的序列化行为，否则优先使用 `steer`。
-- `followup`：将每条消息排队等待当前运行结束后的后续 agent 轮次。
-- `collect`：在安静窗口后将排队的消息合并为**单个** followup 轮次。如果消息针对不同的 channel/thread，它们会单独排出以保留路由。
-- `steer-backlog`（又称 `steer+backlog`）：立即 steer **并且**为 followup 轮次保留相同消息。
-- `interrupt`（传统）：中止该 session 的活跃运行，然后运行最新消息。
-
-Steer-backlog 意味着在 steered 运行后可以获得 followup 响应，因此在 streaming 界面上看起来像重复。如果需要每条入站消息一个响应，优先使用 `collect`/`steer`。
+- `steer`：将消息注入活跃运行时。Pi 在**当前 assistant 轮次完成其工具调用后**投递所有待处理的 steering 消息，在下一次 LLM 调用之前；Codex app-server 接收一个批量 `turn/steer`。如果运行没有在活跃 streaming 中或 steering 不可用，OpenClaw 等待活跃运行结束后再启动该提示。
+- `followup`：不 steer。将每条消息排队等待当前运行结束后的后续 agent 轮次。
+- `collect`：不 steer。在安静窗口后将排队的消息合并为**单个** followup 轮次。如果消息针对不同的 channel/thread，它们会单独排出以保留路由。
+- `interrupt`：中止该 session 的活跃运行，然后运行最新消息。
 
 有关运行时特定的时序和依赖行为，参见 [Steering queue](/concepts/queue-steering)。有关显式 `/steer <message>` 命令，参见 [Steer](/tools/steer)。
 
@@ -67,9 +62,9 @@ Steer-backlog 意味着在 steered 运行后可以获得 followup 响应，因�
 
 ## 队列选项
 
-选项适用于 `followup`、`collect` 和 `steer-backlog`（以及 `steer` 或传统 `queue` 在 steering 回退到 followup 时）：
+选项适用于排队的投递。`debounceMs` 在 `steer` 模式下也设置 Codex steering 安静窗口：
 
-- `debounceMs`：排干排队 followup 前的安静窗口。裸数字为毫秒；`/queue` 选项接受 `ms`、`s`、`m`、`h` 和 `d` 单位。
+- `debounceMs`：排干排队 followup 或 collect 批次前的安静窗口；在 Codex `steer` 模式下，发送批量 `turn/steer` 前的安静窗口。裸数字为毫秒；`/queue` 选项接受 `ms`、`s`、`m`、`h` 和 `d` 单位。
 - `cap`：每个 session 的最大排队消息数。低于 `1` 的值会被忽略。
 - `drop: "summarize"`：默认值。根据需要删除最旧的排队条目，保留紧凑摘要，并将其注入为合成 followup 提示。
 - `drop: "old"`：根据需要删除最旧的排队条目，不保留摘要。
@@ -90,7 +85,7 @@ Steer-backlog 意味着在 steered 运行后可以获得 followup 响应，因�
 
 ## Per-session 覆盖
 
-- 以独立命令发送 `/queue <mode>` 来存储当前 session 的模式。
+- 以独立命令发送 `/queue <steer|followup|collect|interrupt>` 来存储当前 session 的队列模式。
 - 选项可以组合：`/queue collect debounce:0.5s cap:25 drop:summarize`
 - `/queue default` 或 `/queue reset` 清除 session 覆盖。
 

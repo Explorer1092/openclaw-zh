@@ -1,12 +1,12 @@
 ---
-title: "OAuth"
-mmh3_hash: "31376bc0b4ecff48b6d27bd61ca04c21"
+mmh3_hash: "538444a9378be9f4bc6276294bd2e502"
 summary: "OpenClaw 中的 OAuth: token 交换、存储和多账户模式"
 read_when:
   - 需要了解 OpenClaw OAuth 端到端流程
   - 遇到 token 失效 / 登出问题
   - 需要使用 Claude CLI 或 OAuth 认证流程
   - 需要多账户或 profile 路由
+title: "OAuth"
 ---
 
 OpenClaw 通过 OAuth 支持"订阅认证"，适用于提供此功能的 provider（特别是 **OpenAI Codex（ChatGPT OAuth）**）。对于 Anthropic，目前的实际分工是：
@@ -40,7 +40,7 @@ OAuth provider 通常在登录/刷新流程中生成**新的 refresh token**。�
 
 - 运行时从**一个地方**读取凭据
 - 可以保存多个 profile 并确定性地路由它们
-- 外部 CLI 复用因 provider 而异：Codex CLI 可以引导一个空的 `openai-codex:default` profile，但一旦 OpenClaw 有了本地 OAuth profile，本地 refresh token 就是权威的；其他集成可以保持外部管理并重新读取它们的 CLI auth 存储
+- 外部 CLI 复用因 provider 而异：Codex CLI 可以引导一个空的 `openai-codex:default` profile，但一旦 OpenClaw 有了本地 OAuth profile，本地 refresh token 就是权威的。如果本地 Codex refresh 失败且 Codex CLI 有同一账户的可用 token，OpenClaw 可能将该 token 用于当前运行时请求而不写回 `auth-profiles.json`；其他集成可以保持外部管理并重新读取它们的 CLI auth 存储
 - 已知已配置 provider 集的状态和启动路径会将外部 CLI 发现的范围限定到该集合，因此对于单 provider 设置，不会探测无关的 CLI 登录存储
 
 ## 存储（token 在哪里）
@@ -114,7 +114,7 @@ Profiles 存储 `expires` 时间戳。
 - 如果 `expires` 在未来 → 使用存储的 access token
 - 如果已过期 → 刷新（在文件锁下）并覆盖存储的凭据
 - 如果次级 agent 读取继承的主 agent OAuth profile，刷新会写回主 agent 存储，而不是将 refresh token 复制到次级 agent 存储中
-- 例外：某些外部 CLI 凭据保持外部管理；OpenClaw 重新读取那些 CLI auth 存储，而不是消耗复制的 refresh token。Codex CLI 引导有意更窄：它会创建一个空的 `openai-codex:default` profile，然后 OpenClaw 拥有的刷新操作保持本地 profile 为权威的。
+- 例外：某些外部 CLI 凭据保持外部管理；OpenClaw 重新读取那些 CLI auth 存储，而不是消耗复制的 refresh token。Codex CLI 引导有意更窄：它会创建一个空的 `openai-codex:default` profile，然后 OpenClaw 拥有的刷新操作保持本地 profile 为权威的。如果本地 Codex refresh 失败且 Codex CLI 有同一账户的可用 token，OpenClaw 可能将该 token 用于当前运行时请求而不写回 `auth-profiles.json`。
 
 刷新流程是自动的；通常不需要手动管理 token。
 

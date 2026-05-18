@@ -1,12 +1,11 @@
 ---
-mmh3_hash: "de0374d9d9d6aff98474333a6658b887"
-title: "Session tools"
-sidebarTitle: "Session tools"
-summary: "Agent 跨 session 状态、召回、消息传递和子 agent 编排工具"
+mmh3_hash: "5d1bad4c6bfd60940de274279417a629"
+summary: "Agent 跨 Session 状态、召回、消息传递和子 Agent 编排工具"
 read_when:
-  - 需要了解 agent 拥有哪些 session 工具
-  - 需要配置跨 session 访问或子 agent 派生
-  - 需要检查状态或控制已派生的子 agent
+  - 需要了解 Agent 拥有哪些 Session 工具
+  - 需要配置跨 Session 访问或子 Agent 派生
+  - 需要检查状态或控制已派生的子 Agent
+title: "Session tools"
 ---
 
 OpenClaw 为 agent 提供工具，以便跨 session 工作、检查状态和编排子 agent。
@@ -85,7 +84,7 @@ OpenClaw 为 agent 提供工具，以便跨 session 工作、检查状态和编�
 
 ## 派生子 agent
 
-`sessions_spawn` 默认为后台任务创建隔离的 session。它始终是非阻塞的——立即返回 `runId` 和 `childSessionKey`。
+`sessions_spawn` 默认为后台任务创建隔离的 session。它始终是非阻塞的——立即返回 `runId` 和 `childSessionKey`。原生子 Agent 运行在子 session 的第一条可见 `[Subagent Task]` 消息中接收委托的任务，而系统提示仅携带子 Agent 运行时规则和路由上下文。
 
 主要选项：
 

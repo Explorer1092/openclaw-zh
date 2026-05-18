@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fe71f53a6629a872acea5aaeaa8ef4db"
+mmh3_hash: "47a91ae6dbc90afb2ce4a49274a26568"
 title: "Model failover"
 sidebarTitle: "Model failover"
 summary: "OpenClaw 如何轮换 auth profiles 并跨 model 进行故障转移"
@@ -61,10 +61,28 @@ OpenClaw 将已选的 provider/model 与选择原因分开。该来源控制是�
 
 - **已配置默认值**：`agents.defaults.model.primary` 使用 `agents.defaults.model.fallbacks`。
 - **Agent 主 model**：`agents.list[].model` 是严格的，除非该 agent model 对象包含自己的 `fallbacks`。使用 `fallbacks: []` 使严格行为明确，或提供非空列表以将该 agent 选择加入 model 故障转移。
-- **自动故障转移覆盖**：运行时故障转移写入 `providerOverride`、`modelOverride`、`modelOverrideSource: "auto"` 和所选源 model，然后重试。该自动覆盖可继续沿已配置的故障转移链走，并被 `/new`、`/reset` 和 `sessions.reset` 清除。没有明确 `heartbeat.model` 的心跳运行，当其源不再匹配当前已配置默认值时，也会清除直接自动覆盖。
+- **自动故障转移覆盖**：运行时故障转移写入 `providerOverride`、`modelOverride`、`modelOverrideSource: "auto"` 和所选源 model，然后重试。该自动覆盖可继续沿已配置的故障转移链走，无需在每条消息上探测主 model，但 OpenClaw 会定期再次探测已配置的源，并在恢复时清除自动覆盖。`/new`、`/reset` 和 `sessions.reset` 也会清除自动来源的覆盖。没有明确 `heartbeat.model` 的心跳运行，当其源不再匹配当前已配置默认值时，也会清除直接自动覆盖。
 - **用户 Session 覆盖**：`/model`、model 选择器、`session_status(model=...)` 和 `sessions.patch` 写入 `modelOverrideSource: "user"`。这是一个精确的 Session 选择。如果所选 provider/model 在产生回复之前失败，OpenClaw 报告失败，而不是从无关的已配置故障转移中回答。
 - **传统 Session 覆盖**：较旧的 Session 条目可能有 `modelOverride` 但没有 `modelOverrideSource`。OpenClaw 将这些视为用户覆盖，以避免明确的旧选择被静默转换为故障转移行为。
 - **Cron payload model**：cron job 的 `payload.model` / `--model` 是 job 主 model，而不是用户 Session 覆盖。它使用已配置的故障转移，除非 job 提供 `payload.fallbacks`；`payload.fallbacks: []` 使 cron 运行变为严格。
+
+自动故障转移主 model 探测间隔为 5 分钟，不可配置。OpenClaw 会记住每个 Session 和主 model 的最近探测记录，以避免在每轮消息中都重试已知失败的主 model。当 Session 转移到故障转移 model 时，OpenClaw 发送一次可见通知；当恢复到所选主 model 时，再发送一次通知；在保持故障转移的每轮消息中不重复该通知。
+
+## 用户可见的故障转移通知
+
+当 Session 转移到自动选择的故障转移 model 时，OpenClaw 在同一回复界面发送状态通知：
+
+```text
+↪️ Model Fallback: <fallback> (selected <primary>; <reason>)
+```
+
+当后续探测成功并且 Session 恢复到所选主 model 时，OpenClaw 发送：
+
+```text
+↪️ Model Fallback cleared: <primary> (was <fallback>)
+```
+
+这些通知是运维消息，而非 assistant 内容。它们在每次状态变化时投递一次，包括可行时的仅产生副作用的轮次，但保持故障转移的轮次不会重复投递。投递会绕过正常的来源回复抑制，通知不会占用线程 channel 的第一个 assistant 回复槽，并且排除在文字转语音和承诺提取之外。
 
 ## Auth 存储（密钥 + OAuth）
 
@@ -127,12 +145,25 @@ OpenClaw **每个 Session 固定选择的 auth profile** 以保持 provider 缓�
 自动固定的 profile（由 Session 路由器选择）被视为**偏好**：优先尝试，但 OpenClaw 可能在速率限制/超时时轮换到另一个 profile。用户固定的 profile 锁定到该 profile；如果失败且配置了 model 故障转移，OpenClaw 会移至下一个 model，而不是切换 profile。
 </Note>
 
-### 为什么 OAuth 会"看起来丢失"
+### OpenAI Codex 订阅加 API 密钥备份
 
-如果同一 provider 同时有 OAuth profile 和 API 密钥 profile，轮询可能在消息间切换，除非已固定。要强制使用单个 profile：
+对于 OpenAI agent model，auth 和 runtime 是分离的。`openai/gpt-*` 保持在 Codex harness 上，而 auth 可以在 Codex 订阅 profile 和 OpenAI API 密钥备份之间轮换。
 
-- 使用 `auth.order[provider] = ["provider:profileId"]` 固定，或
-- 通过 `/model …` 使用 profile 覆盖进行每 Session 覆盖（当 UI/chat 表面支持时）。
+使用 `auth.order.openai` 设置面向用户的顺序：
+
+```json5
+{
+  auth: {
+    order: {
+      openai: ["openai-codex:user@example.com", "openai:api-key-backup"],
+    },
+  },
+}
+```
+
+现有 Codex 订阅 profile 可能仍使用旧版 `openai-codex:*` profile id。有序的 API 密钥备份可以是普通的 `openai:*` API 密钥 profile。当订阅达到 Codex 使用限制时，OpenClaw 记录 Codex 提供的精确重置时间（如有），尝试下一个有序 auth profile，并保持运行在 Codex harness 内。一旦重置时间过去，订阅 profile 即可再次使用，下一次自动选择可以返回到它。
+
+仅当需要为该 Session 强制使用某个账户/密钥时，才使用用户固定 profile。用户固定 profile 是严格的，不会静默跳转到另一个 profile。
 
 ## 冷却
 
@@ -283,7 +314,8 @@ Session model 更改是共享状态。活跃运行器、`/model` 命令、压缩
 - 系统驱动的 model 更改，如故障转移轮换、心跳覆盖或压缩，不会自行标记待处理的实时切换。
 - 用户驱动的 model 覆盖被视为故障转移策略的精确选择，因此不可达的选定 provider 表面为失败，而不是被 `agents.defaults.model.fallbacks` 掩盖。
 - 在故障转移重试开始前，回复运行器将选定的故障转移覆盖字段持久化到 Session 条目。
-- 自动故障转移覆盖在后续轮次中保持选中，以便 OpenClaw 不会在每条消息上探测已知不良的主 model。`/new`、`/reset` 和 `sessions.reset` 清除自动来源的覆盖，并将 Session 返回到已配置的默认值。
+- 自动故障转移覆盖在后续轮次中保持选中，以便 OpenClaw 不会在每条消息上探测已知不良的主 model。OpenClaw 会定期再次探测已配置的源，并在恢复时清除自动覆盖；`/new`、`/reset` 和 `sessions.reset` 立即清除自动来源的覆盖。
+- 用户回复在每次状态变化时公告一次故障转移过渡和故障转移恢复。保持故障转移的轮次不重复该通知。
 - `/status` 显示选定的 model，以及当故障转移状态不同时，活跃的故障转移 model 和原因。
 - 实时 Session 对账优先于过时运行时 model 字段的持久化 Session 覆盖。
 - 如果实时切换错误指向活跃故障转移链中的后续候选，OpenClaw 直接跳转到该选定 model，而不是先走无关的候选。

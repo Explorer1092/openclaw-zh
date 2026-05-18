@@ -1,10 +1,10 @@
 ---
-mmh3_hash: "821825f716d70aec58abaa869d80b941"
+mmh3_hash: "f46594d7667bd286dfed94bae84d4c29"
 summary: "Agent Loop 生命周期、流和等待语义"
 read_when:
   - 您需要 Agent Loop 或生命周期事件的精确演练
   - 您正在修改 Session 排队、转录写入或 Session 写锁行为
-title: "Agent Loop"
+title: "Agent loop"
 ---
 
 agentic loop 是 Agent 的完整"真实"运行过程：接收输入 → 上下文组装 → 模型推理 →
@@ -44,7 +44,8 @@ agentic loop 是 Agent 的完整"真实"运行过程：接收输入 → 上下�
 
 - 运行按 Session 键（Session 通道）序列化，可选择通过全局通道。
 - 这防止了工具/Session 竞争并保持 Session 历史的一致性。
-- 消息 Channel 可以选择喂入此通道系统的队列模式（collect/steer/followup）。参见[命令队列](/concepts/queue)。
+- 消息 Channel 可以选择喂入此通道系统的队列模式（steer/followup/collect/interrupt）。
+  参见[命令队列](/concepts/queue)。
 - 转录写入也受 Session 文件写锁保护。该锁具有进程感知能力且基于文件，因此可以捕获绕过进程内队列或来自其他进程的写入者。Session 转录写入者在报告 Session 繁忙前等待最长 `session.writeLock.acquireTimeoutMs`；默认值为 `60000` 毫秒。
 - Session 写锁默认不可重入。如果辅助工具有意在保留一个逻辑写入者的同时嵌套获取同一锁，必须使用 `allowReentrant: true` 明确选择加入。
 
@@ -134,14 +135,25 @@ Harness 可能以不同方式适配这些 Hook。Codex 应用服务器 Harness �
 - 重试时，内存缓冲区和工具摘要被重置以避免重复输出。
 - 参见[压缩](/concepts/compaction)了解压缩流水线。
 
+## 事件流（当前）
+
+- `lifecycle`：由 `subscribeEmbeddedPiSession` 发出（以及作为 `agentCommand` 的回退）
+- `assistant`：来自 pi-agent-core 的流式增量
+- `tool`：来自 pi-agent-core 的流式工具事件
+
+## 聊天 Channel 处理
+
+- 助手增量被缓冲到聊天 `delta` 消息中。
+- 聊天 `final` 在 **lifecycle end/error** 时发出。
+
 ## 超时
 
 - `agent.wait` 默认：30 秒（仅等待）。`timeoutMs` 参数覆盖。
 - Agent 运行时：`agents.defaults.timeoutSeconds` 默认 172800 秒（48 小时）；在 `runEmbeddedPiAgent` 中通过中止计时器强制执行。
 - Cron 运行时：隔离的 Agent 轮次 `timeoutSeconds` 由 cron 拥有。调度器在执行开始时启动该计时器，在配置的截止时间中止底层运行，然后在记录超时前运行有界清理，以防止陈旧的子 Session 让通道卡住。
-- Session 存活诊断：启用诊断后，`diagnostics.stuckSessionWarnMs` 对没有观察到回复、工具、状态、块或 ACP 进度的长时间 `processing` Session 进行分类。活跃的嵌入式运行、模型调用和工具调用报告为 `session.long_running`；有活跃工作但近期无进度的报告为 `session.stalled`；`session.stuck` 保留用于无活跃工作的陈旧 Session 账务。
-- 模型空闲超时：当在空闲窗口前没有响应块到达时，OpenClaw 中止模型请求。`models.providers.<id>.timeoutSeconds` 为慢速本地/自托管 Provider 扩展此空闲监视器。
-- Provider HTTP 请求超时：`models.providers.<id>.timeoutSeconds` 适用于该 Provider 的模型 HTTP 获取，包括连接、标头、正文、SDK 请求超时、总守护获取中止处理和模型流空闲监视器。
+- Session 存活诊断：启用诊断后，`diagnostics.stuckSessionWarnMs` 对没有观察到回复、工具、状态、块或 ACP 进度的长时间 `processing` Session 进行分类。活跃的嵌入式运行、模型调用和工具调用报告为 `session.long_running`；有活跃工作但近期无进度的报告为 `session.stalled`；`session.stuck` 保留用于无活跃工作的陈旧 Session 账务。陈旧 Session 账务立即释放受影响的 Session 通道；停滞的嵌入式运行仅在 `diagnostics.stuckSessionAbortMs`（默认：至少 5 分钟且为警告阈值的 3 倍）之后才被中止排空，以便排队的工作可以恢复而不中断仅仅是运行缓慢的运行。恢复时会发出结构化的请求/完成结果，且只有当同一处理代仍然是当前代时，诊断状态才会标记为空闲。对于保持不变的 Session，重复的 `session.stuck` 诊断会进行退避。
+- 模型空闲超时：当在空闲窗口前没有响应块到达时，OpenClaw 中止模型请求。`models.providers.<id>.timeoutSeconds` 为慢速本地/自托管 Provider 扩展此空闲监视器，但它仍受任何较低的 `agents.defaults.timeoutSeconds` 或运行特定超时的限制，因为这些控制整个 Agent 运行。否则，当配置了 `agents.defaults.timeoutSeconds` 时，OpenClaw 使用它，默认情况下上限为 120 秒。没有显式模型或 Agent 超时的 Cron 触发运行会禁用空闲监视器，并依赖 cron 外部超时。
+- Provider HTTP 请求超时：`models.providers.<id>.timeoutSeconds` 适用于该 Provider 的模型 HTTP 获取，包括连接、标头、正文、SDK 请求超时、总守护获取中止处理和模型流空闲监视器。在提高整个 Agent 运行超时之前，对 Ollama 等慢速本地/自托管 Provider 使用此选项，并在模型请求需要运行更长时间时，保持 Agent/运行时超时至少与之相同。
 
 ## 提前结束的位置
 

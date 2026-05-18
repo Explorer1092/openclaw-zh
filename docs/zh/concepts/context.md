@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "27aac4ea3b37a5faf74d52c1abfd8a97"
+mmh3_hash: "ccfbae28b410b88dab470e7f89d28789"
 summary: "Context：model 看到什么、如何构建以及如何检查"
 read_when:
   - 您想了解 OpenClaw 中"context"的含义
@@ -125,7 +125,7 @@ System prompt 由 **OpenClaw 拥有**并在每次运行时重建。它包括：
 
 大文件使用 `agents.defaults.bootstrapMaxChars`（默认 `12000` 字符）按文件截断。OpenClaw 还使用 `agents.defaults.bootstrapTotalMaxChars`（默认 `60000` 字符）在文件间强制执行总 bootstrap 注入上限。`/context` 显示**原始 vs 注入**大小以及是否发生截断。
 
-发生截断时，runtime 可以在 Project Context 下注入一个提示内警告块。使用 `agents.defaults.bootstrapPromptTruncationWarning`（`off`、`once`、`always`；默认 `once`）进行配置。
+发生截断时，runtime 可以在 Project Context 下注入一个提示内警告块。使用 `agents.defaults.bootstrapPromptTruncationWarning`（`off`、`once`、`always`；默认 `always`）进行配置。
 
 ## Skills：注入了什么 vs 按需加载
 
@@ -160,7 +160,7 @@ Slash commands 由 Gateway 处理。有几种不同的行为：
 
 - **正常历史记录**在 Session transcript 中持久化，直到通过 policy compact/prune。
 - **Compaction** 将摘要持久化到 transcript 中并保持最近的消息完整。
-- **Pruning** 从运行的内存中 prompt 中删除旧的 tool results，但不重写 transcript。
+- **Pruning** 从_内存中_ prompt 中删除旧的 tool results 以释放 context window 空间，但不重写 Session transcript——磁盘上的完整历史记录仍可检查。
 
 文档：[Session](/concepts/session)、[Compaction](/concepts/compaction)、[Session pruning](/concepts/session-pruning)。
 

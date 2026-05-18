@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "66ab5ad39133fc01e6a89e9d1374f1ce"
+mmh3_hash: "8ce127503a311e6445cfc906c930fa28"
 summary: "Model provider 概述，包含示例配置 + CLI 流程"
 read_when:
   - 需要按 provider 的 model 设置参考
@@ -22,7 +22,7 @@ sidebarTitle: "Model providers"
 
   </Accordion>
   <Accordion title="添加 provider auth 不会改变你的主 model">
-    `openclaw configure` 在你添加或重新认证 provider 时保留现有的 `agents.defaults.model.primary`。Provider Plugin 可能仍然在其 auth 配置补丁中返回推荐的默认 model，但当已存在主 model 时，configure 将其视为"使该 model 可用"，而不是"替换当前主 model"。
+    `openclaw configure` 在你添加或重新认证 provider 时保留现有的 `agents.defaults.model.primary`。`openclaw models auth login` 也同样，除非传递 `--set-default`。Provider Plugin 可能仍然在其 auth 配置补丁中返回推荐的默认 model，但当已存在主 model 时，OpenClaw 将其视为"使该 model 可用"，而不是"替换当前主 model"。
 
     要有意切换默认 model，使用 `openclaw models set <provider/model>` 或 `openclaw models auth login --provider <id> --set-default`。
 
@@ -42,9 +42,9 @@ sidebarTitle: "Model providers"
 
   </Accordion>
   <Accordion title="CLI runtimes">
-    CLI runtimes 使用相同的分离：选择规范 model 引用，如 `anthropic/claude-*`、`google/gemini-*` 或 `openai/gpt-*`，然后在需要本地 CLI 后端时将 provider/model runtime 策略设置为 `claude-cli`、`google-gemini-cli` 或 `codex-cli`。
+    CLI runtimes 使用相同的分离：选择规范 model 引用，如 `anthropic/claude-*` 或 `google/gemini-*`，然后在需要本地 CLI 后端时将 provider/model runtime 策略设置为 `claude-cli` 或 `google-gemini-cli`。
 
-    传统 `claude-cli/*`、`google-gemini-cli/*` 和 `codex-cli/*` 引用迁回规范 provider 引用，runtime 单独记录。
+    传统 `claude-cli/*` 和 `google-gemini-cli/*` 引用迁回规范 provider 引用，runtime 单独记录。传统 `codex-cli/*` 引用迁移到 `openai/*` 并使用 Codex app-server 路由；OpenClaw 不再保留捆绑的 Codex CLI 后端。
 
   </Accordion>
 </AccordionGroup>
@@ -147,7 +147,7 @@ Anthropic 员工告诉我们 OpenClaw 风格的 Claude CLI 使用再次被允许
 - 策略说明：OpenAI Codex OAuth 明确支持在 OpenClaw 等外部工具/工作流中使用
 - 对于常见的订阅加原生 Codex runtime 路由，使用 `openai-codex` auth 登录但配置 `openai/gpt-5.5`；OpenAI agent 轮次默认选择 Codex
 - 仅当想要通过 PI 的兼容性路由时使用 provider/model `agentRuntime.id: "pi"`；否则保持 `openai/gpt-5.5` 在默认 Codex harness 上
-- 较旧的 `openai-codex/gpt-5.1*`、`openai-codex/gpt-5.2*` 和 `openai-codex/gpt-5.3*` 引用被抑制，因为 ChatGPT/Codex OAuth 账户拒绝它们；改用 `openai-codex/gpt-5.5` 或原生 Codex runtime 路由
+- `openai-codex/gpt-*` 引用仍是传统 PI 路由。新的 agent 配置优先使用原生 Codex runtime 上的 `openai/gpt-5.5`，并在想要将旧的 `openai-codex/*` 引用迁移到规范 `openai/*` 引用时运行 `openclaw doctor --fix`
 
 ```json5
 {
@@ -687,7 +687,7 @@ export SGLANG_API_KEY="sglang-local"
     - 对于需要供应商特定字段的 OpenAI 兼容 Completions 代理，设置 `agents.defaults.models["provider/model"].params.extra_body`（或 `extraBody`）将额外 JSON 合并到出站请求主体。
     - 对于 vLLM 聊天模板控制，设置 `agents.defaults.models["provider/model"].params.chat_template_kwargs`。捆绑的 vLLM Plugin 在 session thinking 级别关闭时自动为 `vllm/nemotron-3-*` 发送 `enable_thinking: false` 和 `force_nonempty_content: true`。
     - 对于慢速本地 model 或远程 LAN/tailnet 主机，设置 `models.providers.<id>.timeoutSeconds`。这扩展了 provider model HTTP 请求处理，包括连接、标头、主体 streaming 和总的受保护 fetch 中止，而不增加整个 agent 运行时超时。
-    - Model provider HTTP 调用仅对已配置的 provider `baseUrl` 主机名允许 Surge、Clash 和 sing-box fake-IP DNS 答案在 `198.18.0.0/15` 和 `fc00::/7` 中。其他私有、环回、链路本地和元数据目标仍需要明确的 `models.providers.<id>.request.allowPrivateNetwork: true` 选择加入。
+    - Model provider HTTP 调用仅对已配置的 provider `baseUrl` 主机名允许 Surge、Clash 和 sing-box fake-IP DNS 答案在 `198.18.0.0/15` 和 `fc00::/7` 中。自定义/本地 provider 端点也信任已配置的精确 `scheme://host:port` 源用于受保护的 model 请求，包括环回、LAN 和 tailnet 主机。这不是新的配置选项；你配置的 `baseUrl` 仅为该源扩展请求策略。Fake-IP 主机名允许和精确源信任是独立机制。其他私有、环回、链路本地、元数据目标以及不同端口仍需要明确的 `models.providers.<id>.request.allowPrivateNetwork: true` 选择加入。设置 `models.providers.<id>.request.allowPrivateNetwork: false` 可选择退出精确源信任。
     - 如果 `baseUrl` 为空/省略，OpenClaw 保留默认 OpenAI 行为（解析到 `api.openai.com`）。
     - 为安全起见，明确的 `compat.supportsDeveloperRole: true` 在非原生 `openai-completions` 端点上仍然被覆盖。
     - 对于非直接端点上的 `api: "anthropic-messages"`（任何不是规范 `anthropic` 的 provider，或主机不是公共 `api.anthropic.com` 端点的自定义 `models.providers.anthropic.baseUrl`），OpenClaw 抑制隐式 Anthropic beta 标头，如 `claude-code-20250219`、`interleaved-thinking-2025-05-14` 和 OAuth 标记，以便自定义 Anthropic 兼容代理不拒绝不支持的 beta 标志。如果代理需要特定 beta 功能，明确设置 `models.providers.<id>.headers["anthropic-beta"]`。

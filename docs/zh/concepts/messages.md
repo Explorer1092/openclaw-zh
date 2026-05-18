@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d8aca6028f2d538ba1e0139e4826f799"
+mmh3_hash: "f5942509418ba428fd7eaa92a30a6c0c"
 summary: "消息流程、Session、queueing 和 reasoning 可见性"
 read_when:
   - 解释入站消息如何变成回复
@@ -108,7 +108,7 @@ OpenClaw 将**提示主体**与**命令主体**分开：
 
 - 通过 `messages.queue`（及 `messages.queue.byChannel`）配置。
 - 默认模式为 `steer`，steering 回退到排队后续投递时，500ms 后续防抖。
-- 模式：`steer`、`followup`、`collect`、`steer-backlog`、`interrupt` 以及传统的一次一条 `queue` 模式。
+- 模式：`steer`、`followup`、`collect` 和 `interrupt`。
 
 详情见 [Command queue](/concepts/queue) 和 [Steering queue](/concepts/queue-steering)。
 
@@ -156,15 +156,15 @@ OpenClaw 可以显示或隐藏模型 reasoning：
 
 OpenClaw 按对话类型解析该行为：
 
-- 私信对话默认不允许静默，并将裸静默回复改写为简短可见的回退。
-- 群组/Channel 默认允许静默。
+- 私信对话从不收到 `NO_REPLY` 提示指导。如果私信运行意外返回裸静默 token，OpenClaw 抑制它而不是改写或投递。
+- 群组/Channel 默认只为自动群组回复允许静默。在 `message_tool` 可见回复模式下，静默意味着模型不调用 `message(action=send)`。
 - 内部编排默认允许静默。
 
 OpenClaw 也对非私信聊天中在任何 assistant 回复之前发生的内部运行器故障使用静默回复，以防群组/Channel 看到 Gateway 错误样板文本。私信显示紧凑的失败提示；仅当 `/verbose` 为 `on` 或 `full` 时才显示原始运行器详情。
 
-默认值在 `agents.defaults.silentReply` 和 `agents.defaults.silentReplyRewrite` 下；`surfaces.<id>.silentReply` 和 `surfaces.<id>.silentReplyRewrite` 可按表面覆盖。
+默认值在 `agents.defaults.silentReply` 下；`surfaces.<id>.silentReply` 可按表面覆盖群组/内部策略。
 
-当父 Session 有一个或多个待处理的已生成子 agent 运行时，裸静默回复在所有表面上都会被丢弃，而不是被改写，从而让父 Session 保持静默，直到子 agent 完成事件投递真正的回复。
+裸静默回复在所有表面上都会被丢弃，让父 Session 保持静默，而不是将哨兵文本改写为回退消息。
 
 ## 相关
 

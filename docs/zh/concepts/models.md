@@ -1,7 +1,7 @@
 ---
 title: "Models CLI"
 sidebarTitle: "Models CLI"
-mmh3_hash: "56ce81d051fc1246a36681b5b5ede672"
+mmh3_hash: "43cca32b376635770e962d75da22952c"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when:
   - 添加或修改 models CLI（models list/set/scan/aliases/fallbacks）
@@ -60,7 +60,7 @@ OpenClaw 按以下顺序选择 model：
 相同的 `provider/model` 根据来源可能有不同含义：
 
 - 已配置默认值（`agents.defaults.model.primary` 和 agent 特定主 model）是正常起点，使用 `agents.defaults.model.fallbacks`。
-- 自动故障转移选择是临时恢复状态。它们以 `modelOverrideSource: "auto"` 存储，以便后续轮次可以继续使用故障转移链，而无需先探测已知不良的主 model。
+- 自动故障转移选择是临时恢复状态。它们以 `modelOverrideSource: "auto"` 存储，以便后续轮次可以继续使用故障转移链，而无需每次探测已知不良的主 model；OpenClaw 定期再次探测原始主 model，恢复时清除自动选择，并在每次状态变化时公告一次故障转移/恢复过渡。
 - 用户 Session 选择是精确的。`/model`、model 选择器、`session_status(model=...)` 和 `sessions.patch` 存储 `modelOverrideSource: "user"`；如果所选 provider/model 不可达，OpenClaw 明显失败，而不是回落到另一个已配置 model。
 - Cron `--model` / payload `model` 是每 job 主 model。它仍使用已配置的 fallbacks，除非 job 提供明确的 payload `fallbacks`（用 `fallbacks: []` 进行严格 cron 运行）。
 - CLI 默认 model 和允许列表选择器通过列出明确的 `models.providers.*.models` 来遵守 `models.mode: "replace"`，而不是加载完整的内置目录。

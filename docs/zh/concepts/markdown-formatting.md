@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "231a6526a8dbb33468e26c196193def5"
+mmh3_hash: "93bd1e26930ecd34d044df268714a26e"
 summary: "出站 Channel 的 Markdown 格式化管道"
 read_when:
   - 您正在更改出站 Channel 的 Markdown 格式化或分块
@@ -58,7 +58,7 @@ IR（示意）：
 Markdown 表格在聊天客户端中没有统一支持。使用 `markdown.tables` 控制每个 Channel（和每个账户）的转换。
 
 - `code`：将表格渲染为代码块（大多数 Channel 的默认值）。
-- `bullets`：将每行转换为项目符号（Signal + WhatsApp 的默认值）。
+- `bullets`：将每行转换为项目符号（Matrix、Signal 和 WhatsApp 的默认值）。
 - `off`：禁用表格解析和转换；原始表格文本直接传递。
 
 配置键：

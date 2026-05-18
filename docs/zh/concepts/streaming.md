@@ -1,6 +1,6 @@
 ---
 title: "Streaming and chunking"
-mmh3_hash: "36d88d162b33c9f57a58e32aa888f99a"
+mmh3_hash: "a2be1509c2de2e9f097f46ec5f2f746f"
 summary: "Streaming + chunking 行为（block 回复、channel 预览 streaming、模式映射）"
 read_when:
   - 解释 streaming 或 chunking 在 channel 上的工作方式
@@ -175,7 +175,7 @@ Matrix：
 
 ### 工具进度预览更新
 
-预览 streaming 还可以包含**工具进度**更新——短状态行，如"正在搜索网络"、"正在读取文件"或"正在调用工具"——这些出现在同一预览消息中，工具运行时，在最终回复之前。这让多步骤工具轮次在第一次思考预览和最终答案之间保持视觉活跃而不是静默的。
+预览 streaming 还可以包含**工具进度**更新——短状态行，如"正在搜索网络"、"正在读取文件"或"正在调用工具"——这些出现在同一预览消息中，工具运行时，在最终回复之前。在 Codex app-server 模式下，Codex 前言/评注消息使用相同的预览路径，因此简短的"我正在检查..."进度说明可以 streaming 到可编辑草稿中而不成为最终答案的一部分。这让多步骤工具轮次在第一次思考预览和最终答案之间保持视觉活跃而不是静默的。
 
 支持的界面：
 

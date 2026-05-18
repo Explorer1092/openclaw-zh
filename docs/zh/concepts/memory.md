@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a5461362409346df568850172a8a90e0"
+mmh3_hash: "c9f1dd76dbde0bf073e405710d150f3d"
 summary: "OpenClaw 如何跨 Session 记忆事物"
 title: "内存概述"
 read_when:
@@ -14,7 +14,7 @@ OpenClaw 通过在 Agent 的工作区中写入**纯 Markdown 文件**来记住�
 您的 Agent 有三个与内存相关的文件：
 
 - **`MEMORY.md`**——长期内存。持久事实、偏好和决策。在每次 DM Session 开始时加载。
-- **`memory/YYYY-MM-DD.md`**——每日笔记。运行上下文和观察。今天和昨天的笔记会自动加载。
+- **`memory/YYYY-MM-DD.md`**（或 **`memory/YYYY-MM-DD-<slug>.md`**）——每日笔记。运行上下文和观察。今天和昨天的笔记会自动加载，由捆绑 Session 内存 Hook 在 `/new` 或 `/reset` 时写入的带 slug 变体现在也与仅日期文件一起被提取。
 - **`DREAMS.md`**（可选）——梦境日记和 dreaming 扫描摘要，供人类审查，包括有据可查的历史回填条目。
 
 这些文件位于 Agent 工作区（默认 `~/.openclaw/workspace`）。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9a83863ea0b799dce0d418dc337c1371"
+mmh3_hash: "8dee1dd27e44b47ef08e702fb10b7aae"
 summary: "QA 栈概述：qa-lab、qa-channel、种子场景、实时传输通道、传输适配器和报告。"
 read_when:
   - 了解 QA 栈如何整合
@@ -648,23 +648,24 @@ pnpm openclaw qa character-eval \
   --model openai/gpt-5.5,thinking=medium,fast \
   --model openai/gpt-5.2,thinking=xhigh \
   --model openai/gpt-5,thinking=xhigh \
-  --model anthropic/claude-opus-4-6,thinking=high \
+  --model anthropic/claude-opus-4-7,thinking=high \
   --model anthropic/claude-sonnet-4-6,thinking=high \
   --model zai/glm-5.1,thinking=high \
   --model moonshot/kimi-k2.5,thinking=high \
   --model google/gemini-3.1-pro-preview,thinking=high \
   --judge-model openai/gpt-5.5,thinking=xhigh,fast \
-  --judge-model anthropic/claude-opus-4-6,thinking=high \
+  --judge-model anthropic/claude-opus-4-7,thinking=high \
   --blind-judge-models \
   --concurrency 16 \
   --judge-concurrency 16
 ```
 
-该命令运行本地 QA Gateway 子进程，而不是 Docker。角色评估场景应通过 `SOUL.md` 设置 persona，然后运行普通用户轮次，如聊天、workspace 帮助和小型文件任务。不应告知候选 model 它正在被评估。该命令保留每份完整转录，记录基本运行统计，然后要求评判 model 在支持的情况下以快速模式和 `xhigh` 推理按自然度、氛围和幽默感对运行进行排名。在比较 provider 时使用 `--blind-judge-models`：评判提示仍然获得每份转录和运行状态，但候选引用被替换为中性标签如 `candidate-01`；报告在解析后将排名映射回真实引用。候选运行默认为 `high` 思考，GPT-5.5 为 `medium`，支持它的较旧 OpenAI 评估引用为 `xhigh`。使用 `--model provider/model,thinking=<level>` 内联覆盖特定候选。`--thinking <level>` 仍设置全局回退，较旧的 `--model-thinking <provider/model=level>` 形式保留以兼容。OpenAI 候选引用默认为快速模式，以便在 provider 支持的情况下使用优先处理。在单个候选或评判需要覆盖时，内联添加 `,fast`、`,no-fast` 或 `,fast=false`。仅在需要对每个候选 model 强制开启快速模式时传递 `--fast`。候选和评判 model 运行均默认并发 16。当 provider 限制或本地 Gateway 压力使运行过于嘈杂时，降低 `--concurrency` 或 `--judge-concurrency`。当未传递候选 `--model` 时，角色评估默认为 `openai/gpt-5.5`、`openai/gpt-5.2`、`openai/gpt-5`、`anthropic/claude-opus-4-6`、`anthropic/claude-sonnet-4-6`、`zai/glm-5.1`、`moonshot/kimi-k2.5` 和 `google/gemini-3.1-pro-preview`。当未传递 `--judge-model` 时，评判默认为 `openai/gpt-5.5,thinking=xhigh,fast` 和 `anthropic/claude-opus-4-6,thinking=high`。
+该命令运行本地 QA Gateway 子进程，而不是 Docker。角色评估场景应通过 `SOUL.md` 设置 persona，然后运行普通用户轮次，如聊天、workspace 帮助和小型文件任务。不应告知候选 model 它正在被评估。该命令保留每份完整转录，记录基本运行统计，然后要求评判 model 在支持的情况下以快速模式和 `xhigh` 推理按自然度、氛围和幽默感对运行进行排名。在比较 provider 时使用 `--blind-judge-models`：评判提示仍然获得每份转录和运行状态，但候选引用被替换为中性标签如 `candidate-01`；报告在解析后将排名映射回真实引用。候选运行默认为 `high` 思考，GPT-5.5 为 `medium`，支持它的较旧 OpenAI 评估引用为 `xhigh`。使用 `--model provider/model,thinking=<level>` 内联覆盖特定候选。`--thinking <level>` 仍设置全局回退，较旧的 `--model-thinking <provider/model=level>` 形式保留以兼容。OpenAI 候选引用默认为快速模式，以便在 provider 支持的情况下使用优先处理。在单个候选或评判需要覆盖时，内联添加 `,fast`、`,no-fast` 或 `,fast=false`。仅在需要对每个候选 model 强制开启快速模式时传递 `--fast`。候选和评判 model 运行均默认并发 16。当 provider 限制或本地 Gateway 压力使运行过于嘈杂时，降低 `--concurrency` 或 `--judge-concurrency`。当未传递候选 `--model` 时，角色评估默认为 `openai/gpt-5.5`、`openai/gpt-5.2`、`openai/gpt-5`、`anthropic/claude-opus-4-7`、`anthropic/claude-sonnet-4-6`、`zai/glm-5.1`、`moonshot/kimi-k2.5` 和 `google/gemini-3.1-pro-preview`。当未传递 `--judge-model` 时，评判默认为 `openai/gpt-5.5,thinking=xhigh,fast` 和 `anthropic/claude-opus-4-7,thinking=high`。
 
 ## 相关文档
 
 - [Matrix QA](/concepts/qa-matrix)
+- [个人 Agent 基准测试包](/concepts/personal-agent-benchmark-pack)
 - [QA Channel](/channels/qa-channel)
 - [Testing](/help/testing)
 - [Dashboard](/web/dashboard)

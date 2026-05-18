@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0ff656b4723238ad5d588f0c448ce9fc"
+mmh3_hash: "a7863a0d6612b0bc1dd7a47d4ded5b5d"
 summary: "Agent 运行时、工作区契约和 Session Bootstrap"
 read_when:
   - 修改 Agent 运行时、工作区 Bootstrap 或 Session 行为
