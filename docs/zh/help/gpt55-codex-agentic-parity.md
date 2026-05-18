@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "635398974796116854f0ecfe777b8fde"
+mmh3_hash: "04ee794996e5266c9e1fdaf89e1aa175"
 summary: "OpenClaw 如何弥合 GPT-5.5 和 Codex 风格模型的智能体执行差距"
 title: "GPT-5.5 / Codex 智能体对等"
 read_when:
@@ -14,7 +14,7 @@ OpenClaw 已经与使用工具的前沿模型配合良好，但 GPT-5.5 和 Code
 - 它们可能错误地使用严格的 OpenAI/Codex 工具 schema
 - 即使无法实现完全访问，它们也可能要求 `/elevated full`
 - 它们可能在重放或压缩期间丢失长期运行的任务状态
-- 与 Claude Opus 4.6 的对等声明基于传闻而非可重复的场景
+- 与 Claude Opus 4.7 的对等声明基于传闻而非可重复的场景
 
 这个对等程序在四个可审查的切片中修复了这些差距。
 
@@ -52,7 +52,7 @@ OpenClaw 已经与使用工具的前沿模型配合良好，但 GPT-5.5 和 Code
 
 ### PR D：对等测试套件
 
-该切片添加了第一波 QA 实验室对等包，使 GPT-5.5 和 Opus 4.6 可以通过相同的场景进行练习，并使用共享证据进行比较。
+该切片添加了第一波 QA 实验室对等包，使 GPT-5.5 和 Opus 4.7 可以通过相同的场景进行练习，并使用共享证据进行比较。
 
 对等包是证明层。它本身不改变运行时行为。
 
@@ -61,8 +61,8 @@ OpenClaw 已经与使用工具的前沿模型配合良好，但 GPT-5.5 和 Code
 ```bash
 pnpm openclaw qa parity-report \
   --repo-root . \
-  --candidate-summary .artifacts/qa-e2e/gpt55/qa-suite-summary.json \
-  --baseline-summary .artifacts/qa-e2e/opus46/qa-suite-summary.json \
+  --candidate-summary .artifacts/qa-e2e/openai-candidate/qa-suite-summary.json \
+  --baseline-summary .artifacts/qa-e2e/anthropic-baseline/qa-suite-summary.json \
   --output-dir .artifacts/qa-e2e/parity
 ```
 
@@ -123,7 +123,7 @@ flowchart TD
 ```mermaid
 flowchart LR
     A["Merged runtime slices (PR A-C)"] --> B["Run GPT-5.5 parity pack"]
-    A --> C["Run Opus 4.6 parity pack"]
+    A --> C["Run Opus 4.7 parity pack"]
     B --> D["qa-suite-summary.json"]
     C --> E["qa-suite-summary.json"]
     D --> F["openclaw qa parity-report"]
@@ -171,7 +171,7 @@ flowchart LR
 
 ## 发布门控
 
-只有当合并的运行时同时通过对等包和运行时真实性回归时，GPT-5.5 才能被视为与 Opus 4.6 对等或更优。
+只有当合并的运行时同时通过对等包和运行时真实性回归时，GPT-5.5 才能被视为与 Opus 4.7 对等或更优。
 
 必需结果：
 
@@ -179,7 +179,7 @@ flowchart LR
 - 没有没有真实执行的假完成
 - 没有错误的 `/elevated full` 指导
 - 没有静默的重放或压缩放弃
-- 至少与商定的 Opus 4.6 基准一样强的对等包指标
+- 至少与商定的 Opus 4.7 基准一样强的对等包指标
 
 对于第一波测试套件，门控比较：
 
@@ -190,7 +190,7 @@ flowchart LR
 
 对等证据有意分布在两层：
 
-- PR D 使用 QA 实验室证明了相同场景的 GPT-5.5 与 Opus 4.6 行为
+- PR D 使用 QA 实验室证明了相同场景的 GPT-5.5 与 Opus 4.7 行为
 - PR B 确定性套件在测试套件外证明了认证、代理、DNS 和 `/elevated full` 真实性
 
 ## 目标到证据矩阵
@@ -201,13 +201,13 @@ flowchart LR
 | GPT-5.5 不再伪造进度或假工具完成               | PR A + PR D | 对等报告场景结果和假成功计数                                      | 没有可疑的通过结果，没有仅注释的完成                                                     |
 | GPT-5.5 不再给出错误的 `/elevated full` 指导   | PR B        | 确定性真实性套件                                                  | 阻塞原因和完全访问提示保持运行时准确                                                     |
 | 重放/活跃性失败保持显式                        | PR C + PR D | PR C 生命周期/重放套件加 `compaction-retry-mutating-tool`         | 变异工作保持重放不安全性显式，而不是静默消失                                             |
-| GPT-5.5 在商定指标上匹配或优于 Opus 4.6        | PR D        | `qa-agentic-parity-report.md` 和 `qa-agentic-parity-summary.json` | 相同的场景覆盖，完成、停止行为或有效工具使用没有回归                                     |
+| GPT-5.5 在商定指标上匹配或优于 Opus 4.7        | PR D        | `qa-agentic-parity-report.md` 和 `qa-agentic-parity-summary.json` | 相同的场景覆盖，完成、停止行为或有效工具使用没有回归                                     |
 
 ## 如何阅读对等判决
 
 将 `qa-agentic-parity-summary.json` 中的判决用作第一波对等包的最终机器可读决定。
 
-- `pass` 意味着 GPT-5.5 覆盖了与 Opus 4.6 相同的场景，并且在商定的聚合指标上没有回归。
+- `pass` 意味着 GPT-5.5 覆盖了与 Opus 4.7 相同的场景，并且在商定的聚合指标上没有回归。
 - `fail` 意味着至少触发了一个硬门控：完成率更弱、意外停止更差、有效工具使用更弱、任何假成功案例，或场景覆盖不匹配。
 - "shared/base CI 问题"本身不是对等结果。如果 PR D 之外的 CI 噪音阻塞了运行，判决应该等待干净的已合并运行时执行，而不是从分支时代的日志推断。
 - 认证、代理、DNS 和 `/elevated full` 真实性仍然来自 PR B 的确定性套件，因此最终发布声明需要两者：通过的 PR D 对等判决和绿色的 PR B 真实性覆盖。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "52597e2447bd1828424977738b6b4753"
+mmh3_hash: "991ae9013a14c3ad0114375ab5a35124"
 summary: "常见问题：模型默认值、选择、别名、切换、故障转移和认证配置文件"
 read_when:
   - 选择或切换模型、配置别名
@@ -262,9 +262,9 @@ sidebarTitle: "模型常见问题"
   <Accordion title="opus / sonnet / gpt 是内置快捷方式吗？">
     是的。OpenClaw 附带了一些默认简写（仅在模型存在于 `agents.defaults.models` 中时应用）：
 
-    - `opus` → `anthropic/claude-opus-4-6`
+    - `opus` → `anthropic/claude-opus-4-7`
     - `sonnet` → `anthropic/claude-sonnet-4-6`
-    - `gpt` → `openai/gpt-5.5`
+    - `gpt` → `openai/gpt-5.4`
     - `gpt-mini` → `openai/gpt-5.4-mini`
     - `gpt-nano` → `openai/gpt-5.4-nano`
     - `gemini` → `google/gemini-3.1-pro-preview`

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f4ceee12194fb75343682646d2f43fd"
+mmh3_hash: "417b1bd39aedb30eb74e96413089c6b0"
 title: "FAQ"
 summary: "关于 OpenClaw 设置、配置和使用的常见问题"
 read_when:
@@ -241,7 +241,7 @@ read_when:
     openclaw cron runs --id <jobId> --limit 50
     ```
 
-    文档：[Cron 任务](/automation/cron-jobs)、[自动化和任务](/automation)。
+    文档：[Cron 任务](/automation/cron-jobs)、[自动化](/automation)。
 
   </Accordion>
 
@@ -421,7 +421,7 @@ read_when:
     默认镜像以安全为先，以 `node` 用户运行，因此不包含系统包、Homebrew 或捆绑浏览器。要获得更完整的设置：
 
     - 使用 `OPENCLAW_HOME_VOLUME` 持久化 `/home/node`，使缓存在重启后保留。
-    - 使用 `OPENCLAW_DOCKER_APT_PACKAGES` 将系统依赖项烘焙到镜像中。
+    - 使用 `OPENCLAW_IMAGE_APT_PACKAGES` 将系统依赖项烘焙到镜像中。
     - 通过捆绑 CLI 安装 Playwright 浏览器：
       `node /app/node_modules/playwright-core/cli.js install chromium`
     - 设置 `PLAYWRIGHT_BROWSERS_PATH` 并确保路径被持久化。
@@ -1355,7 +1355,7 @@ read_when:
     - 在 `AUTH_TOKEN_MISMATCH` 上，受信任的客户端可以在 Gateway 返回重试提示（`canRetryWithDeviceToken=true`、`recommendedNextStep=retry_with_device_token`）时尝试用缓存的设备令牌进行一次有界重试。
     - 缓存令牌重试现在重用与设备令牌一起存储的缓存已批准范围。显式 `deviceToken` / 显式 `scopes` 调用者仍保留其请求的范围集，而不是继承缓存的范围。
     - 在该重试路径之外，连接认证优先级为：显式共享令牌/密码，然后是显式 `deviceToken`，然后是存储的设备令牌，然后是引导令牌。
-    - 引导令牌范围检查以角色为前缀。内置引导操作员允许列表只满足操作员请求；Node 或其他非操作员角色仍需在其自己的角色前缀下使用范围。
+    - 内置设置代码引导仅适用于 Node。批准后，它返回 `scopes: []` 的 Node 设备令牌，不返回交接的操作员令牌。
 
     修复：
 

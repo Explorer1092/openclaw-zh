@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7d929d74524409d629d67b89a37c891b"
+mmh3_hash: "3beb50570c3c64b237208df549e17f76"
 summary: "如何将 GPT-5.5 / Codex 对等程序作为四个合并单元进行审查"
 title: "GPT-5.5 / Codex 对等维护者说明"
 read_when:
@@ -60,7 +60,7 @@ read_when:
 
 负责：
 
-- 第一波 GPT-5.5 与 Opus 4.6 场景包
+- 第一波 GPT-5.5 与 Opus 4.7 场景包
 - 对等文档
 - 对等报告和发布门控机制
 
@@ -124,7 +124,7 @@ PR D 的预期工件：
 
 ## 发布门控
 
-在以下情况之前，不要声称 GPT-5.5 与 Opus 4.6 对等或更优：
+在以下情况之前，不要声称 GPT-5.5 与 Opus 4.7 对等或更优：
 
 - PR A、PR B 和 PR C 已合并
 - PR D 干净地运行了第一波对等包
@@ -134,7 +134,7 @@ PR D 的预期工件：
 ```mermaid
 flowchart LR
     A["PR A-C merged"] --> B["Run GPT-5.5 parity pack"]
-    A --> C["Run Opus 4.6 parity pack"]
+    A --> C["Run Opus 4.7 parity pack"]
     B --> D["qa-suite-summary.json"]
     C --> E["qa-suite-summary.json"]
     D --> F["qa parity-report"]
@@ -147,7 +147,7 @@ flowchart LR
 
 对等测试套件不是唯一的证据来源。在审查中保持这个划分明确：
 
-- PR D 负责基于场景的 GPT-5.5 与 Opus 4.6 比较
+- PR D 负责基于场景的 GPT-5.5 与 Opus 4.7 比较
 - PR B 确定性套件仍然负责认证/代理/DNS 和完全访问真实性证据
 
 ## 快速维护者合并工作流
@@ -180,7 +180,7 @@ flowchart LR
 | 没有假进度或假工具完成           | PR A + PR D | 对等假成功计数加场景级别报告详情                                    |
 | 没有错误的 `/elevated full` 指导 | PR B        | 确定性运行时真实性套件                                              |
 | 重放/活跃性失败保持显式          | PR C + PR D | 生命周期/重放套件加 `compaction-retry-mutating-tool`                |
-| GPT-5.5 匹配或优于 Opus 4.6      | PR D        | `qa-agentic-parity-report.md` 和 `qa-agentic-parity-summary.json`  |
+| GPT-5.5 匹配或优于 Opus 4.7      | PR D        | `qa-agentic-parity-report.md` 和 `qa-agentic-parity-summary.json`  |
 
 ## 审查者速查：之前与之后
 

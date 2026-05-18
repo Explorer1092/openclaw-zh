@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7a6ee4e704956736765ae46e23031b87"
+mmh3_hash: "ee799dbd1ed04b033d415cd1ff893639"
 summary: "常见问题：快速入门和首次运行设置——安装、引导、认证、订阅、初始故障"
 read_when:
   - 新安装、引导卡住或首次运行错误
@@ -65,7 +65,7 @@ sidebarTitle: "首次运行常见问题"
 
     在任务模式下，只有在真正的心跳运行完成后才会推进到期时间戳。跳过的运行不会将任务标记为已完成。
 
-    文档：[心跳](/gateway/heartbeat)、[自动化与任务](/automation)。
+    文档：[心跳](/gateway/heartbeat)、[自动化](/automation)。
 
   </Accordion>
 

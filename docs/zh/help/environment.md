@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "da45ab3e16c414197a8638d76b813368"
+mmh3_hash: "89e00e1c8b488738eea8f2fceaf04c43"
 summary: "OpenClaw 加载环境变量的位置和优先级顺序"
 read_when:
   - 您需要知道加载哪些环境变量,以及按什么顺序
@@ -36,6 +36,33 @@ OpenClaw 从多个来源提取环境变量。规则是**永不覆盖现有值**�
   },
 }
 ```
+
+配置 `env` 块仅接受字面量字符串值。它不展开 `file:...` 值；例如，`XAI_API_KEY: "file:secrets/xai-api-key.txt"` 会以该确切字符串传递给 Provider。
+
+对于基于文件的 Provider 密钥，请在支持密钥引用的凭据字段上使用 SecretRef：
+
+```json5
+{
+  secrets: {
+    providers: {
+      xai_key_file: {
+        source: "file",
+        path: "~/.openclaw/secrets/xai-api-key.txt",
+        mode: "singleValue",
+      },
+    },
+  },
+  models: {
+    providers: {
+      xai: {
+        apiKey: { source: "file", provider: "xai_key_file", id: "value" },
+      },
+    },
+  },
+}
+```
+
+有关支持的字段，请参阅[密钥管理](/gateway/secrets)和 [SecretRef 凭据界面](/reference/secretref-credential-surface)。
 
 ## Shell 环境导入
 
@@ -99,7 +126,7 @@ OpenClaw 支持两种环境驱动的模式：
 - 配置值中的 `${VAR}` 字符串替换。
 - SecretRef 对象（`{ source: "env", provider: "default", id: "VAR" }`），用于支持密钥引用的字段。
 
-两者都在激活时从进程环境中解析。SecretRef 详细信息记录在[密钥管理](/gateway/secrets)中。
+两者都在激活时从进程环境中解析。SecretRef 详细信息记录在[密钥管理](/gateway/secrets)中。配置 `env` 块本身不解析 SecretRef 或 `file:...` 简写值。
 
 ## 路径相关的环境变量
 

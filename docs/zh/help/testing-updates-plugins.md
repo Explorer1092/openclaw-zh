@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9f9a995b372d5f6db7a3de23b15ce1f7"
+mmh3_hash: "175f5c99415c77e3ed7fd042cdc4ab00"
 summary: "OpenClaw 如何验证更新路径、包迁移和 Plugin 安装/更新行为"
 read_when:
   - 更改 OpenClaw 更新、doctor、包验收或 Plugin 安装行为
@@ -66,7 +66,7 @@ pnpm test:docker:update-migration
 
 重要通道说明：
 
-- `test:docker:plugins` 验证 Plugin 安装冒烟、本地文件夹安装、本地文件夹更新跳过行为、预安装依赖的本地文件夹、`file:` 包安装、带 CLI 执行的 git 安装、git 移动引用更新、带提升传递依赖的 npm 注册表安装、npm 更新无操作、本地 ClawHub 固件安装和更新无操作、市场更新行为，以及 Claude 捆绑启用/检查。设置 `OPENCLAW_PLUGINS_E2E_CLAWHUB=0` 可使 ClawHub 块保持封闭/离线。
+- `test:docker:plugins` 验证 Plugin 安装冒烟、本地文件夹安装、本地文件夹更新跳过行为、预安装依赖的本地文件夹、`file:` 包安装、带 CLI 执行的 git 安装、git 移动引用更新、带提升传递依赖的 npm 注册表安装、npm 更新无操作、畸形 npm 包元数据拒绝、本地 ClawHub 固件安装和更新无操作、市场更新行为，以及 Claude 捆绑启用/检查。设置 `OPENCLAW_PLUGINS_E2E_CLAWHUB=0` 可使 ClawHub 块保持封闭/离线。
 - `test:docker:plugin-lifecycle-matrix` 在空白容器中安装候选包，运行 npm Plugin 经历安装、检查、禁用、启用、显式升级、显式降级，以及删除 Plugin 代码后的卸载。每个阶段记录 RSS 和 CPU 指标。
 - `test:docker:plugin-update` 验证未更改的已安装 Plugin 在 `openclaw plugins update` 期间不会重新安装或丢失安装元数据。
 - `test:docker:upgrade-survivor` 在脏旧用户固件上安装候选 tarball，运行包更新加非交互式 doctor，然后启动回环 Gateway 并检查状态保持。

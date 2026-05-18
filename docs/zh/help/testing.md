@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e7fae5847ffa15d13c34f5f962e73c0b"
+mmh3_hash: "cbbc0e51f1fd39ab640a9f49da475446"
 title: "测试"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
@@ -47,7 +47,7 @@ Docker 运行器。本文档是"我们如何测试"的指南：
 
 - 实时套件（模型 + Gateway 工具/图像探测）：`pnpm test:live`
 - 安静地定向一个实时文件：`pnpm test:live -- src/agents/models.profiles.live.test.ts`
-- 运行时性能报告：分派 `OpenClaw Performance`，使用 `live_gpt54=true` 进行真实 `openai/gpt-5.4` Agent 轮次，或使用 `deep_profile=true` 获取 Kova CPU/堆/跟踪工件。每日计划运行在配置 `CLAWGRIT_REPORTS_TOKEN` 时将 mock-provider、深度配置文件和 GPT 5.4 通道工件发布到 `openclaw/clawgrit-reports`。mock-provider 报告还包括源级 Gateway 启动、内存、Plugin 压力、重复假模型 hello 循环和 CLI 启动数字。
+- 运行时性能报告：分派 `OpenClaw Performance`，使用 `live_openai_candidate=true` 进行真实 `openai/gpt-5.5` Agent 轮次，或使用 `deep_profile=true` 获取 Kova CPU/堆/跟踪工件。每日计划运行在配置 `CLAWGRIT_REPORTS_TOKEN` 时将 mock-provider、深度配置文件和 GPT 5.5 通道工件发布到 `openclaw/clawgrit-reports`。mock-provider 报告还包括源级 Gateway 启动、内存、Plugin 压力、重复假模型 hello 循环和 CLI 启动数字。
 - Docker 实时模型扫描：`pnpm test:docker:live-models`
   - 每个选定的模型现在运行一个文本轮次加上一个小的文件读取风格探测。元数据声明 `image` 输入的模型还运行一个小的图像轮次。在隔离 Provider 故障时，使用 `OPENCLAW_LIVE_MODEL_FILE_PROBE=0` 或 `OPENCLAW_LIVE_MODEL_IMAGE_PROBE=0` 禁用额外探测。
   - CI 覆盖：每日 `OpenClaw Scheduled Live And E2E Checks` 和手动 `OpenClaw Release Checks` 都以 `include_live_suites: true` 调用可重用的实时/E2E 工作流，其中包括按 Provider 分片的单独 Docker 实时模型矩阵作业。
@@ -183,15 +183,15 @@ gh workflow run package-acceptance.yml --ref main \
 `Mantis Telegram Live` 是围绕此通道的 PR 证据包装器。它使用 Convex 租借的 Telegram 凭据运行候选引用，在 Crabbox 桌面浏览器中呈现经过编辑的观察到的消息脚本，记录 MP4 证据，生成运动裁剪的 GIF，上传工件包，并在设置 `pr_number` 时通过 Mantis GitHub App 发布内联 PR 证据。维护者可以通过 Actions UI 的 `Mantis Scenario`（`scenario_id: telegram-live`）或直接从 PR 评论启动它：
 
 ```text
-@Mantis telegram
-@Mantis telegram scenario=telegram-status-command
-@Mantis telegram scenarios=telegram-status-command,telegram-mentioned-message-reply
+@openclaw-mantis telegram
+@openclaw-mantis telegram scenario=telegram-status-command
+@openclaw-mantis telegram scenarios=telegram-status-command,telegram-mentioned-message-reply
 ```
 
 `Mantis Telegram Desktop Proof` 是用于 PR 视觉证明的智能体原生 Telegram Desktop 前后包装器。通过 `Mantis Scenario`（`scenario_id: telegram-desktop-proof`）或从 PR 评论，从 Actions UI 使用自由格式 `instructions` 启动它：
 
 ```text
-@Mantis telegram desktop proof
+@openclaw-mantis telegram desktop proof
 ```
 
 Mantis Agent 读取 PR，决定哪些 Telegram 可见行为证明了更改，在基线和候选引用上运行真实用户 Crabbox Telegram Desktop 证明通道，迭代直到原生 GIF 有用，写入配对的 `motionPreview` 清单，并在设置 `pr_number` 时通过 Mantis GitHub App 发布相同的 2 列 GIF 表格。
@@ -284,7 +284,6 @@ Telegram 真实用户种类的有效负载形状：
 - `{ groupId: string, sutToken: string, testerUserId: string, testerUsername: string, telegramApiId: string, telegramApiHash: string, tdlibDatabaseEncryptionKey: string, tdlibArchiveBase64: string, tdlibArchiveSha256: string, desktopTdataArchiveBase64: string, desktopTdataArchiveSha256: string }`
 - `groupId`、`testerUserId` 和 `telegramApiId` 必须是数字字符串。
 - `tdlibArchiveSha256` 和 `desktopTdataArchiveSha256` 必须是 SHA-256 十六进制字符串。
-- `kind: "telegram-user"` 代表一个 Telegram 临时账户。将租约视为账户范围：TDLib CLI 驱动程序和 Telegram Desktop 视觉见证从相同的有效负载恢复，一次只有一个作业应持有租约。
 
 Telegram 真实用户租约恢复：
 

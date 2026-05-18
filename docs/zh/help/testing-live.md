@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d73669813bf8d88ddf603a674a87a9bf"
+mmh3_hash: "663a37a1650174483ddbe397b466a795"
 summary: "实时（网络触达）测试：模型矩阵、CLI 后端、ACP、媒体 Provider、凭据"
 read_when:
   - 运行实时模型矩阵 / CLI 后端 / ACP / 媒体 Provider 冒烟测试
@@ -11,13 +11,9 @@ sidebarTitle: "实时测试"
 
 有关快速入门、QA 运行器、单元/集成套件和 Docker 流程，请参阅[测试](/help/testing)。本页面涵盖**实时**（网络触达）测试套件：模型矩阵、CLI 后端、ACP 和媒体 Provider 实时测试，以及凭据处理。
 
-## 实时：本地配置文件冒烟命令
+## 实时：本地冒烟命令
 
-在即席实时检查之前源 `~/.profile`，使 Provider 密钥和本地工具路径与你的 Shell 匹配：
-
-```bash
-source ~/.profile
-```
+在即席实时检查之前，将所需的 Provider 密钥导出到进程环境中。
 
 安全媒体冒烟：
 
@@ -131,7 +127,7 @@ openclaw models list --json
 
 </Tip>
 
-## 实时：CLI 后端冒烟（Claude、Codex、Gemini 或其他本地 CLI）
+## 实时：CLI 后端冒烟（Claude、Gemini 或其他本地 CLI）
 
 - 测试：`src/gateway/gateway-cli-backend.live.test.ts`
 - 目标：使用本地 CLI 后端验证 Gateway + Agent 管道，而不触及你的默认配置。
@@ -143,9 +139,9 @@ openclaw models list --json
   - 默认 Provider/模型：`claude-cli/claude-sonnet-4-6`
   - 命令/参数/图像行为来自拥有的 CLI 后端 Plugin 元数据。
 - 覆盖（可选）：
-  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.5"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_COMMAND="/full/path/to/codex"`
-  - `OPENCLAW_LIVE_CLI_BACKEND_ARGS='["exec","--json","--color","never","--sandbox","read-only","--skip-git-repo-check"]'`
+  - `OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-sonnet-4-6"`
+  - `OPENCLAW_LIVE_CLI_BACKEND_COMMAND="/full/path/to/claude"`
+  - `OPENCLAW_LIVE_CLI_BACKEND_ARGS='["-p","--output-format","json"]'`
   - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_PROBE=1` 发送真实的图像附件（路径注入到提示词中）。Docker 配方默认关闭此功能，除非明确请求。
   - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_ARG="--image"` 通过 CLI 参数传递图像文件路径，而不是提示词注入。
   - `OPENCLAW_LIVE_CLI_BACKEND_IMAGE_MODE="repeat"`（或 `"list"`）控制当设置 `IMAGE_ARG` 时图像参数的传递方式。
@@ -157,7 +153,7 @@ openclaw models list --json
 
 ```bash
 OPENCLAW_LIVE_CLI_BACKEND=1 \
-  OPENCLAW_LIVE_CLI_BACKEND_MODEL="codex-cli/gpt-5.5" \
+  OPENCLAW_LIVE_CLI_BACKEND_MODEL="claude-cli/claude-sonnet-4-6" \
   pnpm test:live src/gateway/gateway-cli-backend.live.test.ts
 ```
 
@@ -292,7 +288,6 @@ Docker 说明：
 本地配方：
 
 ```bash
-source ~/.profile
 OPENCLAW_LIVE_CODEX_HARNESS=1 \
   OPENCLAW_LIVE_CODEX_HARNESS_IMAGE_PROBE=1 \
   OPENCLAW_LIVE_CODEX_HARNESS_MCP_PROBE=1 \
@@ -304,7 +299,6 @@ OPENCLAW_LIVE_CODEX_HARNESS=1 \
 Docker 配方：
 
 ```bash
-source ~/.profile
 pnpm test:docker:live-codex-harness
 ```
 
