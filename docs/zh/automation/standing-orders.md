@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0ab20e103e5c0e588178240868625515"
+mmh3_hash: "5d5c8f2998803b0f27e8ed0d281378e4"
 summary: "为自主 Agent 程序定义永久操作权限"
 read_when:
   - 设置无需逐任务提示即可运行的自主 Agent 工作流时

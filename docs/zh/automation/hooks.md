@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4e22387822e122b50a6c26acdca2d564"
+mmh3_hash: "b757e4ef396d7ca3d6cacdec7e1b9008"
 summary: "Hooks：用于命令和生命周期事件的事件驱动自动化"
 read_when:
   - 你需要为 /new、/reset、/stop 和 Agent 生命周期事件设置事件驱动自动化
@@ -131,7 +131,7 @@ export default handler;
 
 `command:stop` 观察用户发出 `/stop`；它是取消/命令生命周期，而非 Agent 最终化门控。需要检查自然最终答案并请求 Agent 再进行一轮的插件应使用类型化插件 Hook `before_agent_finalize`。参见 [Plugin hooks](/plugins/hooks)。
 
-**Gateway 生命周期事件**：`gateway:shutdown` 包含 `reason` 和 `restartExpectedMs`，在 Gateway 开始关闭时触发。`gateway:pre-restart` 包含相同上下文，但仅在关闭是预期重启的一部分且提供了有限的 `restartExpectedMs` 值时触发。关闭期间，每个生命周期 Hook 等待是尽力的且有时间限制，以便在处理程序停滞时关闭仍能继续。
+**Gateway 生命周期事件**：`gateway:shutdown` 包含 `reason` 和 `restartExpectedMs`，在 Gateway 开始关闭时触发。`gateway:pre-restart` 包含相同上下文，但仅在关闭是预期重启的一部分且提供了有限的 `restartExpectedMs` 值时触发。关闭期间，每个生命周期 Hook 等待是尽力的且有时间限制，以便在处理程序停滞时关闭仍能继续。`gateway:shutdown` 的默认等待预算为 5 秒，`gateway:pre-restart` 为 10 秒。
 
 ## Hook 发现
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "acd43961a719076d3b1e379103d1a39b"
+mmh3_hash: "283982e8a0740d140baa3152e5c57bba"
 summary: "重定向到 /automation"
 title: "Cron 与 Heartbeat"
 ---

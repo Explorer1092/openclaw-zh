@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d6618d9a4aeb350e176f0cd2a4e60db3"
+mmh3_hash: "a774f860cb9db98e42ab2bd03b56fbee"
 summary: "Gateway 调度器的定时任务、Webhooks 和 Gmail PubSub 触发器"
 read_when:
   - 调度后台任务或唤醒时
@@ -28,6 +28,7 @@ Cron 是 Gateway 的内置调度器。它持久化任务，在正确时间唤醒
   <Step title="查看你的任务">
     ```bash
     openclaw cron list
+    openclaw cron get <job-id>
     openclaw cron show <job-id>
     ```
   </Step>
@@ -360,6 +361,9 @@ openclaw webhooks gmail setup --account openclaw@gmail.com
 # 列出所有任务
 openclaw cron list
 
+# 以 JSON 格式获取单个存储任务
+openclaw cron get <jobId>
+
 # 查看单个任务，包括已解析的交付路由
 openclaw cron show <jobId>
 
@@ -369,11 +373,17 @@ openclaw cron edit <jobId> --message "Updated prompt" --model "opus"
 # 立即强制运行任务
 openclaw cron run <jobId>
 
+# 立即强制运行任务并等待终止状态
+openclaw cron run <jobId> --wait --wait-timeout 10m --poll-interval 2s
+
 # 仅在到期时运行
 openclaw cron run <jobId> --due
 
 # 查看运行历史
 openclaw cron runs --id <jobId> --limit 50
+
+# 查看某次具体运行
+openclaw cron runs --id <jobId> --run-id <runId>
 
 # 删除任务
 openclaw cron remove <jobId>
@@ -382,6 +392,8 @@ openclaw cron remove <jobId>
 openclaw cron add --name "Ops sweep" --cron "0 6 * * *" --session isolated --message "Check ops queue" --agent ops
 openclaw cron edit <jobId> --clear-agent
 ```
+
+`openclaw cron run <jobId>` 在将手动运行入队后立即返回。使用 `--wait` 可在关闭 Hook、维护脚本或其他必须阻塞直到排队运行完成的自动化场景中等待结果。等待模式轮询返回的确切 `runId`；状态为 `ok` 时以 `0` 退出，状态为 `error`、`skipped` 或等待超时时以非零值退出。
 
 <Note>
 模型覆盖说明：

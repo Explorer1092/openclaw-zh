@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8fd59e4be393ab8341b99052db3319fb"
+mmh3_hash: "8952d12875a8891dbc9b45c8f50ed8a3"
 summary: "ACP 运行、子 Agent、隔离 Cron 任务和 CLI 操作的后台任务跟踪"
 read_when:
   - 检查进行中或最近完成的后台工作时
@@ -93,17 +93,17 @@ sidebarTitle: "后台任务"
 | 子 Agent 编排          | `subagent`   | 通过 `sessions_spawn` 生成子 Agent                     | `done_only`    |
 | Cron 任务（所有类型）  | `cron`       | 每次 Cron 执行（主 Session 和隔离）                    | `silent`       |
 | CLI 操作               | `cli`        | 通过 Gateway 运行的 `openclaw agent` 命令              | `silent`       |
-| Agent 媒体任务         | `cli`        | Session 支持的 `music_generate`/`video_generate` 运行  | `silent`       |
+| Agent 媒体任务         | `cli`        | Session 支持的 `image_generate`/`music_generate`/`video_generate` 运行  | `silent`       |
 
 <AccordionGroup>
   <Accordion title="Cron 和媒体的默认通知">
     主 Session Cron 任务默认使用 `silent` 通知策略——它们创建用于跟踪的记录，但不生成通知。隔离 Cron 任务也默认为 `silent`，但更可见，因为它们在自己的 Session 中运行。
 
-    Session 支持的 `music_generate` 和 `video_generate` 运行也使用 `silent` 通知策略。它们仍然创建任务记录，但完成会作为内部唤醒回传到原始 Agent Session，以便 Agent 可以写后续消息并附加已完成的媒体。群组/Channel 完成遵循正常的可见回复策略，因此 Agent 在来源交付需要时使用 message 工具。如果完成 Agent 在仅工具路由中未能产生消息工具交付证明，OpenClaw 会直接将完成后备发送到原始 Channel，而非将媒体保持私密。
+    Session 支持的 `image_generate`、`music_generate` 和 `video_generate` 运行也使用 `silent` 通知策略。它们仍然创建任务记录，但完成会作为内部唤醒回传到原始 Agent Session，以便 Agent 可以写后续消息并附加已完成的媒体。生成媒体的完成事件需要通过 message 工具交付：Agent 必须用 `message` 工具发送已完成的媒体，然后回复 `NO_REPLY`。如果完成 Agent 仅写入私有最终回复或遗漏了媒体附件，OpenClaw 会将完成移交标记为失败；它不会自动将生成的媒体作为后备发布。
 
   </Accordion>
-  <Accordion title="并发 video_generate 守卫">
-    当 Session 支持的 `video_generate` 任务仍处于活跃状态时，该工具还充当守卫：在同一 Session 中重复调用 `video_generate` 会返回活跃任务状态，而非启动第二个并发生成。当你希望从 Agent 侧进行明确的进度/状态查询时，请使用 `action: "status"`。
+  <Accordion title="并发媒体生成守卫">
+    当 Session 支持的媒体生成任务仍处于活跃状态时，该工具还充当守卫：在同一 Session 中重复调用 `image_generate`、`music_generate` 或 `video_generate` 会返回活跃任务状态，而非启动第二个并发生成。当你希望从 Agent 侧进行明确的进度/状态查询时，请使用 `action: "status"`。
   </Accordion>
   <Accordion title="什么不会创建任务">
     - Heartbeat 轮次——主 Session；参见 [Heartbeat](/gateway/heartbeat)
