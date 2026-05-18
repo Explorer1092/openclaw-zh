@@ -1,8 +1,9 @@
 ---
-mmh3_hash: "23390ba3c378c314190134b9a33f8739"
-summary: "`openclaw plugins` 的 CLI 参考（列表、安装、marketplace、卸载、启用/禁用、doctor）"
+mmh3_hash: "8476b248ba23c0e8e673fef85cb88dc8"
+summary: "`openclaw plugins` 的 CLI 参考（init、build、validate、列表、安装、marketplace、卸载、启用/禁用、doctor）"
 read_when:
   - 您想安装或管理 Gateway Plugin 或兼容包
+  - 您想搭建或验证简单的工具 Plugin
   - 您想调试 Plugin 加载失败
 title: "Plugins"
 sidebarTitle: "Plugins"
@@ -54,6 +55,11 @@ openclaw plugins update <id-or-npm-spec>
 openclaw plugins update --all
 openclaw plugins marketplace list <marketplace>
 openclaw plugins marketplace list <marketplace> --json
+openclaw plugins init <id>
+openclaw plugins init <id> --directory ./my-plugin --name "My Plugin"
+openclaw plugins build --entry ./dist/index.js
+openclaw plugins build --entry ./dist/index.js --check
+openclaw plugins validate --entry ./dist/index.js
 ```
 
 对于缓慢的安装、检查、卸载或注册表刷新调查，使用 `OPENCLAW_PLUGIN_LIFECYCLE_TRACE=1` 运行命令。跟踪将阶段计时写入 stderr 并保持 JSON 输出可解析。请参阅[调试](/help/debugging#plugin-lifecycle-trace)。
@@ -69,6 +75,19 @@ openclaw plugins marketplace list <marketplace> --json
 
 `plugins list` 显示 `Format: openclaw` 或 `Format: bundle`。详细列表/信息输出还显示包子类型（`codex`、`claude` 或 `cursor`）以及检测到的包能力。
 </Note>
+
+### 创作
+
+```bash
+openclaw plugins init stock-quotes --name "Stock Quotes"
+cd stock-quotes
+npm run plugin:build
+npm run plugin:validate
+```
+
+`plugins init` 创建一个使用 `defineToolPlugin` 的最小 TypeScript 工具 Plugin。`plugins build` 导入该入口，读取其静态工具元数据，写入 `openclaw.plugin.json`，并保持 `package.json` `openclaw.extensions` 对齐。`plugins validate` 检查生成的清单、包元数据和当前入口导出是否一致。请参阅[工具 Plugin](/plugins/tool-plugins) 了解完整的编写工作流程。
+
+scaffold 写入 TypeScript 源，但从构建的 `./dist/index.js` 入口生成元数据，因此工作流程也适用于已发布的 CLI。当入口不是默认包入口时，使用 `--entry <path>`。在 CI 中使用 `plugins build --check` 在生成的元数据过期时失败，而不重写文件。
 
 ### 安装
 
@@ -357,7 +376,7 @@ Plugin 拥有的 CLI 命令通常安装为根 `openclaw` 命令组，但 Plugin 
 openclaw plugins doctor
 ```
 
-`doctor` 报告 Plugin 加载错误、清单/发现诊断和兼容性通知。当一切正常时打印 `No plugin issues detected.`
+`doctor` 报告 Plugin 加载错误、清单/发现诊断、兼容性通知和过期的 Plugin 配置引用（如缺失的 Plugin 槽）。当安装树和 Plugin 配置都正常时，打印 `No plugin issues detected.`。如果存在过期配置但安装树本身健康，则摘要会说明这一点，而不暗示完整的 Plugin 健康状况。
 
 如果已配置的 Plugin 在磁盘上存在，但被加载器的路径安全检查阻止，配置验证会保留 Plugin 条目并将其报告为 `present but blocked`。修复前面的被阻止 Plugin 诊断，如路径所有权或全球可写权限，而不是删除 `plugins.entries.<id>` 或 `plugins.allow` 配置。
 
@@ -375,7 +394,7 @@ openclaw plugins registry --json
 
 使用 `plugins registry` 检查持久化注册表是否存在、当前或过期。使用 `--refresh` 从持久化的 Plugin 索引、配置策略和清单/包元数据重建它。这是修复路径，而非运行时激活路径。
 
-`openclaw doctor --fix` 还修复注册表相邻的托管 npm 漂移：如果托管的 Plugin npm 根目录下孤立或恢复的 `@openclaw/*` 包遮蔽了捆绑的 Plugin，doctor 会删除该过期包并重建注册表，以便启动对捆绑的清单进行验证。
+`openclaw doctor --fix` 还修复注册表相邻的托管 npm 漂移：如果托管的 Plugin npm 根目录下孤立或恢复的 `@openclaw/*` 包遮蔽了捆绑的 Plugin，doctor 会删除该过期包并重建注册表，以便启动对捆绑的清单进行验证。Doctor 还会将主机 `openclaw` 包重新链接到声明了 `peerDependencies.openclaw` 的托管 npm Plugin 中，以便在更新或 npm 修复后，包本地运行时导入（如 `openclaw/plugin-sdk/*`）能够正确解析。
 
 <Warning>
 `OPENCLAW_DISABLE_PERSISTED_PLUGIN_REGISTRY=1` 是注册表读取失败的已弃用紧急兼容性开关。优先使用 `plugins registry --refresh` 或 `openclaw doctor --fix`；环境变量回退仅用于迁移推出时的紧急启动恢复。

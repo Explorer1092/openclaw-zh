@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4761e21e9bc15d6c3daf5f5fbf262346"
+mmh3_hash: "4fea02bbd31f1548e2b04914663a3baf"
 summary: "`openclaw models` 的 CLI 参考（状态/列表/设置/扫描、别名、回退、身份验证）"
 read_when:
   - 您想更改默认模型或查看 Provider 身份验证状态
@@ -133,11 +133,14 @@ openclaw models auth paste-token
 `models auth login` 运行 Provider Plugin 的身份验证流程（OAuth/API 密钥）。使用 `openclaw plugins list` 查看已安装的 Provider。
 使用 `openclaw models auth --agent <id> <subcommand>` 将身份验证结果写入特定的已配置 Agent 存储。父级 `--agent` 标志由 `add`、`list`、`login`、`setup-token`、`paste-token` 和 `login-github-copilot` 使用。
 
+对于 OpenAI 模型，`--provider openai` 默认为 ChatGPT/Codex 账户登录。仅当您希望添加 OpenAI API 密钥配置文件（通常作为 Codex 订阅限制的备份）时，才使用 `--method api-key`。旧版 `--provider openai-codex` 拼写对现有脚本仍然有效。
+
 示例：
 
 ```bash
-openclaw models auth login --provider openai-codex --set-default
-openclaw models auth list --provider openai-codex
+openclaw models auth login --provider openai --set-default
+openclaw models auth login --provider openai --method api-key
+openclaw models auth list --provider openai
 ```
 
 注意事项：

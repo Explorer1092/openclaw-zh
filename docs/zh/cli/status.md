@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "77971c99348bb0679d0cbea5cc942296"
+mmh3_hash: "0295beb388330306c971079f485474a0"
 summary: "`openclaw status` 的 CLI 参考（诊断、探测、使用快照）"
 read_when:
   - 您想快速诊断 Channel 健康状态 + 最近的 Session 收件人
@@ -32,6 +32,7 @@ openclaw status --usage
 - 概览在可用时包含 Gateway + Node 主机服务安装/运行时状态。
 - 概览包含更新渠道 + git SHA（对于源代码检出）。
 - 更新信息显示在概览中；如果有可用更新，status 打印运行 `openclaw update` 的提示（请参阅[更新](/install/updating)）。
+- 模型定价刷新失败以可选的定价警告显示。它们不意味着 Gateway 或 Channel 不健康。
 - 只读状态界面（`status`、`status --json`、`status --all`）在可能时为其目标配置路径解析支持的 SecretRef。
 - 如果支持的 Channel SecretRef 已配置但在当前命令路径中不可用，status 保持只读并报告降级输出，而不是崩溃。人类输出显示警告，如"此命令路径中配置的令牌不可用"，JSON 输出包含 `secretDiagnostics`。
 - 当命令本地 SecretRef 解析成功时，status 优先使用已解析的快照，并从最终输出中清除瞬态"密钥不可用"Channel 标记。

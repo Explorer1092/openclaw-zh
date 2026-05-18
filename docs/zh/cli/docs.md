@@ -1,15 +1,15 @@
 ---
-mmh3_hash: "37d62e9c9fd9b2d3c801063e3d550c99"
+mmh3_hash: "803e841f82a4b168636768648dc1d7aa"
 summary: "`openclaw docs` 的 CLI 参考（搜索实时文档索引）"
 read_when:
   - 您想从终端搜索实时 OpenClaw 文档
-  - 您需要了解文档 CLI 调用了哪些辅助二进制文件
+  - 您需要了解 docs CLI 调用了哪些辅助二进制文件
 title: "Docs"
 ---
 
 # `openclaw docs`
 
-从终端搜索实时 OpenClaw 文档索引。该命令调用位于 `https://docs.openclaw.ai/mcp.SearchOpenClaw` 的公共 Mintlify 托管文档 MCP 搜索端点，并在终端中呈现结果。
+从终端搜索实时 OpenClaw 文档索引。该命令调用 Mintlify 托管的公共 docs MCP 搜索端点 `https://docs.openclaw.ai/mcp.search_open_claw`，并在终端中渲染结果。
 
 ## 用法
 

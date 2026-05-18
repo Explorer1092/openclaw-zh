@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "45fb2badddd7ccd1b65e8a7b3087c9eb"
+mmh3_hash: "74f656101279b64f75e6f903bab9a7de"
 summary: "通过 MCP 公开 OpenClaw Channel 会话，并管理已保存的 MCP 服务器定义"
 read_when:
   - 将 Codex、Claude Code 或其他 MCP 客户端连接到 OpenClaw 支持的 Channel
@@ -368,6 +368,8 @@ pnpm test:docker:mcp-channels
 </AccordionGroup>
 
 运行时适配器可能会将此共享注册表规范化为其下游客户端期望的形状。例如，嵌入式 Pi 直接使用 OpenClaw `transport` 值，而 Claude Code 和 Gemini 接收 CLI 原生 `type` 值，如 `http`、`sse` 或 `stdio`。
+
+Codex app-server 还支持每个服务器上的可选 `codex` 块。这是仅用于 Codex app-server 线程的 OpenClaw 投影元数据；它不会改变 ACP Session、通用 Codex 运行时配置或其他运行时适配器。使用非空 `codex.agents` 将服务器仅投影到特定的 OpenClaw agent id 中。空白或无效的 agent 列表会被配置验证拒绝，并被运行时投影路径忽略，而不会成为全局的。使用 `codex.defaultToolsApprovalMode`（`auto`、`prompt` 或 `approve`）为受信任服务器发出 Codex 原生 `default_tools_approval_mode`。OpenClaw 在将原生 `mcp_servers` 配置传递给 Codex 之前会剥离 `codex` 元数据。
 
 ### 已保存的 MCP 服务器定义
 

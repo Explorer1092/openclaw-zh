@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "6d3edb35344cd173205735ce7ed1ba38"
+mmh3_hash: "9530c4dcfa709d4ca226305cdc09acce"
 summary: "`openclaw node` 的 CLI 参考（无头 Node 主机）"
 read_when:
   - 运行无头 Node 主机
@@ -67,7 +67,7 @@ openclaw node run --host <gateway-host> --port 18789
 - 在 `gateway.mode=remote` 中，远程客户端字段（`gateway.remote.token` / `gateway.remote.password`）也根据远程优先级规则有资格。
 - Node 主机身份验证解析仅处理 `OPENCLAW_GATEWAY_*` 环境变量。
 
-对于连接到可信私有网络上非回环 `ws://` Gateway 的 Node，设置 `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`。否则 Node 启动将关闭失败并要求使用 `wss://`、SSH 隧道或 Tailscale。
+对于连接到明文 `ws://` Gateway 的 Node，回环地址、私有 IP 字面量、`.local` 和 Tailnet `*.ts.net` 主机均被接受。对于其他可信私有 DNS 名称，请设置 `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`；否则 Node 启动将关闭失败并要求使用 `wss://`、SSH 隧道或 Tailscale。
 这是进程环境选项加入，而非 `openclaw.json` 配置键。
 `openclaw node install` 在安装命令环境中存在时将其保留到受监督的 Node 服务中。
 

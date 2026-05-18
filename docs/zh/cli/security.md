@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "805543fc31b7a68d751d17fe21e0faa3"
+mmh3_hash: "4e46035f7e6c9b0c8db60c7d217d548f"
 summary: "`openclaw security` 的 CLI 参考（审计和修复常见的安全陷阱）"
 read_when:
   - 您想对配置/状态运行快速安全审计
@@ -44,6 +44,26 @@ openclaw security audit --json
 当 `gateway.auth.mode="none"` 使 Gateway HTTP API 在没有共享密钥的情况下可达时（`/tools/invoke` 加上任何已启用的 `/v1/*` 端点），它会发出警告。
 以 `dangerous`/`dangerously` 为前缀的设置是明确的紧急操作员覆盖；启用一个本身不是安全漏洞报告。
 有关完整的危险参数清单，请参阅[安全性](/gateway/security)中的"不安全或危险标志摘要"部分。
+
+有意的长期发现可以通过 `security.audit.suppressions` 接受。每个抑制匹配一个精确的 `checkId`，并可以使用 `titleIncludes` 和/或 `detailIncludes` 大小写不敏感子字符串来缩小范围：
+
+```json
+{
+  "security": {
+    "audit": {
+      "suppressions": [
+        {
+          "checkId": "plugins.tools_reachable_permissive_policy",
+          "detailIncludes": "Enabled extension plugins: gbrain",
+          "reason": "trusted local operator plugin"
+        }
+      ]
+    }
+  }
+}
+```
+
+被抑制的发现会从活动的 `summary` 和 `findings` 列表中删除。JSON 输出将其保留在 `suppressedFindings` 下以供审计。当配置了抑制时，活动输出还会保留一个不可抑制的 `security.audit.suppressions.active` 信息发现，以便读者可以知道审计经过了过滤。危险配置标志每个标志发出一个发现，因此接受一个危险标志不会隐藏共享相同 `config.insecure_or_dangerous_flags` checkId 的其他已启用标志。由于抑制可以隐藏长期风险，通过 Agent 运行的 Shell 命令添加或删除它们需要 exec 审批，除非 exec 已在运行并具有 `security="full"` 和 `ask="off"` 用于可信本地自动化。
 
 SecretRef 行为：
 

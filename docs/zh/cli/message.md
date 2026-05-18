@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9cdb62bb99d53abd3228db354d04d409"
+mmh3_hash: "0a3f4dd966cada1d8a7e69b596d29bb4"
 summary: "`openclaw message` 的 CLI 参考（发送 + Channel 操作）"
 read_when:
   - 添加或修改消息 CLI 操作
@@ -73,7 +73,7 @@ Channel 选择：
   - 可选：`--media`、`--presentation`、`--delivery`、`--pin`、`--reply-to`、`--thread-id`、`--gif-playback`、`--force-document`、`--silent`
   - 共享展示有效载荷：`--presentation` 发送语义块（`text`、`context`、`divider`、`buttons`、`select`），核心通过选定 Channel 的声明能力进行渲染。请参阅[消息展示](/plugins/message-presentation)。
   - 通用交付偏好：`--delivery` 接受交付提示，如 `{ "pin": true }`；`--pin` 是 Channel 支持时固定交付的简写。
-  - 仅 Telegram：`--force-document`（将图片和 GIF 作为文档发送以避免 Telegram 压缩）
+  - Telegram + WhatsApp：`--force-document`（将图片、GIF 和视频作为文档发送以避免 Channel 压缩）
   - 仅 Telegram：`--thread-id`（论坛主题 ID）
   - 仅 Slack：`--thread-id`（线程时间戳；`--reply-to` 使用相同字段）
   - Telegram + Discord：`--silent`
@@ -285,6 +285,15 @@ openclaw message send --channel telegram --target @mychat --message "Choose:" \
   --presentation '{"blocks":[{"type":"buttons","buttons":[{"label":"Yes","value":"cmd:yes"},{"label":"No","value":"cmd:no"}]}]}'
 ```
 
+通过通用展示发送 Telegram Mini App 按钮：
+
+```
+openclaw message send --channel telegram --target 123456789 --message "Open app:" \
+  --presentation '{"blocks":[{"type":"buttons","buttons":[{"label":"Launch","webApp":{"url":"https://example.com/app"}}]}]}'
+```
+
+Telegram web app 按钮仅支持用户与机器人之间的私聊。旧版使用 `web_app` 的 JSON 有效载荷仍可解析，但 `webApp` 是规范的展示字段。
+
 通过通用展示发送 Teams 卡片：
 
 ```bash
@@ -293,7 +302,7 @@ openclaw message send --channel msteams \
   --presentation '{"title":"Status update","blocks":[{"type":"text","text":"Build completed"}]}'
 ```
 
-将 Telegram 图片作为文档发送以避免压缩：
+将 Telegram 或 WhatsApp 图片作为文档发送以避免压缩：
 
 ```bash
 openclaw message send --channel telegram --target @mychat \
