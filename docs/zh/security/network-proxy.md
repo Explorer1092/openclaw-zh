@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c9c05e45af0765212c17bc32a5e1ae60"
+mmh3_hash: "8bde5331d2a9e02f173e1d5dd13ffdcb"
 summary: "如何通过操作者管理的过滤代理路由 OpenClaw 运行时 HTTP 和 WebSocket 流量"
 title: "网络代理"
 read_when:
@@ -37,16 +37,18 @@ OpenClaw 进程
 
 公共合约是路由行为，而不是用于实现它的内部 Node hooks。当 Gateway URL 使用 `localhost` 或 `127.0.0.1` 或 `[::1]` 等字面回环 IP 时，OpenClaw Gateway 控制平面 WebSocket 客户端对本地回环 Gateway RPC 流量使用窄直接路径。该控制平面路径必须能够在操作者代理封锁回环目标时也能到达回环 Gateway。正常的运行时 HTTP 和 WebSocket 请求仍使用配置的代理。
 
-OpenClaw 内部为此功能使用两个进程级路由 hooks：
-
-- Undici 调度器路由涵盖 `fetch`、undici 支持的客户端以及提供自己的 undici 调度器的传输。
-- `global-agent` 路由涵盖 Node 核心 `node:http` 和 `node:https` 调用方，包括许多基于 `http.request`、`https.request`、`http.get` 和 `https.get` 的库。托管代理模式强制使用该全局 Agent，使显式 Node HTTP Agent 不会意外绕过操作者代理。
+OpenClaw 内部安装 Proxyline 作为此功能的进程级路由运行时。Proxyline 涵盖 `fetch`、undici 支持的客户端、Node 核心 `node:http` / `node:https` 调用方、常见 WebSocket 客户端以及辅助器创建的 CONNECT 隧道。托管代理模式替换调用方提供的 Node HTTP Agent，使显式 Agent 不会意外绕过操作者代理。
 
 某些插件拥有自定义传输，即使存在进程级路由也需要显式代理配置。例如，Telegram 的 Bot API 传输使用自己的 HTTP/1 undici 调度器，因此在该所有者特定传输路径中遵守进程代理环境加托管的 `OPENCLAW_PROXY_URL` 后备。
 
-代理 URL 本身必须使用 `http://`。HTTPS 目标仍然通过代理的 HTTP `CONNECT` 支持；这只意味着 OpenClaw 期望一个普通的 HTTP 转发代理监听器，如 `http://127.0.0.1:3128`。
+代理 URL 本身可以使用 `http://` 或 `https://`。这些方案描述了 OpenClaw 到代理端点的连接：
 
-当代理处于活跃状态时，OpenClaw 清除 `no_proxy`、`NO_PROXY` 和 `GLOBAL_AGENT_NO_PROXY`。这些绕过列表是基于目标的，因此将 `localhost` 或 `127.0.0.1` 留在那里会让高风险的 SSRF 目标跳过过滤代理。
+- `http://proxy.example:3128`：OpenClaw 向转发代理打开普通 TCP 连接并发送 HTTP 代理请求，包括 HTTPS 目标的 `CONNECT`。
+- `https://proxy.example:8443`：OpenClaw 向代理端点打开 TLS 连接，验证代理证书，然后在该 TLS 会话内发送 HTTP 代理请求。
+
+目标 HTTPS 与代理端点 TLS 是独立的。对于 HTTPS 目标，OpenClaw 仍然向代理请求 HTTP `CONNECT` 隧道，然后通过该隧道启动目标 TLS。
+
+当代理处于活跃状态时，OpenClaw 清除 `no_proxy` 和 `NO_PROXY`。这些绕过列表是基于目标的，因此将 `localhost` 或 `127.0.0.1` 留在那里会让高风险的 SSRF 目标跳过过滤代理。
 
 关机时，OpenClaw 恢复之前的代理环境并重置缓存的进程路由状态。
 
@@ -64,6 +66,16 @@ OpenClaw 内部为此功能使用两个进程级路由 hooks：
 proxy:
   enabled: true
   proxyUrl: http://127.0.0.1:3128
+```
+
+对于使用私有代理 CA 的 HTTPS 代理端点：
+
+```yaml
+proxy:
+  enabled: true
+  proxyUrl: https://proxy.corp.example:8443
+  tls:
+    caFile: /etc/openclaw/proxy-ca.pem
 ```
 
 你也可以通过环境提供 URL，同时在配置中保持 `proxy.enabled=true`：
@@ -85,8 +97,8 @@ proxy:
   loopbackMode: gateway-only # gateway-only、proxy 或 block
 ```
 
-- `gateway-only`（默认）：OpenClaw 在活跃的 `global-agent` `NO_PROXY` 控制器中注册 Gateway 回环权限，使本地 Gateway WebSocket 流量可以直接连接。自定义回环 Gateway 端口有效，因为活跃 Gateway URL 的主机和端口已注册。
-- `proxy`：OpenClaw 不注册 Gateway 回环 `NO_PROXY` 权限，因此本地 Gateway 流量通过托管代理发送。如果代理是远程的，它必须为 OpenClaw 主机的回环服务提供特殊路由，例如将其映射到代理可达的主机名、IP 或隧道。标准远程代理从代理主机解析 `127.0.0.1` 和 `localhost`，而不是从 OpenClaw 主机解析。
+- `gateway-only`（默认）：OpenClaw 在 Proxyline 的托管绕过策略中注册 Gateway 回环权限，使本地 Gateway WebSocket 流量可以直接连接。自定义回环 Gateway 端口有效，因为活跃 Gateway URL 的主机和端口已注册。
+- `proxy`：OpenClaw 不注册 Gateway 回环绕过，因此本地 Gateway 流量通过托管代理发送。如果代理是远程的，它必须为 OpenClaw 主机的回环服务提供特殊路由，例如将其映射到代理可达的主机名、IP 或隧道。标准远程代理从代理主机解析 `127.0.0.1` 和 `localhost`，而不是从 OpenClaw 主机解析。
 - `block`：OpenClaw 在打开套接字之前拒绝回环 Gateway 控制平面连接。
 
 如果 `enabled=true` 但未配置有效的代理 URL，受保护的命令会在启动时失败，而不是回退到直接网络访问。
@@ -154,6 +166,12 @@ OpenClaw 应用层分类逻辑位于 `src/infra/net/ssrf.ts` 和 `src/shared/net
 openclaw proxy validate --proxy-url http://127.0.0.1:3128
 ```
 
+对于由私有 CA 签名的 HTTPS 代理端点：
+
+```bash
+openclaw proxy validate --proxy-url https://proxy.corp.example:8443 --proxy-ca-file /etc/openclaw/proxy-ca.pem
+```
+
 默认情况下，当没有提供自定义目标时，该命令检查 `https://example.com/` 是否成功，并启动一个代理不能到达的临时回环金丝雀。当代理返回非 2xx 拒绝响应或使用传输失败阻止金丝雀时，默认拒绝检查通过；如果成功响应到达金丝雀则失败。如果没有启用和配置代理，验证会报告配置问题；在更改配置之前，使用 `--proxy-url` 进行一次性预检。使用 `--allowed-url` 和 `--denied-url` 测试特定于部署的预期。添加 `--apns-reachable` 还可以验证直接 APNs HTTP/2 交付是否可以通过代理打开 CONNECT 隧道并接收沙盒 APNs 响应；探测使用故意无效的 Provider Token，因此预期 `403 InvalidProviderToken` 并计为可达。自定义拒绝目标是失败关闭的：任何 HTTP 响应意味着目标可以通过代理到达，任何传输错误都报告为不确定，因为 OpenClaw 无法证明代理阻止了可达的来源。验证失败时，命令以代码 1 退出。
 
 使用 `--json` 进行自动化。JSON 输出包含总体结果、有效代理配置来源、任何配置错误以及每个目标检查。代理 URL 凭证在文本和 JSON 输出中被脱敏：
@@ -194,11 +212,28 @@ curl -x http://127.0.0.1:3128 http://169.254.169.254/
 
 公共请求应该成功。回环和元数据请求应该被代理阻止。对于 `openclaw proxy validate`，内置的回环金丝雀可以区分代理拒绝和可达来源。自定义 `--denied-url` 检查没有该金丝雀，因此将 HTTP 响应和不明确的传输失败都视为验证失败，除非你的代理公开了你可以单独验证的特定于部署的拒绝信号。
 
+## 代理 CA 信任
+
+当代理端点本身使用私有 CA 签名的证书时，请使用托管的 `proxy.tls.caFile`：
+
+```yaml
+proxy:
+  enabled: true
+  proxyUrl: https://proxy.corp.example:8443
+  tls:
+    caFile: /etc/openclaw/proxy-ca.pem
+```
+
+该 CA 用于代理端点的 TLS 验证。它不是目标 MITM 信任设置、客户端证书，也不是代理目标策略的替代。
+
+仅当整个 Node 进程必须从进程启动起信任额外 CA 时（例如企业 TLS 检查系统对进程中每个 HTTPS 客户端重新签署目标证书），才使用 `NODE_EXTRA_CA_CERTS`。`NODE_EXTRA_CA_CERTS` 是进程全局的，必须在 Node 启动前存在。对于 HTTPS 代理端点信任，优先使用 `proxy.tls.caFile`，因为它的范围限定于托管代理路由。
+
 然后启用 OpenClaw 代理路由：
 
 ```bash
 openclaw config set proxy.enabled true
-openclaw config set proxy.proxyUrl http://127.0.0.1:3128
+openclaw config set proxy.proxyUrl https://proxy.corp.example:8443
+openclaw config set proxy.tls.caFile /etc/openclaw/proxy-ca.pem
 openclaw gateway run
 ```
 
@@ -207,13 +242,15 @@ openclaw gateway run
 ```yaml
 proxy:
   enabled: true
-  proxyUrl: http://127.0.0.1:3128
+  proxyUrl: https://proxy.corp.example:8443
+  tls:
+    caFile: /etc/openclaw/proxy-ca.pem
 ```
 
 ## 限制
 
 - 代理改善了进程本地 JavaScript HTTP 和 WebSocket 客户端的覆盖，但它不是操作系统级网络沙盒。
-- Gateway 回环控制平面流量默认通过 `proxy.loopbackMode: "gateway-only"` 直接本地绕过。OpenClaw 通过在托管的 `global-agent` `NO_PROXY` 控制器中注册活跃 Gateway 回环权限来实现该绕过。操作者可以设置 `proxy.loopbackMode: "proxy"` 通过托管代理发送 Gateway 回环流量，或设置 `proxy.loopbackMode: "block"` 拒绝回环 Gateway 连接。请参阅 [Gateway 回环模式](#gateway-loopback-mode) 了解远程代理注意事项。
+- Gateway 回环控制平面流量默认通过 `proxy.loopbackMode: "gateway-only"` 直接本地绕过。OpenClaw 通过在 Proxyline 的托管绕过策略中注册活跃 Gateway 回环权限来实现该绕过。操作者可以设置 `proxy.loopbackMode: "proxy"` 通过托管代理发送 Gateway 回环流量，或设置 `proxy.loopbackMode: "block"` 拒绝回环 Gateway 连接。请参阅 [Gateway 回环模式](#gateway-loopback-mode) 了解远程代理注意事项。
 - 原始的 `net`、`tls` 和 `http2` 套接字、本机插件以及非 OpenClaw 子进程可能绕过 Node 级代理路由，除非它们继承并遵守代理环境变量。分叉的 OpenClaw 子 CLI 继承托管代理 URL 和 `proxy.loopbackMode` 状态。
 - IRC 是一个原始 TCP/TLS Channel，在操作者管理的转发代理路由之外。在要求所有出口通过该转发代理的部署中，除非直接 IRC 出口被明确批准，否则设置 `channels.irc.enabled=false`。
 - 本地调试代理是诊断工具，当托管代理模式处于活跃状态时，代理请求和 CONNECT 隧道的直接上游转发默认禁用；仅对已批准的本地诊断启用直接转发。
