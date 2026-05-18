@@ -478,7 +478,8 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 - Slack 账户快照暴露每个凭据的来源/状态字段，如 `botTokenSource`、`botTokenStatus`、`appTokenStatus`，在 HTTP 模式下还有 `signingSecretStatus`。`configured_unavailable` 表示账户通过 SecretRef 配置，但当前命令/runtime 路径无法解析 secret 值。
 - `configWrites: false` 阻止 Slack 发起的配置写入。
 - 可选的 `channels.slack.defaultAccount` 在匹配配置的账户 id 时覆盖默认账户选择。
-- `channels.slack.streaming.mode` 是规范的 Slack 流模式键。`channels.slack.streaming.nativeTransport` 控制 Slack 的原生流式传输。旧版 `streamMode`、布尔 `streaming` 和 `nativeStreaming` 值会自动迁移。
+- `channels.slack.streaming.mode` 是规范的 Slack 流模式键。`channels.slack.streaming.nativeTransport` 控制 Slack 的原生流式传输。旧版 `streamMode`、布尔 `streaming` 和 `nativeStreaming` 值仍为运行时别名；运行 `openclaw doctor --fix` 重写持久化配置。
+- `unfurlLinks` 和 `unfurlMedia` 透传 Slack 的 `chat.postMessage` 链接和媒体展开布尔值用于 bot 回复。`unfurlLinks` 默认为 `false`，因此出站 bot 链接不会内联展开，除非启用；`unfurlMedia` 除非配置否则省略。在 `channels.slack.accounts.<accountId>` 处设置任一值以覆盖该账户的顶级值。
 - 投递目标使用 `user:<id>`（DM）或 `channel:<id>`。
 
 **反应通知模式：** `off`、`own`（默认）、`all`、`allowlist`（来自 `reactionAllowlist`）。
@@ -499,7 +500,7 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 
 ### Mattermost
 
-Mattermost 作为 Plugin 提供：`openclaw plugins install @openclaw/mattermost`。
+Mattermost 作为捆绑 Plugin 随当前 OpenClaw 版本提供。旧版或自定义构建可以通过 `openclaw plugins install @openclaw/mattermost` 安装当前 npm 包。固定版本前请在 [npmjs.com/package/@openclaw/mattermost](https://www.npmjs.com/package/@openclaw/mattermost) 查看当前 dist-tags。
 
 ```json5
 {
@@ -592,6 +593,17 @@ BlueBubbles 支持已移除。将 `channels.bluebubbles` 配置迁移到 `channe
       mediaMaxMb: 16,
       service: "auto",
       region: "US",
+      actions: {
+        reactions: true,
+        edit: true,
+        unsend: true,
+        reply: true,
+        sendWithEffect: true,
+        sendAttachment: true,
+      },
+      catchup: {
+        enabled: false,
+      },
     },
   },
 }
@@ -605,7 +617,11 @@ BlueBubbles 支持已移除。将 `channels.bluebubbles` 配置迁移到 `channe
 - `attachmentRoots` 和 `remoteAttachmentRoots` 限制入站附件路径（默认：`/Users/*/Library/Messages/Attachments`）。
 - SCP 使用严格的主机密钥检查，因此确保中继主机密钥已存在于 `~/.ssh/known_hosts` 中。
 - `channels.imessage.configWrites`：允许或拒绝 iMessage 发起的配置写入。
-- 带 `type: "acp"` 的顶级 `bindings[]` 条目可以将 iMessage 对话绑定到持久 ACP Session。在 `match.peer.id` 中使用规范化句柄或显式聊天目标（`chat_id:*`、`chat_guid:*`、`chat_identifier:*`）。共享字段语义：[ACP Agent](/tools/acp-agents#channel-specific-settings)。
+- `channels.imessage.actions.*`：启用私有 API 操作，这些操作也受 `imsg status` / `openclaw channels status --probe` 门控。
+- `channels.imessage.includeAttachments` 默认关闭；设置为 `true` 之后才能在 Agent 轮次中收到入站媒体。
+- `channels.imessage.catchup.enabled`：选择加入以重放 Gateway 宕机期间到达的入站消息。
+- `channels.imessage.groups`：群组注册表和每群组设置。使用 `groupPolicy: "allowlist"` 时，配置显式的 `chat_id` 键或 `"*"` 通配符条目，以便群组消息可以通过注册表门控。
+- 带 `type: "acp"` 的顶级 `bindings[]` 条目可以将 iMessage 对话绑定到持久 ACP Session。在 `match.peer.id` 中使用规范化句柄或显式聊天目标（`chat_id:*`、`chat_guid:*`、`chat_identifier:*`）。共享字段语义：[ACP Agent](/tools/acp-agents#persistent-channel-bindings)。
 
 <Accordion title="iMessage SSH 包装器示例">
 

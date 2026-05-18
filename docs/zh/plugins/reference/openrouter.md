@@ -1,23 +1,25 @@
 ---
-mmh3_hash: "4e3b361804e10fcdba2b9fb2c381e5f4"
+mmh3_hash: "064e775b981871375575ca2b1580de67"
+title: "OpenRouter Plugin"
+sidebarTitle: "OpenRouter"
 summary: "为 OpenClaw 添加 OpenRouter 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 openrouter Plugin
-title: "OpenRouter Plugin"
+doc-schema-version: 1
 ---
 
 # OpenRouter Plugin
 
 为 OpenClaw 添加 OpenRouter 模型 Provider 支持。
 
-## 分发
+## 发行版本
 
 - 包名：`@openclaw/openrouter-provider`
-- 安装方式：内置于 OpenClaw
+- 安装方式：已包含在 OpenClaw 中
 
-## 接口
+## 表面
 
-providers: openrouter; contracts: imageGenerationProviders, mediaUnderstandingProviders, speechProviders, videoGenerationProviders
+providers: openrouter；contracts: imageGenerationProviders, mediaUnderstandingProviders, musicGenerationProviders, speechProviders, videoGenerationProviders
 
 ## 相关文档
 

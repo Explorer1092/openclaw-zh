@@ -1,21 +1,23 @@
 ---
-mmh3_hash: "7d605f66c662d699cff2a58949e7acde"
+mmh3_hash: "e9ca6848c4b4ff9cd8d2b0943610d5f5"
+title: "Amazon Bedrock Mantle Plugin"
+sidebarTitle: "Amazon Bedrock Mantle"
 summary: "为 OpenClaw 添加 Amazon Bedrock Mantle 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 amazon-bedrock-mantle Plugin
-title: "Amazon Bedrock Mantle Plugin"
+doc-schema-version: 1
 ---
 
 # Amazon Bedrock Mantle Plugin
 
 为 OpenClaw 添加 Amazon Bedrock Mantle 模型 Provider 支持。
 
-## 分发
+## 发行版本
 
 - 包名：`@openclaw/amazon-bedrock-mantle-provider`
-- 安装方式：OpenClaw 内置
+- 安装方式：npm；ClawHub
 
-## 接口
+## 表面
 
 providers: amazon-bedrock-mantle
 

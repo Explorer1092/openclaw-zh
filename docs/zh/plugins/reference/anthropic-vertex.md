@@ -1,20 +1,22 @@
 ---
-mmh3_hash: "2d7aabc9d5bc56c70dc7f01703c7ddf1"
+mmh3_hash: "dc0f8cf682cd837bc6265118cecaa9fc"
+title: "Anthropic Vertex Plugin"
+sidebarTitle: "Anthropic Vertex"
 summary: "为 OpenClaw 添加 Anthropic Vertex 模型 Provider 支持。"
 read_when:
   - 你正在安装、配置或审计 anthropic-vertex Plugin
-title: "Anthropic Vertex Plugin"
+doc-schema-version: 1
 ---
 
 # Anthropic Vertex Plugin
 
 为 OpenClaw 添加 Anthropic Vertex 模型 Provider 支持。
 
-## 分发
+## 发行版本
 
 - 包名：`@openclaw/anthropic-vertex-provider`
-- 安装方式：OpenClaw 内置
+- 安装方式：npm；ClawHub
 
-## 接口
+## 表面
 
 providers: anthropic-vertex
