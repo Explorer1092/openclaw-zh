@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "635996b711dcdf14125742cb456c4d0c"
+mmh3_hash: "52c40c3f17703215c97cbf4889213d7b"
 summary: 将语义消息表示与 Channel 原生 UI 渲染器解耦。
 title: Channel 表示重构计划
 read_when:
@@ -90,6 +90,7 @@ type MessagePresentationOption = {
 - `interactive` 选择块映射到 `presentation.blocks[].type = "select"`。
 
 外部 Agent 和 CLI schema 现在使用 `presentation`；`interactive` 仍然是现有回复生产者的内部旧版解析器/渲染助手。
+面向公共生产者的 API 将 `interactive` 视为已废弃。运行时支持仍然保留，以便现有的审批助手和旧版插件继续工作，同时新代码发出 `presentation`。
 
 ## 交付元数据
 
@@ -128,6 +129,29 @@ type ChannelPresentationCapabilities = {
   context?: boolean;
   divider?: boolean;
   tones?: MessagePresentationTone[];
+  limits?: {
+    actions?: {
+      maxActions?: number;
+      maxActionsPerRow?: number;
+      maxRows?: number;
+      maxLabelLength?: number;
+      maxValueBytes?: number;
+      supportsStyles?: boolean;
+      supportsDisabled?: boolean;
+      supportsLayoutHints?: boolean;
+    };
+    selects?: {
+      maxOptions?: number;
+      maxLabelLength?: number;
+      maxValueBytes?: number;
+    };
+    text?: {
+      maxLength?: number;
+      encoding?: "characters" | "utf8-bytes" | "utf16-units";
+      markdownDialect?: "plain" | "markdown" | "html" | "slack-mrkdwn" | "discord-markdown";
+      supportsEdit?: boolean;
+    };
+  };
 };
 
 type ChannelDeliveryCapabilities = {
@@ -160,7 +184,7 @@ type ChannelOutboundAdapter = {
 
 - 解析目标 Channel 和运行时适配器。
 - 询问表示能力。
-- 在渲染之前降级不支持的块。
+- 在渲染之前降级不支持的块并应用通用能力限制。
 - 调用 `renderPresentation`。
 - 如果不存在渲染器，将表示转换为文本回退。
 - 成功发送后，当请求 `delivery.pin` 且受支持时调用 `pinDeliveredMessage`。

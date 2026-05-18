@@ -1,7 +1,7 @@
 ---
 title: "媒体理解"
 sidebarTitle: "媒体理解"
-mmh3_hash: "d325b2b834b14480826a1e16bd18bf40"
+mmh3_hash: "a0c3e851da73e34c908e61ce3f2e19d4"
 summary: "入站图像/音频/视频理解（可选），带有 provider + CLI 回退"
 read_when:
   - 设计或重构媒体理解
@@ -193,7 +193,7 @@ OpenClaw 可以在回复管道运行之前**摘要入站媒体**（图像/音频
 
     捆绑的回退顺序：
 
-    - 音频：OpenAI → Groq → xAI → Deepgram → Google → SenseAudio → ElevenLabs → Mistral
+    - 音频：OpenAI → Groq → xAI → Deepgram → OpenRouter → Google → SenseAudio → ElevenLabs → Mistral
     - 图像：OpenAI → Anthropic → Google → MiniMax → MiniMax Portal → Z.AI
     - 视频：Google → Qwen → Moonshot
 
@@ -238,7 +238,7 @@ OpenClaw 可以在回复管道运行之前**摘要入站媒体**（图像/音频
 - `openai`、`anthropic`、`minimax`：**图像**
 - `minimax-portal`：**图像**
 - `moonshot`：**图像 + 视频**
-- `openrouter`：**图像**
+- `openrouter`：**图像 + 音频**
 - `google`（Gemini API）：**图像 + 音频 + 视频**
 - `qwen`：**图像 + 视频**
 - `mistral`：**音频**
@@ -255,14 +255,14 @@ OpenClaw 可以在回复管道运行之前**摘要入站媒体**（图像/音频
 | 能力 | Provider 集成 | 说明 |
 | ---- | ------------ | ---- |
 | 图像 | OpenAI、OpenAI Codex OAuth、Codex app-server、OpenRouter、Anthropic、Google、MiniMax、Moonshot、Qwen、Z.AI、配置 provider | 供应商插件注册图像支持；`openai-codex/*` 使用 OAuth provider 管道；`codex/*` 使用有界 Codex app-server 轮次；MiniMax 和 MiniMax OAuth 都使用 `MiniMax-VL-01`；支持图像的配置 provider 自动注册。 |
-| 音频 | OpenAI、Groq、xAI、Deepgram、Google、SenseAudio、ElevenLabs、Mistral | Provider 转录（Whisper/Groq/xAI/Deepgram/Gemini/SenseAudio/Scribe/Voxtral）。 |
+| 音频 | OpenAI、Groq、xAI、Deepgram、OpenRouter、Google、SenseAudio、ElevenLabs、Mistral | Provider 转录（Whisper/Groq/xAI/Deepgram/OpenRouter STT/Gemini/SenseAudio/Scribe/Voxtral）。 |
 | 视频 | Google、Qwen、Moonshot | 通过供应商插件的 provider 视频理解；Qwen 视频理解使用标准 DashScope 端点。 |
 
 <Note>
 **MiniMax 说明**
 
-- `minimax` 和 `minimax-portal` 图像理解来自插件拥有的 `MiniMax-VL-01` 媒体 provider。
-- 捆绑的 MiniMax 文本目录仍以仅文本开始；明确的 `models.providers.minimax` 条目实例化支持图像的 M2.7 聊天引用。
+- `minimax`、`minimax-cn`、`minimax-portal` 和 `minimax-portal-cn` 图像理解来自插件拥有的 `MiniMax-VL-01` 媒体 provider。
+- 即使旧版 MiniMax M2.x 聊天元数据声称支持图像输入，自动图像路由仍继续使用 `MiniMax-VL-01`。
 
 </Note>
 
