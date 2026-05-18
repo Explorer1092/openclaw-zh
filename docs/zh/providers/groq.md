@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "7d51f8e26d20c0a85c7e86809cb56046"
 title: "Groq"
 summary: "Groq 设置（身份验证 + 模型选择 + Whisper 转录）"
 read_when:

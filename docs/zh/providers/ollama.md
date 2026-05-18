@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "75021ea9d80b4ae471b278fa117c6929"
 title: "Ollama"
 summary: "使用 Ollama 运行 OpenClaw（云端和本地模型）"
 read_when:
@@ -933,6 +934,8 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
     - WSL2 从 Windows 侧反复重启或终止
     - WSL2 启动后 `app.slice` 或 `ollama.service` 中 CPU 占用高
     - 来自 systemd 的 SIGTERM，而非 Linux OOM-killer 事件
+
+    当 OpenClaw 检测到 WSL2、已启用 `Restart=always` 的 `ollama.service` 以及可见的 CUDA 标记时，会记录启动警告。
 
     缓解方法：
 

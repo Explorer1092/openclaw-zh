@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "c221c3f6dc1dc5a10ca9c9b1695f2e21"
 title: "fal"
 summary: "在 OpenClaw 中设置 fal 图像、视频和音乐生成"
 read_when:

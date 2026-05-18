@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "1d02e90bbd8a975902227c3cd73a0a2f"
 title: "Fireworks"
 summary: "Fireworks 设置（身份验证 + 模型选择）"
 read_when:

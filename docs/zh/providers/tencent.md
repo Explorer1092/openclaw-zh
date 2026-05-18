@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "b1225566d23f7bd2d544a08a36598d2b"
 summary: "Tencent Cloud TokenHub 设置，用于 Hy3 预览"
 title: "Tencent Cloud (TokenHub)"
 read_when:

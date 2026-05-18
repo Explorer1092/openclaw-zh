@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "d57079764e54e1e81d1e1ec33f6bb71e"
 title: "OpenAI"
 summary: "在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI"
 read_when:
@@ -24,7 +25,7 @@ Provider、模型、运行时和 Channel 是独立的层。如果这些标签混
 | 目标                                                  | 使用                                                         | 备注                                                                        |
 | ----------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------- |
 | 使用原生 Codex 运行时的 ChatGPT/Codex 订阅            | `openai/gpt-5.5`                                             | 默认 OpenAI Agent 设置。使用 `openai-codex` 身份验证登录。                   |
-| Agent 模型的直接 API 密钥计费                         | `openai/gpt-5.5` 加 `openai-codex` API 密钥配置文件         | 使用 `auth.order.openai-codex` 优先选择该配置文件。                          |
+| Agent 模型的直接 API 密钥计费                         | `openai/gpt-5.5` 加 Codex 兼容 API 密钥配置文件              | 使用 `auth.order.openai` 将备份配置文件置于订阅身份验证之后。                 |
 | 通过显式 PI 的直接 API 密钥计费                       | `openai/gpt-5.5` 加 Provider/模型运行时 `pi`                 | 选择普通的 `openai` API 密钥配置文件。                                       |
 | 最新 ChatGPT Instant API 别名                         | `openai/chat-latest`                                         | 仅限直接 API 密钥。用于实验的移动别名，非默认。                              |
 | 通过显式 PI 的 ChatGPT/Codex 订阅身份验证             | `openai/gpt-5.5` 加 Provider/模型运行时 `pi`                 | 为兼容性路由选择 `openai-codex` 身份验证配置文件。                           |
@@ -38,13 +39,13 @@ Provider、模型、运行时和 Channel 是独立的层。如果这些标签混
 | 您看到的名称                              | 层级               | 含义                                                                                                    |
 | ----------------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------- |
 | `openai`                                  | Provider 前缀      | 规范 OpenAI 模型路由；Agent 轮次使用 Codex 运行时。                                                     |
-| `openai-codex`                            | 身份验证/配置文件前缀 | OpenAI Codex OAuth/订阅身份验证配置文件 Provider。                                                    |
+| `openai-codex`                            | 旧版身份验证/配置文件前缀 | 旧版 OpenAI Codex OAuth/订阅配置文件命名空间。现有配置文件和 `auth.order.openai-codex` 仍然有效。  |
 | `codex` Plugin                            | Plugin             | 提供原生 Codex app-server 运行时和 `/codex` 聊天控制的内置 OpenClaw Plugin。                            |
 | Provider/模型 `agentRuntime.id: codex`   | Agent 运行时       | 为匹配的嵌入式轮次强制使用原生 Codex app-server 套件。                                                  |
 | `/codex ...`                              | 聊天命令集         | 从对话中绑定/控制 Codex app-server 线程。                                                               |
 | `runtime: "acp", agentId: "codex"`        | ACP Session 路由   | 通过 ACP/acpx 运行 Codex 的显式回退路径。                                                               |
 
-这意味着一个配置可以同时包含 `openai/*` 模型引用和 `openai-codex` 身份验证配置文件。`openclaw doctor --fix` 将旧版 `openai-codex/*` 模型引用重写为规范的 OpenAI 模型路由。
+这意味着一个配置可以同时包含 `openai/*` 模型引用和指向 Codex 兼容凭据的身份验证配置文件。优先为新配置使用 `auth.order.openai`；现有的 `openai-codex:*` 配置文件和 `auth.order.openai-codex` 仍受支持。`openclaw doctor --fix` 将旧版 `openai-codex/*` 模型引用重写为规范的 OpenAI 模型路由。
 
 <Note>
 GPT-5.5 可通过直接 OpenAI Platform API 密钥访问和订阅/OAuth 路由使用。对于 ChatGPT/Codex 订阅加原生 Codex 执行，使用 `openai/gpt-5.5`；未设置运行时配置时，OpenAI Agent 轮次现在自动选择 Codex 套件。仅当您想为 OpenAI Agent 模型使用直接 API 密钥身份验证时，才使用 OpenAI API 密钥配置文件。
@@ -60,7 +61,7 @@ OpenAI Agent 模型轮次需要内置的 Codex app-server Plugin。显式 PI 运
 | ------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | 聊天 / Responses          | `openai/<model>` 模型 Provider                                                       | 是                                                    |
 | Codex 订阅模型            | `openai/<model>` 加 `openai-codex` OAuth                                             | 是                                                    |
-| 旧版 Codex 模型引用       | `openai-codex/<model>`                                                               | 由 doctor 修复为 `openai/<model>`                     |
+| 旧版 Codex 模型引用       | `openai-codex/<model>` 或 `codex-cli/<model>`                                        | 由 doctor 修复为 `openai/<model>`                     |
 | Codex app-server 套件     | `openai/<model>` 加省略运行时或 Provider/模型 `agentRuntime.id: codex`               | 是                                                    |
 | 服务器端网络搜索          | 原生 OpenAI Responses 工具                                                            | 是（启用网络搜索且未固定 Provider 时）                |
 | 图像                      | `image_generate`                                                                     | 是                                                    |

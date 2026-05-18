@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "d38be535be43c8afb1b61f268528cdfd"
 title: "OpenRouter"
 summary: "在 OpenClaw 中使用 OpenRouter 的统一 API 访问多种模型"
 read_when:

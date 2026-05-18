@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "cdf35ce8f15b8110d6c3fe573180c24c"
 title: "xAI"
 summary: "在 OpenClaw 中使用 xAI Grok 模型"
 read_when:
@@ -102,7 +103,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
 
 <AccordionGroup>
   <Accordion title="Web 搜索">
-    内置的 `grok` Web 搜索 Provider 同样使用 `XAI_API_KEY`：
+    内置的 `grok` Web 搜索 Provider 可以使用 `XAI_API_KEY` 或插件 Web 搜索密钥：
 
     ```bash
     openclaw config set tools.web.search.provider grok
@@ -148,7 +149,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
     内置的 `xai` Plugin 通过共享的 `image_generate` 工具注册图像生成。
 
     - 默认图像模型：`xai/grok-imagine-image`
-    - 附加模型：`xai/grok-imagine-image-pro`
+    - 附加模型：`xai/grok-imagine-image-quality`
     - 模式：文本到图像和参考图像编辑
     - 参考输入：一张 `image` 或最多五张 `images`
     - 纵横比：`1:1`、`16:9`、`9:16`、`4:3`、`3:4`、`2:3`、`3:2`
@@ -359,7 +360,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
   </Accordion>
 
   <Accordion title="已知限制">
-    - 目前仅支持 API 密钥身份验证，OpenClaw 尚未实现 xAI OAuth 或设备码流程。
+    - xAI 身份验证可以使用 API 密钥、环境变量、插件配置回退，或通过符合条件的 xAI 账号进行 xAI OAuth 浏览器登录。OAuth 使用 `127.0.0.1:56121` 上的本地回调；对于远程主机，请在打开登录 URL 之前转发该端口。xAI 决定哪些账号可以接收 OAuth API 令牌，即使 OpenClaw 不需要 Grok Build 应用，同意页面也可能显示 Grok Build。
     - `grok-4.20-multi-agent-experimental-beta-0304` 不支持常规 xAI Provider 路径，
       因为它需要与标准 OpenClaw xAI 传输不同的上游 API 接口。
     - xAI 实时语音尚未注册为 OpenClaw Provider。它需要与批量 STT 或流式转录不同的双向语音 Session 合约。
@@ -378,7 +379,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
 
 ## 实时测试
 
-xAI 媒体路径由单元测试和可选加入的实时测试套件覆盖。实时命令在探测 `XAI_API_KEY` 之前从您的登录 Shell（包括 `~/.profile`）加载密钥。
+xAI 媒体路径由单元测试和可选加入的实时测试套件覆盖。在运行实时探测之前，请在进程环境中导出 `XAI_API_KEY`。
 
 ```bash
 pnpm test extensions/xai

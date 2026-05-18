@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "d6664418bf7cf24ab159fc1548d1cd43"
 summary: "在 LM Studio 中运行 OpenClaw"
 read_when:
   - 您想通过 LM Studio 使用开源模型运行 OpenClaw

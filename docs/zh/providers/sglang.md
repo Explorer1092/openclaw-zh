@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "23f7cc7d5a999a94a06e3fb461d332d5"
 summary: "使用 SGLang（OpenAI 兼容自托管服务器）运行 OpenClaw"
 read_when:
   - 您想针对本地 SGLang 服务器运行 OpenClaw

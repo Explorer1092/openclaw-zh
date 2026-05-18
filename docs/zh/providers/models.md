@@ -1,4 +1,5 @@
 ---
+mmh3_hash: "cec0181a04253fc1ded3c015b9421ce6"
 title: "Model provider quickstart"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
@@ -50,7 +51,7 @@ OpenClaw 可以使用多个 LLM Provider。选择一个，进行身份验证，�
 
 ## 其他内置 Provider 变体
 
-- `anthropic-vertex` - 当 Vertex 凭据可用时隐式支持 Anthropic 在 Google Vertex 上运行；无需单独的入门身份验证选项
+- `anthropic-vertex` - 安装 `@openclaw/anthropic-vertex-provider`，可在 Vertex 凭据可用时隐式支持 Anthropic 在 Google Vertex 上运行；无需单独的入门身份验证选项
 - `copilot-proxy` - 本地 VS Code Copilot Proxy 桥接；使用 `openclaw onboard --auth-choice copilot-proxy`
 - `google-gemini-cli` - 非官方 Gemini CLI OAuth 流程；需要本地安装 `gemini`（`brew install gemini-cli` 或 `npm install -g @google/gemini-cli`）；默认模型 `google-gemini-cli/gemini-3-flash-preview`；使用 `openclaw onboard --auth-choice google-gemini-cli` 或 `openclaw models auth login --provider google-gemini-cli --set-default`
 
