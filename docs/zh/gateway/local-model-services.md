@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2caf7fe605a2d7ad0a99f95121e19027"
+mmh3_hash: "0b604190127d4cab0dc0162d74851cae"
 summary: "在 OpenClaw 模型请求前按需启动本地模型服务器"
 read_when:
   - 您希望 OpenClaw 仅在选择本地模型时才启动本地模型服务器
@@ -130,6 +130,8 @@ Inferrs 是一个自定义的兼容 OpenAI 的 `/v1` 后端，因此相同的本
 
 ## ds4 示例
 
+完整设置、上下文大小调整指南和验证命令，请参见 [ds4](/providers/ds4)。
+
 ```json5
 {
   models: {
@@ -140,18 +142,20 @@ Inferrs 是一个自定义的兼容 OpenAI 的 `/v1` 后端，因此相同的本
         api: "openai-completions",
         timeoutSeconds: 300,
         localService: {
-          command: "/Users/you/Projects/oss/ds4/ds4-server",
+          command: "<DS4_DIR>/ds4-server",
           args: [
             "--model",
-            "/Users/you/Projects/oss/ds4/ds4flash.gguf",
+            "<DS4_DIR>/ds4flash.gguf",
             "--host",
             "127.0.0.1",
             "--port",
             "18000",
             "--ctx",
-            "393216",
+            "32768",
+            "--tokens",
+            "128",
           ],
-          cwd: "/Users/you/Projects/oss/ds4",
+          cwd: "<DS4_DIR>",
           healthUrl: "http://127.0.0.1:18000/v1/models",
           readyTimeoutMs: 300000,
           idleStopMs: 0,

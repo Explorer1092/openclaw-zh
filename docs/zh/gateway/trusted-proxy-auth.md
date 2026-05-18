@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0629363bede40bb33a48c6c78ee610be"
+mmh3_hash: "73e9906deaee8f6b8ec220cc7c668fb8"
 summary: "将 Gateway 身份验证委托给受信任的反向代理（Pomerium、Caddy、nginx + OAuth）"
 read_when:
   - 在身份感知代理后面运行 OpenClaw
@@ -99,7 +99,7 @@ sidebarTitle: "Trusted proxy auth"
 - `allowLoopback` 将本地进程对 Gateway 主机的信任程度提升到与反向代理相同。仅在 Gateway 仍被防火墙阻止直接远程访问且本地代理剥离或覆盖客户端提供的身份标头时启用。
 - 不通过反向代理的内部 Gateway 客户端应使用 `gateway.auth.password` / `OPENCLAW_GATEWAY_PASSWORD`，而不是 trusted-proxy 身份标头。
 - 非回环 Control UI 部署仍需要显式的 `gateway.controlUi.allowedOrigins`。
-- **转发标头证据优先于本地直接回退的回环局部性。** 如果请求到达回环但携带指向非本地源的 `X-Forwarded-For` / `X-Forwarded-Host` / `X-Forwarded-Proto` 标头，该证据会使本地直接密码回退和设备身份门控失效。使用 `allowLoopback: true`，trusted-proxy 认证仍然可以将请求作为同一主机代理请求接受，而 `requiredHeaders` 和 `allowUsers` 继续适用。
+- **转发标头证据优先于本地直接回退的回环局部性。** 如果请求到达回环但携带 `Forwarded`、任何 `X-Forwarded-*` 或 `X-Real-IP` 标头证据，该证据会使本地直接密码回退和设备身份门控失效。使用 `allowLoopback: true`，trusted-proxy 认证仍然可以将请求作为同一主机代理请求接受，而 `requiredHeaders` 和 `allowUsers` 继续适用。
 
 </Warning>
 

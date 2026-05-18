@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2fc0f6c387f889977acc946c07d7511e"
+mmh3_hash: "6caffede494af4dd7c2303b259723f86"
 summary: "Bonjour/mDNS 发现 + 调试(Gateway beacon、客户端和常见故障模式)"
 read_when:
   - 在 macOS/iOS 上调试 Bonjour 发现问题
@@ -87,8 +87,8 @@ Gateway 广播小的非机密提示，以使 UI 流程更方便：
 - `canvasPort=<port>`（仅在启用 canvas host 时；当前与 `gatewayPort` 相同）
 - `transport=gateway`
 - `tailnetDns=<magicdns>`（Tailnet 可用时的可选提示）
-- `sshPort=<port>`（仅 mDNS 完整模式；wide-area DNS-SD 可能省略）
-- `cliPath=<path>`（仅 mDNS 完整模式；wide-area DNS-SD 仍将其作为远程安装提示写入）
+- `sshPort=<port>`（仅完整模式；在 minimal 和 off 模式下省略）
+- `cliPath=<path>`（仅完整模式；在 minimal 和 off 模式下省略）
 
 安全注意事项：
 
@@ -126,6 +126,8 @@ Gateway 写入滚动日志文件（在启动时打印为 `gateway log file: ...`
 - `bonjour: watchdog detected non-announced service ...`
 - `bonjour: disabling advertiser after ... failed restarts ...`
 
+Watchdog 将活跃的 `probing`、`announcing` 和最近冲突重命名视为进行中状态。如果服务始终无法到达 `announced`，OpenClaw 最终会重新创建广播器，反复失败后会为该 Gateway 进程禁用 Bonjour，而不是永久重新广播。
+
 Bonjour 在系统主机名是有效 DNS 标签时使用其作为广播的 `.local` 主机。如果系统主机名包含空格、下划线或其他无效 DNS 标签字符，OpenClaw 回退到 `openclaw.local`。需要显式主机标签时，在启动 Gateway 前设置 `OPENCLAW_MDNS_HOSTNAME=<name>`。
 
 ## 在 iOS 节点上调试
@@ -149,7 +151,7 @@ macOS 主机上空配置启动 Gateway 时，Bonjour 自动启动，因为本地
 openclaw plugins enable bonjour
 ```
 
-启用后，Bonjour 使用 `discovery.mdns.mode` 决定发布多少 TXT 元数据。默认模式为 `minimal`；仅当本地客户端需要 `cliPath` 或 `sshPort` 提示时才使用 `full`，使用 `off` 在不改变 Plugin 启用状态的情况下抑制 LAN 多播。
+启用后，Bonjour 使用 `discovery.mdns.mode` 决定发布多少 TXT 元数据。相同模式也控制 wide-area DNS-SD 记录中的可选 TXT 提示。默认模式为 `minimal`；仅当客户端需要 `cliPath` 或 `sshPort` 提示时才使用 `full`。使用 `off` 在不改变 Plugin 启用状态的情况下抑制 LAN 多播广播；当 `discovery.wideArea.enabled` 为 true 时，wide-area DNS-SD 仍可发布 minimal Gateway beacon。
 
 ## 何时禁用 Bonjour
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "71702773b72e77ef8d907f0600320efe"
+mmh3_hash: "eaf6db9a8ead0144028dfb0551aeb5f1"
 summary: "Gateway 服务、生命周期和操作手册"
 read_when:
   - 运行或调试 Gateway 进程
@@ -73,6 +73,7 @@ Gateway 配置重载监视活动配置文件路径(从 profile/state 默认值�
 - 单个多路复用端口用于:
   - WebSocket 控制/RPC
   - HTTP API（OpenAI 兼容，`/v1/models`、`/v1/embeddings`、`/v1/chat/completions`、`/v1/responses`、`/tools/invoke`）
+  - Plugin HTTP 路由，例如可选的 `/api/v1/admin/rpc`
   - Control UI 和 hooks
 - 默认绑定模式:`loopback`。
 - 默认需要认证。共享密钥设置使用 `gateway.auth.token` / `gateway.auth.password`(或 `OPENCLAW_GATEWAY_TOKEN` / `OPENCLAW_GATEWAY_PASSWORD`),非 loopback 反向代理设置可以使用 `gateway.auth.mode: "trusted-proxy"`。
@@ -100,6 +101,8 @@ OpenClaw 最高价值的兼容接口现在是:
 - 当您想要后端 provider/model 覆盖时使用 `x-openclaw-model`;否则选定 Agent 的正常模型和嵌入设置保持控制。
 
 所有这些都在主 Gateway 端口上运行,并使用与 Gateway HTTP API 其余部分相同的受信任操作员认证边界。
+
+Admin HTTP RPC（`POST /api/v1/admin/rpc`）是一个独立的、默认关闭的 Plugin 路由，供无法使用 WebSocket RPC 的主机工具使用。参见 [Admin HTTP RPC](/plugins/admin-http-rpc)。
 
 ### 端口和绑定优先级
 
@@ -155,6 +158,20 @@ openclaw gateway probe
 - 当过期的 launchd/systemd/schtasks 安装仍然存在时,`gateway status --deep` 可以报告 `Other gateway-like services detected (best effort)` 并打印清理提示。
 - 当多个目标响应时,`gateway probe` 可以警告 `multiple reachable gateways`。
 - 如果这是有意为之,请为每个 Gateway 隔离端口、config/state 和工作区根目录。
+
+每个实例的检查清单:
+
+- 唯一的 `gateway.port`
+- 唯一的 `OPENCLAW_CONFIG_PATH`
+- 唯一的 `OPENCLAW_STATE_DIR`
+- 唯一的 `agents.defaults.workspace`
+
+示例:
+
+```bash
+OPENCLAW_CONFIG_PATH=~/.openclaw/a.json OPENCLAW_STATE_DIR=~/.openclaw-a openclaw gateway --port 19001
+OPENCLAW_CONFIG_PATH=~/.openclaw/b.json OPENCLAW_STATE_DIR=~/.openclaw-b openclaw gateway --port 19002
+```
 
 详细设置:[/gateway/multiple-gateways](/gateway/multiple-gateways)。
 
@@ -279,7 +296,7 @@ openclaw --dev status
 - Gateway 返回 `hello-ok` 快照(`presence`、`health`、`stateVersion`、`uptimeMs`、限制/策略)。
 - `hello-ok.features.methods` / `events` 是保守的发现列表,不是每个可调用的辅助路由的生成转储。
 - 请求:`req(method, params)` → `res(ok/payload|error)`。
-- 常见事件包括 `connect.challenge`、`agent`、`chat`、`session.message`、`session.tool`、`sessions.changed`、`presence`、`tick`、`health`、`heartbeat`、配对/审批生命周期事件和 `shutdown`。
+- 常见事件包括 `connect.challenge`、`agent`、`chat`、`session.message`、`session.operation`、`session.tool`、`sessions.changed`、`presence`、`tick`、`health`、`heartbeat`、配对/审批生命周期事件和 `shutdown`。
 
 Agent 运行分为两个阶段:
 

@@ -1,163 +1,65 @@
 ---
-mmh3_hash: "59b2f11289390585b363c3cee8afe3c0"
-summary: "社区维护的 OpenClaw Plugin：浏览、安装和提交您自己的 Plugin"
+mmh3_hash: "a2d40cc019f3e986b6da1f06a2dcf458"
+summary: "查找和发布社区维护的 OpenClaw Plugin"
 read_when:
   - 您想查找第三方 OpenClaw Plugin
-  - 您想发布或列出自己的 Plugin
+  - 您想在 ClawHub 上发布或列出您自己的 Plugin
 title: "社区 Plugin"
+doc-schema-version: 1
 ---
 
-# 社区 Plugin
+社区 Plugin 是第三方包，通过 Channel、工具、Provider、Hook 或其他能力扩展 OpenClaw。使用 [ClawHub](/clawhub) 作为公共社区 Plugin 的主要发现表面。
 
-社区 Plugin 是扩展 OpenClaw 功能的第三方包，可添加新的 Channel、Tool、Provider 或其他能力。它们由社区构建和维护，通常发布在 [ClawHub](/clawhub) 上，并可以通过单个命令安装。npm 在 ClawHub 包安装推出期间仍是裸包规范的启动默认值。
+## 查找 Plugin
 
-ClawHub 是社区 Plugin 的规范发现入口。请不要仅仅为了在此处增加可发现性而打开文档 PR；请改为在 ClawHub 上发布。
+从 CLI 搜索 ClawHub：
+
+```bash
+openclaw plugins search "calendar"
+```
+
+使用显式来源前缀安装 ClawHub Plugin：
 
 ```bash
 openclaw plugins install clawhub:<package-name>
 ```
 
-对于托管在 npm 上的包，使用 `openclaw plugins install <package-name>`。
-
-## 已收录 Plugin
-
-### Apify
-
-使用 20,000 多个现成的爬虫从任何网站抓取数据。让您的 Agent 仅通过提问就能从 Instagram、Facebook、TikTok、YouTube、Google Maps、Google Search、电商网站等提取数据。
-
-- **npm：** `@apify/apify-openclaw-plugin`
-- **仓库：** [github.com/apify/apify-openclaw-plugin](https://github.com/apify/apify-openclaw-plugin)
+在发布切换期间，npm 仍是支持的直接安装路径：
 
 ```bash
-openclaw plugins install @apify/apify-openclaw-plugin
+openclaw plugins install npm:<package-name>
 ```
 
-### Codex App Server Bridge
+有关常见的安装、更新、检查和卸载示例，请参见 [管理 Plugin](/plugins/manage-plugins)。有关完整的命令参考和来源选择规则，请参见 [`openclaw plugins`](/cli/plugins)。
 
-用于 Codex App Server 对话的独立 OpenClaw 桥接。将聊天绑定到 Codex 线程，用纯文本与其交谈，并使用聊天原生命令进行恢复、规划、审查、模型选择、压缩等操作。
+## 发布 Plugin
 
-- **npm：** `openclaw-codex-app-server`
-- **仓库：** [github.com/pwrdrvr/openclaw-codex-app-server](https://github.com/pwrdrvr/openclaw-codex-app-server)
+当您希望 OpenClaw 用户发现并安装您的 Plugin 时，请在 ClawHub 上发布公共社区 Plugin。ClawHub 拥有实时包列表、发布历史、扫描状态和安装提示；文档不维护静态的第三方 Plugin 目录。
 
 ```bash
-openclaw plugins install openclaw-codex-app-server
+clawhub package publish your-org/your-plugin --dry-run
+clawhub package publish your-org/your-plugin
 ```
 
-### DingTalk
+在发布之前，请确保 Plugin 具有包元数据、Plugin Manifest、设置文档和明确的维护所有者。ClawHub 在创建发布之前会验证所有者范围、包名、版本、文件限制和来源元数据，然后在审查和验证完成之前将新发布隐藏在正常的安装和下载表面之外。
 
-使用 Stream 模式的企业机器人集成。通过任何 DingTalk 客户端支持文本、图像和文件消息。
+发布前请使用以下检查清单：
 
-- **npm：** `@largezhou/ddingtalk`
-- **仓库：** [github.com/largezhou/openclaw-dingtalk](https://github.com/largezhou/openclaw-dingtalk)
+| 要求          | 原因                                                 |
+| -------------------- | --------------------------------------------------- |
+| 在 ClawHub 上发布 | 用户需要 `openclaw plugins install` 提示才能工作 |
+| 公开的 GitHub 仓库   | 源代码审查、问题跟踪、透明度         |
+| 设置和使用文档 | 用户需要知道如何配置它              |
+| 积极维护   | 近期更新或响应式问题处理         |
 
-```bash
-openclaw plugins install @largezhou/ddingtalk
-```
+使用以下页面了解完整的发布契约：
 
-### Lossless Claw (LCM)
-
-OpenClaw 的无损上下文管理 Plugin。基于 DAG 的对话摘要与增量压缩 — 在减少 Token 使用的同时保留完整上下文保真度。
-
-- **npm：** `@martian-engineering/lossless-claw`
-- **仓库：** [github.com/Martian-Engineering/lossless-claw](https://github.com/Martian-Engineering/lossless-claw)
-
-```bash
-openclaw plugins install @martian-engineering/lossless-claw
-```
-
-### Opik
-
-将 Agent 追踪导出到 Opik 的官方 Plugin。监控 Agent 行为、成本、Token、错误等。
-
-- **npm：** `@opik/opik-openclaw`
-- **仓库：** [github.com/comet-ml/opik-openclaw](https://github.com/comet-ml/opik-openclaw)
-
-```bash
-openclaw plugins install @opik/opik-openclaw
-```
-
-### Prometheus Avatar
-
-为您的 OpenClaw Agent 提供具有实时口型同步、情感表情和文字转语音功能的 Live2D 形象。包含用于 AI 资产生成的创作工具以及一键部署到 Prometheus Marketplace 的功能。目前处于 alpha 阶段。
-
-- **npm：** `@prometheusavatar/openclaw-plugin`
-- **仓库：** [github.com/myths-labs/prometheus-avatar](https://github.com/myths-labs/prometheus-avatar)
-
-```bash
-openclaw plugins install @prometheusavatar/openclaw-plugin
-```
-
-### QQbot
-
-通过 QQ Bot API 将 OpenClaw 连接到 QQ。支持私聊、群组提及、频道消息以及包括语音、图像、视频和文件在内的丰富媒体。
-
-当前 OpenClaw 版本已捆绑 QQ Bot。对于正常安装，请使用 [QQ Bot](/channels/qqbot) 中的捆绑设置；仅当您有意需要腾讯维护的独立包时，才安装此外部 Plugin。
-
-- **npm：** `@tencent-connect/openclaw-qqbot`
-- **仓库：** [github.com/tencent-connect/openclaw-qqbot](https://github.com/tencent-connect/openclaw-qqbot)
-
-```bash
-openclaw plugins install @tencent-connect/openclaw-qqbot
-```
-
-### wecom
-
-腾讯企业微信团队出品的 OpenClaw 企业微信 Channel Plugin。由企业微信 Bot WebSocket 持久连接驱动，支持私信和群聊、流式回复、主动消息、图片/文件处理、Markdown 格式化、内置访问控制以及文档/会议/消息 Skill。
-
-- **npm：** `@wecom/wecom-openclaw-plugin`
-- **仓库：** [github.com/WecomTeam/wecom-openclaw-plugin](https://github.com/WecomTeam/wecom-openclaw-plugin)
-
-```bash
-openclaw plugins install @wecom/wecom-openclaw-plugin
-```
-
-### Yuanbao
-
-腾讯元宝团队出品的 OpenClaw 元宝 Channel Plugin。由 WebSocket 持久连接驱动，支持私信和群聊、流式回复、主动消息、图片/文件/音频/视频处理、Markdown 格式化、内置访问控制以及斜杠命令菜单。
-
-- **npm：** `openclaw-plugin-yuanbao`
-- **仓库：** [github.com/YuanbaoTeam/yuanbao-openclaw-plugin](https://github.com/YuanbaoTeam/yuanbao-openclaw-plugin)
-
-```bash
-openclaw plugins install openclaw-plugin-yuanbao
-```
-
-## 提交您的 Plugin
-
-我们欢迎实用、有文档且安全可操作的社区 Plugin。
-
-<Steps>
-  <Step title="发布到 ClawHub 或 npm">
-    您的 Plugin 必须可通过 `openclaw plugins install <package-name>` 安装。发布到 [ClawHub](/clawhub)（除非您特别需要仅限 npm 的分发）。完整指南请参见 [构建 Plugin](/plugins/building-plugins)。
-
-  </Step>
-
-  <Step title="托管在 GitHub">
-    源代码必须在公开仓库中，并附有设置文档和问题追踪器。
-
-  </Step>
-
-  <Step title="仅对源文档变更使用文档 PR">
-    您不需要提交文档 PR 只是为了让您的 Plugin 可被发现。请改为在 ClawHub 上发布。
-
-    仅当 OpenClaw 的源文档需要实际内容更改时才打开文档 PR，例如更正安装指南或添加属于主文档集的跨仓库文档。
-
-  </Step>
-</Steps>
-
-## 质量标准
-
-| 要求                        | 原因                                           |
-| --------------------------- | ---------------------------------------------- |
-| 发布到 ClawHub 或 npm       | 用户需要 `openclaw plugins install` 能正常工作 |
-| 公开的 GitHub 仓库          | 源码审查、问题跟踪、透明度                     |
-| 设置和使用文档              | 用户需要知道如何配置                           |
-| 积极维护                    | 近期更新或响应及时的问题处理                   |
-
-低质量包装、所有权不明确或无人维护的包可能会被拒绝。
+- [ClawHub 发布](/clawhub/publishing) 解释所有者、范围、发布、审查、包验证和包转让。
+- [构建 Plugin](/plugins/building-plugins) 展示 Plugin 包形状和首次发布工作流程。
+- [Plugin Manifest](/plugins/manifest) 定义原生 Plugin Manifest 字段。
 
 ## 相关
 
-- [安装和配置 Plugin](/tools/plugin) — 如何安装任何 Plugin
-- [构建 Plugin](/plugins/building-plugins) — 创建您自己的 Plugin
-- [Plugin 清单](/plugins/manifest) — 清单模式
+- [Plugin](/tools/plugin) - 安装、配置、重启和故障排除
+- [管理 Plugin](/plugins/manage-plugins) - 命令示例
+- [ClawHub 发布](/clawhub/publishing) - 发布和版本规则

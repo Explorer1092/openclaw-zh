@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "aedf895f170d3d1be50d9339a50f7720"
+mmh3_hash: "1d9d0735551c31153e80ab165356e150"
 summary: "Gateway、Channel、自动化、节点和 Browser 的深度故障排除运行手册"
 read_when:
   - 故障排除中心将您引导到这里进行更深入的诊断
@@ -27,6 +27,24 @@ openclaw channels status --probe
 - `openclaw gateway status` 显示 `Runtime: running`、`Connectivity probe: ok` 和一行 `Capability: ...`。
 - `openclaw doctor` 报告没有阻塞的配置/服务问题。
 - `openclaw channels status --probe` 显示实时每账户传输状态，以及在支持的情况下探测/审计结果（如 `works` 或 `audit ok`）。
+
+## 更新后
+
+当更新完成但 Gateway 宕机、Channel 为空或模型调用开始出现 401 错误时使用。
+
+```bash
+openclaw status --all
+openclaw update status --json
+openclaw gateway status --deep
+openclaw doctor --fix
+openclaw gateway restart
+```
+
+查找：
+
+- `openclaw status` / `openclaw status --all` 中的 `Update restart`。待处理或失败的切换包含下一步要运行的命令。
+- Channel 下的 `plugin load failed: dependency tree corrupted; run openclaw doctor --fix`。这意味着 Channel 配置仍然存在，但在 Channel 加载之前插件注册失败。
+- 重新认证后的 Provider 401 错误。`openclaw doctor --fix` 检查过时的每 Agent OAuth 认证阴影并删除旧副本，使所有 Agent 解析当前共享 Profile。
 
 ## 裂脑安装和较新配置守护
 
@@ -62,6 +80,32 @@ openclaw config get meta.lastTouchedVersion
 <Warning>
 仅用于有意降级或紧急恢复，为单个命令设置 `OPENCLAW_ALLOW_OLDER_BINARY_DESTRUCTIVE_ACTIONS=1`。正常操作时保持未设置。
 </Warning>
+
+## 回滚后协议不匹配
+
+当降级或回滚 OpenClaw 后日志持续打印 `protocol mismatch` 时使用。这意味着旧版 Gateway 正在运行，但较新的本地客户端进程仍在尝试以旧版 Gateway 无法处理的协议范围重新连接。
+
+```bash
+openclaw --version
+which -a openclaw
+openclaw gateway status --deep
+openclaw doctor --deep
+openclaw logs --follow
+```
+
+查找：
+
+- Gateway 日志中的 `protocol mismatch ... client=... v<version> min=<n> max=<n> expected=<n>`。
+- `openclaw gateway status --deep` 中的 `Established clients:` 或 `openclaw doctor --deep` 中的 `Gateway clients`。这列出了连接到 Gateway 端口的活动 TCP 客户端，在 OS 允许的情况下包括 PID 和命令行。
+- 命令行指向您回滚的较新 OpenClaw 安装或包装器的客户端进程。
+
+修复：
+
+1. 停止或重启 `gateway status --deep` 显示的过时 OpenClaw 客户端进程。
+2. 重启嵌入 OpenClaw 的应用或包装器，例如本地 dashboard、编辑器、应用服务器助手或长时间运行的 `openclaw logs --follow` shell。
+3. 重新运行 `openclaw gateway status --deep` 或 `openclaw doctor --deep`，确认过时的客户端 PID 已消失。
+
+不要让旧版 Gateway 接受较新的不兼容协议。协议升级保护了线路契约；回滚恢复是进程/版本清理问题。
 
 ## Skill 符号链接被跳过（路径逃逸）
 
@@ -261,6 +305,7 @@ openclaw gateway status --json
 | `AUTH_TOKEN_MISSING`         | 客户端未发送所需的共享令牌。             | 在客户端粘贴/设置令牌并重试。对于 dashboard 路径:`openclaw config get gateway.auth.token` 然后粘贴到 Control UI 设置中。                          |
 | `AUTH_TOKEN_MISMATCH`        | 共享令牌与 Gateway 认证令牌不匹配。           | 如果 `canRetryWithDeviceToken=true`，允许一次受信任的重试。缓存令牌重试复用已存储的批准范围；明确 `deviceToken` / `scopes` 的调用者保留请求的范围。如果仍然失败，运行[令牌漂移恢复清单](/cli/devices#token-drift-recovery-checklist)。 |
 | `AUTH_DEVICE_TOKEN_MISMATCH` | 缓存的每设备令牌过时或已撤销。             | 使用[设备 CLI](/cli/devices) 轮换/重新批准设备令牌,然后重新连接。                                                                                    |
+| `AUTH_SCOPE_MISMATCH`        | 设备令牌有效，但其批准的角色/范围不覆盖此连接请求。                                                  | 重新配对设备或批准请求的范围契约；不要将其视为共享令牌漂移。                                                                                                               |
 | `PAIRING_REQUIRED`           | 设备身份需要批准。检查 `error.details.reason` 中的 `not-paired`、`scope-upgrade`、`role-upgrade` 或 `metadata-upgrade`，并在存在时使用 `requestId` / `remediationHint`。 | 批准待处理请求:`openclaw devices list` 然后 `openclaw devices approve <requestId>`。范围/角色升级在您审查请求的访问权限后使用相同的流程。 |
 
 设备认证 v2 迁移检查:
@@ -339,6 +384,42 @@ openclaw gateway status --deep   # 同时扫描系统级服务
 - [配置](/gateway/configuration)
 - [Doctor](/gateway/doctor)
 
+## Gateway 在高内存使用时退出
+
+当 Gateway 在负载下消失、监督者报告 OOM 风格的重启，或日志提到 `critical memory pressure bundle written` 时使用。
+
+```bash
+openclaw gateway status --deep
+openclaw logs --follow
+openclaw gateway stability --bundle latest
+openclaw gateway diagnostics export
+```
+
+查找：
+
+- 最新稳定性 bundle 中的 `Reason: diagnostic.memory.pressure.critical`。
+- `Memory pressure:` 带有 `critical/rss_threshold`、`critical/heap_threshold` 或 `critical/rss_growth`。
+- 接近堆限制的 `V8 heap:` 值。
+- `Largest session files:` 条目，如 `agents/<agent>/sessions/<session>.jsonl` 或 `sessions/<session>.jsonl`。
+- 当 Gateway 在容器或内存受限服务中运行时的 Linux cgroup 内存计数器。
+
+常见特征：
+
+- `critical memory pressure bundle written` 在重启前不久出现 → OpenClaw 捕获了 OOM 前的稳定性 bundle。用 `openclaw gateway stability --bundle latest` 检查它。
+- `memory pressure: level=critical ... memoryPressureSnapshot=disabled` 出现在 Gateway 日志中 → OpenClaw 检测到严重内存压力，但 OOM 前稳定性快照已关闭。
+- `Largest session files:` 指向非常大的已编辑转录路径 → 减少保留的 Session 历史，检查 Session 增长，或在重启前将旧转录移出活动存储。
+- `V8 heap:` 使用字节接近堆限制 → 降低提示/Session 压力，减少并发工作，或仅在确认工作负载符合预期后提高 Node 堆限制。
+- `Memory pressure: critical/rss_growth` → 内存在一个采样窗口内快速增长。检查最新日志中是否有大型导入、失控的工具输出、重复重试或一批排队的 Agent 工作。
+- 日志中出现严重内存压力但不存在 bundle → 这是默认情况。设置 `diagnostics.memoryPressureSnapshot: true` 以在未来严重内存压力事件时捕获 OOM 前稳定性 bundle。
+
+稳定性 bundle 不含负载内容。它包含操作内存证据和已编辑的相对文件路径，不包含消息文本、Webhook 主体、凭证、令牌、Cookie 或原始 Session ID。将诊断导出附加到错误报告，而不是复制原始日志。
+
+相关：
+
+- [Gateway 健康状况](/gateway/health)
+- [诊断导出](/gateway/diagnostics)
+- [Sessions](/cli/sessions)
+
 ## Gateway 拒绝了无效配置
 
 当 Gateway 启动时因 `Invalid config` 失败，或热重载日志显示它跳过了无效编辑时使用。
@@ -357,6 +438,7 @@ openclaw doctor
 - `Config write rejected: ...`
 - 活动配置旁边的带时间戳的 `openclaw.json.rejected.*` 文件
 - 带时间戳的 `openclaw.json.clobbered.*` 文件（如果 `doctor --fix` 修复了损坏的直接编辑）
+- OpenClaw 为每个配置路径保留最新的 32 个 `.clobbered.*` 文件并轮换旧的
 
 <AccordionGroup>
   <Accordion title="发生了什么">
@@ -365,6 +447,7 @@ openclaw doctor
     - 热重载跳过无效的外部编辑并保持当前运行时配置活跃。
     - OpenClaw 拥有的写入在提交前拒绝无效/破坏性的负载并保存 `.rejected.*`。
     - `openclaw doctor --fix` 拥有修复权。它可以删除非 JSON 前缀或恢复最后已知良好的副本，同时将被拒绝的负载保留为 `.clobbered.*`。
+    - 当一个配置路径发生多次修复时，OpenClaw 轮换旧的 `.clobbered.*` 文件，以便最新修复的负载仍然可用。
   </Accordion>
   <Accordion title="检查和修复">
     ```bash
@@ -476,7 +559,7 @@ openclaw logs --follow
 
 - Cron 已启用且下次唤醒存在。
 - 作业运行历史状态（`ok`、`skipped`、`error`）。
-- Heartbeat 跳过原因（`quiet-hours`、`requests-in-flight`、`alerts-disabled`、`empty-heartbeat-file`、`no-tasks-due`）。
+- Heartbeat 跳过原因（`quiet-hours`、`requests-in-flight`、`cron-in-progress`、`lanes-busy`、`alerts-disabled`、`empty-heartbeat-file`、`no-tasks-due`）。
 
 常见特征：
 
@@ -650,11 +733,11 @@ openclaw gateway install --force
 openclaw gateway restart
 ```
 
-相关:
+相关：
 
-- [/gateway/pairing](/gateway/pairing)
-- [/gateway/authentication](/gateway/authentication)
-- [/gateway/background-process](/gateway/background-process)
+- [认证](/gateway/authentication)
+- [后台 exec 和进程工具](/gateway/background-process)
+- [Gateway 配对](/gateway/pairing)
 
 ## 相关
 

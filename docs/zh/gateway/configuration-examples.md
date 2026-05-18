@@ -1,13 +1,13 @@
 ---
-mmh3_hash: "7586881d750e8d5512f283de02a95021"
+mmh3_hash: "71545de384f57cf68f15cb69f8ce7baf"
 summary: "常见 OpenClaw 设置的符合 schema 的配置示例"
 read_when:
   - 学习如何配置 OpenClaw
   - 寻找配置示例
   - 首次设置 OpenClaw
 title: "Configuration examples"
+sidebarTitle: "Configuration examples"
 ---
-
 
 以下示例与当前配置 schema 对齐。有关详尽的参考和每个字段的注释，请参见 [Configuration](/gateway/configuration)。
 
@@ -17,7 +17,7 @@ title: "Configuration examples"
 
 ```json5
 {
-  agent: { workspace: "~/.openclaw/workspace" },
+  agents: { defaults: { workspace: "~/.openclaw/workspace" } },
   channels: { whatsapp: { allowFrom: ["+15555550123"] } },
 }
 ```
@@ -28,19 +28,33 @@ title: "Configuration examples"
 
 ```json5
 {
-  identity: {
-    name: "Clawd",
-    theme: "helpful assistant",
-    emoji: "🦞",
-  },
-  agent: {
-    workspace: "~/.openclaw/workspace",
-    model: { primary: "anthropic/claude-sonnet-4-6" },
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      model: { primary: "anthropic/claude-sonnet-4-6" },
+    },
+    list: [
+      {
+        id: "main",
+        identity: {
+          name: "Clawd",
+          theme: "helpful assistant",
+          emoji: "🦞",
+        },
+      },
+    ],
   },
   channels: {
     whatsapp: {
       allowFrom: ["+15555550123"],
       groups: { "*": { requireMention: true } },
+    },
+  },
+  messages: {
+    visibleReplies: "automatic",
+    groupChat: {
+      visibleReplies: "message_tool", // 可选；可见输出需要 message(action=send)
+      unmentionedInbound: "room_event",
     },
   },
 }
@@ -79,12 +93,7 @@ title: "Configuration examples"
     },
   },
 
-  // Identity
-  identity: {
-    name: "Samantha",
-    theme: "helpful sloth",
-    emoji: "🦥",
-  },
+  // Identity 是每个 Agent 的 — 在下面的 agents.list[].identity 中设置。
 
   // Logging
   logging: {
@@ -98,30 +107,28 @@ title: "Configuration examples"
   // 消息格式化
   messages: {
     messagePrefix: "[openclaw]",
+    visibleReplies: "automatic",
     responsePrefix: ">",
     ackReaction: "👀",
     ackReactionScope: "group-mentions",
-  },
-
-  // 路由 + 队列
-  routing: {
     groupChat: {
-      mentionPatterns: ["@openclaw", "openclaw"],
       historyLimit: 50,
+      visibleReplies: "message_tool", // 为拥有工具可靠模型的共享房间启用
+      unmentionedInbound: "room_event",
     },
     queue: {
-      mode: "collect",
-      debounceMs: 1000,
+      mode: "followup",
+      debounceMs: 500,
       cap: 20,
       drop: "summarize",
       byChannel: {
-        whatsapp: "collect",
-        telegram: "collect",
+        whatsapp: "followup",
+        telegram: "followup",
         discord: "collect",
         slack: "collect",
-        signal: "collect",
-        imessage: "collect",
-        webchat: "collect",
+        signal: "followup",
+        imessage: "followup",
+        webchat: "followup",
       },
     },
   },
@@ -165,7 +172,6 @@ title: "Configuration examples"
       mode: "warn",
       pruneAfter: "30d",
       maxEntries: 500,
-      rotateBytes: "10mb",
       resetArchiveRetention: "30d", // 持续时间或 false
       maxDiskBytes: "500mb", // 可选
       highWaterBytes: "400mb", // 可选（默认为 maxDiskBytes 的 80%）
@@ -249,6 +255,8 @@ title: "Configuration examples"
       skills: ["github", "weather"], // 被省略 list[].skills 的 Agent 继承
       thinkingDefault: "low",
       verboseDefault: "off",
+      toolProgressDetail: "explain",
+      reasoningDefault: "off",
       elevatedDefault: "on",
       blockStreamingDefault: "off",
       blockStreamingBreak: "text_end",
@@ -305,7 +313,15 @@ title: "Configuration examples"
       {
         id: "main",
         default: true,
+        identity: {
+          name: "Samantha",
+          theme: "helpful sloth",
+          emoji: "🦥",
+        },
         // 继承 defaults.skills -> github, weather
+        groupChat: {
+          mentionPatterns: ["@openclaw", "openclaw"],
+        },
         thinkingDefault: "high", // 每个 Agent 的 thinking 覆盖
         reasoningDefault: "on", // 每个 Agent 的 reasoning 可见性
         fastModeDefault: false, // 每个 Agent 的 fast mode
@@ -371,7 +387,7 @@ title: "Configuration examples"
   cron: {
     enabled: true,
     store: "~/.openclaw/cron/cron.json",
-    maxConcurrentRuns: 2,
+    maxConcurrentRuns: 2, // cron 调度 + 隔离的 cron agent 轮次执行
     sessionRetention: "24h",
     runLog: {
       maxBytes: "2mb",
@@ -442,10 +458,12 @@ title: "Configuration examples"
     allowBundled: ["gemini", "peekaboo"],
     load: {
       extraDirs: ["~/Projects/agent-scripts/skills"],
+      allowSymlinkTargets: ["~/Projects/agent-scripts/skills"],
     },
     install: {
       preferBrew: true,
       nodeManager: "npm", // npm | pnpm | yarn | bun
+      allowUploadedArchives: false,
     },
     entries: {
       "image-lab": {
@@ -458,6 +476,24 @@ title: "Configuration examples"
   },
 }
 ```
+
+### 符号链接兄弟 skill 仓库
+
+当内置 skill 根目录包含指向兄弟仓库的符号链接时使用此配置，例如 `~/.agents/skills/manager -> ~/Projects/manager/skills`。
+
+```json5
+{
+  skills: {
+    load: {
+      extraDirs: ["~/Projects/manager/skills"],
+      allowSymlinkTargets: ["~/Projects/manager/skills"],
+    },
+  },
+}
+```
+
+- `extraDirs` 将兄弟仓库扫描为显式 skill 根目录。
+- `allowSymlinkTargets` 让符号链接的 skill 文件夹解析到该受信任的真实目标根目录，而不允许任意符号链接逃逸。
 
 ## 常见模式
 
@@ -486,7 +522,7 @@ title: "Configuration examples"
 
 ```json5
 {
-  agent: { workspace: "~/.openclaw/workspace" },
+  agents: { defaults: { workspace: "~/.openclaw/workspace" } },
   channels: {
     whatsapp: { allowFrom: ["+15555550123"] },
     telegram: {
@@ -502,6 +538,24 @@ title: "Configuration examples"
   },
 }
 ```
+
+### 受信任节点网络自动批准
+
+除非您控制网络路径，否则保持设备配对为手动。对于专用实验室或 tailnet 子网，您可以通过精确的 CIDR 或 IP 选择首次节点设备自动批准：
+
+```json5
+{
+  gateway: {
+    nodes: {
+      pairing: {
+        autoApproveCidrs: ["192.168.1.0/24", "fd00:1234:5678::/64"],
+      },
+    },
+  },
+}
+```
+
+未设置时保持关闭。仅适用于无请求范围的全新 `role: node` 配对。Operator/浏览器客户端以及角色、范围、元数据或公钥升级仍需要手动批准。
 
 ### 安全 DM 模式（共享收件箱/多用户 DM）
 
@@ -556,11 +610,13 @@ title: "Configuration examples"
       },
     },
   },
-  agent: {
-    workspace: "~/.openclaw/workspace",
-    model: {
-      primary: "anthropic/claude-opus-4-6",
-      fallbacks: ["minimax/MiniMax-M2.7"],
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      model: {
+        primary: "anthropic/claude-opus-4-6",
+        fallbacks: ["minimax/MiniMax-M2.7"],
+      },
     },
   },
 }
@@ -570,13 +626,20 @@ title: "Configuration examples"
 
 ```json5
 {
-  identity: {
-    name: "WorkBot",
-    theme: "professional assistant",
-  },
-  agent: {
-    workspace: "~/work-openclaw",
-    elevated: { enabled: false },
+  agents: {
+    defaults: {
+      workspace: "~/work-openclaw",
+      elevatedDefault: "off",
+    },
+    list: [
+      {
+        id: "main",
+        identity: {
+          name: "WorkBot",
+          theme: "professional assistant",
+        },
+      },
+    ],
   },
   channels: {
     slack: {
@@ -595,9 +658,11 @@ title: "Configuration examples"
 
 ```json5
 {
-  agent: {
-    workspace: "~/.openclaw/workspace",
-    model: { primary: "lmstudio/my-local-model" },
+  agents: {
+    defaults: {
+      workspace: "~/.openclaw/workspace",
+      model: { primary: "lmstudio/my-local-model" },
+    },
   },
   models: {
     mode: "merge",
@@ -627,10 +692,10 @@ title: "Configuration examples"
 
 - 如果设置 `dmPolicy: "open"`，匹配的 `allowFrom` 列表必须包含 `"*"`。
 - Provider IDs 不同（电话号码、用户 IDs、channel IDs）。使用 provider 文档确认格式。
-- 稍后添加的可选部分：`web`、`browser`、`ui`、`discovery`、`canvasHost`、`talk`、`signal`、`imessage`。
+- 稍后添加的可选部分：`web`、`browser`、`ui`、`discovery`、`plugins`、`talk`、`signal`、`imessage`。
 - 有关更深入的设置说明，请参见 [Providers](/providers) 和 [Troubleshooting](/gateway/troubleshooting)。
 
 ## 相关
 
-- [配置参考](/gateway/configuration-reference)
-- [配置](/gateway/configuration)
+- [Configuration reference](/gateway/configuration-reference)
+- [Configuration](/gateway/configuration)

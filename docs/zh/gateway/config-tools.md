@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "55d7b37a9ddff54ca5aebc5b3aef49d3"
+mmh3_hash: "f4af4d712ae0f2b4d46f9c0305e3fa0d"
 summary: "工具配置（策略、实验性开关、Provider 支持的工具）和自定义 provider/base-URL 设置"
 read_when:
   - 配置 `tools.*` 策略、允许列表或实验性功能
@@ -38,11 +38,11 @@ sidebarTitle: "工具和自定义 Provider"
 | `group:memory`     | `memory_search`, `memory_get`                                                                                           |
 | `group:web`        | `web_search`, `x_search`, `web_fetch`                                                                                   |
 | `group:ui`         | `browser`, `canvas`                                                                                                     |
-| `group:automation` | `cron`, `gateway`                                                                                                       |
+| `group:automation` | `heartbeat_respond`, `cron`, `gateway`                                                                                  |
 | `group:messaging`  | `message`                                                                                                               |
 | `group:nodes`      | `nodes`                                                                                                                 |
-| `group:agents`     | `agents_list`                                                                                                           |
-| `group:media`      | `image`, `image_generate`, `video_generate`, `tts`                                                                      |
+| `group:agents`     | `agents_list`, `update_plan`                                                                                            |
+| `group:media`      | `image`, `image_generate`, `music_generate`, `video_generate`, `tts`                                                    |
 | `group:openclaw`   | 所有内置工具（不包括 Provider Plugin）                                                                                  |
 
 ### `tools.allow` / `tools.deny`
@@ -52,6 +52,14 @@ sidebarTitle: "工具和自定义 Provider"
 ```json5
 {
   tools: { deny: ["browser", "canvas"] },
+}
+```
+
+`write` 和 `apply_patch` 是独立的工具 id。`allow: ["write"]` 也为兼容模型启用 `apply_patch`，但 `deny: ["write"]` 不拒绝 `apply_patch`。要阻止所有文件变更，拒绝 `group:fs` 或明确列出每个变更工具：
+
+```json5
+{
+  tools: { deny: ["write", "edit", "apply_patch"] },
 }
 ```
 
@@ -70,6 +78,26 @@ sidebarTitle: "工具和自定义 Provider"
   },
 }
 ```
+
+### `tools.toolsBySender`
+
+限制特定请求者身份的工具。这是在 Channel 访问控制之上的纵深防御；发送者值必须来自 Channel 适配器，而不是消息文本。
+
+```json5
+{
+  tools: {
+    toolsBySender: {
+      "channel:discord:1234567890123": { alsoAllow: ["group:fs"] },
+      "id:guest-user-id": { deny: ["group:runtime", "group:fs"] },
+      "*": { deny: ["exec", "process", "write", "edit", "apply_patch"] },
+    },
+  },
+}
+```
+
+键使用显式前缀：`channel:<channelId>:<senderId>`、`id:<senderId>`、`e164:<phone>`、`username:<handle>`、`name:<displayName>` 或 `"*"`。Channel id 是规范的 OpenClaw id；`teams` 等别名规范化为 `msteams`。旧版无前缀键仅作为 `id:` 接受。匹配顺序为 channel+id、id、e164、username、name，然后是通配符。
+
+每 Agent 的 `agents.list[].tools.toolsBySender` 在匹配时覆盖全局发送者匹配，即使策略为空 `{}`。
 
 ### `tools.elevated`
 
@@ -104,6 +132,7 @@ sidebarTitle: "工具和自定义 Provider"
       cleanupMs: 1800000,
       notifyOnExit: true,
       notifyOnExitEmptySuccess: false,
+      commandHighlighting: false,
       applyPatch: {
         enabled: false,
         allowModels: ["gpt-5.5"],
@@ -202,7 +231,7 @@ sidebarTitle: "工具和自定义 Provider"
     media: {
       concurrency: 2,
       asyncCompletion: {
-        directSend: false, // 选择加入：直接将完成的异步音乐/视频发送到 Channel
+        directSend: false, // 已废弃：完成项保持 agent 中介
       },
       audio: {
         enabled: true,
@@ -242,7 +271,7 @@ sidebarTitle: "工具和自定义 Provider"
     **CLI 条目**（`type: "cli"`）：
 
     - `command`：要运行的可执行文件
-    - `args`：模板化参数（支持 `{{MediaPath}}`、`{{Prompt}}`、`{{MaxChars}}` 等）
+    - `args`：模板化参数（支持 `{{MediaPath}}`、`{{Prompt}}`、`{{MaxChars}}` 等；`openclaw doctor --fix` 将已废弃的 `{input}` 占位符迁移到 `{{MediaPath}}`）
 
     **通用字段：**
 
@@ -255,7 +284,7 @@ sidebarTitle: "工具和自定义 Provider"
 
     **异步完成字段：**
 
-    - `asyncCompletion.directSend`：为 `true` 时，完成的异步 `music_generate` 和 `video_generate` 任务首先尝试直接 Channel 投递。默认：`false`（旧版请求者 Session 唤醒/model 投递路径）。
+    - `asyncCompletion.directSend`：已废弃的兼容性标志。完成的异步媒体任务保持请求者 Session 中介，以便 Agent 接收结果、决定如何告知用户，并在源投递需要时使用 message 工具。
 
   </Accordion>
 </AccordionGroup>
@@ -362,6 +391,7 @@ sidebarTitle: "工具和自定义 Provider"
         model: "minimax/MiniMax-M2.7",
         maxConcurrent: 8,
         runTimeoutSeconds: 900,
+        announceTimeoutMs: 120000,
         archiveAfterMinutes: 60,
       },
     },
@@ -372,6 +402,7 @@ sidebarTitle: "工具和自定义 Provider"
 - `model`：生成的子 Agent 的默认 model。如果省略，子 Agent 继承调用者的 model。
 - `allowAgents`：当请求者 Agent 未设置自己的 `subagents.allowAgents` 时，`sessions_spawn` 的默认目标 Agent id 允许列表（`["*"]` = 任意；默认：仅同一 Agent）。
 - `runTimeoutSeconds`：工具调用省略 `runTimeoutSeconds` 时 `sessions_spawn` 的默认超时（秒）。`0` 表示无超时。
+- `announceTimeoutMs`：每次调用的 Gateway `agent` 公告投递尝试超时（毫秒）。默认：`120000`。瞬时重试可能使总公告等待时间超过一个配置的超时。
 - 每子 Agent 工具策略：`tools.subagents.tools.allow` / `tools.subagents.tools.deny`。
 
 ---
@@ -379,6 +410,8 @@ sidebarTitle: "工具和自定义 Provider"
 ## 自定义 Provider 和 base URL
 
 OpenClaw 使用内置 model 目录。通过配置中的 `models.providers` 或 `~/.openclaw/agents/<agentId>/agent/models.json` 添加自定义 Provider。
+
+配置自定义/本地 Provider 的 `baseUrl` 也是 model HTTP 请求的网络信任决策：OpenClaw 通过受保护的 fetch 路径允许该精确的 `scheme://host:port` 来源，无需添加单独的配置选项或信任其他私有来源。
 
 ```json5
 {
@@ -452,15 +485,18 @@ OpenClaw 使用内置 model 目录。通过配置中的 `models.providers` 或 `
     - `request.auth`：认证策略覆盖。模式：`"provider-default"`（使用 Provider 的内置认证）、`"authorization-bearer"`（配合 `token`）、`"header"`（配合 `headerName`、`value`、可选 `prefix`）。
     - `request.proxy`：HTTP 代理覆盖。模式：`"env-proxy"`（使用 `HTTP_PROXY`/`HTTPS_PROXY` 环境变量）、`"explicit-proxy"`（配合 `url`）。两种模式都接受可选的 `tls` 子对象。
     - `request.tls`：直连的 TLS 覆盖。字段：`ca`、`cert`、`key`、`passphrase`（均接受 SecretRef）、`serverName`、`insecureSkipVerify`。
-    - `request.allowPrivateNetwork`：为 `true` 时，通过 Provider HTTP fetch 保护允许 HTTPS 到解析为私有、CGNAT 或类似范围的 `baseUrl`（受信任的自托管 OpenAI 兼容端点的 operator 选择加入）。WebSocket 对头/TLS 使用相同的 `request`，但不使用 fetch SSRF 门。默认 `false`。
+    - `request.allowPrivateNetwork`：为 `true` 时，通过 Provider HTTP fetch 保护允许 model-Provider HTTP 请求到私有、CGNAT 或类似范围。自定义/本地 Provider base URL 已信任精确配置的来源（元数据/链路本地来源除外，这些在未显式选择加入时仍被阻止）。设置为 `false` 可退出精确来源信任。WebSocket 对头/TLS 使用相同的 `request`，但不使用 fetch SSRF 门。默认 `false`。
 
   </Accordion>
   <Accordion title="Model 目录条目">
     - `models.providers.*.models`：显式 Provider model 目录条目。
+    - `models.providers.*.models.*.input`：model 输入模态。对于纯文本 model 使用 `["text"]`，对于原生图像/视觉 model 使用 `["text", "image"]`。仅当选定 model 标记为支持图像时，图像附件才会注入 Agent 轮次。
     - `models.providers.*.models.*.contextWindow`：原生 model 上下文窗口元数据。这覆盖该 model 的 Provider 级 `contextWindow`。
     - `models.providers.*.models.*.contextTokens`：可选的 runtime 上下文上限。这覆盖 Provider 级 `contextTokens`；当你想要比 model 的原生 `contextWindow` 更小的有效上下文预算时使用它；`openclaw models list` 在两者不同时显示两个值。
     - `models.providers.*.models.*.compat.supportsDeveloperRole`：可选的兼容性提示。对于非空非原生 `baseUrl`（主机不是 `api.openai.com`）的 `api: "openai-completions"`，OpenClaw 在 runtime 强制将其设置为 `false`。空/省略的 `baseUrl` 保持默认 OpenAI 行为。
     - `models.providers.*.models.*.compat.requiresStringContent`：仅字符串 OpenAI 兼容聊天端点的可选兼容性提示。为 `true` 时，OpenClaw 在发送请求前将纯文本 `messages[].content` 数组扁平化为纯字符串。
+    - `models.providers.*.models.*.compat.strictMessageKeys`：严格 OpenAI 兼容聊天端点的可选兼容性提示。为 `true` 时，OpenClaw 在发送请求前将出站 Chat Completions 消息对象精简为 `role` 和 `content`。
+    - `models.providers.*.models.*.compat.thinkingFormat`：可选的 thinking 负载提示。对 Together 风格的 `reasoning.enabled` 使用 `"together"`，对顶级 `enable_thinking` 使用 `"qwen"`，对支持请求级 chat-template kwargs 的 Qwen 系列 OpenAI 兼容服务器（如 vLLM）上的 `chat_template_kwargs.enable_thinking` 使用 `"qwen-chat-template"`。
   </Accordion>
   <Accordion title="Amazon Bedrock 发现">
     - `plugins.entries.amazon-bedrock.config.discovery`：Bedrock 自动发现设置根目录。
@@ -472,6 +508,8 @@ OpenClaw 使用内置 model 目录。通过配置中的 `models.providers` 或 `
     - `plugins.entries.amazon-bedrock.config.discovery.defaultMaxTokens`：发现 model 的回退最大输出 token。
   </Accordion>
 </AccordionGroup>
+
+交互式自定义 Provider 引导会为常见的视觉模型 ID（如 GPT-4o、Claude、Gemini、Qwen-VL、LLaVA、Pixtral、InternVL、Mllama、MiniCPM-V 和 GLM-4V）推断图像输入，并跳过对已知纯文本系列的额外询问。未知 model ID 仍会提示图像支持。非交互式引导使用相同的推断；传递 `--custom-image-input` 强制图像支持元数据，或传递 `--custom-text-input` 强制纯文本元数据。
 
 ### Provider 示例
 
@@ -520,8 +558,8 @@ OpenClaw 使用内置 model 目录。通过配置中的 `models.providers` 或 `
       env: { KIMI_API_KEY: "sk-..." },
       agents: {
         defaults: {
-          model: { primary: "kimi/kimi-code" },
-          models: { "kimi/kimi-code": { alias: "Kimi Code" } },
+          model: { primary: "kimi/kimi-for-coding" },
+          models: { "kimi/kimi-for-coding": { alias: "Kimi Code" } },
         },
       },
     }

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "14e8d9f3a7a870c138cf572cf24bc6b0"
+mmh3_hash: "8d126b59bc0f6f0af3491e1faf2de77f"
 summary: "通过 Gateway HTTP 端点直接调用单个工具"
 read_when:
   - 在不运行完整 Agent 轮次的情况下调用工具
@@ -32,6 +32,7 @@ OpenClaw 的 Gateway 暴露了一个简单的 HTTP 端点，用于直接调用�
 - 当 `gateway.auth.mode="token"` 时，使用 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`）。
 - 当 `gateway.auth.mode="password"` 时，使用 `gateway.auth.password`（或 `OPENCLAW_GATEWAY_PASSWORD`）。
 - 当 `gateway.auth.mode="trusted-proxy"` 时，HTTP 请求必须来自配置的受信任代理来源；同一主机的回环代理需要显式设置 `gateway.auth.trustedProxy.allowLoopback = true`。
+- 绕过代理的内部同一主机调用者可以使用 `gateway.auth.password` / `OPENCLAW_GATEWAY_PASSWORD` 作为本地直接回退。任何 `Forwarded`、`X-Forwarded-*` 或 `X-Real-IP` 头证据都会使请求保持在 trusted-proxy 路径上。
 - 如果配置了 `gateway.auth.rateLimit` 且发生太多认证失败，端点返回 `429` 和 `Retry-After`。
 
 ## 安全边界（重要）

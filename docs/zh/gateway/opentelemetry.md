@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "409244922ceefb91dfb052f8468ad9a4"
+mmh3_hash: "5c5cbfc2e90e39ead1d649688fe5d2a5"
 summary: "通过 diagnostics-otel Plugin（OTLP/HTTP）将 OpenClaw 诊断导出到任何 OpenTelemetry 收集器"
 title: "OpenTelemetry export"
 read_when:
@@ -18,6 +18,12 @@ OpenClaw 通过捆绑的 `diagnostics-otel` Plugin 使用 **OTLP/HTTP（protobuf
 - 导出器仅在诊断表面和 Plugin 都启用时才附加，因此默认情况下进程内成本几乎为零。
 
 ## 快速开始
+
+对于打包安装，请先安装 Plugin：
+
+```bash
+openclaw plugins install clawhub:@openclaw/diagnostics-otel
+```
 
 ```json5
 {
@@ -58,7 +64,7 @@ openclaw plugins enable diagnostics-otel
 
 | 信号        | 包含内容                                                                                                                      |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| **Metrics** | token 使用量、成本、运行时长、消息流、队列通道、Session 状态、exec 和内存压力的计数器和直方图。                               |
+| **Metrics** | token 使用量、成本、运行时长、消息流、Talk 事件、队列通道、Session 状态/恢复、exec 和内存压力的计数器和直方图。               |
 | **Traces**  | model 使用、model 调用、harness 生命周期、工具执行、exec、webhook/消息处理、上下文组装和工具循环的 span。                     |
 | **Logs**    | 启用 `diagnostics.otel.logs` 时通过 OTLP 导出的结构化 `logging.file` 记录。                                                  |
 
@@ -110,7 +116,7 @@ openclaw plugins enable diagnostics-otel
 
 ## 隐私和内容捕获
 
-原始 model/工具内容**默认不导出**。span 携带有界标识符（Channel、Provider、model、错误类别、仅散列的请求 id），从不包含 prompt 文本、响应文本、工具输入、工具输出或 Session 密钥。
+原始 model/工具内容**默认不导出**。span 携带有界标识符（Channel、Provider、model、错误类别、仅散列的请求 id），从不包含 prompt 文本、响应文本、工具输入、工具输出或 Session 密钥。Talk 指标仅导出有界事件元数据，如模式、传输、Provider 和事件类型，不包含转录、音频有效负载、Session id、轮次 id、通话 id、房间 id 或切换令牌。
 
 出站 model 请求可能包含 W3C `traceparent` 头。该头仅从 OpenClaw 拥有的活跃 model 调用诊断 trace 上下文生成。现有的调用者提供的 `traceparent` 头被替换，因此 Plugin 或自定义 Provider 选项无法伪造跨服务 trace 祖先。
 
@@ -158,6 +164,12 @@ openclaw plugins enable diagnostics-otel
 - `openclaw.message.delivery.started`（计数器，属性：`openclaw.channel`、`openclaw.delivery.kind`）
 - `openclaw.message.delivery.duration_ms`（直方图，属性：`openclaw.channel`、`openclaw.delivery.kind`、`openclaw.outcome`、`openclaw.errorCategory`）
 
+### Talk
+
+- `openclaw.talk.event`（计数器，属性：`openclaw.talk.event_type`、`openclaw.talk.mode`、`openclaw.talk.transport`、`openclaw.talk.brain`、`openclaw.talk.provider`）
+- `openclaw.talk.event.duration_ms`（直方图，属性：与 `openclaw.talk.event` 相同；当 Talk 事件报告时长时发出）
+- `openclaw.talk.audio.bytes`（直方图，属性：与 `openclaw.talk.event` 相同；对报告字节长度的 Talk 音频帧事件发出）
+
 ### 队列和 Session
 
 - `openclaw.queue.lane.enqueue`（计数器，属性：`openclaw.lane`）
@@ -165,9 +177,26 @@ openclaw plugins enable diagnostics-otel
 - `openclaw.queue.depth`（直方图，属性：`openclaw.lane` 或 `openclaw.channel=heartbeat`）
 - `openclaw.queue.wait_ms`（直方图，属性：`openclaw.lane`）
 - `openclaw.session.state`（计数器，属性：`openclaw.state`、`openclaw.reason`）
-- `openclaw.session.stuck`（计数器，属性：`openclaw.state`）
-- `openclaw.session.stuck_age_ms`（直方图，属性：`openclaw.state`）
+- `openclaw.session.stuck`（计数器，属性：`openclaw.state`；仅对无活跃工作的陈旧 Session 账目发出）
+- `openclaw.session.stuck_age_ms`（直方图，属性：`openclaw.state`；仅对无活跃工作的陈旧 Session 账目发出）
+- `openclaw.session.recovery.requested`（计数器，属性：`openclaw.state`、`openclaw.action`、`openclaw.active_work_kind`、`openclaw.reason`）
+- `openclaw.session.recovery.completed`（计数器，属性：`openclaw.state`、`openclaw.action`、`openclaw.status`、`openclaw.active_work_kind`、`openclaw.reason`）
+- `openclaw.session.recovery.age_ms`（直方图，属性：与对应恢复计数器相同）
 - `openclaw.run.attempt`（计数器，属性：`openclaw.attempt`）
+
+### Session 活跃度遥测
+
+`diagnostics.stuckSessionWarnMs` 是 Session 活跃度诊断的无进度老化阈值。当 OpenClaw 观察到回复、工具、状态、块或 ACP 运行时进度时，`processing` Session 不向该阈值累积老化。输入保活不算作进度，因此仍可检测到静默的模型或 harness。
+
+OpenClaw 按可观察到的工作对 Session 进行分类：
+
+- `session.long_running`：活跃的嵌入式工作、模型调用或工具调用仍在取得进度。
+- `session.stalled`：活跃工作存在，但活跃运行最近未报告进度。停滞的嵌入式运行起初仅处于观察状态，然后在 `diagnostics.stuckSessionAbortMs` 时间无进度后进行中止排空，以便 lane 后面排队的轮次可以恢复。未设置时，中止阈值默认为至少 5 分钟且为 `diagnostics.stuckSessionWarnMs` 3 倍的更安全延展窗口。
+- `session.stuck`：无活跃工作的陈旧 Session 账目。这会立即释放受影响的 Session lane。
+
+恢复发出结构化的 `session.recovery.requested` 和 `session.recovery.completed` 事件。诊断 Session 状态仅在变更恢复结果（`aborted` 或 `released`）后且仅在相同处理代仍是当前代时才标记为空闲。
+
+只有 `session.stuck` 发出 `openclaw.session.stuck` 计数器、`openclaw.session.stuck_age_ms` 直方图和 `openclaw.session.stuck` span。重复的 `session.stuck` 诊断在 Session 保持不变时退避，因此仪表板应对持续增长而非每次心跳滴答发出告警。有关配置旋钮和默认值，请参见[配置参考](/gateway/configuration-reference#diagnostics)。
 
 ### Harness 生命周期
 
@@ -209,11 +238,11 @@ openclaw plugins enable diagnostics-otel
 - `openclaw.exec`
   - `openclaw.exec.target`、`openclaw.exec.mode`、`openclaw.outcome`、`openclaw.failureKind`、`openclaw.exec.command_length`、`openclaw.exec.exit_code`、`openclaw.exec.timed_out`
 - `openclaw.webhook.processed`
-  - `openclaw.channel`、`openclaw.webhook`、`openclaw.chatId`
+  - `openclaw.channel`、`openclaw.webhook`
 - `openclaw.webhook.error`
-  - `openclaw.channel`、`openclaw.webhook`、`openclaw.chatId`、`openclaw.error`
+  - `openclaw.channel`、`openclaw.webhook`、`openclaw.error`
 - `openclaw.message.processed`
-  - `openclaw.channel`、`openclaw.outcome`、`openclaw.chatId`、`openclaw.messageId`、`openclaw.reason`
+  - `openclaw.channel`、`openclaw.outcome`、`openclaw.reason`
 - `openclaw.message.delivery`
   - `openclaw.channel`、`openclaw.delivery.kind`、`openclaw.outcome`、`openclaw.errorCategory`、`openclaw.delivery.result_count`
 - `openclaw.session.stuck`
@@ -244,8 +273,8 @@ openclaw plugins enable diagnostics-otel
 **队列和 Session**
 
 - `queue.lane.enqueue` / `queue.lane.dequeue`
-- `session.state` / `session.stuck`
-- `run.attempt`
+- `session.state` / `session.long_running` / `session.stalled` / `session.stuck`
+- `run.attempt` / `run.progress`
 - `diagnostic.heartbeat`（聚合计数器：webhook/队列/Session）
 
 **Harness 生命周期**

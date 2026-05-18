@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "97629568aa0fc1af168fe5f4b96bc594"
+mmh3_hash: "69c1a29f6ede5df301eb75b00bd27b26"
 summary: "为 bug 报告创建可共享的 Gateway 诊断包"
 title: "Diagnostics export"
 read_when:
@@ -29,6 +29,20 @@ openclaw gateway diagnostics export --output openclaw-diagnostics.zip
 ```bash
 openclaw gateway diagnostics export --json
 ```
+
+## 聊天命令
+
+Owner 可以在聊天中使用 `/diagnostics [note]` 请求本地 Gateway 导出。当 bug 发生在真实对话中且您希望获得一份可复制粘贴的支持报告时使用此命令：
+
+1. 在您注意到问题的对话中发送 `/diagnostics`。如有帮助，可添加简短说明，例如 `/diagnostics bad tool choice`。
+2. OpenClaw 发送诊断前言并请求一次明确的 exec 批准。该批准运行 `openclaw gateway diagnostics export --json`。不要通过 allow-all 规则批准诊断。
+3. 批准后，OpenClaw 回复一份可粘贴的报告，包含本地包路径、清单摘要、隐私说明和相关 Session id。
+
+在群聊中，owner 仍可运行 `/diagnostics`，但 OpenClaw 不会将诊断详情发布回共享聊天。它通过私人批准路由将前言、批准提示、Gateway 导出结果和 Codex Session/线程明细发送给 owner。群聊只收到诊断流程已私下发送的简短通知。如果 OpenClaw 找不到私人 owner 路由，该命令以关闭状态失败并要求 owner 从私信中运行。
+
+当活跃的 OpenClaw Session 使用原生 OpenAI Codex harness 时，同一 exec 批准还涵盖 OpenClaw 已知的 Codex 运行时线程的 OpenAI 反馈上传。该上传独立于本地 Gateway zip，且仅对 Codex harness Session 显示。批准前，提示会说明批准诊断也将发送 Codex 反馈，但不列出 Codex Session 或线程 id。批准后，聊天回复会列出已发送到 OpenAI 服务器的线程的 Channel、OpenClaw Session id、Codex 线程 id 和本地恢复命令。如果您拒绝或忽略批准，OpenClaw 不会运行导出、不发送 Codex 反馈，也不打印 Codex id。
+
+这使常见的 Codex 调试循环变得简短：在 Telegram、Discord 或其他 Channel 中注意到异常行为，运行 `/diagnostics`，批准一次，将报告分享给支持团队，然后如果想在本地检查原生 Codex 线程，运行打印的 `codex resume <thread-id>` 命令。参见 [Codex harness](/plugins/codex-harness#inspect-codex-threads-locally) 了解检查工作流。
 
 ## 导出包含的内容
 
@@ -65,6 +79,10 @@ zip 包含：
 ## 稳定性记录器
 
 启用诊断时，Gateway 默认记录有界的、无有效负载的稳定性流。它记录操作事实，而非内容。
+
+同一诊断心跳在 Gateway 持续运行但 Node.js 事件循环或 CPU 看起来饱和时记录活跃度样本。这些 `diagnostic.liveness.warning` 事件包括事件循环延迟、事件循环利用率、CPU 核心比率、活跃/等待/排队 Session 计数、当前启动/运行时阶段（已知时）、最近阶段时间跨度和有界的活跃/排队工作标签。空闲样本在遥测中保持 `info` 级别。仅当工作正在等待或排队，或活跃工作与持续的事件循环延迟重叠时，活跃度样本才成为 Gateway 警告。在其他健康的后台工作期间出现的瞬间最大延迟峰值保持在调试日志中，它们本身不会重启 Gateway。
+
+启动阶段也会发出带有挂钟和 CPU 计时的 `diagnostic.phase.completed` 事件。当最后一次 bridge 进度看起来是终止状态（例如原始响应项或响应完成事件）但 Gateway 仍认为嵌入式运行活跃时，停滞的嵌入式运行诊断会将 `terminalProgressStale=true` 标记为 true。
 
 检查实时记录器：
 
@@ -120,6 +138,18 @@ openclaw gateway diagnostics export \
 ```
 
 禁用诊断会减少 bug 报告的细节。它不影响正常的 Gateway 日志记录。
+
+关键内存压力快照默认关闭。要保留诊断事件并同时捕获预 OOM 稳定性快照：
+
+```json5
+{
+  diagnostics: {
+    memoryPressureSnapshot: true,
+  },
+}
+```
+
+仅在关键内存压力期间可以承受额外文件系统扫描和快照写入的主机上使用此选项。快照关闭时，普通内存压力事件仍记录 RSS、heap、阈值和增长事实。
 
 ## 相关文档
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fb3a6412a183c68bf31f693b621c6078"
+mmh3_hash: "67500000d8f8ad57332468e0614604f7"
 summary: "Heartbeat 轮询消息和通知规则"
 read_when:
   - 调整 Heartbeat 节奏或消息
@@ -67,7 +67,7 @@ Heartbeat 是计划的主 Session 轮次 — 它**不会**创建[后台任务](/
 - Heartbeat 提示以**逐字**方式作为用户消息发送。系统提示包含"Heartbeat"部分，仅在为默认 Agent 启用 Heartbeat 时，运行在内部被标记。
 - 当使用 `0m` 禁用 Heartbeat 时，正常运行也会从引导上下文中省略 `HEARTBEAT.md`，以便模型看不到仅 Heartbeat 的指令。
 - 活跃时间(`heartbeat.activeHours`)在配置的时区中检查。在窗口外,Heartbeat 被跳过,直到窗口内的下一个滴答。
-- Heartbeat 在 cron 工作活跃或排队时自动延迟。设置 `heartbeat.skipWhenBusy: true` 以在额外繁忙的 lane(子 Agent 或嵌套命令工作)上也延迟;这对于本地 Ollama 和其他受约束的单运行时主机很有用。
+- Heartbeat 在 cron 工作活跃或排队时自动延迟。设置 `heartbeat.skipWhenBusy: true` 以在该 Agent 自己的 Session 键子 Agent 或嵌套命令 lane 上也延迟；仅因为另一个 Agent 有子 Agent 工作进行中，兄弟 Agent 不再暂停。
 
 ## Heartbeat 提示的用途
 
@@ -486,7 +486,7 @@ Heartbeat 运行完整的 Agent 轮次。较短的间隔消耗更多 token。要
 
 ## 相关
 
-- [Automation & Tasks](/automation) — 一目了然的所有自动化机制
+- [Automation](/automation) — 一目了然的所有自动化机制
 - [后台任务](/automation/tasks) — 分离工作如何被跟踪
 - [Timezone](/concepts/timezone) — 时区如何影响 Heartbeat 调度
 - [故障排除](/automation/cron-jobs#troubleshooting) — 调试自动化问题

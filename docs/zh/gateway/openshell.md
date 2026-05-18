@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7ee5495e0f1ac54ab6caaf882d6c277a"
+mmh3_hash: "f294c76bff3012f7e70f88b28e1b169e"
 title: OpenShell
 summary: "将 OpenShell 作为 OpenClaw agent 的托管沙盒后端"
 read_when:
@@ -8,21 +8,25 @@ read_when:
   - 你需要在 mirror 和 remote workspace 模式之间选择
 ---
 
-# OpenShell
-
 OpenShell 是 OpenClaw 的托管沙盒后端。OpenClaw 将沙盒生命周期委托给 `openshell` CLI,而不是在本地运行 Docker 容器,`openshell` CLI 会预配具有基于 SSH 命令执行的远程环境。
 
 OpenShell plugin 重用与通用 [SSH 后端](/gateway/sandboxing#ssh-backend)相同的核心 SSH 传输和远程文件系统桥。它添加了 OpenShell 特定的生命周期(`sandbox create/get/delete`、`sandbox ssh-config`)和可选的 `mirror` workspace 模式。
 
 ## 先决条件
 
-- 已安装 `openshell` CLI 并在 `PATH` 中(或通过 `plugins.entries.openshell.config.command` 设置自定义路径)
+- 已安装 OpenShell plugin（`openclaw plugins install @openclaw/openshell-sandbox`）
+- 已安装 `openshell` CLI 并在 `PATH` 中（或通过 `plugins.entries.openshell.config.command` 设置自定义路径）
 - 具有沙盒访问权限的 OpenShell 账户
 - 在主机上运行的 OpenClaw Gateway
 
 ## 快速开始
 
-1. 启用 plugin 并设置沙盒后端:
+1. 安装并启用 plugin，然后设置沙盒后端:
+
+```bash
+openclaw plugins install @openclaw/openshell-sandbox
+```
+
 
 ```json5
 {
@@ -98,7 +102,9 @@ openclaw sandbox explain
 - 你想要更低的每回合同步开销。
 - 你不希望主机本地编辑静默覆盖远程沙盒状态。
 
-重要提示:如果你在初始播种后在 OpenClaw 外部在主机上编辑文件,远程沙盒**不**会看到这些更改。使用 `openclaw sandbox recreate` 重新播种。
+<Warning>
+如果你在初始播种后在 OpenClaw 外部在主机上编辑文件，远程沙盒**不**会看到这些更改。使用 `openclaw sandbox recreate` 重新播种。
+</Warning>
 
 ### 选择模式
 
@@ -258,6 +264,10 @@ openclaw sandbox recreate --all
 ```bash
 openclaw sandbox recreate --all
 ```
+
+## 安全加固
+
+OpenShell 固定 workspace 根 fd 并在每次读取前重新检查沙盒身份，因此符号链接替换或重新挂载的 workspace 无法将读取重定向到预期远程 workspace 之外。
 
 ## 当前限制
 

@@ -1,214 +1,183 @@
 ---
-mmh3_hash: "8ee285c53052da8a7f85a1af473226b1"
+mmh3_hash: "b7c154ce67c7925816bce15f907427e9"
 title: "构建 Plugin"
 sidebarTitle: "入门指南"
 summary: "几分钟内创建您的第一个 OpenClaw Plugin"
+doc-schema-version: 1
 read_when:
   - 您想创建新的 OpenClaw Plugin
-  - 您需要 Plugin 开发的快速入门指南
-  - 您正在向 OpenClaw 添加新的 Channel、Provider、Tool 或其他能力
+  - 您需要 Plugin 开发的快速入门
+  - 您正在 Channel、Provider、CLI 后端、工具或 Hook 文档之间做选择
 ---
 
-# 构建 Plugin
+Plugin 无需修改核心即可扩展 OpenClaw。Plugin 可以添加消息 Channel、模型 Provider、本地 CLI 后端、Agent 工具、Hook、媒体 Provider 或其他 Plugin 拥有的能力。
 
-Plugin 通过以下能力扩展 OpenClaw：Channel、模型 Provider、语音、实时转录、实时语音、媒体理解、图像生成、视频生成、Web 抓取、Web 搜索、Agent Tool 或任意组合。
+您无需将外部 Plugin 添加到 OpenClaw 仓库。将包发布到 [ClawHub](/clawhub)，用户使用以下命令安装：
 
-您无需将 Plugin 添加到 OpenClaw 仓库。发布到 [ClawHub](/clawhub)，用户使用以下命令安装：`openclaw plugins install clawhub:<package-name>`。在 ClawHub 推出期间，裸包规范仍从 npm 安装。
+```bash
+openclaw plugins install clawhub:<package-name>
+```
 
-## 前提条件
+裸包规格在发布切换期间仍从 npm 安装。当您希望使用 ClawHub 解析时，请使用 `clawhub:` 前缀。
 
-- Node >= 22 和包管理器（npm 或 pnpm）
-- 熟悉 TypeScript (ESM)
-- 对于仓库内 Plugin：已克隆仓库并完成 `pnpm install`。源码检出的 Plugin 开发仅支持 pnpm，因为 OpenClaw 从 `extensions/*` 工作区包加载打包 Plugin。
+## 要求
 
-## 您要构建哪种 Plugin？
+- 使用 Node 22.19 或更新版本以及 `npm` 或 `pnpm` 等包管理器。
+- 熟悉 TypeScript ESM 模块。
+- 对于仓库内的 Bundle Plugin 工作，克隆仓库并运行 `pnpm install`。源代码检出 Plugin 开发仅限于 pnpm，因为 OpenClaw 从 `extensions/*` 工作区包加载 Bundle Plugin。
 
-<CardGroup cols={3}>
+## 选择 Plugin 形态
+
+<CardGroup cols={2}>
   <Card title="Channel Plugin" icon="messages-square" href="/plugins/sdk-channel-plugins">
-    将 OpenClaw 连接到消息平台（Discord、IRC 等）
+    将 OpenClaw 连接到消息平台。
   </Card>
   <Card title="Provider Plugin" icon="cpu" href="/plugins/sdk-provider-plugins">
-    添加模型 Provider（LLM、代理或自定义端点）
+    添加模型、媒体、搜索、获取、语音或实时 Provider。
   </Card>
   <Card title="CLI 后端 Plugin" icon="terminal" href="/plugins/cli-backend-plugins">
-    将本地 AI CLI 映射到 OpenClaw 的文本回退运行器
+    通过 OpenClaw 模型回退运行本地 AI CLI。
   </Card>
-  <Card title="Tool / Hook Plugin" icon="wrench" href="/plugins/hooks">
-    注册 Agent Tool、事件 Hook 或服务 — 继续阅读下方内容
+  <Card title="工具 Plugin" icon="wrench" href="/plugins/tool-plugins">
+    注册 Agent 工具。
   </Card>
 </CardGroup>
 
-如果 Channel Plugin 是可选的，且在入门/设置运行时可能未安装，请使用来自 `openclaw/plugin-sdk/channel-setup` 的 `createOptionalChannelSetupSurface(...)`。它会生成一个设置适配器 + 向导对，宣传安装要求，并在真正的配置写入之前在 Plugin 未安装时失败关闭。
+## 快速入门
 
-## 快速入门：Tool Plugin
-
-此演练创建一个注册 Agent Tool 的最小 Plugin。Channel 和 Provider Plugin 有上方链接的专门指南。
+通过注册一个必需的 Agent 工具来构建最小的工具 Plugin。这是最短的有用 Plugin 形态，展示了包、Manifest、入口点和本地验证。
 
 <Steps>
-  <Step title="创建包和清单">
+  <Step title="创建包元数据">
     <CodeGroup>
-    ```json package.json
-    {
-      "name": "@myorg/openclaw-my-plugin",
-      "version": "1.0.0",
-      "type": "module",
-      "openclaw": {
-        "extensions": ["./index.ts"],
-        "compat": {
-          "pluginApi": ">=2026.3.24-beta.2",
-          "minGatewayVersion": "2026.3.24-beta.2"
-        },
-        "build": {
-          "openclawVersion": "2026.3.24-beta.2",
-          "pluginSdkVersion": "2026.3.24-beta.2"
-        }
-      }
-    }
-    ```
 
-    ```json openclaw.plugin.json
-    {
-      "id": "my-plugin",
-      "name": "My Plugin",
-      "description": "Adds a custom tool to OpenClaw",
-      "contracts": {
-        "tools": ["my_tool"]
-      },
-      "activation": {
-        "onStartup": true
-      },
-      "configSchema": {
-        "type": "object",
-        "additionalProperties": false
-      }
+```json package.json
+{
+  "name": "@myorg/openclaw-my-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "openclaw": {
+    "extensions": ["./index.ts"],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    },
+    "build": {
+      "openclawVersion": "2026.3.24-beta.2",
+      "pluginSdkVersion": "2026.3.24-beta.2"
     }
-    ```
+  }
+}
+```
+
+```json openclaw.plugin.json
+{
+  "id": "my-plugin",
+  "name": "My Plugin",
+  "description": "向 OpenClaw 添加自定义工具",
+  "contracts": {
+    "tools": ["my_tool"]
+  },
+  "activation": {
+    "onStartup": true
+  },
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false
+  }
+}
+```
+
     </CodeGroup>
 
-    每个 Plugin 都需要一个清单，即使没有配置也是如此。运行时注册的 Tool 必须在 `contracts.tools` 中列出，以便 OpenClaw 无需加载每个 Plugin 运行时即可发现所属 Plugin。Plugin 也应有意声明 `activation.onStartup`。本示例将其设置为 `true`。完整模式请参见 [清单](/plugins/manifest)。ClawHub 发布代码片段的规范模板在 `docs/snippets/plugin-publish/` 中。
+    已发布的外部 Plugin 应将运行时入口指向已构建的 JavaScript 文件。请参见 [SDK 入口点](/plugins/sdk-entrypoints) 了解完整的入口点契约。
+
+    每个 Plugin 都需要 Manifest，即使没有配置。运行时工具必须出现在 `contracts.tools` 中，以便 OpenClaw 在不急切加载每个 Plugin 运行时的情况下发现所有权。请有意地设置 `activation.onStartup`。此示例在 Gateway 启动时启动。
+
+    有关每个 Manifest 字段，请参见 [Plugin Manifest](/plugins/manifest)。
 
   </Step>
 
-  <Step title="编写入口点">
-
-    ```typescript
-    // index.ts
+  <Step title="注册工具">
+    ```typescript index.ts
+    import { Type } from "typebox";
     import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
-    import { Type } from "@sinclair/typebox";
 
     export default definePluginEntry({
       id: "my-plugin",
       name: "My Plugin",
-      description: "Adds a custom tool to OpenClaw",
+      description: "向 OpenClaw 添加自定义工具",
       register(api) {
         api.registerTool({
           name: "my_tool",
-          description: "Do a thing",
+          description: "回显一个输入值",
           parameters: Type.Object({ input: Type.String() }),
           async execute(_id, params) {
-            return { content: [{ type: "text", text: `Got: ${params.input}` }] };
+            return {
+              content: [{ type: "text", text: `Got: ${params.input}` }],
+            };
           },
         });
       },
     });
     ```
 
-    `definePluginEntry` 用于非 Channel Plugin。对于 Channel，使用 `defineChannelPluginEntry` — 参见 [Channel Plugin](/plugins/sdk-channel-plugins)。完整入口点选项请参见 [入口点](/plugins/sdk-entrypoints)。
+    对于非 Channel Plugin，使用 `definePluginEntry`。Channel Plugin 使用 `defineChannelPluginEntry`。
 
   </Step>
 
-  <Step title="测试和发布">
+  <Step title="测试运行时">
+    对于已安装或外部的 Plugin，检查已加载的运行时：
 
-    **外部 Plugin：** 使用 ClawHub 验证和发布，然后安装：
+    ```bash
+    openclaw plugins inspect my-plugin --runtime --json
+    ```
+
+    如果 Plugin 注册了 CLI 命令，也运行该命令。例如，演示命令应该有一个执行证明，如 `openclaw demo-plugin ping`。
+
+    对于此仓库中的 Bundle Plugin，OpenClaw 从 `extensions/*` 工作区发现源代码检出 Plugin 包。运行最接近的目标测试：
+
+    ```bash
+    pnpm test -- extensions/my-plugin/
+    pnpm check
+    ```
+
+  </Step>
+
+  <Step title="发布">
+    在发布之前验证包：
 
     ```bash
     clawhub package publish your-org/your-plugin --dry-run
     clawhub package publish your-org/your-plugin
-    openclaw plugins install clawhub:@myorg/openclaw-my-plugin
     ```
 
-    对于不带前缀的包规格（如 `@myorg/openclaw-my-plugin`），OpenClaw 也会在 npm 之前检查 ClawHub。
+    规范的 ClawHub 代码片段位于 `docs/snippets/plugin-publish/`。
 
-    **仓库内 Plugin：** 放在打包 Plugin 工作区树下 — 自动发现。
+  </Step>
+
+  <Step title="安装">
+    通过 ClawHub 安装已发布的包：
 
     ```bash
-    pnpm test -- <bundled-plugin-root>/my-plugin/
+    openclaw plugins install clawhub:your-org/your-plugin
     ```
 
   </Step>
 </Steps>
 
-## Plugin 能力
+<a id="registering-agent-tools"></a>
 
-单个 Plugin 可以通过 `api` 对象注册任意数量的能力：
+## 注册工具
 
-| 能力                | 注册方法                                                 | 详细指南                                                                          |
-| ------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| 文本推理 (LLM)      | `api.registerProvider(...)`                              | [Provider Plugin](/plugins/sdk-provider-plugins)                                  |
-| CLI 推理后端        | `api.registerCliBackend(...)`                            | [CLI 后端 Plugin](/plugins/cli-backend-plugins)                                   |
-| Channel / 消息      | `api.registerChannel(...)`                               | [Channel Plugin](/plugins/sdk-channel-plugins)                                    |
-| 语音 (TTS/STT)      | `api.registerSpeechProvider(...)`                        | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| 实时转录            | `api.registerRealtimeTranscriptionProvider(...)`         | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| 实时语音            | `api.registerRealtimeVoiceProvider(...)`                 | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| 媒体理解            | `api.registerMediaUnderstandingProvider(...)`            | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| 图像生成            | `api.registerImageGenerationProvider(...)`               | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| 音乐生成            | `api.registerMusicGenerationProvider(...)`               | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| 视频生成            | `api.registerVideoGenerationProvider(...)`               | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| Web 抓取            | `api.registerWebFetchProvider(...)`                      | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| Web 搜索            | `api.registerWebSearchProvider(...)`                     | [Provider Plugin](/plugins/sdk-provider-plugins#step-5-add-extra-capabilities)    |
-| Tool 结果中间件     | `api.registerAgentToolResultMiddleware(...)`              | [SDK 概览](/plugins/sdk-overview#registration-api)                                |
-| Agent Tool          | `api.registerTool(...)`                                  | 下方                                                                              |
-| 自定义命令          | `api.registerCommand(...)`                               | [入口点](/plugins/sdk-entrypoints)                                                |
-| Plugin Hook         | `api.on(...)`                                            | [Plugin Hook](/plugins/hooks)                                                     |
-| 内部事件 Hook       | `api.registerHook(...)`                                  | [入口点](/plugins/sdk-entrypoints)                                                |
-| HTTP 路由           | `api.registerHttpRoute(...)`                             | [内部架构](/plugins/architecture-internals#gateway-http-routes)                   |
-| CLI 子命令          | `api.registerCli(...)`                                   | [入口点](/plugins/sdk-entrypoints)                                                |
-
-完整注册 API 请参见 [SDK 概览](/plugins/sdk-overview#registration-api)。
-
-打包 Plugin 可以在需要在模型看到输出之前异步重写工具结果时使用 `api.registerAgentToolResultMiddleware(...)`。在 `contracts.agentToolResultMiddleware` 中声明目标运行时，例如 `["pi", "codex"]`。这是一个受信任的打包 Plugin 接缝；外部 Plugin 应优先使用常规 OpenClaw Plugin Hook，除非 OpenClaw 为此能力制定了明确的信任策略。
-
-如果您的 Plugin 注册自定义 Gateway RPC 方法，请保持它们在 Plugin 特定的前缀下。核心管理员命名空间（`config.*`、`exec.approvals.*`、`wizard.*`、`update.*`）保持保留状态，始终解析为 `operator.admin`，即使 Plugin 请求更窄的范围。
-
-需要记住的 Hook 守护语义：
-
-- `before_tool_call`：`{ block: true }` 是终止的，停止较低优先级的处理程序。
-- `before_tool_call`：`{ block: false }` 被视为无决策。
-- `before_tool_call`：`{ requireApproval: true }` 暂停 Agent 执行，通过执行批准覆盖层、Telegram 按钮、Discord 交互或任何 Channel 上的 `/approve` 命令提示用户批准。
-- `before_install`：`{ block: true }` 是终止的，停止较低优先级的处理程序。
-- `before_install`：`{ block: false }` 被视为无决策。
-- `message_sending`：`{ cancel: true }` 是终止的，停止较低优先级的处理程序。
-- `message_sending`：`{ cancel: false }` 被视为无决策。
-- `message_received`：当您需要入站线程/话题路由时，优先使用类型化的 `threadId` 字段。将 `metadata` 保留给 Channel 特定的额外内容。
-- `message_sending`：优先使用类型化的 `replyToId` / `threadId` 路由字段，而非 Channel 特定的元数据键。
-
-`/approve` 命令通过有限回退同时处理执行和 Plugin 批准：当找不到执行批准 id 时，OpenClaw 通过 Plugin 批准重试相同的 id。Plugin 批准转发可以通过配置中的 `approvals.plugin` 独立配置。
-
-如果自定义批准管道需要检测相同的有限回退情况，优先使用来自 `openclaw/plugin-sdk/error-runtime` 的 `isApprovalNotFoundError`，而不是手动匹配批准到期字符串。
-
-详见 [Plugin Hook](/plugins/hooks) 的示例和 Hook 参考。
-
-## 注册 Agent Tool
-
-Tool 是 LLM 可以调用的类型化函数。它们可以是必需的（始终可用）或可选的（用户选择加入）：
+工具可以是必需的或可选的。必需工具在 Plugin 启用时始终可用。可选工具需要用户选择加入。
 
 ```typescript
 register(api) {
-  // 必需 Tool — 始终可用
-  api.registerTool({
-    name: "my_tool",
-    description: "Do a thing",
-    parameters: Type.Object({ input: Type.String() }),
-    async execute(_id, params) {
-      return { content: [{ type: "text", text: params.input }] };
-    },
-  });
-
-  // 可选 Tool — 用户必须添加到允许列表
   api.registerTool(
     {
       name: "workflow_tool",
-      description: "Run a workflow",
+      description: "运行工作流",
       parameters: Type.Object({ pipeline: Type.String() }),
       async execute(_id, params) {
         return { content: [{ type: "text", text: params.pipeline }] };
@@ -219,104 +188,76 @@ register(api) {
 }
 ```
 
-用户在配置中启用可选 Tool：
+使用 `api.registerTool(...)` 注册的每个工具也必须在 Plugin Manifest 中声明：
+
+```json
+{
+  "contracts": {
+    "tools": ["workflow_tool"]
+  },
+  "toolMetadata": {
+    "workflow_tool": {
+      "optional": true
+    }
+  }
+}
+```
+
+用户使用 `tools.allow` 选择加入：
 
 ```json5
 {
-  tools: { allow: ["workflow_tool"] },
+  tools: { allow: ["workflow_tool"] }, // 或 ["my-plugin"] 表示来自一个 Plugin 的所有工具
 }
 ```
 
-- Tool 名称不得与核心 Tool 名称冲突（冲突的 Tool 会被跳过）
-- 注册对象格式错误的 Tool（包括缺少 `parameters` 的情况）会被跳过并在 Plugin 诊断中报告，而不是中断 Agent 运行
-- 对于有副作用或需要额外二进制依赖的 Tool，使用 `optional: true`
-- 用户可以通过将 Plugin id 添加到 `tools.allow` 来启用 Plugin 的所有 Tool
+对于副作用、不常见的二进制文件或默认情况下不应暴露的能力，请使用可选工具。工具名称不得与核心工具冲突；冲突会被跳过并在 Plugin 诊断中报告。格式错误的注册（包括没有 `parameters` 的工具描述符）会以相同方式被跳过并报告。已注册的工具是模型在策略和允许列表检查通过后可以调用的类型化函数。
 
-## 注册 CLI 命令
+工具工厂接收运行时提供的上下文对象。当工具需要记录、显示或适应当前轮次的活动模型时，请使用 `ctx.activeModel`。该对象可以包含 `provider`、`modelId` 和 `modelRef`。将其视为信息性的运行时元数据，而不是针对本地操作员、已安装 Plugin 代码或修改过的 OpenClaw 运行时的安全边界。敏感的本地工具仍应需要显式的 Plugin 或操作员选择加入，并在活动模型元数据缺失或不适合时快速失败。
 
-Plugin 可以使用 `api.registerCli` 添加根 `openclaw` 命令组。为每个顶层命令根提供 `descriptors`，以便 OpenClaw 在不贪婪加载每个 Plugin 运行时的情况下显示和路由命令。
+Manifest 声明所有权和发现；执行仍然调用实时注册的工具实现。保持 `toolMetadata.<tool>.optional: true` 与 `api.registerTool(..., { optional: true })` 对齐，以便 OpenClaw 可以避免加载该 Plugin 运行时，直到工具被明确加入允许列表。
 
-```typescript
-register(api) {
-  api.registerCli(
-    ({ program }) => {
-      const demo = program
-        .command("demo-plugin")
-        .description("Run demo plugin commands");
+## 导入约定
 
-      demo
-        .command("ping")
-        .description("Check that the plugin CLI is executable")
-        .action(() => {
-          console.log("demo-plugin:pong");
-        });
-    },
-    {
-      descriptors: [
-        {
-          name: "demo-plugin",
-          description: "Run demo plugin commands",
-          hasSubcommands: true,
-        },
-      ],
-    },
-  );
-}
-```
-
-安装后，验证运行时注册并执行命令：
-
-```bash
-openclaw plugins inspect demo-plugin --runtime --json
-openclaw demo-plugin ping
-```
-
-## 导入规范
-
-始终从专注的 `openclaw/plugin-sdk/<subpath>` 路径导入：
+从聚焦的 SDK 子路径导入：
 
 ```typescript
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { createPluginRuntimeStore } from "openclaw/plugin-sdk/runtime-store";
-
-// 错误：单体根（已弃用，将被移除）
-import { ... } from "openclaw/plugin-sdk";
 ```
 
-完整子路径参考请参见 [SDK 概览](/plugins/sdk-overview)。
+不要从已弃用的根 Barrel 导入：
 
-在您的 Plugin 中，使用本地 barrel 文件进行内部导入（`api.ts`、`runtime-api.ts`）— 永远不要通过 SDK 路径导入自己的 Plugin。
+```typescript
+import { definePluginEntry } from "openclaw/plugin-sdk";
+```
 
-对于 Provider Plugin，将 Provider 特定的辅助工具保留在那些包根 barrel 中，除非接口真的是通用的。当前打包示例：
+在您的 Plugin 包中，使用本地 Barrel 文件（如 `api.ts` 和 `runtime-api.ts`）进行内部导入。不要通过 SDK 路径导入您自己的 Plugin。Provider 特定的助手应保留在 Provider 包中，除非接缝真正是通用的。
 
-- Anthropic：Claude 流包装器和 `service_tier`/beta 辅助工具
-- OpenAI：Provider 构建器、默认模型辅助工具、实时 Provider
-- OpenRouter：Provider 构建器加上入门/配置辅助工具
+自定义 Gateway RPC 方法是高级入口点。将它们保留在 Plugin 特定的前缀上；核心管理员命名空间，如 `config.*`、`exec.approvals.*`、`operator.admin.*`、`wizard.*` 和 `update.*` 保持保留状态并解析为 `operator.admin`。`openclaw/plugin-sdk/gateway-method-runtime` 桥接专用于声明 `contracts.gatewayMethodDispatch: ["authenticated-request"]` 的 Plugin HTTP 路由。
 
-如果辅助工具仅在一个打包 Provider 包内有用，请将其保留在该包根接口上，而不是将其提升到 `openclaw/plugin-sdk/*` 中。
-
-部分生成的 `openclaw/plugin-sdk/<bundled-id>` 辅助接口在有经过追踪的所有者使用时仍然存在，用于打包 Plugin 维护。将这些视为保留接口，而不是新第三方 Plugin 的默认模式。
+有关完整的导入映射，请参见 [Plugin SDK 概览](/plugins/sdk-overview)。
 
 ## 提交前检查清单
 
-<Check>**package.json** 包含正确的 `openclaw` 元数据</Check>
-<Check>**openclaw.plugin.json** 清单存在且有效</Check>
+<Check>**package.json** 具有正确的 `openclaw` 元数据</Check>
+<Check>**openclaw.plugin.json** Manifest 存在且有效</Check>
 <Check>入口点使用 `defineChannelPluginEntry` 或 `definePluginEntry`</Check>
-<Check>所有导入使用专注的 `plugin-sdk/<subpath>` 路径</Check>
+<Check>所有导入使用聚焦的 `plugin-sdk/<subpath>` 路径</Check>
 <Check>内部导入使用本地模块，而不是 SDK 自导入</Check>
 <Check>测试通过（`pnpm test -- <bundled-plugin-root>/my-plugin/`）</Check>
-<Check>仓库内 Plugin 通过 `pnpm check`</Check>
+<Check>`pnpm check` 通过（仓库内 Plugin）</Check>
 
-## Beta 版测试
+## 对 Beta 版本进行测试
 
-1. 关注 [openclaw/openclaw](https://github.com/openclaw/openclaw/releases) 上的 GitHub 发布标签，并通过 `Watch` > `Releases` 订阅。Beta 标签看起来像 `v2026.3.N-beta.1`。您也可以在官方 OpenClaw X 账号 [@openclaw](https://x.com/openclaw) 上开启发布公告通知。
-2. 一旦 Beta 标签出现，立即针对它测试您的 Plugin。在稳定版之前的窗口期通常只有几个小时。
-3. 测试后，在 Discord `plugin-forum` 频道中您的 Plugin 话题中发布 `all good` 或描述出现的问题。如果还没有话题，请创建一个。
-4. 如果出现问题，请打开或更新一个标题为 `Beta blocker: <plugin-name> - <summary>` 的 Issue，并添加 `beta-blocker` 标签。在您的话题中放置 Issue 链接。
-5. 向 `main` 打开一个标题为 `fix(<plugin-id>): beta blocker - <summary>` 的 PR，并在 PR 和您的 Discord 话题中都链接该 Issue。贡献者无法标记 PR，所以标题是维护者和自动化的 PR 端信号。有 PR 的阻止问题会被合并；没有的可能还是会发布。维护者在 Beta 测试期间监视这些话题。
-6. 沉默意味着通过。如果您错过了窗口，您的修复可能会在下一个周期中发布。
+1. 在 [openclaw/openclaw](https://github.com/openclaw/openclaw/releases) 上关注 GitHub 发布标签，并通过 `Watch` > `Releases` 订阅。Beta 标签看起来像 `v2026.3.N-beta.1`。您也可以打开官方 OpenClaw X 账号 [@openclaw](https://x.com/openclaw) 的通知以获取发布公告。
+2. 标签出现后立即针对 Beta 标签测试您的 Plugin。稳定版发布前的窗口通常只有几个小时。
+3. 使用 `all good` 或出现的问题在 `plugin-forum` Discord Channel 中您的 Plugin 线程中发布测试结果。如果您还没有线程，请创建一个。
+4. 如果出现问题，打开或更新标题为 `Beta blocker: <plugin-name> - <summary>` 的 Issue 并应用 `beta-blocker` 标签。将 Issue 链接放入您的线程。
+5. 向 `main` 打开标题为 `fix(<plugin-id>): beta blocker - <summary>` 的 PR，并在 PR 和您的 Discord 线程中链接该 Issue。贡献者无法为 PR 添加标签，因此标题是维护者和自动化的 PR 端信号。有 PR 的 Blocker 会被合并；没有 PR 的 Blocker 可能仍然会发布。维护者在 Beta 测试期间关注这些线程。
+6. 沉默意味着正常。如果您错过了窗口，您的修复可能会在下一个周期中发布。
 
-## 后续步骤
+## 下一步
 
 <CardGroup cols={2}>
   <Card title="Channel Plugin" icon="messages-square" href="/plugins/sdk-channel-plugins">
@@ -331,21 +272,18 @@ import { ... } from "openclaw/plugin-sdk";
   <Card title="SDK 概览" icon="book-open" href="/plugins/sdk-overview">
     导入映射和注册 API 参考
   </Card>
-  <Card title="运行时辅助工具" icon="settings" href="/plugins/sdk-runtime">
+  <Card title="运行时助手" icon="settings" href="/plugins/sdk-runtime">
     通过 api.runtime 使用 TTS、搜索、子 Agent
   </Card>
   <Card title="测试" icon="test-tubes" href="/plugins/sdk-testing">
     测试工具和模式
   </Card>
-  <Card title="Plugin 清单" icon="file-json" href="/plugins/manifest">
-    完整清单模式参考
+  <Card title="Plugin Manifest" icon="file-json" href="/plugins/manifest">
+    完整 Manifest Schema 参考
   </Card>
 </CardGroup>
 
 ## 相关
 
-- [Plugin 架构](/plugins/architecture) — 内部架构深度剖析
-- [SDK 概览](/plugins/sdk-overview) — Plugin SDK 参考
-- [清单](/plugins/manifest) — Plugin 清单格式
-- [Channel Plugin](/plugins/sdk-channel-plugins) — 构建 Channel Plugin
-- [Provider Plugin](/plugins/sdk-provider-plugins) — 构建 Provider Plugin
+- [Plugin Hook](/plugins/hooks)
+- [Plugin 架构](/plugins/architecture)

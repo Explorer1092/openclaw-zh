@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "fbf18b94540eafbb4401413082fef157"
+mmh3_hash: "b035f6b296f19f015fe7e2f721f3fa6c"
 summary: "openclaw security audit 发出的 checkId 参考目录"
 read_when:
   - 你在 `openclaw security audit` 输出中看到特定的 `checkId`，想了解其含义
@@ -35,7 +35,7 @@ title: "Security audit checks"
 | `gateway.bind_no_auth`                                        | critical      | 无共享密钥的远程绑定                                                                 | `gateway.bind`、`gateway.auth.*`                                                                     | 否       |
 | `gateway.loopback_no_auth`                                    | critical      | 反向代理的回环可能变为未认证                                                         | `gateway.auth.*`、代理设置                                                                           | 否       |
 | `gateway.trusted_proxies_missing`                             | warn          | 存在反向代理头但未受信任                                                             | `gateway.trustedProxies`                                                                             | 否       |
-| `gateway.http.no_auth`                                        | warn/critical | Gateway HTTP API 可以通过 `auth.mode="none"` 访问                                    | `gateway.auth.mode`、`gateway.http.endpoints.*`                                                      | 否       |
+| `gateway.http.no_auth`                                        | warn/critical | Gateway HTTP API 可以通过 `auth.mode="none"` 访问                                    | `gateway.auth.mode`、`gateway.http.endpoints.*`、`plugins.entries.admin-http-rpc`                    | 否       |
 | `gateway.http.session_key_override_enabled`                   | info          | HTTP API 调用者可以覆盖 `sessionKey`                                                 | `gateway.http.allowSessionKeyOverride`                                                               | 否       |
 | `gateway.tools_invoke_http.dangerous_allow`                   | warn/critical | 通过 HTTP API 重新启用了危险工具                                                     | `gateway.tools.allow`                                                                                | 否       |
 | `gateway.nodes.allow_commands_dangerous`                      | warn/critical | 启用了高影响的节点命令（摄像头/屏幕/联系人/日历/SMS）                                | `gateway.nodes.allowCommands`                                                                        | 否       |
@@ -58,7 +58,8 @@ title: "Security audit checks"
 | `gateway.probe_auth_secretref_unavailable`                    | warn          | 深度探测无法在此命令路径中解析认证 SecretRef                                         | 深度探测认证来源 / SecretRef 可用性                                                                  | 否       |
 | `gateway.probe_failed`                                        | warn/critical | 实时 Gateway 探测失败                                                                | gateway 可达性/认证                                                                                  | 否       |
 | `discovery.mdns_full_mode`                                    | warn/critical | mDNS 完整模式在本地网络上公告 `cliPath`/`sshPort` 元数据                             | `discovery.mdns.mode`、`gateway.bind`                                                                | 否       |
-| `config.insecure_or_dangerous_flags`                          | warn          | 启用了任何不安全/危险的调试标志                                                      | 多个键（见发现详情）                                                                                 | 否       |
+| `config.insecure_or_dangerous_flags`                          | warn          | 启用了任何不安全/危险的调试标志                                                      | 发现详情中命名的键                                                                                   | 否       |
+| `security.audit.suppressions.active`                          | info          | 审计输出配置了抑制规则，可能被过滤                                                   | `security.audit.suppressions`                                                                        | 否       |
 | `config.secrets.gateway_password_in_config`                   | warn          | Gateway 密码直接存储在配置中                                                         | `gateway.auth.password`                                                                              | 否       |
 | `config.secrets.hooks_token_in_config`                        | warn          | Hook 承载 token 直接存储在配置中                                                     | `hooks.token`                                                                                        | 否       |
 | `hooks.token_reuse_gateway_token`                             | critical      | Hook 入口 token 也解锁 Gateway 认证                                                  | `hooks.token`、`gateway.auth.token`                                                                  | 否       |

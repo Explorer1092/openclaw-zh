@@ -1,6 +1,6 @@
 ---
 title: "Security"
-mmh3_hash: "ab1aa2f72c2164d02f112ace71f5551c"
+mmh3_hash: "103e95578bab22ca76dc534eca09728c"
 summary: "运行具有 shell 访问权限的 AI 网关的安全注意事项和威胁模型"
 read_when:
   - 添加扩大访问权限或自动化的功能
@@ -264,13 +264,14 @@ OpenClaw 区分两个概念：
 
 ## 不安全或危险标志摘要
 
-`openclaw security audit` 在启用已知不安全/危险调试开关时引发 `config.insecure_or_dangerous_flags`。在生产中保持这些未设置。
+`openclaw security audit` 在启用已知不安全/危险调试开关时引发 `config.insecure_or_dangerous_flags`。在生产中保持这些未设置。每个启用的标志作为自己的发现报告。如果配置了审计抑制规则，即使匹配的发现移到 `suppressedFindings`，`security.audit.suppressions.active` 仍然保留在活跃的审计输出中。
 
 <AccordionGroup>
   <Accordion title="当前被审计跟踪的标志">
     - `gateway.controlUi.allowInsecureAuth=true`
     - `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true`
     - `gateway.controlUi.dangerouslyDisableDeviceAuth=true`
+    - `security.audit.suppressions configured (<count>)`
     - `hooks.gmail.allowUnsafeExternalContent=true`
     - `hooks.mappings[<index>].allowUnsafeExternalContent=true`
     - `tools.exec.applyPatch.workspaceOnly=false`
@@ -804,7 +805,7 @@ HTTP API 端点（例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`）**不
 重要边界说明：
 
 - Gateway HTTP Bearer 认证实际上是全有或全无的操作员访问。
-- 将能够调用 `/v1/chat/completions`、`/v1/responses` 或 `/api/channels/*` 的凭证视为该 Gateway 的完全访问操作员密钥。
+- 将能够调用 `/v1/chat/completions`、`/v1/responses`、plugin 路由（如 `/api/v1/admin/rpc`）或 `/api/channels/*` 的凭证视为该 Gateway 的完全访问操作员密钥。
 - 在 OpenAI 兼容的 HTTP 表面上，共享密钥 Bearer 认证恢复完整的默认操作员范围（`operator.admin`、`operator.approvals`、`operator.pairing`、`operator.read`、`operator.talk.secrets`、`operator.write`）和 Agent 轮次的 owner 语义；较窄的 `x-openclaw-scopes` 值不会缩减该共享密钥路径。
 - HTTP 上的每请求范围语义仅在请求来自身份感知模式（如受信任代理认证或私有 ingress 上的 `gateway.auth.mode="none"`）时适用。
 - 在这些身份感知模式中，省略 `x-openclaw-scopes` 回退到正常操作员默认范围集；当您需要较窄的范围集时，显式发送该头。

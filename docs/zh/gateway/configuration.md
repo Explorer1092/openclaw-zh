@@ -1,13 +1,13 @@
 ---
-mmh3_hash: "242b4b5efa71ec494ade37f8c3031dbe"
+mmh3_hash: "047c3a5436b7366c27a1b02d30a28387"
 summary: "配置概览:常见任务、快速设置以及完整参考文档的链接"
 read_when:
   - 首次设置 OpenClaw
   - 查找常见配置模式
   - 导航到特定配置部分
 title: "Configuration"
+sidebarTitle: "Configuration"
 ---
-
 
 OpenClaw 从 `~/.openclaw/openclaw.json` 读取一个可选的 <Tooltip tip="JSON5 支持注释和尾随逗号">**JSON5**</Tooltip> 配置文件。
 活动配置路径必须是普通文件。带符号链接的 `openclaw.json` 布局不支持 OpenClaw 所有写入；原子写入可能替换路径而不是保留符号链接。如果您将配置保存在默认状态目录之外，请将 `OPENCLAW_CONFIG_PATH` 直接指向真实文件。
@@ -76,7 +76,7 @@ OpenClaw 只接受完全符合架构的配置。未知键、格式错误的类�
 - 运行 `openclaw doctor` 查看具体问题
 - 运行 `openclaw doctor --fix`（或 `--yes`）应用修复
 
-Gateway 在每次成功启动后保存一个受信任的最后已知良好副本。如果 `openclaw.json` 之后验证失败（或丢失 `gateway.mode`、大幅缩小，或有杂乱的日志行前置），OpenClaw 会将损坏的文件保存为 `.clobbered.*`，恢复最后已知良好副本，并记录恢复原因。当候选文件包含诸如 `***` 之类的已修订密钥占位符时，将跳过升级为最后已知良好副本。当所有验证问题的范围都在 `plugins.entries.<id>...` 时，OpenClaw 不执行整文件恢复。它保持当前配置活动并显示插件本地失败，以便插件 schema 或主机版本不匹配不会回滚不相关的用户设置。
+Gateway 在每次成功启动后保存一个受信任的最后已知良好副本，但启动和热重载不会自动恢复它。如果 `openclaw.json` 验证失败（包括插件本地验证），Gateway 启动失败或跳过重载，当前运行时保留最后已接受的配置。运行 `openclaw doctor --fix`（或 `--yes`）修复前缀/被覆盖的配置或恢复最后已知良好副本。当候选文件包含诸如 `***` 之类的已修订密钥占位符时，将跳过升级为最后已知良好副本。
 
 ## 常见任务
 
@@ -156,10 +156,17 @@ Gateway 在每次成功启动后保存一个受信任的最后已知良好副本
   </Accordion>
 
   <Accordion title="设置群聊提及门控">
-    群组消息默认**需要提及**。按 Agent 配置模式:
+    群组消息默认**需要提及**。按 Agent 配置触发模式。普通群组/Channel 回复自动发布；对于 Agent 应决定何时发言的共享房间，选择进入 message-tool 路径：
 
     ```json5
     {
+      messages: {
+        visibleReplies: "automatic", // 设置 "message_tool" 要求全局 message-tool 发送
+        groupChat: {
+          visibleReplies: "message_tool", // 可选；可见输出需要 message(action=send)
+          unmentionedInbound: "room_event", // 未提及的常驻群聊是安静的上下文
+        },
+      },
       agents: {
         list: [
           {
@@ -178,9 +185,10 @@ Gateway 在每次成功启动后保存一个受信任的最后已知良好副本
     }
     ```
 
-    - **元数据提及**:原生 @-提及(WhatsApp 点击提及、Telegram @bot 等)
-    - **文本模式**:`mentionPatterns` 中的正则表达式模式
-    - 参见[完整参考文档](/gateway/config-channels#group-chat-mention-gating)了解每个 Channel 的覆盖和自聊模式。
+    - **元数据提及**：原生 @-提及（WhatsApp 点击提及、Telegram @bot 等）
+    - **文本模式**：`mentionPatterns` 中的正则表达式模式
+    - **可见回复**：`messages.visibleReplies` 可全局要求 message-tool 发送；`messages.groupChat.visibleReplies` 针对群组/Channel 覆盖该设置。
+    - 参见[完整参考文档](/gateway/config-channels#group-chat-mention-gating)了解可见回复模式、每个 Channel 的覆盖和自聊模式。
 
   </Accordion>
 
@@ -239,6 +247,23 @@ Gateway 在每次成功启动后保存一个受信任的最后已知良好副本
 
   </Accordion>
 
+  <Accordion title="调整 Gateway WebSocket 握手超时">
+    为在负载或低功耗主机上的本地客户端提供更多时间完成预认证 WebSocket 握手：
+
+    ```json5
+    {
+      gateway: {
+        handshakeTimeoutMs: 30000,
+      },
+    }
+    ```
+
+    - 默认值为 `15000` 毫秒。
+    - `OPENCLAW_HANDSHAKE_TIMEOUT_MS` 仍优先用于一次性服务或 shell 覆盖。
+    - 优先修复启动/事件循环卡顿；此配置项适用于健康但在预热期间较慢的主机。
+
+  </Accordion>
+
   <Accordion title="配置 Session 和重置">
     Session 控制对话连续性和隔离:
 
@@ -283,7 +308,7 @@ Gateway 在每次成功启动后保存一个受信任的最后已知良好副本
     }
     ```
 
-    首先构建镜像:`scripts/sandbox-setup.sh`
+    首先构建镜像 — 从源码检出运行 `scripts/sandbox-setup.sh`，或从 npm 安装，参见[沙盒 § 镜像和设置](/gateway/sandboxing#images-and-setup)中的内联 `docker build` 命令。
 
     参见[沙盒](/gateway/sandboxing)完整指南和[完整参考文档](/gateway/config-agents#agentsdefaultssandbox)了解所有选项。
 
@@ -467,8 +492,9 @@ Gateway 在每次成功启动后保存一个受信任的最后已知良好副本
     - **嵌套包含**:支持最多 10 层深度
     - **相对路径**:相对于包含文件解析
     - **OpenClaw 所有写入**:当写入仅更改由单文件包含（如 `plugins: { $include: "./plugins.json5" }`）支持的一个顶级部分时，OpenClaw 更新该包含文件并保持 `openclaw.json` 不变
-    - **不支持的写穿**:根包含、包含数组以及带同级覆盖的包含，对于 OpenClaw 所有写入会安全关闭，而不是展平配置
-    - **错误处理**:清晰的错误提示,包括缺失文件、解析错误和循环包含
+    - **不支持的写穿**：根包含、包含数组以及带同级覆盖的包含，对于 OpenClaw 所有写入会安全关闭，而不是展平配置
+    - **限制范围**：`$include` 路径必须在持有 `openclaw.json` 的目录下解析。如需跨机器或用户共享目录树，请将 `OPENCLAW_INCLUDE_ROOTS` 设置为路径列表（POSIX 上用 `:`，Windows 上用 `;`），列出包含可引用的其他目录。符号链接会被解析并重新检查，因此在词法上位于配置目录内但其真实目标逃逸所有允许根目录的路径仍会被拒绝。
+    - **错误处理**：清晰的错误提示，包括缺失文件、解析错误和循环包含
 
   </Accordion>
 </AccordionGroup>
@@ -477,11 +503,9 @@ Gateway 在每次成功启动后保存一个受信任的最后已知良好副本
 
 Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数设置无需手动重启。
 
-直接文件编辑在验证之前被视为不可信。Watcher 会等待编辑器临时写入/重命名的变化稳定下来，读取最终文件，并通过恢复最后已知良好配置来拒绝无效的外部编辑。OpenClaw 所有的配置写入在写入前使用相同的 schema 门控；丢弃 `gateway.mode` 或将文件缩小超过一半等破坏性覆盖会被拒绝并保存为 `.rejected.*` 以供检查。
+直接文件编辑在验证之前被视为不可信。Watcher 会等待编辑器临时写入/重命名的变化稳定下来，读取最终文件，并拒绝无效的外部编辑而不重写 `openclaw.json`。OpenClaw 所有的配置写入在写入前使用相同的 schema 门控；丢弃 `gateway.mode` 或将文件缩小超过一半等破坏性覆盖会被拒绝并保存为 `.rejected.*` 以供检查。
 
-插件本地验证失败是例外情况：如果所有问题都在 `plugins.entries.<id>...` 下，重载会保持当前配置并报告插件问题，而不是恢复 `.last-good`。
-
-如果您在日志中看到 `Config auto-restored from last-known-good` 或 `config reload restored last-known-good config`，请检查 `openclaw.json` 旁边的 `.clobbered.*` 文件，修复被拒绝的负载，然后运行 `openclaw config validate`。有关恢复检查清单，请参见 [Gateway 故障排除](/gateway/troubleshooting#gateway-restored-last-known-good-config)。
+如果您看到 `config reload skipped (invalid config)` 或启动报告 `Invalid config`，请检查配置，运行 `openclaw config validate`，然后运行 `openclaw doctor --fix` 进行修复。有关检查清单，请参见 [Gateway 故障排除](/gateway/troubleshooting#gateway-rejected-invalid-config)。
 
 ### 重载模式
 
@@ -513,7 +537,7 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
 | 工具和媒体       | `tools`、`browser`、`skills`、`mcp`、`audio`、`talk`                 | 否              |
 | UI 和其他           | `ui`、`logging`、`identity`、`bindings`                              | 否              |
 | Gateway 服务器      | `gateway.*`(端口、绑定、认证、Tailscale、TLS、HTTP)                 | **是**         |
-| 基础设施      | `discovery`、`canvasHost`、`plugins`                                 | **是**         |
+| 基础设施      | `discovery`、`plugins`                                               | **是**         |
 
 <Note>
 `gateway.reload` 和 `gateway.remote` 是例外 — 更改它们**不会**触发重启。
@@ -531,7 +555,7 @@ Gateway 监视 `~/.openclaw/openclaw.json` 并自动应用更改 — 大多数�
 - `config.get`：获取当前快照加 `hash`
 - `config.patch`：用于部分更新（JSON merge patch：对象合并，`null` 删除，数组替换）
 - `config.apply`：仅当您打算替换整个配置时使用
-- `update.run`：用于显式自我更新加重启
+- `update.run`：用于显式自我更新加重启；当重启后的 Session 应运行一次后续轮次时，包含 `continuationMessage`
 - `update.status`：检查最新的更新重启哨兵，并在重启后验证运行版本
 
 Agent 应将 `config.schema.lookup` 作为获取精确字段级文档和约束的第一步。需要更广泛的配置映射、默认值或专用子系统参考链接时，使用[配置参考文档](/gateway/configuration-reference)。

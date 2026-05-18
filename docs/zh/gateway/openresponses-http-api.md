@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "13dc033f16afac881c27ea5c82d1b976"
+mmh3_hash: "e8237588961af5c5e920f93b14f0ce8a"
 summary: "从 Gateway 公开兼容 OpenResponses 的 /v1/responses HTTP 端点"
 read_when:
   - 集成使用 OpenResponses API 的客户端
@@ -23,8 +23,9 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 
 - 使用匹配的 Gateway HTTP 认证路径：
   - 共享密钥认证（`gateway.auth.mode="token"` 或 `"password"`）：`Authorization: Bearer <token-or-password>`
-  - 受信任代理认证（`gateway.auth.mode="trusted-proxy"`）：来自已配置的非回环受信任代理源的身份感知代理头
-  - 私有入口开放认证（`gateway.auth.mode="none"`）：无认证头
+  - 受信任代理认证（`gateway.auth.mode="trusted-proxy"`）：来自配置的受信任代理来源的身份感知代理头；同一主机的回环代理需要显式设置 `gateway.auth.trustedProxy.allowLoopback = true`
+  - trusted-proxy 本地直接回退：没有 `Forwarded`、`X-Forwarded-*` 或 `X-Real-IP` 头的同一主机调用者可以使用 `gateway.auth.password` / `OPENCLAW_GATEWAY_PASSWORD`
+  - 私有 ingress 开放认证（`gateway.auth.mode="none"`）：无认证头
 - 将端点视为 Gateway 实例的完整操作员访问
 - 对于共享密钥认证模式（`token` 和 `password`），忽略更窄的 bearer 声明的 `x-openclaw-scopes` 值并恢复正常的完整操作员默认值
 - 对于受信任的身份承载 HTTP 模式（例如受信任代理认证或 `gateway.auth.mode="none"`），在存在时遵守 `x-openclaw-scopes`，否则回退到正常的操作员默认范围集
@@ -73,7 +74,9 @@ OpenClaw 的 Gateway 可以提供兼容 OpenResponses 的 `POST /v1/responses` �
 - `tools`:客户端工具定义(函数工具)。
 - `tool_choice`:过滤或要求客户端工具。
 - `stream`:启用 SSE 流式传输。
-- `max_output_tokens`:尽力输出限制(取决于提供商)。
+- `max_output_tokens`:尽力输出限制（取决于 provider）。
+- `temperature`：尽力而为的采样温度，转发给 provider。基于 ChatGPT 的 Codex Responses 后端会忽略此字段，因为它使用固定的服务器端采样。
+- `top_p`：尽力而为的核采样，转发给 provider。与 `temperature` 的 Codex Responses 说明相同。
 - `user`:稳定的 Session 路由。
 
 接受但**当前忽略**:

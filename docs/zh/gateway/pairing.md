@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "98a7f31080cd60f9d72d72e4d44a7a51"
+mmh3_hash: "7c930b34d96f9fd476b7cdea3fa7cdaf"
 summary: "Gateway 拥有的节点配对（Option B）用于 iOS 和其他远程节点"
 read_when:
   - 在没有 macOS UI 的情况下实现节点配对批准
@@ -144,7 +144,7 @@ macOS 应用程序可以选择尝试**静默批准**,当:
 
 ## 本地性和转发头
 
-Gateway 配对仅在原始套接字和任何上游代理证据都一致时才将连接视为 loopback。如果请求到达 loopback 但携带指向非本地来源的 `X-Forwarded-For` / `X-Forwarded-Host` / `X-Forwarded-Proto` 头，该转发头证据会取消 loopback 本地性声明。配对路径随后需要显式批准，而不是静默地将请求视为同主机连接。有关 operator 认证的等效规则，请参见 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)。
+Gateway 配对仅在原始套接字和任何上游代理证据都一致时才将连接视为 loopback。如果请求到达 loopback 但携带 `Forwarded`、任何 `X-Forwarded-*` 或 `X-Real-IP` 头证据，该转发头证据会取消 loopback 本地性声明。配对路径随后需要显式批准，而不是静默地将请求视为同主机连接。有关 operator 认证的等效规则，请参见 [Trusted Proxy Auth](/gateway/trusted-proxy-auth)。
 
 ## 存储（本地，私有）
 

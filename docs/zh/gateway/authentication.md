@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "830ef50e887061e929f9ec56cc4597ee"
+mmh3_hash: "4467ad01f6700f6edd8dcf92c9f1a3cb"
 summary: "模型认证:OAuth、API 密钥、Claude CLI 复用和 Anthropic setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题
@@ -153,6 +153,12 @@ openclaw doctor
 - OpenClaw 仅针对速率限制错误使用下一个密钥重试（例如 `429`、`rate_limit`、`quota`、`resource exhausted`、`Too many concurrent requests`、`ThrottlingException`、`concurrency limit reached` 或 `workers_ai ... quota limit exceeded`）。
 - 非速率限制错误不会使用备用密钥重试。
 - 如果所有密钥都失败，则返回最后一次尝试的最终错误。
+
+## 在 Gateway 运行时移除提供商认证
+
+当通过 Gateway 控制平面移除提供商认证时，OpenClaw 会删除该提供商已保存的认证 profile，并中止已选择 model provider 与被移除提供商匹配的活跃聊天或 agent 运行。中止的运行将以 `stopReason: "auth-revoked"` 发出正常的聊天取消和生命周期事件，以便连接的客户端可以显示运行因凭证被移除而停止。
+
+移除已保存的认证不会在提供商处撤销密钥。如需提供商端失效，请在提供商控制台中轮换或撤销密钥。
 
 ## 控制使用哪个凭证
 

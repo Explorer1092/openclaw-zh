@@ -94,6 +94,22 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 
 ```json5
 {
+  web: {
+    enabled: true,
+    heartbeatSeconds: 60,
+    whatsapp: {
+      keepAliveIntervalMs: 25000,
+      connectTimeoutMs: 60000,
+      defaultQueryTimeoutMs: 60000,
+    },
+    reconnect: {
+      initialMs: 2000,
+      maxMs: 120000,
+      factor: 1.4,
+      jitter: 0.2,
+      maxAttempts: 0,
+    },
+  },
   channels: {
     whatsapp: {
       dmPolicy: "pairing", // pairing | allowlist | open | disabled
@@ -107,17 +123,6 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
       },
       groupPolicy: "allowlist",
       groupAllowFrom: ["+15551234567"],
-    },
-  },
-  web: {
-    enabled: true,
-    heartbeatSeconds: 60,
-    reconnect: {
-      initialMs: 2000,
-      maxMs: 120000,
-      factor: 1.4,
-      jitter: 0.2,
-      maxAttempts: 0,
     },
   },
 }
@@ -193,6 +198,7 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
         autoSelectFamily: true,
         dnsResultOrder: "ipv4first",
       },
+      apiRoot: "https://api.telegram.org",
       proxy: "socks5://localhost:9050",
       webhookUrl: "https://example.com/telegram-webhook",
       webhookSecret: "secret",
@@ -203,6 +209,7 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 ```
 
 - Bot token：`channels.telegram.botToken` 或 `channels.telegram.tokenFile`（仅普通文件；拒绝符号链接），默认账户使用 `TELEGRAM_BOT_TOKEN` 作为回退。
+- `apiRoot` 仅是 Telegram Bot API 根路径。使用 `https://api.telegram.org` 或你的自托管/代理根路径，而不是 `https://api.telegram.org/bot<TOKEN>`；`openclaw doctor --fix` 会删除意外添加的尾部 `/bot<TOKEN>` 后缀。
 - 可选的 `channels.telegram.defaultAccount` 在匹配配置的账户 id 时覆盖默认账户选择。
 - 在多账户设置（2+ 个账户 id）中，设置明确的默认值（`channels.telegram.defaultAccount` 或 `channels.telegram.accounts.default`）以避免回退路由；缺少或无效时 `openclaw doctor` 会警告。
 - `configWrites: false` 阻止 Telegram 发起的配置写入（超级群组 ID 迁移、`/config set|unset`）。
@@ -262,8 +269,17 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
       },
       historyLimit: 20,
       textChunkLimit: 2000,
+      suppressEmbeds: true,
       chunkMode: "length", // length | newline
-      streaming: "off", // off | partial | block | progress（progress 在 Discord 上映射到 partial）
+      streaming: {
+        mode: "progress", // off | partial | block | progress（Discord 默认：progress）
+        progress: {
+          label: "auto",
+          maxLines: 8,
+          maxLineChars: 120,
+          toolProgress: true,
+        },
+      },
       maxLinesPerMessage: 17,
       ui: {
         components: {
@@ -274,7 +290,8 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
         enabled: true,
         idleHours: 24,
         maxAgeHours: 0,
-        spawnSubagentSessions: false, // sessions_spawn({ thread: true }) 的选择加入
+        spawnSessions: true,
+        defaultSpawnContext: "fork",
       },
       voice: {
         enabled: true,
@@ -286,6 +303,8 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
         ],
         daveEncryption: true,
         decryptionFailureTolerance: 24,
+        connectTimeoutMs: 30000,
+        reconnectGraceMs: 15000,
         tts: {
           provider: "openai",
           openai: { voice: "alloy" },
@@ -318,18 +337,23 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 - Bot 发送的消息默认被忽略。`allowBots: true` 启用它们；使用 `allowBots: "mentions"` 只接受提及 bot 的 bot 消息（自己的消息仍然被过滤）。
 - `channels.discord.guilds.<id>.ignoreOtherMentions`（及 Channel 覆盖）丢弃提及了另一个用户或角色但没有提及 bot 的消息（不包括 @everyone/@here）。
 - `maxLinesPerMessage`（默认 17）即使在 2000 字符以内也会分割高行数消息。
+- `channels.discord.suppressEmbeds` 默认为 `true`，因此出站 URL 不会展开为 Discord 链接预览，除非禁用。显式 `embeds` 负载仍会正常发送；每消息工具调用可以使用 `suppressEmbeds` 覆盖。
 - `channels.discord.threadBindings` 控制 Discord 线程绑定路由：
   - `enabled`：线程绑定 Session 功能的 Discord 覆盖（`/focus`、`/unfocus`、`/agents`、`/session idle`、`/session max-age` 和绑定投递/路由）
   - `idleHours`：非活跃自动取消聚焦的 Discord 覆盖（小时）（`0` 禁用）
   - `maxAgeHours`：硬性最大年龄的 Discord 覆盖（小时）（`0` 禁用）
-  - `spawnSubagentSessions`：`sessions_spawn({ thread: true })` 自动线程创建/绑定的选择加入开关
-- 带 `type: "acp"` 的顶级 `bindings[]` 条目为 Channel 和线程配置持久 ACP 绑定（在 `match.peer.id` 中使用 Channel/线程 id）。字段语义在 [ACP Agent](/tools/acp-agents#channel-specific-settings) 中共享。
+  - `spawnSessions`：`sessions_spawn({ thread: true })` 和 ACP 线程生成自动线程创建/绑定的开关（默认：`true`）
+  - `defaultSpawnContext`：线程绑定生成的原生子 Agent 上下文（默认 `"fork"`）
+- 带 `type: "acp"` 的顶级 `bindings[]` 条目为 Channel 和线程配置持久 ACP 绑定（在 `match.peer.id` 中使用 Channel/线程 id）。字段语义在 [ACP Agent](/tools/acp-agents#persistent-channel-bindings) 中共享。
 - `channels.discord.ui.components.accentColor` 为 Discord components v2 容器设置强调色。
-- `channels.discord.voice` 启用 Discord 语音频道对话和可选的自动加入 + LLM + TTS 覆盖。
+- `channels.discord.voice` 启用 Discord 语音频道对话和可选的自动加入 + LLM + TTS 覆盖。仅文本 Discord 配置默认关闭语音；设置 `channels.discord.voice.enabled=true` 以选择加入。
 - `channels.discord.voice.model` 可选地覆盖用于 Discord 语音频道响应的 LLM model。
 - `channels.discord.voice.daveEncryption` 和 `channels.discord.voice.decryptionFailureTolerance` 透传到 `@discordjs/voice` DAVE 选项（默认 `true` 和 `24`）。
+- `channels.discord.voice.connectTimeoutMs` 控制 `/vc join` 和自动加入尝试的初始 `@discordjs/voice` Ready 等待时间（默认 `30000`）。
+- `channels.discord.voice.reconnectGraceMs` 控制断开的语音 Session 在 OpenClaw 销毁它之前进入重连信号的时间（默认 `15000`）。
+- Discord 语音播放不会被其他用户的发言开始事件中断。为避免反馈循环，OpenClaw 在 TTS 播放时忽略新的语音捕获。
 - OpenClaw 还通过在重复解密失败后离开/重新加入语音 Session 来尝试语音接收恢复。
-- `channels.discord.streaming` 是规范的流模式键。旧版 `streamMode` 和布尔 `streaming` 值会自动迁移。
+- `channels.discord.streaming` 是规范的流模式键。Discord 默认使用 `streaming.mode: "progress"`，使工具/工作进度显示在一条编辑的预览消息中；设置 `streaming.mode: "off"` 禁用它。旧版 `streamMode` 和布尔 `streaming` 值仍为运行时别名；运行 `openclaw doctor --fix` 重写持久化配置。
 - `channels.discord.autoPresence` 将 runtime 可用性映射到 bot presence（健康 => online，降级 => idle，耗尽 => dnd），并允许可选的状态文本覆盖。
 - `channels.discord.dangerouslyAllowNameMatching` 重新启用可变名称/标签匹配（紧急兼容性模式）。
 - `channels.discord.execApprovals`：Discord 原生 exec 批准投递和批准者授权。
@@ -386,6 +410,11 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
       enabled: true,
       botToken: "xoxb-...",
       appToken: "xapp-...",
+      socketMode: {
+        clientPingTimeout: 15000,
+        serverPingTimeout: 30000,
+        pingPongLoggingEnabled: false,
+      },
       dmPolicy: "pairing",
       allowFrom: ["U123", "U456", "*"],
       dm: { enabled: true, groupEnabled: false, groupChannels: ["G123"] },
@@ -444,6 +473,7 @@ WhatsApp 通过 Gateway 的 Web Channel（Baileys Web）运行。当链接的 Se
 
 - **Socket 模式**需要 `botToken` 和 `appToken`（默认账户环境变量回退为 `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN`）。
 - **HTTP 模式**需要 `botToken` 加 `signingSecret`（在根级别或每账户）。
+- `socketMode` 将 Slack SDK Socket Mode 传输调优透传到公开的 Bolt receiver API。仅在排查 ping/pong 超时或陈旧 WebSocket 行为时使用。`clientPingTimeout` 默认为 `15000`；仅在配置时才传递 `serverPingTimeout` 和 `pingPongLoggingEnabled`。
 - `botToken`、`appToken`、`signingSecret` 和 `userToken` 接受明文字符串或 SecretRef 对象。
 - Slack 账户快照暴露每个凭据的来源/状态字段，如 `botTokenSource`、`botTokenStatus`、`appTokenStatus`，在 HTTP 模式下还有 `signingSecretStatus`。`configured_unavailable` 表示账户通过 SecretRef 配置，但当前命令/runtime 路径无法解析 secret 值。
 - `configWrites: false` 阻止 Slack 发起的配置写入。
