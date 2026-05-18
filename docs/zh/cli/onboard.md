@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f5b2e37f41f1b8f6e8c5c0db8aaa73fb"
+mmh3_hash: "f8ef8937284194d04366efbc4180549d"
 summary: "`openclaw onboard` 的 CLI 参考（交互式入职向导）"
 read_when:
   - 您想要 Gateway、工作空间、身份验证、Channel 和技能的引导设置
@@ -48,9 +48,25 @@ openclaw onboard --mode remote --remote-url wss://gateway-host:18789
 `--modern` 启动 Crestodian 会话式入职预览。不使用
 `--modern` 时，`openclaw onboard` 保留经典入职流程。
 
-对于纯文本私有网络 `ws://` 目标（仅限可信网络），在入职进程环境中设置
-`OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`。
-此客户端传输紧急措施没有 `openclaw.json` 等效项。
+明文 `ws://` 可用于回环地址、私有 IP 字面量、`.local` 以及 Tailnet `*.ts.net` Gateway URL。对于其他受信任的私有 DNS 名称，请在入职进程环境中设置 `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1`。
+
+## 语言设置
+
+交互式入职使用 CLI 向导语言设置来显示固定的设置文案。解析顺序为：
+
+1. `OPENCLAW_LOCALE`
+2. `LC_ALL`
+3. `LC_MESSAGES`
+4. `LANG`
+5. 英语回退
+
+支持的向导语言为 `en`、`zh-CN` 和 `zh-TW`。语言设置值可以使用下划线或 POSIX 后缀形式，例如 `zh_CN.UTF-8`。产品名称、命令名称、配置键、URL、Provider ID、模型 ID 和 Plugin/Channel 标签保持为字面值。
+
+示例：
+
+```bash
+OPENCLAW_LOCALE=zh-CN openclaw onboard
+```
 
 非交互式自定义 Provider：
 

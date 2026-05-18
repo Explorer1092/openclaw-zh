@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "81a3672a749c02dc6a646ae2dc430730"
+mmh3_hash: "16fae32e5f49f72b568646dc1607c1f2"
 summary: "Crestodian 的 CLI 参考和安全模型 — 无需配置的安全设置与修复助手"
 read_when:
   - 您运行不带命令的 openclaw 并想了解 Crestodian
@@ -139,7 +139,7 @@ setup workspace ~/Projects/work model openai/gpt-5.5
 - `OPENAI_API_KEY` -> `openai/gpt-5.5`
 - `ANTHROPIC_API_KEY` -> `anthropic/claude-opus-4-7`
 - Claude Code CLI -> `claude-cli/claude-opus-4-7`
-- Codex CLI -> `codex-cli/gpt-5.5`
+- Codex -> `openai/gpt-5.5`（通过 Codex 应用服务器运行环境）
 
 如果都不可用，setup 仍会写入默认工作区并保持模型未设置。安装或登录 Codex/Claude Code，或暴露 `OPENAI_API_KEY`/`ANTHROPIC_API_KEY`，然后再次运行 setup。
 
@@ -149,7 +149,6 @@ Crestodian 始终以确定性模式启动。对于确定性解析器无法理解
 
 - Claude Code CLI：`claude-cli/claude-opus-4-7`
 - Codex 应用服务器运行环境：`openai/gpt-5.5`
-- Codex CLI：`codex-cli/gpt-5.5`
 
 模型辅助规划器不能直接修改配置。它必须将请求转换为 Crestodian 的类型化命令之一，然后应用正常的审批和审计规则。Crestodian 在运行任何内容之前打印它使用的模型和解释的命令。无配置回退规划器轮次是临时的，在运行时支持的情况下禁用工具，并使用临时工作区/Session。
 

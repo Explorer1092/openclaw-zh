@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7dd393264bf8d08ada08585d20c59824"
+mmh3_hash: "8ec679db1c04c6ccb9164e207e3f06e2"
 summary: "OpenClaw Gateway CLI（`openclaw gateway`）— 运行、查询和发现 Gateway"
 read_when:
   - 从 CLI 运行 Gateway（开发或服务器）
@@ -126,6 +126,7 @@ openclaw gateway restart --force
 ### 启动分析
 
 - 设置 `OPENCLAW_GATEWAY_STARTUP_TRACE=1` 以在 Gateway 启动期间记录阶段计时，包括每阶段 `eventLoopMax` 延迟以及已安装索引、清单注册表、启动规划和拥有者映射工作的插件查找表计时。
+- 设置 `OPENCLAW_GATEWAY_RESTART_TRACE=1` 以记录重启范围的 `restart trace:` 行，涵盖重启信号处理、活跃工作排空、关闭阶段、下次启动、就绪计时和内存指标。
 - 设置 `OPENCLAW_DIAGNOSTICS=timeline` 与 `OPENCLAW_DIAGNOSTICS_TIMELINE_PATH=<path>` 以为外部 QA 运行环境写入尽力而为的 JSONL 启动诊断时间线。您也可以在配置中使用 `diagnostics.flags: ["timeline"]` 启用该标志；路径仍然由 env 提供。添加 `OPENCLAW_DIAGNOSTICS_EVENT_LOOP=1` 以包含事件循环样本。
 - 运行 `pnpm test:startup:gateway -- --runs 5 --warmup 1` 以对 Gateway 启动进行基准测试。基准记录第一次进程输出、`/healthz`、`/readyz`、启动跟踪计时、事件循环延迟和插件查找表计时详情。
 
@@ -521,10 +522,10 @@ openclaw gateway restart
 - `role`（Gateway 角色提示）
 - `transport`（传输提示，例如 `gateway`）
 - `gatewayPort`（WebSocket 端口，通常为 `18789`）
-- `sshPort`（可选；缺席时客户端默认 SSH 目标为 `22`）
+- `sshPort`（仅完整发现模式；缺席时客户端默认 SSH 目标为 `22`）
 - `tailnetDns`（MagicDNS 主机名，如果可用）
 - `gatewayTls` / `gatewayTlsSha256`（TLS 启用 + 证书指纹）
-- `cliPath`（写入广域 zone 的远程安装提示）
+- `cliPath`（仅完整发现模式）
 
 ### `gateway discover`
 
@@ -549,7 +550,7 @@ openclaw gateway discover --json | jq '.beacons[].wsUrl'
 <Note>
 - CLI 扫描 `local.` 加上配置了广域域时的已配置广域域。
 - JSON 输出中的 `wsUrl` 来源于已解析的服务端点，而不是来自仅 TXT 的提示，如 `lanHost` 或 `tailnetDns`。
-- 在 `local.` mDNS 上，`sshPort` 和 `cliPath` 仅在 `discovery.mdns.mode` 为 `full` 时广播。广域 DNS-SD 仍然写入 `cliPath`；`sshPort` 那里也是可选的。
+- 在 `local.` mDNS 和广域 DNS-SD 上，`sshPort` 和 `cliPath` 仅在 `discovery.mdns.mode` 为 `full` 时发布。
 
 </Note>
 

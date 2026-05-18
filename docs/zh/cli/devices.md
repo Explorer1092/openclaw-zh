@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ac12c80b605b0865bd2d8d0d823045a9"
+mmh3_hash: "38dea5f6a6090b5f44b0af9f51830460"
 summary: "`openclaw devices` 的 CLI 参考（设备配对 + token 轮换/撤销）"
 read_when:
   - 您正在批准设备配对请求
@@ -125,7 +125,7 @@ openclaw devices revoke --device <deviceId> --role node
 
 ## Token 漂移恢复清单
 
-当控制 UI 或其他客户端持续以 `AUTH_TOKEN_MISMATCH` 或 `AUTH_DEVICE_TOKEN_MISMATCH` 失败时使用此清单。
+当控制 UI 或其他客户端持续以 `AUTH_TOKEN_MISMATCH`、`AUTH_DEVICE_TOKEN_MISMATCH` 或 `AUTH_SCOPE_MISMATCH` 失败时使用此清单。
 
 1. 确认当前 Gateway token 来源：
 
@@ -159,6 +159,7 @@ openclaw devices approve <requestId>
 
 - 正常的重新连接身份验证优先级是：显式共享 token/密码优先，然后是显式 `deviceToken`，然后是存储的设备 token，然后是引导 token。
 - 受信任的 `AUTH_TOKEN_MISMATCH` 恢复可以临时同时发送共享 token 和存储的设备 token 进行一次有界重试。
+- `AUTH_SCOPE_MISMATCH` 意味着设备 token 已被识别，但不携带请求的范围集；在更改共享 Gateway 身份验证之前，请修复配对/范围批准契约。
 
 相关：
 

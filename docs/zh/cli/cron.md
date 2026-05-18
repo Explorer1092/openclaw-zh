@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b0194eda3f8c74135042b5150773dd38"
+mmh3_hash: "4837c2006aae46599efdcc00b1bf4386"
 summary: "`openclaw cron` 的 CLI 参考（安排和运行后台作业）"
 read_when:
   - 您想安排定时作业和唤醒
@@ -93,10 +93,23 @@ Provider 前缀目标可以消除未解析的通告 Channel 的歧义。例如�
 
 ### 手动运行
 
-`openclaw cron run` 在手动运行加入队列后立即返回。成功响应包含 `{ ok: true, enqueued: true, runId }`。使用 `openclaw cron runs --id <job-id>` 跟踪最终结果。
+`openclaw cron run <job-id>` 默认强制运行，并在手动运行加入队列后立即返回。成功响应包含 `{ ok: true, enqueued: true, runId }`。使用返回的 `runId` 查看后续结果：
+
+```bash
+openclaw cron run <job-id>
+openclaw cron runs --id <job-id> --run-id <run-id>
+```
+
+在脚本需要阻塞等待该特定排队运行记录到终止状态时，添加 `--wait`：
+
+```bash
+openclaw cron run <job-id> --wait --wait-timeout 10m --poll-interval 2s
+```
+
+使用 `--wait` 时，CLI 先调用 `cron.run`，然后轮询 `cron.runs` 获取返回的 `runId`。仅当运行以状态 `ok` 完成时，命令以 `0` 退出。当运行以 `error` 或 `skipped` 完成、Gateway 响应不包含 `runId` 或 `--wait-timeout` 过期时，命令以非零退出。`--poll-interval` 必须大于零。
 
 <Note>
-`openclaw cron run <job-id>` 默认强制运行。使用 `--due` 保留旧的"仅在到期时运行"行为。
+使用 `--due` 可让手动命令仅在作业当前到期时运行。如果 `--due --wait` 未排队运行，命令返回正常的非运行响应而不进行轮询。
 </Note>
 
 ## 模型
@@ -213,13 +226,19 @@ openclaw cron add \
 ```bash
 openclaw cron list
 openclaw cron list --agent ops
+openclaw cron get <job-id>
 openclaw cron show <job-id>
 openclaw cron run <job-id>
 openclaw cron run <job-id> --due
+openclaw cron run <job-id> --wait --wait-timeout 10m
+openclaw cron run <job-id> --wait --wait-timeout 10m --poll-interval 2s
 openclaw cron runs --id <job-id> --limit 50
+openclaw cron runs --id <job-id> --run-id <run-id>
 ```
 
 `openclaw cron list` 默认显示所有匹配的作业。传递 `--agent <id>` 仅显示有效规范化 Agent ID 匹配的作业；没有存储 Agent ID 的作业计为配置的默认 Agent。
+
+`openclaw cron get <job-id>` 直接返回存储的作业 JSON。当需要带有传递路由预览的人类可读视图时，使用 `cron show <job-id>`。
 
 `cron list --json` 和 `cron show <job-id> --json` 在每个作业上包含顶层 `status` 字段，由 `enabled`、`state.runningAtMs` 和 `state.lastRunStatus` 计算。值：`disabled`、`running`、`ok`、`error`、`skipped` 或 `idle`。这镜像了人类可读的状态列，以便外部工具可以读取作业状态而无需重新推导。
 

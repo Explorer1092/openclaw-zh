@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5ceb2b28c5133b4073bcee7bb8f7f3bc"
+mmh3_hash: "febe23b9f7386d301f49d5b74ba396f7"
 summary: "OpenClaw CLI 索引：命令列表、全局标志和各命令页面链接"
 read_when:
   - 查找合适的 `openclaw` 子命令
@@ -253,6 +253,7 @@ openclaw [--dev] [--profile <name>] <command>
   cron
     status
     list
+    get
     add
     edit
     rm

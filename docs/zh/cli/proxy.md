@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "12ec644b52fae1c765582d761274cd00"
+mmh3_hash: "16a511e54785ebb13e8d659fb5c226f8"
 summary: "`openclaw proxy` 的 CLI 参考，包括操作员管理的代理验证和本地调试代理捕获检查器"
 read_when:
   - 您需要在部署前验证操作员管理的代理路由
@@ -19,7 +19,7 @@ title: "Proxy"
 ```bash
 openclaw proxy start [--host <host>] [--port <port>]
 openclaw proxy run [--host <host>] [--port <port>] -- <cmd...>
-openclaw proxy validate [--json] [--proxy-url <url>] [--allowed-url <url>] [--denied-url <url>] [--apns-reachable] [--apns-authority <url>] [--timeout-ms <ms>]
+openclaw proxy validate [--json] [--proxy-url <url>] [--proxy-ca-file <path>] [--allowed-url <url>] [--denied-url <url>] [--apns-reachable] [--apns-authority <url>] [--timeout-ms <ms>]
 openclaw proxy coverage
 openclaw proxy sessions [--limit <count>]
 openclaw proxy query --preset <name> [--session <id>]
@@ -29,12 +29,13 @@ openclaw proxy purge
 
 ## 验证
 
-`openclaw proxy validate` 检查来自 `--proxy-url`、配置或 `OPENCLAW_PROXY_URL` 的有效操作员管理代理 URL。当没有启用和配置代理时，它报告配置问题；在更改配置之前，使用 `--proxy-url` 进行一次性预检。默认情况下，它验证公共目标通过代理成功，并且代理无法访问临时回环金丝雀。自定义拒绝的目标为关闭失败：HTTP 响应和模糊的传输失败都会失败，除非您可以单独验证特定于部署的拒绝信号。添加 `--apns-reachable` 以通过代理打开 APNs HTTP/2 CONNECT 隧道并确认沙盒 APNs 响应；探测使用故意无效的 Provider 令牌，因此 APNs `403 InvalidProviderToken` 响应是成功的可达性信号。
+`openclaw proxy validate` 检查来自 `--proxy-url`、配置或 `OPENCLAW_PROXY_URL` 的有效操作员管理代理 URL。托管代理 URL 可以使用 `http://` 用于普通正向代理监听器，也可以使用 `https://` 用于 OpenClaw 在发送代理请求前必须先对代理端点建立 TLS 连接的场景。当没有启用和配置代理时，它报告配置问题；在更改配置之前，使用 `--proxy-url` 进行一次性预检。添加 `--proxy-ca-file` 以信任用于连接到 HTTPS 代理端点的私有 CA。默认情况下，它验证公共目标通过代理成功，并且代理无法访问临时回环金丝雀。自定义拒绝的目标为关闭失败：HTTP 响应和模糊的传输失败都会失败，除非您可以单独验证特定于部署的拒绝信号。添加 `--apns-reachable` 以通过代理打开 APNs HTTP/2 CONNECT 隧道并确认沙盒 APNs 响应；探测使用故意无效的 Provider 令牌，因此 APNs `403 InvalidProviderToken` 响应是成功的可达性信号。
 
 选项：
 
 - `--json`：打印机器可读 JSON。
-- `--proxy-url <url>`：验证此代理 URL，而不是配置或环境变量。
+- `--proxy-url <url>`：验证此 `http://` 或 `https://` 代理 URL，而不是配置或环境变量。
+- `--proxy-ca-file <path>`：信任此 PEM CA 文件，用于对 HTTPS 代理端点进行 TLS 验证。
 - `--allowed-url <url>`：添加预期通过代理成功的目标。重复以检查多个目标。
 - `--denied-url <url>`：添加预期被代理阻止的目标。重复以检查多个目标。
 - `--apns-reachable`：还验证沙盒 APNs HTTP/2 是否可通过代理访问。

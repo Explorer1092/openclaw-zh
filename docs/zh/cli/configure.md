@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b95c5a0f16cd5556253bf24a400928c8"
+mmh3_hash: "9b014866df8cd80b9ab5ff6f725f13e9"
 summary: "`openclaw configure` 的 CLI 参考（交互式配置提示）"
 read_when:
   - 您想以交互方式调整凭据、设备或 Agent 默认值
@@ -52,7 +52,7 @@ title: "Configure"
 
 注意：
 
-- 选择 Gateway 运行位置始终更新 `gateway.mode`。如果这就是您所需要的，您可以在不选择其他部分的情况下选择"继续"。
+- 完整向导和与 Gateway 相关的部分会询问 Gateway 的运行位置并更新 `gateway.mode`。不包含 `gateway`、`daemon` 或 `health` 的部分过滤器会直接进入所请求的设置。
 - 在本地配置写入后，configure 在所选设置路径需要时安装选定的可下载 Plugin。远程 Gateway 配置不安装本地 Plugin 包。
 - 面向 Channel 的服务（Slack/Discord/Matrix/Microsoft Teams）在设置期间提示 Channel/房间允许列表。您可以输入名称或 ID；向导尽可能将名称解析为 ID。
 - 如果您运行守护进程安装步骤，token 身份验证需要 token，且 `gateway.auth.token` 是 SecretRef 管理的，configure 会验证 SecretRef，但不会将已解析的明文 token 值持久化到监控服务环境元数据中。

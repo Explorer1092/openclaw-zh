@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9c943043a516d5a69fb7fb91ae2eb773"
+mmh3_hash: "2e48759d404a610bbea74039beac410c"
 summary: "`openclaw config` 的 CLI 参考（获取/设置/补丁/取消设置/文件/Schema/验证）"
 read_when:
   - 您想以非交互方式读取或编辑配置
@@ -335,7 +335,7 @@ openclaw config set channels.discord.token \
     - `checks.resolvabilityComplete`：可解析性检查是否完整运行（当 exec ref 被跳过时为 false）
     - `refsChecked`：dry-run 期间实际解析的 ref 数量
     - `skippedExecRefs`：因未设置 `--allow-exec` 而跳过的 exec ref 数量
-    - `errors`：当 `ok=false` 时的结构化 Schema/可解析性失败
+    - `errors`：当 `ok=false` 时的结构化缺失路径、Schema 或可解析性失败
 
   </Accordion>
 </AccordionGroup>
@@ -347,7 +347,7 @@ openclaw config set channels.discord.token \
   ok: boolean,
   operations: number,
   configPath: string,
-  inputModes: ["value" | "json" | "builder", ...],
+  inputModes: ["value" | "json" | "builder" | "unset", ...],
   checks: {
     schema: boolean,
     resolvability: boolean,
@@ -357,7 +357,7 @@ openclaw config set channels.discord.token \
   skippedExecRefs: number,
   errors?: [
     {
-      kind: "schema" | "resolvability",
+      kind: "missing-path" | "schema" | "resolvability",
       message: string,
       ref?: string, // 可解析性错误时存在
     },

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "99c7b179b96c891ec1dcc5bf811597bc"
+mmh3_hash: "8155fc0d51dc6523541d0a08e313befd"
 summary: "`openclaw path` 的 CLI 参考（通过 `oc://` 寻址方案检查和编辑工作区文件）"
 read_when:
   - 您想从终端读取或写入工作区文件中的某个叶子节点
@@ -10,7 +10,7 @@ title: "Path"
 
 # `openclaw path`
 
-Plugin 提供的针对 `oc://` 寻址基底的 Shell 访问接口：一种按类型分派的路径方案，用于检查和编辑可寻址的工作区文件（markdown、jsonc、jsonl）。自托管用户、Plugin 作者和编辑器扩展可用它来读取、查找或更新某个特定位置，而无需为每种文件格式手写专用解析器。
+Plugin 提供的针对 `oc://` 寻址基底的 Shell 访问接口：一种按类型分派的路径方案，用于检查和编辑可寻址的工作区文件（markdown、jsonc、jsonl、yaml/yml/lobster）。自托管用户、Plugin 作者和编辑器扩展可用它来读取、查找或更新某个特定位置，而无需为每种文件格式手写专用解析器。
 
 CLI 镜像了基底的公共动词：
 
@@ -26,7 +26,7 @@ openclaw plugins enable oc-path
 
 ## 为何使用它
 
-OpenClaw 的状态分布在人工编辑的 Markdown、带注释的 JSONC 配置和仅追加的 JSONL 日志中。Shell 脚本、Hook 和 Agent 通常只需要这些文件中的一个小值：前置元数据键、Plugin 设置、日志记录字段或某个命名节下的某个列表项。
+OpenClaw 的状态分布在人工编辑的 Markdown、带注释的 JSONC 配置、仅追加的 JSONL 日志和 YAML 工作流/规格文件中。Shell 脚本、Hook 和 Agent 通常只需要这些文件中的一个小值：前置元数据键、Plugin 设置、日志记录字段、YAML 步骤或某个命名节下的某个列表项。
 
 `openclaw path` 为这些调用者提供了稳定的地址，而不是针对每种文件格式进行一次性的 grep、正则或专用解析。同一个 `oc://` 路径可以从终端进行验证、解析、搜索、预演（dry-run）和写入，使狭义的自动化更易于审查且更安全。它特别适合在只需更新某一个叶子节点、同时保留文件中其余注释、换行符和周围格式的场景。
 
@@ -78,9 +78,9 @@ openclaw path validate 'oc://AGENTS.md/tools/$last/risk'
 `openclaw path` 完成四件事：
 
 1. 将 `oc://` 地址解析为槽位：文件、节、项、字段和可选的 Session。
-2. 根据目标文件扩展名（`.md`、`.jsonc`、`.jsonl` 及相关别名）选择文件类型适配器。
-3. 将槽位解析到该文件类型的 AST：Markdown 标题/列表项、JSONC 对象键/数组索引，或 JSONL 行记录。
-4. 对于 `set`，通过同一适配器发出编辑后的字节，以便在支持该类型的情况下保留文件中未被修改部分的注释、换行符和周围格式。
+2. 根据目标文件扩展名（`.md`、`.jsonc`、`.jsonl`、`.yaml`、`.yml`、`.lobster` 及相关别名）选择文件类型适配器。
+3. 将槽位解析到该文件类型的 AST：Markdown 标题/列表项、JSONC 对象键/数组索引、JSONL 行记录，或 YAML 映射/序列节点。
+4. 对于 `set`，通过同一适配器发出编辑后的字节，以便在类型支持的情况下保留文件中未被修改部分的注释、换行符和周围格式。
 
 `resolve` 和 `set` 需要一个具体目标。`find` 是探索性动词：它将通配符、联合、谓词和序数展开为具体匹配项，供您在选择要写入的目标之前进行检查。
 
@@ -103,6 +103,7 @@ openclaw path validate 'oc://AGENTS.md/tools/$last/risk'
 | `--json`        | 强制 JSON 输出（stdout 非 TTY 时为默认值）。                             |
 | `--human`       | 强制人类可读输出（stdout 为 TTY 时为默认值）。                           |
 | `--dry-run`     | （仅限 `set`）打印将被写入的字节而不实际写入。                           |
+| `--diff`        | （与 `set --dry-run` 配合使用）以统一差异格式打印预览，而非完整字节。    |
 
 ## `oc://` 语法
 
@@ -116,7 +117,7 @@ oc://FILE/SECTION/ITEM/FIELD?session=SCOPE
 - **谓词** — `[k=v]`、`[k!=v]`、`[k<v]`、`[k<=v]`、`[k>v]`、`[k>=v]`。数值操作要求两侧均可强制转换为有限数字。
 - **联合** — `{a,b,c}` 匹配任意一个备选项。
 - **通配符** — `*`（单个子段）和 `**`（零个或多个，递归）。`find` 接受这些；`resolve` 和 `set` 因歧义而拒绝。
-- **位置** — `$last` 解析为最后一个索引/最后声明的键。
+- **位置** — `$first` / `$last` 解析为第一个/最后一个索引或声明的键。
 - **序数** — `#N` 表示文档顺序中的第 N 个匹配项。
 - **插入标记** — `+`、`+key`、`+nnn` 用于键式/索引式插入（与 `set` 配合使用）。
 - **Session 范围** — `?session=cron-daily` 等。与槽位嵌套正交。Session 值为原始值，不经百分比解码；不得包含控制字符或保留的查询分隔符（`?`、`&`、`%`）。
@@ -127,11 +128,12 @@ oc://FILE/SECTION/ITEM/FIELD?session=SCOPE
 
 ## 按文件类型寻址
 
-| 类型       | 寻址模型                                                                                      |
-| ---------- | --------------------------------------------------------------------------------------------- |
-| Markdown   | 通过 slug 的 H2 节、通过 slug 或 `#N` 的列表项、通过 `[frontmatter]` 的前置元数据。          |
-| JSONC/JSON | 对象键和数组索引；点号分割嵌套子段，除非带引号。                                              |
-| JSONL      | 顶层行地址（`L1`、`L2`、`$last`），然后在行内以 JSONC 风格下降。                             |
+| 类型               | 寻址模型                                                                                      |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| Markdown           | 通过 slug 的 H2 节、通过 slug 或 `#N` 的列表项、通过 `[frontmatter]` 的前置元数据。          |
+| JSONC/JSON         | 对象键和数组索引；点号分割嵌套子段，除非带引号。                                              |
+| JSONL              | 顶层行地址（`L1`、`L2`、`$first`、`$last`），然后在行内以 JSONC 风格下降。                   |
+| YAML/YML/.lobster  | 映射键和序列索引；注释和流式样式由 YAML 文档 API 处理。                                       |
 
 `resolve` 返回结构化匹配：`root`、`node`、`leaf` 或 `insertion-point`，附带基于 1 的行号。叶子值以文本和 `leafType` 的形式呈现，以便 Plugin 作者无需依赖特定类型的 AST 形状即可渲染预览。
 
@@ -142,8 +144,10 @@ oc://FILE/SECTION/ITEM/FIELD?session=SCOPE
 - Markdown 前置元数据值和 `- key: value` 项字段是字符串叶子。Markdown 插入会追加节、前置元数据键或节列表项，并为变更后的文件呈现规范的 Markdown 形状。
 - JSONC 叶子写入将字符串值强制转换为现有叶子类型（`string`、有限 `number`、`true`/`false` 或 `null`）。JSONC 对象和数组插入将 `<value>` 解析为 JSON，并对普通叶子写入使用 `jsonc-parser` 编辑路径，保留注释和周围格式。
 - JSONL 叶子写入与行内的 JSONC 强制转换方式相同。整行替换和追加将 `<value>` 解析为 JSON。渲染的 JSONL 保留文件的主要 LF/CRLF 换行惯例。
+- YAML 叶子写入将字符串值强制转换为现有标量类型（`string`、有限 `number`、`true`/`false` 或 `null`）。YAML 插入使用捆绑的 `yaml` 包的文档 API 进行映射/序列更新。存在解析器错误的格式错误 YAML 文档在修改前会以 `parse-error` 被拒绝。
 
 在用户可见的写入之前使用 `--dry-run`（当确切字节至关重要时）。基底保证解析/发出往返的字节完全相同，但修改可能会根据类型对编辑的区域或文件进行规范化。
+添加 `--diff` 可将预览显示为聚焦的前后对比差异，而非完整渲染文件。
 
 ## 示例
 
@@ -159,6 +163,9 @@ openclaw path find 'oc://session.jsonl/*/event' --file ./logs/session.jsonl
 
 # Dry-run 写入
 openclaw path set 'oc://gateway.jsonc/version' '2.0' --dry-run
+
+# 以统一差异格式进行 Dry-run 写入
+openclaw path set 'oc://gateway.jsonc/version' '2.0' --dry-run --diff
 
 # 应用写入
 openclaw path set 'oc://gateway.jsonc/version' '2.0'
@@ -187,6 +194,12 @@ openclaw path set 'oc://session.jsonl/+' '{"event":"checkpoint","ok":true}' --fi
 
 # 解析最后一个 JSONL 值行
 openclaw path resolve 'oc://session.jsonl/$last/event' --file ./logs/session.jsonl
+
+# 解析 YAML 工作流步骤
+openclaw path resolve 'oc://workflow.yaml/steps/0/id'
+
+# 更新 YAML 标量
+openclaw path set 'oc://workflow.yaml/steps/$last/id' 'classify-renamed' --dry-run
 
 # 定位 Markdown 前置元数据
 openclaw path resolve 'oc://AGENTS.md/[frontmatter]/name'
@@ -283,6 +296,34 @@ leaf @ L2: "2" (number)
 
 每行是一条记录。当不知道行号时用谓词（`[event=action]`）寻址，知道行号时用规范的 `LN` 段寻址。
 
+### YAML
+
+```text
+# workflow.yaml
+name: inbox-triage
+steps:
+  - id: fetch
+    command: gmail.search
+  - id: classify
+    command: openclaw.invoke
+```
+
+```bash
+$ openclaw path resolve 'oc://workflow.yaml/steps/0/id' --file workflow.yaml --human
+leaf @ L3: "fetch" (string)
+
+$ openclaw path set 'oc://workflow.yaml/steps/$last/id' 'classify-renamed' --file workflow.yaml --dry-run
+--dry-run: would write 99 bytes to /…/workflow.yaml
+name: inbox-triage
+steps:
+  - id: fetch
+    command: gmail.search
+  - id: classify-renamed
+    command: openclaw.invoke
+```
+
+YAML 使用 `yaml` 包的 `Document` API 而非手写解析器，因此普通解析/发出往返可保留注释和创作风格，同时解析的路径与 JSONC 使用相同的映射键/序列索引模型。同一适配器处理 `.yaml`、`.yml` 和 `.lobster` 文件。
+
 ## 子命令参考
 
 ### `resolve <oc-path>`
@@ -310,6 +351,7 @@ openclaw path find 'oc://config.jsonc/plugins/{github,slack}/enabled'
 
 ```bash
 openclaw path set 'oc://gateway.jsonc/version' '2.0' --dry-run
+openclaw path set 'oc://gateway.jsonc/version' '2.0' --dry-run --diff
 openclaw path set 'oc://gateway.jsonc/version' '2.0'
 openclaw path set 'oc://AGENTS.md/Tools/+gh/risk' 'low'
 ```

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a91ac97f7f0c0b2afc442b59606c5295"
+mmh3_hash: "104fdbf7fe32b996243fec105997d5f1"
 summary: "`openclaw update` 的 CLI 参考（相对安全的源更新 + Gateway 自动重启）"
 read_when:
   - 您想安全地更新源代码检出
@@ -82,11 +82,21 @@ openclaw update status --timeout 10
 - `stable` → 使用 `latest` 从 npm 安装。
 - `beta` → 优先使用 npm dist-tag `beta`，但当 beta 缺失或比当前稳定版本旧时回退到 `latest`。
 
-Gateway 核心自动更新程序（通过配置启用时）在实时 Gateway 请求处理程序之外启动 CLI 更新路径。控制平面 `update.run` 包管理器更新在包交换后强制非延迟、无冷却更新重启，因为旧 Gateway 进程可能仍有指向新包删除的文件的内存中块。
+Gateway 核心自动更新程序（通过配置启用时）在实时 Gateway 请求处理程序之外启动 CLI 更新路径。控制平面 `update.run` 包管理器更新也使用托管服务交接而非在实时 Gateway 进程内替换包树。Gateway 启动一个独立的帮助程序，然后退出，帮助程序在 Gateway 进程树之外运行正常的 `openclaw update --yes --json` CLI 路径。如果该交接不可用，`update.run` 会返回一个结构化响应，其中包含可手动运行的安全 Shell 命令。
 
 对于包管理器安装，`openclaw update` 在调用包管理器之前解析目标包版本。npm 全局安装使用分阶段安装：OpenClaw 将新包安装到临时 npm 前缀中，在那里验证打包的 `dist` 清单，然后将该干净的包树交换到真实的全局前缀中。如果验证失败，更新后的 doctor、Plugin 同步和重启工作不会从可疑的树中运行。即使已安装的版本已与目标匹配，该命令也会刷新全局包安装，然后运行 Plugin 同步、核心命令补全刷新和重启工作。这使打包的附属程序和 Channel 拥有的 Plugin 记录与已安装的 OpenClaw 版本保持一致，同时将完整的 Plugin 命令补全重建留给显式的 `openclaw completion --write-state` 运行。
 
-当安装了本地托管的 Gateway 服务且启用了重启时，包管理器更新在替换包树之前停止运行的服务，然后从更新后的安装刷新服务元数据，重启服务，并在报告成功之前验证重启后的 Gateway 报告了预期版本。在 macOS 上，更新后检查还验证 LaunchAgent 已为活动配置文件加载/运行，并且已配置的回环端口是健康的。如果 plist 已安装但 launchd 没有监督它，OpenClaw 自动重新引导 LaunchAgent，然后重新运行健康/版本/渠道就绪检查。全新的引导直接加载 RunAtLoad 作业，因此更新恢复不会立即 `kickstart -k` 新生成的 Gateway。如果 Gateway 仍然不健康，命令以非零退出并打印重启日志路径加上显式的重启、重新安装和包回滚说明。使用 `--no-restart` 时，包替换仍然运行，但托管服务不会被停止或重启，因此运行中的 Gateway 可能会保留旧代码，直到您手动重启它。
+当安装了本地托管的 Gateway 服务且启用了重启时，包管理器更新在替换包树之前停止运行的服务，然后从更新后的安装刷新服务元数据，重启服务，并在报告 `Gateway: restarted and verified.` 之前验证重启后的 Gateway 报告了预期版本。在 macOS 上，更新后检查还验证 LaunchAgent 已为活动配置文件加载/运行，并且已配置的回环端口是健康的。如果 plist 已安装但 launchd 没有监督它，OpenClaw 自动重新引导 LaunchAgent，然后重新运行健康/版本/渠道就绪检查。全新的引导直接加载 RunAtLoad 作业，因此更新恢复不会立即 `kickstart -k` 新生成的 Gateway。如果 Gateway 仍然不健康，命令以非零退出并打印重启日志路径加上显式的重启、重新安装和包回滚说明。如果无法重启，命令打印 `Gateway: restart skipped (...)` 或 `Gateway: restart failed: ...`，并提示手动运行 `openclaw gateway restart`。使用 `--no-restart` 时，包替换仍然运行，但托管服务不会被停止或重启，因此运行中的 Gateway 可能会保留旧代码，直到您手动重启它。
+
+### 控制平面响应结构
+
+当通过 Gateway 控制平面在包管理器安装上调用 `update.run` 时，处理程序会分别报告交接启动和 Gateway 退出后继续的 CLI 更新：
+
+- `ok: true`、`result.status: "skipped"`、`result.reason: "managed-service-handoff-started"` 和 `handoff.status: "started"` 表示 Gateway 已创建托管服务交接并安排自身重启，以便独立帮助程序可以在实时服务进程之外运行 `openclaw update --yes --json`。
+- `ok: false`、`result.reason: "managed-service-handoff-unavailable"` 和 `handoff.status: "unavailable"` 表示 OpenClaw 无法找到安全交接的监督服务边界。响应包含 `handoff.command`，即在 Gateway 之外运行的 Shell 命令。
+- `ok: false`、`result.reason: "managed-service-handoff-failed"` 表示 Gateway 尝试创建交接但无法生成独立帮助程序。
+
+`sentinel` 有效载荷在 Gateway 退出前写入，CLI 交接在托管服务重启健康检查完成后更新同一个重启哨兵。交接期间，哨兵可能携带 `stats.reason: "restart-health-pending"` 而无成功延续；重启后的 Gateway 持续轮询它，只有在 CLI 验证服务健康并用最终 `ok` 结果重写哨兵后才触发延续。`openclaw status` 和 `openclaw status --all` 在该哨兵待处理或失败时显示 `Update restart` 行，`update.status` 返回最新缓存的哨兵。
 
 ## Git 检出流程
 

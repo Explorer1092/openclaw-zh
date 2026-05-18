@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "26d3bd528f6ee34e9fa16f60f2e3216c"
+mmh3_hash: "8698d5fa62ce988fc33690b8ffb9e460"
 summary: "`openclaw doctor` 的 CLI 参考（健康检查 + 指导性修复）"
 read_when:
   - 您有连接性/身份验证问题并想要指导性修复
@@ -16,13 +16,30 @@ Gateway 和 Channel 的健康检查 + 快速修复。
 - 故障排除：[Troubleshooting](/gateway/troubleshooting)
 - 安全审计：[Security](/gateway/security)
 
+## 为何使用它
+
+`openclaw doctor` 是 OpenClaw 的健康检查界面。当 Gateway、Channel、Plugin、Skill、模型路由、本地状态或配置迁移行为不符合预期，且您希望通过一条命令解释问题时，请使用它。
+
+Doctor 有三种检查姿态：
+
+| 姿态   | 命令                     | 行为                                                              |
+| ------ | ------------------------ | ----------------------------------------------------------------- |
+| 检查   | `openclaw doctor`        | 面向人工的检查和引导式提示。                                      |
+| 修复   | `openclaw doctor --fix`  | 应用支持的修复，除非非交互式修复安全，否则使用提示。              |
+| 代码检查 | `openclaw doctor --lint` | 用于 CI、预检和审查门控的只读结构化发现。                        |
+
+当自动化需要稳定结果时，首选 `--lint`。当人工操作员有意希望 doctor 编辑配置或状态时，首选 `--fix`。
+
 ## 示例
 
 ```bash
 openclaw doctor
-openclaw doctor --repair
+openclaw doctor --lint
+openclaw doctor --lint --json
+openclaw doctor --lint --severity-min warning
 openclaw doctor --deep
-openclaw doctor --repair --non-interactive
+openclaw doctor --fix
+openclaw doctor --fix --non-interactive
 openclaw doctor --generate-gateway-token
 ```
 
@@ -45,13 +62,102 @@ openclaw channels status --probe
 - `--non-interactive`：不带提示运行；仅安全迁移和非服务修复
 - `--generate-gateway-token`：生成并配置 Gateway token
 - `--deep`：扫描系统服务以查找额外的 Gateway 安装并报告最近的 Gateway 监控器重启移交
+- `--lint`：以只读模式运行现代化健康检查并发出诊断发现
+- `--json`：与 `--lint` 配合，发出 JSON 发现而非人工输出
+- `--severity-min <level>`：与 `--lint` 配合，丢弃低于 `info`、`warning` 或 `error` 的发现
+- `--skip <id>`：与 `--lint` 配合，跳过某个检查 ID；重复此参数可跳过多个
+- `--only <id>`：与 `--lint` 配合，仅运行某个检查 ID；重复此参数可运行少量选定的检查
+
+## Lint 模式
+
+`openclaw doctor --lint` 是 doctor 检查的只读自动化姿态。它使用结构化健康检查路径，不提示，也不修复或重写配置/状态。在 CI、预检脚本和审查工作流中使用它，当您希望获得机器可读发现而非引导式修复提示时。`--json`、`--severity-min`、`--only` 和 `--skip` 等 lint 输出选项仅在与 `--lint` 一起使用时有效。
+
+```bash
+openclaw doctor --lint
+openclaw doctor --lint --severity-min warning
+openclaw doctor --lint --json
+openclaw doctor --lint --only core/doctor/gateway-config --json
+```
+
+人工输出较为紧凑：
+
+```text
+doctor --lint: ran 6 check(s), 1 finding(s)
+  [warning] core/doctor/gateway-config gateway.mode - gateway.mode is unset; gateway start will be blocked.
+    fix: Run `openclaw configure` and set Gateway mode (local/remote), or `openclaw config set gateway.mode local`.
+```
+
+JSON 输出是 lint 运行的脚本界面：
+
+```json
+{
+  "ok": false,
+  "checksRun": 5,
+  "checksSkipped": 0,
+  "findings": [
+    {
+      "checkId": "core/doctor/gateway-config",
+      "severity": "warning",
+      "message": "gateway.mode is unset; gateway start will be blocked.",
+      "path": "gateway.mode",
+      "fixHint": "Run `openclaw configure` and set Gateway mode (local/remote), or `openclaw config set gateway.mode local`."
+    }
+  ]
+}
+```
+
+退出行为：
+
+- `0`：在所选严重性阈值及以上无发现
+- `1`：至少一个发现满足所选阈值
+- `2`：在 lint 发现可以产生之前发生命令/运行时失败
+
+`--severity-min` 同时控制可见发现和退出阈值。例如，即使存在较低严重性的 `info` 或 `warning` 发现，`openclaw doctor --lint --severity-min error` 也可以不打印发现并以 `0` 退出。
+
+## 结构化健康检查
+
+现代 doctor 检查使用小型结构化契约：
+
+```ts
+detect(ctx, scope?) -> HealthFinding[]
+repair?(ctx, findings) -> HealthRepairResult
+```
+
+`detect()` 驱动 `doctor --lint`。`repair()` 是可选的，仅由 `doctor --fix` / `doctor --repair` 考虑。尚未迁移到此形状的检查继续使用旧版 doctor 贡献流程。
+
+该分离是有意为之：`detect()` 拥有诊断，而 `repair()` 拥有报告其更改或将更改的内容。修复上下文可以携带 `dryRun`/`diff` 请求，修复结果可以返回结构化的 `diffs` 用于配置/文件编辑，以及 `effects` 用于服务、进程、包、状态或其他副作用。
+
+发现包含：
+
+| 字段             | 用途                                           |
+| ---------------- | ---------------------------------------------- |
+| `checkId`        | 用于跳过/仅过滤器和 CI 允许列表的稳定 ID。    |
+| `severity`       | `info`、`warning` 或 `error`。                 |
+| `message`        | 人类可读的问题陈述。                           |
+| `path`           | 配置、文件或逻辑路径（如可用）。               |
+| `line` / `column`| 源代码位置（如可用）。                         |
+| `ocPath`         | 当检查可以指向时的精确 `oc://` 地址。          |
+| `fixHint`        | 建议的操作员操作或修复摘要。                   |
+
+## 检查选择
+
+在工作流需要聚焦门控时，使用 `--only` 和 `--skip`：
+
+```bash
+openclaw doctor --lint --only core/doctor/gateway-config --json
+openclaw doctor --lint --skip core/doctor/skills-readiness
+```
+
+`--only` 和 `--skip` 接受完整的检查 ID，可以重复使用。如果 `--only` ID 未注册，则该 ID 不运行任何检查；使用命令的 `checksRun` 和 `checksSkipped` 字段验证聚焦门控是否正在选择您期望的检查。
 
 注意：
 
 - 在 Nix 模式（`OPENCLAW_NIX_MODE=1`）下，只读 doctor 检查仍然有效，但 `doctor --fix`、`doctor --repair`、`doctor --yes` 和 `doctor --generate-gateway-token` 被禁用，因为 `openclaw.json` 是不可变的。改为编辑此安装的 Nix 源；对于 nix-openclaw，请使用 Agent 优先的[快速入门](https://github.com/openclaw/nix-openclaw#quick-start)。
 - 交互式提示（如密钥链/OAuth 修复）仅在 stdin 是 TTY 且**未**设置 `--non-interactive` 时运行。无头运行（cron、Telegram、无终端）将跳过提示。
-- 性能：非交互式 `doctor` 运行跳过急切的插件加载，以使无头健康检查保持快速。交互式会话在检查需要其贡献时仍然完全加载插件。
+- 性能：非交互式 `doctor` 运行跳过急切的插件加载，以使无头健康检查保持快速。交互式 doctor 会话仍然加载旧版健康和修复流程所需的插件界面。
+- `--lint` 比 `--non-interactive` 更严格：它始终是只读的，从不提示，也从不应用安全迁移。当您希望 doctor 进行更改时，运行 `doctor --fix` 或 `doctor --repair`。
 - `--fix`（`--repair` 的别名）将备份写入 `~/.openclaw/openclaw.json.bak` 并删除未知的配置键，列出每个删除项。
+- 现代化健康检查可以为 `doctor --fix` 公开 `repair()` 路径；不公开的检查继续通过现有的 doctor 修复流程。
 - `doctor --fix --non-interactive` 报告缺少或陈旧的 Gateway 服务定义，但不在更新修复模式之外安装或重写它们。对于缺少的服务运行 `openclaw gateway install`，或当您有意想要替换启动器时运行 `openclaw gateway install --force`。
 - 状态完整性检查现在检测 sessions 目录中的孤立转录文件。将它们归档为 `.deleted.<timestamp>` 需要交互式确认；`--fix`、`--yes` 和无头运行会将其保留原位。
 - Doctor 还扫描 `~/.openclaw/cron/jobs.json`（或 `cron.store`）以查找旧版 cron 作业形状，并可以在调度器不得不在运行时自动规范化它们之前就地重写它们。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "313366345e293e77dab47ee9826dd358"
+mmh3_hash: "d9360eb2d4cfc282d346b03d41f35907"
 summary: "运行 ACP 桥接以支持 IDE 集成"
 read_when:
   - 设置基于 ACP 的 IDE 集成
@@ -38,6 +38,7 @@ title: "ACP"
 | --------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `initialize`, `newSession`, `prompt`, `cancel`                        | 已实现 | 通过 stdio 到 Gateway chat/send + abort 的核心桥接流程。                                                                                                                                                                                        |
 | `listSessions`，Slash 命令                                            | 已实现 | Session 列表针对 Gateway Session 状态运行，具有有界光标分页和 `cwd` 过滤（当 Gateway Session 行携带工作区元数据时）；命令通过 `available_commands_update` 进行通告。                                                                             |
+| Session 血缘关系元数据                                                | 已实现 | Session 列表和 Session 信息快照在 `_meta` 中包含 OpenClaw 父子血缘关系，以便 ACP 客户端无需私有 Gateway 侧信道即可渲染子 Agent 图。                                                                                                              |
 | `resumeSession`, `closeSession`                                       | 已实现 | Resume 将 ACP Session 重新绑定到现有 Gateway Session，而不重放历史记录。Close 取消活跃的桥接工作，将待处理的提示解析为已取消，并释放桥接 Session 状态。                                                                                         |
 | `loadSession`                                                         | 部分实现     | 将 ACP Session 重新绑定到 Gateway Session 密钥，并重放桥接创建的 Session 的 ACP 事件账本历史记录。较旧的/无账本的 Session 回退到存储的用户/助手文本。                                                                                           |
 | 提示内容（`text`、嵌入的 `resource`、图像）                           | 部分实现     | 文本/资源被展平为聊天输入；图像成为 Gateway 附件。                                                                                                                                                                                              |

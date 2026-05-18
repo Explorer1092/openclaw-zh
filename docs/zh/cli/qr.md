@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "155fb5f7d2d9227796c3b49b891f4e44"
+mmh3_hash: "3cfa3b52c45a9e577f0e1d31de1709e3"
 summary: "`openclaw qr` 的 CLI 参考（生成移动端配对二维码和设置码）"
 read_when:
   - 您想快速将移动端 Node 应用与 Gateway 配对
@@ -36,9 +36,8 @@ openclaw qr --url wss://gateway.example/ws
 
 - `--token` 和 `--password` 互斥。
 - 设置码本身现在携带不透明的短期 `bootstrapToken`，而非共享的 Gateway 令牌/密码。
-- 在内置的 Node/操作员引导流程中，主 Node 令牌仍以 `scopes: []` 到达。
-- 如果引导交接还颁发操作员令牌，它被限制在引导允许列表范围内：`operator.approvals`、`operator.read`、`operator.talk.secrets`、`operator.write`。
-- 引导范围检查带有角色前缀。该操作员允许列表仅满足操作员请求；非操作员角色仍需要其自己角色前缀下的范围。
+- 内置的设置码引导仅适用于 Node。批准后，主 Node 令牌以 `scopes: []` 到达。
+- 内置的设置码流程不返回交接的操作员令牌；操作员访问需要单独的已批准操作员配对或令牌流程。
 - 移动端配对对 Tailscale/公共 `ws://` Gateway URL 关闭失败。私有 LAN 地址和 `.local` Bonjour 主机仍然支持通过 `ws://`，但 Tailscale/公共移动路由应使用 Tailscale Serve/Funnel 或 `wss://` Gateway URL。
 - 使用 `--remote` 时，OpenClaw 需要 `gateway.remote.url` 或 `gateway.tailscale.mode=serve|funnel`。
 - 使用 `--remote` 时，如果有效的远程凭据配置为 SecretRef 且您未传递 `--token` 或 `--password`，命令会从活动的 Gateway 快照解析它们。如果 Gateway 不可用，命令快速失败。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0cb59ab0b1a3774c954603ed1268ce14"
+mmh3_hash: "14c2f7b3d7ae68fb1d91f54dd63a31d1"
 summary: "`openclaw channels` 的 CLI 参考（账户、状态、登录/登出、日志）"
 read_when:
   - 您想添加/删除 Channel 账户（WhatsApp/Telegram/Discord/Google Chat/Slack/Mattermost（插件）/Signal/iMessage/Matrix）
@@ -33,7 +33,7 @@ openclaw channels logs --channel all
 
 ## 状态 / 能力 / 解析 / 日志
 
-- `channels status`：`--probe`、`--timeout <ms>`、`--json`
+- `channels status`：`--channel <name>`、`--probe`、`--timeout <ms>`、`--json`
 - `channels capabilities`：`--channel <name>`、`--account <id>`（仅与 `--channel` 配合）、`--target <dest>`、`--timeout <ms>`、`--json`
 - `channels resolve`：`<entries...>`、`--channel <name>`、`--account <id>`、`--kind <auto|user|group>`、`--json`
 - `channels logs`：`--channel <name|all>`、`--lines <n>`、`--json`

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9c2136b82c57a3cc26fd82219c5df36d"
+mmh3_hash: "ae26767c3a85d90076a525c0ade9da8f"
 summary: "用于 Provider 支持的模型、图像、音频、TTS、视频、网络和嵌入工作流的推理优先 CLI"
 read_when:
   - 添加或修改 `openclaw infer` 命令
@@ -190,6 +190,7 @@ openclaw infer image generate --prompt "slow image backend" --timeout-ms 180000 
 openclaw infer image edit --file ./logo.png --model openai/gpt-image-1.5 --output-format png --background transparent --prompt "keep the logo, remove the background" --json
 openclaw infer image edit --file ./poster.png --prompt "make this a vertical story ad" --size 2160x3840 --aspect-ratio 9:16 --resolution 4K --json
 openclaw infer image describe --file ./photo.jpg --json
+openclaw infer image describe --file https://example.com/photo.png --json
 openclaw infer image describe --file ./receipt.jpg --prompt "Extract the merchant, date, and total" --json
 openclaw infer image describe-many --file ./before.png --file ./after.png --prompt "Compare the screenshots and list visible UI changes" --json
 openclaw infer image describe --file ./ui-screenshot.png --model openai/gpt-4.1-mini --json
@@ -201,6 +202,7 @@ openclaw infer image describe --file ./photo.jpg --model ollama/qwen2.5vl:7b --p
 - 从现有输入文件开始时使用 `image edit`。
 - 对于支持参考图像编辑几何提示的 Provider/模型，在 `image edit` 中使用 `--size`、`--aspect-ratio` 或 `--resolution`。
 - 对于 `--model openai/gpt-image-1.5` 的透明背景 OpenAI PNG 输出，使用 `--output-format png --background transparent`；`--openai-background` 作为 OpenAI 特定别名仍然可用。不声明背景支持的 Provider 将提示报告为被忽略的覆盖。
+- 对于 `image describe`，`--file` 接受本地路径和 HTTP(S) 图像 URL。远程 URL 使用正常的媒体抓取 SSRF 策略。
 - 使用 `image providers --json` 验证哪些捆绑图像 Provider 可被发现、已配置、已选择，以及每个 Provider 公开的生成/编辑能力。
 - 使用 `image generate --model <provider/model> --json` 作为最窄的图像生成更改实时 CLI 冒烟测试。示例：
 

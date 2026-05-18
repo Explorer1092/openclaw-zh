@@ -1,12 +1,11 @@
 ---
-title: "`openclaw system`"
-sidebarTitle: "openclaw system"
-mmh3_hash: "a7ff18045f9d3b24203be78069f75cea"
-summary: "`openclaw system` 的 CLI 参考(系统事件、心跳、存在)"
+mmh3_hash: "b3682892533cb900689f720917bf3dae"
+summary: "`openclaw system` 的 CLI 参考（系统事件、心跳、存在）"
 read_when:
   - 您想在不创建 Cron 作业的情况下将系统事件排队
   - 您需要启用或禁用心跳
   - 您想检查系统存在条目
+title: "System"
 ---
 
 # `openclaw system`
@@ -32,14 +31,19 @@ openclaw system presence
 
 ## `system event`
 
-在**主** Session 上将系统事件排队。下一次心跳将在提示中作为 `System:` 行注入它。使用 `--mode now` 立即触发心跳;`next-heartbeat` 等待下一个计划的滴答。
+在**主** Session 上将系统事件排队（默认）。下一次心跳将在提示中作为 `System:` 行注入它。使用 `--mode now` 立即触发心跳；`next-heartbeat` 等待下一个计划的滴答。
 
-标志:
+传递 `--session-key` 以定向特定 Session（例如将异步任务完成情况中继回启动它的 Channel）。
 
-- `--text <text>`:必需的系统事件文本。
-- `--mode <mode>`:`now` 或 `next-heartbeat`(默认)。
-- `--json`:机器可读输出。
-- `--url`、`--token`、`--timeout`、`--expect-final`:共享 Gateway RPC 标志。
+> **关于 `--session-key` 的时序例外：** 提供 `--session-key` 时，`--mode next-heartbeat` 会折叠为立即定向唤醒，而非等待下一个计划滴答。定向唤醒使用心跳意图 `immediate`，因此会绕过运行器的"未到期"门控（否则会推迟并实际上丢弃 `event` 意图唤醒）。如果您需要延迟传递，请省略 `--session-key`，让事件落在主 Session 上，并随下一次常规心跳传递。
+
+标志：
+
+- `--text <text>`：必需的系统事件文本。
+- `--mode <mode>`：`now` 或 `next-heartbeat`（默认）。
+- `--session-key <sessionKey>`：可选；定向特定 Agent Session 而非 Agent 的主 Session。不属于已解析 Agent 的键会回退到 Agent 的主 Session。
+- `--json`：机器可读输出。
+- `--url`、`--token`、`--timeout`、`--expect-final`：共享 Gateway RPC 标志。
 
 ## `system heartbeat last|enable|disable`
 

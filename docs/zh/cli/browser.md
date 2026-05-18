@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "019d00fd76717c109402cb06ca7ab82f"
+mmh3_hash: "1292a1c2cdc3008ce39db1027f84cea8"
 title: "`openclaw browser`"
 sidebarTitle: "openclaw browser"
 summary: "`openclaw browser` 的 CLI 参考(生命周期、配置文件、标签、操作、状态和调试)"
@@ -181,7 +181,10 @@ openclaw browser upload /tmp/openclaw/uploads/file.pdf --ref <ref>
 openclaw browser waitfordownload
 openclaw browser download <ref> report.pdf
 openclaw browser dialog --accept
+openclaw browser dialog --dismiss --dialog-id d1
 ```
+
+托管 Chrome 配置文件将点击触发的普通下载保存到 OpenClaw 下载目录（默认为 `/tmp/openclaw/downloads`，或配置的临时根目录）。当 Agent 需要等待特定文件并返回其路径时，请使用 `waitfordownload` 或 `download`；这些显式等待器拥有下一次下载。当操作打开模态对话框时，操作响应会返回包含 `browserState.dialogs.pending` 的 `blockedByDialog`；传递 `--dialog-id` 可直接回应该对话框。在 OpenClaw 之外处理的对话框出现在 `browserState.dialogs.recent` 下。
 
 ## 状态和存储
 
