@@ -1,7 +1,7 @@
 ---
 title: "Dashboard (Control UI)"
 sidebarTitle: "Dashboard"
-mmh3_hash: "649142b4b52d330c597e95e4ce6a5ce7"
+mmh3_hash: "29d1e993dd306e54889a3d41e6224d2d"
 summary: "Gateway Dashboard（Control UI）访问和身份验证"
 read_when:
   - 更改仪表板认证或暴露模式
@@ -55,6 +55,7 @@ Gateway 仪表板是浏览器 Control UI，默认在 `/` 提供（通过 `gatewa
 
 - 确保 Gateway 可达（本地：`openclaw status`；远程：SSH 隧道 `ssh -N -L 18789:127.0.0.1:18789 user@host` 然后打开 `http://127.0.0.1:18789/`）。
 - 对于 `AUTH_TOKEN_MISMATCH`，当 Gateway 返回重试提示时，客户端可以使用缓存的设备令牌进行一次可信重试。该缓存令牌重试重用令牌缓存的已批准范围；显式 `deviceToken` / 显式 `scopes` 调用者保留其请求的范围集。如果认证在该重试后仍然失败，请手动解决令牌漂移。
+- 对于 `AUTH_SCOPE_MISMATCH`，设备令牌已被识别，但不携带 Dashboard 请求的范围；请重新配对或批准请求的范围合约，而不是轮换共享 Gateway 令牌。
 - 在该重试路径之外，连接认证优先级是：显式共享令牌/密码优先，然后是显式 `deviceToken`，然后是存储的设备令牌，然后是引导令牌。
 - 在异步 Tailscale Serve Control UI 路径上，针对相同 `{scope, ip}` 的失败尝试在失败认证限制器记录之前被序列化，因此第二个并发错误重试可能已经显示 `retry later`。
 - 有关令牌漂移修复步骤，请遵循 [令牌漂移恢复清单](/cli/devices#token-drift-recovery-checklist)。

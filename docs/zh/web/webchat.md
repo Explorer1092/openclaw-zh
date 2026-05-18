@@ -1,6 +1,6 @@
 ---
 title: "WebChat"
-mmh3_hash: "a78231544f29a27cb133bfec9fc7e266"
+mmh3_hash: "a7c5bf7c3399f21c171193720ab7df62"
 summary: "环回 WebChat 静态主机和 Gateway WS 聊天 UI 使用"
 read_when:
   - 调试或配置 WebChat 访问
@@ -43,6 +43,7 @@ WebChat 有两个独立的数据路径：
 
 - 会话 JSONL 文件是持久的模型/运行时转录。对于正常的 agent 运行，Pi 通过其会话管理器持久化模型可见的 `user`、`assistant` 和 `toolResult` 消息。WebChat 不会将任意的交付、状态或辅助文本写入该转录。
 - Gateway `ReplyPayload` 事件是实时交付投影。它们可以针对 WebChat/Channel 显示进行规范化，阻止流式传输，指令标签、媒体嵌入、TTS/音频标志和 UI 回退行为。它们本身不是规范的会话日志。
+- 需要通过 `tools.message` 显示回复的 Harness 仍然将 WebChat 用作当前运行的内部来源回复接收器。来自该活动 WebChat 运行的无目标 `message.send` 会投影到相同的聊天中并镜像到会话转录中；WebChat 不会成为可重用的出站 Channel，也绝不继承 `lastChannel`。
 - WebChat 仅当 Gateway 拥有正常 Pi 助手轮次之外显示的消息时才注入助手转录条目：`chat.inject`、非 agent 命令回复、中止的部分输出和 WebChat 管理的媒体转录补充。
 - `chat.history` 读取存储的会话转录并应用 WebChat 显示投影。如果运行期间出现实时助手文本但在历史重新加载后消失，首先检查原始 JSONL 是否包含助手文本，然后检查 `chat.history` 投影是否剥离了它，然后检查 Control UI 乐观尾部合并是否用持久化的快照替换了本地交付状态。
 

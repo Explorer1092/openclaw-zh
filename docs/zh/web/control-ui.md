@@ -1,7 +1,7 @@
 ---
 title: "Control UI (浏览器)"
 sidebarTitle: "Control UI"
-mmh3_hash: "19f43f114e9f50f7147676cd3d8a38f4"
+mmh3_hash: "444cd171b180725e5b27d0022d61b409"
 summary: "Gateway 的基于浏览器的 Control UI（聊天、Node、配置）"
 read_when:
   - 您想从浏览器操作 Gateway
@@ -90,6 +90,8 @@ Control UI 可以在首次加载时根据您的浏览器语言环境进行本地
 
 外观面板保留内置的 Claw、Knot 和 Dash 主题，加上一个浏览器本地的 tweakcn 导入槽。要导入主题，打开 [tweakcn 编辑器](https://tweakcn.com/editor/theme)，选择或创建主题，点击**分享**，并将复制的主题链接粘贴到外观中。导入器还接受 `https://tweakcn.com/r/themes/<id>` 注册表 URL、编辑器 URL 如 `https://tweakcn.com/editor/theme?theme=amethyst-haze`、相对 `/themes/<id>` 路径、原始主题 ID 和默认主题名称如 `amethyst-haze`。
 
+外观还包括浏览器本地的文本大小设置。该设置与其余 Control UI 首选项一起存储，适用于聊天文本、编辑器文本、工具卡片和聊天侧边栏，并将文本输入保持在至少 16px，以防移动端 Safari 在聚焦时自动缩放。
+
 导入的主题仅存储在当前浏览器配置文件中。它们不会写入 Gateway 配置，也不会在设备间同步。替换导入的主题会更新一个本地插槽；清除它会在所选导入主题时将活动主题切换回 Claw。
 
 ## 功能（当前）
@@ -122,6 +124,7 @@ Control UI 可以在首次加载时根据您的浏览器语言环境进行本地
     - 应用 + 重启并验证（`config.apply`）并唤醒最后一个活动会话。
     - 写入包括基础哈希保护以防止覆盖并发编辑。
     - 写入（`config.set`/`config.apply`/`config.patch`）在提交的配置负载中预检活动 SecretRef 解析；未解析的活动提交引用在写入前被拒绝。
+    - 表单保存会丢弃无法从已保存配置恢复的过时已脱敏占位符，同时保留仍映射到已保存密钥的已脱敏值。
     - Schema + 表单渲染（`config.schema` / `config.schema.lookup`，包括字段 `title` / `description`、匹配的 UI 提示、即时子摘要、嵌套对象/通配符/数组/组合节点上的文档元数据，以及在可用时的插件 + Channel schema）；仅当快照具有安全的原始往返时，才提供原始 JSON 编辑器。
     - 如果快照不能安全地往返原始文本，Control UI 强制使用表单模式并为该快照禁用原始模式。
     - 原始 JSON 编辑器"重置为已保存"保留原始编写的格式（格式化、注释、`$include` 布局），而不是重新渲染扁平化的快照，因此当快照可以安全往返时，外部编辑在重置后仍然存在。
@@ -199,6 +202,8 @@ Control UI 可以在首次加载时根据您的浏览器语言环境进行本地
 ## PWA 安装和 Web Push
 
 Control UI 包含 `manifest.webmanifest` 和服务工作者，因此现代浏览器可以将其作为独立的 PWA 安装。Web Push 允许 Gateway 在标签页或浏览器窗口未打开时唤醒已安装的 PWA 并发送通知。
+
+如果页面在 OpenClaw 更新后显示**协议不匹配**，请先用 `openclaw dashboard` 重新打开 Dashboard 并强制刷新页面。如果仍然失败，请清除 Dashboard 来源的站点数据，或在隐私浏览窗口中测试；旧的标签页或浏览器 Service Worker 缓存可能会让更新前的 Control UI 包继续对较新的 Gateway 运行。
 
 | 界面 | 功能 |
 | ---- | ---- |
@@ -426,6 +431,16 @@ pnpm ui:dev
 
 然后将 UI 指向您的 Gateway WS URL（例如 `ws://127.0.0.1:18789`）。
 
+## 空白 Control UI 页面
+
+如果浏览器加载了空白的 Dashboard 且 DevTools 没有显示有用的错误，某个扩展或提前注入的内容脚本可能阻止了 JavaScript 模块应用的执行。静态页面包含一个纯 HTML 恢复面板，当启动后 `<openclaw-app>` 未注册时会显示出来。
+
+在更改浏览器环境后使用面板的**重试**操作，或在以下检查之后手动重新加载：
+
+- 禁用注入到所有页面的扩展，尤其是带有 `<all_urls>` 内容脚本的扩展。
+- 尝试隐私窗口、干净的浏览器配置文件或其他浏览器。
+- 保持 Gateway 运行，并在更改浏览器后用相同的 Dashboard URL 验证。
+
 ## 调试/测试：开发服务器 + 远程 Gateway
 
 Control UI 是静态文件；WebSocket 目标是可配置的，可以与 HTTP 源不同。当您想要本地 Vite 开发服务器但 Gateway 在其他地方运行时，这很方便。
@@ -459,7 +474,7 @@ Control UI 是静态文件；WebSocket 目标是可配置的，可以与 HTTP �
     - 设置 `gatewayUrl` 时，UI 不会回退到配置或环境凭据。明确提供 `token`（或 `password`）。缺少显式凭据是错误。
     - 当 Gateway 在 TLS 后面时使用 `wss://`（Tailscale Serve、HTTPS 代理等）。
     - `gatewayUrl` 仅在顶级窗口（未嵌入）中接受，以防止点击劫持。
-    - 非环回 Control UI 部署必须明确设置 `gateway.controlUi.allowedOrigins`（完整的源）。这包括远程开发设置。
+    - 公共非环回 Control UI 部署必须明确设置 `gateway.controlUi.allowedOrigins`（完整的源）。来自环回、RFC1918/链路本地、`.local`、`.ts.net` 或 Tailscale CGNAT 主机的私有同源 LAN/Tailnet 加载可在不启用 Host 标头回退的情况下被接受。
     - Gateway 启动可能会从有效的运行时绑定和端口中生成本地源，如 `http://localhost:<port>` 和 `http://127.0.0.1:<port>`，但远程浏览器源仍然需要显式条目。
     - 不要使用 `gateway.controlUi.allowedOrigins: ["*"]`，除非用于严格控制的本地测试。它表示允许任何浏览器源，而不是"匹配我使用的任何主机"。
     - `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true` 启用主机标头源回退模式，但它是危险的安全模式。

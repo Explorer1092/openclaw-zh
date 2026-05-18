@@ -1,6 +1,6 @@
 ---
 title: "TUI"
-mmh3_hash: "39ac0b559e3205b9657b9dd651835bd2"
+mmh3_hash: "60bf45f9c955a788f4280ed4ef872085"
 summary: "Terminal UI（TUI）：连接到 Gateway 或在嵌入式模式下本地运行"
 read_when:
   - 您想要 TUI 的入门友好演练
@@ -74,6 +74,7 @@ openclaw tui --local
 ## 发送 + 交付
 
 - 消息发送到 Gateway；默认情况下，向 provider 的交付是关闭的。
+- TUI 是像 WebChat 一样的内部来源界面，而不是通用的出站 Channel。需要 `tools.message` 来显示回复的 Harness 可以用无目标的 `message.send` 满足活动的 TUI 轮次；显式 Provider 交付仍然使用正常配置的 Channel，绝不回退到 `lastChannel`。
 - 开启交付：
   - `/deliver on`
   - 或设置面板
