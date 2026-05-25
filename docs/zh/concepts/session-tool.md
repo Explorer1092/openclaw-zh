@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5d1bad4c6bfd60940de274279417a629"
+mmh3_hash: "193dc082b14a22fc0cd07085b1b90989"
 summary: "Agent 跨 Session 状态、召回、消息传递和子 Agent 编排工具"
 read_when:
   - 需要了解 Agent 拥有哪些 Session 工具
@@ -19,7 +19,7 @@ OpenClaw 为 agent 提供工具，以便跨 session 工作、检查状态和编�
 | `sessions_send` | 向另一个 session 发送消息，可选等待响应 |
 | `sessions_spawn` | 派生隔离的子 agent session 用于后台工作 |
 | `sessions_yield` | 结束当前轮次并等待后续子 agent 结果 |
-| `subagents` | 列出、引导或终止该 session 的已派生子 agent |
+| `subagents` | 列出该 session 已派生的子 agent 状态 |
 | `session_status` | 显示类 `/status` 卡片，可选设置 per-session model 覆盖 |
 
 这些工具仍受活跃工具 profile 和允许/拒绝 policy 约束。`tools.profile: "coding"` 包含完整的 session 编排集，包括 `sessions_spawn`、`sessions_yield` 和 `subagents`。`tools.profile: "messaging"` 包含跨 session 消息传递工具（`sessions_list`、`sessions_history`、`sessions_send`、`session_status`），但不包含子 agent 派生。要保留 messaging profile 同时允许原生委托，添加：
@@ -76,11 +76,7 @@ OpenClaw 为 agent 提供工具，以便跨 session 工作、检查状态和编�
 
 `sessions_yield` 有意结束当前轮次，以便下一条消息可以是你正在等待的后续事件。在派生子 agent 后使用它，以便完成结果作为下一条消息到达，而不是构建轮询循环。
 
-`subagents` 是已派生 OpenClaw 子 agent 的控制平面辅助工具。它支持：
-
-- `action: "list"` 检查活跃/最近的运行
-- `action: "steer"` 向运行中的子 agent 发送后续指导
-- `action: "kill"` 停止一个子 agent 或 `all`
+`subagents` 是已派生 OpenClaw 子 agent 的可见性辅助工具。它支持 `action: "list"` 来检查活跃/最近的运行。
 
 ## 派生子 agent
 

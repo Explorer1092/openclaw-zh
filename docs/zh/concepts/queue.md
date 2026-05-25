@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "465876ffc8225b226c929f188871f16e"
+mmh3_hash: "eb5c3f2c8284d8df53e2753bb11bc72e"
 summary: "自动回复队列模式、默认值和 per-session 覆盖"
 read_when:
   - 更改自动回复执行或并发设置
@@ -71,6 +71,16 @@ title: "Command queue"
 - `drop: "new"`：当队列已满时拒绝最新消息。
 
 默认值：`debounceMs: 500`、`cap: 20`、`drop: summarize`。
+
+## Steer 和 streaming
+
+当 channel streaming 为 `partial` 或 `block` 时，steering 在活跃运行到达运行时边界时可能看起来像几条简短的可见回复：
+
+- `partial`：预览可能提前最终确定，然后在 steering 被接受后开始新的预览。
+- `block`：草稿大小的块可以产生相同的顺序外观。
+- 没有 streaming 时，当运行时无法接受同轮次 steering 时，steering 回退到活跃运行结束后的 followup。
+
+`steer` 不会中止进行中的工具。当最新消息应该中止当前运行时，使用 `/queue interrupt`。
 
 ## 优先级
 

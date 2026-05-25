@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1135ef59bc5a2e4fd18d80eddaf6afb9"
+mmh3_hash: "b66aab39c7ca2cc9e7be74f592ef1e6f"
 summary: "OpenClaw 中实验性标志的含义，以及当前已记录的标志"
 title: "实验性功能"
 read_when:
@@ -21,13 +21,14 @@ OpenClaw 中的实验性功能是**可选的预览界面**。它们位于显式�
 
 | 界面 | 键 | 使用时机 | 更多信息 |
 | ------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| 本地模型运行时 | `agents.defaults.experimental.localModelLean` | 较小或更严格的本地后端无法处理 OpenClaw 的完整默认工具界面 | [本地模型](/gateway/local-models) |
+| 本地模型运行时 | `agents.defaults.experimental.localModelLean`、`agents.list[].experimental.localModelLean` | 较小或更严格的本地后端无法处理 OpenClaw 的完整默认工具界面 | [本地模型](/gateway/local-models) |
 | 内存搜索 | `agents.defaults.memorySearch.experimental.sessionMemory` | 您希望 `memory_search` 索引先前的 Session 记录并接受额外的存储/索引成本 | [内存配置参考](/reference/memory-config#session-memory-search-experimental) |
+| Codex harness | `plugins.entries.codex.config.appServer.experimental.sandboxExecServer` | 您希望原生 Codex app-server 0.132.0 或更新版本以 OpenClaw 沙箱支持的 exec-server 为目标，而非禁用 Code Mode | [Codex harness 参考](/plugins/codex-harness-reference#sandboxed-native-execution) |
 | 结构化规划工具 | `tools.experimental.planTool` | 您希望为兼容运行时和 UI 中的多步骤工作跟踪公开结构化 `update_plan` 工具 | [Gateway 配置参考](/gateway/config-tools#toolsexperimental) |
 
 ## 本地模型精简模式
 
-`agents.defaults.experimental.localModelLean: true` 是针对较弱本地模型设置的压力释放阀。启用后，OpenClaw 会从 Agent 的工具界面中移除三个默认工具——`browser`、`cron` 和 `message`——用于每次轮次。其他设置不变。
+`agents.defaults.experimental.localModelLean: true` 是针对较弱本地模型设置的压力释放阀。启用后，OpenClaw 会从 Agent 的工具界面中移除三个默认工具——`browser`、`cron` 和 `message`——用于每次轮次。其他设置不变。使用 `agents.list[].experimental.localModelLean` 可为单个已配置的 Agent 启用或禁用相同行为。
 
 ### 为什么是这三个工具
 
@@ -63,6 +64,24 @@ OpenClaw 中的实验性功能是**可选的预览界面**。它们位于显式�
         localModelLean: true,
       },
     },
+  },
+}
+```
+
+仅针对一个 Agent：
+
+```json5
+{
+  agents: {
+    list: [
+      {
+        id: "local",
+        model: "lmstudio/gemma-4-e4b-it",
+        experimental: {
+          localModelLean: true,
+        },
+      },
+    ],
   },
 }
 ```

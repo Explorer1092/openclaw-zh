@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "647a620e83c342b1dc5d6558588582a0"
+mmh3_hash: "3a04e985a90fea084ad347559cdbdb90"
 summary: "OpenClaw system prompt 包含什么以及如何组装"
 read_when:
   - 编辑 system prompt 文本、工具列表或时间/心跳部分
@@ -92,7 +92,7 @@ OpenClaw 在 `test/fixtures/agents/prompt-snapshots/codex-runtime-happy-path/` �
 
 ## Workspace bootstrap 注入
 
-Bootstrap 文件被裁剪并附加在 **Project Context** 下，以便 model 无需显式读取即可看到身份和 profile context：
+Bootstrap 文件从活跃 workspace 解析，然后路由到与其生命周期匹配的 prompt 界面：
 
 - `AGENTS.md`
 - `SOUL.md`
@@ -103,9 +103,9 @@ Bootstrap 文件被裁剪并附加在 **Project Context** 下，以便 model 无
 - `BOOTSTRAP.md`（仅在全新 workspace 上）
 - `MEMORY.md`（如果存在）
 
-所有这些文件都在每次轮次**注入到 context 窗口**中，除非应用特定文件的门控。当默认 agent 禁用心跳或 `agents.defaults.heartbeat.includeSystemPromptSection` 为 false 时，`HEARTBEAT.md` 在正常运行中被省略。保持注入文件简洁，尤其是 `MEMORY.md`。`MEMORY.md` 旨在保持为精选的长期摘要；详细的每日笔记属于 `memory/*.md`，`memory_search` 和 `memory_get` 可以按需检索它们。过大的 `MEMORY.md` 文件会增加 prompt 使用量，并可能因以下 bootstrap 文件限制而被部分注入。
+在原生 Codex harness 上，OpenClaw 避免在每次用户轮次中重复稳定的 workspace 文件。Codex 通过其自己的项目文档发现加载 `AGENTS.md`。`SOUL.md`、`IDENTITY.md`、`TOOLS.md` 和 `USER.md` 作为 Codex 开发者指令转发。`HEARTBEAT.md` 内容不注入；心跳轮次在文件存在且非空时获得一条指向该文件的协作模式说明。`MEMORY.md` 和活跃的 `BOOTSTRAP.md` 内容目前保留普通轮次 context 角色。
 
-当 session 在原生 Codex harness 上运行时，Codex 通过其自己的项目文档发现加载 `AGENTS.md`。OpenClaw 仍解析剩余的 bootstrap 文件并将其作为 Codex 配置指令转发，因此 `SOUL.md`、`TOOLS.md`、`IDENTITY.md`、`USER.md`、`HEARTBEAT.md`、`BOOTSTRAP.md` 和 `MEMORY.md` 保持相同的 workspace context 角色，而不会重复 `AGENTS.md`。
+在非 Codex harness 上，bootstrap 文件继续按其现有门控组合到 OpenClaw prompt 中。当默认 agent 禁用心跳或 `agents.defaults.heartbeat.includeSystemPromptSection` 为 false 时，`HEARTBEAT.md` 在正常运行中被省略。保持注入文件简洁，尤其是 `MEMORY.md`。`MEMORY.md` 旨在保持为精选的长期摘要；详细的每日笔记属于 `memory/*.md`，`memory_search` 和 `memory_get` 可以按需检索它们。过大的 `MEMORY.md` 文件会增加 prompt 使用量，并可能因以下 bootstrap 文件限制而被部分注入。
 
 <Note>
 `memory/*.md` 每日文件**不**是正常 bootstrap Project Context 的一部分。在普通轮次中，它们通过 `memory_search` 和 `memory_get` 工具按需访问，因此除非 model 显式读取它们，否则不会计入 context 窗口。裸 `/new` 和 `/reset` 轮次是例外：运行时可以将最近的每日 memory 作为一次性启动 context 块预置到该首次轮次。

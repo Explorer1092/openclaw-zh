@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8dee1dd27e44b47ef08e702fb10b7aae"
+mmh3_hash: "ccf6e0a3b7886602b42c7bf46e5e61d6"
 summary: "QA 栈概述：qa-lab、qa-channel、种子场景、实时传输通道、传输适配器和报告。"
 read_when:
   - 了解 QA 栈如何整合
@@ -28,7 +28,7 @@ title: "QA 概述"
 | `qa run` | 捆绑的 QA 自检；写入 Markdown 报告。 |
 | `qa suite` | 针对 QA Gateway 通道运行代码库支持的场景。别名：`pnpm openclaw qa suite --runner multipass` 用于一次性 Linux VM。 |
 | `qa coverage` | 打印 Markdown 场景覆盖率清单（`--json` 用于机器输出）。 |
-| `qa parity-report` | 比较两个 `qa-suite-summary.json` 文件并写入 agentic parity 报告。 |
+| `qa parity-report` | 比较两个 `qa-suite-summary.json` 文件并写入 agentic parity 报告，或使用 `--runtime-axis --token-efficiency` 从一个 runtime-pair 摘要写入 Codex vs Pi 运行时 parity 和 token 效率报告。 |
 | `qa character-eval` | 跨多个实时 model 运行角色 QA 场景并生成评判报告。参见 [报告](#报告)。 |
 | `qa manual` | 针对所选 provider/model 通道运行一次性提示。 |
 | `qa ui` | 启动 QA 调试器 UI 和本地 QA 总线（别名：`pnpm qa:lab:ui`）。 |
@@ -155,7 +155,7 @@ doctor 检查 Convex broker 环境，验证端点设置，并在存在维护者�
 pnpm openclaw qa suite --runner multipass --scenario channel-chat-baseline
 ```
 
-这会启动一个新的 Multipass 虚拟机，安装依赖项，在虚拟机内构建 OpenClaw，运行 `qa suite`，然后将正常的 QA 报告和摘要复制回主机的 `.artifacts/qa-e2e/...`。它复用与主机上 `qa suite` 相同的场景选择行为。主机和 Multipass suite 运行默认并行执行多个选定场景，使用隔离的 Gateway worker。`qa-channel` 默认并发数为 4，受选定场景数上限。使用 `--concurrency <count>` 调整 worker 数，或 `--concurrency 1` 进行串行执行。当任何场景失败时，命令退出非零。使用 `--allow-failures` 在不设置失败退出码的情况下写入构件。实时运行转发对虚拟机实际可行的受支持 QA auth 输入：基于环境变量的 provider 密钥、QA 实时 provider 配置路径，以及存在时的 `CODEX_HOME`。将 `--output-dir` 保持在代码库根目录下，以便虚拟机可以通过挂载的 workspace 写回。
+这会启动一个新的 Multipass 虚拟机，安装依赖项，在虚拟机内构建 OpenClaw，运行 `qa suite`，然后将正常的 QA 报告和摘要复制回主机的 `.artifacts/qa-e2e/...`。它复用与主机上 `qa suite` 相同的场景选择行为。主机和 Multipass suite 运行默认并行执行多个选定场景，使用隔离的 Gateway worker。`qa-channel` 默认并发数为 4，受选定场景数上限。使用 `--concurrency <count>` 调整 worker 数，或 `--concurrency 1` 进行串行执行。使用 `--pack personal-agent` 运行个人助手基准测试包。包选择器与重复的 `--scenario` 标志是累加的：显式场景先运行，然后按包顺序运行包场景，并去除重复项。当自定义 QA 运行器已经提供了 OpenTelemetry 收集器设置，并希望同时选择 OpenTelemetry 和 Prometheus 诊断 smoke 场景时，使用 `--pack observability`。当任何场景失败时，命令退出非零。使用 `--allow-failures` 在不设置失败退出码的情况下写入构件。实时运行转发对虚拟机实际可行的受支持 QA auth 输入：基于环境变量的 provider 密钥、QA 实时 provider 配置路径，以及存在时的 `CODEX_HOME`。将 `--output-dir` 保持在代码库根目录下，以便虚拟机可以通过挂载的 workspace 写回。
 
 ## Telegram、Discord 和 Slack QA 参考
 
@@ -297,6 +297,8 @@ pnpm openclaw qa slack
 可选：
 
 - `OPENCLAW_QA_SLACK_CAPTURE_CONTENT=1` 在观察到的消息构件中保留消息正文。
+- `OPENCLAW_QA_SLACK_APPROVAL_CHECKPOINT_DIR` 为可选的原生审批场景启用视觉审批检查点写入；目录路径由 Mantis 提供。
+- `OPENCLAW_QA_SLACK_APPROVAL_CHECKPOINT_TIMEOUT_MS` 覆盖检查点等待的默认超时。
 
 场景（`extensions/qa-lab/src/live-transports/slack/slack-live.runtime.ts:39`）：
 
@@ -307,12 +309,15 @@ pnpm openclaw qa slack
 - `slack-restart-resume`
 - `slack-thread-follow-up`
 - `slack-thread-isolation`
+- `slack-approval-exec-native` - 可选的原生 Slack exec 审批场景。通过 Gateway 请求 exec 审批，验证 Slack 消息具有原生审批按钮，解析它，并验证已解析的 Slack 更新。
+- `slack-approval-plugin-native` - 可选的原生 Slack Plugin 审批场景。同时启用 exec 和 Plugin 审批转发，以便 Plugin 事件不被 exec 审批路由抑制，然后验证相同的待处理/已解析原生 Slack UI 路径。
 
 输出构件：
 
 - `slack-qa-report.md`
 - `slack-qa-summary.json`
 - `slack-qa-observed-messages.json` - 除非 `OPENCLAW_QA_SLACK_CAPTURE_CONTENT=1`，否则正文会被编辑。
+- `approval-checkpoints/` - 仅当 Mantis 设置 `OPENCLAW_QA_SLACK_APPROVAL_CHECKPOINT_DIR` 时；包含检查点 JSON、确认 JSON 和待处理/已解析截图。
 
 #### 设置 Slack workspace
 

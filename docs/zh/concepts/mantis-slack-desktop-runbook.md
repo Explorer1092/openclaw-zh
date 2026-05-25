@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "abb3b42430a4f80c012c3f01f1cf42b0"
+mmh3_hash: "39817fa05adae4cd2824999ba8167929"
 summary: "Mantis Slack 桌面端 QA 操作手册：GitHub dispatch、本地 CLI、热 VNC 租约、hydrate 模式、时序解读、产物和故障处理。"
 read_when:
   - 从 GitHub 或本地运行 Mantis Slack 桌面端 QA
@@ -102,6 +102,22 @@ pnpm openclaw qa mantis slack-desktop-smoke \
 
 仅当复用的远程工作区已有 `node_modules` 和构建好的 `dist/` 时，才使用 `--hydrate-mode prehydrated`。若这些文件缺失，Mantis 会以关闭方式失败。
 
+证明原生 Slack 审批 UI：
+
+```bash
+pnpm openclaw qa mantis slack-desktop-smoke \
+  --provider aws \
+  --class standard \
+  --approval-checkpoints \
+  --credential-source convex \
+  --credential-role maintainer \
+  --hydrate-mode source
+```
+
+审批检查点模式与 `--gateway-setup` 互斥。除非传入显式的审批检查点 `--scenario` 标志，否则它运行可选的 `slack-approval-exec-native` 和 `slack-approval-plugin-native` 场景；其他 Slack 场景在 VM 启动前会被拒绝。Slack QA 运行器从其观察到的真实 Slack API 消息写入每个检查点 JSON 文件，然后远程监视器将该消息快照渲染到 `approval-checkpoints/<scenario>-pending.png` 和 `approval-checkpoints/<scenario>-resolved.png`。如果任何检查点 JSON、消息证据、ack JSON 或渲染的截图缺失或为空，则运行失败。
+
+冷的 GitHub Actions 租约没有 Slack Web Cookie，因此其浏览器捕获可能会停留在 Slack 登录页面。对于审批检查点证明，请信任渲染的检查点图像和 Slack QA 产物，而非 `slack-desktop-smoke.png`。仅当浏览器截图本身必须显示 Slack Web 时，才使用保留的带有手动登录 Slack Web 配置文件的热租约。
+
 ## Hydrate 模式
 
 | 模式           | 使用场景                       | 远程行为                                                                           | 权衡                         |
@@ -121,7 +137,7 @@ GitHub Actions 始终在 VM 运行前准备候选检出。其 pnpm store 按 OS�
 - `crabbox.remote_run`：同步、浏览器启动、OpenClaw 安装/构建或 hydrate 验证、Gateway 启动、截图和视频捕获。
 - `artifacts.copy`：从 VM rsync 回本地。
 
-当 Mantis 已复制证明 OpenClaw Gateway 存活且设置完成的元数据后，若 Crabbox 返回非零远程状态，`crabbox.remote_run` 可被标记为 `accepted`。将 `accepted` 视为带解释的通过，而非场景失败。
+当 Mantis 已复制元数据证明 OpenClaw Gateway 设置已完成或 Slack QA 命令本身已成功退出后，若 Crabbox 返回非零远程状态，`crabbox.remote_run` 可被标记为 `accepted`。将 `accepted` 视为带解释的通过，而非场景失败。
 
 如果运行缓慢：
 
@@ -137,7 +153,7 @@ GitHub Actions 始终在 VM 运行前准备候选检出。其 pnpm store 按 OS�
 - 场景 ID 和候选 SHA；
 - GitHub Actions 运行 URL；
 - 产物 URL；
-- 内联截图；
+- 内联审批检查点截图，或来自已登录热租约的 Slack Web 截图；
 - 有动态预览时的内联动态预览；
 - 完整 MP4 和裁剪 MP4 链接；
 - 通过/失败状态；

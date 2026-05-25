@@ -1,7 +1,7 @@
 ---
 title: "Models CLI"
 sidebarTitle: "Models CLI"
-mmh3_hash: "43cca32b376635770e962d75da22952c"
+mmh3_hash: "28c549f943065b29a58e787a87d621d0"
 summary: "Models CLI: list、set、aliases、fallbacks、scan、status"
 read_when:
   - 添加或修改 models CLI（models list/set/scan/aliases/fallbacks）

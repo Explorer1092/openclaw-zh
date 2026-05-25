@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "abfb027adca3510a7386764204b0c101"
+mmh3_hash: "ba04c436e4d43d22100ae8cb9c9a6890"
 summary: "上下文引擎：可插拔的上下文组装、压缩和子 Agent 生命周期"
 read_when:
   - 您想了解 OpenClaw 如何组装模型上下文

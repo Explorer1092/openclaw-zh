@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8ce127503a311e6445cfc906c930fa28"
+mmh3_hash: "d5160ad1ed6efd30ec6dc73d825d53e9"
 summary: "Model provider 概述，包含示例配置 + CLI 流程"
 read_when:
   - 需要按 provider 的 model 设置参考
@@ -175,7 +175,7 @@ Anthropic 员工告诉我们 OpenClaw 风格的 Claude CLI 使用再次被允许
 ### 其他订阅式托管选项
 
 <CardGroup cols={3}>
-  <Card title="GLM models" href="/providers/glm">
+  <Card title="Z.AI (GLM)" href="/providers/zai">
     Z.AI Coding Plan 或通用 API 端点。
   </Card>
   <Card title="MiniMax" href="/providers/minimax">
@@ -312,7 +312,7 @@ Gemini CLI JSON 回复从 `response` 解析；用量回退到 `stats`，`stats.c
 | Venice                  | `venice`                         | `VENICE_API_KEY`                                             | -                                             |
 | Vercel AI Gateway       | `vercel-ai-gateway`              | `AI_GATEWAY_API_KEY`                                         | `vercel-ai-gateway/anthropic/claude-opus-4.6` |
 | Volcano Engine (Doubao) | `volcengine` / `volcengine-plan` | `VOLCANO_ENGINE_API_KEY`                                     | `volcengine-plan/ark-code-latest`             |
-| xAI                     | `xai`                            | `XAI_API_KEY`                                                | `xai/grok-4.3`                                |
+| xAI                     | `xai`                            | SuperGrok/X Premium OAuth 或 `XAI_API_KEY`                   | `xai/grok-4.3`                                |
 | Xiaomi                  | `xiaomi`                         | `XIAOMI_API_KEY`                                             | `xiaomi/mimo-v2-flash`                        |
 
 #### 值得了解的细节
@@ -331,7 +331,7 @@ Gemini CLI JSON 回复从 `response` 解析；用量回退到 `stats`，`stats.c
     Model id 使用 `nvidia/<vendor>/<model>` 命名空间（例如 `nvidia/nvidia/nemotron-...` 与 `nvidia/moonshotai/kimi-k2.5`）；选择器保留字面 `<provider>/<model-id>` 组合，而发送到 API 的规范键保持单前缀。
   </Accordion>
   <Accordion title="xAI">
-    使用 xAI Responses 路径。`grok-4.3` 是捆绑的默认聊天 model。`/fast` 或 `params.fastMode: true` 将 `grok-3`、`grok-3-mini`、`grok-4` 和 `grok-4-0709` 重写为其 `*-fast` 变体。`tool_stream` 默认开启；通过 `agents.defaults.models["xai/<model>"].params.tool_stream=false` 禁用。
+    使用 xAI Responses 路径。推荐的路径是 SuperGrok/X Premium OAuth；API 密钥仍可通过 `XAI_API_KEY` 或 Plugin 配置使用，Grok `web_search` 在 API 密钥回退之前复用相同的认证配置文件。`grok-4.3` 是捆绑的默认聊天 model，`grok-build-0.1` 可供以构建/编码为重点的工作选用。`/fast` 或 `params.fastMode: true` 将 `grok-3`、`grok-3-mini`、`grok-4` 和 `grok-4-0709` 重写为其 `*-fast` 变体。`tool_stream` 默认开启；通过 `agents.defaults.models["xai/<model>"].params.tool_stream=false` 禁用。
   </Accordion>
   <Accordion title="Cerebras">
     作为捆绑的 `cerebras` provider Plugin 发布。GLM 使用 `zai-glm-4.7`；OpenAI 兼容基础 URL 为 `https://api.cerebras.ai/v1`。

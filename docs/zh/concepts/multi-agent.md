@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bc69775bb1cd5d29653b053dddcc2f49"
+mmh3_hash: "0d58f9432b6ae8cba13bae965c045c4a"
 summary: "Multi-agent 路由：隔离的 agents、channel accounts 和 bindings"
 title: "Multi-agent routing"
 sidebarTitle: "Multi-agent routing"
@@ -352,6 +352,11 @@ Bindings 是**确定性的**，遵循**最具体优先**原则：
 
     - 通过 BotFather 为每个 agent 创建一个 bot，并复制各自的 token。
     - Token 位于 `channels.telegram.accounts.<id>.botToken`（默认账户可使用 `TELEGRAM_BOT_TOKEN`）。
+    - 对于同一 Telegram 群组中的多个 bot，邀请每个 bot 并提及应该回答的那个 bot。
+    - 为每个群组 bot 在 BotFather 中禁用 Privacy Mode，然后重新添加该 bot 以使 Telegram 应用该设置。
+    - 使用 `channels.telegram.groups` 允许群组，或仅对受信任的群组部署使用 `groupPolicy: "open"`。
+    - 在 `groupAllowFrom` 中放置发送者用户 ID。群组和超级群组 ID 属于 `channels.telegram.groups`，而非 `groupAllowFrom`。
+    - 按 `accountId` 绑定，以便每个 bot 路由到其自己的 agent。
 
   </Accordion>
   <Accordion title="每个 agent 一个 WhatsApp 号码">
@@ -453,15 +458,15 @@ Bindings 是**确定性的**，遵循**最具体优先**原则：
         ],
       },
       bindings: [
-        { agentId: "chat", match: { channel: "whatsapp" } },
-        { agentId: "opus", match: { channel: "telegram" } },
+        { agentId: "chat", match: { channel: "whatsapp", accountId: "*" } },
+        { agentId: "opus", match: { channel: "telegram", accountId: "*" } },
       ],
     }
     ```
 
     注意事项：
 
-    - 如果一个 channel 有多个账户，在 binding 中添加 `accountId`（例如 `{ channel: "whatsapp", accountId: "personal" }`）。
+    - 这些示例使用 `accountId: "*"`，因此如果您以后添加账户，binding 仍然有效。
     - 要将单个 DM/群组路由到 Opus 而其余保留在 chat，添加针对该 peer 的 `match.peer` binding；peer 匹配始终优先于 channel 级别规则。
 
   </Tab>
