@@ -39,6 +39,41 @@ title: "Secrets Apply 计划约定"
 }
 ```
 
+## Provider upsert 和删除
+
+计划还可以包含两个可选的顶级字段，在逐目标写入的同时修改 `secrets.providers` 映射：
+
+- `providerUpserts` — 以 provider 别名为键的对象。每个值是一个 provider 定义（与 `openclaw.json` 中 `secrets.providers.<alias>` 下接受的形式相同，例如 `exec` 或 `file` provider）。
+- `providerDeletes` — 要删除的 provider 别名数组。
+
+`providerUpserts` 在 `targets` 之前运行，因此 `target.ref.provider` 可以引用同一计划在 `providerUpserts` 中引入的 provider 别名。否则，引用 `openclaw.json` 中尚未配置别名的计划会以 `provider "<alias>" is not configured` 失败。
+
+```json5
+{
+  version: 1,
+  protocolVersion: 1,
+  providerUpserts: {
+    onepassword_anthropic: {
+      source: "exec",
+      command: "/usr/bin/op",
+      args: ["read", "op://Vault/Anthropic/credential"],
+    },
+  },
+  providerDeletes: ["legacy_unused_alias"],
+  targets: [
+    {
+      type: "models.providers.apiKey",
+      path: "models.providers.anthropic.apiKey",
+      pathSegments: ["models", "providers", "anthropic", "apiKey"],
+      providerId: "anthropic",
+      ref: { source: "exec", provider: "onepassword_anthropic", id: "credential" },
+    },
+  ],
+}
+```
+
+通过 `providerUpserts` 引入的 exec provider 仍受 [Exec provider 同意行为](#exec-provider-同意行为)中的 exec 同意规则约束：包含 exec provider 的计划在写入模式下需要 `--allow-exec`。
+
 ## 支持的目标作用域
 
 计划目标接受以下支持的凭证路径：
@@ -99,6 +134,10 @@ openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run
 
 # 然后正式应用
 openclaw secrets apply --from /tmp/openclaw-secrets-plan.json
+
+# 对于包含 exec 的计划，在两种模式下都显式选择加入
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --dry-run --allow-exec
+openclaw secrets apply --from /tmp/openclaw-secrets-plan.json --allow-exec
 ```
 
 如果 apply 因无效目标路径消息失败，请使用 `openclaw secrets configure` 重新生成计划，或将目标路径修正为上述支持的形式之一。
