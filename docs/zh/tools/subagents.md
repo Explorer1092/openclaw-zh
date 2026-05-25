@@ -1,7 +1,7 @@
 ---
 title: "子 Agent"
 sidebarTitle: "子 Agent"
-mmh3_hash: "4e705e94d5e0f8d5327bd2a23a001ec3"
+mmh3_hash: "3a0405d5e51d0e16f91853744c053e52"
 summary: "子 Agent：生成隔离的 Agent 运行，将结果公告回请求者聊天"
 read_when:
   - 您想通过 Agent 进行后台/并行工作
@@ -28,12 +28,8 @@ read_when:
 
 ```text
 /subagents list
-/subagents kill <id|#|all>
 /subagents log <id|#> [limit] [tools]
 /subagents info <id|#>
-/subagents send <id|#> <message>
-/subagents steer <id|#> <message>
-/subagents spawn <agentId> <task> [--model <model>] [--thinking <level>]
 ```
 
 使用顶层 [`/steer <message>`](/tools/steer) 引导当前请求者 Session 的活跃运行。当目标是子运行时，使用 `/subagents steer <id|#> <message>`。
@@ -66,12 +62,12 @@ read_when:
     - 完成时，OpenClaw 在公告清理流程继续之前，尽力关闭该子 Agent Session 打开的已追踪浏览器标签页/进程。
 
   </Accordion>
-  <Accordion title="手动生成投递弹性">
+  <Accordion title="完成投递">
     - OpenClaw 通过带有稳定幂等键的 `agent` 轮次将完成传回请求者 Session。
     - 如果请求者运行仍然活跃，OpenClaw 首先尝试唤醒/引导该运行，而不是启动第二个可见回复路径。
     - 如果活跃的请求者无法被唤醒，OpenClaw 回退到与相同完成上下文的请求者 Agent 移交，而不是丢弃公告。
-    - 如果请求者 Agent 完成移交失败或没有产生可见输出，OpenClaw 将投递视为失败并回退到队列路由/重试。它不会将子 Agent 结果直接原始发送到外部聊天。
-    - 组和 Channel 完成移交遵循与正常组/Channel 轮次相同的仅 message 工具可见回复策略，因此请求者 Agent 在需要时必须使用 message 工具。
+    - 成功的父 Agent 移交即可完成子 Agent 投递，即使父 Agent 决定不需要向用户显示可见更新。
+    - 原生子 Agent 不获取 message 工具。它们将最新的 assistant 轮次返回给父/请求者 Agent；面向用户的回复由父/请求者 Agent 的正常投递策略负责。
     - 如果无法使用直接移交，则回退到队列路由。
     - 如果队列路由仍不可用，则以短指数退避重试公告，然后最终放弃。
     - 完成投递保留已解析的请求者路由：线程绑定或对话绑定的完成路由在可用时优先；如果完成来源仅提供 Channel，OpenClaw 从请求者 Session 的已解析路由（`lastChannel` / `lastTo` / `lastAccountId`）中填充缺失的目标/账户，使直接投递仍然有效。
@@ -431,12 +427,13 @@ read_when:
 
 子 Agent 首先使用与父 Agent 或目标 Agent 相同的配置文件和工具策略管道。之后，OpenClaw 应用子 Agent 限制层。
 
-没有限制性 `tools.profile` 时，子 Agent 获取**除 Session 工具和系统工具之外的所有工具**：
+没有限制性 `tools.profile` 时，子 Agent 获取**除 message 工具、Session 工具和系统工具之外的所有工具**：
 
 - `sessions_list`
 - `sessions_history`
 - `sessions_send`
 - `sessions_spawn`
+- `message`
 
 此处 `sessions_history` 也保持有界、经过处理的回顾视图——不是原始转录转储。
 
@@ -508,7 +505,7 @@ Gateway 重启后，过期的未结束已还原运行将被清除，除非其子
 - 子 Agent 公告是**尽力而为**的。如果 Gateway 重启，待处理的"公告返回"工作将丢失。
 - 子 Agent 仍然共享相同的 Gateway 进程资源；将 `maxConcurrent` 视为安全阀。
 - `sessions_spawn` 始终是非阻塞的：它立即返回 `{ status: "accepted", runId, childSessionKey }`。
-- 子 Agent 上下文只注入 `AGENTS.md`、`TOOLS.md`、`SOUL.md`、`IDENTITY.md` 和 `USER.md`（无 `MEMORY.md`、`HEARTBEAT.md` 或 `BOOTSTRAP.md`）。
+- 子 Agent 上下文只注入 `AGENTS.md` 和 `TOOLS.md`（无 `SOUL.md`、`IDENTITY.md`、`USER.md`、`MEMORY.md`、`HEARTBEAT.md` 或 `BOOTSTRAP.md`）。Codex 原生子 Agent 遵循相同边界：`TOOLS.md` 保留在继承的 Codex 线程指令中，而父 Agent 专属的人物设定、身份和用户文件作为轮次范围的协作指令注入，以便子 Agent 不会克隆它们。
 - 最大嵌套深度为 5（`maxSpawnDepth` 范围：1–5）。大多数用例推荐深度 2。
 - `maxChildrenPerAgent` 限制每个 Session 的活动子 Agent 数（默认：5，范围：1–20）。
 

@@ -1,7 +1,7 @@
 ---
 title: "Exec 工具"
 sidebarTitle: "Exec 工具"
-mmh3_hash: "2197e6e6b7864ffb38dc5e33d651b454"
+mmh3_hash: "6412816102b825a871400e716a0b2f05"
 summary: "Exec 工具使用、stdin 模式和 TTY 支持"
 read_when:
   - 使用或修改 exec 工具
@@ -120,6 +120,7 @@ read_when:
 - `host=gateway`：将你的登录 shell `PATH` 合并到 exec 环境中。主机执行拒绝 `env.PATH` 覆盖。守护进程本身仍然使用最小的 `PATH` 运行：
   - macOS：`/opt/homebrew/bin`、`/usr/local/bin`、`/usr/bin`、`/bin`
   - Linux：`/usr/local/bin`、`/usr/bin`、`/bin`
+    - 为防止用户 shell 配置（如 `~/.zshenv` 或 `/etc/zshenv`）在启动时覆盖优先级路径，`tools.exec.pathPrepend` 条目会在执行前以安全方式前置到 shell 命令内部的最终 `PATH` 中。
 - `host=sandbox`：在容器内运行 `sh -lc`（登录 shell），因此 `/etc/profile` 可能会重置 `PATH`。OpenClaw 在配置文件来源后通过内部环境变量前置 `env.PATH`（无 shell 插值）；`tools.exec.pathPrepend` 也在这里应用。
 - `host=node`：只有你传递的非阻止环境覆盖才会发送到节点。主机执行拒绝 `env.PATH` 覆盖，节点主机也会忽略它。如果你需要节点上的额外 PATH 条目，请配置节点主机服务环境（systemd/launchd）或将工具安装在标准位置。
 
@@ -150,7 +151,7 @@ openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
 
 沙盒化的 Agent 可以在 `exec` 在 Gateway 或节点主机上运行之前要求每请求审批。有关策略、允许列表和 UI 流程，请参见 [Exec 审批](/tools/exec-approvals)。
 
-当需要审批时，exec 工具立即返回 `status: "approval-pending"` 和审批 id。一旦审批（或拒绝/超时），Gateway 发出系统事件（`Exec finished` / `Exec denied`）。如果命令在 `tools.exec.approvalRunningNoticeMs` 后仍在运行，会发出单个 `Exec running` 通知。在具有原生审批卡/按钮的 Channel 上，Agent 应优先依赖该原生 UI，仅在工具结果明确表示聊天审批不可用或手动审批是唯一路径时才包含手动 `/approve` 命令。
+当需要审批时，exec 工具立即返回 `status: "approval-pending"` 和审批 id。一旦审批（或拒绝/超时），Gateway 仅为已审批的运行发出命令进度和完成系统事件（`Exec running` / `Exec finished`）。被拒绝或超时的审批是终态，不会用拒绝系统事件唤醒 Agent Session。在具有原生审批卡/按钮的 Channel 上，Agent 应优先依赖该原生 UI，仅在工具结果明确表示聊天审批不可用或手动审批是唯一路径时才包含手动 `/approve` 命令。
 
 ## 允许列表 + 安全 bin
 

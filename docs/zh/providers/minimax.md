@@ -1,6 +1,6 @@
 ---
 title: "MiniMax"
-mmh3_hash: "888c8b3d851c15a140040e12b9188b86"
+mmh3_hash: "2ba05c796a97e7e0b24e5d3a10d76b8d"
 summary: "在 OpenClaw 中使用 MiniMax 模型"
 read_when:
   - 您想在 OpenClaw 中使用 MiniMax 模型
@@ -145,7 +145,7 @@ Provider 拆分：
                 id: "MiniMax-M2.7",
                 name: "MiniMax M2.7",
                 reasoning: true,
-                input: ["text", "image"],
+                input: ["text"],
                 cost: { input: 0.3, output: 1.2, cacheRead: 0.06, cacheWrite: 0.375 },
                 contextWindow: 204800,
                 maxTokens: 131072,
@@ -154,7 +154,7 @@ Provider 拆分：
                 id: "MiniMax-M2.7-highspeed",
                 name: "MiniMax M2.7 Highspeed",
                 reasoning: true,
-                input: ["text", "image"],
+                input: ["text"],
                 cost: { input: 0.6, output: 2.4, cacheRead: 0.06, cacheWrite: 0.375 },
                 contextWindow: 204800,
                 maxTokens: 131072,
@@ -271,7 +271,7 @@ MiniMax 插件为 `image_generate` 工具注册了 `image-01` 模型。它支持
 - 默认音乐模型：`minimax/music-2.6`
 - OAuth 音乐模型：`minimax-portal/music-2.6`
 - 也支持 `minimax/music-2.5` 和 `minimax/music-2.0`
-- 提示控制：`lyrics`、`instrumental`、`durationSeconds`
+- 提示控制：`lyrics`、`instrumental`
 - 输出格式：`mp3`
 - 基于 Session 的运行通过共享任务/状态流程分离，包括 `action: "status"`
 

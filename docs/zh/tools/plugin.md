@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "454ec5f2a532eb2c97fd42c23f90c7a5"
+mmh3_hash: "9c086a088f45fef127621161cfdb1a33"
 summary: "安装、配置和管理 OpenClaw Plugin"
 read_when:
   - 安装或配置 Plugin
@@ -147,6 +147,20 @@ OpenClaw 识别两种 Plugin 格式：
 | 兼容包                | Codex、Claude 或 Cursor Plugin 布局映射到 OpenClaw Plugin 清单                 | 复用兼容的技能、命令、Hook 或包元数据                              |
 
 两种格式都出现在 `openclaw plugins list`、`openclaw plugins inspect`、`openclaw plugins enable` 和 `openclaw plugins disable` 中。包兼容边界参见 [Plugin 包](/plugins/bundles)，原生 Plugin 创作参见[构建 Plugin](/plugins/building-plugins)。
+
+## Plugin hooks
+
+Plugin 可以在运行时注册 Hook，但有两种不同的 API 各有不同的用途。
+
+- 使用 `api.on(...)` 的类型化 Hook 用于运行时生命周期 Hook。这是中间件、策略、消息重写、Prompt 整形和工具控制的首选接口。
+- 仅当你想参与 [Hook](/automation/hooks) 中描述的内部 Hook 系统时，才使用 `api.registerHook(...)`。这主要用于粗粒度命令/生命周期副作用，以及与现有 HOOK 风格自动化的兼容。
+
+快速规则：
+
+- 如果处理程序需要优先级、合并语义或阻止/取消行为，使用类型化 Plugin Hook。
+- 如果处理程序只是对 `command:new`、`command:reset`、`message:sent` 或类似粗粒度事件作出响应，`api.registerHook(...)` 即可。
+
+Plugin 管理的内部 Hook 会以 `plugin:<id>` 出现在 `openclaw hooks list` 中。你无法通过 `openclaw hooks` 启用或禁用它们；应改为启用或禁用该 Plugin。
 
 ## 验证活跃 Gateway
 

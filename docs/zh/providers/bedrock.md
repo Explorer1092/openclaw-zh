@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a5845f1bd6ba64e7ce62c1f4876ca6ac"
+mmh3_hash: "9684e2dbf8669a61afd0c1091f017dd6"
 summary: "在 OpenClaw 中使用 Amazon Bedrock（Converse API）模型"
 read_when:
   - 您想要在 OpenClaw 中使用 Amazon Bedrock 模型
@@ -27,7 +27,7 @@ OpenClaw 可以通过 pi-ai 的 **Bedrock Converse** 流式 Provider 使用 **Am
     <Steps>
       <Step title="在 Gateway 主机上设置 AWS 凭据">
         ```bash
-        export AWS_ACCESS_KEY_ID="AKIA..."
+        export AWS_ACCESS_KEY_ID="EXAMPLE_AWS_ACCESS_KEY_ID"
         export AWS_SECRET_ACCESS_KEY="..."
         export AWS_REGION="us-east-1"
         # 可选：

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c4531a1bf90c2b36b8b9d8c814aaa288"
+mmh3_hash: "31a21eb5dde5c42f3767ac9723c17f9f"
 summary: "code_execution -- 通过 xAI 运行沙盒远程 Python 分析"
 read_when:
   - 希望启用或配置 code_execution
@@ -37,11 +37,25 @@ title: "Code execution"
 ## 设置
 
 <Steps>
-  <Step title="提供 xAI API 密钥">
-    运行 `openclaw onboard --auth-choice xai-api-key` 以同时设置 `code_execution` 和
-    `x_search`，或设置 `XAI_API_KEY` / 在 xAI Plugin 下配置密钥（如果你也希望 Grok 网络搜索使用同一凭据）：
+  <Step title="提供 xAI 凭据">
+    使用符合条件的 SuperGrok 或 X Premium 订阅通过 Grok OAuth 登录，使用适合远程环境的设备码流程，或存储 API 密钥。OAuth 适用于 `code_execution` 和 `x_search`；`XAI_API_KEY` 或 Plugin 网络搜索配置也可以为 Grok `web_search` 提供支持。
 
     ```bash
+    openclaw models auth login --provider xai --method oauth
+    openclaw models auth login --provider xai --device-code
+    ```
+
+    在全新安装期间，相同的认证选项也可在引导流程中使用：
+
+    ```bash
+    openclaw onboard --install-daemon
+    openclaw onboard --install-daemon --auth-choice xai-device-code
+    ```
+
+    或使用 API 密钥：
+
+    ```bash
+    openclaw models auth login --provider xai --method api-key
     export XAI_API_KEY=xai-...
     ```
 
@@ -66,7 +80,7 @@ title: "Code execution"
   </Step>
 
   <Step title="启用并调整 code_execution">
-    该工具通过 `plugins.entries.xai.config.codeExecution.enabled` 控制，默认关闭。
+    当 xAI 凭据可用时，`code_execution` 即可使用。将 `plugins.entries.xai.config.codeExecution.enabled` 设置为 `false` 可以禁用它，或使用相同配置块来调整模型和超时。
 
     ```json5
     {
@@ -124,7 +138,7 @@ Use web_search to gather the latest AI benchmark numbers, then use code_executio
 ```json
 {
   "error": "missing_xai_api_key",
-  "message": "code_execution needs an xAI API key. Run openclaw onboard --auth-choice xai-api-key, set XAI_API_KEY in the Gateway environment, or configure plugins.entries.xai.config.webSearch.apiKey.",
+  "message": "code_execution needs xAI credentials. Run `openclaw onboard --auth-choice xai-oauth` to sign in with Grok, run `openclaw onboard --auth-choice xai-api-key`, set `XAI_API_KEY` in the Gateway environment, or configure `plugins.entries.xai.config.webSearch.apiKey`.",
   "docs": "https://docs.openclaw.ai/tools/code-execution"
 }
 ```

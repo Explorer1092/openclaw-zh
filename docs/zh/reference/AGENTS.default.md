@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ab81aaae021b0ef1142e2f39efb66135"
+mmh3_hash: "563efd1e07dd82c35e2d8e953e3a9a7a"
 title: "默认 AGENTS.md"
 summary: "OpenClaw 个人助理设置的默认 Agent 指令和技能列表"
 read_when:
@@ -43,6 +43,7 @@ cp docs/reference/AGENTS.default.md ~/.openclaw/workspace/AGENTS.md
 
 - 不要将目录或机密转储到聊天中。
 - 除非明确要求，否则不要运行破坏性命令。
+- 在更改配置或调度器（例如 crontab、systemd units、nginx 配置或 shell rc 文件）之前，先检查现有状态，默认保留/合并。
 - 不要向外部消息界面发送部分/流式回复（仅最终回复）。
 
 ## Session 开始（必需）
@@ -68,6 +69,7 @@ cp docs/reference/AGENTS.default.md ~/.openclaw/workspace/AGENTS.md
 - 长期记忆：`MEMORY.md` 用于持久事实、偏好和决策。
 - 小写的 `memory.md` 仅作为旧版修复输入；不要故意同时保留两个根文件。
 - Session 开始时，读取今天 + 昨天 + `MEMORY.md`（如果存在）。
+- 写入记忆文件前，先读取它们；只写入具体更新，不要写空占位符。
 - 记录：决策、偏好、约束、待办事项。
 - 除非明确要求，否则避免存储机密信息。
 

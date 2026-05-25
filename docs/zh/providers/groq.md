@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7d51f8e26d20c0a85c7e86809cb56046"
+mmh3_hash: "975a1b19f9d53bc72892c6a7a32422a1"
 title: "Groq"
 summary: "Groq 设置（身份验证 + 模型选择 + Whisper 转录）"
 read_when:
@@ -76,26 +76,17 @@ export GROQ_API_KEY=gsk_...
 
 OpenClaw 附带了一个支持清单的 Groq 目录，包含推理和非推理条目。运行 `openclaw models list --provider groq` 查看您安装版本的捆绑行，或查看 [console.groq.com/docs/models](https://console.groq.com/docs/models) 获取 Groq 的权威列表。
 
-| 模型引用                                             | 名称                          | 推理 | 输入         | 上下文  |
-| ---------------------------------------------------- | ----------------------------- | ---- | ------------ | ------- |
-| `groq/llama-3.3-70b-versatile`                       | Llama 3.3 70B Versatile       | 否   | 文本         | 131,072 |
-| `groq/llama-3.1-8b-instant`                          | Llama 3.1 8B Instant          | 否   | 文本         | 131,072 |
-| `groq/meta-llama/llama-4-maverick-17b-128e-instruct` | Llama 4 Maverick 17B          | 否   | 文本 + 图像  | 131,072 |
-| `groq/meta-llama/llama-4-scout-17b-16e-instruct`     | Llama 4 Scout 17B             | 否   | 文本 + 图像  | 131,072 |
-| `groq/llama3-70b-8192`                               | Llama 3 70B                   | 否   | 文本         | 8,192   |
-| `groq/llama3-8b-8192`                                | Llama 3 8B                    | 否   | 文本         | 8,192   |
-| `groq/gemma2-9b-it`                                  | Gemma 2 9B                    | 否   | 文本         | 8,192   |
-| `groq/mistral-saba-24b`                              | Mistral Saba 24B              | 否   | 文本         | 32,768  |
-| `groq/moonshotai/kimi-k2-instruct`                   | Kimi K2 Instruct              | 否   | 文本         | 131,072 |
-| `groq/moonshotai/kimi-k2-instruct-0905`              | Kimi K2 Instruct 0905         | 否   | 文本         | 262,144 |
-| `groq/openai/gpt-oss-120b`                           | GPT OSS 120B                  | 是   | 文本         | 131,072 |
-| `groq/openai/gpt-oss-20b`                            | GPT OSS 20B                   | 是   | 文本         | 131,072 |
-| `groq/openai/gpt-oss-safeguard-20b`                  | Safety GPT OSS 20B            | 是   | 文本         | 131,072 |
-| `groq/qwen-qwq-32b`                                  | Qwen QwQ 32B                  | 是   | 文本         | 131,072 |
-| `groq/qwen/qwen3-32b`                                | Qwen3 32B                     | 是   | 文本         | 131,072 |
-| `groq/deepseek-r1-distill-llama-70b`                 | DeepSeek R1 Distill Llama 70B | 是   | 文本         | 131,072 |
-| `groq/groq/compound`                                 | Compound                      | 是   | 文本         | 131,072 |
-| `groq/groq/compound-mini`                            | Compound Mini                 | 是   | 文本         | 131,072 |
+| 模型引用                                             | 名称                    | 推理 | 输入         | 上下文  |
+| ---------------------------------------------------- | ----------------------- | ---- | ------------ | ------- |
+| `groq/llama-3.3-70b-versatile`                       | Llama 3.3 70B Versatile | 否   | 文本         | 131,072 |
+| `groq/llama-3.1-8b-instant`                          | Llama 3.1 8B Instant    | 否   | 文本         | 131,072 |
+| `groq/meta-llama/llama-4-scout-17b-16e-instruct`     | Llama 4 Scout 17B       | 否   | 文本 + 图像  | 131,072 |
+| `groq/openai/gpt-oss-120b`                           | GPT OSS 120B            | 是   | 文本         | 131,072 |
+| `groq/openai/gpt-oss-20b`                            | GPT OSS 20B             | 是   | 文本         | 131,072 |
+| `groq/openai/gpt-oss-safeguard-20b`                  | Safety GPT OSS 20B      | 是   | 文本         | 131,072 |
+| `groq/qwen/qwen3-32b`                                | Qwen3 32B               | 是   | 文本         | 131,072 |
+| `groq/groq/compound`                                 | Compound                | 是   | 文本         | 131,072 |
+| `groq/groq/compound-mini`                            | Compound Mini           | 是   | 文本         | 131,072 |
 
 <Tip>
   目录会随每次 OpenClaw 发布而更新。`openclaw models list --provider groq` 显示您安装版本已知的行；请与 [console.groq.com/docs/models](https://console.groq.com/docs/models) 交叉核对新增或已弃用的模型。

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4a66cc1a8ceb0dcb6358520b8776cece"
+mmh3_hash: "da9faede99fef99917073a4a043514de"
 summary: "OpenClaw code mode：一种可选的 exec/wait 工具界面，由 QuickJS-WASI 和隐藏的运行范围工具目录支撑"
 title: "Code mode"
 sidebarTitle: "Code mode"
@@ -11,7 +11,12 @@ read_when:
 
 Code mode 是 OpenClaw Agent 运行时的一项实验性功能，默认关闭。启用后，OpenClaw 会为一次运行改变模型所见的内容：不是直接暴露每个已启用工具的 Schema，而是让模型只能看到 `exec` 和 `wait`。
 
-本页记录 OpenClaw code mode。它不是 Codex Code mode。Codex Code mode 是 Codex 编码工作架的一部分，有自己的项目工作区、运行时、工具和执行语义。Codex Code mode 和 Codex 原生动态工具搜索是稳定的 Codex 工作架界面。OpenClaw code mode 是 OpenClaw 自有的、用于通用 OpenClaw 运行的实验性工具界面适配器。它使用 `quickjs-wasi`、隐藏的 OpenClaw 工具目录和正常的 OpenClaw 工具执行器。
+本页记录 OpenClaw code mode。它不是 Codex Code mode。两个功能共用同一名称，但由不同运行时实现并暴露不同的 `exec` 合约：
+
+- Codex Code Mode 为 Codex 应用服务器线程启用，除非受限工具策略禁用原生 code mode。它在 Codex 编码工作架中运行，模型通过 `exec.command` 合约写入 shell 命令。
+- OpenClaw code mode 除非配置了 `tools.codeMode.enabled: true` 否则禁用。它在 OpenClaw 通用 Agent 运行时中运行，模型通过 `exec.code` 合约写入 JavaScript 或 TypeScript 程序。
+
+Codex Code Mode 和 Codex 原生动态工具搜索是稳定的 Codex 工作架界面。OpenClaw code mode 是 OpenClaw 自有的、用于通用 OpenClaw 运行的实验性工具界面适配器。它使用 `quickjs-wasi`、隐藏的 OpenClaw 工具目录和正常的 OpenClaw 工具执行器。
 
 ## 这是什么？
 
@@ -208,14 +213,18 @@ Code mode 目录的范围为每次运行。它不得从另一个 Agent、Session
 
 ```typescript
 type CodeModeExecInput = {
-  code: string;
+  code?: string;
+  command?: string;
   language?: "javascript" | "typescript";
 };
 ```
 
 输入规则：
 
-- `code` 是必填项且必须非空。
+- `code` 或 `command` 之一必须非空。
+- `code` 是面向模型的文档字段。
+- `command` 作为 Hook 策略和受信重写的 exec 兼容别名被接受；当两者都存在时，值必须匹配。
+- 外层 code mode `exec` Hook 事件包含 `toolKind: "code_mode_exec"`，并在输入语言已知时包含 `toolInputKind: "javascript" | "typescript"`，以便策略区分 code mode 单元与共享相同工具名称的 shell 风格 `exec` 调用。
 - `language` 默认为 `"javascript"`。
 - 如果 `language` 为 `"typescript"`，OpenClaw 在评估前进行转换。
 - `exec` 在 v1 中拒绝 `import`、`require`、动态导入和模块加载器模式。

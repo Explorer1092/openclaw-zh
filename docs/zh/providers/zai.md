@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8bfcf50d677d3273e5449541af238e17"
+mmh3_hash: "1af0524fa869005faef1a1aa93d1bdcb"
 title: "Z.AI"
 summary: "将 Z.AI (GLM 模型) 与 OpenClaw 一起使用"
 read_when:
@@ -9,9 +9,16 @@ read_when:
 
 Z.AI 是 **GLM** 模型的 API 平台。它为 GLM 提供 REST API，并使用 API 密钥进行身份验证。在 Z.AI 控制台中创建您的 API 密钥。OpenClaw 使用带有 Z.AI API 密钥的 `zai` Provider。
 
-- Provider：`zai`
-- 身份验证：`ZAI_API_KEY`
-- API：Z.AI Chat Completions（Bearer 身份验证）
+| 属性 | 值                                           |
+| ---- | -------------------------------------------- |
+| Provider | `zai`                                   |
+| 身份验证 | `ZAI_API_KEY`（旧版别名：`Z_AI_API_KEY`） |
+| API  | Z.AI Chat Completions（Bearer 身份验证）     |
+
+## GLM 模型
+
+GLM 是一个模型系列，而非单独的 Provider。在 OpenClaw 中，GLM 模型使用
+`zai/glm-5.1` 格式的引用：Provider `zai`，模型 ID `glm-5.1`。
 
 ## 快速开始
 
@@ -25,17 +32,9 @@ Z.AI 是 **GLM** 模型的 API 平台。它为 GLM 提供 REST API，并使用 A
         openclaw onboard --auth-choice zai-api-key
         ```
       </Step>
-      <Step title="设置默认模型">
-        ```json5
-        {
-          env: { ZAI_API_KEY: "sk-..." },
-          agents: { defaults: { model: { primary: "zai/glm-5.1" } } },
-        }
-        ```
-      </Step>
       <Step title="验证模型是否可用">
         ```bash
-        openclaw models list --provider zai
+        openclaw models list --all --provider zai
         ```
       </Step>
     </Steps>
@@ -61,17 +60,9 @@ Z.AI 是 **GLM** 模型的 API 平台。它为 GLM 提供 REST API，并使用 A
         openclaw onboard --auth-choice zai-cn
         ```
       </Step>
-      <Step title="设置默认模型">
-        ```json5
-        {
-          env: { ZAI_API_KEY: "sk-..." },
-          agents: { defaults: { model: { primary: "zai/glm-5.1" } } },
-        }
-        ```
-      </Step>
       <Step title="验证模型是否可用">
         ```bash
-        openclaw models list --provider zai
+        openclaw models list --all --provider zai
         ```
       </Step>
     </Steps>
@@ -79,9 +70,37 @@ Z.AI 是 **GLM** 模型的 API 平台。它为 GLM 提供 REST API，并使用 A
   </Tab>
 </Tabs>
 
-## 内置 GLM 目录
+## 配置示例
 
-OpenClaw 目前内置以下 `zai` Provider 模型：
+<Tip>
+`zai-api-key` 让 OpenClaw 从密钥中检测匹配的 Z.AI 端点并自动应用正确的 Base URL。当您想强制使用特定 Coding Plan 或通用 API 接口时，请使用明确的区域选项。
+</Tip>
+
+```json5
+{
+  env: { ZAI_API_KEY: "sk-..." },
+  models: {
+    providers: {
+      zai: {
+        // 示例值。入门程序为您的端点写入匹配的 baseUrl。
+        baseUrl: "https://api.z.ai/api/paas/v4",
+      },
+    },
+  },
+  agents: { defaults: { model: { primary: "zai/glm-5.1" } } },
+}
+```
+
+## 内置目录
+
+OpenClaw 在 Plugin 清单中提供捆绑的 `zai` Provider 目录，因此只读
+列表可以在不加载 Provider 运行时的情况下显示已知的 GLM 行：
+
+```bash
+openclaw models list --all --provider zai
+```
+
+清单支持的目录当前包含：
 
 | 模型引用             | 说明     |
 | -------------------- | -------- |
@@ -100,8 +119,12 @@ OpenClaw 目前内置以下 `zai` Provider 模型：
 | `zai/glm-4.5v`       |          |
 
 <Tip>
-GLM 模型可用作 `zai/<model>`（例如：`zai/glm-5`）。默认内置模型引用为 `zai/glm-5.1`。
+GLM 模型可用作 `zai/<model>`（例如：`zai/glm-5`）。
 </Tip>
+
+<Note>
+默认内置模型引用为 `zai/glm-5.1`。GLM 版本和可用性可能会变化；运行 `openclaw models list --all --provider zai` 查看您已安装版本所知的目录。
+</Note>
 
 ## 高级配置
 
@@ -173,18 +196,19 @@ GLM 模型可用作 `zai/<model>`（例如：`zai/glm-5`）。默认内置模型
 
   <Accordion title="身份验证详情">
     - Z.AI 使用带有您的 API 密钥的 Bearer 身份验证。
-    - `zai-api-key` 入门选项从密钥前缀自动检测匹配的 Z.AI 端点。
+    - `zai-api-key` 入门选项通过探测支持的端点来自动检测匹配的 Z.AI 端点。
     - 当您想强制使用特定 API 接口时，请使用明确的区域选项（`zai-coding-global`、`zai-coding-cn`、`zai-global`、`zai-cn`）。
+    - 旧版环境变量 `Z_AI_API_KEY` 仍被接受；如果 `ZAI_API_KEY` 未设置，OpenClaw 会在启动时将其复制到 `ZAI_API_KEY`。
   </Accordion>
 </AccordionGroup>
 
 ## 相关
 
 <CardGroup cols={2}>
-  <Card title="GLM 模型系列" href="/providers/glm" icon="microchip">
-    GLM 模型系列概览。
-  </Card>
   <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     选择 Provider、模型引用和故障转移行为。
+  </Card>
+  <Card title="配置参考" href="/gateway/configuration-reference" icon="gear">
+    完整的 OpenClaw 配置 Schema，包括 Provider 和模型设置。
   </Card>
 </CardGroup>

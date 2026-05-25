@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8bde5331d2a9e02f173e1d5dd13ffdcb"
+mmh3_hash: "479ac1d61be508ffb06ab5f02a1b4884"
 summary: "如何通过操作者管理的过滤代理路由 OpenClaw 运行时 HTTP 和 WebSocket 流量"
 title: "网络代理"
 read_when:
@@ -97,9 +97,9 @@ proxy:
   loopbackMode: gateway-only # gateway-only、proxy 或 block
 ```
 
-- `gateway-only`（默认）：OpenClaw 在 Proxyline 的托管绕过策略中注册 Gateway 回环权限，使本地 Gateway WebSocket 流量可以直接连接。自定义回环 Gateway 端口有效，因为活跃 Gateway URL 的主机和端口已注册。
-- `proxy`：OpenClaw 不注册 Gateway 回环绕过，因此本地 Gateway 流量通过托管代理发送。如果代理是远程的，它必须为 OpenClaw 主机的回环服务提供特殊路由，例如将其映射到代理可达的主机名、IP 或隧道。标准远程代理从代理主机解析 `127.0.0.1` 和 `localhost`，而不是从 OpenClaw 主机解析。
-- `block`：OpenClaw 在打开套接字之前拒绝回环 Gateway 控制平面连接。
+- `gateway-only`（默认）：OpenClaw 在 Proxyline 的托管绕过策略中注册 Gateway 回环权限，使本地 Gateway WebSocket 流量可以直接连接。自定义回环 Gateway 端口有效，因为活跃 Gateway URL 的主机和端口已注册。捆绑的 browser Plugin 也可为 OpenClaw 启动的托管浏览器注册精确的本地 CDP 就绪和 DevTools WebSocket 端点，捆绑的 Ollama 内存嵌入 Provider 可以为配置的主机本地回环嵌入来源使用自己更窄的受保护直接路径。
+- `proxy`：OpenClaw 不注册 Gateway 或 Ollama 回环绕过，因此本地 Gateway 流量通过托管代理发送。如果代理是远程的，它必须为 OpenClaw 主机的回环服务提供特殊路由，例如将其映射到代理可达的主机名、IP 或隧道。标准远程代理从代理主机解析 `127.0.0.1` 和 `localhost`，而不是从 OpenClaw 主机解析。
+- `block`：OpenClaw 在打开套接字之前拒绝回环 Gateway 控制平面连接和受保护的 Ollama 主机本地嵌入回环连接。
 
 如果 `enabled=true` 但未配置有效的代理 URL，受保护的命令会在启动时失败，而不是回退到直接网络访问。
 
@@ -254,7 +254,7 @@ proxy:
 - 原始的 `net`、`tls` 和 `http2` 套接字、本机插件以及非 OpenClaw 子进程可能绕过 Node 级代理路由，除非它们继承并遵守代理环境变量。分叉的 OpenClaw 子 CLI 继承托管代理 URL 和 `proxy.loopbackMode` 状态。
 - IRC 是一个原始 TCP/TLS Channel，在操作者管理的转发代理路由之外。在要求所有出口通过该转发代理的部署中，除非直接 IRC 出口被明确批准，否则设置 `channels.irc.enabled=false`。
 - 本地调试代理是诊断工具，当托管代理模式处于活跃状态时，代理请求和 CONNECT 隧道的直接上游转发默认禁用；仅对已批准的本地诊断启用直接转发。
-- 用户本地 WebUI 和本地模型服务器在需要时应在操作者代理策略中允许列出；OpenClaw 不为它们公开通用的本地网络绕过。
+- 用户本地 WebUI 和本地模型服务器在需要时应在操作者代理策略中允许列出；OpenClaw 不为它们公开通用的本地网络绕过。捆绑的 Ollama 内存嵌入 Provider 范围更窄：它仅对从配置的 `baseUrl` 派生的精确主机本地回环嵌入来源使用受保护的直接路径，以便当托管代理无法访问主机回环时主机本地嵌入仍然有效。LAN、tailnet、私有网络和公共 Ollama 嵌入主机仍然使用托管代理路径。`proxy.loopbackMode: "proxy"` 将此 Ollama 回环流量通过托管代理发送，`proxy.loopbackMode: "block"` 在打开连接之前拒绝它。
 - Gateway 控制平面代理绕过有意限制为 `localhost` 和字面回环 IP URL。使用 `ws://127.0.0.1:18789`、`ws://[::1]:18789` 或 `ws://localhost:18789` 进行本地直接 Gateway 控制平面连接；其他主机名像普通的基于主机名的流量一样路由。
 - OpenClaw 不检查、测试或认证你的代理策略。
 - 将代理策略变更视为安全敏感的操作变更。

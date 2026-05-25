@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c1b32edb1ad7b550f533987c1d07c314"
+mmh3_hash: "cb9655fcea4ef3b9a51ed58a711e1a5e"
 title: "展示"
 description: "来自社区的真实 OpenClaw 项目"
 summary: "社区构建的项目和由 OpenClaw 驱动的集成"
@@ -13,26 +13,6 @@ OpenClaw 项目不是玩具演示。人们正在通过他们日常使用的 Chan
 <Info>
 **想要被展示？** 在 [Discord 的 #self-promotion](https://discord.gg/clawd) 分享您的项目，或[在 X 上标记 @openclaw](https://x.com/openclaw)。
 </Info>
-
-## 视频
-
-如果你想以最短的路径从"这是什么？"到"好的，我明白了"，从这里开始。
-
-<CardGroup cols={3}>
-
-<Card title="完整设置演练" href="https://www.youtube.com/watch?v=SaWSPZoPX34">
-  VelvetShark，28 分钟。端到端安装、引导并完成第一个可用助手。
-</Card>
-
-<Card title="社区展示精选" href="https://www.youtube.com/watch?v=mMSKQvlmFuQ">
-  快速浏览围绕 OpenClaw 构建的真实项目、界面和工作流。
-</Card>
-
-<Card title="野外的项目" href="https://www.youtube.com/watch?v=5kkIJNUGFho">
-  来自社区的示例，从聊天原生编码循环到硬件和个人自动化。
-</Card>
-
-</CardGroup>
 
 ## 来自 Discord 的新鲜内容
 

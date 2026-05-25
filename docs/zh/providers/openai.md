@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d57079764e54e1e81d1e1ec33f6bb71e"
+mmh3_hash: "a7e693c4b466ac222b1fd102fc0815d6"
 title: "OpenAI"
 summary: "在 OpenClaw 中通过 API 密钥或 Codex 订阅使用 OpenAI"
 read_when:
@@ -125,19 +125,19 @@ OpenClaw 可以使用 OpenAI 或 OpenAI 兼容嵌入端点进行 `memory_search`
 
     | 模型引用              | 运行时配置                                         | 路由                       | 身份验证              |
     | --------------------- | -------------------------------------------------- | -------------------------- | --------------------- |
-    | `openai/gpt-5.5`      | 省略 / Provider/模型 `agentRuntime.id: "codex"`    | Codex app-server 套件      | `openai-codex` 配置文件 |
-    | `openai/gpt-5.4-mini` | 省略 / Provider/模型 `agentRuntime.id: "codex"`    | Codex app-server 套件      | `openai-codex` 配置文件 |
+    | `openai/gpt-5.5`      | 省略 / Provider/模型 `agentRuntime.id: "codex"`    | Codex app-server 套件      | Codex 兼容 OpenAI 配置文件 |
+    | `openai/gpt-5.4-mini` | 省略 / Provider/模型 `agentRuntime.id: "codex"`    | Codex app-server 套件      | Codex 兼容 OpenAI 配置文件 |
     | `openai/gpt-5.5`      | Provider/模型 `agentRuntime.id: "pi"`              | PI 嵌入运行时              | `openai` 配置文件或选定的 `openai-codex` 配置文件 |
 
     <Note>
-    `openai/*` Agent 模型使用 Codex app-server 套件。要为 Agent 模型使用 API 密钥身份验证，请创建 `openai-codex` API 密钥配置文件并用 `auth.order.openai-codex` 排序；`OPENAI_API_KEY` 仍是非 Agent OpenAI API 接口的直接回退。
+    `openai/*` Agent 模型使用 Codex app-server 套件。要为 Agent 模型使用 API 密钥身份验证，请创建 Codex 兼容 API 密钥配置文件并用 `auth.order.openai` 排序；`OPENAI_API_KEY` 仍是非 Agent OpenAI API 接口的直接回退。旧版 `auth.order.openai-codex` 条目仍然有效。
     </Note>
 
     ### 配置示例
 
     ```json5
     {
-      env: { OPENAI_API_KEY: "sk-..." },
+      env: { OPENAI_API_KEY: "example-openai-key-not-real" },
       agents: { defaults: { model: { primary: "openai/gpt-5.5" } } },
     }
     ```
@@ -146,7 +146,7 @@ OpenClaw 可以使用 OpenAI 或 OpenAI 兼容嵌入端点进行 `memory_search`
 
     ```json5
     {
-      env: { OPENAI_API_KEY: "sk-..." },
+      env: { OPENAI_API_KEY: "example-openai-key-not-real" },
       agents: { defaults: { model: { primary: "openai/chat-latest" } } },
     }
     ```
@@ -200,9 +200,10 @@ OpenClaw 可以使用 OpenAI 或 OpenAI 兼容嵌入端点进行 `memory_search`
 
     | 模型引用          | 运行时配置                                         | 路由                                            | 身份验证                               |
     |-------------------| -------------------------------------------------- | ----------------------------------------------- | -------------------------------------- |
-    | `openai/gpt-5.5`  | 省略 / Provider/模型 `agentRuntime.id: "codex"`    | 原生 Codex app-server 套件                      | Codex 登录或选定的 `openai-codex` 配置文件 |
+    | `openai/gpt-5.5`  | 省略 / Provider/模型 `agentRuntime.id: "codex"`    | 原生 Codex app-server 套件                      | Codex 登录或选定的 `openai` 身份验证配置文件 |
     | `openai/gpt-5.5`  | Provider/模型 `agentRuntime.id: "pi"`              | PI 嵌入运行时加内部 Codex 身份验证传输          | 选定的 `openai-codex` 配置文件         |
     | `openai-codex/gpt-5.5` | 由 doctor 修复                                | 旧版路由重写为 `openai/gpt-5.5`                 | 现有 `openai-codex` 配置文件           |
+    | `codex-cli/gpt-5.5` | 由 doctor 修复                                   | 旧版 CLI 路由重写为 `openai/gpt-5.5`             | Codex app-server 身份验证              |
 
     <Warning>
     不要配置旧版 `openai-codex/gpt-5.1*`、`openai-codex/gpt-5.2*` 或 `openai-codex/gpt-5.3*` 模型引用。ChatGPT/Codex OAuth 账户现在拒绝这些模型。使用 `openai/gpt-5.5`；OpenAI Agent 轮次现在默认选择 Codex 运行时。
@@ -410,7 +411,7 @@ openclaw infer image generate \
 
 OpenClaw 为跨 Provider 的 GPT-5 系列运行添加共享的 GPT-5 提示贡献。它按模型 id 应用，因此 `openai/gpt-5.5`、修复前的旧版引用（如 `openai-codex/gpt-5.5`）、`openrouter/openai/gpt-5.5`、`opencode/gpt-5.5` 和其他兼容的 GPT-5 引用都会收到相同的叠加层。较旧的 GPT-4.x 模型则不会。
 
-内置的原生 Codex 套件通过 Codex app-server 开发者指令使用相同的 GPT-5 行为和心跳叠加层，因此通过 Codex 路由的 `openai/gpt-5.x` Session 即使在 Codex 拥有套件提示的其余部分时，也保持相同的后续和主动心跳指导。
+内置的原生 Codex 套件**不会**通过 Codex app-server 开发者指令接收这个 OpenClaw GPT-5 叠加层。原生 Codex 保留 Codex 拥有的基础、模型、个性和项目文档行为；OpenClaw 仅贡献运行时上下文，例如 Channel 传递、OpenClaw 动态工具、ACP 委托、工作区上下文和 OpenClaw 技能。
 
 GPT-5 贡献为角色持久性、执行安全、工具规范、输出形状、完成检查和验证添加了带标签的行为契约。Channel 特定的回复和静默消息行为保留在共享的 OpenClaw 系统提示和出站传递策略中。GPT-5 指导对匹配的模型始终启用。友好的交互风格层是独立且可配置的。
 

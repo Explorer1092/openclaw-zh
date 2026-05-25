@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cec0181a04253fc1ded3c015b9421ce6"
+mmh3_hash: "7a034c9f423fe38b621e096d4ff1843d"
 title: "Model provider quickstart"
 summary: "OpenClaw 支持的模型 Provider（LLM）"
 read_when:
@@ -32,7 +32,7 @@ OpenClaw 可以使用多个 LLM Provider。选择一个，进行身份验证，�
 - [DeepInfra](/providers/deepinfra)
 - [fal](/providers/fal)
 - [Fireworks](/providers/fireworks)
-- [GLM 模型](/providers/glm)
+- [Z.AI (GLM)](/providers/zai)
 - [MiniMax](/providers/minimax)
 - [Mistral](/providers/mistral)
 - [Moonshot AI (Kimi + Kimi Coding)](/providers/moonshot)

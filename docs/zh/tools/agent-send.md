@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7f97aaf5cac2fb0404a551ee15e61ec9"
+mmh3_hash: "3c4ec2855f2ed65381c9d09817af7921"
 summary: "从 CLI 运行 Agent 轮次并可选地将回复发送到 Channel"
 read_when:
   - 想从脚本或命令行触发 Agent 运行
@@ -31,6 +31,9 @@ title: "Agent send"
 
     # 复用现有 Session
     openclaw agent --session-id abc123 --message "Continue the task"
+
+    # 使用显式 Session key
+    openclaw agent --session-key agent:ops:incident-42 --message "Summarize status"
     ```
 
   </Step>
@@ -54,6 +57,7 @@ title: "Agent send"
 | ----------------------------- | ------------------------------------------------------- |
 | `--message \<text\>`          | 要发送的消息（必填）                                    |
 | `--to \<dest\>`               | 从目标派生 Session key（电话号码、聊天 id）             |
+| `--session-key \<key\>`       | 使用显式 Session key                                    |
 | `--agent \<id\>`              | 指定已配置的 Agent（使用其 `main` Session）             |
 | `--session-id \<id\>`         | 通过 id 复用现有 Session                                |
 | `--local`                     | 强制使用本地嵌入式运行时（跳过 Gateway）                |
@@ -72,6 +76,7 @@ title: "Agent send"
 - 默认情况下，CLI **通过 Gateway** 运行。添加 `--local` 可强制在当前机器上使用嵌入式运行时。
 - 如果 Gateway 不可访问，CLI **回退**到本地嵌入式运行。
 - Session 选择：`--to` 派生 Session key（群组/Channel 目标保持隔离；直接聊天折叠为 `main`）。
+- `--session-key` 选择显式 key。带 Agent 前缀的 key 必须使用 `agent:<agent-id>:<session-key>` 格式，且同时提供 `--agent` 时必须与该 agent id 匹配。提供了 `--agent` 时，裸非哨兵 key 的作用域限定为该 Agent；例如，`--agent ops --session-key incident-42` 路由到 `agent:ops:incident-42`。不提供 `--agent` 时，裸非哨兵 key 的作用域限定为已配置的默认 Agent。只有在不提供 `--agent` 时，字面值 `global` 和 `unknown` 才保持无作用域；在这种情况下，嵌入式回退和存储所有权使用已配置的默认 Agent。
 - 思考和详细标志会持久保存到 Session 存储中。
 - 输出：默认为纯文本，或使用 `--json` 获取结构化载荷加元数据。
 - 使用 `--json --deliver` 时，JSON 包含已发送、已抑制、部分发送和发送失败的交付状态。请参见 [JSON 交付状态](/cli/agent#json-delivery-status)。
@@ -84,6 +89,12 @@ openclaw agent --to +15555550123 --message "Trace logs" --verbose on --json
 
 # 带思考级别的轮次
 openclaw agent --session-id 1234 --message "Summarize inbox" --thinking medium
+
+# 显式 Session key
+openclaw agent --session-key agent:ops:incident-42 --message "Summarize status"
+
+# 作用域到 Agent 的旧版 key
+openclaw agent --agent ops --session-key incident-42 --message "Summarize status"
 
 # 发送到与 Session 不同的 Channel
 openclaw agent --agent ops --message "Alert" --deliver --reply-channel telegram --reply-to "@admin"

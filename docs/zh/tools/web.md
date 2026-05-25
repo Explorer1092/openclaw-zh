@@ -1,7 +1,7 @@
 ---
 title: "Web Search"
 sidebarTitle: "Web Search"
-mmh3_hash: "58d1a34517b9ff0d988e315f7977e8a6"
+mmh3_hash: "ce2d081f06fb8893ef958ccb3c5295a3"
 summary: "web_search、x_search 和 web_fetch — 搜索网络、搜索 X 帖子或获取页面内容"
 read_when:
   - 您想启用或配置 web_search
@@ -98,7 +98,7 @@ OpenClaw 还包含用于搜索 X（前 Twitter）帖子的 `x_search` 和用于�
 | [Exa](/tools/exa-search)                          | 结构化 + 提取          | 神经/关键词模式、日期、内容提取                    | `EXA_API_KEY`                                                                    |
 | [Firecrawl](/tools/firecrawl)                     | 结构化摘要             | 通过 `firecrawl_search` 工具                       | `FIRECRAWL_API_KEY`                                                              |
 | [Gemini](/tools/gemini-search)                    | AI 综合 + 引用         | --                                                 | `GEMINI_API_KEY`                                                                 |
-| [Grok](/tools/grok-search)                        | AI 综合 + 引用         | --                                                 | `XAI_API_KEY`                                                                    |
+| [Grok](/tools/grok-search)                        | AI 综合 + 引用         | --                                                 | xAI OAuth、`XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`       |
 | [Kimi](/tools/kimi-search)                        | AI 综合 + 引用         | --                                                 | `KIMI_API_KEY` / `MOONSHOT_API_KEY`                                              |
 | [MiniMax Search](/tools/minimax-search)           | 结构化摘要             | 地区（`global` / `cn`）                            | `MINIMAX_CODE_PLAN_KEY` / `MINIMAX_CODING_API_KEY` / `MINIMAX_OAUTH_TOKEN`       |
 | [Ollama Web Search](/tools/ollama-search)         | 结构化摘要             | --                                                 | 默认无需；需要 `ollama signin`，可复用 Ollama Provider 的 bearer 认证            |
@@ -162,7 +162,7 @@ API 支持的 Provider 优先：
 1. **Brave** — `BRAVE_API_KEY` 或 `plugins.entries.brave.config.webSearch.apiKey`（顺序 10）
 2. **MiniMax Search** — `MINIMAX_CODE_PLAN_KEY` / `MINIMAX_CODING_API_KEY` / `MINIMAX_OAUTH_TOKEN` / `MINIMAX_API_KEY` 或 `plugins.entries.minimax.config.webSearch.apiKey`（顺序 15）
 3. **Gemini** — `plugins.entries.google.config.webSearch.apiKey`、`GEMINI_API_KEY` 或 `models.providers.google.apiKey`（顺序 20）
-4. **Grok** — `XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`（顺序 30）
+4. **Grok** — xAI OAuth、`XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`（顺序 30）
 5. **Kimi** — `KIMI_API_KEY` / `MOONSHOT_API_KEY` 或 `plugins.entries.moonshot.config.webSearch.apiKey`（顺序 40）
 6. **Perplexity** — `PERPLEXITY_API_KEY` / `OPENROUTER_API_KEY` 或 `plugins.entries.perplexity.config.webSearch.apiKey`（顺序 50）
 7. **Firecrawl** — `FIRECRAWL_API_KEY` 或 `plugins.entries.firecrawl.config.webSearch.apiKey`（顺序 60）
@@ -199,7 +199,9 @@ API 支持的 Provider 优先：
 }
 ```
 
-Provider 专属配置（API 密钥、base URL、模式）位于 `plugins.entries.<plugin>.config.webSearch.*` 下。请参见各 Provider 页面的示例。
+Provider 专属配置（API 密钥、base URL、模式）位于 `plugins.entries.<plugin>.config.webSearch.*` 下。Gemini 还可以在其专属网络搜索配置和 `GEMINI_API_KEY` 之后，将 `models.providers.google.apiKey` 和 `models.providers.google.baseUrl` 作为较低优先级的回退。请参见各 Provider 页面的示例。Grok 还可以复用通过 `openclaw models auth login --provider xai --method oauth` 生成的 xAI OAuth 认证配置文件；API 密钥配置仍为回退。
+
+`tools.web.search.provider` 会根据捆绑和已安装 Plugin Manifest 声明的网络搜索 Provider id 进行验证。拼写错误（如 `"brvae"`）会导致配置验证失败，而非静默地回退到自动检测。如果已配置的 Provider 仅有过时的 Plugin 证据（例如卸载第三方 Plugin 后残留的 `plugins.entries.<plugin>` 块），OpenClaw 会保持启动弹性并报告警告，以便你重新安装 Plugin 或运行 `openclaw doctor --fix` 清理过时配置。
 
 `web_fetch` 回退 Provider 选择是独立的：
 

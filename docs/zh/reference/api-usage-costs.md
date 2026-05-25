@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9cbd3fc55558dd5678fa78a371edcf43"
+mmh3_hash: "48020b888210c187f2162d83e38abd3f"
 title: "API 使用量与费用"
 summary: "审计哪些功能可能花费资金、使用哪些密钥以及如何查看使用情况"
 read_when:
@@ -15,13 +15,13 @@ read_when:
 **每 Session 费用快照**
 
 - `/status` 显示当前 Session 模型、上下文使用情况和最后响应的 token 数。
-- 如果模型使用 **API 密钥身份验证**，`/status` 还会显示最后一次回复的**估计费用**。
+- 如果 OpenClaw 具有活跃模型的使用元数据和本地定价，`/status` 还会显示最后一次回复的**估计费用**。这可以包括明确定价的非 API 密钥提供商，例如 Bedrock `aws-sdk` 模型。
 - 如果实时 Session 元数据稀少，`/status` 可以从最新的转录使用条目中恢复 token/缓存计数器和活动运行时模型标签。现有的非零实时值仍然优先，当存储的总计缺失或更小时，提示大小的转录总计可以胜出。
 
 **每消息费用页脚**
 
-- `/usage full` 为每条回复附加一个使用页脚，包括**估计费用**（仅 API 密钥）。
-- `/usage tokens` 仅显示 token；订阅式 OAuth/token 和 CLI 流程隐藏美元费用。
+- `/usage full` 为每条回复附加一个使用页脚，包括**估计费用**（当为活跃模型配置了本地定价且使用元数据可用时）。
+- `/usage tokens` 仅显示 token；订阅式 OAuth/token 和 CLI 流程仍然只显示 token，除非该运行时提供兼容的使用元数据且配置了明确的本地定价。
 - Gemini CLI 注意：当 CLI 返回 JSON 输出时，OpenClaw 从 `stats` 读取使用情况，将 `stats.cached` 规范化为 `cacheRead`，并在需要时从 `stats.input_tokens - stats.cached` 推导输入 token。
 
 Anthropic 注意：Anthropic 工作人员告知我们，OpenClaw 风格的 Claude CLI 使用方式再次获得许可，因此 OpenClaw 将 Claude CLI 重用和 `claude -p` 使用视为此集成的被认可方式，除非 Anthropic 发布新策略。Anthropic 仍然不公开 OpenClaw 可以在 `/usage full` 中显示的每消息美元估算。
@@ -101,7 +101,7 @@ OpenClaw 可以从以下位置获取凭据：
 - **Exa**：`EXA_API_KEY` 或 `plugins.entries.exa.config.webSearch.apiKey`
 - **Firecrawl**：`FIRECRAWL_API_KEY` 或 `plugins.entries.firecrawl.config.webSearch.apiKey`
 - **Gemini（Google Search）**：`GEMINI_API_KEY` 或 `plugins.entries.google.config.webSearch.apiKey`
-- **Grok（xAI）**：`XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`
+- **Grok（xAI）**：xAI OAuth 配置文件、`XAI_API_KEY` 或 `plugins.entries.xai.config.webSearch.apiKey`
 - **Kimi（Moonshot）**：`KIMI_API_KEY`、`MOONSHOT_API_KEY` 或 `plugins.entries.moonshot.config.webSearch.apiKey`
 - **MiniMax Search**：`MINIMAX_CODE_PLAN_KEY`、`MINIMAX_CODING_API_KEY`、`MINIMAX_API_KEY` 或 `plugins.entries.minimax.config.webSearch.apiKey`
 - **Ollama Web Search**：对于可访问的已登录本地 Ollama 主机无需密钥；直接 `https://ollama.com` 搜索使用 `OLLAMA_API_KEY`，受身份验证保护的主机可以重用普通 Ollama 提供商 bearer 身份验证

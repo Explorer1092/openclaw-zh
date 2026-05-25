@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cdf35ce8f15b8110d6c3fe573180c24c"
+mmh3_hash: "be8ddbd5c2d14a125465835efdd7f757"
 title: "xAI"
 summary: "在 OpenClaw 中使用 xAI Grok 模型"
 read_when:
@@ -7,21 +7,59 @@ read_when:
   - 您正在配置 xAI 身份验证或模型 ID
 ---
 
-OpenClaw 内置了 `xai` Provider Plugin，用于 Grok 模型。
+OpenClaw 内置了 `xai` Provider Plugin，用于 Grok 模型。大多数用户推荐使用符合条件的 SuperGrok 或 X Premium 订阅进行 Grok OAuth。OpenClaw 本地优先：Gateway、配置、路由和工具在您的机器上运行，而 Grok 模型请求通过 xAI 进行身份验证并发送到 xAI 的 API。
 
-## 快速开始
+OAuth 不需要 xAI API 密钥，也不需要 Grok Build 应用。xAI 可能仍会在授权页面上显示 Grok Build，因为 OpenClaw 使用 xAI 的共享 OAuth 客户端。
+
+## 选择设置路径
+
+根据您的 OpenClaw 安装状态选择对应路径：
 
 <Steps>
-  <Step title="选择认证方式">
-    使用 [xAI 控制台](https://console.x.ai/)的 API 密钥，或通过符合条件的 xAI 账号进行 xAI OAuth 浏览器登录。OAuth 无需 xAI API 密钥，OpenClaw 也不需要 Grok Build 应用。xAI 可能仍将授权应用标记为 Grok Build，因为 OpenClaw 使用 xAI 的共享 OAuth 客户端。
-  </Step>
-  <Step title="登录">
-    设置 `XAI_API_KEY`，运行 API 密钥向导，或启动 OAuth 流程：
+  <Step title="全新 OpenClaw 安装">
+    在设置新的本地 Gateway 时，使用守护进程安装运行引导程序，然后在模型/身份验证步骤中选择 xAI/Grok OAuth 选项：
 
     ```bash
-    openclaw onboard --auth-choice xai-api-key
-    openclaw onboard --auth-choice xai-oauth
+    openclaw onboard --install-daemon
+    ```
+
+    在 VPS 或通过 SSH 时，在引导过程中使用设备码：
+
+    ```bash
+    openclaw onboard --install-daemon --auth-choice xai-device-code
+    ```
+
+    OAuth 不需要 xAI API 密钥。OpenClaw 不需要 Grok Build 应用。xAI 可能仍将授权应用标记为 Grok Build，因为 OpenClaw 使用 xAI 的共享 OAuth 客户端。
+
+  </Step>
+  <Step title="已有 OpenClaw 安装">
+    如果 OpenClaw 已配置，仅登录 xAI。不要仅为了连接 Grok 而重新运行完整引导或重新安装守护进程：
+
+    ```bash
     openclaw models auth login --provider xai --method oauth
+    ```
+
+    当 Gateway 通过 SSH、Docker 或 VPS 运行且 localhost 浏览器回调不方便时，改用设备码流程：
+
+    ```bash
+    openclaw models auth login --provider xai --device-code
+    ```
+
+    登录后若要将 Grok 设置为默认模型，请单独应用：
+
+    ```bash
+    openclaw models set xai/grok-4.3
+    ```
+
+    仅当您有意更改 Gateway、守护进程、Channel、工作区或其他设置选项时，才重新运行完整引导。
+
+  </Step>
+  <Step title="API 密钥路径">
+    API 密钥设置仍适用于 xAI 控制台密钥以及需要密钥支持的 Provider 配置的媒体功能：
+
+    ```bash
+    openclaw models auth login --provider xai --method api-key
+    export XAI_API_KEY=xai-...
     ```
 
   </Step>
@@ -35,8 +73,25 @@ OpenClaw 内置了 `xai` Provider Plugin，用于 Grok 模型。
 </Steps>
 
 <Note>
-OpenClaw 使用 xAI Responses API 作为内置 xAI 传输。同样的 `openclaw onboard --auth-choice xai-api-key` 或 `openclaw onboard --auth-choice xai-oauth` 凭据还可以驱动一级 `x_search`、远程 `code_execution` 以及 xAI 图像/视频生成。语音和转录目前需要 `XAI_API_KEY` 或 Provider 配置。`XAI_API_KEY` 或插件 Web 搜索配置也可以驱动 Grok 支持的 `web_search`。如果您在 `plugins.entries.xai.config.webSearch.apiKey` 下存储了 xAI 密钥，内置 xAI 模型 Provider 也会将其作为回退密钥。设置 `plugins.entries.xai.config.webSearch.baseUrl` 可以通过运营者 xAI Responses 代理路由 Grok `web_search` 以及默认情况下的 `x_search`。`code_execution` 调优在 `plugins.entries.xai.config.codeExecution` 下配置。
+OpenClaw 使用 xAI Responses API 作为内置 xAI 传输。来自 `openclaw models auth login --provider xai --method oauth`、`openclaw models auth login --provider xai --device-code` 或 `openclaw models auth login --provider xai --method api-key` 的同一凭据还可以驱动一级 `web_search`、`x_search`、远程 `code_execution` 以及 xAI 图像/视频生成。语音和转录目前需要 `XAI_API_KEY` 或 Provider 配置。Grok 支持的 `web_search` 优先使用 xAI OAuth，并回退到 `XAI_API_KEY` 或插件 Web 搜索配置。如果您在 `plugins.entries.xai.config.webSearch.apiKey` 下存储了 xAI 密钥，内置 xAI 模型 Provider 也会将其作为回退密钥。设置 `plugins.entries.xai.config.webSearch.baseUrl` 可以通过运营者 xAI Responses 代理路由 Grok `web_search` 以及默认情况下的 `x_search`。`code_execution` 调优在 `plugins.entries.xai.config.codeExecution` 下配置。
 </Note>
+
+## OAuth 故障排除
+
+- 如果浏览器 OAuth 无法访问 `127.0.0.1:56121`，请使用 `openclaw models auth login --provider xai --device-code`。
+- 如果登录成功但 Grok 不是默认模型，请运行 `openclaw models set xai/grok-4.3`。
+- 要查看已保存的 xAI 身份验证配置，请运行：
+
+  ```bash
+  openclaw models auth list --provider xai
+  openclaw models status
+  ```
+
+- xAI 决定哪些账号可以接收 OAuth API 令牌。如果账号不符合条件，请尝试 API 密钥路径或在 xAI 一侧检查订阅状态。
+
+<Tip>
+从 SSH、Docker 或 VPS 登录时请使用 `xai-device-code`。OpenClaw 会打印 xAI URL 和短代码；在远程进程轮询 xAI 完成令牌交换时，在任意本地浏览器中完成登录。
+</Tip>
 
 ## 内置目录
 
@@ -44,13 +99,14 @@ OpenClaw 开箱即包含当前 xAI 聊天模型，在模型选择器中按最新
 
 | 系列           | 模型 ID                                                                  |
 | -------------- | ------------------------------------------------------------------------ |
+| Grok Build 0.1 | `grok-build-0.1`                                                         |
 | Grok 4.3       | `grok-4.3`                                                               |
 | Grok 4.20 Beta | `grok-4.20-beta-latest-reasoning`、`grok-4.20-beta-latest-non-reasoning` |
 
-该插件仍会前向解析旧版 Grok 3、Grok 4、Grok 4 Fast、Grok 4.1 Fast 和 Grok Code 别名以兼容现有配置，但 OpenClaw 不再在可选目录中显示这些已退役的上游别名。
+该插件仍会前向解析旧版 Grok 3、Grok 4、Grok 4 Fast、Grok 4.1 Fast 和 Grok Code 别名以兼容现有配置。官方 Grok Code Fast 别名会规范化到 `grok-build-0.1`；OpenClaw 不再在可选目录中显示其他已退役的上游别名。
 
 <Tip>
-对于新的聊天和编程工作负载，请使用 `grok-4.3`，除非您明确需要 Grok 4.20 beta 别名。
+对于常规聊天请使用 `grok-4.3`，对于构建/编程专项工作负载请使用 `grok-build-0.1`，除非您明确需要 Grok 4.20 beta 别名。
 </Tip>
 
 ## OpenClaw 功能覆盖
@@ -94,6 +150,9 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
 
 | 旧版别名                  | 规范 ID                               |
 | ------------------------- | ------------------------------------- |
+| `grok-code-fast-1`        | `grok-build-0.1`                      |
+| `grok-code-fast`          | `grok-build-0.1`                      |
+| `grok-code-fast-1-0825`   | `grok-build-0.1`                      |
 | `grok-4-fast-reasoning`   | `grok-4-fast`                         |
 | `grok-4-1-fast-reasoning` | `grok-4-1-fast`                       |
 | `grok-4.20-reasoning`     | `grok-4.20-beta-latest-reasoning`     |
@@ -103,9 +162,10 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
 
 <AccordionGroup>
   <Accordion title="Web 搜索">
-    内置的 `grok` Web 搜索 Provider 可以使用 `XAI_API_KEY` 或插件 Web 搜索密钥：
+    内置的 `grok` Web 搜索 Provider 优先使用 xAI OAuth，然后回退到 `XAI_API_KEY` 或插件 Web 搜索密钥：
 
     ```bash
+    openclaw models auth login --provider xai --method oauth
     openclaw config set tools.web.search.provider grok
     ```
 
@@ -120,6 +180,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
     - 分辨率：`480P`、`720P`
     - 时长：生成/图像到视频为 1-15 秒，使用 `reference_image` 角色时为 1-10 秒，延长时为 2-10 秒
     - 参考图像生成：将每张提供图像的 `imageRoles` 设置为 `reference_image`；xAI 最多接受 7 张此类图像
+    - 默认操作超时：600 秒，除非设置了 `video_generate.timeoutMs` 或 `agents.defaults.videoGenerationModel.timeoutMs`
 
     <Warning>
     不接受本地视频缓冲区。视频编辑/延长输入请使用远程 `http(s)` URL。图像到视频接受本地图像缓冲区，因为 OpenClaw 可以将其编码为 data URL 发送给 xAI。
@@ -155,6 +216,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
     - 纵横比：`1:1`、`16:9`、`9:16`、`4:3`、`3:4`、`2:3`、`3:2`
     - 分辨率：`1K`、`2K`
     - 数量：最多 4 张图像
+    - 默认操作超时：600 秒，除非设置了 `image_generate.timeoutMs` 或 `agents.defaults.imageGenerationModel.timeoutMs`
 
     OpenClaw 向 xAI 请求 `b64_json` 图像响应，使生成的媒体可以通过正常的 Channel 附件路径存储和投递。本地参考图像会被转换为 data URL；远程 `http(s)` 引用则直接传递。
 
@@ -360,7 +422,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
   </Accordion>
 
   <Accordion title="已知限制">
-    - xAI 身份验证可以使用 API 密钥、环境变量、插件配置回退，或通过符合条件的 xAI 账号进行 xAI OAuth 浏览器登录。OAuth 使用 `127.0.0.1:56121` 上的本地回调；对于远程主机，请在打开登录 URL 之前转发该端口。xAI 决定哪些账号可以接收 OAuth API 令牌，即使 OpenClaw 不需要 Grok Build 应用，同意页面也可能显示 Grok Build。
+    - xAI 身份验证可以使用 API 密钥、环境变量、插件配置回退，或通过符合条件的 xAI 账号进行浏览器 OAuth 或设备码 OAuth。浏览器 OAuth 使用 `127.0.0.1:56121` 上的本地回调；对于远程主机，请在打开登录 URL 之前转发该端口或改用 `xai-device-code`。xAI 决定哪些账号可以接收 OAuth API 令牌，即使 OpenClaw 不需要 Grok Build 应用，同意页面也可能显示 Grok Build。
     - `grok-4.20-multi-agent-experimental-beta-0304` 不支持常规 xAI Provider 路径，
       因为它需要与标准 OpenClaw xAI 传输不同的上游 API 接口。
     - xAI 实时语音尚未注册为 OpenClaw Provider。它需要与批量 STT 或流式转录不同的双向语音 Session 合约。
@@ -372,6 +434,7 @@ OpenClaw 使用 xAI 的 REST 图像/视频/TTS/STT API 进行媒体生成、语�
     - 原生 xAI 请求默认启用 `tool_stream: true`。将 `agents.defaults.models["xai/<model>"].params.tool_stream` 设置为 `false` 可禁用它。
     - 内置 xAI 封装器在发送原生 xAI 请求前会剥离不支持的严格工具 Schema 标志和推理负载键。
     - `web_search`、`x_search` 和 `code_execution` 作为 OpenClaw 工具公开。OpenClaw 在每次工具请求中启用所需的具体 xAI 内置工具，而不是在每次聊天轮次中附加所有原生工具。
+    - Grok `web_search` 读取 `plugins.entries.xai.config.webSearch.baseUrl`。`x_search` 读取 `plugins.entries.xai.config.xSearch.baseUrl`，然后回退到 Grok Web 搜索 Base URL。
     - `x_search` 和 `code_execution` 由内置 xAI Plugin 管理，而非硬编码到核心模型运行时中。
     - `code_execution` 是远程 xAI 沙箱执行，不是本地 [`exec`](/tools/exec)。
   </Accordion>

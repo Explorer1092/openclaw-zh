@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b05daf4d6afe5bcbe3ec1b04d6c3342c"
+mmh3_hash: "4644e7ef05b782012a7fe1f5f6352873"
 summary: "CLI 引导流程、认证/模型设置、输出和内部的完整参考"
 read_when:
   - 您需要 openclaw onboard 的详细行为
@@ -142,8 +142,14 @@ sidebarTitle: "CLI 参考"
     当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
 
   </Accordion>
+  <Accordion title="xAI（Grok）OAuth">
+    适用于符合条件的 SuperGrok 或 X Premium 账号的浏览器登录。这是大多数用户的推荐 xAI 路径。OpenClaw 存储生成的认证配置文件，用于 Grok 模型、Grok `web_search`、`x_search` 和 `code_execution`。
+  </Accordion>
+  <Accordion title="xAI（Grok）设备码">
+    使用短码代替 localhost 回调的远程友好型浏览器登录。在 SSH、Docker 或 VPS 主机中使用此方式。
+  </Accordion>
   <Accordion title="xAI（Grok）API 密钥">
-    提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。
+    提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。当你希望使用 xAI Console API 密钥而非订阅 OAuth 时使用此方式。
   </Accordion>
   <Accordion title="OpenCode">
     提示输入 `OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`），并让您选择 Zen 或 Go 目录。
@@ -210,6 +216,7 @@ sidebarTitle: "CLI 参考"
 模型行为：
 
 - 从检测到的选项中选择默认模型，或手动输入 Provider 和模型。
+- 自定义 Provider 引导会为常见模型 ID 推断图像支持，仅在模型名称未知时才询问。
 - 当引导从 Provider 认证选择开始时，模型选择器会自动偏向该 Provider。对于 Volcengine 和 BytePlus，同样的偏向也匹配其编码计划变体（`volcengine-plan/*`、`byteplus-plan/*`）。
 - 如果该偏向 Provider 过滤器结果为空，选择器会回退到完整目录，而不是显示无模型。
 - 向导运行模型检查，如果配置的模型未知或缺少认证，则发出警告。

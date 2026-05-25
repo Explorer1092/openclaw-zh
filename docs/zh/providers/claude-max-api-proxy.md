@@ -1,7 +1,7 @@
 ---
 title: "Claude Max API Proxy"
 sidebarTitle: "Claude Max API Proxy"
-mmh3_hash: "51a95f8b87b960b106dca4bd2912f049"
+mmh3_hash: "c6b387ba0e23d816ddf551d186738d60"
 summary: "社区代理，将 Claude 订阅凭据公开为 OpenAI 兼容端点"
 read_when:
   - 您想将 Claude Max 订阅与 OpenAI 兼容工具一起使用
@@ -150,12 +150,6 @@ read_when:
   </Accordion>
 </AccordionGroup>
 
-## 链接
-
-- **npm:** [https://www.npmjs.com/package/claude-max-api-proxy](https://www.npmjs.com/package/claude-max-api-proxy)
-- **GitHub:** [https://github.com/atalovesyou/claude-max-api-proxy](https://github.com/atalovesyou/claude-max-api-proxy)
-- **Issues:** [https://github.com/atalovesyou/claude-max-api-proxy/issues](https://github.com/atalovesyou/claude-max-api-proxy/issues)
-
 ## 注意事项
 
 - 这是一个**社区工具**，不受 Anthropic 或 OpenClaw 官方支持
@@ -176,7 +170,7 @@ read_when:
   <Card title="OpenAI provider" href="/providers/openai" icon="robot">
     用于 OpenAI/Codex 订阅。
   </Card>
-  <Card title="模型 Provider" href="/concepts/model-providers" icon="layers">
+  <Card title="模型选择" href="/concepts/model-providers" icon="layers">
     所有 Provider、模型引用和故障转移行为的概述。
   </Card>
   <Card title="配置" href="/gateway/configuration" icon="gear">

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "75021ea9d80b4ae471b278fa117c6929"
+mmh3_hash: "bc4dc2f20e0eeded48c14168a53f07c0"
 title: "Ollama"
 summary: "使用 Ollama 运行 OpenClaw（云端和本地模型）"
 read_when:
@@ -185,7 +185,7 @@ Ollama Provider 配置使用 `baseUrl` 作为规范键。OpenClaw 也接受 `bas
 | 目录查询         | 查询 `/api/tags`                                                                                                                                                    |
 | 能力检测         | 使用尽力而为的 `/api/show` 查找来读取 `contextWindow`、扩展的 `num_ctx` Modelfile 参数以及包括视觉/工具在内的能力                                                   |
 | 视觉模型         | `/api/show` 报告 `vision` 能力的模型被标记为图像支持（`input: ["text", "image"]`），因此 OpenClaw 会自动将图像注入提示词                                             |
-| 推理检测         | 使用模型名称启发式（`r1`、`reasoning`、`think`）标记 `reasoning`                                                                                                   |
+| 推理检测         | 在可用时使用 `/api/show` 能力（包括 `thinking`）；当 Ollama 省略能力时，回退到模型名称启发式（`r1`、`reasoning`、`think`）                                          |
 | Token 限制       | 将 `maxTokens` 设置为 OpenClaw 使用的默认 Ollama 最大 Token 上限                                                                                                   |
 | 成本             | 将所有成本设置为 `0`                                                                                                                                                |
 
@@ -199,7 +199,7 @@ ollama list
 openclaw models list
 ```
 
-对于避免完整 Agent 工具接口的窄文本生成冒烟测试，请使用本地 `infer model run`：
+对于避免完整 Agent 工具接口的窄文本生成冒烟测试，请使用完整 Ollama 模型引用的本地 `infer model run`：
 
 ```bash
 OLLAMA_API_KEY=ollama-local \
@@ -210,7 +210,9 @@ OLLAMA_API_KEY=ollama-local \
     --json
 ```
 
-对于视觉模型冒烟测试，添加图像文件：
+该路径仍使用 OpenClaw 配置的 Provider、身份验证和原生 Ollama 传输，但不启动聊天 Agent 轮次或加载 MCP/工具上下文。如果此操作成功但正常 Agent 回复失败，请继续排查模型的 Agent 提示词/工具能力。
+
+对于同样精简路径上的视觉模型冒烟测试，向 `infer model run` 添加一个或多个图像文件。这会将提示词和图像直接发送给所选 Ollama 视觉模型，不加载聊天工具、Memory 或之前的 Session 上下文：
 
 ```bash
 OLLAMA_API_KEY=ollama-local \
@@ -220,6 +222,19 @@ OLLAMA_API_KEY=ollama-local \
     --prompt "Describe this image in one sentence." \
     --file ./photo.jpg \
     --json
+```
+
+`model run --file` 接受被检测为 `image/*` 的文件，包括常见的 PNG、JPEG 和 WebP 输入。非图像文件会在调用 Ollama 之前被拒绝。如需语音识别，请改用 `openclaw infer audio transcribe`。
+
+当您通过 `/model ollama/<model>` 切换对话时，OpenClaw 将其视为精确的用户选择。如果配置的 Ollama `baseUrl` 不可访问，则下一次回复会以 Provider 错误失败，而不是静默地使用另一个已配置的备用模型作答。
+
+隔离的 Cron 任务在启动 Agent 轮次之前会进行一次额外的本地安全检查。如果所选模型解析到本地、私有网络或 `.local` 的 Ollama Provider 且 `/api/tags` 不可访问，OpenClaw 会将该 Cron 运行记录为 `skipped`，错误文本中包含所选的 `ollama/<model>`。端点预检结果会缓存 5 分钟，因此指向同一个已停止 Ollama 守护进程的多个 Cron 任务不会全都发起失败的模型请求。
+
+使用以下命令对本地 Ollama 进行文本路径、原生流式传输路径和嵌入的实时验证：
+
+```bash
+OPENCLAW_LIVE_TEST=1 OPENCLAW_LIVE_OLLAMA=1 OPENCLAW_LIVE_OLLAMA_WEB_SEARCH=0 \
+  pnpm test:live -- extensions/ollama/ollama.live.test.ts
 ```
 
 要添加新模型，只需用 Ollama 拉取它：
@@ -256,6 +271,8 @@ openclaw infer image describe \
 
 `--model` 必须是完整的 `<provider/model>` 引用。设置后，`openclaw infer image describe` 会直接运行该模型，而不会因模型支持原生视觉而跳过描述。
 
+当您需要 OpenClaw 的图像理解 Provider 流程、配置的 `agents.defaults.imageModel` 和图像描述输出形状时，请使用 `infer image describe`。当您需要使用自定义提示词和一个或多个图像对模型进行原始多模态探测时，请使用 `infer model run --file`。
+
 要将 Ollama 设置为入站媒体的默认图像理解模型，请配置 `agents.defaults.imageModel`：
 
 ```json5
@@ -269,6 +286,8 @@ openclaw infer image describe \
   },
 }
 ```
+
+优先使用完整的 `ollama/<model>` 引用。如果同一个模型在 `models.providers.ollama.models` 中以 `input: ["text", "image"]` 列出，且没有其他已配置的图像 Provider 暴露该裸模型 ID，OpenClaw 也会将 `qwen2.5vl:7b` 这样的裸 `imageModel` 引用规范化为 `ollama/qwen2.5vl:7b`。如果多个已配置的图像 Provider 具有相同的裸 ID，请显式使用 Provider 前缀。
 
 缓慢的本地视觉模型可能需要比云端模型更长的图像理解超时。在受限硬件上，当 Ollama 尝试分配完整的视觉上下文时，它们也可能崩溃或停止。设置能力超时，并在模型条目上限制 `num_ctx`（当您只需要普通图像描述轮次时）：
 
@@ -585,12 +604,15 @@ OpenClaw 会拒绝对未标记为图像支持的模型的图像描述请求。�
     ```json5
     {
       agents: {
-        defaults: {
-          experimental: {
-            localModelLean: true,
+        list: [
+          {
+            id: "local",
+            experimental: {
+              localModelLean: true,
+            },
+            model: { primary: "ollama/gemma4" },
           },
-          model: { primary: "ollama/gemma4" },
-        },
+        ],
       },
       models: {
         providers: {
@@ -783,7 +805,7 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
   <Accordion title="上下文窗口">
     对于自动发现的模型，OpenClaw 在可用时使用 Ollama 报告的上下文窗口（包括自定义 Modelfile 中较大的 `PARAMETER num_ctx` 值），否则回退到 OpenClaw 使用的默认 Ollama 上下文窗口。
 
-    您可以为该 Ollama Provider 下的每个模型设置 Provider 级别的 `contextWindow`、`contextTokens` 和 `maxTokens` 默认值，然后根据需要按模型覆盖它们。`contextWindow` 是 OpenClaw 的提示和压缩预算。原生 Ollama 请求不设置 `options.num_ctx`，除非您显式配置 `params.num_ctx`，这样 Ollama 可以应用其自己的模型、`OLLAMA_CONTEXT_LENGTH` 或基于 VRAM 的默认值。要在不重建 Modelfile 的情况下限制或强制 Ollama 的每请求运行时上下文，请设置 `params.num_ctx`；无效、零、负数和非有限值将被忽略。OpenAI 兼容的 Ollama 适配器仍然默认从配置的 `params.num_ctx` 或 `contextWindow` 注入 `options.num_ctx`；如果您的上游拒绝 `options`，请用 `injectNumCtxForOpenAICompat: false` 禁用。
+    您可以为该 Ollama Provider 下的每个模型设置 Provider 级别的 `contextWindow`、`contextTokens` 和 `maxTokens` 默认值，然后根据需要按模型覆盖它们。`contextWindow` 是 OpenClaw 的提示和压缩预算。原生 Ollama 请求不设置 `options.num_ctx`，除非您显式配置 `params.num_ctx`，这样 Ollama 可以应用其自己的模型、`OLLAMA_CONTEXT_LENGTH` 或基于 VRAM 的默认值。要在不重建 Modelfile 的情况下限制或强制 Ollama 的每请求运行时上下文，请设置 `params.num_ctx`；无效、零、负数和非有限值将被忽略。如果您升级了仅使用 `contextWindow` 或 `maxTokens` 来强制原生 Ollama 请求上下文的旧配置，请运行 `openclaw doctor --fix`，将这些显式 Provider 或模型预算复制到 `params.num_ctx`。OpenAI 兼容的 Ollama 适配器仍然默认从配置的 `params.num_ctx` 或 `contextWindow` 注入 `options.num_ctx`；如果您的上游拒绝 `options`，请用 `injectNumCtxForOpenAICompat: false` 禁用。
 
     原生 Ollama 模型条目也接受 `params` 下的常见 Ollama 运行时选项，包括 `temperature`、`top_p`、`top_k`、`min_p`、`num_predict`、`stop`、`repeat_penalty`、`num_batch`、`num_thread` 和 `use_mmap`。OpenClaw 仅转发 Ollama 请求键，因此 `streaming` 等 OpenClaw 运行时参数不会泄露给 Ollama。使用 `params.think` 或 `params.thinking` 发送顶层 Ollama `think`；`false` 禁用 Qwen 风格思维模型的 API 级思维。
 
@@ -863,6 +885,8 @@ OpenClaw 支持 **Ollama Web Search** 作为内置的 `web_search` Provider。
     内置 Ollama Plugin 为
     [Memory 搜索](/concepts/memory) 注册了一个 Memory 嵌入 Provider。它使用配置的 Ollama Base URL
     和 API 密钥，调用 Ollama 当前的 `/api/embed` 端点，并在可能时将多个 Memory 块批量放入一个 `input` 请求。
+
+    当 `proxy.enabled=true` 时，到达从配置的 `baseUrl` 派生的精确主机本地回环地址的 Ollama Memory 嵌入请求会使用 OpenClaw 的受守护直连路径，而非托管转发代理。配置的主机名本身必须是 `localhost` 或回环 IP 字面量；仅解析到回环的 DNS 名称仍使用托管代理路径。局域网、Tailnet、私有网络和公共 Ollama 主机也使用托管代理路径。重定向到其他主机或端口不会继承信任。运营商仍可设置全局 `proxy.loopbackMode: "proxy"` 将回环流量通过代理发送，或设置 `proxy.loopbackMode: "block"` 在打开连接之前拒绝回环连接；全进程效果请参见[托管代理](/security/network-proxy#gateway-loopback-mode)。
 
     | 属性          | 值                  |
     | ------------- | ------------------- |

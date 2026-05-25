@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "275d40ff5af7fd93a54888159708d6dc"
+mmh3_hash: "6e6312a870319d9828fabea08219d079"
 summary: "embed、媒体、音频提示和回复的富输出短代码协议"
 read_when:
   - 在 Control UI 中更改助手输出渲染
@@ -17,6 +17,26 @@ title: "富输出协议"
 远程 `MEDIA:` 附件必须是公开的 `https:` URL。纯 `http:`、回环、链路本地、私有和内部主机名将被忽略为附件指令；服务器端媒体获取器仍然会执行自己的网络守卫。
 
 本地 `MEDIA:` 附件可以使用绝对路径、相对于工作区的路径或以 `~/` 开头的家目录相对路径。它们仍然需要通过 Agent 文件读取策略和媒体类型检查才能投递。
+
+<Warning>
+`MEDIA:` 仅作为纯文本解析。将指令包裹在 Markdown 格式（粗体、内联代码、围栏代码块）中会导致解析器无法识别，附件将被静默丢弃。
+
+有效：
+
+```text
+MEDIA:/workspace/image.png
+```
+
+无效（解析为普通文本，不投递附件）：
+
+```text
+**MEDIA:/workspace/image.png**
+`MEDIA:/workspace/image.png`
+Here is your image: MEDIA:/workspace/image.png
+```
+
+保持 `MEDIA:` 单独成行，使用纯文本，不带任何格式。
+</Warning>
 
 普通 Markdown 图像语法默认保持为文本。有意将 Markdown 图像回复映射为媒体附件的 Channel 在其出站适配器中选择加入；Telegram 就是这样做的，使 `![alt](url)` 仍然可以成为媒体回复。
 

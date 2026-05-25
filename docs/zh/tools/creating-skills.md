@@ -1,6 +1,6 @@
 ---
 title: "创建技能"
-mmh3_hash: "15e1142b81f8caaff5c55840e7dc6ecf"
+mmh3_hash: "6a8f517516aac0e98d3577d1437cdb78"
 summary: "使用 SKILL.md 构建和测试自定义工作区技能"
 read_when:
   - 在工作区中创建新的自定义技能
@@ -87,6 +87,17 @@ YAML frontmatter 支持以下字段：
 | `metadata.openclaw.os`              | 否   | 操作系统过滤器（`["darwin"]`、`["linux"]` 等）|
 | `metadata.openclaw.requires.bins`   | 否   | PATH 上所需的二进制文件                     |
 | `metadata.openclaw.requires.config` | 否   | 所需的配置键                                |
+
+## 高级功能
+
+基础 Skill 正常工作后，以下字段可以使其更可靠和可移植：
+
+- **条件激活** — 使用 `requires.bins`、`requires.env` 或 `requires.config`，仅在所需依赖可用时加载 Skill。参见 [技能参考：门控](/tools/skills#gating)。
+- **环境和 API 密钥配置** — 使用 `skills.entries.<name>.env` 和 `skills.entries.<name>.apiKey` 为 Skill 轮次注入主机端环境。参见 [技能参考：配置接线](/tools/skills#config-wiring)。
+- **调用控制** — 设置 `user-invocable: false` 隐藏 Slash 命令，或设置 `disable-model-invocation: true` 使命令式 Skill 不进入模型提示词。参见 [技能参考：frontmatter](/tools/skills#frontmatter)。
+- **直接命令分派** — 当 Slash 命令应直接调用工具而不经过模型路由时，结合 `command-tool` 使用 `command-dispatch: tool`。
+- **可移植路径** — 在 `SKILL.md` 中引用 Skill 目录内的脚本或资产时，使用 `{baseDir}`。
+- **发布** — 准备发布 Skill 时使用 ClawHub Skill。它记录了当前的 `clawhub publish` 命令格式和所需元数据。
 
 ## 最佳实践
 

@@ -1,7 +1,7 @@
 ---
 title: "技能"
 sidebarTitle: "技能"
-mmh3_hash: "fc5f2d6c6f6730399fa5cb5bfbfdd39c"
+mmh3_hash: "d48fd2fb2d97d2a4cd97f19a1d4b87ee"
 summary: "技能：管理 vs 工作区、门控规则、Agent 允许列表和配置接线"
 read_when:
   - 添加或修改技能
@@ -91,11 +91,16 @@ Skill Workshop 仅写入 `<workspace>/skills`，扫描生成的内容，支持�
 
 [ClawHub](https://clawhub.ai) 是 OpenClaw 的公共 Skill 注册表。使用原生 `openclaw skills` 命令进行发现/安装/更新，或使用单独的 `clawhub` CLI 进行发布/同步工作流。完整指南：[ClawHub](/clawhub)。
 
-| 操作                           | 命令                                   |
-| ------------------------------ | -------------------------------------- |
-| 将 Skill 安装到工作区          | `openclaw skills install <skill-slug>` |
-| 更新所有已安装的 Skill         | `openclaw skills update --all`         |
-| 同步（扫描 + 发布更新）        | `clawhub sync --all`                   |
+| 操作                                | 命令                                                   |
+| ----------------------------------- | ------------------------------------------------------ |
+| 将 ClawHub Skill 安装到工作区       | `openclaw skills install <skill-slug>`                 |
+| 将 Git Skill 安装到工作区           | `openclaw skills install git:owner/repo@ref`           |
+| 将本地 Skill 安装到工作区           | `openclaw skills install ./path/to/skill --as my-tool` |
+| 为所有本地 Agent 安装 Skill         | `openclaw skills install <skill-slug> --global`        |
+| 更新所有已安装的 Skill              | `openclaw skills update --all`                         |
+| 更新单个共享托管 Skill              | `openclaw skills update <skill-slug> --global`         |
+| 更新所有共享托管/本地 Skill         | `openclaw skills update --all --global`                |
+| 同步（扫描 + 发布更新）             | `clawhub sync --all`                                   |
 
 原生 `openclaw skills install` 安装到活动工作区的 `skills/` 目录。单独的 `clawhub` CLI 也安装到当前工作目录下的 `./skills`（或回退到配置的 OpenClaw 工作区）。OpenClaw 在下一个 Session 中将其作为 `<workspace>/skills` 获取。已配置的 Skill 根还支持一级分组，例如 `skills/<group>/<skill>/SKILL.md`，因此相关的第三方 Skill 可以保存在共享文件夹下，无需广泛的递归扫描。
 
@@ -112,7 +117,7 @@ ClawHub Skill 页面在安装前显示最新的安全扫描状态，包含 Virus
 - 工作区、项目 Agent 和 extra-dir Skill 发现只接受 Skill 根目录，其解析的 realpath 须保持在配置的根目录内，除非 `skills.load.allowSymlinkTargets` 显式信任某个目标根。捆绑 Skill 始终处于隔离状态。托管 `~/.openclaw/skills` 和个人 `~/.agents/skills` 根目录可以包含由 ClawHub 或其他本地 Skill 管理器安装的符号链接 Skill 文件夹，但每个 `SKILL.md` 的 realpath 仍必须保持在其解析的 Skill 目录内。
 - Gateway 私有归档安装默认关闭。当显式启用时，它们需要包含 `SKILL.md` 的已提交 zip 上传，并重用与 ClawHub Skill 安装相同的归档提取、路径遍历、符号链接、强制和回滚保护。通过 `skills.install.allowUploadedArchives` 进行门控；普通 ClawHub 安装不需要该设置。
 - Gateway 支持的 Skill 依赖安装（`skills.install`、引导向导和 Skills 设置 UI）在执行安装器元数据之前会运行内置的危险代码扫描器。`critical` 级发现默认会阻止安装，除非调用者显式设置了危险覆盖；`suspicious` 级发现仍然只会发出警告。
-- `openclaw skills install <slug>` 与此不同——它将 ClawHub Skill 文件夹下载到工作区，不使用上述安装器元数据路径。
+- `openclaw skills install <slug>` 与此不同——它将 ClawHub Skill 文件夹下载到工作区，或通过 `--global` 下载到共享托管/本地 Skill，不使用上述安装器元数据路径。Git 和本地目录安装会将受信任的 `SKILL.md` 目录复制到相同的 Skill 根目录，但不被 `openclaw skills update` 跟踪。
 - `skills.entries.*.env` 和 `skills.entries.*.apiKey` 将秘密注入该 Agent 运行的**主机**进程（不是沙箱）。将秘密排除在提示和日志之外。
 
 有关更广泛的威胁模型和检查清单，请参见 [安全](/gateway/security)。

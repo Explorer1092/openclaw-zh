@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1f8bb0bb8fe2cb5917b4f5870eb0e13f"
+mmh3_hash: "c744bd647edcfbdad01792403e2711a1"
 summary: "将 OpenClaw 作为带有安全警告的个人助手运行的端到端指南"
 read_when:
   - 引导新的助手实例
@@ -197,7 +197,7 @@ OpenClaw 默认为良好的助手设置，但你通常需要调整：
 - `{{MediaUrl}}` （伪 URL）
 - `{{Transcript}}` （如果启用了音频转录）
 
-来自 Agent 的出站附件：包含 `MEDIA:<path-or-url>` 在其自己的一行（无空格）。示例：
+来自 Agent 的出站附件：包含 `MEDIA:<path-or-url>` 在其自己的一行（无空格）。该指令必须以纯文本开头行，位于代码围栏之外，且不带 **粗体** 或 `内联代码` 等 Markdown 包装器。示例：
 
 ```
 Here's the screenshot.
@@ -205,6 +205,14 @@ MEDIA:https://example.com/screenshot.png
 ```
 
 OpenClaw 提取这些并作为媒体与文本一起发送。
+
+以下形式不是附件指令，会作为普通文本发送：
+
+```md
+**MEDIA:https://example.com/screenshot.png**
+`MEDIA:https://example.com/screenshot.png`
+Here is the screenshot: MEDIA:https://example.com/screenshot.png
+```
 
 本地路径行为遵循与 Agent 相同的文件读取信任模型：
 

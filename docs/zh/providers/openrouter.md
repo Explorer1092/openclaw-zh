@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d38be535be43c8afb1b61f268528cdfd"
+mmh3_hash: "813767bd01cae138c993effa50faf5ee"
 title: "OpenRouter"
 summary: "在 OpenClaw 中使用 OpenRouter 的统一 API 访问多种模型"
 read_when:
@@ -119,25 +119,6 @@ OpenRouter 也可以通过聊天补全音频输出支持 `music_generate` 工具
 
 内置的 OpenRouter 音乐 Provider 默认使用 `google/lyria-3-pro-preview`，同时提供 `google/lyria-3-clip-preview`。OpenClaw 发送 `modalities: ["text", "audio"]`，启用流式传输，收集流式音频块，并将结果保存为生成的媒体以供 Channel 传递。通过共享的 `music_generate image=...` 参数，Lyria 模型接受参考图像。
 
-## 语音转文本（入站音频）
-
-OpenRouter 可以通过共享的 `tools.media.audio` 路径使用其 STT 端点（`/audio/transcriptions`）对入站语音/音频附件进行转录。这适用于将入站语音/音频转发到媒体理解预处理的任何 Channel 插件。
-
-```json5
-{
-  tools: {
-    media: {
-      audio: {
-        enabled: true,
-        models: [{ provider: "openrouter", model: "openai/whisper-large-v3-turbo" }],
-      },
-    },
-  },
-}
-```
-
-OpenClaw 以 JSON 格式发送 OpenRouter STT 请求，在 `input_audio` 下使用 base64 音频（OpenRouter STT 规范），而非 OpenAI 分段表单上传格式。
-
 ## 文本转语音
 
 OpenRouter 也可以通过其 OpenAI 兼容的 `/audio/speech` 端点作为 TTS Provider 使用。
@@ -161,6 +142,25 @@ OpenRouter 也可以通过其 OpenAI 兼容的 `/audio/speech` 端点作为 TTS 
 ```
 
 如果省略 `messages.tts.providers.openrouter.apiKey`，TTS 会重用 `models.providers.openrouter.apiKey`，然后是 `OPENROUTER_API_KEY`。
+
+## 语音转文本（入站音频）
+
+OpenRouter 可以通过共享的 `tools.media.audio` 路径使用其 STT 端点（`/audio/transcriptions`）对入站语音/音频附件进行转录。这适用于将入站语音/音频转发到媒体理解预处理的任何 Channel 插件。
+
+```json5
+{
+  tools: {
+    media: {
+      audio: {
+        enabled: true,
+        models: [{ provider: "openrouter", model: "openai/whisper-large-v3-turbo" }],
+      },
+    },
+  },
+}
+```
+
+OpenClaw 以 JSON 格式发送 OpenRouter STT 请求，在 `input_audio` 下使用 base64 音频（OpenRouter STT 规范），而非 OpenAI 分段表单上传格式。
 
 ## 身份验证和标头
 
@@ -232,7 +232,49 @@ OpenRouter 在底层使用 Bearer 令牌和您的 API 密钥。
   </Accordion>
 
   <Accordion title="Provider 路由元数据">
-    如果您在模型参数下传递 OpenRouter Provider 路由，OpenClaw 在共享流包装器运行之前将其转发为 OpenRouter 路由元数据。
+    OpenRouter 支持用于底层 Provider 路由的 `provider` 请求对象。使用 `models.providers.openrouter.params.provider` 为所有 OpenRouter 文本模型请求配置默认策略：
+
+    ```json5
+    {
+      models: {
+        providers: {
+          openrouter: {
+            params: {
+              provider: {
+                sort: "latency",
+                require_parameters: true,
+                data_collection: "deny",
+              },
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    OpenClaw 将该对象作为请求的 `provider` 负载转发给 OpenRouter。使用 OpenRouter 文档中的 snake_case 字段，包括 `sort`、`only`、`ignore`、`order`、`allow_fallbacks`、`require_parameters`、`data_collection`、`quantizations`、`max_price`、`preferred_max_latency`、`preferred_min_throughput`、`zdr` 和 `enforce_distillable_text`。
+
+    每个模型的参数仍可覆盖 Provider 范围的路由对象：
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          models: {
+            "openrouter/anthropic/claude-sonnet-4-6": {
+              params: {
+                provider: {
+                  order: ["anthropic"],
+                  allow_fallbacks: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    }
+    ```
+
   </Accordion>
 </AccordionGroup>
 

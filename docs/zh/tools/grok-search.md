@@ -1,15 +1,15 @@
 ---
-mmh3_hash: "e7ec832595cf84395648b3c8bc6aabe6"
+mmh3_hash: "5103fd9bf459f40807e24b300c8130f5"
 summary: "Grok 网页搜索，通过 xAI 网页接地响应"
 read_when:
   - 希望将 Grok 用于 web_search
-  - 需要 XAI_API_KEY 用于网页搜索
+  - 希望使用 xAI OAuth 或 XAI_API_KEY 用于网页搜索
 title: "Grok search"
 ---
 
 OpenClaw 支持将 Grok 作为 `web_search` 提供商，使用 xAI 网页接地响应生成带引用的 AI 合成答案，由实时搜索结果支持。
 
-同一个 xAI API 密钥还可以驱动内置的 `x_search` 工具（用于 X（原 Twitter）帖子搜索）和 `code_execution` 工具。如果你将密钥存储在 `plugins.entries.xai.config.webSearch.apiKey` 下，OpenClaw 现在也会将其作为捆绑 xAI 模型提供商的回退。
+Grok 网页搜索在有可用 xAI OAuth 登录时会优先使用。如果没有 OAuth 配置文件，同一个 xAI API 密钥还可以驱动内置的 `x_search` 工具（用于 X（原 Twitter）帖子搜索）和 `code_execution` 工具。如果你将密钥存储在 `plugins.entries.xai.config.webSearch.apiKey` 下，OpenClaw 也会将其作为捆绑 xAI 模型提供商的回退。
 
 对于转发、回复、书签或查看次数等帖子级 X 指标，优先使用带有确切帖子 URL 或状态 ID 的 `x_search`，而非宽泛的搜索查询。
 
@@ -20,7 +20,7 @@ OpenClaw 支持将 Grok 作为 `web_search` 提供商，使用 xAI 网页接地�
 - `openclaw onboard`
 - `openclaw configure --section web`
 
-OpenClaw 可以显示一个单独的后续步骤，使用相同的 `XAI_API_KEY` 启用 `x_search`。该后续步骤：
+OpenClaw 可以在不提示输入单独网页搜索密钥的情况下使用现有 xAI OAuth 配置文件。如果 OAuth 不可用，则回退到 xAI API 密钥设置。OpenClaw 还可以显示一个单独的后续步骤，使用相同的 xAI 凭据启用 `x_search`。该后续步骤：
 
 - 仅在你为 `web_search` 选择 Grok 后出现
 - 不是单独的顶级 web 搜索提供商选择
@@ -28,11 +28,20 @@ OpenClaw 可以显示一个单独的后续步骤，使用相同的 `XAI_API_KEY`
 
 如果跳过，你可以稍后在配置中启用或更改 `x_search`。
 
-## 获取 API 密钥
+## 登录或获取 API 密钥
 
 <Steps>
-  <Step title="创建密钥">
-    从 [xAI](https://console.x.ai/) 获取 API 密钥。
+  <Step title="使用 xAI OAuth">
+    如果你在引导或模型认证期间已经用 xAI 登录，选择 Grok 作为 `web_search` 提供商即可，无需单独的 API 密钥：
+
+    ```bash
+    openclaw onboard --auth-choice xai-oauth
+    openclaw config set tools.web.search.provider grok
+    ```
+
+  </Step>
+  <Step title="使用 API 密钥回退">
+    当 OAuth 不可用或你希望使用密钥支持的网页搜索配置时，从 [xAI](https://console.x.ai/) 获取 API 密钥。
   </Step>
   <Step title="存储密钥">
     在 Gateway 环境中设置 `XAI_API_KEY`，或通过以下命令配置：
@@ -53,7 +62,7 @@ OpenClaw 可以显示一个单独的后续步骤，使用相同的 `XAI_API_KEY`
       xai: {
         config: {
           webSearch: {
-            apiKey: "xai-...", // 如果已设置 XAI_API_KEY 则可选
+            apiKey: "xai-...", // 如果已设置 xAI OAuth 或 XAI_API_KEY 则可选
             baseUrl: "https://api.x.ai/v1", // 可选的 Responses API 代理/基础 URL 覆盖
           },
         },
@@ -70,8 +79,7 @@ OpenClaw 可以显示一个单独的后续步骤，使用相同的 `XAI_API_KEY`
 }
 ```
 
-**环境变量替代方案：** 在 Gateway 环境中设置 `XAI_API_KEY`。
-对于 Gateway 安装，将其放入 `~/.openclaw/.env`。
+**凭据替代方案：** 使用 `openclaw models auth login --provider xai --method oauth` 登录，在 Gateway 环境中设置 `XAI_API_KEY`，或存储 `plugins.entries.xai.config.webSearch.apiKey`。对于 Gateway 安装，将环境变量放入 `~/.openclaw/.env`。
 
 ## 工作原理
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "224d97d2ce6f1815b0d483d12a569cbd"
+mmh3_hash: "3b16300625d6078a3c80662505650001"
 summary: "完整发布验证的各阶段、子工作流、发布 Profile、重新运行 Handle 和测试证据"
 title: "完整发布验证"
 read_when:
@@ -25,7 +25,7 @@ gh workflow run full-release-validation.yml \
 
 默认情况下，`release_profile=stable` 运行阻断发布的通道并跳过详尽的实时/Docker 浸泡测试。传入 `run_release_soak=true` 可在 stable 运行中包含浸泡通道。`release_profile=full` 始终启用浸泡通道，确保广泛的建议性 Profile 不会静默丢失覆盖。
 
-Package Acceptance 通常从解析的 `ref` 构建候选 tarball，包括使用 `pnpm ci:full-release` 分发的完整 SHA 运行。在 beta 发布后，传入 `release_package_spec=openclaw@YYYY.M.D-beta.N` 可在发布检查、Package Acceptance、跨 OS、发布路径 Docker 和 package Telegram 中复用已发布的 npm 包。仅当 Package Acceptance 需要验证不同包时才使用 `package_acceptance_package_spec`。
+Package Acceptance 通常从解析的 `ref` 构建候选 tarball，包括使用 `pnpm ci:full-release` 分发的完整 SHA 运行。在 beta 发布后，传入 `release_package_spec=openclaw@YYYY.M.D-beta.N` 可在发布检查、Package Acceptance、跨 OS、发布路径 Docker 和 package Telegram 中复用已发布的 npm 包。仅当 Package Acceptance 需要验证不同包时才使用 `package_acceptance_package_spec`。Codex plugin 实时包通道遵循相同状态：已发布的 `release_package_spec` 值推导出 `codex_plugin_spec=npm:@openclaw/codex@<version>`；SHA/产物运行从所选 ref 打包 `extensions/codex`；操作者可以直接为 `npm:`、`npm-pack:` 或 `git:` plugin 来源设置 `codex_plugin_spec`。该通道授予该 plugin 所需的显式 Codex CLI 安装批准，然后运行 Codex CLI 预检和同 Session 的 OpenAI Agent 轮次。
 
 ## 顶层阶段
 
@@ -66,7 +66,7 @@ Package Acceptance 通常从解析的 `ref` 构建候选 tarball，包括使用 
 | 区块 | 覆盖范围 |
 | ---- | -------- |
 | `core` | 核心 Docker 发布路径烟雾通道。 |
-| `package-update-openai` | OpenAI 包安装/更新行为，包括 Codex 按需安装。 |
+| `package-update-openai` | OpenAI 包安装/更新行为、Codex 按需安装、Codex plugin 实时轮次和 Chat Completions 工具调用。 |
 | `package-update-anthropic` | Anthropic 包安装和更新行为。 |
 | `package-update-core` | Provider 无关的包和更新行为。 |
 | `plugins-runtime-plugins` | 演练 Plugin 行为的 Plugin 运行时通道。 |

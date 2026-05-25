@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4839b8f82fabbe5d042e6048aaa768d7"
+mmh3_hash: "ac3b5be56fc52399f96307bd98d1b033"
 summary: "通过 video_generate 从文本、图像或视频参考使用 16 个提供商后端生成视频"
 read_when:
   - 通过 Agent 生成视频
@@ -54,7 +54,7 @@ OpenClaw 将视频生成视为三种运行时模式：
 1. OpenClaw 向提供商提交请求并立即返回任务 ID。
 2. 提供商在后台处理任务（通常需要 30 秒至数分钟，具体取决于提供商和分辨率；慢速队列支持的提供商可能运行到配置的超时时间）。
 3. 视频准备好后，OpenClaw 通过内部完成事件唤醒同一 Session。
-4. Agent 告知用户并通过 message 工具附上完成的视频。如果完成 Agent 仅写了私有最终回复，OpenClaw 不会自动将视频作为回退发布。
+4. Agent 告知用户并通过 message 工具附上完成的视频。如果请求者 Session 已不活跃且部分生成的视频仍未通过 message 工具投递，OpenClaw 会以幂等方式直接发送仅包含缺失视频的回退投递。
 
 任务进行中时，同一 Session 中重复的 `video_generate` 调用会返回当前任务状态，而非启动新的生成。使用 `openclaw tasks list` 或 `openclaw tasks show <taskId>` 从 CLI 检查进度。
 
@@ -119,7 +119,7 @@ openclaw tasks cancel <taskId>
 | fal        |     ✓      |       ✓        |       ✓        | `generate`、`imageToVideo`；`videoToVideo` 仅在使用 Seedance 参考转视频时运行                                                                   |
 | Google     |     ✓      |       ✓        |       ✓        | `generate`、`imageToVideo`；共享 `videoToVideo` 因当前缓冲区支持的 Gemini/Veo 扫描不接受该输入而跳过                                            |
 | MiniMax    |     ✓      |       ✓        |       -        | `generate`、`imageToVideo`                                                                                                                      |
-| OpenAI     |     ✓      |       ✓        |       ✓        | `generate`、`imageToVideo`；共享 `videoToVideo` 因此组织/输入路径当前需要提供商端 inpaint/remix 访问而跳过                                      |
+| OpenAI     |     ✓      |       ✓        |       ✓        | `generate`、`imageToVideo`；共享 `videoToVideo` 因此组织/输入路径当前需要提供商端视频编辑访问而跳过                                             |
 | OpenRouter |     ✓      |       ✓        |       -        | `generate`、`imageToVideo`                                                                                                                      |
 | Qwen       |     ✓      |       ✓        |       ✓        | `generate`、`imageToVideo`；`videoToVideo` 因需要远程 `http(s)` 视频 URL 而跳过                                                                 |
 | Runway     |     ✓      |       ✓        |       ✓        | `generate`、`imageToVideo`；`videoToVideo` 仅在选定模型为 `runway/gen4_aleph` 时运行                                                            |

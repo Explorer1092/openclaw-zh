@@ -1,6 +1,6 @@
 ---
-mmh3_hash: "05509f0cd89da914c70665db0cbc7ef8"
-summary: "通过共享提供商（含工作流驱动的插件）生成音乐"
+mmh3_hash: "6f3517f316efaa1e9ff029f77aab0e05"
+summary: "通过 music_generate 使用 ComfyUI、fal、Google Lyria、MiniMax 和 OpenRouter 工作流生成音乐"
 read_when:
   - 通过 Agent 生成音乐或音频
   - 配置音乐生成提供商和模型
@@ -11,7 +11,7 @@ sidebarTitle: "Music generation"
 
 `music_generate` 工具让 Agent 能够通过已配置提供商（ComfyUI、fal、Google、MiniMax 和 OpenRouter）的共享音乐生成能力来创作音乐或音频。
 
-对于 Session 支持的 Agent 运行，OpenClaw 会将音乐生成作为后台任务启动，在任务账本中跟踪进度，然后在音轨准备好后重新唤醒 Agent，以便 Agent 告知用户并附上完成的音频。生成媒体的完成由 Agent 通过 message 工具投递；如果完成 Agent 仅写了私有最终回复，OpenClaw 不会自动将文件作为回退发布。完成唤醒时会明确提示 Agent 该路由的正常最终回复为私有。
+对于 Session 支持的 Agent 运行，OpenClaw 会将音乐生成作为后台任务启动，在任务账本中跟踪进度，然后在音轨准备好后重新唤醒 Agent，以便 Agent 告知用户并附上完成的音频。生成媒体的完成由 Agent 通过 message 工具投递。如果请求者 Session 已不活跃且部分生成的音频仍未通过 message 工具投递，OpenClaw 会以幂等方式直接发送仅包含缺失音频的回退投递。完成唤醒时会明确提示 Agent 该路由的正常最终回复为私有。
 
 <Note>
 内置共享工具仅在至少一个音乐生成提供商可用时才会显示。如果你在 Agent 工具列表中看不到 `music_generate`，请配置 `agents.defaults.musicGenerationModel` 或设置提供商 API 密钥。
@@ -82,7 +82,7 @@ Generate an energetic chiptune loop about launching a rocket at sunrise.
 | ComfyUI    | `workflow`                    | 最多 1 张图像  | 工作流定义的音乐或音频                                            | `COMFY_API_KEY`、`COMFY_CLOUD_API_KEY` |
 | fal        | `fal-ai/minimax-music/v2.6`   | 无             | `lyrics`、`instrumental`、`durationSeconds`、`format`             | `FAL_KEY` 或 `FAL_API_KEY`             |
 | Google     | `lyria-3-clip-preview`        | 最多 10 张图像 | `lyrics`、`instrumental`、`format`                                | `GEMINI_API_KEY`、`GOOGLE_API_KEY`     |
-| MiniMax    | `music-2.6`                   | 无             | `lyrics`、`instrumental`、`durationSeconds`、`format=mp3`         | `MINIMAX_API_KEY` 或 MiniMax OAuth     |
+| MiniMax    | `music-2.6`                   | 无             | `lyrics`、`instrumental`、`format=mp3`                            | `MINIMAX_API_KEY` 或 MiniMax OAuth     |
 | OpenRouter | `google/lyria-3-pro-preview`  | 最多 1 张图像  | `lyrics`、`instrumental`、`durationSeconds`、`format`             | `OPENROUTER_API_KEY`                   |
 
 ### 声明的能力矩阵

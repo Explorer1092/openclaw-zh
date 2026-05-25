@@ -100,8 +100,9 @@ Control UI 可以在首次加载时根据您的浏览器语言环境进行本地
   <Accordion title="聊天和对讲">
     - 通过 Gateway WS 与模型聊天（`chat.history`、`chat.send`、`chat.abort`、`chat.inject`）。
     - 聊天历史刷新请求有界的最近窗口，带有每条消息的文本上限，以便大型会话不会强制浏览器在聊天变得可用之前渲染完整的转录负载。
-    - 通过浏览器实时会话对讲。OpenAI 使用直接 WebRTC，Google Live 在 WebSocket 上使用受约束的一次性浏览器令牌，仅后端实时语音插件使用 Gateway relay 传输。客户端拥有的 provider 会话以 `talk.client.create` 开始；Gateway relay 会话以 `talk.session.create` 开始。relay 将 provider 凭据保留在 Gateway 上，而浏览器通过 `talk.session.appendAudio` 流式传输麦克风 PCM，并通过 `talk.client.toolCall` 转发 `openclaw_agent_consult` provider 工具调用，用于 Gateway 策略和更大的配置 OpenClaw 模型。
+    - 通过浏览器实时会话对讲。OpenAI 使用直接 WebRTC，Google Live 在 WebSocket 上使用受约束的一次性浏览器令牌，仅后端实时语音插件使用 Gateway relay 传输。客户端拥有的 provider 会话以 `talk.client.create` 开始；Gateway relay 会话以 `talk.session.create` 开始。relay 将 provider 凭据保留在 Gateway 上，而浏览器通过 `talk.session.appendAudio` 流式传输麦克风 PCM，并通过 `talk.client.toolCall` 转发 `openclaw_agent_consult` provider 工具调用，用于 Gateway 策略和更大的配置 OpenClaw 模型，并通过 `talk.client.steer` 或 `talk.session.steer` 路由活跃运行的语音引导。
     - 在聊天中流式传输工具调用 + 实时工具输出卡片（agent 事件）。
+    - 聊天中的活动标签页，包含来自现有 `session.tool` / 工具事件交付的实时工具活动浏览器本地、脱敏优先摘要。
 
   </Accordion>
   <Accordion title="Channel、实例、会话、梦境">
@@ -150,6 +151,12 @@ Control UI 可以在首次加载时根据您的浏览器语言环境进行本地
 
   </Accordion>
 </AccordionGroup>
+
+## 活动标签页
+
+活动标签页是用于实时工具活动的临时浏览器本地观察者。它源自同一 Gateway `session.tool` / 工具事件流，该流也驱动聊天工具卡片；它不会添加另一个 Gateway 事件族、端点、持久活动存储、指标源或外部观察者流。
+
+活动条目仅保留已净化的摘要和脱敏的、截断的输出预览。工具参数值不存储在活动状态中；UI 显示参数已隐藏，仅记录参数字段数。内存中的列表跟随当前浏览器标签页，在 Control UI 内导航时存活，在页面重新加载、会话切换或**清除**时重置。
 
 ## 聊天行为
 
@@ -216,7 +223,7 @@ Control UI 包含 `manifest.webmanifest` 和服务工作者，因此现代浏览
 
 - `OPENCLAW_VAPID_PUBLIC_KEY`
 - `OPENCLAW_VAPID_PRIVATE_KEY`
-- `OPENCLAW_VAPID_SUBJECT`（默认为 `mailto:openclaw@localhost`）
+- `OPENCLAW_VAPID_SUBJECT`（默认为 `https://openclaw.ai`）
 
 Control UI 使用这些范围控制的 Gateway 方法来注册和测试浏览器订阅：
 

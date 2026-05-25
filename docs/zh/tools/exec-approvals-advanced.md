@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e7c61b03cc900a94e716a0c70a42b018"
+mmh3_hash: "031cd8b5383bba91239a06691b9db70e"
 summary: "高级 exec 审批：安全二进制文件、解释器绑定、审批转发、原生交付"
 read_when:
   - 配置安全二进制文件或自定义安全二进制文件配置文件
@@ -260,6 +260,57 @@ Gateway -> Node Service (WS)
 - Unix socket 模式 `0600`，token 存储在 `exec-approvals.json` 中。
 - 相同 UID 的对等检查。
 - 挑战/响应（随机数 + HMAC token + 请求哈希）+ 短 TTL。
+
+## FAQ
+
+### 何时会在审批目标上使用 `accountId` 和 `threadId`？
+
+当 Channel 配置了多个身份且审批提示必须通过某个特定账户发出时，使用 `accountId`。当目标支持话题或线程且提示应保留在该线程内而不是顶层聊天时，使用 `threadId`。
+
+一个具体的 Telegram 案例：一个带有论坛话题和两个 Telegram 机器人账户的运营超级群组。`to` 值命名超级群组，`accountId` 选择机器人账户，`threadId` 选择论坛话题：
+
+```json5
+{
+  approvals: {
+    exec: {
+      enabled: true,
+      mode: "targets",
+      targets: [
+        {
+          channel: "telegram",
+          to: "-1001234567890",
+          accountId: "ops-bot",
+          threadId: "77",
+        },
+      ],
+    },
+  },
+  channels: {
+    telegram: {
+      accounts: {
+        default: {
+          name: "Primary bot",
+          botToken: "env:TELEGRAM_PRIMARY_BOT_TOKEN",
+        },
+        "ops-bot": {
+          name: "Operations bot",
+          botToken: "env:TELEGRAM_OPS_BOT_TOKEN",
+        },
+      },
+    },
+  },
+}
+```
+
+通过该配置，转发的 exec 审批由 `ops-bot` Telegram 账户发布到聊天 `-1001234567890` 的话题 `77` 中。没有 `accountId` 的目标使用 Channel 的默认账户，没有 `threadId` 的目标发布到顶层目的地。
+
+### 当审批发送到 Session 时，该 Session 中的任何人都可以批准吗？
+
+不行。Session 交付只控制提示出现在哪里，本身不授权该聊天中的每个参与者批准。
+
+对于通用的同聊天 `/approve`，发送者必须已在该 Channel Session 中获得命令授权。如果 Channel 暴露了显式的审批者，这些审批者可以授权 `/approve` 操作，即使他们在该 Session 中没有其他命令授权。
+
+某些 Channel 更为严格。Discord、Telegram、Matrix、Slack 原生审批私信和类似的原生审批客户端使用其已解析的审批者列表进行审批授权。例如，Telegram 论坛话题审批提示对话题中的每个人都可见，但只有从 `channels.telegram.execApprovals.approvers` 或 `commands.ownerAllowFrom` 解析的 Telegram 数字用户 ID 才能批准或拒绝。
 
 ## 相关
 

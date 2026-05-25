@@ -1,7 +1,7 @@
 ---
 title: "GitHub Copilot"
 sidebarTitle: "GitHub Copilot"
-mmh3_hash: "55ab28523731f8b082005dfd3550634f"
+mmh3_hash: "af586199c1bbf6922f561c2b1185eb49"
 summary: "使用设备流或非交互式令牌导入从 OpenClaw 登录 GitHub Copilot"
 read_when:
   - 您想将 GitHub Copilot 用作模型 Provider
@@ -87,7 +87,7 @@ openclaw onboard --non-interactive --accept-risk \
   </Accordion>
 
   <Accordion title="模型可用性取决于您的计划">
-    Copilot 模型可用性取决于您的 GitHub 计划。如果模型被拒绝，请尝试另一个 ID（例如 `github-copilot/gpt-4.1`）。
+    Copilot 模型可用性取决于您的 GitHub 计划。如果模型被拒绝，请尝试另一个 ID（例如 `github-copilot/gpt-5.5`）。有关当前模型列表，请参见 GitHub 的[每个 Copilot 计划支持的模型](https://docs.github.com/en/copilot/reference/ai-models/supported-models#supported-ai-models-per-copilot-plan)。
   </Accordion>
 
   <Accordion title="从 Copilot API 实时刷新目录">

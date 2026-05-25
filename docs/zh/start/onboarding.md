@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "89649668bd1edcfd02f56166c39214a1"
+mmh3_hash: "1dc39ace963d9b9b44cbf9592faa4b92"
 summary: "OpenClaw 的首次运行入门流程（macOS 应用）"
 read_when:
   - 设计 macOS 入门助手
@@ -43,7 +43,7 @@ sidebarTitle: "入门：macOS 应用"
 **Gateway** 在哪里运行？
 
 - **本地 Mac（仅本地）：** 引导可以在本地配置认证并写入凭据。
-- **远程（通过 SSH/Tailnet）：** 引导**不**在本地配置认证；凭据必须存在于 Gateway 主机上。
+- **远程（通过 SSH/Tailnet）：** 引导**不**在本地配置认证；凭据必须存在于 Gateway 主机上。远程 Gateway token 字段存储 macOS 应用用于连接该 Gateway 的 token；现有的非明文 `gateway.remote.token` 值在你替换之前会被保留。
 - **稍后配置：** 跳过设置并保持应用程序未配置状态。
 
 <Tip>

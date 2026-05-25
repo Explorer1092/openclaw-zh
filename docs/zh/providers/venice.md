@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2bb1dbf20ea628712e5696ea73232115"
+mmh3_hash: "856622206f0a1b1c568e573436d130f9"
 title: "Venice AI"
 summary: "在 OpenClaw 中使用 Venice AI 注重隐私的模型"
 read_when:
@@ -162,13 +162,11 @@ openclaw models list --all --provider venice
     | `minimax-m25`                          | MiniMax M2.5                        | 198k    | 推理                       |
   </Accordion>
 
-  <Accordion title="匿名模型（15 个）——通过 Venice 代理">
+  <Accordion title="匿名模型（12 个）——通过 Venice 代理">
     | 模型 ID                         | 名称                           | 上下文  | 功能                      |
     | ------------------------------- | ------------------------------ | ------- | ------------------------- |
     | `claude-opus-4-6`               | Claude Opus 4.6 (via Venice)   | 1M      | 推理，视觉                |
-    | `claude-opus-4-5`               | Claude Opus 4.5 (via Venice)   | 198k    | 推理，视觉                |
     | `claude-sonnet-4-6`             | Claude Sonnet 4.6 (via Venice) | 1M      | 推理，视觉                |
-    | `claude-sonnet-4-5`             | Claude Sonnet 4.5 (via Venice) | 198k    | 推理，视觉                |
     | `openai-gpt-54`                 | GPT-5.4 (via Venice)           | 1M      | 推理，视觉                |
     | `openai-gpt-53-codex`           | GPT-5.3 Codex (via Venice)     | 400k    | 推理，视觉，代码          |
     | `openai-gpt-52`                 | GPT-5.2 (via Venice)           | 256k    | 推理                      |
@@ -179,7 +177,6 @@ openclaw models list --all --provider venice
     | `gemini-3-pro-preview`          | Gemini 3 Pro (via Venice)      | 198k    | 推理，视觉                |
     | `gemini-3-flash-preview`        | Gemini 3 Flash (via Venice)    | 256k    | 推理，视觉                |
     | `grok-41-fast`                  | Grok 4.1 Fast (via Venice)     | 1M      | 推理，视觉                |
-    | `grok-code-fast-1`              | Grok Code Fast 1 (via Venice)  | 256k    | 推理，代码                |
   </Accordion>
 </AccordionGroup>
 

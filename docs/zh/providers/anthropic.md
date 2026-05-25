@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "06f2f449fd83da034de825487ecf11ef"
+mmh3_hash: "79abde6ccce4de4b470ca4482abd5f2a"
 title: "Anthropic"
 summary: "在 OpenClaw 中通过 API 密钥或 Claude CLI 使用 Anthropic Claude"
 read_when:
@@ -61,7 +61,7 @@ Anthropic 当前公开文档：
 
     ```json5
     {
-      env: { ANTHROPIC_API_KEY: "sk-ant-..." },
+      env: { ANTHROPIC_API_KEY: "example-anthropic-key-not-real" },
       agents: { defaults: { model: { primary: "anthropic/claude-opus-4-6" } } },
     }
     ```
@@ -120,7 +120,7 @@ Anthropic 当前公开文档：
     旧版 `claude-cli/claude-opus-4-7` 模型引用仍可用于兼容，但新配置应将 Provider/模型选择保留为 `anthropic/*`，并将执行后端放入 Provider/模型运行时策略中。
 
     <Tip>
-    如果您想要最清晰的计费路径，请改用 Anthropic API 密钥。OpenClaw 还支持来自 [OpenAI Codex](/providers/openai)、[Qwen Cloud](/providers/qwen)、[MiniMax](/providers/minimax) 和 [Z.AI / GLM](/providers/glm) 的订阅风格选项。
+    如果您想要最清晰的计费路径，请改用 Anthropic API 密钥。OpenClaw 还支持来自 [OpenAI Codex](/providers/openai)、[Qwen Cloud](/providers/qwen)、[MiniMax](/providers/minimax) 和 [Z.AI / GLM](/providers/zai) 的订阅风格选项。
     </Tip>
 
   </Tab>
@@ -263,29 +263,31 @@ OpenClaw 支持 Anthropic 的提示缓存功能，用于 API 密钥认证。
 
   </Accordion>
 
-  <Accordion title="1M 上下文窗口（测试版）">
-    Anthropic 的 1M 上下文窗口受测试版门控。按模型启用：
+  <Accordion title="1M 上下文窗口">
+    Anthropic 的 1M 上下文窗口已在支持 GA 的 Claude 4.x 模型上可用，
+    例如 Opus 4.6、Opus 4.7 和 Sonnet 4.6。OpenClaw 会自动将这些模型的上下文大小设为 1M：
 
     ```json5
     {
       agents: {
         defaults: {
           models: {
-            "anthropic/claude-opus-4-6": {
-              params: { context1m: true },
-            },
+            "anthropic/claude-opus-4-6": {},
           },
         },
       },
     }
     ```
 
-    OpenClaw 将此映射到请求中的 `anthropic-beta: context-1m-2025-08-07`。
+    旧配置可以保留 `params.context1m: true`，但 OpenClaw 不再发送
+    已停用的 `context-1m-2025-08-07` 测试版请求头。包含该值的旧版 `anthropicBeta` 配置条目
+    在请求头解析时会被忽略，不支持的旧版 Claude 模型仍会使用其正常的上下文窗口。
 
-    `params.context1m: true` 也适用于 Claude CLI 后端（`claude-cli/*`）中符合条件的 Opus 和 Sonnet 模型，将这些 CLI Session 的运行时上下文窗口扩展到与直接 API 行为相匹配。
+    `params.context1m: true` 也适用于 Claude CLI 后端（`claude-cli/*`）中符合条件的
+    支持 GA 的 Opus 和 Sonnet 模型，保持这些 CLI Session 的运行时上下文窗口与直接 API 行为一致。
 
     <Warning>
-    需要您的 Anthropic 凭据具有长上下文访问权限。旧版 Token 认证（`sk-ant-oat-*`）对 1M 上下文请求会被拒绝——OpenClaw 记录警告并回退到标准上下文窗口。
+    需要您的 Anthropic 凭据具有长上下文访问权限。OAuth/订阅 Token 认证保留其所需的 Anthropic 测试版请求头，但 OpenClaw 会在旧配置中仍存在时清除已停用的 1M 测试版请求头。
     </Warning>
 
   </Accordion>

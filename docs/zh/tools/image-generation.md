@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "018cff7bd9a179dc3b89604ec63b2882"
+mmh3_hash: "95e8c9f652b34e9dfd8a4c9859d8e261"
 summary: "通过 image_generate 使用 OpenAI、Google、fal、MiniMax、ComfyUI、DeepInfra、OpenRouter、LiteLLM、xAI、Vydra 生成和编辑图像"
 read_when:
   - 通过 Agent 生成或编辑图像
@@ -9,7 +9,7 @@ title: "Image generation"
 sidebarTitle: "Image generation"
 ---
 
-`image_generate` 工具让 Agent 能够使用你已配置的提供商创建和编辑图像。在聊天 Session 中，图像生成以异步方式运行：OpenClaw 记录后台任务，立即返回任务 id，并在提供商完成时唤醒 Agent。完成 Agent 必须通过 `message` 工具发送生成的图像；OpenClaw 不会自动发布私有最终回复作为回退。
+`image_generate` 工具让 Agent 能够使用你已配置的提供商创建和编辑图像。在聊天 Session 中，图像生成以异步方式运行：OpenClaw 记录后台任务，立即返回任务 id，并在提供商完成时唤醒 Agent。完成 Agent 必须通过 `message` 工具发送生成的图像。如果请求者 Session 已不活跃且部分生成的图像仍未通过 message 工具投递，OpenClaw 会以幂等方式直接发送仅包含缺失图像的回退投递。
 
 <Note>
 该工具仅在至少一个图像生成提供商可用时才会显示。如果你在 Agent 工具列表中看不到 `image_generate`，请配置 `agents.defaults.imageGenerationModel`、设置提供商 API 密钥，或通过 OpenAI Codex OAuth 登录。
@@ -188,7 +188,7 @@ OpenClaw 按以下顺序尝试提供商：
     只有 OpenClaw 能够实际验证该提供商时，提供商默认值才会进入候选列表。设置 `agents.defaults.mediaGenerationAutoProviderFallback: false` 以仅使用显式 `model`、`primary` 和 `fallbacks` 条目。
   </Accordion>
   <Accordion title="超时">
-    为慢速图像后端设置 `agents.defaults.imageGenerationModel.timeoutMs`。每次调用的 `timeoutMs` 工具参数会覆盖已配置的默认值。Codex 动态工具调用遵循相同的超时预算，以 OpenClaw 的 600000 ms 动态工具桥接最大值为上限。
+    为慢速图像后端设置 `agents.defaults.imageGenerationModel.timeoutMs`。每次调用的 `timeoutMs` 工具参数会覆盖已配置的默认值，已配置的默认值会覆盖 Plugin 编写的提供商默认值。Google 和 OpenRouter 托管图像提供商默认使用 180 秒；xAI 和 Azure OpenAI 图像生成默认使用 600 秒。Codex 动态工具调用使用 120 秒的 `image_generate` 桥接默认值，并在已配置时遵循相同的超时预算，以 OpenClaw 的 600000 ms 动态工具桥接最大值为上限。
   </Accordion>
   <Accordion title="运行时检查">
     使用 `action: "list"` 查看当前已注册的提供商、其默认模型及认证环境变量提示。
