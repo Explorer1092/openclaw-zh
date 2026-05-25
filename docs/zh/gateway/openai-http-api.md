@@ -73,6 +73,14 @@ OpenClaw 的 Gateway 可以提供一个小的 OpenAI 兼容的 Chat Completions 
 
 参见 [Security](/gateway/security) 和 [Remote access](/gateway/remote)。
 
+## 何时使用此端点
+
+当您正在将工具或受信任的应用程序端后端与现有 Gateway 集成，并且可以安全持有 Gateway operator 凭证时，请使用 `/v1/chat/completions`。
+
+- 当您的集成只是同一 Gateway 的另一个 operator/client 接口时，优先选择此方式而非添加新的内置 Channel。
+- 对于直接连接到远程 Gateway 的原生移动客户端，优先使用 [WebChat](/web/webchat) 或 [Gateway Protocol](/gateway/protocol)，并实现配对设备引导/设备令牌流程，这样设备就不需要共享 HTTP token/password。
+- 当您正在集成具有自己用户、房间、webhook 投递或出站传输的外部消息网络时，请构建 Channel Plugin。参见 [Building plugins](/plugins/building-plugins)。
+
 ## 以 Agent 为先的模型契约
 
 OpenClaw 将 OpenAI `model` 字段视为 **Agent 目标**，而不是原始 provider 模型 id。
@@ -130,6 +138,8 @@ OpenClaw 将 OpenAI `model` 字段视为 **Agent 目标**，而不是原始 prov
 默认情况下，端点是**每个请求无状态的**（每次调用生成一个新的 Session 键）。
 
 如果请求包含 OpenAI `user` 字符串，Gateway 从中派生一个稳定的 Session 键，因此重复调用可以共享 Agent Session。
+
+对于自定义应用，最安全的默认做法是在每个对话线程中重用相同的 `user` 值。除非您明确希望多个对话或设备共享一个 OpenClaw Session，否则请避免使用账户级标识符。当您需要跨多个客户端或线程进行精确路由控制时，请使用 `x-openclaw-session-key`。
 
 ## 为什么这个接口重要
 
@@ -278,6 +288,21 @@ curl -sS http://127.0.0.1:18789/v1/models \
 如果返回 `openclaw/default`，大多数 Open WebUI 设置可以使用相同的 base URL 和 token 连接。
 
 ## 示例
+
+单个应用对话的稳定 Session：
+
+```bash
+curl -sS http://127.0.0.1:18789/v1/chat/completions \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "openclaw/default",
+    "user": "conv:YOUR_CONVERSATION_ID",
+    "messages": [{"role":"user","content":"Summarize my tasks for today"}]
+  }'
+```
+
+在该对话的后续调用中重用相同的 `user` 值，以继续同一 Agent Session。
 
 非流式传输：
 

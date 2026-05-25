@@ -51,10 +51,10 @@ title: "Configuration — channels"
         "123456789012345678": "anthropic/claude-opus-4-6",
       },
       slack: {
-        C1234567890: "openai/gpt-4.1",
+        C1234567890: "openai/gpt-5.5",
       },
       telegram: {
-        "-1001234567890": "openai/gpt-4.1-mini",
+        "-1001234567890": "openai/gpt-5.4-mini",
         "-1001234567890:topic:99": "anthropic/claude-sonnet-4-6",
       },
     },
@@ -769,7 +769,7 @@ IRC 由 Plugin 支持，在 `channels.irc` 下配置。
 
 群组消息默认**需要提及**（元数据提及或安全正则表达式模式）。适用于 WhatsApp、Telegram、Discord、Google Chat 和 iMessage 群聊。
 
-可见回复单独控制。正常群组/Channel 请求默认使用 `messages.groupChat.visibleReplies: "automatic"`：最终助手文本通过旧版可见回复路径发送。在共享房间中如果只希望 Agent 调用 `message(action=send)` 后才发送可见输出，请设置 `"message_tool"`。如果模型返回最终文本而没有调用消息工具，该最终文本保持私有，Gateway 详细日志记录抑制的负载元数据。若要对直接聊天也应用相同的仅工具可见回复行为，设置 `messages.visibleReplies: "message_tool"`；Codex 运行时也将该仅工具行为作为其未设置的直接聊天默认值。
+可见回复单独控制。正常群组/Channel 请求默认使用自动最终投递：最终助手文本通过旧版可见回复路径发送。某些 harness（包括 Codex）将直接/源聊天默认为 message-tool 投递，因此只有在 Agent 调用 `message(action=send)` 后才发送可见输出。如果模型返回最终文本而没有调用消息工具，该最终文本保持私有，Gateway 详细日志记录抑制的负载元数据。
 
 仅工具可见回复需要能可靠调用工具的模型/运行时，建议在最新一代模型（如 GPT 5.5）的共享环境房间中使用。如果 Session 日志显示带有 `didSendViaMessagingTool: false` 的助手文本，说明模型生成了私有最终文本而不是调用消息工具。为该 Channel 切换到更强的工具调用模型，检查 Gateway 详细日志中的抑制负载摘要，或设置 `messages.groupChat.visibleReplies: "automatic"` 以对每个群组/Channel 请求使用可见最终回复。
 

@@ -7,11 +7,9 @@ read_when: "你遇到'sandbox jail'或看到工具/elevated 拒绝,想要找到�
 status: active
 ---
 
-# 沙盒 vs 工具策略 vs 提升模式
-
 OpenClaw 有三个相关(但不同)的控件:
 
-1. **Sandbox**(`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`)决定**工具在哪里运行**(Docker 与主机)。
+1. **Sandbox**(`agents.defaults.sandbox.*` / `agents.list[].sandbox.*`)决定**工具在哪里运行**(sandbox backend 与 host)。
 2. **工具策略**(`tools.*`、`tools.sandbox.tools.*`、`agents.list[].tools.*`)决定**哪些工具可用/允许**。
 3. **Elevated**(`tools.elevated.*`、`agents.list[].tools.elevated.*`)是一个**仅 exec 的逃生通道**,在沙盒化时在沙盒外运行(`gateway` 默认,或当 exec 目标配置为 `node` 时为 `node`)。
 
@@ -68,8 +66,10 @@ openclaw sandbox explain --json
 - `deny` 总是优先。
 - 如果 `allow` 非空,其他所有内容都被视为阻止。
 - 工具策略是硬停止:`/exec` 无法覆盖被拒绝的 `exec` 工具。
+- 工具策略按名称过滤工具可用性；它不检查 `exec` 内部的副作用。如果允许 `exec`，拒绝 `write`、`edit` 或 `apply_patch` 不会使 shell 命令变为只读。
 - `/exec` 仅更改授权发送者的 session 默认值;它不授予工具访问权限。
   Provider 工具键接受 `provider`(例如 `google-antigravity`)或 `provider/model`(例如 `openai/gpt-5.4`)。
+- Gateway 日志在工具策略步骤删除工具或 sandbox 工具策略阻止调用时包含 `agents/tool-policy` 审计条目。使用 `openclaw logs` 查看规则标签、配置键和受影响的工具名称。
 
 ### 工具组(简写)
 
@@ -91,16 +91,22 @@ openclaw sandbox explain --json
 
 - `group:runtime`: `exec`、`process`、`code_execution`（`bash` 作为 `exec` 的别名被接受）
 - `group:fs`: `read`、`write`、`edit`、`apply_patch`
+  对于只读 agent，还需拒绝 `group:runtime` 以及变更文件系统工具，除非 sandbox 文件系统策略或单独的主机边界强制执行只读约束。
 - `group:sessions`: `sessions_list`、`sessions_history`、`sessions_send`、`sessions_spawn`、`sessions_yield`、`subagents`、`session_status`
 - `group:memory`: `memory_search`、`memory_get`
 - `group:web`: `web_search`、`x_search`、`web_fetch`
 - `group:ui`: `browser`、`canvas`
-- `group:automation`: `cron`、`gateway`
+- `group:automation`: `heartbeat_respond`、`cron`、`gateway`
 - `group:messaging`: `message`
 - `group:nodes`: `nodes`
-- `group:agents`: `agents_list`
-- `group:media`: `image`、`image_generate`、`video_generate`、`tts`
+- `group:agents`: `agents_list`、`update_plan`
+- `group:media`: `image`、`image_generate`、`music_generate`、`video_generate`、`tts`
 - `group:openclaw`: 所有内置 OpenClaw 工具(不包括 provider plugin)
+- `group:plugins`: 所有已加载的 plugin 拥有工具，包括通过 `bundle-mcp` 公开的已配置 MCP 服务器
+
+对于沙盒化的 MCP 服务器，sandbox 工具策略是第二个允许门控。如果配置了 `mcp.servers` 但沙盒化轮次只显示内置工具，请将 `bundle-mcp`、`group:plugins` 或服务器前缀的 MCP 工具名称/glob（如 `outlook__send_mail` 或 `outlook__*`）添加到 `tools.sandbox.tools.alsoAllow`，然后重启/重载 gateway 并重新捕获工具列表。服务器 glob 使用 provider 安全的 MCP 服务器前缀：非 `[A-Za-z0-9_-]` 字符变为 `-`，不以字母开头的名称添加 `mcp-` 前缀，过长或重复的前缀可能被截断或加后缀。
+
+`openclaw doctor` 目前检查 `mcp.servers` 中 OpenClaw 管理服务器的此形状。从捆绑的 plugin 清单或 Claude `.mcp.json` 加载的 MCP 服务器使用相同的 sandbox 门控，但此诊断尚未枚举这些来源；如果它们的工具在沙盒化轮次中消失，使用相同的允许列表条目。
 
 ## Elevated: 仅 exec 的"在主机上运行"
 
@@ -130,6 +136,7 @@ Elevated **不**授予额外工具;它只影响 `exec`。
 - 在 sandbox 内允许工具:
   - 从 `tools.sandbox.tools.deny` 中删除它(或每个 agent 的 `agents.list[].tools.sandbox.tools.deny`)
   - 或将其添加到 `tools.sandbox.tools.allow`(或每个 agent 允许)
+- 检查 `openclaw logs` 中的 `agents/tool-policy` 条目。它记录 sandbox 模式以及允许还是拒绝规则阻止了工具。
 
 ### "我以为这是 main,为什么它被沙盒化了?"
 

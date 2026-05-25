@@ -168,6 +168,23 @@ openclaw doctor
 
 使用 `/model`（或 `/model list`）获取紧凑选择器；使用 `/model status` 获取完整视图（候选项 + 下一个认证 profile，以及配置时的提供商端点详情）。
 
+### During login（CLI）
+
+对于支持在登录时使用命名 auth profile 的提供商，请使用 `openclaw models auth login --provider <id> --profile-id <profileId>`。
+
+```bash
+openclaw models auth login --provider openai-codex --profile-id openai-codex:ritsuko
+openclaw models auth login --provider openai-codex --profile-id openai-codex:lain
+```
+
+这是在一个 Agent 中为同一提供商保持多个 OAuth 登录分离的最简单方法。
+
+### Per-session（聊天命令）
+
+使用 `/model <alias-or-id>@<profileId>` 为当前 Session 固定特定的提供商凭证（示例 profile ID：`anthropic:default`、`anthropic:work`）。
+
+使用 `/model`（或 `/model list`）获取紧凑选择器；使用 `/model status` 获取完整视图（候选项 + 下一个认证 profile，以及配置时的提供商端点详情）。
+
 ### Per-agent（CLI 覆盖）
 
 为 Agent 设置显式的认证 profile 顺序覆盖（存储在该 Agent 的 `auth-state.json` 中）：
@@ -181,6 +198,8 @@ openclaw models auth order clear --provider anthropic
 使用 `--agent <id>` 指定特定的 Agent；省略则使用配置的默认 Agent。
 调试顺序问题时，`openclaw models status --probe` 会将被省略的已存储 profile 显示为 `excluded_by_auth_order`，而不是静默跳过。
 调试冷却问题时，请记住速率限制冷却可能绑定到一个模型 ID，而非整个提供商 profile。
+
+如果您更改了已在运行的聊天的认证顺序或 profile 固定，请在该聊天中发送 `/new` 或 `/reset` 以开始新 Session。现有 Session 可以保留其当前的模型/profile 选择，直到重置。
 
 ## 故障排除
 

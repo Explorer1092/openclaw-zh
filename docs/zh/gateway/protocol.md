@@ -120,19 +120,26 @@ Gateway → 客户端：
 }
 ```
 
-内置 QR/设置码引导仅限节点。所有者批准待处理的节点请求后，`hello-ok.auth` 包含主要节点令牌：
+内置 QR/设置码引导是全新的移动端交接路径。成功的基线设置码连接返回主要节点令牌加上一个有界的 operator 令牌：
 
 ```json
 {
   "auth": {
     "deviceToken": "…",
     "role": "node",
-    "scopes": []
+    "scopes": [],
+    "deviceTokens": [
+      {
+        "deviceToken": "…",
+        "role": "operator",
+        "scopes": ["operator.approvals", "operator.read", "operator.talk.secrets", "operator.write"]
+      }
+    ]
   }
 }
 ```
 
-内置设置码流程不包含额外的 `deviceTokens` 条目，也不会移交操作员令牌。客户端作者应将可选的 `hello-ok.auth.deviceTokens` 字段视为旧版/自定义引导扩展数据：仅在受信任传输上存在时才持久化，并且不要将其要求于内置配对。
+operator 移交刻意设置了边界，使 QR onboarding 可以在不授予 `operator.admin` 或 `operator.pairing` 的情况下启动移动端 operator 循环。它确实包含 `operator.talk.secrets`，使原生客户端可以在引导后读取所需的 Talk 配置。更广泛的 admin 和 pairing 范围需要单独批准的 operator 配对或令牌流程。仅在连接使用受信任传输（例如 `wss://` 或本地回环）上的引导认证时，客户端才应持久化 `hello-ok.auth.deviceTokens`。
 
 ### 节点示例
 
@@ -318,10 +325,12 @@ Gateway 将这些视为**声明**并强制执行服务器端允许列表。
     - `talk.session.startTurn`、`talk.session.endTurn` 和 `talk.session.cancelTurn` 在状态清除前使用陈旧轮次拒绝驱动托管房间轮次生命周期。
     - `talk.session.cancelOutput` 停止助手音频输出，主要用于 Gateway 中继 Session 中 VAD 门控的插话中断。
     - `talk.session.submitToolResult` 完成 Gateway 拥有的实时中继 Session 发出的提供商工具调用。对于最终结果将跟随的中间工具输出，传递 `options: { willContinue: true }`；当工具结果应满足提供商调用而不启动另一个实时助手响应时，传递 `options: { suppressResponse: true }`。
+    - `talk.session.steer` 向 Gateway 拥有的 Agent 支持的 Talk Session 发送活跃运行语音控制。接受 `{ sessionId, text, mode? }`，其中 `mode` 为 `status`、`steer`、`cancel` 或 `followup`；省略 mode 时从语音文本自动分类。
     - `talk.session.close` 关闭 Gateway 拥有的中继、转录或托管房间 Session 并发出终端 Talk 事件。
     - `talk.mode` 为 WebChat/Control UI 客户端设置/广播当前 Talk 模式状态。
     - `talk.client.create` 使用 `webrtc` 或 `provider-websocket` 创建客户端拥有的实时 Provider Session，同时 Gateway 拥有配置、凭据、指令和工具策略。
     - `talk.client.toolCall` 让客户端拥有的实时传输将 Provider 工具调用转发到 Gateway 策略。第一个支持的工具是 `openclaw_agent_consult`；客户端接收运行 ID 并等待正常聊天生命周期事件，然后再提交提供商特定的工具结果。
+    - `talk.client.steer` 向客户端拥有的实时传输发送活跃运行语音控制。Gateway 从 `sessionKey` 解析活跃嵌入式运行，并返回结构化的已接受/已拒绝结果，而不是静默丢弃转向请求。
     - `talk.event` 是实时、转录、STT/TTS、托管房间、电话和会议适配器的单一 Talk 事件通道。
     - `talk.speak` 通过活跃的 Talk 语音 Provider 合成语音。
     - `tts.status` 返回 TTS 启用状态、活跃 Provider、备用 Provider 和 Provider 配置状态。

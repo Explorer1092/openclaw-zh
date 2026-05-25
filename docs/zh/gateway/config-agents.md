@@ -293,6 +293,25 @@ skills prompt 预算的每 Agent 覆盖。
 }
 ```
 
+### `agents.defaults.imageQuality`
+
+从文件路径、URL 和媒体引用加载的图像的图像工具压缩/细节偏好。默认值：`auto`。
+
+OpenClaw 会根据所选图像模型调整调整尺寸梯度。例如，Claude Opus 4.7、OpenAI GPT-5.5、Qwen VL 和托管的 Llama 4 视觉模型可以使用比旧版/默认高细节视觉路径更大的图像，而多图像轮次在 `auto` 模式下会更激进地压缩以控制 token 和延迟成本。
+
+值：
+
+- `auto`：适应模型限制和图像数量。
+- `efficient`：偏好较小图像以降低 token 和字节使用量。
+- `balanced`：使用标准中间梯度。
+- `high`：为截图、图表和文档图像保留更多细节。
+
+```json5
+{
+  agents: { defaults: { imageQuality: "auto" } },
+}
+```
+
 ### `agents.defaults.userTimezone`
 
 系统 prompt 上下文的时区（不是消息时间戳）。回退到主机时区。
@@ -1333,7 +1352,7 @@ scripts/sandbox-browser-setup.sh   # 可选浏览器镜像
       auto: "always", // off | always | inbound | tagged
       mode: "final", // final | all
       provider: "elevenlabs",
-      summaryModel: "openai/gpt-4.1-mini",
+      summaryModel: "openai/gpt-5.4-mini",
       modelOverrides: { enabled: true },
       maxTextLength: 4000,
       timeoutMs: 30000,
@@ -1441,6 +1460,7 @@ Talk 模式（macOS/iOS/Android）的默认值。
 - `speechLocale` 设置 iOS/macOS Talk 语音识别使用的 BCP 47 区域 id。留空使用设备默认值。
 - `silenceTimeoutMs` 控制 Talk 模式在用户沉默后等待多长时间再发送转录。未设置时保留平台默认暂停窗口（`macOS 和 Android 上 700ms，iOS 上 900ms`）。
 - `realtime.instructions` 向 OpenClaw 内置实时提示追加 Provider 面向的系统指令，因此可以配置声音风格而不丢失默认的 `openclaw_agent_consult` 指导。
+- `realtime.consultRouting` 控制当实时 Provider 生成最终用户转录而不调用 `openclaw_agent_consult` 时的 Gateway 中继回退：`provider-direct` 保留 Provider 的直接回复，而 `force-agent-consult` 将最终请求路由到 OpenClaw。
 
 ---
 

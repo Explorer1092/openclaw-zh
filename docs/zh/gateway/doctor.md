@@ -392,6 +392,8 @@ openclaw memory rem-backfill --path ./memory --stage-short-term
     - 短冷却（速率限制/超时/认证失败）
     - 更长的禁用（计费/信用失败）
 
+    令牌存储在 macOS Keychain 中的旧版 Codex OAuth 配置文件（较旧的 onboarding 在基于文件的 sidecar 布局之前）不会被嵌入式运行时路径识别——该路径以 `allowKeychainPrompt: false` 运行，无法触发 Keychain 提示。运行一次 `openclaw doctor --fix` 将 Keychain 支持的旧版令牌内联迁移到 `auth-profiles.json`；之后，嵌入式轮次（Telegram、cron、子 Agent dispatch）像解析任何其他内联 OAuth 配置文件一样解析它们。
+
   </Accordion>
   <Accordion title="6. Hooks 模型验证">
     如果设置了 `hooks.gmail.model`，doctor 会根据目录和 allowlist 验证模型引用，并在无法解析或被禁止时发出警告。

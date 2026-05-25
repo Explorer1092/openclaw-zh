@@ -44,6 +44,38 @@ sidebarTitle: "工具和自定义 Provider"
 | `group:agents`     | `agents_list`, `update_plan`                                                                                            |
 | `group:media`      | `image`, `image_generate`, `music_generate`, `video_generate`, `tts`                                                    |
 | `group:openclaw`   | 所有内置工具（不包括 Provider Plugin）                                                                                  |
+| `group:plugins`    | 已加载 Plugin 所拥有的工具，包括通过 `bundle-mcp` 公开的已配置 MCP server                                              |
+
+### MCP 和 Plugin 工具的沙盒工具策略
+
+已配置的 MCP server 作为 `bundle-mcp` Plugin id 下的 Plugin 自有工具公开。普通工具配置文件可以允许它们，但 `tools.sandbox.tools` 是沙盒 Session 的额外门控。如果沙盒模式为 `"all"` 或 `"non-main"`，当 MCP/Plugin 工具应在沙盒工具允许列表中可见时，请包含以下条目之一：
+
+- `bundle-mcp`：用于 `mcp.servers` 中 OpenClaw 管理的 MCP server
+- Plugin id：用于特定原生 Plugin
+- `group:plugins`：用于所有已加载的 Plugin 自有工具
+- 精确的 MCP server 工具名称或 server glob，如 `outlook__send_mail` 或 `outlook__*`（仅需要一个 server 时）
+
+Server glob 使用对 Provider 安全的 MCP server 前缀，不一定是原始的 `mcp.servers` 键。非 `[A-Za-z0-9_-]` 字符变为 `-`，不以字母开头的名称会添加 `mcp-` 前缀，过长或重复的前缀可能被截断或加后缀；例如，`mcp.servers["Outlook Graph"]` 使用类似 `outlook-graph__*` 的 glob。
+
+```json5
+{
+  agents: { defaults: { sandbox: { mode: "all" } } },
+  mcp: {
+    servers: {
+      outlook: { command: "node", args: ["./outlook-mcp.js"] },
+    },
+  },
+  tools: {
+    sandbox: {
+      tools: {
+        alsoAllow: ["web_search", "web_fetch", "memory_search", "memory_get", "bundle-mcp"],
+      },
+    },
+  },
+}
+```
+
+如果没有该沙盒层条目，MCP server 仍可成功加载，但其工具会在 Provider 请求之前被过滤掉。使用 `openclaw doctor` 检测 `mcp.servers` 中 OpenClaw 管理的 server 的此类情况。从捆绑 Plugin 清单或 Claude `.mcp.json` 加载的 MCP server 使用相同的沙盒门控，但此诊断尚未枚举这些来源；如果其工具在沙盒轮次中消失，请使用相同的允许列表条目。
 
 ### `tools.allow` / `tools.deny`
 

@@ -99,7 +99,9 @@ SSH 特定配置位于 `agents.defaults.sandbox.ssh` 下。OpenShell 特定配�
 
 - **配置需要主机路径**：`openclaw.json` 的 `workspace` 配置**必须**包含**主机的绝对路径**（例如 `/home/user/.openclaw/workspaces`），而不是内部 Gateway 容器路径。当 OpenClaw 要求 Docker 守护进程生成沙盒时，守护进程相对于主机 OS 命名空间而不是 Gateway 命名空间来评估路径。
 - **FS 桥接一致性（相同卷映射）**：OpenClaw Gateway 原生进程也会将心跳和桥接文件写入 `workspace` 目录。因为 Gateway 在其自己的容器化环境中评估完全相同的字符串（主机路径），Gateway 部署**必须**包含一个相同的卷映射，将主机命名空间原生连接（`-v /home/user/.openclaw:/home/user/.openclaw`）。
-- **Codex 代码模式**：当 OpenClaw 沙盒处于活动状态时，OpenClaw 将 Codex 应用服务器轮次约束为 Codex `workspace-write` 沙盒，即使 Codex plugin 默认值为 `danger-full-access`。Codex 轮次网络标志遵循 OpenClaw 沙盒出口设置，因此 Docker `network: "none"` 保持离线，`network: "bridge"` 或自定义 Docker 网络允许出站访问。不要将主机 Docker socket 挂载到 Agent 沙盒容器或自定义 Codex 沙盒中。
+- **Codex 代码模式**：当 OpenClaw 沙盒处于活动状态时，OpenClaw 为该轮次禁用 Codex 应用服务器原生代码模式、用户 MCP 服务器和应用支持的 Plugin 执行，因为这些原生表面从 Gateway 主机应用服务器进程运行，而不是从 OpenClaw 沙盒后端运行。当普通 exec/process 工具可用时，shell 访问通过 OpenClaw 沙盒支持的工具（如 `sandbox_exec` 和 `sandbox_process`）公开。不要将主机 Docker socket 挂载到 Agent 沙盒容器或自定义 Codex 沙盒中。
+
+在 Ubuntu/AppArmor 主机上，当您有意在没有活跃 OpenClaw 沙盒化的情况下运行原生 Codex `workspace-write`，且服务用户不允许创建非特权用户命名空间时，Codex `workspace-write` 可能在 shell 启动前失败。当 Docker 沙盒出口被禁用（`network: "none"`，默认值）时，Codex 还需要非特权网络命名空间。常见症状是 `bwrap: setting up uid map: Permission denied` 和 `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`。运行 `openclaw doctor`；如果它报告 Codex bwrap 命名空间探测失败，优先使用 AppArmor profile，为 OpenClaw 服务进程授予所需命名空间。`kernel.apparmor_restrict_unprivileged_userns=0` 是一个全主机回退，具有安全权衡；仅当该主机姿态可接受时才使用它。
 
 如果您在没有绝对主机一致性的情况下内部映射路径，OpenClaw 原生会抛出 `EACCES` 权限错误，尝试在容器环境内写入其心跳，因为完全限定的路径字符串在原生情况下不存在。
 </Warning>

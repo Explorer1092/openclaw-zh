@@ -5,6 +5,7 @@ read_when:
   - 调整 Heartbeat 节奏或消息
   - 在 Heartbeat 和 Cron 之间决定用于计划任务
 title: "Heartbeat"
+sidebarTitle: "Heartbeat"
 ---
 
 <Note>
@@ -52,7 +53,7 @@ Heartbeat 是计划的主 Session 轮次 — 它**不会**创建[后台任务](/
         isolatedSession: true, // 可选:每次运行新 Session(无对话历史)
         skipWhenBusy: true, // 可选:子 Agent 或嵌套 lane 繁忙时也延迟
         // activeHours: { start: "08:00", end: "24:00" },
-        // includeReasoning: true, // 可选:也发送单独的 `Reasoning:` 消息
+        // includeReasoning: true, // 可选:也发送单独的 `Thinking` 消息
       },
     },
   },
@@ -99,7 +100,7 @@ Heartbeat 可以响应已完成的[后台任务](/automation/tasks),但 Heartbea
       heartbeat: {
         every: "30m", // 默认: 30m (0m 禁用)
         model: "anthropic/claude-opus-4-6",
-        includeReasoning: false, // 默认: false (当可用时交付单独的 Reasoning: 消息)
+        includeReasoning: false, // 默认: false (当可用时交付单独的 Thinking 消息)
         lightContext: false, // 默认: false; true 仅从 workspace 引导文件保留 HEARTBEAT.md
         isolatedSession: false, // 默认: false; true 在新 Session 中运行每次 Heartbeat(无对话历史)
         skipWhenBusy: false, // 默认: false; true 也等待子 Agent/嵌套 lane
@@ -227,7 +228,7 @@ Heartbeat 可以响应已完成的[后台任务](/automation/tasks),但 Heartbea
   Heartbeat 运行的可选模型覆盖(`provider/model`)。
 </ParamField>
 <ParamField path="includeReasoning" type="boolean" default="false">
-  启用时,当可用时也交付单独的 `Reasoning:` 消息(与 `/reasoning on` 相同形状)。
+  启用时,当可用时也交付单独的 `Thinking` 消息(与 `/reasoning on` 相同形状)。
 </ParamField>
 <ParamField path="lightContext" type="boolean" default="false">
   为 true 时,Heartbeat 运行使用轻量引导上下文,并仅从 workspace 引导文件保留 `HEARTBEAT.md`。
@@ -381,6 +382,8 @@ channels:
 
 在正常运行中,`HEARTBEAT.md` 仅在为默认 Agent 启用 Heartbeat 指导时才注入。使用 `0m` 禁用 Heartbeat 节奏或设置 `includeSystemPromptSection: false` 会从正常引导上下文中省略它。
 
+在原生 Codex harness 上，`HEARTBEAT.md` 内容不会注入到轮次中。如果该文件存在且有非空白内容，Heartbeat 协作模式指令会将 Codex 指向该文件，并告知其在继续之前先阅读。
+
 如果 `HEARTBEAT.md` 存在但实际上是空的(只有空行和像 `# Heading` 这样的 markdown 标题),OpenClaw 跳过 Heartbeat 运行以节省 API 调用。跳过会以 `reason=empty-heartbeat-file` 报告。如果文件缺失,Heartbeat 仍然运行,模型决定做什么。
 
 保持简短(简短清单或提醒)以避免提示膨胀。
@@ -466,7 +469,7 @@ openclaw system event --text "Check for urgent follow-ups" --mode now
 
 - `agents.defaults.heartbeat.includeReasoning: true`
 
-启用时,Heartbeat 还会交付一个以 `Reasoning:` 为前缀的单独消息(与 `/reasoning on` 相同形状)。当 Agent 管理多个 Session/代码库时,这很有用,您想了解它决定 ping 您的原因 — 但它也可能泄露比您想要更多的内部细节。建议在群聊中保持关闭。
+启用时,Heartbeat 还会交付一个以 `Thinking` 为前缀的单独消息(与 `/reasoning on` 相同形状)。当 Agent 管理多个 Session/代码库时,这很有用,您想了解它决定 ping 您的原因 — 但它也可能泄露比您想要更多的内部细节。建议在群聊中保持关闭。
 
 ## 成本意识
 

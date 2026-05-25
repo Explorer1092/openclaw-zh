@@ -8,8 +8,6 @@ read_when:
 title: "Secrets Apply 计划约定"
 ---
 
-# Secrets apply 计划约定
-
 本页定义了 `openclaw secrets apply` 强制执行的严格约定。
 
 如果目标不符合这些规则，apply 会在修改配置之前退出并报错。

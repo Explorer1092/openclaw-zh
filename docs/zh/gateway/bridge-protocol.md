@@ -8,8 +8,6 @@ read_when:
 title: "Bridge Protocol"
 ---
 
-# Bridge 协议（旧版节点传输）
-
 <Warning>
 TCP Bridge 已被**移除**。当前的 OpenClaw 版本不附带 Bridge 监听器，`bridge.*` 配置键不再在 schema 中。本页仅供历史参考。所有节点/operator 客户端请使用 [Gateway Protocol](/gateway/protocol)。
 </Warning>

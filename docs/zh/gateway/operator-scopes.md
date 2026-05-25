@@ -73,6 +73,6 @@ Operator RPC 方法需要 `operator` 角色。节点发起的方法需要 `node`
 
 ## 共享密钥认证
 
-共享 Gateway 令牌/密码认证被视为该 Gateway 的受信任 operator 访问。兼容 OpenAI 的 HTTP 接口和 `/tools/invoke` 会为共享密钥 bearer 认证恢复正常的完整 operator 默认作用域集，即使调用者发送了更窄的声明作用域。
+共享 Gateway 令牌/密码认证被视为该 Gateway 的受信任 operator 访问。兼容 OpenAI 的 HTTP 接口、`/tools/invoke` 和 HTTP Session 历史端点会为共享密钥 bearer 认证恢复正常的完整 operator 默认作用域集，即使调用者发送了更窄的声明作用域。
 
 带有身份的模式（例如 trusted proxy 认证或私有入口 `none`）仍然可以遵守显式声明的作用域。对于真正的信任边界分离，请使用独立的 Gateway。

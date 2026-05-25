@@ -9,7 +9,7 @@ read_when:
   - 你想在不运行 OpenTelemetry 收集器的情况下获取 metrics
 ---
 
-OpenClaw 可以通过捆绑的 `diagnostics-prometheus` Plugin 暴露诊断 metrics。它监听受信任的内部诊断，并在以下地址渲染 Prometheus 文本端点：
+OpenClaw 可以通过官方 `diagnostics-prometheus` Plugin 暴露诊断 metrics。它监听受信任的内部诊断，并在以下地址渲染 Prometheus 文本端点：
 
 ```text
 GET /api/diagnostics/prometheus
@@ -26,6 +26,11 @@ Content type 为 `text/plain; version=0.0.4; charset=utf-8`，即标准 Promethe
 ## 快速开始
 
 <Steps>
+  <Step title="安装 Plugin">
+    ```bash
+    openclaw plugins install clawhub:@openclaw/diagnostics-prometheus
+    ```
+  </Step>
   <Step title="启用 Plugin">
     <Tabs>
       <Tab title="配置">
@@ -91,20 +96,32 @@ Content type 为 `text/plain; version=0.0.4; charset=utf-8`，即标准 Promethe
 | `openclaw_model_call_duration_seconds`        | histogram | `api`, `error_category`, `model`, `outcome`, `provider`, `transport`                    |
 | `openclaw_model_tokens_total`                 | counter   | `agent`, `channel`, `model`, `provider`, `token_type`                                   |
 | `openclaw_gen_ai_client_token_usage`          | histogram | `model`, `provider`, `token_type`                                                       |
-| `openclaw_model_cost_usd_total`               | counter   | `agent`, `channel`, `model`, `provider`                                                 |
-| `openclaw_tool_execution_total`               | counter   | `error_category`, `outcome`, `params_kind`, `tool`                                      |
-| `openclaw_tool_execution_duration_seconds`    | histogram | `error_category`, `outcome`, `params_kind`, `tool`                                      |
-| `openclaw_harness_run_total`                  | counter   | `channel`, `error_category`, `harness`, `model`, `outcome`, `phase`, `plugin`, `provider` |
-| `openclaw_harness_run_duration_seconds`       | histogram | `channel`, `error_category`, `harness`, `model`, `outcome`, `phase`, `plugin`, `provider` |
-| `openclaw_message_processed_total`            | counter   | `channel`, `outcome`, `reason`                                                          |
-| `openclaw_message_processed_duration_seconds` | histogram | `channel`, `outcome`, `reason`                                                          |
-| `openclaw_message_delivery_total`             | counter   | `channel`, `delivery_kind`, `error_category`, `outcome`                                 |
-| `openclaw_message_delivery_duration_seconds`  | histogram | `channel`, `delivery_kind`, `error_category`, `outcome`                                 |
-| `openclaw_queue_lane_size`                    | gauge     | `lane`                                                                                  |
-| `openclaw_queue_lane_wait_seconds`            | histogram | `lane`                                                                                  |
-| `openclaw_session_state_total`                | counter   | `reason`, `state`                                                                       |
-| `openclaw_session_queue_depth`                | gauge     | `state`                                                                                 |
-| `openclaw_memory_bytes`                       | gauge     | `kind`                                                                                  |
+| `openclaw_model_cost_usd_total`               | counter   | `agent`, `channel`, `model`, `provider`                                                         |
+| `openclaw_skill_used_total`                   | counter   | `activation`, `agent`, `skill`, `source`                                                        |
+| `openclaw_tool_execution_total`               | counter   | `error_category`, `outcome`, `params_kind`, `tool`, `tool_owner`, `tool_source`                 |
+| `openclaw_tool_execution_duration_seconds`    | histogram | `error_category`, `outcome`, `params_kind`, `tool`, `tool_owner`, `tool_source`                 |
+| `openclaw_harness_run_total`                  | counter   | `channel`, `error_category`, `harness`, `model`, `outcome`, `phase`, `plugin`, `provider`       |
+| `openclaw_harness_run_duration_seconds`       | histogram | `channel`, `error_category`, `harness`, `model`, `outcome`, `phase`, `plugin`, `provider`       |
+| `openclaw_message_received_total`             | counter   | `channel`, `source`                                                                             |
+| `openclaw_message_dispatch_started_total`     | counter   | `channel`, `source`                                                                             |
+| `openclaw_message_dispatch_completed_total`   | counter   | `channel`, `outcome`, `reason`, `source`                                                        |
+| `openclaw_message_dispatch_duration_seconds`  | histogram | `channel`, `outcome`, `reason`, `source`                                                        |
+| `openclaw_message_processed_total`            | counter   | `channel`, `outcome`, `reason`                                                                  |
+| `openclaw_message_processed_duration_seconds` | histogram | `channel`, `outcome`, `reason`                                                                  |
+| `openclaw_message_delivery_started_total`     | counter   | `channel`, `delivery_kind`                                                                      |
+| `openclaw_message_delivery_total`             | counter   | `channel`, `delivery_kind`, `error_category`, `outcome`                                         |
+| `openclaw_message_delivery_duration_seconds`  | histogram | `channel`, `delivery_kind`, `error_category`, `outcome`                                         |
+| `openclaw_talk_event_total`                   | counter   | `brain`, `event_type`, `mode`, `provider`, `transport`                                          |
+| `openclaw_talk_event_duration_seconds`        | histogram | `brain`, `event_type`, `mode`, `provider`, `transport`                                          |
+| `openclaw_talk_audio_bytes`                   | histogram | `brain`, `event_type`, `mode`, `provider`, `transport`                                          |
+| `openclaw_queue_lane_size`                    | gauge     | `lane`                                                                                          |
+| `openclaw_queue_lane_wait_seconds`            | histogram | `lane`                                                                                          |
+| `openclaw_session_state_total`                | counter   | `reason`, `state`                                                                               |
+| `openclaw_session_queue_depth`                | gauge     | `state`                                                                                         |
+| `openclaw_session_turn_created_total`         | counter   | `agent`, `channel`, `trigger`                                                                   |
+| `openclaw_session_recovery_total`             | counter   | `action`, `active_work_kind`, `state`, `status`                                                 |
+| `openclaw_session_recovery_age_seconds`       | histogram | `action`, `active_work_kind`, `state`, `status`                                                 |
+| `openclaw_memory_bytes`                       | gauge     | `kind`                                                                                          |
 | `openclaw_memory_rss_bytes`                   | histogram | 无                                                                                      |
 | `openclaw_memory_pressure_total`              | counter   | `level`, `reason`                                                                       |
 | `openclaw_telemetry_exporter_total`           | counter   | `exporter`, `reason`, `signal`, `status`                                                |
@@ -116,7 +133,7 @@ Content type 为 `text/plain; version=0.0.4; charset=utf-8`，即标准 Promethe
   <Accordion title="有界的低基数标签">
     Prometheus 标签保持有界和低基数。导出器不发出原始诊断标识符，如 `runId`、`sessionKey`、`sessionId`、`callId`、`toolCallId`、消息 ID、聊天 ID 或 Provider 请求 ID。
 
-    标签值经过编辑，必须符合 OpenClaw 的低基数字符策略。不符合策略的值被替换为 `unknown`、`other` 或 `none`，具体取决于指标。
+    标签值经过编辑，必须符合 OpenClaw 的低基数字符策略。不符合策略的值被替换为 `unknown`、`other` 或 `none`，具体取决于指标。看起来像范围 Agent Session 密钥的标签也会被替换为 `unknown`。
 
   </Accordion>
   <Accordion title="系列上限和溢出核算">
@@ -127,6 +144,7 @@ Content type 为 `text/plain; version=0.0.4; charset=utf-8`，即标准 Promethe
   </Accordion>
   <Accordion title="Prometheus 输出中永远不会出现的内容">
     - prompt 文本、响应文本、工具输入、工具输出、系统 prompt
+    - Talk 转录、音频有效负载、通话 id、房间 id、切换令牌、轮次 id 和原始 Session id
     - 原始 Provider 请求 ID（仅有界散列，适用时在 span 上，而不是在 metrics 上）
     - Session 密钥和 Session ID
     - 主机名、文件路径、密钥值
@@ -154,6 +172,9 @@ histogram_quantile(
   0.95,
   sum by (le, lane) (rate(openclaw_queue_lane_wait_seconds_bucket[5m]))
 ) < 2
+
+# Skill 使用量，按有界来源拆分
+sum by (skill, source) (increase(openclaw_skill_used_total[24h]))
 
 # 丢弃的 Prometheus 系列（基数告警）
 increase(openclaw_prometheus_series_dropped_total[15m]) > 0

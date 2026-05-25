@@ -8,7 +8,7 @@ read_when:
   - 你需要确切的指标名称、span 名称或属性形状来构建仪表板或告警
 ---
 
-OpenClaw 通过捆绑的 `diagnostics-otel` Plugin 使用 **OTLP/HTTP（protobuf）** 导出诊断。任何接受 OTLP/HTTP 的收集器或后端无需更改代码即可工作。关于本地文件日志及其读取方法，请参见 [日志记录](/logging)。
+OpenClaw 通过官方 `diagnostics-otel` Plugin 使用 **OTLP/HTTP（protobuf）** 导出诊断。任何接受 OTLP/HTTP 的收集器或后端无需更改代码即可工作。关于本地文件日志及其读取方法，请参见 [日志记录](/logging)。
 
 ## 工作原理
 
@@ -64,8 +64,8 @@ openclaw plugins enable diagnostics-otel
 
 | 信号        | 包含内容                                                                                                                      |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| **Metrics** | token 使用量、成本、运行时长、消息流、Talk 事件、队列通道、Session 状态/恢复、exec 和内存压力的计数器和直方图。               |
-| **Traces**  | model 使用、model 调用、harness 生命周期、工具执行、exec、webhook/消息处理、上下文组装和工具循环的 span。                     |
+| **Metrics** | token 使用量、成本、运行时长、Skill 使用、消息流、Talk 事件、队列通道、Session 状态/恢复、工具执行、exec 和内存压力的计数器和直方图。 |
+| **Traces**  | model 使用、model 调用、harness 生命周期、Skill 使用、工具执行、exec、webhook/消息处理、上下文组装和工具循环的 span。             |
 | **Logs**    | 启用 `diagnostics.otel.logs` 时通过 OTLP 导出的结构化 `logging.file` 记录。                                                  |
 
 独立切换 `traces`、`metrics` 和 `logs`。当 `diagnostics.otel.enabled` 为 true 时，三者都默认开启。
@@ -116,7 +116,7 @@ openclaw plugins enable diagnostics-otel
 
 ## 隐私和内容捕获
 
-原始 model/工具内容**默认不导出**。span 携带有界标识符（Channel、Provider、model、错误类别、仅散列的请求 id），从不包含 prompt 文本、响应文本、工具输入、工具输出或 Session 密钥。Talk 指标仅导出有界事件元数据，如模式、传输、Provider 和事件类型，不包含转录、音频有效负载、Session id、轮次 id、通话 id、房间 id 或切换令牌。
+原始 model/工具内容**默认不导出**。span 携带有界标识符（Channel、Provider、model、错误类别、仅散列的请求 id、工具来源、工具所有者以及 Skill 名称/来源），从不包含 prompt 文本、响应文本、工具输入、工具输出、Skill 文件路径或 Session 密钥。OTLP 日志记录默认保留严重性、logger、代码位置、受信任 trace 上下文和净化属性，但原始日志消息正文仅在 `diagnostics.otel.captureContent` 设置为布尔值 `true` 时才导出。精细的 `captureContent.*` 子键不启用日志正文。看起来像范围 Agent Session 密钥的标签会被替换为 `unknown`。Talk 指标仅导出有界事件元数据，如模式、传输、Provider 和事件类型，不包含转录、音频有效负载、Session id、轮次 id、通话 id、房间 id 或切换令牌。
 
 出站 model 请求可能包含 W3C `traceparent` 头。该头仅从 OpenClaw 拥有的活跃 model 调用诊断 trace 上下文生成。现有的调用者提供的 `traceparent` 头被替换，因此 Plugin 或自定义 Provider 选项无法伪造跨服务 trace 祖先。
 
@@ -128,7 +128,7 @@ openclaw plugins enable diagnostics-otel
 - `toolOutputs` — 工具结果有效负载。
 - `systemPrompt` — 组装的系统/开发者 prompt。
 
-启用任何子键时，model 和工具 span 还会获得仅针对你选择加入的那类内容的有界、编辑的 `openclaw.content.*` 属性。
+启用任何子键时，model 和工具 span 还会获得仅针对你选择加入的那类内容的有界、编辑的 `openclaw.content.*` 属性。仅在 OTLP 日志消息正文也被批准导出的情况下，使用布尔值 `captureContent: true` 进行宽泛的诊断捕获。
 
 ## 采样和刷新
 
@@ -152,6 +152,7 @@ openclaw plugins enable diagnostics-otel
 - `openclaw.model_call.request_bytes`（直方图，最终 model 请求有效负载的 UTF-8 字节大小；无原始有效负载内容）
 - `openclaw.model_call.response_bytes`（直方图，流式 model 响应事件的 UTF-8 字节大小；无原始响应内容）
 - `openclaw.model_call.time_to_first_byte_ms`（直方图，第一个流式响应事件之前的经过时间）
+- `openclaw.skill.used`（计数器，属性：`openclaw.skill.name`、`openclaw.skill.source`、`openclaw.skill.activation`，可选 `openclaw.agent`，可选 `openclaw.toolName`）
 
 ### 消息流
 
@@ -159,6 +160,10 @@ openclaw plugins enable diagnostics-otel
 - `openclaw.webhook.error`（计数器，属性：`openclaw.channel`、`openclaw.webhook`）
 - `openclaw.webhook.duration_ms`（直方图，属性：`openclaw.channel`、`openclaw.webhook`）
 - `openclaw.message.queued`（计数器，属性：`openclaw.channel`、`openclaw.source`）
+- `openclaw.message.received`（计数器，属性：`openclaw.channel`、`openclaw.source`）
+- `openclaw.message.dispatch.started`（计数器，属性：`openclaw.channel`、`openclaw.source`）
+- `openclaw.message.dispatch.completed`（计数器，属性：`openclaw.channel`、`openclaw.outcome`、`openclaw.reason`、`openclaw.source`）
+- `openclaw.message.dispatch.duration_ms`（直方图，属性：`openclaw.channel`、`openclaw.outcome`、`openclaw.reason`、`openclaw.source`）
 - `openclaw.message.processed`（计数器，属性：`openclaw.channel`、`openclaw.outcome`）
 - `openclaw.message.duration_ms`（直方图，属性：`openclaw.channel`、`openclaw.outcome`）
 - `openclaw.message.delivery.started`（计数器，属性：`openclaw.channel`、`openclaw.delivery.kind`）
@@ -179,6 +184,7 @@ openclaw plugins enable diagnostics-otel
 - `openclaw.session.state`（计数器，属性：`openclaw.state`、`openclaw.reason`）
 - `openclaw.session.stuck`（计数器，属性：`openclaw.state`；仅对无活跃工作的陈旧 Session 账目发出）
 - `openclaw.session.stuck_age_ms`（直方图，属性：`openclaw.state`；仅对无活跃工作的陈旧 Session 账目发出）
+- `openclaw.session.turn.created`（计数器，属性：`openclaw.agent`、`openclaw.channel`、`openclaw.trigger`）
 - `openclaw.session.recovery.requested`（计数器，属性：`openclaw.state`、`openclaw.action`、`openclaw.active_work_kind`、`openclaw.reason`）
 - `openclaw.session.recovery.completed`（计数器，属性：`openclaw.state`、`openclaw.action`、`openclaw.status`、`openclaw.active_work_kind`、`openclaw.reason`）
 - `openclaw.session.recovery.age_ms`（直方图，属性：与对应恢复计数器相同）

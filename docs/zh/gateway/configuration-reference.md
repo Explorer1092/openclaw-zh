@@ -46,6 +46,7 @@ Agent 查找路径：在编辑前，使用 `gateway` 工具操作 `config.schema
   - `talk.consultFastMode`：Control UI Talk 实时咨询的一次性快速模式覆盖
   - `talk.speechLocale`：iOS/macOS 上 Talk 语音识别的可选 BCP 47 区域 ID
   - `talk.silenceTimeoutMs`：未设置时，Talk 保持平台默认的暂停窗口后再发送转录文本（`macOS 和 Android 上 700 ms，iOS 上 900 ms`）
+  - `talk.realtime.consultRouting`：跳过 `openclaw_agent_consult` 的已终结实时 Talk 转录的 Gateway 中继回退
 
 ## 工具和自定义提供商
 
@@ -780,7 +781,7 @@ Secret ref 是附加的：纯文本值仍然有效。
 - `provider` 模式：`^[a-z][a-z0-9_-]{0,63}$`
 - `source: "env"` id 模式：`^[A-Z][A-Z0-9_]{0,127}$`
 - `source: "file"` id：绝对 JSON 指针（例如 `"/providers/openai/apiKey"`）
-- `source: "exec"` id 模式：`^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$`
+- `source: "exec"` id 模式：`^[A-Za-z0-9][A-Za-z0-9._:/#-]{0,255}$`（支持 AWS 风格的 `secret#json_key` 选择器）
 - `source: "exec"` id 不得包含 `.` 或 `..` 斜杠分隔的路径段（例如 `a/../b` 被拒绝）
 
 ### 支持的凭证接口
