@@ -19,7 +19,9 @@ title: "测试"
 - `pnpm test`：通过有作用域的 Vitest 通道路由显式文件/目录目标。无目标运行使用固定的分片组并扩展到叶配置以进行本地并行执行；扩展组始终扩展到每个扩展的分片配置，而不是一个大型根项目进程。
 - 测试包装器运行以简短的 `[test] passed|failed|skipped ... in ...` 摘要结束。Vitest 自己的持续时间行保持为每个分片的详细信息。
 - 共享 OpenClaw 测试状态：当测试需要隔离的 `HOME`、`OPENCLAW_STATE_DIR`、`OPENCLAW_CONFIG_PATH`、配置固件、工作区、Agent 目录或 auth-profile 存储时，从 Vitest 使用 `src/test-utils/openclaw-test-state.ts`。
+- Control UI 模拟 E2E：使用 `pnpm test:ui:e2e` 运行 Vitest + Playwright 通道，该通道启动 Vite Control UI 并驱动真实 Chromium 页面对抗模拟的 Gateway WebSocket。测试位于 `ui/src/**/*.e2e.test.ts`；共享模拟和控件位于 `ui/src/test-helpers/control-ui-e2e.ts`。`pnpm test:e2e` 包含此通道。在 Codex worktree 中，在安装依赖项后，优先使用 `node scripts/run-vitest.mjs run --config test/vitest/vitest.ui-e2e.config.ts --configLoader runner ui/src/ui/e2e/chat-flow.e2e.test.ts` 进行小型针对性证明，或使用 Testbox/Crabbox 进行更广泛的 GUI 证明。
 - 进程 E2E 辅助程序：当 Vitest 进程级 E2E 测试需要运行的 Gateway、CLI 环境、日志捕获和一站式清理时，使用 `test/helpers/openclaw-test-instance.ts`。
+- TUI PTY 测试：使用 `node scripts/run-vitest.mjs run --config test/vitest/vitest.tui-pty.config.ts` 运行快速的假后端 PTY 通道。使用 `OPENCLAW_TUI_PTY_INCLUDE_LOCAL=1` 或 `pnpm tui:pty:test:watch --mode local` 运行较慢的 `tui --local` 冒烟测试，该测试仅模拟外部模型端点。断言稳定的可见文本或固件调用，而不是原始 ANSI 快照。
 - Docker/Bash E2E 辅助程序：来源 `scripts/lib/docker-e2e-image.sh` 的通道可以将 `docker_e2e_test_state_shell_b64 <label> <scenario>` 传递到容器，并用 `scripts/lib/openclaw-e2e-instance.sh` 解码；多主脚本可以传递 `docker_e2e_test_state_function_b64` 并在每个流中调用 `openclaw_test_state_create <label> <scenario>`。较低级别的调用者可以使用 `scripts/lib/openclaw-test-state.mjs shell --label <name> --scenario <name>` 获取容器内 shell 代码片段，或使用 `node scripts/lib/openclaw-test-state.mjs -- create --label <name> --scenario <name> --env-file <path> --json` 获取可加载的主机环境文件。`--` 在 `create` 之前防止较新的 Node 运行时将 `--env-file` 视为 Node 标志。启动 Gateway 的 Docker/Bash 通道可以在容器内来源 `scripts/lib/openclaw-e2e-instance.sh` 以获取入口点解析、模拟 OpenAI 启动、Gateway 前台/后台启动、就绪探测、状态环境导出、日志转储和进程清理。
 - 完整、扩展和包含模式分片运行更新 `.artifacts/vitest-shard-timings.json` 中的本地时间数据；之后的整个配置运行使用这些时间来平衡慢速和快速分片。包含模式 CI 分片将分片名称附加到时间键，这使得过滤的分片时间可见而不替换整体配置时间数据。设置 `OPENCLAW_TEST_PROJECTS_TIMINGS=0` 以忽略本地时间产物。
 - 选定的 `plugin-sdk` 和 `commands` 测试文件现在通过只保留 `test/setup.ts` 的专用轻量通道路由，将运行时密集型用例保留在其现有通道上。
@@ -37,12 +39,13 @@ title: "测试"
 - `pnpm test:perf:groups --full-suite --allow-failures --output .artifacts/test-perf/baseline-before.json`：串行运行每个完整套件 Vitest 叶配置并写入分组持续时间数据加上每个配置的 JSON/日志产物。测试性能 Agent 在尝试修复慢速测试之前将此用作其基准。
 - `pnpm test:perf:groups:compare .artifacts/test-perf/baseline-before.json .artifacts/test-perf/after-agent.json`：在专注于性能的变更后比较分组报告。
 - Gateway 集成：通过 `OPENCLAW_TEST_INCLUDE_GATEWAY=1 pnpm test` 或 `pnpm test:gateway` 选择加入。
-- `pnpm test:e2e`：运行 Gateway 端到端冒烟测试（多实例 WS/HTTP/节点配对）。在 `vitest.e2e.config.ts` 中默认使用 `threads` + `isolate: false` 和自适应工作线程；使用 `OPENCLAW_E2E_WORKERS=<n>` 调整，使用 `OPENCLAW_E2E_VERBOSE=1` 获取详细日志。
+- `pnpm test:e2e`：运行仓库 E2E 聚合：Gateway 端到端冒烟测试加上 Control UI 模拟浏览器 E2E 通道。
+- `pnpm test:e2e:gateway`：运行 Gateway 端到端冒烟测试（多实例 WS/HTTP/节点配对）。在 `vitest.e2e.config.ts` 中默认使用 `threads` + `isolate: false` 和自适应工作线程；使用 `OPENCLAW_E2E_WORKERS=<n>` 调整，使用 `OPENCLAW_E2E_VERBOSE=1` 获取详细日志。
 - `pnpm test:live`：运行 Provider 实时测试（minimax/zai）。需要 API 密钥和 `LIVE=1`（或 Provider 特定的 `*_LIVE_TEST=1`）以取消跳过。
 - `pnpm test:docker:all`：构建共享实时测试镜像，将 OpenClaw 打包一次为 npm tarball，构建/复用裸 Node/Git 运行器镜像加上将该 tarball 安装到 `/app` 的功能镜像，然后通过加权调度器使用 `OPENCLAW_SKIP_DOCKER_BUILD=1` 运行 Docker 烟雾通道。裸镜像（`OPENCLAW_DOCKER_E2E_BARE_IMAGE`）用于安装器/更新/插件依赖通道；这些通道挂载预构建的 tarball 而不是使用复制的仓库源。功能镜像（`OPENCLAW_DOCKER_E2E_FUNCTIONAL_IMAGE`）用于正常的已构建应用功能通道。`scripts/package-openclaw-for-docker.mjs` 是单一本地/CI 包打包器，并在 Docker 使用之前验证 tarball 加 `dist/postinstall-inventory.json`。Docker 通道定义存在于 `scripts/lib/docker-e2e-scenarios.mjs`；规划器逻辑存在于 `scripts/lib/docker-e2e-plan.mjs`；`scripts/test-docker-all.mjs` 执行所选计划。`node scripts/test-docker-all.mjs --plan-json` 为所选通道、镜像类型、包/实时镜像需求和凭据检查发出调度器拥有的 CI 计划，而不构建或运行 Docker。`OPENCLAW_DOCKER_ALL_PARALLELISM=<n>` 控制进程槽，默认为 10；`OPENCLAW_DOCKER_ALL_TAIL_PARALLELISM=<n>` 控制 Provider 敏感尾部池，默认为 10。重型通道上限默认为 `OPENCLAW_DOCKER_ALL_LIVE_LIMIT=9`、`OPENCLAW_DOCKER_ALL_NPM_LIMIT=10` 和 `OPENCLAW_DOCKER_ALL_SERVICE_LIMIT=7`；Provider 上限默认为通过 `OPENCLAW_DOCKER_ALL_LIVE_CLAUDE_LIMIT=4`、`OPENCLAW_DOCKER_ALL_LIVE_CODEX_LIMIT=4` 和 `OPENCLAW_DOCKER_ALL_LIVE_GEMINI_LIMIT=4` 每个 Provider 一个重型通道。使用 `OPENCLAW_DOCKER_ALL_WEIGHT_LIMIT` 或 `OPENCLAW_DOCKER_ALL_DOCKER_LIMIT` 适用于更大的主机。如果一个通道在低并行度主机上超过有效的权重或资源上限，它仍然可以从空池启动，并将独自运行直到释放容量。通道启动默认错开 2 秒以避免本地 Docker 守护程序创建风暴；使用 `OPENCLAW_DOCKER_ALL_START_STAGGER_MS=<ms>` 覆盖。运行器默认预检 Docker，清理陈旧的 OpenClaw E2E 容器，每 30 秒发出活跃通道状态，在兼容通道之间共享 Provider CLI 工具缓存，默认重试一次瞬态实时 Provider 失败（`OPENCLAW_DOCKER_ALL_LIVE_RETRIES=<n>`），并将通道时间存储在 `.artifacts/docker-tests/lane-timings.json` 中以便在后续运行中按最长优先排序。使用 `OPENCLAW_DOCKER_ALL_DRY_RUN=1` 打印通道清单而不运行 Docker，`OPENCLAW_DOCKER_ALL_STATUS_INTERVAL_MS=<ms>` 调整状态输出，或 `OPENCLAW_DOCKER_ALL_TIMINGS=0` 禁用时间复用。使用 `OPENCLAW_DOCKER_ALL_LIVE_MODE=skip` 仅用于确定性/本地通道，或 `OPENCLAW_DOCKER_ALL_LIVE_MODE=only` 仅用于实时 Provider 通道；包别名为 `pnpm test:docker:local:all` 和 `pnpm test:docker:live:all`。仅实时模式将主要和尾部实时通道合并到一个最长优先池中，以便 Provider 桶可以将 Claude、Codex 和 Gemini 工作一起打包。运行器在第一次失败后停止调度新的池化通道，除非设置了 `OPENCLAW_DOCKER_ALL_FAIL_FAST=0`，每个通道都有 120 分钟的后备超时，可通过 `OPENCLAW_DOCKER_ALL_LANE_TIMEOUT_MS` 覆盖；选定的实时/尾部通道使用更严格的每通道上限。CLI 后端 Docker 设置命令通过 `OPENCLAW_LIVE_CLI_BACKEND_SETUP_TIMEOUT_SECONDS` 有自己的超时（默认 180）。每个通道的日志、`summary.json`、`failures.json` 和阶段时间写在 `.artifacts/docker-tests/<run-id>/` 下；使用 `pnpm test:docker:timings <summary.json>` 检查慢速通道，使用 `pnpm test:docker:rerun <run-id|summary.json|failures.json>` 打印低成本的针对性重新运行命令。
 - `pnpm test:docker:browser-cdp-snapshot`：构建基于 Chromium 的源 E2E 容器，启动原始 CDP 加上隔离的 Gateway，运行 `browser doctor --deep`，并验证 CDP 角色快照包含链接 URL、光标提升的可点击项、iframe 引用和帧元数据。
-- CLI 后端实时 Docker 探针可以作为专注通道运行，例如 `pnpm test:docker:live-cli-backend:codex`、`pnpm test:docker:live-cli-backend:codex:resume` 或 `pnpm test:docker:live-cli-backend:codex:mcp`。Claude 和 Gemini 有匹配的 `:resume` 和 `:mcp` 别名。
-- `pnpm test:docker:openwebui`：启动 Docker 化的 OpenClaw + Open WebUI，通过 Open WebUI 登录，检查 `/api/models`，然后通过 `/api/chat/completions` 运行真实的代理聊天。需要可用的实时模型密钥（例如 `~/.profile` 中的 OpenAI），拉取外部 Open WebUI 镜像，且不像正常的单元/e2e 套件那样期望 CI 稳定。
+- CLI 后端实时 Docker 探针可以作为专注通道运行，例如 `pnpm test:docker:live-cli-backend:claude`、`pnpm test:docker:live-cli-backend:claude:resume` 或 `pnpm test:docker:live-cli-backend:claude:mcp`。Gemini 有匹配的 `:resume` 和 `:mcp` 别名。
+- `pnpm test:docker:openwebui`：启动 Docker 化的 OpenClaw + Open WebUI，通过 Open WebUI 登录，检查 `/api/models`，然后通过 `/api/chat/completions` 运行真实的代理聊天。需要可用的实时模型密钥，拉取外部 Open WebUI 镜像，且不像正常的单元/e2e 套件那样期望 CI 稳定。
 - `pnpm test:docker:mcp-channels`：启动已种子的 Gateway 容器和第二个生成 `openclaw mcp serve` 的客户端容器，然后验证路由对话发现、转录读取、附件元数据、实时事件队列行为、出站发送路由以及通过真实 stdio 桥的 Claude 风格 Channel + 权限通知。Claude 通知断言直接读取原始 stdio MCP 帧，以便冒烟反映桥实际发出的内容。
 - `pnpm test:docker:upgrade-survivor`：将打包的 OpenClaw tarball 安装在旧用户脏固件上，无需实时 Provider 或 Channel 密钥即可运行包更新加非交互式 doctor，然后启动回环 Gateway 并检查 Agent、Channel 配置、Plugin 允许列表、工作区/Session 文件、过期旧 Plugin 依赖状态、启动和 RPC 状态是否存活。
 - `pnpm test:docker:published-upgrade-survivor`：默认安装 `openclaw@latest`，在没有实时 Provider 或 Channel 密钥的情况下播种真实的现有用户文件，使用烘焙的 `openclaw config set` 命令配方配置该基准线，将该已发布安装更新到打包的 OpenClaw tarball，运行非交互式 doctor，写入 `.artifacts/upgrade-survivor/summary.json`，然后启动回环 Gateway 并检查已配置的意图、工作区/Session 文件、过期 Plugin 配置和旧版依赖状态、启动、`/healthz`、`/readyz` 和 RPC 状态是否存活或干净修复。使用 `OPENCLAW_UPGRADE_SURVIVOR_BASELINE_SPEC` 覆盖一个基准线，使用 `OPENCLAW_UPGRADE_SURVIVOR_BASELINE_SPECS` 扩展精确的本地矩阵（如 `openclaw@2026.5.2 openclaw@2026.4.23 openclaw@2026.4.15`），或使用 `OPENCLAW_UPGRADE_SURVIVOR_SCENARIOS=reported-issues` 添加场景固件；reported-issues 集包括 `configured-plugin-installs`（验证已配置的外部 OpenClaw Plugin 在升级期间自动安装）和 `stale-source-plugin-shadow`（防止仅源 Plugin 影子破坏启动）。Package Acceptance 将这些公开为 `published_upgrade_survivor_baseline`、`published_upgrade_survivor_baselines` 和 `published_upgrade_survivor_scenarios`，并在将精确包规格传递给 Docker 通道之前解析元基准线 token（如 `last-stable-4` 或 `all-since-2026.4.23`）。
@@ -72,7 +75,7 @@ title: "测试"
 
 用法：
 
-- `source ~/.profile && pnpm tsx scripts/bench-model.ts --runs 10`
+- `pnpm tsx scripts/bench-model.ts --runs 10`
 - 可选环境变量：`MINIMAX_API_KEY`、`MINIMAX_BASE_URL`、`MINIMAX_MODEL`、`ANTHROPIC_API_KEY`
 - 默认提示词："Reply with a single word: ok. No punctuation or extra text."
 
@@ -122,6 +125,65 @@ title: "测试"
 - `test/fixtures/cli-startup-bench.json`
 - 使用 `pnpm test:startup:bench:update` 刷新
 - 使用 `pnpm test:startup:bench:check` 将当前结果与固件进行比较
+
+## Gateway 启动基准测试
+
+脚本：[`scripts/bench-gateway-startup.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-gateway-startup.ts)
+
+该基准测试默认使用 `dist/entry.js` 处的已构建 CLI 入口；在使用包脚本命令之前运行 `pnpm build`。要改为测量源运行器，请传入 `--entry scripts/run-node.mjs` 并将这些结果与已构建入口基准线分开。
+
+用法：
+
+- `pnpm test:startup:gateway -- --runs 5 --warmup 1`
+- `pnpm test:startup:gateway -- --case default --runs 10 --warmup 1`
+- `pnpm test:startup:gateway -- --case skipChannels --case fiftyPlugins --runs 5`
+- `node --import tsx scripts/bench-gateway-startup.ts --case default --runs 5 --output .artifacts/gateway-startup.json`
+- `node --import tsx scripts/bench-gateway-startup.ts --case default --runs 3 --cpu-prof-dir .artifacts/gateway-startup-cpu`
+
+用例 ID：
+
+- `default`：正常的 Gateway 启动。
+- `skipChannels`：跳过 Channel 启动的 Gateway 启动。
+- `oneInternalHook`：一个已配置的内部 Hook。
+- `allInternalHooks`：所有内部 Hook。
+- `fiftyPlugins`：50 个 manifest Plugin。
+- `fiftyStartupLazyPlugins`：50 个启动懒加载 manifest Plugin。
+
+输出包括首次进程输出、`/healthz`、`/readyz`、HTTP 监听日志时间、Gateway 就绪日志时间、CPU 时间、CPU 核心比率、最大 RSS、堆内存、启动跟踪指标、事件循环延迟和 Plugin 查找表详细指标。该脚本在子 Gateway 环境中启用 `OPENCLAW_GATEWAY_STARTUP_TRACE=1`。
+
+将 `/healthz` 读作活跃性：HTTP 服务器可以响应。将 `/readyz` 读作可用就绪性：启动 Plugin sidecar、Channel 和就绪关键的附加后工作已稳定。Gateway 启动 Hook 是异步分发的，不属于就绪性保证。就绪日志时间是 Gateway 内部就绪日志时间戳；它对进程侧归因很有用，但不能替代外部 `/readyz` 探测。
+
+比较变更时使用 JSON 输出或 `--output`。仅在跟踪输出指向无法从阶段时间单独解释的导入、编译或 CPU 密集型工作时才使用 `--cpu-prof-dir`。不要将源运行器结果与已构建 `dist/entry.js` 结果作为相同基准线比较。
+
+## Gateway 重启基准测试
+
+脚本：[`scripts/bench-gateway-restart.ts`](https://github.com/openclaw/openclaw/blob/main/scripts/bench-gateway-restart.ts)
+
+重启基准测试仅在 macOS 和 Linux 上受支持。它使用 SIGUSR1 进行进程内重启，在 Windows 上立即失败。
+
+该基准测试默认使用 `dist/entry.js` 处的已构建 CLI 入口；在使用包脚本命令之前运行 `pnpm build`。要改为测量源运行器，请传入 `--entry scripts/run-node.mjs` 并将这些结果与已构建入口基准线分开。
+
+用法：
+
+- `pnpm test:restart:gateway -- --case skipChannels --runs 1 --restarts 5`
+- `pnpm test:restart:gateway -- --case default --runs 3 --restarts 3 --warmup 1`
+- `pnpm test:restart:gateway -- --case skipChannelsAcpxProbe --case skipChannelsNoAcpxProbe --runs 1 --restarts 5`
+- `node --import tsx scripts/bench-gateway-restart.ts --case fiftyPlugins --runs 1 --restarts 5 --output .artifacts/gateway-restart.json`
+- `node --import tsx scripts/bench-gateway-restart.ts --json`
+
+用例 ID：
+
+- `skipChannels`：跳过 Channel 的重启。
+- `skipChannelsAcpxProbe`：跳过 Channel 且开启 ACPX 启动探测的重启。
+- `skipChannelsNoAcpxProbe`：跳过 Channel 且关闭 ACPX 启动探测的重启。
+- `default`：正常重启。
+- `fiftyPlugins`：50 个 manifest Plugin 的重启。
+
+输出包括下一个 `/healthz`、下一个 `/readyz`、停机时间、重启就绪时间、CPU、RSS、替换进程的启动跟踪指标，以及信号处理、活跃工作排空、关闭阶段、下次启动、就绪时间和内存快照的重启跟踪指标。该脚本在子 Gateway 环境中启用 `OPENCLAW_GATEWAY_STARTUP_TRACE=1` 和 `OPENCLAW_GATEWAY_RESTART_TRACE=1`。
+
+当变更涉及重启信号、关闭处理程序、重启后启动、sidecar 关闭、服务切换或重启后就绪性时，使用此基准测试。从 `skipChannels` 开始，在将 Gateway 机制与 Channel 启动隔离时。仅在窄用例解释了重启路径后才使用 `default` 或插件密集型用例。
+
+跟踪指标是归因提示，而非判决。重启变更应从多个样本、匹配的所有者 span、`/healthz` 和 `/readyz` 行为，以及用户可见的重启契约来判断。
 
 ## 引导 E2E（Docker）
 

@@ -60,6 +60,10 @@ sidebarTitle: "Trusted proxy auth"
 - 您的反向代理认证策略和 `allowUsers` 成为有效的访问控制。
 - 仅将 Gateway 入口锁定到受信任的代理 IP（`gateway.trustedProxies` + 防火墙）。
 
+**不带设备身份的范围清除：** 由于浏览器通过普通 HTTP 无法创建 OpenClaw 用于绑定 Operator 范围的设备身份，缺少设备身份的 trusted-proxy WebSocket 连接会将其自我声明的范围清除为空集。连接被允许，但受范围保护的方法（`operator.read`、`operator.write` 等）将以 `missing scope` 失败。
+
+要在没有设备身份的 trusted-proxy WebSocket 连接上保留 Operator 范围，请设置 `gateway.controlUi.dangerouslyDisableDeviceAuth: true`。这是一个紧急方案标志（`openclaw security audit` 将其报告为严重问题）。仅在反向代理是唯一到达 Gateway 的路径且无法建立设备身份时使用。
+
 ## 配置
 
 ```json5
@@ -312,6 +316,8 @@ OpenClaw 拒绝同时激活 `gateway.auth.token`（或 `OPENCLAW_GATEWAY_TOKEN`�
 
 Trusted-proxy 认证是**身份感知** HTTP 模式，因此调用者可以选择使用 `x-openclaw-scopes` 声明 Operator 范围。
 
+注意：`x-openclaw-scopes` 仅适用于 HTTP 端点。WebSocket 范围由 Gateway 协议握手和设备身份绑定决定。关于 trusted-proxy 的 WebSocket 范围行为，参见 [Control UI 配对行为](#control-ui-配对行为)。
+
 示例：
 
 - `x-openclaw-scopes: operator.read`
@@ -407,6 +413,17 @@ Trusted-proxy 认证是**身份感知** HTTP 模式，因此调用者可以选�
     - `gateway.controlUi.allowedOrigins` 包含确切的浏览器源。
     - 您不依赖通配符源，除非您有意想要允许所有行为。
     - 如果您有意使用 Host 头回退模式，请明确设置 `gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback=true`。
+
+  </Accordion>
+  <Accordion title="连接成功但方法报告缺少范围">
+    WebSocket 连接成功，但 `chat.history` 或 `sessions.list` 以 `missing scope: operator.read` 失败。
+
+    这对于没有设备身份的 trusted-proxy WebSocket 连接是预期行为。缺少设备身份的连接其范围会被清除。浏览器无法通过普通 HTTP 生成设备身份。
+
+    修复：
+
+    - 设置 `gateway.controlUi.dangerouslyDisableDeviceAuth: true` 以在 trusted-proxy WebSocket 连接上保留 Operator 范围，或
+    - 使用设备身份配对，使范围绑定到设备令牌。
 
   </Accordion>
   <Accordion title="WebSocket 仍然失败">

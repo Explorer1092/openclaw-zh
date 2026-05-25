@@ -312,6 +312,16 @@ openclaw gateway status --json
 - 客户端和 Gateway 之间的认证模式/令牌不匹配。
 - 需要设备身份的地方使用了 HTTP。
 
+如果本地浏览器在更新后无法连接到 `127.0.0.1:18789`，首先恢复本地 Gateway 服务并确认它正在提供 dashboard：
+
+```bash
+openclaw gateway restart
+lsof -i :18789
+curl http://127.0.0.1:18789
+```
+
+如果 `curl` 返回 OpenClaw HTML，则 Gateway 正在工作，其余问题很可能是浏览器缓存、旧的深链接或过时的标签状态。直接打开 `http://127.0.0.1:18789` 并从 dashboard 导航。如果重启后服务仍未运行，运行 `openclaw gateway start` 并重新检查 `openclaw gateway status`。
+
 <AccordionGroup>
   <Accordion title="连接/认证特征">
     - `device identity required` → 非安全上下文或缺少设备认证。
@@ -592,15 +602,18 @@ openclaw logs --follow
 - 作业运行历史状态（`ok`、`skipped`、`error`）。
 - Heartbeat 跳过原因（`quiet-hours`、`requests-in-flight`、`cron-in-progress`、`lanes-busy`、`alerts-disabled`、`empty-heartbeat-file`、`no-tasks-due`）。
 
-常见特征：
+<AccordionGroup>
+  <Accordion title="常见特征">
+    - `cron: scheduler disabled; jobs will not run automatically` → Cron 已禁用。
+    - `cron: timer tick failed` → 调度器滴答失败；检查文件/日志/运行时错误。
+    - `heartbeat skipped` 带 `reason=quiet-hours` → 在活跃时间窗口外。
+    - `heartbeat skipped` 带 `reason=empty-heartbeat-file` → `HEARTBEAT.md` 存在但只包含空行 / Markdown 标题，所以 OpenClaw 跳过模型调用。
+    - `heartbeat skipped` 带 `reason=no-tasks-due` → `HEARTBEAT.md` 包含 `tasks:` 块，但没有任务在此次滴答时到期。
+    - `heartbeat: unknown accountId` → Heartbeat 交付目标的账户 ID 无效。
+    - `heartbeat skipped` 带 `reason=dm-blocked` → Heartbeat 目标解析为 DM 风格的目的地，而 `agents.defaults.heartbeat.directPolicy`（或每个 Agent 的覆盖）设置为 `block`。
 
-- `cron: scheduler disabled; jobs will not run automatically` → Cron 已禁用。
-- `cron: timer tick failed` → 调度器滴答失败；检查文件/日志/运行时错误。
-- `heartbeat skipped` 带 `reason=quiet-hours` → 在活跃时间窗口外。
-- `heartbeat skipped` 带 `reason=empty-heartbeat-file` → `HEARTBEAT.md` 存在但只包含空行 / Markdown 标题，所以 OpenClaw 跳过模型调用。
-- `heartbeat skipped` 带 `reason=no-tasks-due` → `HEARTBEAT.md` 包含 `tasks:` 块，但没有任务在此次滴答时到期。
-- `heartbeat: unknown accountId` → Heartbeat 交付目标的账户 ID 无效。
-- `heartbeat skipped` 带 `reason=dm-blocked` → Heartbeat 目标解析为 DM 风格的目的地，而 `agents.defaults.heartbeat.directPolicy`（或每个 Agent 的覆盖）设置为 `block`。
+  </Accordion>
+</AccordionGroup>
 
 相关：
 

@@ -34,7 +34,7 @@ sidebarTitle: "向导参考"
       - 当模型未设置或已为 OpenAI 系列时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
     - **OpenAI API 密钥**：如果存在则使用 `OPENAI_API_KEY`，或提示输入密钥，然后将其存储在身份验证配置文件中。
       - 当模型未设置、为 `openai/*` 或 `openai-codex/*` 时，设置 `agents.defaults.model` 为 `openai/gpt-5.5`。
-    - **xAI（Grok）API 密钥**：提示输入 `XAI_API_KEY` 并将 xAI 配置为模型 Provider。
+    - **xAI（Grok）OAuth / API 密钥**：在选择时使用 xAI OAuth 登录，或在 API 密钥路径上提示输入 `XAI_API_KEY`，并将 xAI 配置为模型 Provider。
     - **OpenCode**：提示输入 `OPENCODE_API_KEY`（或 `OPENCODE_ZEN_API_KEY`，在 https://opencode.ai/auth 获取），并让您选择 Zen 或 Go 目录。
     - **Ollama**：首先提供 **Cloud + Local**、**Cloud only** 或 **Local only** 选项。`Cloud only` 提示输入 `OLLAMA_API_KEY` 并使用 `https://ollama.com`；主机支持的模式提示输入 Ollama base URL，发现可用模型，并在需要时自动拉取所选本地模型；`Cloud + Local` 还检查该 Ollama 主机是否已登录以进行云访问。
     - 更多详情：[Ollama](/providers/ollama)
