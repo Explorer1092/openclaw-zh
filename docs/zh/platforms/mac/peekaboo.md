@@ -1,14 +1,16 @@
 ---
-title: "Peekaboo Bridge (macOS UI 自动化)"
-sidebarTitle: "Peekaboo Bridge"
-mmh3_hash: "2255c39457ba38977f5b959bd36e0b00"
+mmh3_hash: "7414fdc653deb2bbac366e7b41cf6719"
 summary: "macOS UI 自动化的 PeekabooBridge 集成"
-read_when: ["在 OpenClaw.app 中托管 PeekabooBridge","通过 Swift Package Manager 集成 Peekaboo","更改 PeekabooBridge 协议/路径"]
+read_when:
+  - 在 OpenClaw.app 中托管 PeekabooBridge
+  - 通过 Swift Package Manager 集成 Peekaboo
+  - 更改 PeekabooBridge 协议/路径
+  - 在 PeekabooBridge、Codex Computer Use 和 cua-driver MCP 之间做选择时
+title: "Peekaboo bridge"
 ---
-# Peekaboo Bridge (macOS UI 自动化)
 
 OpenClaw 可以将 **PeekabooBridge** 托管为本地、权限感知的 UI 自动化代理。
-这让 `peekaboo` CLI 驱动 UI 自动化,同时重用 macOS 应用的 TCC 权限。
+这让 `peekaboo` CLI 驱动 UI 自动化，同时重用 macOS 应用的 TCC 权限。
 
 ## 这是什么（以及不是什么）
 
@@ -62,6 +64,7 @@ export PEEKABOO_BRIDGE_SOCKET=/path/to/bridge.sock
 
 - 桥接验证**调用者代码签名**；强制执行 TeamID 的允许列表（Peekaboo 主机
   TeamID + OpenClaw 应用 TeamID）。
+- 优先将 Accessibility 授予已签名的 bridge/应用标识，而不是通用的 `node` 运行时。向 `node` 授予 Accessibility 会让通过该 Node 可执行文件启动的任何 package 继承 GUI 自动化访问权限；参见 [macOS 权限](/platforms/mac/permissions#accessibility-grants-for-node-and-cli-runtimes)。
 - 请求在约 10 秒后超时。
 - 如果缺少所需权限，桥接返回清晰的错误消息，而不是启动系统设置。
 

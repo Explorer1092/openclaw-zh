@@ -1,6 +1,6 @@
 ---
 title: "音频与语音笔记"
-mmh3_hash: "2de81f721b5fdd7f478f709c6e34589c"
+mmh3_hash: "9ddab7ea44f34e71758ef2d90802532c"
 summary: "入站音频/语音笔记如何下载、转录并注入到回复中"
 read_when:
   - 更改音频转录或媒体处理时
@@ -27,10 +27,11 @@ OpenClaw 会按以下顺序自动检测并在第一个可用的选项处停止�
    - `sherpa-onnx-offline`（需要带有编码器/解码器/连接器/令牌的 `SHERPA_ONNX_MODEL_DIR`）
    - `whisper-cli`（来自 `whisper-cpp`；使用 `WHISPER_CPP_MODEL` 或捆绑的 tiny 模型）
    - `whisper`（Python CLI；自动下载模型）
-3. **Gemini CLI**（`gemini`）使用 `read_many_files`
-4. **Provider 认证**
+3. **Provider 认证**
    - 配置的 `models.providers.*` 支持音频的条目首先尝试
    - 捆绑的回退顺序：OpenAI → Groq → xAI → Deepgram → Google → SenseAudio → ElevenLabs → Mistral
+
+自 2026-05-22 起，Gemini CLI 自动检测不再支持媒体理解。Google 正在将 Gemini CLI 用户迁移至 Antigravity CLI；音频应使用本地或 Provider 转录，而图像/视频 CLI 回退应迁移至 Antigravity CLI（`agy`）。
 
 要禁用自动检测，请设置 `tools.media.audio.enabled: false`。
 要自定义，请设置 `tools.media.audio.models`。

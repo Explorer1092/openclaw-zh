@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2d2b1efcff0b121cb0ba46855057a80b"
+mmh3_hash: "99a471a080b48bb9b9952e6dfda0e34d"
 summary: "OpenClaw 如何安装 Plugin Package 及解析 Plugin 依赖"
 read_when:
   - 您正在调试 Plugin Package 安装问题
@@ -46,6 +46,17 @@ npm install --omit=dev --omit=peer --legacy-peer-deps --ignore-scripts --no-audi
 `openclaw plugins install npm-pack:<path.tgz>` 对本地 npm-pack 压缩包使用相同的托管 npm 根目录。OpenClaw 读取压缩包的 npm 元数据，将其作为复制的 `file:` 依赖添加到托管根目录，运行正常 npm 安装，然后在信任 Plugin 前验证已安装的锁文件元数据。这用于 Package 验收和候选发布验证，其中本地 pack 制件的行为应与其模拟的注册表制件相同。
 
 npm 可能会将传递依赖提升到 `~/.openclaw/npm/node_modules` 中，与 Plugin Package 并列。OpenClaw 在信任安装之前会扫描托管 npm 根目录，并在卸载时使用 npm 删除 npm 托管的 Package，因此提升的运行时依赖保留在托管清理边界内。
+
+已发布的 npm Plugin Package 可以随附 `npm-shrinkwrap.json`。npm 在安装期间使用该可发布的锁定文件，OpenClaw 的托管 npm 根目录通过正常的 npm 安装路径支持它。OpenClaw 拥有的可发布 Plugin Package 必须包含从该 Plugin Package 发布的依赖图生成的 Package 本地 shrinkwrap：
+
+```bash
+pnpm deps:shrinkwrap:generate
+pnpm deps:shrinkwrap:check
+```
+
+生成器去除 Plugin `devDependencies`，应用工作区覆盖策略，并为每个 `publishToNpm` Plugin 写入 `extensions/<id>/npm-shrinkwrap.json`。第三方 Plugin Package 也可以随附 shrinkwrap；OpenClaw 不要求社区 Package 提供它，但 npm 在存在时会遵守它。
+
+OpenClaw 拥有的 npm Plugin Package 还可以发布时带有显式 `bundledDependencies`。npm 发布路径叠加运行时依赖名称列表，从发布的 Package Manifest 中删除仅开发的工作区元数据，为 Package 本地运行时依赖运行无脚本的 npm 安装，然后将包含这些依赖文件的 Plugin 压缩包打包或发布。原生密集型 Package（包括 Codex 和 ACP 运行时）通过 `openclaw.release.bundleRuntimeDependencies: false` 选择退出；这些 Package 仍然随附其 shrinkwrap，但 npm 在安装期间解析运行时依赖，而不是将每个平台二进制文件嵌入 Plugin 压缩包中。根 `openclaw` Package 不捆绑其完整的依赖树。
 
 导入 `openclaw/plugin-sdk/*` 的 Plugin 将 `openclaw` 声明为对等依赖。OpenClaw 不让 npm 将宿主 Package 的单独注册表副本安装到托管根目录中，因为过时的宿主 Package 可能会影响后续 Plugin 安装期间的 npm 对等解析。托管 npm 安装为共享根目录跳过 npm 对等解析/实体化，OpenClaw 在安装、更新或卸载后为声明宿主对等的已安装 Package 重新声明 Plugin 本地 `node_modules/openclaw` 链接。
 

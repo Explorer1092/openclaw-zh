@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1e723ed437a5fd46fce92cb28d5ddd25"
+mmh3_hash: "c66c12985c343d9113b6283afa476bb2"
 summary: "添加用于收发 OpenClaw 消息的 Discord Channel 接口。"
 read_when:
   - 你正在安装、配置或审计 discord Plugin
@@ -17,7 +17,7 @@ title: "Discord Plugin"
 
 ## 接口
 
-channels: discord
+channels: discord; contracts: meetingNotesSourceProviders
 
 ## 相关文档
 

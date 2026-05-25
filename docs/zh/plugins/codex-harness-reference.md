@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2fe78a15fbe9452800a95904b416cde8"
+mmh3_hash: "92768e3db7b4e3219f0bebd22994dc0b"
 summary: "Codex Harness 的配置、身份验证、发现和 app-server 参考"
 title: "Codex Harness 参考"
 read_when:
@@ -91,12 +91,14 @@ codex app-server --listen stdio://
 | `clearEnv`                    | `[]`                                                   | 在 OpenClaw 构建其继承环境后从生成的 stdio app-server 进程中删除的额外环境变量名称。                                                                       |
 | `requestTimeoutMs`            | `60000`                                                | app-server 控制平面调用的超时。                                                                                                                                                                               |
 | `turnCompletionIdleTimeoutMs` | `60000`                                                | Codex 接受轮次后或轮次范围的 app-server 请求后 OpenClaw 等待 `turn/completed` 时的静默窗口。                                                                              |
+| `postToolRawAssistantCompletionIdleTimeoutMs` | 未设置                                | 工具交接后当 Codex 发出原始助手完成或进度但不发送 `turn/completed` 时使用的完成空闲守护。未设置时默认为助手完成空闲超时。对于工具后合成可以比最终助手释放预算更长时间保持静默的受信任或繁重工作负载使用此选项。 |
 | `mode`                        | `"yolo"`（除非本地 Codex 要求不允许 YOLO） | YOLO 或 guardian 审查执行的预设。                                                                                                                                           |
 | `approvalPolicy`              | `"never"` 或允许的 guardian 批准策略       | 发送到线程开始、恢复和轮次的原生 Codex 批准策略。                                                                                                                                                      |
 | `sandbox`                     | `"danger-full-access"` 或允许的 guardian 沙盒  | 发送到线程开始和恢复的原生 Codex 沙盒模式。活动的 OpenClaw 沙盒将 `danger-full-access` 轮次缩小为 Codex `workspace-write`；轮次网络标志遵循 OpenClaw 沙盒出口。 |
 | `approvalsReviewer`           | `"user"` 或允许的 guardian 审查者               | 使用 `"auto_review"` 让 Codex 在允许时审查原生批准提示。                                                                                                                             |
 | `defaultWorkspaceDir`         | 当前进程目录                              | 省略 `--cwd` 时 `/codex bind` 使用的工作区。                                                                                                                                                  |
 | `serviceTier`                 | 未设置                                                  | 可选的 Codex app-server 服务层级。`"priority"` 启用快速模式路由，`"flex"` 请求弹性处理，`null` 清除覆盖。旧版 `"fast"` 被接受为 `"priority"`。           |
+| `experimental.sandboxExecServer` | `false`                                             | 预览选择加入，向 Codex app-server 0.132.0 或更新版本注册由 OpenClaw 沙盒支持的 Codex 环境，使原生 Codex 执行可以在活动的 OpenClaw 沙盒内运行。          |
 
 Plugin 阻止较旧或未版本化的 app-server 握手。Codex app-server 必须报告稳定版本 `0.125.0` 或更新版本。
 
@@ -128,7 +130,36 @@ Plugin 阻止较旧或未版本化的 app-server 握手。Codex app-server 必�
 
 当这些值被允许时，`guardian` 预设展开为 `approvalPolicy: "on-request"`、`approvalsReviewer: "auto_review"` 和 `sandbox: "workspace-write"`。各个策略字段覆盖 `mode`。旧版 `guardian_subagent` 审查者值仍被接受为兼容性别名，但新配置应使用 `auto_review`。
 
-当 OpenClaw 沙盒处于活动状态时，本地 Codex app-server 进程仍在 Gateway 主机上运行。因此，OpenClaw 为原生代码模式轮次保留 Codex 自己的文件系统沙盒。`danger-full-access` 轮次被缩小为 Codex `workspace-write`，`workspace-write` 轮次 `networkAccess` 从 OpenClaw 沙盒出口设置派生：Docker `network: "none"` 保持离线，而 `network: "bridge"` 或自定义 Docker 网络允许出站访问。
+当 OpenClaw 沙盒处于活动状态时，本地 Codex app-server 进程仍在 Gateway 主机上运行。因此，OpenClaw 禁用该轮次的 Codex 原生代码模式、用户 MCP 服务器和应用支持的 Plugin 执行，而不是将 Codex 主机端沙盒视为等同于 OpenClaw 沙盒后端。当正常的 exec/process 工具可用时，Shell 访问通过 OpenClaw 沙盒支持的动态工具（如 `sandbox_exec` 和 `sandbox_process`）暴露。
+
+在 Ubuntu/AppArmor 主机上，当您有意在没有活动 OpenClaw 沙盒的情况下运行原生 Codex `workspace-write` 时，Codex bwrap 可能会在 Shell 命令启动前在 `workspace-write` 下失败。如果您看到 `bwrap: setting up uid map: Permission denied` 或 `bwrap: loopback: Failed RTM_NEWADDR: Operation not permitted`，请运行 `openclaw doctor` 并修复报告的 OpenClaw 服务用户的主机命名空间策略，而不是授予更广泛的 Docker 容器权限。优先为服务进程使用有范围的 AppArmor 配置文件；`kernel.apparmor_restrict_unprivileged_userns=0` 回退是主机范围的，存在安全权衡。
+
+## 沙盒化原生执行
+
+稳定默认为失败关闭：活动的 OpenClaw 沙盒禁用原本会从 Codex app-server 主机运行的原生 Codex 执行界面。仅当您希望尝试将 Codex 的远程环境支持与 OpenClaw 的沙盒后端配合使用时，才使用 `appServer.experimental.sandboxExecServer: true`。此预览路径需要 Codex app-server 0.132.0 或更新版本。
+
+```json5
+{
+  plugins: {
+    entries: {
+      codex: {
+        enabled: true,
+        config: {
+          appServer: {
+            experimental: {
+              sandboxExecServer: true,
+            },
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+当标志启用且当前 OpenClaw Session 已沙盒化时，OpenClaw 启动由活动沙盒支持的本地回环 exec-server，将其注册到 Codex app-server，并使用该 OpenClaw 拥有的环境启动 Codex 线程和轮次。如果 app-server 无法注册该环境，运行会失败关闭，而不是静默回退到主机执行。
+
+此预览路径仅限本地。远程 WebSocket app-server 无法访问回环 exec-server，除非它在同一主机上运行，因此 OpenClaw 会拒绝该组合。
 
 ## 身份验证和环境隔离
 

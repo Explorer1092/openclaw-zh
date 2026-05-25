@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "26af0928da35066f13a9f2446f04cc41"
+mmh3_hash: "3cff1887b9f835f59f440926c9728fda"
 summary: "Plugin 内部架构：能力模型、所有权、契约、加载管道和运行时辅助工具"
 read_when:
   - 构建或调试原生 OpenClaw Plugin
@@ -38,10 +38,12 @@ sidebarTitle: "内部架构"
 | ------------------ | ----------------------------------------------------- | ------------------------------------ |
 | 文本推理           | `api.registerProvider(...)`                           | `openai`, `anthropic`                |
 | CLI 推理后端       | `api.registerCliBackend(...)`                         | `openai`, `anthropic`                |
+| Embeddings         | `api.registerEmbeddingProvider(...)`                  | Provider 所属的向量 Plugin           |
 | 语音               | `api.registerSpeechProvider(...)`                     | `elevenlabs`, `microsoft`            |
 | 实时转录           | `api.registerRealtimeTranscriptionProvider(...)`      | `openai`                             |
 | 实时语音           | `api.registerRealtimeVoiceProvider(...)`              | `openai`                             |
 | 媒体理解           | `api.registerMediaUnderstandingProvider(...)`         | `openai`, `google`                   |
+| 会议纪要来源       | `api.registerMeetingNotesSourceProvider(...)`         | `discord`, `meeting-notes`           |
 | 图像生成           | `api.registerImageGenerationProvider(...)`            | `openai`, `google`, `fal`, `minimax` |
 | 音乐生成           | `api.registerMusicGenerationProvider(...)`            | `google`, `minimax`                  |
 | 视频生成           | `api.registerVideoGenerationProvider(...)`            | `qwen`                               |
@@ -441,12 +443,8 @@ Plugin API 接口有意在 `OpenClawPluginApi` 中进行类型化和集中化。
 原生 OpenClaw Plugin **在进程内**与 Gateway 运行。它们不是沙箱化的。已加载的原生 Plugin 与核心代码具有相同的进程级信任边界。
 
 <Warning>
-影响：
-
-- 原生 Plugin 可以注册 Tool、网络处理程序、Hook 和服务
-- 原生 Plugin 错误可能导致 Gateway 崩溃或不稳定
-- 恶意原生 Plugin 等同于 OpenClaw 进程内的任意代码执行
-  </Warning>
+原生 Plugin 的影响：Plugin 可以注册 Tool、网络处理程序、Hook 和服务；Plugin 错误可能导致 Gateway 崩溃或不稳定；恶意原生 Plugin 等同于 OpenClaw 进程内的任意代码执行。
+</Warning>
 
 兼容的 Bundle 默认更安全，因为 OpenClaw 目前将它们视为元数据/内容包。在当前版本中，这主要意味着打包的 Skill。
 

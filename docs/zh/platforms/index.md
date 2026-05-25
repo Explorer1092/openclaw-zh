@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8dd387a9431c595c25a84007c3cee67f"
+mmh3_hash: "615da4d646a3b5ff8a7fcfb476cd18f3"
 title: "平台"
 summary: "平台支持概述（Gateway + 配套应用）"
 read_when:
@@ -30,6 +30,7 @@ Windows 的原生配套应用也已在计划中；推荐通过 WSL2 运行 Gatew
 - GCP (Compute Engine): [GCP](/install/gcp)
 - Azure (Linux VM): [Azure](/install/azure)
 - exe.dev (VM + HTTPS 代理): [exe.dev](/install/exe-dev)
+- EasyRunner (Podman + Caddy): [EasyRunner](/platforms/easyrunner)
 
 ## 常见链接
 

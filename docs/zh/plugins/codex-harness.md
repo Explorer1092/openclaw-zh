@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c6fa6ebd318fbda49ae6870d2861a558"
+mmh3_hash: "37d748f82f65c6b0ae6baafcb75c9502"
 summary: "通过捆绑的 Codex app-server Harness 运行 OpenClaw 嵌入式 Agent 轮次"
 title: "Codex Harness"
 read_when:
@@ -14,7 +14,9 @@ read_when:
 
 正常设置使用规范的 OpenAI 模型引用，如 `openai/gpt-5.5`。不要配置 `openai-codex/gpt-*` 模型引用。将 OpenAI Agent 身份验证顺序放在 `auth.order.openai` 下；旧版 `openai-codex:*` 配置文件和 `auth.order.openai-codex` 条目对于现有安装仍然受支持。
 
-OpenClaw 以 Codex 原生代码模式和仅代码模式启动 Codex app-server 线程。这使可延迟/可搜索的 OpenClaw 动态 Tool 保留在 Codex 自己的代码执行和 Tool 搜索界面内，而不是在 Codex 之上添加 PI 风格的 Tool 搜索包装器。
+当没有活跃的 OpenClaw 沙盒时，OpenClaw 在启用 Codex 原生代码模式的同时默认关闭仅代码模式启动 Codex app-server 线程。这使 Codex 原生工作区和代码能力保持可用，同时 OpenClaw 动态 Tool 继续通过 app-server `item/tool/call` 桥接。活跃的 OpenClaw 沙盒和受限的 Tool 策略完全禁用原生代码模式，除非您选择加入实验性沙盒 exec-server 路径。
+
+这个 Codex 原生功能与 [OpenClaw 代码模式](/reference/code-mode) 是独立的，后者是通用 OpenClaw 运行的可选加入 QuickJS-WASI 运行时，具有不同的 `exec` 输入形状。
 
 有关更广泛的模型/Provider/运行时拆分，请从 [Agent 运行时](/concepts/agent-runtimes) 开始。简短版本是：`openai/gpt-5.5` 是模型引用，`codex` 是运行时，而 Telegram、Discord、Slack 或其他 Channel 仍然是通信界面。
 
@@ -92,11 +94,13 @@ openclaw models auth login --provider openai-codex
 
 对 Codex 支持的 OpenAI Agent 轮次使用 `openai/gpt-*` 模型引用。优先使用 `auth.order.openai` 进行订阅优先/API 密钥备份排序。现有的 `openai-codex:*` 身份验证配置文件和 `auth.order.openai-codex` 仍然有效，但不要写入新的 `openai-codex/gpt-*` 模型引用。
 
-不要在 Codex 支持的 Agent 上设置 `compaction.model` 或 `compaction.provider`，除非选定的上下文引擎拥有 Compaction。没有拥有所有权的上下文引擎，Codex 通过其原生 app-server 线程状态进行 Compaction，因此 OpenClaw 在运行时忽略那些本地汇总器覆盖，当 Agent 使用 Codex 时，`openclaw doctor --fix` 会删除它们。
+不要在 Codex 支持的 Agent 上设置 `compaction.model` 或 `compaction.provider`。Codex 通过其原生 app-server 线程状态进行 Compaction，因此 OpenClaw 在运行时忽略那些本地汇总器覆盖，当 Agent 使用 Codex 时，`openclaw doctor --fix` 会删除它们。
 
-Lossless 作为上下文引擎仍受支持。通过 `plugins.slots.contextEngine: "lossless-claw"` 和 `plugins.entries.lossless-claw.config.summaryModel` 配置它，而不是通过 `agents.defaults.compaction.provider`。当 Codex 是活跃运行时时，`openclaw doctor --fix` 将旧的 `compaction.provider: "lossless-claw"` 形状迁移到 Lossless 上下文引擎 Slot。
+Lossless 作为上下文引擎仍受支持，用于围绕 Codex 轮次进行组装、摄取和维护。通过 `plugins.slots.contextEngine: "lossless-claw"` 和 `plugins.entries.lossless-claw.config.summaryModel` 配置它，而不是通过 `agents.defaults.compaction.provider`。当 Codex 是活跃运行时时，`openclaw doctor --fix` 将旧的 `compaction.provider: "lossless-claw"` 形状迁移到 Lossless 上下文引擎 Slot，但原生 Codex 仍然拥有 Compaction。
 
-当活跃的上下文引擎报告 `ownsCompaction: true` 时，`/compact` 运行该引擎的 Compaction 生命周期并使绑定的 Codex app-server 线程失效。下一个 Codex 轮次启动新的后端线程，并从上下文引擎重新水化，而不是在引擎拥有的语义摘要之上叠加 Codex 原生 Compaction。
+原生 Codex app-server Harness 支持需要预提示组装的上下文引擎。通用 CLI 后端（包括 `codex-cli`）不提供该主机能力。
+
+对于 Codex 支持的 Agent，`/compact` 在绑定的线程上启动原生 Codex app-server Compaction。OpenClaw 不会等待完成、施加 OpenClaw 超时、重启共享 app-server，也不会回退到上下文引擎或公共 OpenAI 汇总器。如果原生 Codex 线程绑定缺失或过时，命令以关闭方式失败，以便操作员看到真实的运行时边界，而不是静默地切换 Compaction 后端。
 
 ```json5
 {
@@ -147,6 +151,8 @@ Runtime: OpenAI Codex
 | 附加当前 Chat                                         | `/codex bind [--cwd <path>]`                                                                          |
 | 恢复现有 Codex 线程                                   | `/codex resume <thread-id>`                                                                           |
 | 列出或过滤 Codex 线程                                 | `/codex threads [filter]`                                                                             |
+| 列出原生 Codex Plugin                                 | `/codex plugins list`                                                                                 |
+| 启用或禁用已配置的原生 Codex Plugin                   | `/codex plugins enable <name>`、`/codex plugins disable <name>`                                       |
 | 在已配对节点上附加现有 Codex CLI Session              | `/codex sessions --host <node> [filter]`，然后 `/codex resume <session-id> --host <node> --bind here` |
 | 仅发送 Codex 反馈                                     | `/codex diagnostics [note]`                                                                           |
 | 启动 ACP/acpx 任务                                    | ACP/acpx Session 命令，而非 `/codex`                                                                  |
@@ -274,7 +280,7 @@ Runtime: OpenAI Codex
 }
 ```
 
-本地 stdio app-server Session 默认为受信任的本地操作员姿态：`approvalPolicy: "never"`、`approvalsReviewer: "user"` 和 `sandbox: "danger-full-access"`。如果本地 Codex 要求不允许该隐式 YOLO 姿态，OpenClaw 会选择允许的 guardian 权限。当 Session 的 OpenClaw 沙盒处于活动状态时，OpenClaw 将 Codex `danger-full-access` 缩小到 Codex `workspace-write`，以便原生 Codex 代码模式轮次保持在沙盒工作区内。Codex 轮次网络标志遵循 OpenClaw 沙盒出口策略：Docker `network: "none"` 保持离线，而 `network: "bridge"` 或自定义 Docker 网络允许出站访问。显式 Codex `workspace-write` 轮次使用相同的出口派生网络标志。
+本地 stdio app-server Session 默认为受信任的本地操作员姿态：`approvalPolicy: "never"`、`approvalsReviewer: "user"` 和 `sandbox: "danger-full-access"`。如果本地 Codex 要求不允许该隐式 YOLO 姿态，OpenClaw 会选择允许的 guardian 权限。当 Session 的 OpenClaw 沙盒处于活动状态时，OpenClaw 对该轮次禁用 Codex 原生代码模式、用户 MCP 服务器和应用支持的 Plugin 执行，而不是依赖 Codex 主机端沙盒。当正常的 exec/process Tool 可用时，Shell 访问通过 OpenClaw 沙盒支持的动态 Tool（如 `sandbox_exec` 和 `sandbox_process`）暴露。
 
 当您希望在沙盒逃逸或额外权限之前进行 Codex 原生自动审查时，使用 guardian 模式：
 
@@ -389,17 +395,20 @@ Codex 动态 Tool 默认为 `searchable` 加载。OpenClaw 不公开复制 Codex
 | `authToken`                   | 未设置                                                  | WebSocket 传输的承载令牌。                                                                                                                                                                                                                                                 |
 | `headers`                     | `{}`                                                   | 额外的 WebSocket 头。                                                                                                                                                                                                                                                     |
 | `clearEnv`                    | `[]`                                                   | 在 OpenClaw 构建其继承环境后从生成的 stdio app-server 进程中删除的额外环境变量名称。OpenClaw 在本地启动时保留每个 Agent 的 `CODEX_HOME` 和继承的 `HOME`。                                                                                                                  |
+| `codeModeOnly`                | `false`                                                | 选择加入 Codex 的仅代码模式 Tool 界面。OpenClaw 动态 Tool 仍然向 Codex 注册，以便嵌套的 `tools.*` 调用通过 app-server `item/tool/call` 桥接返回。                                                                                                                          |
 | `requestTimeoutMs`            | `60000`                                                | app-server 控制平面调用的超时。                                                                                                                                                                                                                                            |
 | `turnCompletionIdleTimeoutMs` | `60000`                                                | Codex 接受轮次后或 OpenClaw 响应轮次范围的 app-server 请求后等待 `turn/completed` 时的静默窗口。对于缓慢的工具后或仅状态综合阶段，请提高此值。                                                                                                                            |
+| `postToolRawAssistantCompletionIdleTimeoutMs` | 未设置                                  | 工具交接后当 Codex 发出原始助手完成或进度但不发送 `turn/completed` 时使用的完成空闲守护。未设置时默认为助手完成空闲超时。对于工具后合成可以比最终助手释放预算更长时间保持静默的受信任或繁重工作负载使用此选项。                                                          |
 | `mode`                        | `"yolo"`（除非本地 Codex 要求不允许 YOLO）             | YOLO 或 guardian 审查执行的预设。省略 `danger-full-access`、`never` 审批或 `user` 审查者的本地 stdio 要求使隐式默认值为 guardian。                                                                                                                                        |
 | `approvalPolicy`              | `"never"` 或允许的 guardian 审批策略                   | 发送到线程开始/恢复/轮次的原生 Codex 审批策略。guardian 默认值在允许时优先选择 `"on-request"`。                                                                                                                                                                           |
 | `sandbox`                     | `"danger-full-access"` 或允许的 guardian 沙盒          | 发送到线程开始/恢复的原生 Codex 沙盒模式。guardian 默认值在允许时优先选择 `"workspace-write"`，否则为 `"read-only"`。当 OpenClaw 沙盒处于活动状态时，`danger-full-access` 轮次使用 Codex `workspace-write`，网络访问从 OpenClaw 沙盒出口设置派生。                          |
 | `approvalsReviewer`           | `"user"` 或允许的 guardian 审查者                      | 使用 `"auto_review"` 让 Codex 在允许时审查原生审批提示，否则使用 `guardian_subagent` 或 `user`。`guardian_subagent` 仍然是旧版别名。                                                                                                                                      |
 | `serviceTier`                 | 未设置                                                  | 可选的 Codex app-server 服务层级。`"priority"` 启用快速模式路由，`"flex"` 请求弹性处理，`null` 清除覆盖，旧版 `"fast"` 被接受为 `"priority"`。                                                                                                                            |
+| `experimental.sandboxExecServer` | `false`                                              | 预览选择加入，向 Codex app-server 0.132.0 或更新版本注册由 OpenClaw 沙盒支持的 Codex 环境，使原生 Codex 执行可以在活动的 OpenClaw 沙盒内运行。                                                                                                                            |
 
-OpenClaw 拥有的动态 Tool 调用独立于 `appServer.requestTimeoutMs` 进行限制：Codex `item/tool/call` 请求默认使用 30 秒 OpenClaw 看门狗。正数的每次调用 `timeoutMs` 参数会延长或缩短该特定 Tool 预算。`image_generate` Tool 在 Tool 调用不提供自己的超时时也使用 `agents.defaults.imageGenerationModel.timeoutMs`，媒体理解 `image` Tool 使用 `tools.media.image.timeoutSeconds` 或其 60 秒媒体默认值。动态 Tool 预算上限为 600000 毫秒。超时时，OpenClaw 在支持的情况下中止 Tool 信号，并向 Codex 返回失败的动态 Tool 响应，以便轮次可以继续，而不是将 Session 留在 `processing` 中。
+OpenClaw 拥有的动态 Tool 调用独立于 `appServer.requestTimeoutMs` 进行限制：Codex `item/tool/call` 请求默认使用 30 秒 OpenClaw 看门狗。正数的每次调用 `timeoutMs` 参数会延长或缩短该特定 Tool 预算。`image_generate` Tool 在 Tool 调用不提供自己的超时时使用 `agents.defaults.imageGenerationModel.timeoutMs`，否则使用 120 秒图像生成默认值。媒体理解 `image` Tool 使用 `tools.media.image.timeoutSeconds` 或其 60 秒媒体默认值。动态 Tool 预算上限为 600000 毫秒。超时时，OpenClaw 在支持的情况下中止 Tool 信号，并向 Codex 返回失败的动态 Tool 响应，以便轮次可以继续，而不是将 Session 留在 `processing` 中。
 
-Codex 接受轮次后，以及 OpenClaw 响应轮次范围的 app-server 请求后，Harness 期望 Codex 取得当前轮次的进展，并最终以 `turn/completed` 完成原生轮次。如果 app-server 在 `appServer.turnCompletionIdleTimeoutMs` 期间变得静默，OpenClaw 会尽力中断 Codex 轮次，记录诊断超时，并释放 OpenClaw Session 通道，以便后续 Chat 消息不会在过时的原生轮次后面排队。同一轮次的大多数非终端通知会解除该短看门狗，因为 Codex 已证明轮次仍然处于活动状态；原始 `custom_tool_call_output` 完成保持短的工具后看门狗处于活动状态，因为它们是轮次范围的工具结果交接。全局 app-server 通知（如速率限制更新）不重置轮次空闲进度。已完成的 `agentMessage` 项目和工具前的原始助手 `rawResponseItem/completed` 项目激活助手输出释放：如果 Codex 随后变得静默而没有 `turn/completed`，OpenClaw 会尽力中断原生轮次并释放 Session 通道。工具后的原始助手进度继续等待 `turn/completed` 或终端看门狗。超时诊断包括最后一个 app-server 通知方法，以及对于原始助手响应项目，包括项目类型、角色、ID 和有界助手文本预览。
+Codex 接受轮次后，以及 OpenClaw 响应轮次范围的 app-server 请求后，Harness 期望 Codex 取得当前轮次的进展，并最终以 `turn/completed` 完成原生轮次。如果 app-server 在 `appServer.turnCompletionIdleTimeoutMs` 期间变得静默，OpenClaw 会尽力中断 Codex 轮次，记录诊断超时，并释放 OpenClaw Session 通道，以便后续 Chat 消息不会在过时的原生轮次后面排队。同一轮次的大多数非终端通知会解除该短看门狗，因为 Codex 已证明轮次仍然处于活动状态；原始 `custom_tool_call_output` 完成保持短的工具后看门狗处于活动状态，因为它们是轮次范围的工具结果交接。全局 app-server 通知（如速率限制更新）不重置轮次空闲进度。已完成的 `agentMessage` 项目和工具前的原始助手 `rawResponseItem/completed` 项目激活助手输出释放：如果 Codex 随后变得静默而没有 `turn/completed`，OpenClaw 会尽力中断原生轮次并释放 Session 通道。工具后的原始助手进度继续等待 `turn/completed`，同时完成空闲守护保持激活；守护在已配置时使用 `appServer.postToolRawAssistantCompletionIdleTimeoutMs`，否则回退到助手完成空闲超时。超时诊断包括最后一个 app-server 通知方法，以及对于原始助手响应项目，包括项目类型、角色、ID 和有界助手文本预览。
 
 环境覆盖仍可用于本地测试：
 
@@ -462,7 +471,7 @@ Codex Harness 只更改低级嵌入式 Agent 执行器。
 
 - OpenClaw 动态 Tool 受支持。Codex 请求 OpenClaw 执行这些 Tool，因此 OpenClaw 保持在执行路径中。
 - Codex 原生 Shell、补丁、MCP 和原生应用 Tool 由 Codex 拥有。OpenClaw 可以通过支持的中继观测或阻止选定的原生事件，但不重写原生 Tool 参数。
-- Codex 拥有原生 Compaction，除非活跃的 OpenClaw 上下文引擎声明 `ownsCompaction: true`。OpenClaw 为 Channel 历史、搜索、`/new`、`/reset` 和未来的模型或 Harness 切换保留转录镜像。
+- Codex 拥有原生 Compaction。OpenClaw 为 Channel 历史、搜索、`/new`、`/reset` 和未来的模型或 Harness 切换保留转录镜像，但不用 OpenClaw 或上下文引擎汇总器替换 Codex Compaction。
 - 媒体生成、媒体理解、TTS、审批和消息 Tool 输出继续通过匹配的 OpenClaw Provider/模型设置。
 - `tool_result_persist` 适用于 OpenClaw 拥有的转录 Tool 结果，而不是 Codex 原生 Tool 结果记录。
 

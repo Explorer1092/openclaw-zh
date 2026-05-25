@@ -1,7 +1,7 @@
 ---
 title: "对讲模式"
 sidebarTitle: "对讲模式"
-mmh3_hash: "8b79b89b07690d985046b4675c2a2efa"
+mmh3_hash: "ec12b67e4449bb02d6003778de2bacf8"
 summary: "对讲模式：通过本地 STT/TTS 和实时语音实现的持续语音对话"
 read_when:
   - 在 macOS/iOS/Android 上实现对讲模式
@@ -22,6 +22,7 @@ read_when:
 4. 通过配置的对讲 provider（`talk.speak`）朗读回应
 
 浏览器实时对讲通过 `talk.client.toolCall` 转发 provider 工具调用；浏览器客户端不直接调用 `chat.send` 进行实时咨询。
+当实时咨询处于活跃状态时，Talk 客户端可以使用 `talk.client.steer` 或 `talk.session.steer` 将语音输入分类为 `status`、`steer`、`cancel` 或 `followup`。已接受的引导被排入活动嵌入式运行；被拒绝的引导返回结构化原因，例如 `no_active_run`、`not_streaming` 或 `compacting`。
 
 仅转录对讲与实时和 STT/TTS 会话发出相同的通用对讲事件信封，但使用 `mode: "transcription"` 和 `brain: "none"`。它用于字幕、听写和仅观察语音捕获；一次性上传的语音笔记仍然使用媒体/音频路径。
 
@@ -110,7 +111,9 @@ read_when:
 - `realtime.provider`：选择活动的浏览器/服务器实时语音 provider。对 WebRTC 使用 `openai`，对 provider WebSocket 使用 `google`，或通过 Gateway relay 使用仅桥接的 provider。
 - `realtime.providers.<provider>` 存储 provider 拥有的实时配置。浏览器只接收临时或受限的会话凭据，而不是标准 API 密钥。
 - `realtime.providers.openai.voice`：内置 OpenAI Realtime 语音 ID。当前 `gpt-realtime-2` 语音有 `alloy`、`ash`、`ballad`、`coral`、`echo`、`sage`、`shimmer`、`verse`、`marin` 和 `cedar`；推荐 `marin` 和 `cedar` 以获得最佳质量。
-- `realtime.brain`：`agent-consult` 通过 Gateway 策略路由实时工具调用；`direct-tools` 是仅所有者的兼容性行为；`none` 用于转录或外部编排。
+- `realtime.transport`：`webrtc` 和 `provider-websocket` 是浏览器实时传输。Android 仅当此设置为 `gateway-relay` 时才使用实时 relay；否则 Android Talk 使用其原生 STT/TTS 循环。
+- `realtime.brain`：`agent-consult` 通过 Gateway 策略路由实时工具调用；`direct-tools` 是旧版直接工具兼容行为；`none` 用于转录或外部编排。
+- `realtime.consultRouting`：`provider-direct` 在 provider 跳过 `openclaw_agent_consult` 时保留其直接回复；`force-agent-consult` 使 Gateway relay 将最终用户转录通过 OpenClaw 路由。
 - `realtime.instructions`：向 OpenClaw 内置的实时提示附加面向 provider 的系统指令。用于语音风格和语气；OpenClaw 保留默认的 `openclaw_agent_consult` 指导。
 - `talk.catalog` 公开每个 provider 的有效模式、传输、brain 策略、实时音频格式和能力标志，以便第一方对讲客户端可以避免不支持的组合。
 - 流式转录 provider 通过 `talk.catalog.transcription` 发现。当前 Gateway relay 使用语音通话流式传输 provider 配置，直到添加专用对讲转录配置界面。

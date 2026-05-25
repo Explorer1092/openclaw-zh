@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "106d9c08e40fc4c1b9ea76727f4af919"
+mmh3_hash: "446447f75b006d1f4df0aa13422b9c60"
 summary: "Plugin Hook：拦截 Agent、工具、消息、Session 和 Gateway 生命周期事件"
 title: "Plugin Hook"
 read_when:
@@ -144,10 +144,11 @@ Hook 按其扩展的界面分组。**粗体**名称接受决策结果（阻止�
 
 - `event.toolName`
 - `event.params`
+- 可选的 `event.toolKind` 和 `event.toolInputKind`，是专为有意共享名称的 Tool 提供的主机权威鉴别器；例如，外层代码模式 `exec` 调用使用 `toolKind: "code_mode_exec"`，并在已知输入语言时包含 `toolInputKind: "javascript" | "typescript"`
 - 可选的 `event.derivedPaths`，包含对已知 Tool 信封（如 `apply_patch`）的尽力主机派生目标路径提示；存在时，这些路径可能不完整或可能过度近似 Tool 实际将触及的内容（例如，对于格式错误或部分输入）
 - 可选的 `event.runId`
 - 可选的 `event.toolCallId`
-- 上下文字段，如 `ctx.agentId`、`ctx.sessionKey`、`ctx.sessionId`、`ctx.runId`、`ctx.jobId`（在 Cron 驱动的运行上设置）和诊断 `ctx.trace`
+- 上下文字段，如 `ctx.agentId`、`ctx.sessionKey`、`ctx.sessionId`、`ctx.runId`、`ctx.jobId`（在 Cron 驱动的运行上设置）、`ctx.toolKind`、`ctx.toolInputKind` 和诊断 `ctx.trace`
 
 它可以返回：
 
@@ -162,6 +163,7 @@ type BeforeToolCallResult = {
     severity?: "info" | "warning" | "critical";
     timeoutMs?: number;
     timeoutBehavior?: "allow" | "deny";
+    allowedDecisions?: Array<"allow-once" | "allow-always" | "deny">;
     pluginId?: string;
     onResolution?: (
       decision: "allow-once" | "allow-always" | "deny" | "timeout" | "cancelled",
@@ -208,7 +210,7 @@ Tool 结果可以包含用于 UI 渲染、诊断、媒体路由或 Plugin 拥有
 
 对于 Channel 发起的运行，`ctx.messageProvider` 是 Provider 界面，如 `discord` 或 `telegram`，而 `ctx.channelId` 是当 OpenClaw 可以从 Session 键或投递元数据派生时的对话目标标识符。
 
-`agent_end` 是观测 Hook，在轮次后以即发即忘方式运行。Hook 运行器应用 30 秒超时，以便挂起的 Plugin 或嵌入端点不会让 Hook Promise 永远待定。超时会被记录，OpenClaw 继续；除非 Plugin 也使用自己的中止信号，否则它不取消 Plugin 拥有的网络工作。
+`agent_end` 是观测 Hook。Gateway 和持久性 Harness 路径在轮次后以即发即忘方式运行它，而短暂的一次性 CLI 路径在进程清理之前等待 Hook Promise，以便受信任的 Plugin 可以刷新终端可观测性或捕获状态。Hook 运行器应用 30 秒超时，以便挂起的 Plugin 或嵌入端点不会让 Hook Promise 永远待定。超时会被记录，OpenClaw 继续；除非 Plugin 也使用自己的中止信号，否则它不取消 Plugin 拥有的网络工作。
 
 使用 `model_call_started` 和 `model_call_ended` 进行不应接收原始提示、历史记录、响应、头、请求体或 Provider 请求 ID 的 Provider 调用遥测。这些 Hook 包含稳定的元数据，如 `runId`、`callId`、`provider`、`model`、可选的 `api`/`transport`、终止的 `durationMs`/`outcome`，以及当 OpenClaw 可以派生有界 Provider 请求 ID 哈希时的 `upstreamRequestIdHash`。当运行时已解析上下文窗口元数据时，Hook 事件和上下文还包含 `contextTokenBudget`（模型/配置/Agent 上限后的有效 Token 预算），以及应用了较低上限时的 `contextWindowSource` 和 `contextWindowReferenceTokens`。
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4573bf8c1edd41bd569263e271f92792"
+mmh3_hash: "75a673df6841341a6e1471eb294f1e06"
 summary: "向 OpenClaw Plugin 系统添加新共享能力的贡献者指南"
 read_when:
   - 添加新的核心能力和 Plugin 注册界面
@@ -112,6 +112,12 @@ sidebarTitle: "添加能力"
 - `agents.defaults.imageGenerationModel` 用于生成图像。
 
 保持二者分离，使回退和策略保持明确。
+
+## Embedding providers
+
+使用 `embeddingProviders` 获取可复用的向量嵌入 Provider。此契约有意比 memory 更宽泛：Tool、搜索、检索、导入器或未来的功能 Plugin 可以在不依赖 memory 引擎的情况下使用 embedding。
+
+对于 memory 引擎特定的适配器，继续使用 `memoryEmbeddingProviders`。这些适配器拥有 memory 索引细节，例如查询/文档分割、运行时元数据和本地 memory 引擎设置。不要让通用 embedding provider 依赖 memory 所属模块，除非该 provider 只能由 memory 使用。
 
 ## 审查清单
 

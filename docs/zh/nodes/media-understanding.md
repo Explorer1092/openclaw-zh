@@ -1,7 +1,7 @@
 ---
 title: "媒体理解"
 sidebarTitle: "媒体理解"
-mmh3_hash: "a0c3e851da73e34c908e61ce3f2e19d4"
+mmh3_hash: "837263bc690fdc870a86100169224bb3"
 summary: "入站图像/音频/视频理解（可选），带有 provider + CLI 回退"
 read_when:
   - 设计或重构媒体理解
@@ -137,6 +137,27 @@ OpenClaw 可以在回复管道运行之前**摘要入站媒体**（图像/音频
 
   </Tab>
 </Tabs>
+
+### Provider 凭据（`apiKey`）
+
+Provider 媒体理解使用与普通模型调用相同的 Provider 认证解析：认证配置文件、环境变量，然后是 `models.providers.<providerId>.apiKey`。
+
+`tools.media.*.models[]` 条目不接受内联 `apiKey` 字段。媒体模型条目中的 `provider` 值（如 `openai` 或 `moonshot`）必须通过标准 Provider 认证来源之一提供凭据。
+
+最小示例：
+
+```json5
+{
+  models: {
+    providers: {
+      openai: { apiKey: "<OPENAI_API_KEY>" },
+      moonshot: { apiKey: "<MOONSHOT_API_KEY>" },
+    },
+  },
+}
+```
+
+有关完整的 Provider 认证参考，包括配置文件、环境变量和自定义 base URL，请参见[工具与自定义 Provider](/gateway/config-tools)。
 
 ## 默认值和限制
 

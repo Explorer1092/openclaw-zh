@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b97891eb594f0044475fb1931d15af1b"
+mmh3_hash: "df8840ec27ed8f6c85a00e2b1fa88898"
 summary: "为 Codex 模式的 OpenClaw Agent 配置已迁移的原生 Codex Plugin"
 title: "原生 Codex Plugin"
 read_when:
@@ -71,7 +71,24 @@ openclaw migrate apply codex --yes
 }
 ```
 
-更改 `codexPlugins` 后，使用 `/new`、`/reset` 或重启 Gateway，以便未来的 Codex Harness Session 以更新的应用集启动。
+更改 `codexPlugins` 后，新的 Codex 对话会自动获取更新的应用集。使用 `/new` 或 `/reset` 刷新当前对话。Plugin 启用或禁用更改不需要重启 Gateway。
+
+## 从 Chat 管理 Plugin
+
+当您希望从操作 Codex Harness 的同一 Chat 检查或更改已配置的原生 Codex Plugin 时，使用 `/codex plugins`：
+
+```text
+/codex plugins
+/codex plugins list
+/codex plugins disable google-calendar
+/codex plugins enable google-calendar
+```
+
+`/codex plugins` 是 `/codex plugins list` 的别名。列表输出显示来自 `plugins.entries.codex.config.codexPlugins.plugins` 的已配置 Plugin 键、开/关状态、Codex Plugin 名称和市场。
+
+`enable` 和 `disable` 只写入 `~/.openclaw/openclaw.json` 处的 OpenClaw 配置；它们不编辑 `~/.codex/config.toml` 或安装新的 Codex Plugin。只有所有者或具有 `operator.admin` 范围的 Gateway 客户端才能更改 Plugin 状态。
+
+启用已配置的 Plugin 也会打开全局 `codexPlugins.enabled` 开关。如果 Plugin 因迁移返回 `auth_required` 而被写为已禁用，请在 OpenClaw 中启用它之前在 Codex 中重新授权该应用。
 
 ## 原生 Plugin 设置的工作原理
 
@@ -83,7 +100,7 @@ openclaw migrate apply codex --yes
 
 迁移是持久的安装/资格步骤。在规划期间，OpenClaw 读取源 Codex `plugin/read` 详情，并检查源 Codex app-server 账户响应是否为 ChatGPT 订阅账户。非 ChatGPT 或缺失的账户响应会以 `codex_subscription_required` 跳过应用支持的 Plugin。默认情况下，迁移不调用源 `app/list`；通过账户验证的应用支持源 Plugin 在没有源应用可访问性验证的情况下规划，账户查找传输失败以 `codex_account_unavailable` 跳过。使用 `--verify-plugin-apps` 时，迁移会获取新的源 `app/list` 快照，并要求每个拥有的应用在规划原生激活之前都存在、已启用且可访问。在该模式下，账户查找传输失败会落入源应用清单验证。运行时应用清单是迁移后的目标 Session 可访问性检查。Codex Harness Session 设置随后为已启用且可访问的 Plugin 应用计算限制性的线程应用配置。
 
-线程应用配置在 OpenClaw 建立 Codex Harness Session 或替换过时的 Codex 线程绑定时计算。它不会在每个轮次重新计算。
+线程应用配置在 OpenClaw 建立 Codex Harness Session 或替换过时的 Codex 线程绑定时计算。它不会在每个轮次重新计算，因此 `/codex plugins enable` 和 `/codex plugins disable` 影响新的 Codex 对话。当前对话应获取更新的应用集时，使用 `/new` 或 `/reset`。
 
 ## V1 支持边界
 
@@ -149,7 +166,7 @@ Plugin 应用的 Tool 审批模式默认是自动的，因此非破坏性的读�
 
 **`app_ownership_ambiguous`：** 应用清单仅通过显示名称匹配，因此该应用不会暴露给 Codex 线程。
 
-**配置已更改但 Agent 看不到 Plugin：** 使用 `/new`、`/reset` 或重启 Gateway。现有的 Codex 线程绑定会保留它们启动时的应用配置，直到 OpenClaw 建立新的 Harness Session 或替换过时的绑定。
+**配置已更改但 Agent 看不到 Plugin：** 使用 `/codex plugins list` 确认已配置的状态，然后使用 `/new` 或 `/reset`。现有的 Codex 线程绑定会保留它们启动时的应用配置，直到 OpenClaw 建立新的 Harness Session 或替换过时的绑定。
 
 **破坏性操作被拒绝：** 检查全局和每 Plugin 的 `allow_destructive_actions` 值。即使策略为 true，不安全的触发 Schema 和模糊的 Plugin 标识仍然以关闭方式失败。
 

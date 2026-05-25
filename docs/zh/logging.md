@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f66526a262b5f874239b6f632be7064f"
+mmh3_hash: "e06453c1e2c22838a463162f37aad410"
 title: "日志记录"
 summary: "文件日志、控制台输出、CLI 跟踪和控制 UI 日志选项卡"
 read_when:
@@ -70,7 +70,7 @@ openclaw logs --follow
 - `notice`：截断/轮转提示
 - `raw`：未解析的日志行
 
-如果本地环回 Gateway 请求配对、在连接期间关闭，或在 `logs.tail` 响应前超时，`openclaw logs` 会自动回退到配置的 Gateway 文件日志。显式 `--url` 目标不使用此回退。
+如果本地环回 Gateway 请求配对、在连接期间关闭，或在 `logs.tail` 响应前超时，`openclaw logs` 会自动回退到配置的 Gateway 文件日志。显式 `--url` 目标不使用此回退。`openclaw logs --follow` 更为严格：在 Linux 上，当通过 PID 可获取活跃用户 systemd Gateway 日志时，它会使用该日志，否则会持续重试实时 Gateway，而不是跟踪可能过时的并行文件。
 
 如果 Gateway 不可访问，CLI 会打印简短提示以运行：
 

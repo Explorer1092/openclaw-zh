@@ -1,6 +1,6 @@
 ---
 title: "Nodes"
-mmh3_hash: "a03a3691d9d28fd0576d8eae0e0dc818"
+mmh3_hash: "6183597ec4c94c98dbbb7f73db7efd84"
 summary: "Node 的配对、功能、权限和 canvas/camera/screen/device/notifications/system 的 CLI 辅助工具"
 read_when:
   - 将 iOS/Android Node 配对到 Gateway
@@ -355,18 +355,18 @@ openclaw nodes invoke --node <idOrNameOrIp> --command system.which --params '{"n
 openclaw config set tools.exec.node "node-id-or-name"
 ```
 
-每个 agent 覆盖：
+每个 Agent 覆盖：
 
 ```bash
 openclaw config get agents.list
-openclaw config set agents.list[0].tools.exec.node "node-id-or-name"
+openclaw config set 'agents.list[0].tools.exec.node' "node-id-or-name"
 ```
 
 取消设置以允许任何 node：
 
 ```bash
 openclaw config unset tools.exec.node
-openclaw config unset agents.list[0].tools.exec.node
+openclaw config unset 'agents.list[0].tools.exec.node'
 ```
 
 ## 权限映射

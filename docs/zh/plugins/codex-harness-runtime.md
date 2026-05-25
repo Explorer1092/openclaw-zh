@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "91b68d3eeac30ec551fbf78deaa124a4"
+mmh3_hash: "26de472a800a627c572895dc2322b478"
 summary: "Codex Harness 的运行时边界、Hook、Tool、权限和诊断"
 title: "Codex Harness 运行时"
 read_when:
@@ -14,7 +14,11 @@ read_when:
 
 Codex 模式不是底层换了不同模型调用的 PI。Codex 拥有更多原生模型循环，而 OpenClaw 围绕该边界适配其 Plugin、Tool、Session 和诊断界面。
 
-OpenClaw 仍然拥有 Channel 路由、Session 文件、可见消息投递、OpenClaw 动态 Tool、审批、媒体投递和转录镜像。Codex 拥有规范原生线程、原生模型循环、原生 Tool 延续，以及原生 Compaction（除非活跃的 OpenClaw 上下文引擎声明其拥有 Compaction）。
+OpenClaw 仍然拥有 Channel 路由、Session 文件、可见消息投递、OpenClaw 动态 Tool、审批、媒体投递和转录镜像。Codex 拥有规范原生线程、原生模型循环、原生 Tool 延续，以及原生 Compaction。
+
+提示路由遵循所选运行时，而不仅仅是 Provider 字符串。原生 Codex 轮次接收 Codex app-server 开发者指令，而显式 PI 兼容路由即使使用 Codex 风格的 OpenAI 身份验证或传输，也保留正常的 OpenClaw/PI 系统提示。
+
+原生 Codex 根据活跃的 Codex 线程配置保留 Codex 拥有的基础/模型/个性指令和项目文档行为。轻量级 OpenClaw 运行仍然保留其现有的项目文档抑制。OpenClaw 开发者指令涵盖 OpenClaw 运行时关注点，如源 Channel 投递、OpenClaw 动态 Tool、ACP 委托、适配器上下文和活跃 Agent 工作区配置文件。OpenClaw Skill 目录以及 `MEMORY.md` 和活跃的 `BOOTSTRAP.md` 内容作为轮次输入参考上下文投影给原生 Codex。
 
 ## 线程绑定和模型更改
 
@@ -26,7 +30,7 @@ OpenClaw 仍然拥有 Channel 路由、Session 文件、可见消息投递、Ope
 
 Codex 心跳轮次默认在可搜索的 OpenClaw Tool 目录中也获得 `heartbeat_respond`，因此 Agent 可以记录唤醒是否应保持静默或发出通知，而无需在最终文本中编码该控制流。
 
-心跳特定的主动性指导作为 Codex 协作模式开发者指令发送到心跳轮次本身。普通 Chat 轮次会恢复 Codex 默认模式，而不是在其正常运行时提示中携带心跳策略。
+心跳特定的主动性指导作为 Codex 协作模式开发者指令发送到心跳轮次本身。普通 Chat 轮次会恢复 Codex 默认模式，而不是在其正常运行时提示中携带心跳策略。当存在非空的 `HEARTBEAT.md` 时，心跳协作模式指令将 Codex 指向该文件，而不是内联其内容。
 
 ## Hook 边界
 
@@ -61,8 +65,8 @@ Codex 运行时 V1 支持：
 | 通过 Codex 的 OpenAI 模型循环               | 支持                                         | Codex app-server 拥有 OpenAI 轮次、原生线程恢复和原生 Tool 延续。                                                                                                             |
 | OpenClaw Channel 路由和投递                 | 支持                                         | Telegram、Discord、Slack、WhatsApp、iMessage 和其他 Channel 保持在模型运行时之外。                                                                                            |
 | OpenClaw 动态 Tool                          | 支持                                         | Codex 请求 OpenClaw 执行这些 Tool，因此 OpenClaw 保持在执行路径中。                                                                                                           |
-| 提示和上下文 Plugin                         | 支持                                         | OpenClaw 构建提示覆盖层，并在启动或恢复线程之前将上下文投影到 Codex 轮次中。                                                                                                 |
-| 上下文引擎生命周期                          | 支持                                         | 组装、摄取、轮次后维护和上下文引擎 Compaction 协调针对 Codex 轮次运行。                                                                                                       |
+| 提示和上下文 Plugin                         | 支持                                         | OpenClaw 将 OpenClaw 特定的提示/上下文投影到 Codex 轮次中，同时将 Codex 拥有的基础、模型、个性和已配置项目文档提示保留在原生 Codex 通道中。原生 Codex 开发者指令仅接受明确限定范围为 `codex_app_server` 的命令指导；旧版全局命令提示保留用于非 Codex 提示界面。 |
+| 上下文引擎生命周期                          | 支持                                         | 组装、摄取和轮次后维护围绕 Codex 轮次运行。上下文引擎不替换原生 Codex Compaction。                                                                                            |
 | 动态 Tool Hook                              | 支持                                         | `before_tool_call`、`after_tool_call` 和 Tool 结果中间件围绕 OpenClaw 拥有的动态 Tool 运行。                                                                                  |
 | 生命周期 Hook                               | 作为适配器观测支持                           | `llm_input`、`llm_output`、`agent_end`、`before_compaction` 和 `after_compaction` 以诚实的 Codex 模式载荷触发。                                                               |
 | 最终答案修订门                              | 通过原生 Hook 中继支持                       | Codex `Stop` 被中继到 `before_agent_finalize`；`revise` 要求 Codex 在最终确定前再进行一次模型处理。                                                                          |
@@ -91,6 +95,8 @@ Codex app-server 审批模式默认省略此原生 Hook。当 `permission_reques
 
 当 Codex 将 `_meta.codex_approval_kind` 标记为 `"mcp_tool_call"` 时，Codex MCP Tool 审批触发通过 OpenClaw 的 Plugin 审批流路由。Codex `request_user_input` 提示被发送回原始 Chat，而下一个排队的后续消息会回答该原生服务器请求，而不是作为额外上下文被引导。其他 MCP 触发请求会以关闭方式失败。
 
+有关携带这些提示的通用 Plugin 审批流，请参见 [Plugin 权限请求](/plugins/plugin-permission-requests)。
+
 ## 队列引导
 
 活跃运行队列引导映射到 Codex app-server `turn/steer`。在默认的 `messages.queue.mode: "steer"` 下，OpenClaw 在配置的静默窗口内批处理引导模式 Chat 消息，并按到达顺序将它们作为一个 `turn/steer` 请求发送。
@@ -109,11 +115,13 @@ Codex 审查和手动 Compaction 轮次可以拒绝同轮次引导。在这种�
 
 ## Compaction 和转录镜像
 
-当选定的模型使用 Codex Harness 时，原生线程 Compaction 委托给 Codex app-server，除非活跃的上下文引擎声明 `ownsCompaction: true`。拥有所有权的上下文引擎先进行 Compaction，并导致 OpenClaw 放弃旧的 Codex 后端线程，以便下一个轮次可以从引擎管理的上下文中重新水化新线程。OpenClaw 为 Channel 历史、搜索、`/new`、`/reset` 和未来的模型或 Harness 切换保留转录镜像。
+当选定的模型使用 Codex Harness 时，原生线程 Compaction 归属于 Codex app-server。OpenClaw 不为 Codex 轮次运行预检 Compaction，不用上下文引擎 Compaction 替换 Codex Compaction，也不在原生 Codex Compaction 无法启动时回退到 OpenClaw 或公共 OpenAI 摘要。OpenClaw 为 Channel 历史、搜索、`/new`、`/reset` 和未来的模型或 Harness 切换保留转录镜像。
+
+显式 Compaction 请求（如 `/compact` 或 Plugin 请求的手动压缩操作）通过 `thread/compact/start` 启动原生 Codex Compaction。OpenClaw 在启动该原生操作后返回。它不会等待完成、施加单独的 OpenClaw 超时、重启共享的 Codex app-server，也不会将该操作记录为 OpenClaw 完成的 Compaction。
 
 当上下文引擎请求 Codex 线程引导投影时，OpenClaw 将 Tool 调用名称和 ID、输入形状和经过编辑的 Tool 结果内容投影到新的 Codex 线程中。它不会将原始 Tool 调用参数值复制到该投影中。
 
-镜像包括用户提示、最终助手文本，以及 app-server 发出时的轻量级 Codex 推理或计划记录。目前，OpenClaw 仅记录原生 Compaction 开始和完成信号。它尚未暴露人类可读的 Compaction 摘要或 Codex 在 Compaction 后保留了哪些条目的可审计列表。
+镜像包括用户提示、最终助手文本，以及 app-server 发出时的轻量级 Codex 推理或计划记录。目前，OpenClaw 仅在请求 Compaction 时记录显式原生 Compaction 开始信号。它不暴露人类可读的 Compaction 摘要或 Codex 在 Compaction 后保留了哪些条目的可审计列表。
 
 由于 Codex 拥有规范的原生线程，`tool_result_persist` 目前不重写 Codex 原生 Tool 结果记录。它仅在 OpenClaw 写入 OpenClaw 拥有的 Session 转录 Tool 结果时适用。
 

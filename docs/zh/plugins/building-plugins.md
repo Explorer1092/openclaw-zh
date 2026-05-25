@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b7c154ce67c7925816bce15f907427e9"
+mmh3_hash: "5394de1d2faacc6a92cd897d34a9d65c"
 title: "构建 Plugin"
 sidebarTitle: "入门指南"
 summary: "几分钟内创建您的第一个 OpenClaw Plugin"
@@ -210,6 +210,8 @@ register(api) {
   tools: { allow: ["workflow_tool"] }, // 或 ["my-plugin"] 表示来自一个 Plugin 的所有工具
 }
 ```
+
+可选工具控制工具是否向模型暴露。当工具或 Hook 应在模型选择后、动作执行前请求批准时，请使用 [Plugin 权限请求](/plugins/plugin-permission-requests)。
 
 对于副作用、不常见的二进制文件或默认情况下不应暴露的能力，请使用可选工具。工具名称不得与核心工具冲突；冲突会被跳过并在 Plugin 诊断中报告。格式错误的注册（包括没有 `parameters` 的工具描述符）会以相同方式被跳过并报告。已注册的工具是模型在策略和允许列表检查通过后可以调用的类型化函数。
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8f2206887d0c5c6190a80febd4c87481"
+mmh3_hash: "6c14c89a7b051e97e0d9c9e7c42fa2a7"
 summary: "通过捆绑的可选 admin-http-rpc 插件将选定的 Gateway 控制平面方法暴露为 HTTP 接口"
 read_when:
   - 构建无法使用 Gateway WebSocket RPC 客户端的主机工具时
@@ -172,6 +172,7 @@ HTTP 状态在可能时遵循 Gateway 错误。例如，`INVALID_REQUEST` 返回
 - gateway：`health`、`status`、`logs.tail`、`usage.status`、`usage.cost`、`gateway.restart.request`
 - config：`config.get`、`config.schema`、`config.schema.lookup`、`config.set`、`config.patch`、`config.apply`
 - channels：`channels.status`、`channels.start`、`channels.stop`、`channels.logout`
+- web：`web.login.start`、`web.login.wait`
 - models：`models.list`、`models.authStatus`
 - agents：`agents.list`、`agents.create`、`agents.update`、`agents.delete`
 - approvals：`exec.approvals.get`、`exec.approvals.set`、`exec.approvals.node.get`、`exec.approvals.node.set`

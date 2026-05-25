@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a0db3ad2d64029816ffa70c352878cc0"
+mmh3_hash: "9b645cadc7c4fbf8e664a98e6e7618ba"
 title: "Android 应用 (节点)"
 summary: "Android 应用（节点）：连接手册 + Connect/Chat/Voice/Canvas 命令接口"
 read_when:
@@ -202,7 +202,8 @@ Canvas 命令（仅前台）：
 
 - Voice 选项卡：Android 有两种明确的捕获模式。**Mic** 是手动 Voice 选项卡 session，将每次停顿作为聊天轮发送，当应用离开前台或用户离开 Voice 选项卡时停止。**Talk** 是持续 Talk 模式，持续监听直到关闭或节点断开连接。
 - Talk 模式在捕获开始前将现有前台服务从 `dataSync` 提升为 `dataSync|microphone`，Talk 模式停止时再降级。Android 14+ 需要 `FOREGROUND_SERVICE_MICROPHONE` 声明、`RECORD_AUDIO` 运行时授权以及运行时的麦克风服务类型。
-- 语音回复通过已配置的 gateway Talk provider 使用 `talk.speak`。仅当 `talk.speak` 不可用时才使用本地系统 TTS。
+- 默认情况下，Android Talk 使用原生语音识别、Gateway 聊天和通过已配置的 gateway Talk provider 的 `talk.speak`。仅当 `talk.speak` 不可用时才使用本地系统 TTS。
+- Android Talk 仅当 `talk.realtime.mode` 为 `realtime` 且 `talk.realtime.transport` 为 `gateway-relay` 时才使用实时 Gateway relay。
 - Voice wake 在 Android UX/运行时中保持禁用。
 - 其他 Android 命令系列（可用性取决于设备 + 权限）：
   - `device.status`、`device.info`、`device.permissions`、`device.health`
