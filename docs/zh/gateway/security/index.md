@@ -22,6 +22,8 @@ OpenClaw 安全指南假设**个人助手**部署：一个受信任的操作员�
 
 本页解释**在该模型内**的加固。它不声称在一个共享 Gateway 上实现敌对多租户隔离。
 
+更改远程访问、DM 策略、反向代理或公共暴露之前，请使用 [Gateway 暴露运维手册](/gateway/security/exposure-runbook) 作为预检和回滚清单。
+
 ## 快速检查：`openclaw security audit`
 
 另见：[形式化验证（安全模型）](/security/formal-verification)
@@ -46,6 +48,50 @@ OpenClaw 既是产品又是实验：您正在将前沿模型行为连接到真�
 - 机器人可以访问什么
 
 从仍然有效的最小访问权限开始，然后随着信心的增长逐步扩大。
+
+### 发布包依赖锁定
+
+OpenClaw 源码检出使用 `pnpm-lock.yaml`。已发布的 `openclaw` npm 包和 OpenClaw 拥有的 npm plugin 包包含 `npm-shrinkwrap.json`（npm 的可发布依赖锁定文件），因此包安装使用来自该版本的已审核传递依赖图，而不是在安装时解析新图。合适的 OpenClaw 拥有的 npm plugin 包也可以使用明确的 `bundledDependencies` 发布，因此它们的运行时依赖文件包含在 plugin tarball 中，而不是仅依赖安装时解析。
+
+这是一项供应链加固措施：
+
+- 版本安装更具可重现性；
+- 传递依赖更新成为可见的审核面；
+- 包 tarball 包含版本验证器检查的依赖图；
+- 合适的 OpenClaw 拥有的 plugin tarball 包含来自该图的依赖文件；
+- `package-lock.json` 不包含在发布包中，因为 npm 不将其视为可发布的锁定契约。
+
+Shrinkwrap 不是沙盒，也不会使每个依赖变得可信。它不会替代 `openclaw security audit`、主机隔离、npm provenance、签名/审计检查，或在适当时使用 `--ignore-scripts` 安装冒烟测试。将其视为版本可重现性和审查控制边界。
+
+每当根包或 OpenClaw 拥有的已发布 plugin 包更改其已发布依赖图时，维护者应更新并验证 shrinkwrap：
+
+```bash
+pnpm deps:shrinkwrap:generate
+pnpm deps:shrinkwrap:check
+```
+
+生成器解析 npm 的可发布锁定格式，但会拒绝 `pnpm-lock.yaml` 中尚不存在的生成包版本，从而保留 pnpm 依赖年龄、覆盖和补丁审查边界。
+
+仅当您有意在不触及 plugin 包的情况下刷新根 `openclaw` 包时，才使用 `pnpm deps:shrinkwrap:root:generate` 和 `pnpm deps:shrinkwrap:root:check`。
+
+将 `pnpm-lock.yaml`、`npm-shrinkwrap.json`、捆绑的 plugin 依赖负载以及任何 `package-lock.json` diff 视为安全敏感内容。包验证器要求新根包 tarball 中存在 shrinkwrap，plugin npm 发布路径检查 plugin 本地 shrinkwrap，安装包本地捆绑依赖，然后打包或发布。包验证器拒绝 `package-lock.json`。
+
+检查已发布包：
+
+```bash
+npm pack openclaw@<version> --json --pack-destination /tmp/openclaw-pack
+tar -tf /tmp/openclaw-pack/openclaw-<version>.tgz | grep '^package/npm-shrinkwrap.json$'
+```
+
+检查 OpenClaw 拥有的 plugin 包，替换包规范并检查相同的 tar 条目：
+
+```bash
+npm pack @openclaw/discord@<version> --json --pack-destination /tmp/openclaw-plugin-pack
+tar -tf /tmp/openclaw-plugin-pack/openclaw-discord-<version>.tgz | grep '^package/npm-shrinkwrap.json$'
+tar -tf /tmp/openclaw-plugin-pack/openclaw-discord-<version>.tgz | grep '^package/node_modules/'
+```
+
+背景：[npm-shrinkwrap.json](https://docs.npmjs.com/cli/v11/configuring-npm/npm-shrinkwrap-json)。
 
 ### 部署和主机信任
 
@@ -807,9 +853,9 @@ HTTP API 端点（例如 `/v1/*`、`/tools/invoke` 和 `/api/channels/*`）**不
 - Gateway HTTP Bearer 认证实际上是全有或全无的操作员访问。
 - 将能够调用 `/v1/chat/completions`、`/v1/responses`、plugin 路由（如 `/api/v1/admin/rpc`）或 `/api/channels/*` 的凭证视为该 Gateway 的完全访问操作员密钥。
 - 在 OpenAI 兼容的 HTTP 表面上，共享密钥 Bearer 认证恢复完整的默认操作员范围（`operator.admin`、`operator.approvals`、`operator.pairing`、`operator.read`、`operator.talk.secrets`、`operator.write`）和 Agent 轮次的 owner 语义；较窄的 `x-openclaw-scopes` 值不会缩减该共享密钥路径。
-- HTTP 上的每请求范围语义仅在请求来自身份感知模式（如受信任代理认证或私有 ingress 上的 `gateway.auth.mode="none"`）时适用。
+- HTTP 上的每请求范围语义仅在请求来自身份感知模式（如受信任代理认证或明确无认证的私有 ingress）时适用。
 - 在这些身份感知模式中，省略 `x-openclaw-scopes` 回退到正常操作员默认范围集；当您需要较窄的范围集时，显式发送该头。
-- `/tools/invoke` 遵循相同的共享密钥规则：token/password Bearer 认证在那里也被视为完全操作员访问，而身份感知模式仍然遵守声明的范围。
+- `/tools/invoke` 和 HTTP session 历史端点遵循相同的共享密钥规则：token/password Bearer 认证在那里也被视为完全操作员访问，而身份感知模式仍然遵守声明的范围。
 - 不要与不受信任的调用者共享这些凭证；优先每个信任边界使用单独的 Gateway。
 
 **信任假设：** 无令牌 Serve 认证假设 Gateway 主机是受信任的。不要将其视为对敌对同主机进程的保护。如果不受信任的本地代码可能在 Gateway 主机上运行，请禁用 `gateway.auth.allowTailscale` 并要求明确的共享密钥认证，使用 `gateway.auth.mode: "token"` 或 `"password"`。

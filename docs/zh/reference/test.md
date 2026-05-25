@@ -10,7 +10,7 @@ title: "测试"
 - 更新和 Plugin 包验证：[测试更新和 Plugin](/help/testing-updates-plugins)
 
 - `pnpm test:force`：杀死任何占用默认控制端口的遗留 Gateway 进程，然后使用隔离的 Gateway 端口运行完整的 Vitest 套件，以便服务器测试不会与运行的实例冲突。当先前的 Gateway 运行占用端口 18789 时使用此选项。
-- `pnpm test:coverage`：使用 V8 覆盖率运行单元套件（通过 `vitest.unit.config.ts`）。这是加载文件的单元覆盖率关卡，而不是全仓库所有文件的覆盖率。阈值为 70% 行/函数/语句和 55% 分支。因为 `coverage.all` 为 false，关卡测量单元覆盖率套件加载的文件，而不是将每个拆分通道源文件视为未覆盖。
+- `pnpm test:coverage`：使用 V8 覆盖率运行单元套件（通过 `vitest.unit.config.ts`）。这是默认单元通道的覆盖率关卡，而不是全仓库所有文件的覆盖率。阈值为 70% 行/函数/语句和 55% 分支。因为 `coverage.all` 为 false 且默认通道作用域的覆盖率仅包含带有同级源文件的非快速单元测试，该关卡测量此通道拥有的源文件，而不是它碰巧加载的每个传递导入。
 - `pnpm test:coverage:changed`：仅对自 `origin/main` 以来变更的文件运行单元覆盖率。
 - `pnpm test:changed`：低成本智能变更测试运行。它从直接测试编辑、同级 `*.test.ts` 文件、显式源映射和本地导入图中运行精确目标。广泛的/配置/包变更会被跳过，除非它们映射到精确的测试。
 - `OPENCLAW_TEST_CHANGED_BROAD=1 pnpm test:changed`：显式广泛变更测试运行。当测试工具/配置/包编辑应回退到 Vitest 更广泛的变更测试行为时使用它。

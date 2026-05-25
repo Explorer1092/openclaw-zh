@@ -525,12 +525,15 @@ OpenClaw 还在泛型 Provider 身份验证和环境变量查询中包含 `setup
   "contracts": {
     "agentToolResultMiddleware": ["pi", "codex"],
     "externalAuthProviders": ["acme-ai"],
+    "embeddingProviders": ["openai-compatible"],
     "speechProviders": ["openai"],
     "realtimeTranscriptionProviders": ["openai"],
     "realtimeVoiceProviders": ["openai"],
     "memoryEmbeddingProviders": ["local"],
     "mediaUnderstandingProviders": ["openai", "openai-codex"],
+    "meetingNotesSourceProviders": ["discord"],
     "imageGenerationProviders": ["openai"],
+    "musicGenerationProviders": ["example-music"],
     "videoGenerationProviders": ["qwen"],
     "webFetchProviders": ["firecrawl"],
     "webSearchProviders": ["gemini"],
@@ -548,12 +551,15 @@ OpenClaw 还在泛型 Provider 身份验证和环境变量查询中包含 `setup
 | `embeddedExtensionFactories`     | `string[]` | Codex app-server 扩展工厂 ID，目前为 `codex-app-server`。                                      |
 | `agentToolResultMiddleware`      | `string[]` | 捆绑 Plugin 可以为其注册 Tool 结果中间件的运行时 ID。                                          |
 | `externalAuthProviders`          | `string[]` | 此 Plugin 拥有外部身份验证配置文件 Hook 的 Provider ID。                                       |
+| `embeddingProviders`             | `string[]` | 此 Plugin 为内存之外的可重用向量嵌入用途拥有的通用嵌入 Provider ID。                           |
 | `speechProviders`                | `string[]` | 此 Plugin 拥有的语音 Provider ID。                                                              |
 | `realtimeTranscriptionProviders` | `string[]` | 此 Plugin 拥有的实时转录 Provider ID。                                                         |
 | `realtimeVoiceProviders`         | `string[]` | 此 Plugin 拥有的实时语音 Provider ID。                                                         |
 | `memoryEmbeddingProviders`       | `string[]` | 此 Plugin 拥有的内存嵌入 Provider ID。                                                         |
 | `mediaUnderstandingProviders`    | `string[]` | 此 Plugin 拥有的媒体理解 Provider ID。                                                         |
+| `meetingNotesSourceProviders`    | `string[]` | 此 Plugin 拥有的会议笔记来源 Provider ID。                                                     |
 | `imageGenerationProviders`       | `string[]` | 此 Plugin 拥有的图像生成 Provider ID。                                                         |
+| `musicGenerationProviders`       | `string[]` | 此 Plugin 拥有的音乐生成 Provider ID。                                                         |
 | `videoGenerationProviders`       | `string[]` | 此 Plugin 拥有的视频生成 Provider ID。                                                         |
 | `webFetchProviders`              | `string[]` | 此 Plugin 拥有的网络获取 Provider ID。                                                         |
 | `webSearchProviders`             | `string[]` | 此 Plugin 拥有的网络搜索 Provider ID。                                                         |
@@ -568,6 +574,8 @@ OpenClaw 还在泛型 Provider 身份验证和环境变量查询中包含 `setup
 实现 `resolveExternalAuthProfiles` 的 Provider Plugin 应声明 `contracts.externalAuthProviders`。没有声明的 Plugin 仍然通过已弃用的兼容性回退运行，但该回退速度较慢，将在迁移窗口后删除。
 
 捆绑的内存嵌入 Provider 应为其公开的每个适配器 ID（包括内置适配器如 `local`）声明 `contracts.memoryEmbeddingProviders`。独立 CLI 路径使用此 Manifest 契约在完整的 Gateway 运行时注册 Provider 之前仅加载拥有的 Plugin。
+
+通用嵌入 Provider 应为使用 `api.registerEmbeddingProvider(...)` 注册的每个适配器声明 `contracts.embeddingProviders`。当向量旨在被多个功能、Tool 或 Plugin 使用时，使用通用契约。将 `contracts.memoryEmbeddingProviders` 保留给形状和生命周期特定于 OpenClaw 内存索引的适配器。
 
 `contracts.gatewayMethodDispatch` 目前接受 `"authenticated-request"`。它是有意在进程内分派 Gateway 控制平面方法的原生 Plugin HTTP 路由的 API 卫生门控，而不是针对恶意原生 Plugin 的沙盒。仅将其用于已经需要 Gateway HTTP 身份验证的经过严格审查的捆绑/操作员界面。
 
@@ -769,10 +777,11 @@ OpenClaw 应用此优先级：
 
 | 字段           | 类型                                                     | 含义                                                                                               |
 | -------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `providers`    | `Record<string, object>`                                 | 此 Plugin 拥有的 Provider ID 的目录行。键也应出现在顶层 `providers` 中。                          |
-| `aliases`      | `Record<string, object>`                                 | 应解析为拥有的 Provider 以进行目录或抑制规划的 Provider 别名。                                    |
-| `suppressions` | `object[]`                                               | 此 Plugin 为 Provider 特定原因抑制的来自另一个来源的模型行。                                      |
-| `discovery`    | `Record<string, "static" \| "refreshable" \| "runtime">` | Provider 目录是否可以从 Manifest 元数据读取、刷新到缓存中，还是需要运行时。                       |
+| `providers`      | `Record<string, object>`                                 | 此 Plugin 拥有的 Provider ID 的目录行。键也应出现在顶层 `providers` 中。                          |
+| `aliases`        | `Record<string, object>`                                 | 应解析为拥有的 Provider 以进行目录或抑制规划的 Provider 别名。                                    |
+| `suppressions`   | `object[]`                                               | 此 Plugin 为 Provider 特定原因抑制的来自另一个来源的模型行。                                      |
+| `discovery`      | `Record<string, "static" \| "refreshable" \| "runtime">` | Provider 目录是否可以从 Manifest 元数据读取、刷新到缓存中，还是需要运行时。                       |
+| `runtimeAugment` | `boolean`                                                | 仅当 Provider 运行时必须在 Manifest/配置规划之后追加目录行时，才设置为 `true`。                   |
 
 `aliases` 参与模型目录规划的 Provider 所有权查询。别名目标必须是同一 Plugin 拥有的顶层 Provider。当 Provider 过滤的列表使用别名时，OpenClaw 可以读取拥有的 Manifest 并应用别名 API/基础 URL 覆盖，而无需加载 Provider 运行时。别名不扩展未过滤的目录列表；广泛的列表仅发出拥有的规范 Provider 行。
 

@@ -410,7 +410,7 @@ Codex OAuth 仅涵盖 chat/completions，不满足嵌入请求。
 
 | 键                 | 类型      | 默认值  | 说明                              |
 | ------------------ | --------- | ------- | --------------------------------- |
-| `cache.enabled`    | `boolean` | `false` | 在 SQLite 中缓存块嵌入            |
+| `cache.enabled`    | `boolean` | `true`  | 在 SQLite 中缓存块嵌入            |
 | `cache.maxEntries` | `number`  | `50000` | 最大缓存嵌入数                    |
 
 防止在重新索引或转录更新期间重新嵌入未更改的文本。

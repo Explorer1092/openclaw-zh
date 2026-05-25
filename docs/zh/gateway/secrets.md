@@ -294,6 +294,50 @@ SecretRefs 仅在有效活跃表面上验证。
     }
     ```
   </Accordion>
+  <Accordion title="Bitwarden Secrets Manager (`bws`)">
+    当您希望 SecretRef id 映射到 Bitwarden Secrets Manager 条目键时，使用解析器包装器。仓库包含 `scripts/secrets/openclaw-bws-resolver.mjs`；将其安装或复制到运行 Gateway 的主机上的绝对受信任路径。
+
+    要求：
+
+    - 在 Gateway 主机上安装 Bitwarden Secrets Manager CLI（`bws`）。
+    - `BWS_ACCESS_TOKEN` 对 Gateway 服务可用。
+    - `PATH` 传递给解析器，或将 `BWS_BIN` 设置为绝对 `bws` 二进制路径。
+
+    ```json5
+    {
+      secrets: {
+        providers: {
+          bws: {
+            source: "exec",
+            command: "/usr/local/bin/openclaw-bws-resolver.mjs",
+            passEnv: ["BWS_ACCESS_TOKEN", "PATH", "BWS_BIN"],
+            jsonOnly: true,
+          },
+        },
+      },
+      models: {
+        providers: {
+          openai: {
+            baseUrl: "https://api.openai.com/v1",
+            models: [{ id: "gpt-5", name: "gpt-5" }],
+            apiKey: {
+              source: "exec",
+              provider: "bws",
+              id: "openclaw/providers/openai/apiKey",
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    解析器批量处理请求的 id，运行 `bws secret list`，并返回匹配密钥 `key` 字段的值。使用满足 exec SecretRef id 约定的键，例如 `openclaw/providers/openai/apiKey`；带下划线的环境变量风格键在解析器运行之前被拒绝。如果多个可见的 Bitwarden 密钥具有相同的请求键，解析器将该 id 标记为不明确而不是选择一个。更新配置后，验证解析器路径：
+
+    ```bash
+    openclaw secrets audit --allow-exec
+    ```
+
+  </Accordion>
   <Accordion title="HashiCorp Vault CLI">
     ```json5
     {
@@ -321,6 +365,86 @@ SecretRefs 仅在有效活跃表面上验证。
       },
     }
     ```
+  </Accordion>
+  <Accordion title="password-store (`pass`)">
+    当您希望 SecretRef id 直接映射到 `pass` 条目时，使用小型解析器包装器。将其保存为通过 exec-provider 路径检查的绝对路径中的可执行文件，例如 `/usr/local/bin/openclaw-pass-resolver`。`#!/usr/bin/env node` shebang 从解析器进程 `PATH` 解析 `node`，因此将 `PATH` 包含在 `passEnv` 中。如果 `pass` 不在该 `PATH` 上，在父环境中设置 `PASS_BIN` 并将其也包含在 `passEnv` 中：
+
+    ```js
+    #!/usr/bin/env node
+    const { spawnSync } = require("node:child_process");
+
+    let stdin = "";
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", (chunk) => {
+      stdin += chunk;
+    });
+    process.stdin.on("error", (err) => {
+      process.stderr.write(`${err.message}\n`);
+      process.exit(1);
+    });
+    process.stdin.on("end", () => {
+      let request;
+      try {
+        request = JSON.parse(stdin || "{}");
+      } catch (err) {
+        process.stderr.write(`Failed to parse request: ${err.message}\n`);
+        process.exit(1);
+      }
+
+      const passBin = process.env.PASS_BIN || "pass";
+      const values = {};
+      const errors = {};
+
+      for (const id of request.ids ?? []) {
+        const result = spawnSync(passBin, ["show", id], { encoding: "utf8" });
+        if (result.status === 0) {
+          values[id] = result.stdout.split(/\r?\n/, 1)[0] ?? "";
+        } else {
+          errors[id] = { message: (result.stderr || `pass exited ${result.status}`).trim() };
+        }
+      }
+
+      process.stdout.write(JSON.stringify({ protocolVersion: 1, values, errors }));
+    });
+    ```
+
+    然后配置 exec provider 并将 `apiKey` 指向 `pass` 条目路径：
+
+    ```json5
+    {
+      secrets: {
+        providers: {
+          pass_store: {
+            source: "exec",
+            command: "/usr/local/bin/openclaw-pass-resolver",
+            passEnv: ["PATH", "HOME", "GNUPGHOME", "GPG_TTY", "PASSWORD_STORE_DIR", "PASS_BIN"],
+            jsonOnly: true,
+          },
+        },
+      },
+      models: {
+        providers: {
+          openai: {
+            baseUrl: "https://api.openai.com/v1",
+            models: [{ id: "gpt-5", name: "gpt-5" }],
+            apiKey: {
+              source: "exec",
+              provider: "pass_store",
+              id: "openclaw/providers/openai/apiKey",
+            },
+          },
+        },
+      },
+    }
+    ```
+
+    将密钥保存在 `pass` 条目的第一行，或者如果您想返回完整的 `pass show` 输出，请自定义包装器。更新配置后，验证静态 audit 和 exec 解析器路径：
+
+    ```bash
+    openclaw secrets audit --check
+    openclaw secrets audit --allow-exec
+    ```
+
   </Accordion>
   <Accordion title="sops">
     ```json5
@@ -513,9 +637,9 @@ Secret 激活在以下时间运行：
     openclaw secrets audit --check
     ```
   </Step>
-  <Step title="配置 SecretRefs">
+  <Step title="配置并应用 SecretRefs">
     ```bash
-    openclaw secrets configure
+    openclaw secrets configure --apply
     ```
   </Step>
   <Step title="重新审计">
@@ -524,6 +648,10 @@ Secret 激活在以下时间运行：
     ```
   </Step>
 </Steps>
+
+在迁移完全干净之前，不要将迁移视为完成。如果 audit 仍然报告静态明文值，即使运行时 API 返回编辑后的值，Agent 访问风险仍然存在。
+
+如果在 `configure` 期间保存了计划而不是立即应用，请在重新审计之前用 `openclaw secrets apply --from <plan-path>` 应用该保存的计划。
 
 <AccordionGroup>
   <Accordion title="secrets audit">

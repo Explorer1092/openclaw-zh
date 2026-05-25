@@ -160,15 +160,15 @@ openclaw config get agents.defaults.models
 
 查找:
 
-- 选定的 Anthropic Opus/Sonnet 模型具有 `params.context1m: true`。
+- 选定的 Anthropic 模型是具备 GA 能力的 1M Claude 4.x 模型，或该模型具有旧版 `params.context1m: true`。
 - 当前 Anthropic 凭证不符合长上下文使用条件。
-- 仅在需要 1M beta 路径的长 Session/模型运行上请求失败。
+- 仅在需要 1M 上下文路径的长 Session/模型运行上请求失败。
 
 修复选项:
 
 <Steps>
-  <Step title="禁用 context1m">
-    禁用该模型的 `context1m` 以回退到普通上下文窗口。
+  <Step title="使用标准上下文窗口">
+    切换到标准窗口模型，或从不具备 1M 上下文 GA 能力的旧模型配置中移除旧版 `context1m`。
   </Step>
   <Step title="使用符合条件的凭证">
     使用符合长上下文请求条件的 Anthropic 凭证，或切换到 Anthropic API 密钥。
@@ -183,6 +183,37 @@ openclaw config get agents.defaults.models
 - [Anthropic](/providers/anthropic)
 - [Token 使用和成本](/reference/token-use)
 - [为什么我看到 Anthropic 的 HTTP 429？](/help/faq-first-run#why-am-i-seeing-http-429-ratelimiterror-from-anthropic)
+
+## 上游 403 被阻止的响应
+
+当上游 LLM 提供商返回类似 `Your request was blocked` 的通用 `403` 时使用。
+
+不要假设这总是 OpenClaw 配置问题。该响应可能来自上游安全层，如 CDN、WAF、机器人管理规则，或 OpenAI 兼容端点前面的反向代理。
+
+```bash
+openclaw status
+openclaw gateway status
+openclaw logs --follow
+```
+
+查找：
+
+- 同一提供商下的多个模型以相同方式失败
+- HTML 或通用安全文本，而不是正常的提供商 API 错误
+- 同一请求时间的提供商侧安全事件
+- 一个微小的直接 `curl` 探测成功，而正常 SDK 形状的请求失败
+
+当证据指向 WAF/CDN 阻止时，优先修复提供商侧过滤。为 OpenClaw 使用的 API 路径设置范围较窄的允许或跳过规则，避免禁用整个站点的保护。
+
+<Warning>
+成功的最小 `curl` 不能保证真实的 SDK 风格请求能通过同一上游安全层。
+</Warning>
+
+相关：
+
+- [OpenAI 兼容端点](/gateway/configuration-reference#openai-compatible-endpoints)
+- [Provider 配置](/providers)
+- [日志](/logging)
 
 ## 本地 OpenAI 兼容后端通过直接探测但 Agent 运行失败
 

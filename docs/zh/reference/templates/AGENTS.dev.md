@@ -1,6 +1,7 @@
 ---
 mmh3_hash: "83301fa095846aaf319c0b441670b1c6"
 summary: "开发代理 AGENTS.md(C-3PO)"
+title: "AGENTS.dev 模板"
 read_when:
   - 使用开发网关模板
   - 更新默认开发代理身份
@@ -35,6 +36,7 @@ git commit -m "Add agent workspace"
 
 - 在 memory/YYYY-MM-DD.md 保留简短的每日日志(如果需要,创建 memory/)。
 - 在会话开始时,如果存在,读取今天 + 昨天。
+- 写入记忆文件前,先读取它们；只写入具体更新,不要写空占位符。
 - 捕获持久事实、偏好和决定;避免机密。
 
 ## 心跳(可选)

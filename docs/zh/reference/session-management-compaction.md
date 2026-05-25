@@ -86,7 +86,7 @@ Session 持久化具有自动维护控制（`session.maintenance`），用于 `s
 
 OpenClaw 不再在 Gateway 写入期间创建自动 `sessions.json.bak.*` 轮换备份。旧版 `session.maintenance.rotateBytes` 键被忽略，`openclaw doctor --fix` 会从旧配置中删除它。
 
-转录变更使用 Session 的转录文件写入锁。锁获取等待最多 `session.writeLock.acquireTimeoutMs` 后才会显示繁忙 Session 错误；默认为 `60000` 毫秒。仅在合法的准备、清理、压缩或转录镜像工作在慢速机器上竞争更长时才提高此值。过期锁检测和最大保持时间警告仍然是独立的策略。
+转录变更使用 Session 的转录文件写入锁。锁获取等待最多 `session.writeLock.acquireTimeoutMs` 后才会显示繁忙 Session 错误；默认为 `60000` 毫秒。仅在合法的准备、清理、压缩或转录镜像工作在慢速机器上竞争更长时才提高此值。`session.writeLock.staleMs` 控制现有锁何时可以作为过期锁被回收；默认为 `1800000` 毫秒。`session.writeLock.maxHoldMs` 控制进程内看门狗释放阈值；默认为 `300000` 毫秒。紧急环境变量覆盖为 `OPENCLAW_SESSION_WRITE_LOCK_ACQUIRE_TIMEOUT_MS`、`OPENCLAW_SESSION_WRITE_LOCK_STALE_MS` 和 `OPENCLAW_SESSION_WRITE_LOCK_MAX_HOLD_MS`。
 
 磁盘预算清理的强制执行顺序（`mode: "enforce"`）：
 
@@ -222,6 +222,8 @@ OpenClaw 有意**不**"修复"转录；Gateway 使用 `SessionManager` 读写它
 - 压缩摘要
 - `firstKeptEntryId` 之后的消息
 
+压缩后 AGENTS.md 章节重新注入是通过 `agents.defaults.compaction.postCompactionSections` 选择加入的；未设置或为 `[]` 时，OpenClaw 不会在压缩摘要之上附加 AGENTS.md 摘录。
+
 压缩是**持久的**（不同于 Session 修剪）。请参见 [/concepts/session-pruning](/concepts/session-pruning)。
 
 ## 压缩块边界和工具配对
@@ -239,6 +241,7 @@ OpenClaw 有意**不**"修复"转录；Gateway 使用 `SessionManager` 读写它
 在嵌入式 Pi Agent 中，自动压缩在两种情况下触发：
 
 1. **溢出恢复**：模型返回上下文溢出错误（`request_too_large`、`context length exceeded`、`input exceeds the maximum number of tokens`、`input token count exceeds the maximum number of input tokens`、`input is too long for the model`、`ollama error: context length exceeded` 以及类似的 Provider 变体）→ 压缩 → 重试。
+   如果溢出恢复仍然失败，OpenClaw 会向用户显示明确的指导，并保留当前的 Session 映射，而不是静默地将 Session 键轮换到新的 Session id。下一步由操作者控制：重试消息、运行 `/compact`，或在偏好新 Session 时运行 `/new`。
 2. **阈值维护**：成功的轮次后，当：
 
 `contextTokens > contextWindow - reserveTokens`
