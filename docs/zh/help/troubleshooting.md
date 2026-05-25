@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0a8d958337c68796c98355fd6bcbb009"
+mmh3_hash: "59da4d1ca9bd911d801f587b4d04b763"
 summary: "OpenClaw 的症状优先故障排除中心"
 read_when:
   - OpenClaw 无法正常工作，需要最快的修复路径
@@ -32,6 +32,25 @@ openclaw logs --follow
 - `openclaw doctor` → 没有阻塞的配置/服务错误。
 - `openclaw channels status --probe` → 可达的 Gateway 返回每个账户的实时传输状态加上探测/审计结果，如 `works` 或 `audit ok`；如果 Gateway 不可达，命令会退回到仅配置摘要。
 - `openclaw logs --follow` → 稳定的活动，没有重复的致命错误。
+
+## 助手功能受限或工具缺失
+
+如果助手无法检查文件、运行命令、使用浏览器自动化或看到预期的工具，请先检查有效的工具配置文件：
+
+```bash
+openclaw status
+openclaw status --all
+openclaw doctor
+```
+
+常见原因：
+
+- `tools.profile: "messaging"` 对于仅聊天 Agent 是有意限制的。
+- `tools.profile: "coding"` 是仓库、文件、Shell 和运行时工作流的常用配置文件。
+- `tools.profile: "full"` 公开最广泛的工具集，应限于受信任的运营者控制的 Agent。
+- 每个 Agent 的 `agents.list[].tools` 覆盖可以为单个 Agent 缩小或扩展根配置文件。
+
+更改根或每个 Agent 工具配置文件，然后重启或重新加载 Gateway，并再次运行 `openclaw status --all`。有关配置文件模型和允许/拒绝覆盖，参见 [Tools](/tools)。
 
 ## Anthropic 长上下文 429
 

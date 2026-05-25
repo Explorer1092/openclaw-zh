@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4719f1a51da0ef19bad1192d14429558"
+mmh3_hash: "4ce1ae0d61215709e1432cfe3222ad95"
 summary: "安全地更新 OpenClaw（全局安装或源码），以及回滚策略"
 read_when:
   - 更新 OpenClaw
@@ -22,7 +22,6 @@ openclaw update
 ```bash
 openclaw update --channel beta
 openclaw update --channel dev
-openclaw update --tag main
 openclaw update --dry-run   # 预览但不应用
 ```
 
@@ -57,9 +56,9 @@ openclaw update --channel dev --dry-run
 openclaw update --channel stable --dry-run
 ```
 
-`dev` channel 确保 git 检出，构建它，并从该检出安装全局 CLI。
-`stable` 和 `beta` channel 使用包安装。如果 gateway 已安装，
-`openclaw update` 会刷新服务元数据并重启它，除非你传递 `--no-restart`。
+`dev` channel 确保 git 检出，构建它，并从该检出安装全局 CLI。`stable` 和 `beta` channel 使用包安装。如果 gateway 已安装，`openclaw update` 会刷新服务元数据并重启它，除非你传递 `--no-restart`。
+
+对于具有受管理 Gateway 服务的包安装，`openclaw update` 以该服务使用的包根为目标。如果 shell `openclaw` 命令来自不同的安装，更新器会打印两个根以及受管理的服务 Node 路径。包更新使用拥有服务根的包管理器，并在替换包之前对照目标发布引擎检查受管理的服务 Node。
 
 ## 备用方案：重新运行安装器
 
@@ -89,7 +88,26 @@ curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method npm --ve
 npm i -g openclaw@latest
 ```
 
-对于监督安装，优先使用 `openclaw update`，因为它可以协调与正在运行的 Gateway 服务的包切换。如果你在托管 Gateway 运行时手动更新，请在包管理器完成后立即重启 Gateway，以避免旧进程继续从已替换的包文件中提供服务。
+对于监督安装，优先使用 `openclaw update`，因为它可以协调与正在运行的 Gateway 服务的包切换。如果你在监督安装上手动更新，在包管理器启动之前停止受管理的 Gateway。包管理器会就地替换文件，否则正在运行的 Gateway 可能会在包树暂时处于半交换状态时尝试加载核心或 Plugin 文件。包管理器完成后重启 Gateway，以便服务获取新安装。
+
+对于 root 拥有的 Linux 系统全局安装，如果 `openclaw update` 因 `EACCES` 失败，且你使用系统 npm 恢复，在手动包替换过程中保持 Gateway 停止。使用你通常用于该 Gateway 的相同 `openclaw` 配置文件标志或环境。将 `/usr/bin/npm` 替换为你主机上拥有 root 拥有的全局前缀的系统 npm：
+
+```bash
+openclaw gateway stop
+sudo /usr/bin/npm i -g openclaw@latest
+openclaw gateway install --force
+openclaw gateway restart
+```
+
+然后验证服务：
+
+```bash
+openclaw --version
+curl -fsS http://127.0.0.1:18789/readyz
+openclaw plugins list --json
+openclaw gateway status --deep --json
+openclaw doctor --lint --json
+```
 
 当 `openclaw update` 管理全局 npm 安装时，它首先将目标安装到临时 npm 前缀，验证打包的 `dist` 清单，然后将干净的包树交换到真实的全局前缀。这避免了 npm 将新包覆盖在旧包的陈旧文件上。如果安装命令失败，OpenClaw 会使用 `--omit=optional` 重试一次。这种重试有助于本地可选依赖无法编译的主机，同时在回退也失败时保持原始错误可见。
 

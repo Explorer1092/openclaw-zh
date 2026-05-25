@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2f7dec89ae2fa8c15b6f8b71a6e290e3"
+mmh3_hash: "9a25c9741e4cb84b196a2fa5ba348a2b"
 summary: "安装脚本的工作原理 (install.sh, install-cli.sh, install.ps1)、标志和自动化"
 read_when:
   - 你想了解 `openclaw.ai/install.sh`
@@ -120,9 +120,9 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
     curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git
     ```
   </Tab>
-  <Tab title="通过 npm 安装 GitHub main">
+  <Tab title="GitHub main checkout">
     ```bash
-    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --version main
+    curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git --version main
     ```
   </Tab>
   <Tab title="试运行">
@@ -157,11 +157,12 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
 
 | 变量                                                    | 说明                                    |
 | ------------------------------------------------------- | --------------------------------------- |
-| `OPENCLAW_INSTALL_METHOD=git\|npm`                      | 安装方法                                |
-| `OPENCLAW_VERSION=latest\|next\|main\|<semver>\|<spec>` | npm 版本、dist-tag 或包规范             |
-| `OPENCLAW_BETA=0\|1`                                    | 如果可用则使用 beta                     |
-| `OPENCLAW_GIT_DIR=<path>`                               | Checkout 目录                           |
-| `OPENCLAW_GIT_UPDATE=0\|1`                              | 切换 git 更新                           |
+| `OPENCLAW_INSTALL_METHOD=git\|npm`                | 安装方法                                |
+| `OPENCLAW_VERSION=latest\|next\|<semver>\|<spec>` | npm 版本、dist-tag 或包规范             |
+| `OPENCLAW_BETA=0\|1`                              | 如果可用则使用 beta                     |
+| `OPENCLAW_HOME=<path>`                            | OpenClaw 状态和默认 git/引导路径的基础目录 |
+| `OPENCLAW_GIT_DIR=<path>`                         | Checkout 目录                           |
+| `OPENCLAW_GIT_UPDATE=0\|1`                        | 切换 git 更新                           |
 | `OPENCLAW_NO_PROMPT=1`                                  | 禁用提示                                |
 | `OPENCLAW_NO_ONBOARD=1`                                 | 跳过引导                                |
 | `OPENCLAW_DRY_RUN=1`                                    | 试运行模式                              |
@@ -187,6 +188,7 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
 <Steps>
   <Step title="安装本地 Node 运行时">
     将固定的受支持 Node LTS 压缩包（版本嵌入在脚本中并独立更新）下载到 `<prefix>/tools/node-v<version>` 并验证 SHA-256。
+    在 Alpine/musl Linux 上（Node 未为固定运行时发布兼容压缩包），改用 `apk` 安装 `nodejs` 和 `npm` 并将该运行时链接到前缀包装路径。
   </Step>
   <Step title="确保 Git">
     如果 Git 缺失，则尝试在 Linux 上通过 apt/dnf/yum 或在 macOS 上通过 Homebrew 安装。
@@ -283,7 +285,7 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
     需要 PowerShell 5+。
   </Step>
   <Step title="确保默认安装 Node.js 24">
-    如果缺失，则尝试通过 winget，然后 Chocolatey，然后 Scoop 安装。Node 22 LTS（当前为 `22.19+`）仍然受支持以保持兼容性。
+    如果缺失，则尝试通过 winget，然后 Chocolatey，然后 Scoop 安装。如果没有可用的包管理器，脚本会将官方 Node.js Windows zip 下载到 `%LOCALAPPDATA%\OpenClaw\deps\portable-node` 并将其添加到当前进程和用户 PATH。Node 22 LTS（当前为 `22.19+`）仍然受支持以保持兼容性。
   </Step>
   <Step title="安装 OpenClaw">
     - `npm` 方法（默认）：使用选定的 `-Tag` 进行全局 npm 安装，从可写的安装程序临时目录启动，因此在受保护文件夹（如 `C:\`）中打开的 shell 仍然有效
@@ -314,9 +316,9 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
     & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -InstallMethod git
     ```
   </Tab>
-  <Tab title="通过 npm 安装 GitHub main">
+  <Tab title="GitHub main checkout">
     ```powershell
-    & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -Tag main
+    & ([scriptblock]::Create((iwr -useb https://openclaw.ai/install.ps1))) -InstallMethod git -Tag main
     ```
   </Tab>
   <Tab title="自定义 git 目录">
@@ -367,7 +369,7 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
 </AccordionGroup>
 
 <Note>
-如果使用 `-InstallMethod git` 且 Git 缺失，脚本会退出并打印 Git for Windows 链接。
+如果使用 `-InstallMethod git` 且 Git 缺失，脚本会先尝试引导用户本地 MinGit，然后再打印 Git for Windows 链接。
 </Note>
 
 ---
@@ -423,7 +425,7 @@ OpenClaw 提供三个安装脚本，从 `openclaw.ai` 提供。
   </Accordion>
 
   <Accordion title='Windows："npm error spawn git / ENOENT"'>
-    安装 Git for Windows，重新打开 PowerShell，重新运行安装程序。
+    重新运行安装程序使其可以引导用户本地 MinGit，或安装 Git for Windows 然后重新打开 PowerShell。
   </Accordion>
 
   <Accordion title='Windows："openclaw is not recognized"'>

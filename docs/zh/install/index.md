@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9b7dbea29a3b597d8c2a1a0799ce843b"
+mmh3_hash: "b0459a8ce6484a1c71cc41565bd0b778"
 summary: "安装 OpenClaw — 安装程序脚本、npm/pnpm、从源码、Docker 等"
 read_when:
   - 你需要入门快速入门之外的安装方法
@@ -130,7 +130,7 @@ openclaw onboard --install-daemon
 ### 从 GitHub main 安装
 
 ```bash
-npm install -g github:openclaw/openclaw#main
+curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method git --version main
 ```
 
 ### 容器和包管理器

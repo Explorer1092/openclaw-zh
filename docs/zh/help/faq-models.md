@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "991ae9013a14c3ad0114375ab5a35124"
+mmh3_hash: "7e03de9780de1217c6ad45d989ac556f"
 summary: "常见问题：模型默认值、选择、别名、切换、故障转移和认证配置文件"
 read_when:
   - 选择或切换模型、配置别名
@@ -286,7 +286,6 @@ sidebarTitle: "模型常见问题"
           models: {
             "anthropic/claude-opus-4-6": { alias: "opus" },
             "anthropic/claude-sonnet-4-6": { alias: "sonnet" },
-            "anthropic/claude-haiku-4-5": { alias: "haiku" },
           },
         },
       },

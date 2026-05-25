@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "26dd2721f087a801527904695b164224"
+mmh3_hash: "bdc0b9ffae5d653e776257ac70785953"
 title: "Docker（可选）"
 sidebarTitle: "Docker"
 summary: "OpenClaw 的可选 Docker 设置和引导"
@@ -51,6 +51,7 @@ Docker 是**可选的**。仅在你想要容器化的 gateway 或验证 Docker �
 
     - 提示输入 provider API 密钥
     - 生成 gateway 令牌并写入 `.env`
+    - 创建认证配置文件密钥目录
     - 通过 Docker Compose 启动 gateway
 
     在设置期间，预启动引导和配置写入通过 `openclaw-gateway` 直接运行。`openclaw-cli` 用于 gateway 容器已存在后运行的命令。
@@ -123,6 +124,7 @@ docker compose up -d openclaw-gateway
 | ------------------------------------------ | --------------------------------------------------------------- |
 | `OPENCLAW_IMAGE`                           | 使用远程镜像而不是本地构建                                      |
 | `OPENCLAW_IMAGE_APT_PACKAGES`              | 构建时安装额外 apt 包（空格分隔）                                     |
+| `OPENCLAW_IMAGE_PIP_PACKAGES`              | 构建时安装额外 Python 包（空格分隔）                                  |
 | `OPENCLAW_EXTENSIONS`                      | 构建时预安装 plugin 依赖项（空格分隔的名称）                          |
 | `OPENCLAW_EXTRA_MOUNTS`                    | 额外主机绑定挂载（逗号分隔 `source:target[:opts]`）             |
 | `OPENCLAW_HOME_VOLUME`                     | 在命名 Docker 卷中持久化 `/home/node`                           |
@@ -138,7 +140,7 @@ docker compose up -d openclaw-gateway
 | `OTEL_SEMCONV_STABILITY_OPT_IN`            | 选择加入最新的实验性 GenAI 语义属性                             |
 | `OPENCLAW_OTEL_PRELOADED`                  | 预加载 OpenTelemetry SDK 时跳过启动第二个                        |
 
-官方 Docker 镜像不附带 Homebrew。在引导过程中，当 OpenClaw 运行在没有 `brew` 的 Linux 容器中时，它会隐藏仅适用于 brew 的技能依赖项安装程序；这些依赖项必须由自定义镜像提供或手动安装。对于可从 Debian 包获取的依赖项，请在镜像构建时使用 `OPENCLAW_IMAGE_APT_PACKAGES`。旧版 `OPENCLAW_DOCKER_APT_PACKAGES` 名称仍然被接受。
+官方 Docker 镜像不附带 Homebrew。在引导过程中，当 OpenClaw 运行在没有 `brew` 的 Linux 容器中时，它会隐藏仅适用于 brew 的技能依赖项安装程序；这些依赖项必须由自定义镜像提供或手动安装。对于可从 Debian 包获取的依赖项，请在镜像构建时使用 `OPENCLAW_IMAGE_APT_PACKAGES`。旧版 `OPENCLAW_DOCKER_APT_PACKAGES` 名称仍然被接受。对于 Python 依赖项，使用 `OPENCLAW_IMAGE_PIP_PACKAGES`。这会在镜像构建期间运行 `python3 -m pip install --break-system-packages`，因此请固定包版本并仅使用你信任的包索引。
 
 维护者可以通过将一个 plugin 源目录挂载到其打包源路径上来测试捆绑 plugin 源与打包镜像，例如
 `OPENCLAW_EXTRA_MOUNTS=/path/to/fork/extensions/synology-chat:/app/extensions/synology-chat:ro`。
@@ -398,13 +400,14 @@ echo 'source ~/.clawdock/clawdock-helpers.sh' >> ~/.zshrc && source ~/.zshrc
 
     1. **持久化 `/home/node`**：`export OPENCLAW_HOME_VOLUME="openclaw_home"`
     2. **烘焙系统依赖**：`export OPENCLAW_IMAGE_APT_PACKAGES="git curl jq"`
-    3. **烘焙 Playwright Chromium**：`export OPENCLAW_INSTALL_BROWSER=1`
-    4. **或将 Playwright 浏览器安装到持久化卷中**：
+    3. **烘焙 Python 依赖**：`export OPENCLAW_IMAGE_PIP_PACKAGES="requests==2.32.5 humanize==4.14.0"`
+    4. **烘焙 Playwright Chromium**：`export OPENCLAW_INSTALL_BROWSER=1`
+    5. **或将 Playwright 浏览器安装到持久化卷中**：
        ```bash
        docker compose run --rm openclaw-cli \
          node /app/node_modules/playwright-core/cli.js install chromium
        ```
-    5. **持久化浏览器下载**：使用 `OPENCLAW_HOME_VOLUME` 或
+    6. **持久化浏览器下载**：使用 `OPENCLAW_HOME_VOLUME` 或
        `OPENCLAW_EXTRA_MOUNTS`。OpenClaw 在 Linux 上自动检测 Docker 镜像的
        Playwright 管理的 Chromium。
 

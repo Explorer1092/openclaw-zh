@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "cbbc0e51f1fd39ab640a9f49da475446"
+mmh3_hash: "180406b2e428dfa0ac7372dcc30a0a45"
 title: "测试"
 summary: "测试套件：单元/e2e/实时套件、Docker 运行器以及每个测试涵盖的内容"
 read_when:
@@ -86,6 +86,9 @@ CI 在专用工作流中运行 QA Lab。智能体对等嵌套在 `QA-Lab - All L
   - 默认通过隔离的 Gateway 工作器并行运行多个选定的场景。`qa-channel` 默认并发数为 4（受选定场景数量限制）。使用 `--concurrency <count>` 调整工作器数量，或使用 `--concurrency 1` 进行旧的串行通道。
   - 当任何场景失败时以非零退出。当你想要工件而不需要失败退出代码时，使用 `--allow-failures`。
   - 支持 Provider 模式 `live-frontier`、`mock-openai` 和 `aimock`。`aimock` 启动本地 AIMock 支持的 Provider 服务器，用于实验性固件和协议 mock 覆盖，而不替换场景感知的 `mock-openai` 通道。
+- `pnpm openclaw qa coverage --match <query>`
+  - 搜索场景 ID、标题、界面、覆盖 ID、文档引用、代码引用、Plugin 和 Provider 要求，然后打印匹配的套件目标。
+  - 在 QA Lab 运行之前，当你知道触及的行为或文件路径但不知道最小场景时使用此命令。它仅供参考；仍然从正在更改的行为中选择 mock、实时、Multipass、Matrix 或传输证明。
 - `pnpm test:plugins:kitchen-sink-live`
   - 通过 QA Lab 运行实时 OpenAI Kitchen Sink Plugin 测试。它安装外部 Kitchen Sink 包，验证 Plugin SDK 界面库存，探测 `/healthz` 和 `/readyz`，记录 Gateway CPU/RSS 证据，运行实时 OpenAI 轮次，并检查对抗性诊断。需要实时 OpenAI 认证，如 `OPENAI_API_KEY`。在经过水化的 Testbox Session 中，当存在 `openclaw-testbox-env` 帮助器时，它会自动获取 Testbox 实时认证配置文件。
 - `pnpm test:gateway:cpu-scenarios`
@@ -125,7 +128,7 @@ gh workflow run package-acceptance.yml --ref main \
   -f telegram_mode=mock-openai
 ```
 
-- 精确 tarball URL 证明需要摘要：
+- 精确 tarball URL 证明需要摘要，并使用公共 URL 安全策略：
 
 ```bash
 gh workflow run package-acceptance.yml --ref main \
@@ -134,6 +137,19 @@ gh workflow run package-acceptance.yml --ref main \
   -f package_sha256=<sha256> \
   -f suite_profile=package
 ```
+
+- 企业/私有 tarball 镜像使用显式可信来源策略：
+
+```bash
+gh workflow run package-acceptance.yml --ref main \
+  -f source=trusted-url \
+  -f trusted_source_id=enterprise-artifactory \
+  -f package_url=https://packages.example.internal:8443/artifactory/openclaw/openclaw-VERSION.tgz \
+  -f package_sha256=<sha256> \
+  -f suite_profile=package
+```
+
+`source=trusted-url` 从可信工作流引用读取 `.github/package-trusted-sources.json`，不接受 URL 凭据或工作流输入级别的私有网络绕过。如果命名策略声明了 Bearer 认证，请配置固定的 `OPENCLAW_TRUSTED_PACKAGE_TOKEN` 密钥。
 
 - 工件证明从另一个 Actions 运行下载 tarball 工件：
 
@@ -426,9 +442,19 @@ pnpm qa:telegram-user:crabbox -- finish \
   - CI 安全且无密钥
   - 稳定性回归跟进的窄通道，不是完整 Gateway 套件的替代
 
-### E2E（Gateway 冒烟）
+### E2E（仓库聚合）
 
 - 命令：`pnpm test:e2e`
+- 范围：
+  - 运行 Gateway 冒烟 E2E 通道
+  - 运行 mocked Control UI 浏览器 E2E 通道
+- 期望：
+  - CI 安全且无密钥
+  - 需要安装 Playwright Chromium
+
+### E2E（Gateway 冒烟）
+
+- 命令：`pnpm test:e2e:gateway`
 - 配置：`vitest.e2e.config.ts`
 - 文件：`src/**/*.e2e.test.ts`、`test/**/*.e2e.test.ts` 和 `extensions/` 下捆绑 Plugin E2E 测试
 - 运行时默认值：
@@ -445,6 +471,20 @@ pnpm qa:telegram-user:crabbox -- finish \
   - 在 CI 中运行（当在管道中启用时）
   - 不需要真实密钥
   - 比单元测试有更多的移动部件（可能更慢）
+
+### E2E（Control UI mocked 浏览器）
+
+- 命令：`pnpm test:ui:e2e`
+- 配置：`test/vitest/vitest.ui-e2e.config.ts`
+- 文件：`ui/src/**/*.e2e.test.ts`
+- 范围：
+  - 启动 Vite Control UI
+  - 通过 Playwright 驱动真实的 Chromium 页面
+  - 用确定性的浏览器内 mock 替换 Gateway WebSocket
+- 期望：
+  - 作为 `pnpm test:e2e` 的一部分在 CI 中运行
+  - 不需要真实的 Gateway、Agent 或 Provider 密钥
+  - 浏览器依赖项必须存在（`pnpm --dir ui exec playwright install chromium`）
 
 ### E2E：OpenShell 后端冒烟
 
@@ -476,10 +516,10 @@ pnpm qa:telegram-user:crabbox -- finish \
   - 设计上不稳定（真实网络、真实 Provider 策略、配额、中断）
   - 花钱/使用速率限制
   - 更喜欢运行缩小的子集而不是"所有"
-- 实时运行源 `~/.profile` 以获取缺失的 API 密钥。
+- 实时运行使用已导出的 API 密钥和暂存的认证配置文件。
 - 默认情况下，实时运行仍然隔离 `HOME` 并将配置/认证材料复制到临时测试主目录中，因此单元固件无法修改你真实的 `~/.openclaw`。
 - 仅在你有意需要实时测试使用你真实主目录时设置 `OPENCLAW_LIVE_USE_REAL_HOME=1`。
-- `pnpm test:live` 现在默认为更安静的模式：保持 `[live] ...` 进度输出，但抑制额外的 `~/.profile` 通知并静音 Gateway 引导日志/Bonjour 喋喋不休。如果你想要完整的启动日志，设置 `OPENCLAW_LIVE_TEST_QUIET=0`。
+- `pnpm test:live` 默认为更安静的模式：保持 `[live] ...` 进度输出并静音 Gateway 引导日志/Bonjour 喋喋不休。如果你想要完整的启动日志，设置 `OPENCLAW_LIVE_TEST_QUIET=0`。
 - API 密钥轮换（特定 Provider）：使用逗号/分号格式设置 `*_API_KEYS` 或 `*_API_KEY_1`、`*_API_KEY_2`（例如 `OPENAI_API_KEYS`、`ANTHROPIC_API_KEYS`、`GEMINI_API_KEYS`）或通过 `OPENCLAW_LIVE_*_KEY` 进行每实时覆盖；测试在速率限制响应上重试。
 - 进度/心跳输出：
   - 实时套件现在将进度行发送到 stderr，因此即使 Vitest 控制台捕获安静，长 Provider 调用也明显处于活跃状态。
@@ -503,13 +543,13 @@ pnpm qa:telegram-user:crabbox -- finish \
 
 这些 Docker 运行器分为两个桶：
 
-- 实时模型运行器：`test:docker:live-models` 和 `test:docker:live-gateway` 只运行各自匹配的配置文件密钥实时文件在仓库 Docker 镜像中（`src/agents/models.profiles.live.test.ts` 和 `src/gateway/gateway-models.profiles.live.test.ts`），挂载你的本地配置目录和工作区（如果挂载，则源 `~/.profile`）。匹配的本地入口点是 `test:live:models-profiles` 和 `test:live:gateway-profiles`。
+- 实时模型运行器：`test:docker:live-models` 和 `test:docker:live-gateway` 只运行各自匹配的配置文件密钥实时文件在仓库 Docker 镜像中（`src/agents/models.profiles.live.test.ts` 和 `src/gateway/gateway-models.profiles.live.test.ts`），挂载你的本地配置目录、工作区和可选的配置文件环境文件。匹配的本地入口点是 `test:live:models-profiles` 和 `test:live:gateway-profiles`。
 - Docker 实时运行器默认为较小的冒烟上限，以使完整的 Docker 扫描保持实用：`test:docker:live-models` 默认为 `OPENCLAW_LIVE_MAX_MODELS=12`，`test:docker:live-gateway` 默认为 `OPENCLAW_LIVE_GATEWAY_SMOKE=1`、`OPENCLAW_LIVE_GATEWAY_MAX_MODELS=8`、`OPENCLAW_LIVE_GATEWAY_STEP_TIMEOUT_MS=45000` 和 `OPENCLAW_LIVE_GATEWAY_MODEL_TIMEOUT_MS=90000`。当你明确想要更大的详尽扫描时，覆盖这些环境变量。
 - `test:docker:all` 通过 `test:docker:live-build` 构建一次实时 Docker 镜像，通过 `scripts/package-openclaw-for-docker.mjs` 将 OpenClaw 一次打包为 npm tarball，然后构建/重用两个 `scripts/e2e/Dockerfile` 镜像。裸镜像只是安装/更新/Plugin 依赖通道的 Node/Git 运行器；这些通道挂载预构建的 tarball。功能镜像将相同的 tarball 安装到 `/app` 中用于内置应用功能通道。Docker 通道定义位于 `scripts/lib/docker-e2e-scenarios.mjs`；规划器逻辑位于 `scripts/lib/docker-e2e-plan.mjs`；`scripts/test-docker-all.mjs` 执行选定的计划。聚合使用加权本地调度器：`OPENCLAW_DOCKER_ALL_PARALLELISM` 控制进程插槽，而资源上限防止重型实时、npm 安装和多服务通道同时全部启动。如果单个通道重于活跃上限，调度器仍然可以在池为空时启动它，然后让它单独运行，直到容量再次可用。默认为 10 个插槽，`OPENCLAW_DOCKER_ALL_LIVE_LIMIT=9`，`OPENCLAW_DOCKER_ALL_NPM_LIMIT=10`，`OPENCLAW_DOCKER_ALL_SERVICE_LIMIT=7`；仅在 Docker 主机有更多空间时调整 `OPENCLAW_DOCKER_ALL_WEIGHT_LIMIT` 或 `OPENCLAW_DOCKER_ALL_DOCKER_LIMIT`。运行器默认执行 Docker 预检，删除陈旧的 OpenClaw E2E 容器，每 30 秒打印状态，将成功的通道计时存储在 `.artifacts/docker-tests/lane-timings.json` 中，并使用这些计时在以后的运行中首先启动较长的通道。使用 `OPENCLAW_DOCKER_ALL_DRY_RUN=1` 打印加权通道清单而不构建或运行 Docker，或使用 `node scripts/test-docker-all.mjs --plan-json` 打印选定通道、包/镜像需求和凭据的 CI 计划。
 - `Package Acceptance` 是用于"此可安装 tarball 是否作为产品工作？"的 GitHub 原生包门控。它从 `source=npm`、`source=ref`、`source=url` 或 `source=artifact` 解析一个候选包，将其上传为 `package-under-test`，然后对该确切 tarball 运行可重用的 Docker E2E 通道，而不是重新打包选定的引用。配置文件按广度排序：`smoke`、`package`、`product` 和 `full`。有关包/更新/Plugin 合约、已发布升级幸存者矩阵、发布默认值和故障分类，请参阅[更新和 Plugin 测试](/help/testing-updates-plugins)。
 - 构建和发布检查在 tsdown 后运行 `scripts/check-cli-bootstrap-imports.mjs`。保护程序从 `dist/entry.js` 和 `dist/cli/run-main.js` 走静态构建图，如果预调度启动导入在命令调度之前包含 Commander、提示 UI、undici 或日志记录等包依赖项，则失败；它还将捆绑的 Gateway 运行块保持在预算下，并拒绝已知冷 Gateway 路径的静态导入。打包的 CLI 冒烟还涵盖根帮助、引导帮助、doctor 帮助、状态、配置模式和模型列表命令。
 - Package Acceptance 旧版兼容性上限为 `2026.4.25`（包括 `2026.4.25-beta.*`）。在该截止之前，测试套件只允许已发布包元数据差距：省略的私有 QA 库存条目、缺失的 `gateway install --wrapper`、tarball 派生 git 固件中缺失的补丁文件、缺失的持久 `update.channel`、旧版 Plugin 安装记录位置、缺失的市场安装记录持久性和 `plugins update` 期间的配置元数据迁移。对于 `2026.4.25` 之后的包，这些路径是严格失败。
-- 容器冒烟运行器：`test:docker:openwebui`、`test:docker:onboard`、`test:docker:npm-onboard-channel-agent`、`test:docker:skill-install`、`test:docker:update-channel-switch`、`test:docker:upgrade-survivor`、`test:docker:published-upgrade-survivor`、`test:docker:session-runtime-context`、`test:docker:agents-delete-shared-workspace`、`test:docker:gateway-network`、`test:docker:browser-cdp-snapshot`、`test:docker:mcp-channels`、`test:docker:pi-bundle-mcp-tools`、`test:docker:cron-mcp-cleanup`、`test:docker:plugins`、`test:docker:plugin-update`、`test:docker:plugin-lifecycle-matrix` 和 `test:docker:config-reload` 启动一个或多个真实容器并验证更高级别的集成路径。
+- 容器冒烟运行器：`test:docker:openwebui`、`test:docker:onboard`、`test:docker:npm-onboard-channel-agent`、`test:docker:release-user-journey`、`test:docker:release-typed-onboarding`、`test:docker:release-media-memory`、`test:docker:release-upgrade-user-journey`、`test:docker:release-plugin-marketplace`、`test:docker:skill-install`、`test:docker:update-channel-switch`、`test:docker:upgrade-survivor`、`test:docker:published-upgrade-survivor`、`test:docker:session-runtime-context`、`test:docker:agents-delete-shared-workspace`、`test:docker:gateway-network`、`test:docker:browser-cdp-snapshot`、`test:docker:mcp-channels`、`test:docker:pi-bundle-mcp-tools`、`test:docker:cron-mcp-cleanup`、`test:docker:plugins`、`test:docker:plugin-update`、`test:docker:plugin-lifecycle-matrix` 和 `test:docker:config-reload` 启动一个或多个真实容器并验证更高级别的集成路径。
 
 实时模型 Docker 运行器还仅绑定挂载所需的 CLI 认证主目录（或在运行未缩小时所有支持的），然后在运行之前将它们复制到容器主目录中，以便外部 CLI OAuth 可以刷新令牌而不修改主机认证存储：
 
@@ -518,10 +558,15 @@ pnpm qa:telegram-user:crabbox -- finish \
 - CLI 后端冒烟：`pnpm test:docker:live-cli-backend`（脚本：`scripts/test-live-cli-backend-docker.sh`）
 - Codex 应用服务器测试套件冒烟：`pnpm test:docker:live-codex-harness`（脚本：`scripts/test-live-codex-harness-docker.sh`）
 - Gateway + 开发 Agent：`pnpm test:docker:live-gateway`（脚本：`scripts/test-live-gateway-models-docker.sh`）
-- 可观测性冒烟：`pnpm qa:otel:smoke` 是私有 QA 源检出通道。它有意不属于包 Docker 发布通道，因为 npm tarball 省略了 QA Lab。
+- 可观测性冒烟：`pnpm qa:otel:smoke`、`pnpm qa:prometheus:smoke` 和 `pnpm qa:observability:smoke` 是私有 QA 源检出通道。它们有意不属于包 Docker 发布通道，因为 npm tarball 省略了 QA Lab。
 - Open WebUI 实时冒烟：`pnpm test:docker:openwebui`（脚本：`scripts/e2e/openwebui-docker.sh`）
 - 引导向导（TTY，完整脚手架）：`pnpm test:docker:onboard`（脚本：`scripts/e2e/onboard-docker.sh`）
 - Npm tarball 引导/Channel/Agent 冒烟：`pnpm test:docker:npm-onboard-channel-agent` 在 Docker 中全局安装打包的 OpenClaw tarball，通过环境引用引导加默认 Telegram 配置 OpenAI，运行 doctor，并运行一个 mocked OpenAI Agent 轮次。使用 `OPENCLAW_CURRENT_PACKAGE_TGZ=/path/to/openclaw-*.tgz` 重用预构建的 tarball，使用 `OPENCLAW_NPM_ONBOARD_HOST_BUILD=0` 跳过主机重建，或使用 `OPENCLAW_NPM_ONBOARD_CHANNEL=discord` 或 `OPENCLAW_NPM_ONBOARD_CHANNEL=slack` 切换 Channel。
+- 发布用户旅程冒烟：`pnpm test:docker:release-user-journey` 在全新 Docker 主目录中全局安装打包的 OpenClaw tarball，运行引导，配置 mocked OpenAI Provider，运行 Agent 轮次，安装/卸载外部 Plugin，对本地固件配置 ClickClack，验证出站/入站消息，重启 Gateway，并运行 doctor。
+- 发布类型引导冒烟：`pnpm test:docker:release-typed-onboarding` 安装打包的 tarball，通过真实 TTY 驱动 `openclaw onboard`，将 OpenAI 配置为环境引用 Provider，验证无原始密钥持久化，并运行 mocked Agent 轮次。
+- 发布媒体/内存冒烟：`pnpm test:docker:release-media-memory` 安装打包的 tarball，验证来自 PNG 附件的图像理解、OpenAI 兼容的图像生成输出、内存搜索召回以及跨 Gateway 重启的召回存活。
+- 发布升级用户旅程冒烟：`pnpm test:docker:release-upgrade-user-journey` 默认安装 `openclaw@latest`，在已发布的包上配置 Provider/Plugin/ClickClack 状态，升级到候选 tarball，然后重新运行核心 Agent/Plugin/Channel 旅程。使用 `OPENCLAW_RELEASE_UPGRADE_BASELINE_SPEC=openclaw@<version>` 覆盖基线。
+- 发布 Plugin 市场冒烟：`pnpm test:docker:release-plugin-marketplace` 从本地固件市场安装，更新已安装的 Plugin，卸载它，并验证 Plugin CLI 随安装元数据修剪而消失。
 - Skill 安装冒烟：`pnpm test:docker:skill-install` 在 Docker 中全局安装打包的 OpenClaw tarball，在配置中禁用上传的存档安装，从搜索解析当前实时 ClawHub Skill slug，使用 `openclaw skills install` 安装它，并验证已安装的 Skill 加上 `.clawhub` 来源/锁定元数据。
 - 更新 Channel 切换冒烟：`pnpm test:docker:update-channel-switch` 在 Docker 中全局安装打包的 OpenClaw tarball，从包 `stable` 切换到 git `dev`，验证持久化的 Channel 和 Plugin 更新后工作，然后切换回包 `stable` 并检查更新状态。
 - 升级幸存者冒烟：`pnpm test:docker:upgrade-survivor` 在具有 Agent、Channel 配置、Plugin 白名单、陈旧 Plugin 依赖状态和现有工作区/Session 文件的脏旧用户固件上安装打包的 OpenClaw tarball。它在没有实时 Provider 或 Channel 密钥的情况下运行包更新加非交互式 doctor，然后启动环回 Gateway 并检查配置/状态保存加启动/状态预算。
@@ -557,7 +602,7 @@ OPENCLAW_DOCKER_E2E_IMAGE=openclaw-docker-e2e-functional:local OPENCLAW_SKIP_DOC
 
 - `OPENCLAW_CONFIG_DIR=...`（默认：`~/.openclaw`）挂载到 `/home/node/.openclaw`
 - `OPENCLAW_WORKSPACE_DIR=...`（默认：`~/.openclaw/workspace`）挂载到 `/home/node/.openclaw/workspace`
-- `OPENCLAW_PROFILE_FILE=...`（默认：`~/.profile`）挂载到 `/home/node/.profile` 并在运行测试前源
+- `OPENCLAW_PROFILE_FILE=...` 挂载并在运行测试前源
 - `OPENCLAW_DOCKER_PROFILE_ENV_ONLY=1` 仅验证从 `OPENCLAW_PROFILE_FILE` 源的环境变量，使用临时配置/工作区目录，无外部 CLI 认证挂载
 - `OPENCLAW_DOCKER_CLI_TOOLS_DIR=...`（默认：`~/.cache/openclaw/docker-cli-tools`）挂载到 `/home/node/.npm-global` 用于 Docker 内部缓存的 CLI 安装
 - `$HOME` 下的外部 CLI 认证目录/文件只读挂载在 `/host-auth...` 下，然后在测试开始前复制到 `/home/node/...`

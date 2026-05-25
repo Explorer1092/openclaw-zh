@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8a493ce35aca4ec2a3b4d20c17ce83e5"
+mmh3_hash: "c8240e81ac61d873bee1a3fcf98714c2"
 title: "Bun（实验性）"
 sidebarTitle: "Bun"
 summary: "Bun 工作流（实验性）：安装以及与 pnpm 相比的注意事项"
@@ -52,7 +52,7 @@ bun pm trust baileys protobufjs
 
 ## 注意事项
 
-部分脚本仍然硬编码使用 pnpm（例如 `docs:build`、`ui:*`、`protocol:check`）。目前请通过 pnpm 运行这些脚本。
+部分脚本仍然硬编码使用 pnpm（例如 `check:docs`、`ui:*`、`protocol:check`）。目前请通过 pnpm 运行这些脚本。
 
 ## 相关
 

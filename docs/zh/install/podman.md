@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0f64f172006c3b2d036fb6cf7d579ad0"
+mmh3_hash: "0ff4f4a02b3dec9192129585327cf04e"
 summary: "在无根 Podman 容器中运行 OpenClaw"
 read_when:
   - 你想使用 Podman 而不是 Docker 运行容器化 gateway
@@ -63,6 +63,7 @@ Quadlet 是仅 Linux 的选项，因为它依赖 systemd 用户服务。
 
 - `OPENCLAW_IMAGE` 或 `OPENCLAW_PODMAN_IMAGE` -- 使用现有/已拉取的镜像而不是构建 `openclaw:local`
 - `OPENCLAW_IMAGE_APT_PACKAGES` -- 在镜像构建期间安装额外的 apt 包（也接受旧版 `OPENCLAW_DOCKER_APT_PACKAGES`）
+- `OPENCLAW_IMAGE_PIP_PACKAGES` -- 在镜像构建期间安装额外的 Python 包；请固定版本并仅使用你信任的包索引
 - `OPENCLAW_EXTENSIONS` -- 在构建时预安装 plugin 依赖项
 - `OPENCLAW_INSTALL_BROWSER` -- 为浏览器自动化预安装 Chromium 和 Xvfb（设置为 `1` 启用）
 

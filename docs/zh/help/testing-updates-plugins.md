@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "175f5c99415c77e3ed7fd042cdc4ab00"
+mmh3_hash: "1931ed751f8daa299200b1c06575acf4"
 summary: "OpenClaw 如何验证更新路径、包迁移和 Plugin 安装/更新行为"
 read_when:
   - 更改 OpenClaw 更新、doctor、包验收或 Plugin 安装行为
@@ -107,7 +107,8 @@ gh workflow run update-migration.yml \
 
 - `source=npm`：验证 `openclaw@beta`、`openclaw@latest` 或精确的已发布版本。
 - `source=ref`：使用选定的当前测试套件从受信任的分支、标签或提交打包。
-- `source=url`：使用必需的 `package_sha256` 验证 HTTPS tarball。
+- `source=url`：使用必需的 `package_sha256` 验证公共 HTTPS tarball。此路径拒绝 URL 凭据、非默认 HTTPS 端口、私有/内部主机名或 DNS/IP 结果、特殊用途 IP 空间和不安全重定向。
+- `source=trusted-url`：使用必需的 `package_sha256` 和 `trusted_source_id` 根据 `.github/package-trusted-sources.json` 中维护者拥有的策略验证 HTTPS tarball。对于企业/私有镜像，请使用此路径，而不是使用输入级别的 allow-private 开关削弱 `source=url`。当策略配置了 Bearer 认证时，使用固定的 `OPENCLAW_TRUSTED_PACKAGE_TOKEN` 密钥。
 - `source=artifact`：重用由另一个 Actions 运行上传的 tarball。
 
 完整发布验证默认使用 `source=artifact`，从解析的发布 SHA 构建。对于发布后验证，传递 `package_acceptance_package_spec=openclaw@YYYY.M.D`，以便相同的升级矩阵针对已发布的 npm 包。

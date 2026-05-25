@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "663a37a1650174483ddbe397b466a795"
+mmh3_hash: "1c3aa14b983a3db5ac43ca5db1e21a04"
 summary: "实时（网络触达）测试：模型矩阵、CLI 后端、ACP、媒体 Provider、凭据"
 read_when:
   - 运行实时模型矩阵 / CLI 后端 / ACP / 媒体 Provider 冒烟测试
@@ -97,7 +97,7 @@ pnpm openclaw voicecall smoke --to "+15555550123"
   - `read` 探测：测试在工作区中写入一个随机数文件，并要求 Agent `read` 它并回显随机数。
   - `exec+read` 探测：测试要求 Agent `exec` 将随机数写入临时文件，然后 `read` 回来。
   - 图像探测：测试附加生成的 PNG（猫 + 随机代码）并期望模型返回 `cat <CODE>`。
-  - 实现参考：`src/gateway/gateway-models.profiles.live.test.ts` 和 `src/gateway/live-image-probe.ts`。
+  - 实现参考：`src/gateway/gateway-models.profiles.live.test.ts` 和 `test/helpers/live-image-probe.ts`。
 - 如何启用：
   - `pnpm test:live`（或在直接调用 Vitest 时使用 `OPENCLAW_LIVE_TEST=1`）
 - 如何选择模型：
@@ -111,7 +111,7 @@ pnpm openclaw voicecall smoke --to "+15555550123"
   - `read` 探测 + `exec+read` 探测（工具压力）
   - 当模型广告图像输入支持时运行图像探测
   - 流程（高级）：
-    - 测试生成带有"CAT" + 随机代码的小型 PNG（`src/gateway/live-image-probe.ts`）
+    - 测试生成带有"CAT" + 随机代码的小型 PNG（`test/helpers/live-image-probe.ts`）
     - 通过 `agent` `attachments: [{ mimeType: "image/png", content: "<base64>" }]` 发送
     - Gateway 将附件解析为 `images[]`（`src/gateway/server-methods/agent.ts` + `src/gateway/chat-attachments.ts`）
     - 嵌入式 Agent 将多模态用户消息转发给模型
@@ -262,9 +262,9 @@ Docker 说明：
 - Docker 运行器位于 `scripts/test-live-acp-bind-docker.sh`。
 - 默认情况下，它按顺序对聚合实时 CLI Agent 运行 ACP 绑定冒烟：`claude`、`codex`，然后是 `gemini`。
 - 使用 `OPENCLAW_LIVE_ACP_BIND_AGENTS=claude`、`OPENCLAW_LIVE_ACP_BIND_AGENTS=codex`、`OPENCLAW_LIVE_ACP_BIND_AGENTS=droid`、`OPENCLAW_LIVE_ACP_BIND_AGENTS=gemini` 或 `OPENCLAW_LIVE_ACP_BIND_AGENTS=opencode` 缩小矩阵。
-- 它源 `~/.profile`，将匹配的 CLI 认证材料暂存到容器中，然后在缺失时安装请求的实时 CLI（`@anthropic-ai/claude-code`、`@openai/codex`、通过 `https://app.factory.ai/cli` 的 Factory Droid、`@google/gemini-cli` 或 `opencode-ai`）。ACP 后端本身是来自官方 `acpx` Plugin 的嵌入式 `acpx/runtime` 包。
+- 它将匹配的 CLI 认证材料暂存到容器中，然后在缺失时安装请求的实时 CLI（`@anthropic-ai/claude-code`、`@openai/codex`、通过 `https://app.factory.ai/cli` 的 Factory Droid、`@google/gemini-cli` 或 `opencode-ai`）。ACP 后端本身是来自官方 `acpx` Plugin 的嵌入式 `acpx/runtime` 包。
 - Droid Docker 变体暂存 `~/.factory` 用于设置，转发 `FACTORY_API_KEY`，并需要该 API 密钥，因为本地 Factory OAuth/密钥环认证不可携带到容器中。它使用 ACPX 内置的 `droid exec --output-format acp` 注册表条目。
-- OpenCode Docker 变体是严格的单 Agent 回归通道。在源 `~/.profile` 之后，它从 `OPENCLAW_LIVE_ACP_BIND_OPENCODE_MODEL`（默认 `opencode/kimi-k2.6`）写入临时 `OPENCODE_CONFIG_CONTENT` 默认模型，`pnpm test:docker:live-acp-bind:opencode` 需要绑定的 Assistant 脚本，而不是接受通用的绑定后跳过。
+- OpenCode Docker 变体是严格的单 Agent 回归通道。它从 `OPENCLAW_LIVE_ACP_BIND_OPENCODE_MODEL`（默认 `opencode/kimi-k2.6`）写入临时 `OPENCODE_CONFIG_CONTENT` 默认模型，`pnpm test:docker:live-acp-bind:opencode` 需要绑定的 Assistant 脚本，而不是接受通用的绑定后跳过。
 - 直接 `acpx` CLI 调用只是在 Gateway 外部比较行为的手动/变通路径。Docker ACP 绑定冒烟测试 OpenClaw 的嵌入式 `acpx` 运行时后端。
 
 ## 实时：Codex 应用服务器测试套件冒烟
@@ -305,7 +305,7 @@ pnpm test:docker:live-codex-harness
 Docker 说明：
 
 - Docker 运行器位于 `scripts/test-live-codex-harness-docker.sh`。
-- 它源挂载的 `~/.profile`，传递 `OPENAI_API_KEY`，在存在时复制 Codex CLI 认证文件，将 `@openai/codex` 安装到可写挂载的 npm 前缀，暂存源代码树，然后只运行 Codex 测试套件实时测试。
+- 它传递 `OPENAI_API_KEY`，在存在时复制 Codex CLI 认证文件，将 `@openai/codex` 安装到可写挂载的 npm 前缀，暂存源代码树，然后只运行 Codex 测试套件实时测试。
 - Docker 默认启用图像、MCP/工具和 Guardian 探测。当需要更窄的调试运行时，设置 `OPENCLAW_LIVE_CODEX_HARNESS_IMAGE_PROBE=0`、`OPENCLAW_LIVE_CODEX_HARNESS_MCP_PROBE=0` 或 `OPENCLAW_LIVE_CODEX_HARNESS_GUARDIAN_PROBE=0`。
 - Docker 使用相同的显式 Codex 运行时配置，因此旧版别名或 PI 回退不能隐藏 Codex 测试套件回归。
 
@@ -327,7 +327,6 @@ Docker 说明：
   - Antigravity（OAuth）：`OPENCLAW_LIVE_GATEWAY_MODELS="google-antigravity/claude-opus-4-6-thinking,google-antigravity/gemini-3-pro-high" pnpm test:live src/gateway/gateway-models.profiles.live.test.ts`
 
 - Google 自适应思考冒烟：
-  - 如果本地密钥在 Shell 配置文件中：`source ~/.profile`
   - Gemini 3 动态默认：`pnpm openclaw qa manual --provider-mode live-frontier --model google/gemini-3.1-pro-preview --alt-model google/gemini-3.1-pro-preview --message '/think adaptive Reply exactly: GEMINI_ADAPTIVE_OK' --timeout-ms 180000`
   - Gemini 2.5 动态预算：`pnpm openclaw qa manual --provider-mode live-frontier --model google/gemini-2.5-flash --alt-model google/gemini-2.5-flash --message '/think adaptive Reply exactly: GEMINI25_ADAPTIVE_OK' --timeout-ms 180000`
 
@@ -410,7 +409,7 @@ Docker 说明：
 - 旧版状态目录：`~/.openclaw/credentials/`（存在时复制到暂存的实时主目录，但不是主要配置文件密钥存储）
 - 实时本地运行默认将活跃配置、每 Agent `auth-profiles.json` 文件、旧版 `credentials/` 和支持的外部 CLI 认证目录复制到临时测试主目录；暂存的实时主目录跳过 `workspace/` 和 `sandboxes/`，以及 `agents.*.workspace` / `agentDir` 路径覆盖被剥离，使探测保持在你真实的主机工作区之外。
 
-如果你想依赖环境密钥（例如在你的 `~/.profile` 中导出），在 `source ~/.profile` 之后运行本地测试，或使用下面的 Docker 运行器（它们可以将 `~/.profile` 挂载到容器中）。
+如果你想依赖环境密钥，在本地测试之前导出它们，或使用带有明确 `OPENCLAW_PROFILE_FILE` 的 Docker 运行器。
 
 ## Deepgram 实时（音频转录）
 
@@ -439,7 +438,7 @@ Docker 说明：
 - 测试套件：`pnpm test:live:media image`
 - 范围：
   - 枚举每个已注册的图像生成 Provider Plugin
-  - 在探测之前从你的登录 Shell（`~/.profile`）加载缺失的 Provider 环境变量
+  - 在探测之前使用已导出的 Provider 环境变量
   - 默认使用实时/环境 API 密钥而不是存储的认证配置文件，因此 `auth-profiles.json` 中的过期测试密钥不会掩盖真实的 Shell 凭据
   - 跳过没有可用认证/配置文件/模型的 Provider
   - 通过共享图像生成运行时对每个配置的 Provider 运行：
@@ -484,7 +483,7 @@ openclaw infer image generate \
 - 范围：
   - 测试共享的捆绑音乐生成 Provider 路径
   - 目前涵盖 Google 和 MiniMax
-  - 在探测之前从你的登录 Shell（`~/.profile`）加载 Provider 环境变量
+  - 在探测之前使用已导出的 Provider 环境变量
   - 默认使用实时/环境 API 密钥而不是存储的认证配置文件，因此 `auth-profiles.json` 中的过期测试密钥不会掩盖真实的 Shell 凭据
   - 跳过没有可用认证/配置文件/模型的 Provider
   - 在可用时运行两种声明的运行时模式：
@@ -509,7 +508,7 @@ openclaw infer image generate \
   - 测试共享的捆绑视频生成 Provider 路径
   - 默认为发布安全的冒烟路径：非 FAL Provider、每个 Provider 一个文本到视频请求、一秒钟的龙虾提示词，以及来自 `OPENCLAW_LIVE_VIDEO_GENERATION_TIMEOUT_MS`（默认 `180000`）的每个 Provider 操作上限
   - 默认跳过 FAL，因为 Provider 端队列延迟可能主导发布时间；传递 `--video-providers fal` 或 `OPENCLAW_LIVE_VIDEO_GENERATION_PROVIDERS="fal"` 显式运行它
-  - 在探测之前从你的登录 Shell（`~/.profile`）加载 Provider 环境变量
+  - 在探测之前使用已导出的 Provider 环境变量
   - 默认使用实时/环境 API 密钥而不是存储的认证配置文件
   - 跳过没有可用认证/配置文件/模型的 Provider
   - 默认只运行 `generate`
@@ -540,7 +539,7 @@ openclaw infer image generate \
 - 命令：`pnpm test:live:media`
 - 目的：
   - 通过一个仓库原生入口点运行共享的图像、音乐和视频实时套件
-  - 自动从 `~/.profile` 加载缺失的 Provider 环境变量
+  - 使用已导出的 Provider 环境变量
   - 默认自动将每个套件缩小到当前具有可用认证的 Provider
   - 重用 `scripts/test-live.mjs`，因此心跳和安静模式行为保持一致
 - 示例：

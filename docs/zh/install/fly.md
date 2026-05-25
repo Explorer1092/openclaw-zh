@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c4a898942b5f3c09aca01cf3ef3290f7"
+mmh3_hash: "4766649bf8d718c816e02a77c3e1a726"
 title: Fly.io
 summary: "在 Fly.io 上逐步部署 OpenClaw，支持持久存储和 HTTPS"
 read_when:
@@ -99,14 +99,14 @@ read_when:
     fly secrets set OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)
 
     # 模型 provider API 密钥
-    fly secrets set ANTHROPIC_API_KEY=sk-ant-...
+    fly secrets set ANTHROPIC_API_KEY=example-anthropic-key-not-real
 
     # 可选：其他 provider
-    fly secrets set OPENAI_API_KEY=sk-...
+    fly secrets set OPENAI_API_KEY=example-openai-key-not-real
     fly secrets set GOOGLE_API_KEY=...
 
     # Channel 令牌
-    fly secrets set DISCORD_BOT_TOKEN=MTQ...
+    fly secrets set DISCORD_BOT_TOKEN=example-discord-bot-token
     ```
 
     **说明：**

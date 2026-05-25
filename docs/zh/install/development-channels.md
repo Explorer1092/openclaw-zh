@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "448cbb364dece5bc4fc5b04266ff5b7a"
+mmh3_hash: "979ed4dd04de3d290cb953b0addf0d2a"
 title: "发布频道"
 sidebarTitle: "发布频道"
 summary: "稳定版、测试版和开发版频道：语义、切换、固定版本和标记"
@@ -31,7 +31,7 @@ openclaw update --channel dev
 - **`beta`**（包安装）：优先使用 npm dist-tag `beta`，但当 `beta` 缺失或比当前稳定标签旧时，回退到 `latest`。
 - **`stable`**（git 安装）：检出最新的稳定 git 标签。
 - **`beta`**（git 安装）：优先使用最新的 beta git 标签，但当 beta 缺失或比最新稳定标签旧时，回退到最新稳定 git 标签。
-- **`dev`**：确保 git 检出（默认 `~/openclaw`，可通过 `OPENCLAW_GIT_DIR` 覆盖），切换到 `main`，在上游变基，构建并从该检出安装全局 CLI。
+- **`dev`**：确保 git 检出（默认 `~/openclaw`，或在设置了 `OPENCLAW_HOME` 时为 `$OPENCLAW_HOME/openclaw`；可通过 `OPENCLAW_GIT_DIR` 覆盖），切换到 `main`，在上游变基，构建并从该检出安装全局 CLI。
 
 <Tip>
 如果你想同时使用稳定版和开发版，保留两个克隆，并将你的 gateway 指向稳定版。
@@ -48,17 +48,21 @@ openclaw update --tag 2026.4.1-beta.1
 # 从 beta dist-tag 安装（一次性，不持久化）
 openclaw update --tag beta
 
-# 从 GitHub main 分支安装（npm tarball）
-openclaw update --tag main
+# 切换到移动的 GitHub main 检出
+openclaw update --channel dev
 
 # 安装特定 npm 包规范
 openclaw update --tag openclaw@2026.4.1-beta.1
+
+# 一次性从 GitHub main 安装而不持久化频道
+openclaw update --tag main
 ```
 
 注意：
 
 - `--tag` **仅适用于包（npm）安装**。git 安装会忽略它。
 - 标签不会持久化。你的下一次 `openclaw update` 将照常使用你配置的频道。
+- 对于包安装，OpenClaw 在暂存 npm 安装之前将 GitHub/git 源规范预先打包成临时 tarball。当你希望移动的 `main` 检出作为持久安装时，请使用 `--channel dev` 或 `--install-method git --version main`。
 - 降级保护：如果目标版本比你当前版本旧，OpenClaw 会提示确认（使用 `--yes` 跳过）。
 - `--channel beta` 与 `--tag beta` 不同：频道流程在 beta 缺失或比稳定版旧时可以回退到 stable/latest，而 `--tag beta` 针对该次运行的原始 `beta` dist-tag。
 

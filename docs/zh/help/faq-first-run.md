@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ee799dbd1ed04b033d415cd1ff893639"
+mmh3_hash: "a8331ae437ac3b95323b4f67462f0eaa"
 summary: "常见问题：快速入门和首次运行设置——安装、引导、认证、订阅、初始故障"
 read_when:
   - 新安装、引导卡住或首次运行错误
@@ -484,7 +484,7 @@ sidebarTitle: "首次运行常见问题"
 
     OpenClaw 还支持其他托管订阅式选项，包括 **Qwen Cloud 编码计划**、**MiniMax 编码计划**和 **Z.AI / GLM 编码计划**。
 
-    文档：[Anthropic](/providers/anthropic)、[OpenAI](/providers/openai)、[Qwen Cloud](/providers/qwen)、[MiniMax](/providers/minimax)、[GLM 模型](/providers/glm)、[本地模型](/gateway/local-models)、[模型](/concepts/models)。
+    文档：[Anthropic](/providers/anthropic)、[OpenAI](/providers/openai)、[Qwen Cloud](/providers/qwen)、[MiniMax](/providers/minimax)、[Z.AI (GLM)](/providers/zai)、[本地模型](/gateway/local-models)、[模型](/concepts/models)。
 
   </Accordion>
 
@@ -500,7 +500,7 @@ sidebarTitle: "首次运行常见问题"
 
     Anthropic 工作人员告诉我们此用法再次被允许，所以 OpenClaw 将 Claude CLI 重用和 `claude -p` 用法视为已批准的集成，除非 Anthropic 发布新政策。
 
-    Anthropic setup-token 仍然可用作支持的 OpenClaw 令牌路径，但 OpenClaw 现在在可用时优先使用 Claude CLI 重用和 `claude -p`。对于生产或多用户工作负载，Anthropic API 密钥认证仍然是更安全、更可预测的选择。如果你想要 OpenClaw 中其他订阅式托管选项，请参阅 [OpenAI](/providers/openai)、[Qwen / 模型云](/providers/qwen)、[MiniMax](/providers/minimax) 和 [GLM 模型](/providers/glm)。
+    Anthropic setup-token 仍然可用作支持的 OpenClaw 令牌路径，但 OpenClaw 现在在可用时优先使用 Claude CLI 重用和 `claude -p`。对于生产或多用户工作负载，Anthropic API 密钥认证仍然是更安全、更可预测的选择。如果你想要 OpenClaw 中其他订阅式托管选项，请参阅 [OpenAI](/providers/openai)、[Qwen / 模型云](/providers/qwen)、[MiniMax](/providers/minimax) 和 [GLM 模型](/providers/zai)。
 
   </Accordion>
 
@@ -512,7 +512,7 @@ sidebarTitle: "首次运行常见问题"
   <Accordion title="为什么我看到来自 Anthropic 的 HTTP 429 rate_limit_error？">
     这意味着你当前窗口的 **Anthropic 配额/速率限制**已耗尽。如果你使用 **Claude CLI**，请等待窗口重置或升级计划。如果你使用 **Anthropic API 密钥**，请查看 Anthropic 控制台了解使用情况/计费并根据需要提高限制。
 
-    如果消息具体是：`Extra usage is required for long context requests`，则请求正在尝试使用 Anthropic 的 1M 上下文 beta（`context1m: true`）。这仅在你的凭据有资格获得长上下文计费（API 密钥计费或启用了额外用量的 OpenClaw Claude 登录路径）时才有效。
+    如果消息具体是：`Extra usage is required for long context requests`，则请求正在尝试使用 Anthropic 的 1M 上下文窗口（GA 级别的 1M Claude 4.x 模型或旧版 `context1m: true` 配置）。这仅在你的凭据有资格获得长上下文计费（API 密钥计费或启用了额外用量的 OpenClaw Claude 登录路径）时才有效。
 
     提示：设置**备用模型**，这样当 Provider 受到速率限制时 OpenClaw 可以继续回复。参阅 [模型](/cli/models)、[OAuth](/concepts/oauth) 和 [/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context](/gateway/troubleshooting#anthropic-429-extra-usage-required-for-long-context)。
 

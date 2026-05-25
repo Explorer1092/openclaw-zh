@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "417b1bd39aedb30eb74e96413089c6b0"
+mmh3_hash: "70c7f2e2470514bdd729f9da9e0c3ae9"
 title: "FAQ"
 summary: "关于 OpenClaw 设置、配置和使用的常见问题"
 read_when:
@@ -213,7 +213,7 @@ read_when:
     - 如果既没有绑定路由也没有可用的存储路由，直接交付可能失败，结果会回退到队列 Session 交付，而不是立即发送到聊天。
     - 无效或过时的目标仍然可以强制回退到队列或最终交付失败。
     - 如果子 Agent 最后可见的助手回复恰好是静默令牌 `NO_REPLY` / `no_reply`，或恰好是 `ANNOUNCE_SKIP`，OpenClaw 会故意抑制通知，而不是发送过时的早期进度。
-    - 如果子 Agent 仅在工具调用后超时，通知可能会将其折叠成简短的部分进度摘要，而不是重放原始工具输出。
+    - 工具/工具结果输出不会提升为子 Agent 结果文本；结果是子 Agent 最新可见的助手回复。
 
     调试：
 
@@ -664,7 +664,8 @@ read_when:
   <Accordion title="如何启用 Web 搜索（和 Web 抓取）？">
     `web_fetch` 无需 API 密钥即可工作。`web_search` 取决于你选择的 Provider：
 
-    - 基于 API 的 Provider（如 Brave、Exa、Firecrawl、Gemini、Grok、Kimi、MiniMax Search、Perplexity 和 Tavily）需要其常规 API 密钥设置。
+    - 基于 API 的 Provider（如 Brave、Exa、Firecrawl、Gemini、Kimi、MiniMax Search、Perplexity 和 Tavily）需要其常规 API 密钥设置。
+    - Grok 可以复用模型认证中的 xAI OAuth，或回退到 `XAI_API_KEY` / 插件 Web 搜索配置。
     - Ollama Web Search 免密钥，但它使用你配置的 Ollama 主机，需要 `ollama signin`。
     - DuckDuckGo 免密钥，但它是一种非官方的基于 HTML 的集成。
     - SearXNG 免密钥/自托管；配置 `SEARXNG_BASE_URL` 或 `plugins.entries.searxng.config.webSearch.baseUrl`。
@@ -676,7 +677,7 @@ read_when:
     - Exa：`EXA_API_KEY`
     - Firecrawl：`FIRECRAWL_API_KEY`
     - Gemini：`GEMINI_API_KEY`
-    - Grok：`XAI_API_KEY`
+    - Grok：xAI OAuth、`XAI_API_KEY`
     - Kimi：`KIMI_API_KEY` 或 `MOONSHOT_API_KEY`
     - MiniMax Search：`MINIMAX_CODE_PLAN_KEY`、`MINIMAX_CODING_API_KEY` 或 `MINIMAX_API_KEY`
     - Perplexity：`PERPLEXITY_API_KEY` 或 `OPENROUTER_API_KEY`
@@ -1454,7 +1455,7 @@ read_when:
 
     服务/supervisor 日志（当 Gateway 通过 launchd/systemd 运行时）：
 
-    - macOS：`$OPENCLAW_STATE_DIR/logs/gateway.log` 和 `gateway.err.log`（默认：`~/.openclaw/logs/...`；配置文件使用 `~/.openclaw-<profile>/logs/...`）
+    - macOS launchd stdout：`~/Library/Logs/openclaw/gateway.log`（配置文件使用 `gateway-<profile>.log`；stderr 被抑制）
     - Linux：`journalctl --user -u openclaw-gateway[-<profile>].service -n 200 --no-pager`
     - Windows：`schtasks /Query /TN "OpenClaw Gateway (<profile>)" /V /FO LIST`
 

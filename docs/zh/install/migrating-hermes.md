@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "82e632b652275b2cc0d360e8e84648b6"
+mmh3_hash: "db67dd9df8cbd8831c09fa77f11dd2ed"
 summary: "通过预览的、可逆的导入从 Hermes 迁移到 OpenClaw"
 read_when:
   - 你来自 Hermes，想要保留模型配置、提示词、内存和 Skill
@@ -66,8 +66,8 @@ OpenClaw 通过内置的迁移 provider 导入 Hermes 状态。该 provider 在�
   <Accordion title="Skill">
     具有 `SKILL.md` 文件的 skill 以及来自 `skills.config` 的每个 skill 配置值都被复制到 `skills/<name>/` 下。
   </Accordion>
-  <Accordion title="API 密钥（选择加入）">
-    设置 `--include-secrets` 以导入支持的 `.env` 密钥：`OPENAI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENROUTER_API_KEY`、`GOOGLE_API_KEY`、`GEMINI_API_KEY`、`GROQ_API_KEY`、`XAI_API_KEY`、`MISTRAL_API_KEY`、`DEEPSEEK_API_KEY`。没有该标志，永远不会复制 secret。
+  <Accordion title="认证凭据">
+    交互式 `openclaw migrate` 在导入认证凭据之前会询问，默认选择是。接受的导入包括：来自 Hermes `auth.json` 的支持的 OAuth 凭据、来自 OpenCode `auth.json` 的 OpenCode OpenAI OAuth 凭据、来自 OpenCode `auth.json` 的 OpenCode 和 GitHub Copilot 条目，以及[支持的 `.env` 密钥](/cli/migrate#supported-env-keys)。非交互式 `openclaw migrate` 凭据导入使用 `--include-secrets`，跳过使用 `--no-auth-credentials`，从引导向导导入时使用 `--import-secrets`。
   </Accordion>
 </AccordionGroup>
 
@@ -80,7 +80,6 @@ provider 将这些内容复制到迁移报告目录中供手动审查，但**不
 - `logs/`
 - `cron/`
 - `mcp-tokens/`
-- `auth.json`
 - `state.db`
 
 OpenClaw 拒绝自动执行或信任此状态，因为系统之间的格式和信任假设可能存在差异。在查看归档内容后，手动移动你需要的内容。
@@ -101,7 +100,7 @@ OpenClaw 拒绝自动执行或信任此状态，因为系统之间的格式和�
     openclaw migrate apply hermes --yes
     ```
 
-    OpenClaw 在应用之前创建并验证备份。如果你需要导入 API 密钥，请添加 `--include-secrets`。
+    OpenClaw 在应用之前创建并验证备份。此非交互式示例导入非 secret 状态。不带 `--yes` 运行以回答凭据提示，或添加 `--include-secrets` 以在无人值守运行中包含支持的凭据。
 
   </Step>
   <Step title="运行 doctor">
@@ -137,10 +136,12 @@ OpenClaw 拒绝自动执行或信任此状态，因为系统之间的格式和�
 
 ## Secret
 
-默认情况下永远不会导入 secret。
+交互式 `openclaw migrate` 会询问是否导入检测到的认证凭据，默认选择是。
 
-- 首先运行 `openclaw migrate apply hermes --yes` 以导入非 secret 状态。
-- 如果你还希望将支持的 `.env` 密钥复制过来，请使用 `--include-secrets` 重新运行。
+- 接受提示会导入：来自 Hermes `auth.json` 的支持的 OAuth 凭据、来自 OpenCode `auth.json` 的 OpenCode OpenAI OAuth 凭据、来自 OpenCode `auth.json` 的 OpenCode 和 GitHub Copilot 条目，以及[支持的 `.env` 密钥](/cli/migrate#supported-env-keys)。
+- 使用 `--no-auth-credentials` 或在提示时选择否，以仅导入非 secret 状态。
+- 在使用 `--yes` 进行无人值守运行时使用 `--include-secrets`。
+- 从引导向导导入凭据时使用引导的 `--import-secrets`。
 - 对于 SecretRef 管理的凭据，在导入完成后配置 SecretRef 来源。
 
 ## 用于自动化的 JSON 输出
@@ -165,7 +166,7 @@ openclaw migrate apply hermes --json --yes
     引导导入需要全新设置。要么重置状态并重新引导，要么直接使用 `openclaw migrate apply hermes`，它支持 `--overwrite` 和明确的备份控制。
   </Accordion>
   <Accordion title="API 密钥未导入">
-    需要 `--include-secrets`，并且只识别上面列出的密钥。`.env` 中的其他变量被忽略。
+    交互式 `openclaw migrate` 仅在你接受凭据提示时导入 API 密钥。非交互式 `--yes` 运行需要 `--include-secrets`；引导导入需要 `--import-secrets`。只识别[支持的 `.env` 密钥](/cli/migrate#supported-env-keys)；`.env` 中的其他变量被忽略。
   </Accordion>
 </AccordionGroup>
 
