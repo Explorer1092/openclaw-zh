@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4fea02bbd31f1548e2b04914663a3baf"
+mmh3_hash: "f0fda7d40358765f563555bc4c8eea0b"
 summary: "`openclaw models` 的 CLI 参考（状态/列表/设置/扫描、别名、回退、身份验证）"
 read_when:
   - 您想更改默认模型或查看 Provider 身份验证状态

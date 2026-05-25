@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8698d5fa62ce988fc33690b8ffb9e460"
+mmh3_hash: "d2a0ebe6ec44f3688584dfe8e3f09387"
 summary: "`openclaw doctor` 的 CLI 参考（健康检查 + 指导性修复）"
 read_when:
   - 您有连接性/身份验证问题并想要指导性修复

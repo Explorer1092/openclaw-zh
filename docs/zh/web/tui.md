@@ -1,6 +1,6 @@
 ---
 title: "TUI"
-mmh3_hash: "60bf45f9c955a788f4280ed4ef872085"
+mmh3_hash: "3295365db736675e6fc4b62142c3f191"
 summary: "Terminal UI（TUI）：连接到 Gateway 或在嵌入式模式下本地运行"
 read_when:
   - 您想要 TUI 的入门友好演练

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0a3f4dd966cada1d8a7e69b596d29bb4"
+mmh3_hash: "2edf76832b4cf9d2ec27c6e71307e2b8"
 summary: "`openclaw message` 的 CLI 参考（发送 + Channel 操作）"
 read_when:
   - 添加或修改消息 CLI 操作

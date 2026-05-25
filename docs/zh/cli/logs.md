@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2a99e0ae09fdfef88298d82181bd6512"
+mmh3_hash: "9d48b267e6576a1d4935d6fd268cf256"
 summary: "`openclaw logs` 的 CLI 参考（通过 RPC 尾随 Gateway 日志）"
 read_when:
   - 您需要远程尾随 Gateway 日志（无需 SSH）

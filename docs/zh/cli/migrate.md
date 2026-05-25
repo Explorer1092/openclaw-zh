@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5b0e7f4bfe09ce1f3d65632daecaffc3"
+mmh3_hash: "c4b521c5946a84b1619e35745f15aae4"
 summary: "`openclaw migrate` 的 CLI 参考（从其他 Agent 系统导入状态）"
 read_when:
   - 您想从 Hermes 或其他 Agent 系统迁移到 OpenClaw

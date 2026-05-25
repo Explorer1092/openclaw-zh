@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2e48759d404a610bbea74039beac410c"
+mmh3_hash: "c23937cf4702cf83e0fe303b6465a2f2"
 summary: "`openclaw config` 的 CLI 参考（获取/设置/补丁/取消设置/文件/Schema/验证）"
 read_when:
   - 您想以非交互方式读取或编辑配置

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a4db75f35614635ec264e2f9397afeed"
+mmh3_hash: "e9ad439cdb435f9296b7a2c815c46ec9"
 summary: "用于出站回复的文本转语音 — Provider、Persona、斜杠命令和每 Channel 输出"
 read_when:
   - 为回复启用文本转语音

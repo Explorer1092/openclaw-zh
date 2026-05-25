@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "53fc9dfcbbdcde5214126dd53ce892ec"
+mmh3_hash: "f4c5b833f48ed10e7deb46d02bc96850"
 summary: "深入研究：Session 存储 + 转录、生命周期和（自动）压缩内部"
 read_when:
   - 您需要调试 Session id、转录 JSONL 或 sessions.json 字段

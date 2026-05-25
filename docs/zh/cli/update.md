@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "104fdbf7fe32b996243fec105997d5f1"
+mmh3_hash: "e3f02d4961ef34d3ff4b5338c13073ad"
 summary: "`openclaw update` 的 CLI 参考（相对安全的源更新 + Gateway 自动重启）"
 read_when:
   - 您想安全地更新源代码检出
@@ -35,9 +35,9 @@ openclaw --update
 
 - `--no-restart`：成功更新后跳过重启 Gateway 服务。确实重启 Gateway 的包管理器更新会在命令成功之前验证重启后的服务报告了预期的更新版本。
 - `--channel <stable|beta|dev>`：设置更新渠道（git + npm；在配置中持久化）。
-- `--tag <dist-tag|version|spec>`：仅为本次更新覆盖包目标。对于包安装，`main` 映射到 `github:openclaw/openclaw#main`。
+- `--tag <dist-tag|version|spec>`：仅为本次更新覆盖包目标。对于包安装，`main` 映射到 `github:openclaw/openclaw#main`；GitHub/git 源规范在暂存的全局 npm 安装之前被打包成临时 tarball。
 - `--dry-run`：预览计划的更新操作（渠道/标签/目标/重启流程），不写入配置、安装、同步 Plugin 或重启。
-- `--json`：打印机器可读的 `UpdateRunResult` JSON，包括当核心更新成功后损坏或无法加载的托管 Plugin 需要修复时的 `postUpdate.plugins.warnings`，以及在更新后 Plugin 同步期间检测到 npm Plugin 工件漂移时的 `postUpdate.plugins.integrityDrifts`。
+- `--json`：打印机器可读的 `UpdateRunResult` JSON，包括当核心更新成功后损坏或无法加载的托管 Plugin 需要修复时的 `postUpdate.plugins.warnings`、当 Plugin 没有 beta 版本时的测试版渠道 Plugin 回退详情，以及在更新后 Plugin 同步期间检测到 npm Plugin 工件漂移时的 `postUpdate.plugins.integrityDrifts`。
 - `--timeout <seconds>`：每步超时（默认 1800 秒）。
 - `--yes`：跳过确认提示（例如降级确认）。
 
@@ -145,9 +145,11 @@ Gateway 核心自动更新程序（通过配置启用时）在实时 Gateway 请
 </Warning>
 
 <Note>
-范围限定为托管 Plugin 的更新后 Plugin 同步失败在核心更新成功后作为警告报告。JSON 结果保持顶级更新 `status: "ok"` 并报告 `postUpdate.plugins.status: "warning"`，包含 `openclaw doctor --fix` 和 `openclaw plugins inspect <id> --runtime --json` 指导。意外的更新程序或同步异常仍然使更新结果失败。修复 Plugin 安装或更新错误，然后重新运行 `openclaw doctor --fix` 或 `openclaw update`。
+范围限定为托管 Plugin 且同步路径可以绕过的更新后 Plugin 同步失败（例如非必要 Plugin 的 npm 注册表不可达）在核心更新成功后作为警告报告。JSON 结果保持顶级更新 `status: "ok"` 并报告 `postUpdate.plugins.status: "warning"`，包含 `openclaw doctor --fix` 和 `openclaw plugins inspect <id> --runtime --json` 指导。意外的更新程序或同步异常仍然使更新结果失败。修复 Plugin 安装或更新错误，然后重新运行 `openclaw doctor --fix` 或 `openclaw update`。
 
-当更新后的 Gateway 启动时，Plugin 加载仅用于验证：启动不运行包管理器或改变依赖项树。包管理器 `update.run` 重启在包树已交换后绕过正常的空闲延迟和重启冷却，这样旧进程就不能继续惰性加载已删除的块。
+在每个 Plugin 同步步骤之后，`openclaw update` 在重启 Gateway 之前运行强制性的**核心后收敛**过程：修复缺少的已配置 Plugin 载荷，验证磁盘上每个活跃的跟踪安装记录，并静态验证其 `package.json` 是否可解析（以及任何显式声明的 `main` 是否存在）。此过程的失败——以及无效的 OpenClaw 配置快照——返回 `postUpdate.plugins.status: "error"` 并将顶级更新 `status` 翻转为 `"error"`，因此 `openclaw update` 以非零退出，Gateway 不会以未经验证的 Plugin 集重启。错误包含结构化的 `postUpdate.plugins.warnings[].guidance` 行，指向 `openclaw doctor --fix` 和 `openclaw plugins inspect <id> --runtime --json` 以进行后续处理。已禁用的 Plugin 条目和非受信来源链接的官方同步目标记录在此处被跳过，与缺少载荷检查使用的 `skipDisabledPlugins` 策略一致，因此过时的已禁用 Plugin 记录不会阻止其他有效的更新。
+
+当更新后的 Gateway 启动时，Plugin 加载仅用于验证：启动不运行包管理器或改变依赖项树。包管理器 `update.run` 重启被移交给 CLI 托管服务路径，因此包交换发生在旧 Gateway 进程之外，服务健康检查决定更新是否可以报告为完成。
 
 如果 pnpm 引导仍然失败，更新程序会提前停止，并给出特定于包管理器的错误，而不是在检出内尝试 `npm run build`。
 </Note>

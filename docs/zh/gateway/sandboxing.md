@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "31c3f5eaf54b79acee48978ee0eb3f24"
+mmh3_hash: "d9b464393693532c998544e6228ce37d"
 summary: "OpenClaw 沙盒的工作原理:模式、作用域、工作区访问和镜像"
 title: "Sandboxing"
 sidebarTitle: "Sandboxing"

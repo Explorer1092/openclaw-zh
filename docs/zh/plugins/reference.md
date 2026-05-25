@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0070435492b83b82b9cf67afba9aecd0"
+mmh3_hash: "a9343ddc3ff6690cd4b962da3c4a0cab"
 summary: "OpenClaw Plugin 参考页面的生成索引"
 read_when:
   - 您需要特定 OpenClaw Plugin 的参考页面

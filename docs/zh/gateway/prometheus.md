@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f01c64bedaef83ab5288fcd6218711d5"
+mmh3_hash: "13347423b5eff05baa5884c3f10da8c7"
 summary: "通过 diagnostics-prometheus Plugin 将 OpenClaw 诊断暴露为 Prometheus 文本 metrics"
 title: "Prometheus metrics"
 sidebarTitle: "Prometheus"

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "bb55e897fead8ace4e052e7db1a6ba73"
+mmh3_hash: "47a150c12d0a22ab85f3b83318a574cf"
 summary: "Gateway WebSocket 协议:握手、帧、版本控制"
 read_when:
   - 实现或更新 Gateway WS 客户端

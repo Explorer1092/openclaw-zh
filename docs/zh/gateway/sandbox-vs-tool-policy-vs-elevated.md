@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b9bb9b009949d1475bced02203243b9d"
+mmh3_hash: "4659b55a7dfcf358736400a7abe8668f"
 title: "Sandbox vs tool policy vs elevated"
 sidebarTitle: "沙盒与工具策略"
 summary: "工具被阻止的原因:sandbox runtime、工具允许/拒绝策略和提升 exec 门控"

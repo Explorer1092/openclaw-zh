@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c977f6e555a6efadc4ed20ace186a4c6"
+mmh3_hash: "0940154ce4030e2635054ed2d3333b42"
 summary: "OpenClaw 浏览器控制 API、CLI 参考和脚本操作"
 read_when:
   - 通过本地控制 API 脚本化或调试 Agent 浏览器

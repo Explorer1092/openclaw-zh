@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0295beb388330306c971079f485474a0"
+mmh3_hash: "3ebf55be8f52e4f7edfcc1d581b72cc5"
 summary: "`openclaw status` 的 CLI 参考（诊断、探测、使用快照）"
 read_when:
   - 您想快速诊断 Channel 健康状态 + 最近的 Session 收件人

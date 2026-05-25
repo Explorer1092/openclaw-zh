@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "996d8944aa07e19273425a32b0d16d25"
+mmh3_hash: "d4f9052c7563b56e27d986ab94fa65ce"
 summary: "Channel 配置：Slack、Discord、Telegram、WhatsApp、Matrix、iMessage 等的访问控制、配对和每 Channel 键"
 read_when:
   - 配置 Channel Plugin（认证、访问控制、多账户）

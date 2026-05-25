@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9d96c7da7dfda41121099fce05bbbab9"
+mmh3_hash: "83301fa095846aaf319c0b441670b1c6"
 summary: "开发代理 AGENTS.md(C-3PO)"
 read_when:
   - 使用开发网关模板

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f8ef8937284194d04366efbc4180549d"
+mmh3_hash: "786352ff71829a55969fb47400818bc4"
 summary: "`openclaw onboard` 的 CLI 参考（交互式入职向导）"
 read_when:
   - 您想要 Gateway、工作空间、身份验证、Channel 和技能的引导设置

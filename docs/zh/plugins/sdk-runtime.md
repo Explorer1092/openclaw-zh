@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ff9c7dd0e48f1c6a18ad51e82a7bba7d"
+mmh3_hash: "749346b77f2eb1bd2622d87118a960f5"
 title: "Plugin 运行时辅助工具"
 sidebarTitle: "运行时辅助工具"
 summary: "api.runtime -- 注入到 Plugin 的运行时辅助工具"

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "16fae32e5f49f72b568646dc1607c1f2"
+mmh3_hash: "e48deec0a60244a250d06299496fb540"
 summary: "Crestodian 的 CLI 参考和安全模型 — 无需配置的安全设置与修复助手"
 read_when:
   - 您运行不带命令的 openclaw 并想了解 Crestodian

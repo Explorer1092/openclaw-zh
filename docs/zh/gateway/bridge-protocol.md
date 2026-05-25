@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e4e10be7a0d017afdda09a005918e3bf"
+mmh3_hash: "3b6616da88b139434dfcf124b83001c9"
 summary: "历史 Bridge 协议（旧版节点）：TCP JSONL、配对、作用域 RPC"
 read_when:
   - 构建或调试节点客户端（iOS/Android/macOS 节点模式）

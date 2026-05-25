@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "05aab794b3d2a45f4e1587a7192542b9"
+mmh3_hash: "2d51bdb0199e912d7d3f8f55fcd335d8"
 summary: "Gateway 客户端的 Operator 角色、作用域和审批时检查"
 read_when:
   - 调试缺少 operator scope 错误

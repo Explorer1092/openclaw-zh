@@ -1,6 +1,6 @@
 ---
 title: "Security"
-mmh3_hash: "103e95578bab22ca76dc534eca09728c"
+mmh3_hash: "21ca92a2cb5c3481e6e1b3d7cc0d6774"
 summary: "运行具有 shell 访问权限的 AI 网关的安全注意事项和威胁模型"
 read_when:
   - 添加扩大访问权限或自动化的功能

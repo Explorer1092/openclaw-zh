@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f23495d8b375138934324349d21b0120"
+mmh3_hash: "23c1680633d8dc2f1d2970c2d1874dea"
 summary: "集成浏览器控制服务 + 操作命令"
 read_when:
   - 添加 Agent 控制的浏览器自动化

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b5d660c00e851d54de686171cd9377f1"
+mmh3_hash: "1dbdd921474192f822a98927b663f518"
 summary: "Doctor 命令：健康检查、配置迁移和修复步骤"
 read_when:
   - 添加或修改 doctor 迁移

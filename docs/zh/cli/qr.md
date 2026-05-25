@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3cfa3b52c45a9e577f0e1d31de1709e3"
+mmh3_hash: "b3b5bf19810177302d57e4d3077e5614"
 summary: "`openclaw qr` 的 CLI 参考（生成移动端配对二维码和设置码）"
 read_when:
   - 您想快速将移动端 Node 应用与 Gateway 配对

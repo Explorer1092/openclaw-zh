@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8155fc0d51dc6523541d0a08e313befd"
+mmh3_hash: "1e3a53b905b78ab92f8fd5129ea84686"
 summary: "`openclaw path` 的 CLI 参考（通过 `oc://` 寻址方案检查和编辑工作区文件）"
 read_when:
   - 您想从终端读取或写入工作区文件中的某个叶子节点

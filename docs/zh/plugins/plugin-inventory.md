@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "c9823811e1324e5eeaf561f7b045aeac"
+mmh3_hash: "b8c00d8cc7071a0ca0c177c4436562d3"
 summary: "OpenClaw Plugin 的生成清单，包括核心内置、外部官方发布及仅源码 Plugin"
 read_when:
   - 您正在决定某个 Plugin 是包含在核心 npm Package 中还是需要单独安装

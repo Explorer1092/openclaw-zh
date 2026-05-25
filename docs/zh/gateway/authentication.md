@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "4467ad01f6700f6edd8dcf92c9f1a3cb"
+mmh3_hash: "346700a59b15f926aebb761477d0ac79"
 summary: "模型认证:OAuth、API 密钥、Claude CLI 复用和 Anthropic setup-token"
 read_when:
   - 调试模型认证或 OAuth 过期问题

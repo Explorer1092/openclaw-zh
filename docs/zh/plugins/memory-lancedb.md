@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "54222652a7128d2992f06e22796aed25"
+mmh3_hash: "262518aba20692056a5545988c67b5d8"
 summary: "配置官方外部 LanceDB 内存 Plugin，包括本地 Ollama 兼容嵌入"
 read_when:
   - 您正在配置 memory-lancedb Plugin

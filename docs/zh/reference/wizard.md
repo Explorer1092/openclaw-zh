@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b0b562f14f6a537574771a93caf2e023"
+mmh3_hash: "ea165e577cee965d5b785c74ddadfb46"
 summary: "CLI 引导向导的完整参考：每个步骤、标志和配置字段"
 read_when:
   - 查找特定的向导步骤或标志

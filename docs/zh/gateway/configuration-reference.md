@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d09077ad8e6c94460ab780f0c38696eb"
+mmh3_hash: "fe04c9cbfd27f0e1123ac2501ce9745d"
 summary: "核心 OpenClaw 键、默认值以及专项子系统参考链接的 Gateway 配置参考"
 title: "Configuration reference"
 read_when:

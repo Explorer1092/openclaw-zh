@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "ae26767c3a85d90076a525c0ade9da8f"
+mmh3_hash: "53d58f579cc347ad7c71cb791a3baf9b"
 summary: "用于 Provider 支持的模型、图像、音频、TTS、视频、网络和嵌入工作流的推理优先 CLI"
 read_when:
   - 添加或修改 `openclaw infer` 命令

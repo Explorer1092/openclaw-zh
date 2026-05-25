@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0b9f920f7491468136af450c6b3bd361"
+mmh3_hash: "4e893314e611e4d441338675dc1b2f02"
 title: "构建 Channel Plugin"
 sidebarTitle: "Channel Plugin"
 summary: "构建 OpenClaw 消息 Channel Plugin 的分步指南"

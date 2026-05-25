@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "d49b4d36220ca78732cad1f3fdd4b0f6"
+mmh3_hash: "c180a2c251bea6f2d2a52ec1b6ce9bc4"
 summary: "OpenClaw 如何构建提示词上下文并报告 token 使用情况 + 成本"
 read_when:
   - 解释 token 使用情况、成本或上下文窗口

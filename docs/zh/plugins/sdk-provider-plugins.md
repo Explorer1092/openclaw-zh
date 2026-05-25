@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "29cf82df9c0721aa879eca685a258964"
+mmh3_hash: "e6261690fc3d2248cc8670f519df0487"
 title: "构建 Provider Plugin"
 sidebarTitle: "Provider Plugin"
 summary: "构建 OpenClaw 模型 Provider Plugin 的分步指南"

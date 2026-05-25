@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f8709d4b30b46a696bb18870a1565577"
+mmh3_hash: "9c3c6874974bbcefb97f003e55495cbd"
 summary: "在不改变队列模式的情况下引导活跃运行"
 read_when:
   - 在 Agent 已运行时使用 /steer 或 /tell

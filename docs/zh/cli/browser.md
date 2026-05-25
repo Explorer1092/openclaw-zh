@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "1292a1c2cdc3008ce39db1027f84cea8"
+mmh3_hash: "ec6337be9539a98c23851a63502b830a"
 title: "`openclaw browser`"
 sidebarTitle: "openclaw browser"
 summary: "`openclaw browser` 的 CLI 参考(生命周期、配置文件、标签、操作、状态和调试)"

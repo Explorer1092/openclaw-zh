@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "2816096ffaa325c67f55100f265c036f"
+mmh3_hash: "2b4a791a6e7b8c7af11a694ce62bd6b4"
 summary: "`openclaw memory` 的 CLI 参考（状态/索引/搜索/提升/提升解释/REM 运行环境）"
 read_when:
   - 您想索引或搜索语义内存

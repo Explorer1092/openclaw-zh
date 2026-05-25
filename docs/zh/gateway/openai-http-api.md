@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "db58566fa2ebbb5c4f13abda29a09068"
+mmh3_hash: "b23d685244544ea4b965e39cb3d176fd"
 summary: "从 Gateway 公开兼容 OpenAI 的 /v1/chat/completions HTTP 端点"
 read_when:
   - 集成期望 OpenAI Chat Completions 的工具

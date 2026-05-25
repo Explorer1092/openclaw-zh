@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "01d9095dec7af8b3b04e4ac3149dc946"
+mmh3_hash: "6b70d6b6e0d8fe583ce14dc93912e6b9"
 title: "Plugin SDK 概览"
 sidebarTitle: "SDK 概览"
 summary: "导入映射、注册 API 参考和 SDK 架构"

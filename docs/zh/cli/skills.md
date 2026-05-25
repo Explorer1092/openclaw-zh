@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "61685112a4220481108abd2f26c45284"
+mmh3_hash: "c29e263c3fdf8cc6f2917ece4cc059da"
 summary: "`openclaw skills` 的 CLI 参考（搜索/安装/更新/列表/信息/检查）"
 read_when:
   - 您想查看哪些技能可用并准备运行

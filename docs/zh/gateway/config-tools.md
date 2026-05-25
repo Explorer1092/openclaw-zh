@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f4af4d712ae0f2b4d46f9c0305e3fa0d"
+mmh3_hash: "79b8c290c2b82ae186e354ea4da0c66c"
 summary: "工具配置（策略、实验性开关、Provider 支持的工具）和自定义 provider/base-URL 设置"
 read_when:
   - 配置 `tools.*` 策略、允许列表或实验性功能

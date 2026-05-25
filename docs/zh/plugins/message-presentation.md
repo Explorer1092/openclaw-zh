@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "7a63b122e93276f98a8ac7fd9de6a525"
+mmh3_hash: "ea02a9b5cef7f5bb4a304daa57f6dcc6"
 summary: "Channel Plugin 的语义消息卡片、按钮、选择菜单、降级文本和交付提示"
 title: "消息呈现"
 read_when:

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a5f9635c8e1f90c90795d7fc2f7a47d8"
+mmh3_hash: "ea7b06d085116e8a04b213a751dd42b0"
 doc-schema-version: 1
 summary: "OpenClaw 工具、技能和 Plugin 概览：Agent 可以调用什么以及如何扩展能力"
 read_when:

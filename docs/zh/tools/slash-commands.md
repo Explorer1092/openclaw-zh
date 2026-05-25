@@ -1,7 +1,7 @@
 ---
 title: "斜杠命令"
 sidebarTitle: "斜杠命令"
-mmh3_hash: "52eaa7a593a00612d52edfca7d35fdb9"
+mmh3_hash: "5778108834466addb768859884ba489f"
 summary: "斜杠命令：文本 vs 原生、配置和支持的命令"
 read_when:
   - 使用或配置聊天命令

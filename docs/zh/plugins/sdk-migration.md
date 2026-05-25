@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "9b26e4b0b25cc659b7ecf18817b3ebeb"
+mmh3_hash: "33779eee9f4aac90ac5eee8bf329254d"
 title: "Plugin SDK 迁移"
 sidebarTitle: "迁移至 SDK"
 summary: "从旧版向后兼容层迁移到现代 Plugin SDK"

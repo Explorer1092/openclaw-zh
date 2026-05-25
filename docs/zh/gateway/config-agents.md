@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "71c574a98e396c66ced191ca92bf49cf"
+mmh3_hash: "73cb7c5b3df7faa8c0d49e7271755115"
 summary: "Agent 默认值、多 Agent 路由、Session、消息和 Talk 配置"
 read_when:
   - 调整 Agent 默认值（model、thinking、workspace、heartbeat、media、skills）

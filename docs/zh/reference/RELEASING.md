@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3b3c72c3c69e511f70d5c22648eb079f"
+mmh3_hash: "6a7b5ce1c971d0229ccfc66fe9a5ebe1"
 title: "发布策略"
 summary: "发布通道、操作员检查清单、验证套件、版本命名和发布节奏"
 read_when:
@@ -48,7 +48,7 @@ OpenClaw 有三个公开发布通道：
 6. 使用 `preflight_only=true` 运行 `OpenClaw NPM Release`。在标签存在之前，允许使用完整的 40 字符发布分支 SHA 进行仅验证预检。保存成功的 `preflight_run_id`。
 7. 使用 `Full Release Validation` 为发布分支、标签或完整提交 SHA 启动所有发布前测试。这是四个大型发布测试套件（Vitest、Docker、QA Lab 和 Package）的唯一手动入口点。
 8. 如果验证失败，在发布分支上修复并重新运行能证明修复有效的最小失败文件、通道、工作流任务、包配置文件、Provider 或模型允许列表。只有当变更的范围使之前的证据失效时才重新运行完整伞形工作流。
-9. 对于 beta，打标签 `vYYYY.M.D-beta.N`，然后从匹配的 `release/YYYY.M.D` 分支运行 `OpenClaw Release Publish`。它验证 `pnpm plugins:sync:check`，并行将所有可发布的插件包分派到 npm 和 ClawHub，然后在插件 npm 发布成功后立即使用匹配的 dist-tag 推广已准备好的 OpenClaw npm 预检产物。OpenClaw npm 发布子任务成功后，它会从完整匹配的 `CHANGELOG.md` 章节创建或更新匹配的 GitHub 发布/预发布页面。发布到 npm `latest` 的 stable 版本成为 GitHub latest release；保留在 npm `beta` 的 stable 维护版本以 `latest=false` 创建。ClawHub 发布在 OpenClaw npm 发布时可能仍在运行，但发布工作流会立即打印子运行 ID。默认情况下，分派 ClawHub 后不等待它，因此 OpenClaw npm 可用性不会被较慢的 ClawHub 审批或注册表工作阻塞；当 ClawHub 必须阻塞工作流完成时，设置 `wait_for_clawhub=true`。发布后，针对已发布的 `openclaw@YYYY.M.D-beta.N` 或 `openclaw@beta` 包运行发布后包验收。如果已推送或发布的预发布需要修复，发布下一个匹配的预发布编号；不要删除或重写旧的预发布。
+9. 对于 beta，打标签 `vYYYY.M.D-beta.N`，然后从匹配的 `release/YYYY.M.D` 分支运行 `pnpm release:candidate -- --tag vYYYY.M.D-beta.N`。该工具运行本地生成发布检查，分派或验证完整发布验证和 npm 预检证据，运行 Parallels 和 Telegram 包验证，记录插件 npm 和 ClawHub 计划，并仅在证据包通过后打印确切的 `OpenClaw Release Publish` 命令。`OpenClaw Release Publish` 将所选或所有可发布插件包并行分派到 npm 和 ClawHub，然后在插件 npm 发布成功后立即使用匹配的 dist-tag 推广已准备好的 OpenClaw npm 预检产物。OpenClaw npm 发布子任务成功后，它会从完整匹配的 `CHANGELOG.md` 章节创建或更新匹配的 GitHub 发布/预发布页面。发布到 npm `latest` 的 stable 版本成为 GitHub latest release；保留在 npm `beta` 的 stable 维护版本以 `latest=false` 创建。工作流还将预检依赖证据作为 `openclaw-<version>-dependency-evidence.zip` 上传到 GitHub 发布页面，用于发布后事件响应。发布工作流立即打印子运行 ID，自动批准工作流令牌被允许批准的发布环境门，汇总失败的子 Job 和日志尾部，在 OpenClaw npm 发布成功后立即关闭 GitHub 发布和依赖证据，在发布 OpenClaw npm 时等待 ClawHub，然后运行 `pnpm release:verify-beta` 并上传 GitHub 发布、npm 包、所选插件 npm 包、所选 ClawHub 包、子工作流运行 ID 和可选 NPM Telegram 运行 ID 的发布后证据。ClawHub 路径会重试临时 CLI 依赖安装失败，即使某个预览单元偶发失败也会发布通过预览的插件，并以对每个预期插件版本进行注册表验证结束，以便部分发布保持可见和可重试。然后针对已发布的 `openclaw@YYYY.M.D-beta.N` 或 `openclaw@beta` 包运行发布后包验收。如果已推送或发布的预发布需要修复，发布下一个匹配的预发布编号；不要删除或重写旧的预发布。
 10. 对于 stable，只有在经过验证的 beta 或发布候选具有所需验证证据后才继续。Stable npm 发布也通过 `OpenClaw Release Publish` 进行，通过 `preflight_run_id` 复用成功的预检产物；stable macOS 发布准备还需要打包的 `.zip`、`.dmg`、`.dSYM.zip` 和 `main` 上更新的 `appcast.xml`。私有 macOS 发布工作流在验证发布产物后自动将签名的 appcast 发布到公开 `main`；如果分支保护阻止直接推送，它会打开或更新一个 appcast PR。
 11. 发布后，运行 npm 发布后验证器、可选的独立已发布 npm Telegram E2E（当需要发布后 Channel 证明时）、必要时的 dist-tag 推广、验证生成的 GitHub 发布页面，以及发布公告步骤。
 

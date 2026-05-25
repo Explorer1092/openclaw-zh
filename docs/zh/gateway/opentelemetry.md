@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5c5cbfc2e90e39ead1d649688fe5d2a5"
+mmh3_hash: "d42943cfedab5f639019a91226e548b0"
 summary: "通过 diagnostics-otel Plugin（OTLP/HTTP）将 OpenClaw 诊断导出到任何 OpenTelemetry 收集器"
 title: "OpenTelemetry export"
 read_when:

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f1327e4be79810fb9f672b24c27651f8"
+mmh3_hash: "101d6c63ee14f521dffd98ef5ff42d38"
 summary: "Secrets 管理:SecretRef 合约、运行时快照行为和安全单向清除"
 read_when:
   - 为 Provider 凭证和 `auth-profiles.json` refs 配置 SecretRefs
@@ -15,6 +15,10 @@ OpenClaw 支持附加性 SecretRefs，因此支持的凭证不需要以明文存
 明文仍然有效。SecretRefs 是每个凭证可选的。
 </Note>
 
+<Warning>
+如果明文凭证存储在 Agent 可以检查的文件中，包括 `openclaw.json`、`auth-profiles.json`、`.env` 或生成的 `agents/*/agent/models.json` 文件，它们对 Agent 仍然可读。SecretRefs 仅在每个支持的凭证都已迁移且 `openclaw secrets audit --check` 报告没有明文密钥残留后，才减少该本地爆炸半径。
+</Warning>
+
 ## 目标和运行时模型
 
 Secrets 被解析到内存中的运行时快照。
@@ -28,6 +32,23 @@ Secrets 被解析到内存中的运行时快照。
 - 出站交付路径也从该活跃快照读取（例如 Discord 回复/线程交付和 Telegram 操作发送）；它们不会在每次发送时重新解析 SecretRefs。
 
 这使 secret 提供商中断不影响热请求路径。
+
+## Agent 访问边界
+
+SecretRefs 保护凭证不被持久化在支持的配置和生成的模型表面中，但它们不是进程隔离边界。如果明文凭证保留在 Agent 可以读取的路径上的磁盘上，Agent 可以通过使用文件或 shell 工具检查该文件来绕过 API 级编辑。
+
+对于 Agent 可访问文件在范围内的生产部署，仅在以下所有条件成立时才将 SecretRef 迁移视为完成：
+
+- 支持的凭证使用 SecretRefs 而不是明文值
+- 旧版明文残留已从 `openclaw.json`、`auth-profiles.json`、`.env` 和生成的 `models.json` 文件中清除
+- 迁移后 `openclaw secrets audit --check` 报告干净
+- 任何剩余的不支持或轮换的凭证受操作系统隔离、容器隔离或外部凭证代理保护
+
+这就是为什么 audit/configure/apply 工作流是安全迁移门控，而不仅仅是便利助手。
+
+<Warning>
+SecretRefs 不会使任意可读文件安全。备份、复制的配置、旧版生成的模型目录以及不支持的凭证类在它们被删除、移到 Agent 信任边界之外或受单独隔离层保护之前，必须被视为生产密钥。
+</Warning>
 
 ## 活跃表面过滤
 
@@ -116,13 +137,13 @@ SecretRefs 仅在有效活跃表面上验证。
   </Tab>
   <Tab title="exec">
     ```json5
-    { source: "exec", provider: "vault", id: "providers/openai/apiKey" }
+    { source: "exec", provider: "vault", id: "providers/openai/apiKey#value" }
     ```
 
     验证：
 
     - `provider` 必须匹配 `^[a-z][a-z0-9_-]{0,63}$`
-    - `id` 必须匹配 `^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$`
+    - `id` 必须匹配 `^[A-Za-z0-9][A-Za-z0-9._:/#-]{0,255}$`（支持如 `secret#json_key` 的选择器）
     - `id` 不得包含 `.` 或 `..` 作为斜杠分隔的路径段（例如 `a/../b` 被拒绝）
 
   </Tab>

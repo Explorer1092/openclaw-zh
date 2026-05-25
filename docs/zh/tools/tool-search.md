@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b5d9953e2231ed83343f8198af9990c3"
+mmh3_hash: "cb7c95af78b047992dee045e7b2a3605"
 summary: "Tool Search：将大型 PI 工具目录压缩为搜索、描述和调用接口"
 title: "Tool Search"
 read_when:
