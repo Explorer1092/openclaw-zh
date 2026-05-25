@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "497412658079b8823e03a8827930cc78"
+mmh3_hash: "5473345f5f560fafc5b6067a3383ac21"
 summary: "跨界面（Discord/iMessage/Matrix/Microsoft Teams/Signal/Slack/Telegram/WhatsApp/Zalo）的群聊行为"
 read_when:
   - 更改群聊行为或提及门控
@@ -50,7 +50,7 @@ requireMention? yes -> 被提及? 否 -> 仅作为上下文存储
 
 如果在活动工具策略下 message 工具不可用，OpenClaw 会回退到自动可见回复，而不是静默地抑制响应。`openclaw doctor` 会警告此不匹配情况。
 
-对于直接聊天和其他任何源事件，使用 `messages.visibleReplies: "message_tool"` 在全局范围内应用相同的仅工具可见回复行为。Harness 也可以选择此作为未设置时的默认值；Codex harness 对 Codex 模式的直接聊天执行此操作。`messages.groupChat.visibleReplies` 仍然是针对群组/频道房间的更具体的覆盖。
+对于直接聊天和其他任何源事件，使用 `messages.visibleReplies: "message_tool"` 在全局范围内应用相同的仅工具可见回复行为。包括 Codex 在内的某些 Harness 在未设置时也会将直接/源聊天默认为 message-tool 传递。设置 `messages.visibleReplies: "automatic"` 可强制使用旧的自动最终回复路径。`messages.groupChat.visibleReplies` 仍然是针对群组/频道房间的更具体的覆盖。
 
 这取代了强制模型对大多数潜伏模式轮次回答 `NO_REPLY` 的旧模式。在仅工具模式下，不做可见操作仅意味着不调用 message 工具。
 

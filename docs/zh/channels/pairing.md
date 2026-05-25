@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "0f0c5db25998ec24e584074d638ba7b7"
+mmh3_hash: "ced6deabc856b9ebeb49bd60b4760767"
 summary: "配对概述：批准谁可以私信您 + 哪些节点可以加入"
 read_when:
   - 设置私信访问控制
@@ -109,10 +109,10 @@ openclaw pairing approve telegram <CODE>
 
 该引导 Token 携带内置配对引导配置：
 
-- 内置设置配置仅允许 `node` 角色
-- 批准后，移交的 `node` Token 保持 `scopes: []`
-- 内置设置码流程不移交 `operator` Token
-- 运维员访问需要单独批准的运维员配对或 Token 流程
+- 内置设置配置仅允许新鲜的二维码/设置码基线：`node` 加上有限的 `operator` 移交
+- 移交的 `node` Token 保持 `scopes: []`
+- 移交的 `operator` Token 仅限于 `operator.approvals`、`operator.read` 和 `operator.write`
+- `operator.admin` 和 `operator.pairing` 不通过二维码/设置码引导授予；需要单独批准的运维员配对或 Token 流程
 - 后续 Token 轮换/撤销仍受设备已批准角色合约和调用者会话运维员权限范围的双重约束
 
 在设置码有效期间，将其视为密码。

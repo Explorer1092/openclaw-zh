@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e81c33a70c9780a2db6403e09f195a3d"
+mmh3_hash: "17f4fbfb5d43583157ab1fa441b585a5"
 summary: "Discord bot 支持状态、功能和配置"
 read_when:
   - 使用 Discord channel 功能时
@@ -251,9 +251,9 @@ Token 解析是账户感知的。配置 token 值优先于环境变量回退。`
   <Step title="允许不需要 @mention 的响应">
     默认情况下，你的 agent 只在被 @提及时才在公会频道中响应。对于私人服务器，你可能希望它响应每条消息。
 
-    在公会频道中，普通 assistant 最终回复默认是私密的。可见的 Discord 输出必须通过 `message` 工具显式发送，因此 agent 默认可以潜伏，只在决定频道回复有用时才发帖。
+    在公会频道中，普通回复默认自动发布。对于共享的常驻房间，可选择加入 `messages.groupChat.visibleReplies: "message_tool"`，让 agent 潜伏并仅在判断有用时才发布频道回复。这在 GPT 5.5 等最新一代、工具调用可靠的模型上效果最佳。环境房间事件保持安静，除非工具发送。完整的潜伏模式配置参见[环境房间事件](/channels/ambient-room-events)。
 
-    这意味着所选模型必须能可靠地调用工具。如果 Discord 显示正在输入但日志显示有 token 使用但没有发出消息，请检查会话日志中 `didSendViaMessagingTool: false` 的 assistant 文本。这意味着模型给出了私密最终答案而不是调用 `message(action=send)`。切换到更强的工具调用模型，或使用下面的配置恢复旧版自动最终回复。
+    如果 Discord 显示正在输入且日志显示有 token 使用但没有发布消息，请检查该轮次是否配置为环境房间事件或选择了 message-tool 可见回复。
 
     <Tabs>
       <Tab title="询问你的 agent">
@@ -276,7 +276,7 @@ Token 解析是账户感知的。配置 token 值优先于环境变量回退。`
 }
 ```
 
-        要为群组/频道房间恢复旧版自动最终回复，设置 `messages.groupChat.visibleReplies: "automatic"`。
+        要使群组/频道房间的可见回复需要通过 message 工具发送，设置 `messages.groupChat.visibleReplies: "message_tool"`。
 
       </Tab>
     </Tabs>
@@ -651,6 +651,23 @@ Modal 表单：
     `batched` 仅在入站轮次是多条消息的防抖批次时附加 Discord 的隐式原生回复引用。这在你主要想为模糊的突发聊天而非每条单消息轮次使用原生回复时很有用。
 
     消息 ID 在上下文/历史中显示，以便 Agent 可以定位特定消息。
+
+  </Accordion>
+
+  <Accordion title="链接预览">
+    Discord 默认会为 URL 生成丰富的链接嵌入。OpenClaw 默认抑制出站 Discord 消息上生成的嵌入，因此 Agent 发送的 URL 保持为纯链接，除非你选择启用：
+
+```json5
+{
+  channels: {
+    discord: {
+      suppressEmbeds: false,
+    },
+  },
+}
+```
+
+    使用 `channels.discord.accounts.<id>.suppressEmbeds` 覆盖单个账户。Agent 消息工具发送也可以为单条消息传入 `suppressEmbeds: false`。显式 Discord `embeds` 负载不受默认链接预览设置的抑制。
 
   </Accordion>
 
@@ -1105,6 +1122,7 @@ OpenClaw 使用 Discord 组件 v2 进行 exec 审批和跨上下文标记。Disc
 
 - `channels.discord.ui.components.accentColor` 设置 Discord 组件容器使用的强调色（十六进制）。
 - 使用 `channels.discord.accounts.<id>.ui.components.accentColor` 按账户设置。
+- `channels.discord.agentComponents.ttlMs` 控制发送的 Discord 组件回调的注册保留时长（默认 `1800000`，最大 `86400000`）。使用 `channels.discord.accounts.<id>.agentComponents.ttlMs` 按账户设置。
 - 当存在组件 v2 时，`embeds` 被忽略。
 - 纯 URL 预览默认被抑制。在消息操作上设置 `suppressEmbeds: false` 以允许单条出站链接展开。
 
@@ -1648,7 +1666,7 @@ openclaw logs --follow
 - 操作：`actions.*`
 - presence：`activity`、`status`、`activityType`、`activityUrl`
 - UI：`ui.components.accentColor`
-- 功能：`threadBindings`、顶层 `bindings[]`（`type: "acp"`）、`pluralkit`、`execApprovals`、`intents`、`agentComponents`、`heartbeat`、`responsePrefix`
+- 功能：`threadBindings`、顶层 `bindings[]`（`type: "acp"`）、`pluralkit`、`execApprovals`、`intents`、`agentComponents.enabled`、`agentComponents.ttlMs`、`heartbeat`、`responsePrefix`
 
 </Accordion>
 

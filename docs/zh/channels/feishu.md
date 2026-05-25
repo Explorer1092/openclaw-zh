@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "80feffb4c425a48436f2d6eaccc94ba3"
+mmh3_hash: "fc816d8d8c73851c8128fb2d00bf8ea9"
 summary: "Feishu 机器人概述、功能和配置"
 read_when:
   - 您想连接 Feishu/Lark 机器人
@@ -402,6 +402,150 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 
 ---
 
+## 每用户 Agent 隔离（动态 Agent 创建）
+
+启用 `dynamicAgentCreation` 可为每个私信用户自动创建**独立的 Agent 实例**。每个用户拥有各自的：
+
+- 独立工作区目录
+- 独立的 `USER.md` / `SOUL.md` / `MEMORY.md`
+- 私有对话历史
+- 隔离的 Skill 和状态
+
+这对于希望每个用户拥有自己私人 AI 助手体验的公开 bot 至关重要。
+
+<Note>
+**账户限制**：`dynamicAgentCreation` 目前仅支持**默认 Feishu 账户**。命名/多账户设置尚未完全支持——动态绑定创建时不带 `accountId`，因此发往命名账户的消息可能仍会路由到 `agent:main`。进度追踪请参见 [Issue #42837](https://github.com/openclaw/openclaw/issues/42837)。
+</Note>
+
+### 快速设置
+
+```json5
+{
+  channels: {
+    feishu: {
+      dmPolicy: "open",
+      allowFrom: ["*"],
+      dynamicAgentCreation: {
+        enabled: true,
+        workspaceTemplate: "~/.openclaw/workspace-{agentId}",
+        agentDirTemplate: "~/.openclaw/agents/{agentId}/agent",
+      },
+    },
+  },
+  session: {
+    // 关键：使每个用户的私信成为其"主 Session"
+    // 自动加载 USER.md / SOUL.md / MEMORY.md
+    // 如需更强隔离，使用 "per-channel-peer"
+    dmScope: "main",
+  },
+}
+```
+
+### 工作原理
+
+当新用户发送第一条私信时：
+
+1. Channel 生成唯一的 `agentId` = `feishu-{user_open_id}`
+2. 在 `workspaceTemplate` 路径创建新工作区
+3. 注册 Agent 并为此用户创建绑定
+4. 工作区助手在首次访问时确保引导文件（`AGENTS.md`、`SOUL.md`、`USER.md` 等）存在
+5. 将此用户的所有后续消息路由到其专属 Agent
+
+### 配置选项
+
+| 设置                                                     | 描述                               | 默认值                               |
+| -------------------------------------------------------- | ---------------------------------- | ------------------------------------ |
+| `channels.feishu.dynamicAgentCreation.enabled`           | 启用每用户 Agent 自动创建          | `false`                              |
+| `channels.feishu.dynamicAgentCreation.workspaceTemplate` | 动态 Agent 工作区的路径模板        | `~/.openclaw/workspace-{agentId}`    |
+| `channels.feishu.dynamicAgentCreation.agentDirTemplate`  | Agent 目录名称模板                 | `~/.openclaw/agents/{agentId}/agent` |
+| `channels.feishu.dynamicAgentCreation.maxAgents`         | 可创建的最大动态 Agent 数量        | 无限制                               |
+
+模板变量：
+
+- `{agentId}` - 生成的 Agent ID（例如 `feishu-ou_xxxxxx`）
+- `{userId}` - 发送者的 Feishu open_id（例如 `ou_xxxxxx`）
+
+### Session 范围
+
+`session.dmScope` 控制私信如何映射到 Agent Session。这是一个**全局设置**，影响所有 Channel。
+
+| 值                   | 行为                                                           | 适用场景                                                              |
+| -------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `"main"`             | 每个用户的私信映射到其 Agent 的主 Session                      | 希望 `USER.md` / `SOUL.md` 自动加载的单用户 bot                      |
+| `"per-channel-peer"` | 每个（Channel + 用户）组合获得独立 Session                    | 需要更强隔离的公开多用户 bot                                          |
+
+**权衡**：使用 `"main"` 可启用引导文件自动加载（`USER.md`、`SOUL.md`、`MEMORY.md`），但意味着所有 Channel 的所有私信共享相同的 Session 键模式。对于隔离性比引导自动加载更重要的公开多用户 bot，考虑使用 `"per-channel-peer"` 并手动管理引导文件。
+
+<Note>
+不推荐将 `"per-account-channel-peer"` 与 `dynamicAgentCreation` 一起使用，因为动态绑定创建时不带 `accountId`。仅在手动绑定时使用。
+</Note>
+
+```json5
+{
+  session: {
+    // 单用户个人 bot：启用引导自动加载
+    dmScope: "main",
+
+    // 公开多用户 bot：更强隔离
+    // dmScope: "per-channel-peer",
+  },
+}
+```
+
+### 典型多用户部署
+
+```json5
+{
+  channels: {
+    feishu: {
+      appId: "cli_xxx",
+      appSecret: "xxx",
+      dmPolicy: "open",
+      allowFrom: ["*"],
+      groupPolicy: "open",
+      requireMention: true,
+      dynamicAgentCreation: {
+        enabled: true,
+        workspaceTemplate: "~/.openclaw/workspace-{agentId}",
+        agentDirTemplate: "~/.openclaw/agents/{agentId}/agent",
+      },
+    },
+  },
+  session: {
+    // 根据隔离需求选择 dmScope：
+    // "main" 用于引导自动加载，"per-channel-peer" 用于更强隔离
+    dmScope: "main",
+  },
+  bindings: [], // 为空——动态 Agent 自动绑定
+}
+```
+
+### 验证
+
+检查 Gateway 日志以确认动态创建正常工作：
+
+```
+feishu: creating dynamic agent "feishu-ou_xxxxxx" for user ou_xxxxxx
+workspace: /Users/you/.openclaw/workspace-feishu-ou_xxxxxx
+feishu: dynamic agent created, new route: agent:feishu-ou_xxxxxx:main
+```
+
+列出所有已创建的工作区：
+
+```bash
+ls -la ~/.openclaw/workspace-*
+```
+
+### 注意事项
+
+- **工作区隔离**：每个用户获得自己的工作区目录和 Agent 实例。在正常消息流中，用户之间无法查看彼此的对话历史或文件。
+- **安全边界**：这是消息上下文隔离机制，而非恶意共租户安全边界。Agent 进程和主机环境是共享的。
+- **`bindings` 应为空**：动态 Agent 自动注册自己的绑定。
+- **升级路径**：现有手动绑定可与动态 Agent 并行工作。
+- **`session.dmScope` 是全局设置**：这影响所有 Channel，而不仅是 Feishu。
+
+---
+
 ## 配置参考
 
 完整配置：[Gateway 配置](/gateway/configuration)
@@ -428,6 +572,10 @@ Feishu/Lark 支持私信和群组话题消息的 ACP。Feishu/Lark ACP 由文本
 | `channels.feishu.requireMention`                  | 群组中需要 @提及                                       | `true`           |
 | `channels.feishu.groups.<chat_id>.requireMention` | 每群组 @提及覆盖；显式 ID 在 allowlist 模式下也会准入该群组 | 继承        |
 | `channels.feishu.groups.<chat_id>.enabled`        | 启用/禁用特定群组                                      | `true`           |
+| `channels.feishu.dynamicAgentCreation.enabled`           | 启用每用户 Agent 自动创建                              | `false`          |
+| `channels.feishu.dynamicAgentCreation.workspaceTemplate` | 动态 Agent 工作区的路径模板                            | `~/.openclaw/workspace-{agentId}` |
+| `channels.feishu.dynamicAgentCreation.agentDirTemplate`  | Agent 目录名称模板                                     | `~/.openclaw/agents/{agentId}/agent` |
+| `channels.feishu.dynamicAgentCreation.maxAgents`         | 可创建的最大动态 Agent 数量                            | 无限制           |
 | `channels.feishu.textChunkLimit`                  | 消息块大小                                             | `2000`           |
 | `channels.feishu.mediaMaxMb`                      | 媒体大小限制                                           | `30`             |
 | `channels.feishu.streaming`                       | 流式卡片输出                                           | `true`           |

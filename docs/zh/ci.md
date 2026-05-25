@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "3d5dd18eba6b7802f426bc21c4bdfefc"
+mmh3_hash: "4fd46339293da07188085932832e6ad0"
 title: "CI Pipeline"
 summary: "CI 任务图、范围控制门以及本地等效命令"
 read_when:
@@ -46,12 +46,30 @@ OpenClaw CI 在每次推送到 `main` 和每个 Pull Request 时运行。`prefli
 
 `ci-timings-summary` 任务为每个非草稿 CI 运行上传一个紧凑的 `ci-timings-summary` 产物。它记录当前运行的挂钟时间、队列时间、最慢的任务和失败的任务，因此 CI 健康检查不需要重复抓取完整的 Actions 负载。
 
+## 真实行为证明
+
+外部贡献者 PR 会从 `.github/workflows/real-behavior-proof.yml` 运行 `Real behavior proof` 门控。该工作流检出可信的基础提交，仅评估 PR 正文；不执行贡献者分支中的代码。
+
+该门控适用于非仓库所有者、成员、协作者或 bot 的 PR 作者。当 PR 正文包含 `Real behavior proof` 章节，且以下字段已填写值时，门控通过：
+
+- `Behavior or issue addressed`
+- `Real environment tested`
+- `Exact steps or command run after this patch`
+- `Evidence after fix`
+- `Observed result after fix`
+- `What was not tested`
+
+证明必须在真实的 OpenClaw 设置中展示补丁后的行为变化。截图、录像、终端截图、控制台输出、复制的实时输出、经脱敏的运行时日志和链接的产物均可。单元测试、mock、快照、lint、类型检查和 CI 结果是有用的支持性验证，但不能单独满足此门控要求。
+
+当检查失败时，更新 PR 正文而不是推送另一个代码提交。维护者只有在证明门控不应适用于该 PR 时才能应用 `proof: override` 标签。
+
 ## 范围和路由
 
 范围逻辑存在于 `scripts/ci-changed-scope.mjs` 中，并由 `src/scripts/ci-changed-scope.test.ts` 中的单元测试覆盖。手动调度跳过已变更范围检测，并使 preflight 清单表现得好像每个作用域区域都已变更。
 
 - **CI 工作流编辑**验证 Node CI 图以及工作流 lint，但不强制 Windows、Android 或 macOS 原生构建；这些平台通道保持作用于平台源变更。
 - **`main` 推送上的文档**由独立的 `Docs` 工作流检查，使用与 CI 相同的 ClawHub 文档镜像，因此混合代码+文档推送不会同时将 CI `check-docs` 分片排队。Pull Request 和手动 CI 在文档变更时仍然从 CI 运行 `check-docs`。
+- **TUI PTY** 是针对 TUI 变更的专项工作流。它在 Linux Node 24 上对 `src/tui/**`、watch 测试工具、包脚本、lockfile 和工作流编辑运行 `node scripts/run-vitest.mjs run --config test/vitest/vitest.tui-pty.config.ts`。required lane 使用确定性 `TuiBackend` 固件；较慢的 `tui --local` 冒烟测试通过 `OPENCLAW_TUI_PTY_INCLUDE_LOCAL=1` 选择加入，且只模拟外部模型端点。
 - **仅 CI 路由编辑、选定的廉价核心测试固件编辑以及狭窄的插件合同辅助/测试路由编辑**使用快速仅 Node 清单路径：`preflight`、安全以及单个 `checks-fast-core` 任务。当变更限于快速任务直接练习的路由或辅助界面时，该路径跳过构建产物、Node 22 兼容性、Channel 合同、完整核心分片、捆绑插件分片和附加守护矩阵。
 - **Windows Node 检查**的范围是 Windows 特定进程/路径包装器、npm/pnpm/UI 运行器辅助器、包管理器配置以及执行该通道的 CI 工作流界面；不相关的源、插件、安装冒烟和仅测试变更保留在 Linux Node 通道上。
 
@@ -228,7 +246,8 @@ Docker 支持的实时模型/后端分片为每个选定提交使用单独的共
 
 - `source=npm` 仅接受 `openclaw@beta`、`openclaw@latest` 或确切的 OpenClaw 发布版本，例如 `openclaw@2026.4.27-beta.2`。用于已发布的预发布/稳定接受。
 - `source=ref` 打包受信任的 `package_ref` 分支、标签或完整提交 SHA。解析器获取 OpenClaw 分支/标签，验证选定的提交可从仓库分支历史或发布标签访问，在分离的工作树中安装依赖，并使用 `scripts/package-openclaw-for-docker.mjs` 打包。
-- `source=url` 下载 HTTPS `.tgz`；需要 `package_sha256`。
+- `source=url` 下载公开 HTTPS `.tgz`；需要 `package_sha256`。此路径拒绝 URL 凭据、非默认 HTTPS 端口、私有/内部/特殊用途主机名或解析的 IP，以及重定向至同一公共安全策略之外的地址。
+- `source=trusted-url` 从 `.github/package-trusted-sources.json` 中命名的受信任源策略下载 HTTPS `.tgz`；需要 `package_sha256` 和 `trusted_source_id`。仅用于需要配置的主机、端口、路径前缀、重定向主机或私有网络解析的维护者自有企业镜像或私有包仓库。如果策略声明 bearer 认证，工作流使用固定的 `OPENCLAW_TRUSTED_PACKAGE_TOKEN` 密钥；仍然拒绝 URL 嵌入的凭据。
 - `source=artifact` 从 `artifact_run_id` 和 `artifact_name` 下载一个 `.tgz`；`package_sha256` 是可选的，但对于外部共享产物应该提供。
 
 保持 `workflow_ref` 和 `package_ref` 分开。`workflow_ref` 是运行测试的受信任工作流/测试框架代码。`package_ref` 是在 `source=ref` 时打包的源提交。这允许当前测试框架验证较旧的受信任源提交，而不运行旧的工作流逻辑。

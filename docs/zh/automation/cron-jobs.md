@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a774f860cb9db98e42ab2bd03b56fbee"
+mmh3_hash: "7a4f0fe52ad8c0e57ba8065c6785192d"
 summary: "Gateway 调度器的定时任务、Webhooks 和 Gmail PubSub 触发器"
 read_when:
   - 调度后台任务或唤醒时
@@ -169,6 +169,17 @@ Fast 模式也遵循解析后的实时选择。如果选定的模型配置有 `p
 当 Agent 从活跃聊天创建隔离提醒时，OpenClaw 会为后备通知路由存储保留的实时交付目标。内部 Session 键可能是小写的；当前聊天上下文可用时，不会从这些键重建 Provider 交付目标。
 
 隐式通知交付使用已配置的 Channel 允许列表来验证和重新路由过时目标。DM 配对存储批准不是后备自动化接收者；当定时任务应主动发送到 DM 时，请设置 `delivery.to` 或配置 Channel `allowFrom` 条目。
+
+## 输出语言
+
+Cron 任务不会从 Channel、locale 或历史消息中推断回复语言。请将语言规则放在计划消息或模板中：
+
+```bash
+openclaw cron edit <jobId> \
+  --message "Summarize the updates. Respond in Chinese; keep URLs, code, and product names unchanged."
+```
+
+对于模板文件，将语言指令保留在渲染的提示中，并在任务运行前验证 `{{language}}` 等占位符已填充。如果输出混合语言，请明确规则，例如："使用中文描述叙述性文本，技术术语保留英文。"
 
 失败通知遵循独立的目标路径：
 

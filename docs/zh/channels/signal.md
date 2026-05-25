@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "16e94428a30a6e7b762152b94281075f"
+mmh3_hash: "d05caf8d1e876a7954120a1b0093d28b"
 summary: "通过 signal-cli (JSON-RPC + SSE) 提供 Signal 支持、设置路径和号码模型"
 read_when:
   - 设置 Signal 支持
@@ -50,6 +50,7 @@ title: "Signal"
 | --- | --- |
 | `account` | E.164 格式的 Bot 电话号码（`+15551234567`） |
 | `cliPath` | `signal-cli` 的路径（如果在 `PATH` 中则为 `signal-cli`） |
+| `configPath` | 作为 `--config` 传递的 signal-cli 配置目录 |
 | `dmPolicy` | DM 访问策略（推荐 `pairing`） |
 | `allowFrom` | 允许发送 DM 的电话号码或 `uuid:<id>` 值 |
 
@@ -257,6 +258,7 @@ DM：
 - `channels.signal.groupAllowFrom` 控制当设置 `allowlist` 时哪些群组或发送者可以触发群组回复；条目可以是 Signal 群组 ID（原始、`group:<id>` 或 `signal:group:<id>`）、发送者电话号码、`uuid:<id>` 值或 `*`。
 - `channels.signal.groups["<group-id>" | "*"]` 可以用 `requireMention`、`tools` 和 `toolsBySender` 覆盖群组行为。
 - 对于多账户设置中的每账户覆盖，使用 `channels.signal.accounts.<id>.groups`。
+- 仅将 Signal 群组加入 `groupAllowFrom` allowlist 本身不会禁用提及门控。显式配置了 `channels.signal.groups["<group-id>"]` 条目的群组会处理每条群组消息，除非设置了 `requireMention=true`。
 - 运行时注意：如果 `channels.signal` 完全缺失，运行时会回退到 `groupPolicy="allowlist"` 进行群组检查（即使 `channels.defaults.groupPolicy` 已设置）。
 
 ## 工作原理（行为）

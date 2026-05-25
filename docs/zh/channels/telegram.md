@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "f663ff68fe7a37eea7f7ecc8613eff8a"
+mmh3_hash: "c59c48bb8dec662c82693050e159bb2d"
 summary: "Telegram bot 支持状态、功能和配置"
 read_when:
   - 开发 Telegram 功能或 webhook

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "001efa9591a855a25416517a38f61781"
+mmh3_hash: "17e7ba0ed27bcae92bdc1bcc463de7f5"
 title: "Mattermost"
 sidebarTitle: "Mattermost"
 summary: "Mattermost bot 设置和 OpenClaw 配置"
@@ -87,6 +87,7 @@ read_when:
     - 多账户设置中，`commands` 可在顶层或 `channels.mattermost.accounts.<id>.commands` 下设置（账户值覆盖顶层字段）。
     - 命令回调使用 Mattermost 在 OpenClaw 注册 `oc_*` 命令时返回的每命令 Token 进行验证。
     - OpenClaw 在接受每个回调之前刷新当前 Mattermost 命令注册，以确保来自已删除或重新生成斜杠命令的过期 Token 无需重启 Gateway 即可停止被接受。
+    - 当 Mattermost API 无法确认命令仍然有效时，回调验证失败关闭；失败的验证会被短暂缓存，并发查询被合并，新鲜查询的启动频率也受每命令限制，以约束重放压力。
     - 当注册失败、启动不完整或回调 Token 与已解析命令的注册 Token 不匹配时，斜杠回调失败关闭（一个命令的有效 Token 不能触达不同命令的上游验证）。
 
   </Accordion>
@@ -289,7 +290,7 @@ Mattermost 将思考、工具活动和部分回复文本流式传输到单个**�
   </Accordion>
   <Accordion title="流式传输行为说明">
     - 如果流无法就地最终确认（例如帖子在流式传输中被删除），OpenClaw 回退到发送新的最终帖子，以确保回复不会丢失。
-    - 仅推理的载荷在频道帖子中被抑制，包括以 `> Reasoning:` 块引用形式到达的文本。在其他界面设置 `/reasoning on` 可查看思考过程；Mattermost 最终帖子仅保留答案。
+    - 仅推理的载荷在频道帖子中被抑制，包括以 `> Thinking` 块引用形式到达的文本。在其他界面设置 `/reasoning on` 可查看思考过程；Mattermost 最终帖子仅保留答案。
     - Channel 映射矩阵参见 [流式传输](/concepts/streaming#preview-streaming-modes)。
 
   </Accordion>

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "5216097beed8cee77d3f8bdf3828bb4a"
+mmh3_hash: "aa513afc229a88f210ac1cfb995f933b"
 summary: "WhatsApp 频道支持、访问控制、传递行为和运维"
 read_when:
   - 开发 WhatsApp/web 频道行为或收件箱路由
@@ -101,6 +101,10 @@ openclaw pairing approve whatsapp <CODE>
 OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（频道元数据和新手引导流程针对该设置进行了优化，但也支持个人号码设置。）
 </Note>
 
+<Warning>
+当前 WhatsApp 设置流程仅支持二维码方式。终端渲染的二维码、截图、PDF 或聊天附件在从远程机器中转时可能会过期或变得不可读。对于远程/无头主机，优先使用直接的二维码图像传递方式，而非手动终端截取。
+</Warning>
+
 ## 部署模式
 
 <AccordionGroup>
@@ -158,6 +162,30 @@ OpenClaw 建议在可能的情况下在单独的号码上运行 WhatsApp。（�
 - WhatsApp Channels/Newsletters 可以作为显式出站目标，使用其原生 `@newsletter` JID。出站 newsletter 发送使用频道会话元数据（`agent:<agentId>:whatsapp:channel:<jid>`），而非私信会话语义。
 - WhatsApp Web 传输遵循 Gateway 主机上的标准代理环境变量（`HTTPS_PROXY`、`HTTP_PROXY`、`NO_PROXY` / 小写变体）。优先使用主机级代理配置，而非特定于 Channel 的 WhatsApp 代理设置。
 - 启用 `messages.removeAckAfterReply` 后，OpenClaw 在传递可见回复后会清除 WhatsApp ack reaction。
+
+## 批准提示
+
+WhatsApp 可以通过 `👍` / `👎` Reaction 呈现 exec 和 Plugin 批准提示。传递由顶层批准转发配置控制：
+
+```json5
+{
+  approvals: {
+    exec: {
+      enabled: true,
+      mode: "session",
+    },
+    plugin: {
+      enabled: true,
+      mode: "targets",
+      targets: [{ channel: "whatsapp", to: "+15551234567" }],
+    },
+  },
+}
+```
+
+`approvals.exec` 和 `approvals.plugin` 是独立的。仅启用 WhatsApp 作为 Channel 只是连接传输层；除非对应的批准系列已启用且路由到 WhatsApp，否则不会发送批准提示。Session 模式仅对来自 WhatsApp 的批准发送原生 emoji 批准。Target 模式使用共享转发管道处理显式 WhatsApp 目标，不创建独立的批准者私信广播。
+
+WhatsApp 批准 Reaction 需要来自 `allowFrom` 或 `"*"` 的显式 WhatsApp 批准者。`defaultTo` 控制普通默认消息目标；它不是批准者。手动 `/approve` 命令在批准解析之前仍会通过正常的 WhatsApp 发送者授权路径。
 
 ## Plugin Hooks 和隐私
 

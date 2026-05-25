@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "b757e4ef396d7ca3d6cacdec7e1b9008"
+mmh3_hash: "4bb889a65c6c945166b0c1c3c5dc6088"
 summary: "Hooks：用于命令和生命周期事件的事件驱动自动化"
 read_when:
   - 你需要为 /new、/reset、/stop 和 Agent 生命周期事件设置事件驱动自动化
@@ -15,6 +15,18 @@ OpenClaw 中有两种 Hooks：
 - **Webhooks**：允许其他系统在 OpenClaw 中触发工作的外部 HTTP 端点。参见 [Webhooks](/automation/cron-jobs#webhooks)。
 
 Hooks 也可以捆绑在插件中。`openclaw hooks list` 会同时显示独立 Hooks 和插件管理的 Hooks。
+
+## 选择正确的扩展方式
+
+OpenClaw 有几种看起来相似但解决不同问题的扩展方式：
+
+| 如果你想...                                                                                              | 使用...                                     | 原因                                                                           |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------ |
+| 在 `/new` 时保存快照、记录 `/reset`、在 `message:sent` 后调用外部 API，或添加粗粒度运维员自动化        | 内部 Hooks（`HOOK.md`，本页）               | 基于文件的 Hooks 用于运维员管理的副作用和命令/生命周期自动化                   |
+| 改写提示、阻止工具、取消出站消息，或添加有序的中间件/策略                                               | 通过 `api.on(...)` 的类型化 Plugin Hooks    | 类型化 Hooks 具有明确的合约、优先级、合并规则以及阻止/取消语义                 |
+| 添加仅遥测导出或可观测性                                                                                 | 诊断事件                                    | 可观测性是独立的事件总线，而不是策略 Hook 界面                                 |
+
+需要像小型已安装集成一样运行的自动化时，使用内部 Hooks。需要运行时生命周期控制时，使用类型化 Plugin Hooks。
 
 ## 快速开始
 
@@ -109,7 +121,9 @@ const handler = async (event) => {
 export default handler;
 ```
 
-每个事件包括：`type`、`action`、`sessionKey`、`timestamp`、`messages`（推送以发送给用户）和 `context`（事件特定数据）。Agent 和工具插件 Hook 上下文还可以包含 `trace`，这是一个只读的 W3C 兼容诊断跟踪上下文，插件可以将其传入结构化日志以进行 OTEL 关联。
+每个事件包括：`type`、`action`、`sessionKey`、`timestamp`、`messages`（仅在可回复界面上推送回复）和 `context`（事件特定数据）。Agent 和工具插件 Hook 上下文还可以包含 `trace`，这是一个只读的 W3C 兼容诊断跟踪上下文，插件可以将其传入结构化日志以进行 OTEL 关联。
+
+`event.messages` 仅在 `command:*` 和 `message:received` 等可回复界面上自动传递。`agent:bootstrap`、`session:*`、`gateway:*` 或 `message:sent` 等仅限生命周期的事件没有回复通道，会忽略推送的消息。
 
 ### 事件上下文要点
 
@@ -132,6 +146,31 @@ export default handler;
 `command:stop` 观察用户发出 `/stop`；它是取消/命令生命周期，而非 Agent 最终化门控。需要检查自然最终答案并请求 Agent 再进行一轮的插件应使用类型化插件 Hook `before_agent_finalize`。参见 [Plugin hooks](/plugins/hooks)。
 
 **Gateway 生命周期事件**：`gateway:shutdown` 包含 `reason` 和 `restartExpectedMs`，在 Gateway 开始关闭时触发。`gateway:pre-restart` 包含相同上下文，但仅在关闭是预期重启的一部分且提供了有限的 `restartExpectedMs` 值时触发。关闭期间，每个生命周期 Hook 等待是尽力的且有时间限制，以便在处理程序停滞时关闭仍能继续。`gateway:shutdown` 的默认等待预算为 5 秒，`gateway:pre-restart` 为 10 秒。
+
+在 Channel 仍然可用时，使用 `gateway:pre-restart` 发送简短的重启通知：
+
+```typescript
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
+
+export default async function handler(event) {
+  if (event.type !== "gateway" || event.action !== "pre-restart") {
+    return;
+  }
+
+  const restartInSeconds = Math.ceil(event.context.restartExpectedMs / 1000);
+  await execFileAsync("openclaw", [
+    "system",
+    "event",
+    "--mode",
+    "now",
+    "--text",
+    `Gateway restarting in ~${restartInSeconds}s (${event.context.reason}). Checkpoint now.`,
+  ]);
+}
+```
 
 ## Hook 发现
 
@@ -220,6 +259,8 @@ Gateway 启动时从活跃工作区运行 `BOOT.md`。
 ## Plugin Hooks
 
 插件可以通过 Plugin SDK 注册类型化 Hooks 以实现更深层集成：拦截工具调用、修改提示词、控制消息流等。当你需要 `before_tool_call`、`before_agent_reply`、`before_install` 或其他进程内生命周期 Hooks 时，请使用插件 Hooks。
+
+插件管理的内部 Hooks 有所不同：它们参与本页面的粗粒度命令/生命周期事件系统，并在 `openclaw hooks list` 中显示为 `plugin:<id>`。这些用于副作用和与 Hook 包的兼容性，而非有序中间件或策略门控。
 
 完整的插件 Hook 参考，请参见 [Plugin hooks](/plugins/hooks)。
 

@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "70cd3240a9076246a1cae988c6aff53c"
+mmh3_hash: "095ab86b40f977ac8dd965182745862f"
 summary: "按 Channel 分类的故障特征和修复方案，快速排查 Channel 级问题"
 read_when:
   - Channel 传输层显示已连接但回复失败
@@ -51,6 +51,7 @@ openclaw status --all
 | 群组消息被忽略           | 检查配置中的 `requireMention` + 提及模式              | 提及机器人或放宽该群组的提及策略。                                                 |
 | 二维码登录超时 408       | 检查 Gateway 的 `HTTPS_PROXY` / `HTTP_PROXY` 环境变量 | 设置可访问的代理；仅对绕过使用 `NO_PROXY`。                                        |
 | 随机断开/重新登录循环    | `openclaw channels status --probe` + 日志             | 即使当前已连接，最近的重连也会被标记；观察日志，重启 Gateway，若仍抖动则重新关联。 |
+| `status=408 Request Time-out` 循环 | Probe、日志、doctor，然后 Gateway 状态 | 先修复主机连接/计时问题；如果循环持续，备份认证数据并重新关联账户。 |
 | 回复延迟数秒/分钟        | `openclaw doctor --fix`                               | Doctor 会停止经验证的过时本地 TUI 客户端，以避免它们降低 Gateway 事件循环性能。    |
 
 完整故障排除：[WhatsApp 故障排除](/channels/whatsapp#troubleshooting)

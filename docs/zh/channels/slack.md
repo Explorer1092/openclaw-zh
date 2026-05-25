@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "e1cc13229ebc6450a58f91aa3a8099f9"
+mmh3_hash: "456c8cb3add75d3078f54fbb0d66bc09"
 title: "Slack"
 sidebarTitle: "Slack"
 summary: "Slack 设置和运行时行为（Socket Mode + HTTP Request URLs）"
@@ -1265,9 +1265,12 @@ Slack 可以渲染 Agent 撰写的交互式回复控件，但此功能默认禁�
 
 Slack 可以作为带有交互按钮和交互的原生审批客户端，而不必回退到 Web UI 或终端。
 
-- Exec 审批使用 `channels.slack.execApprovals.*` 进行原生私信/频道路由。
-- Plugin 审批仍可通过相同的 Slack 原生按钮界面解决，前提是请求已在 Slack 中发起且审批 id 类型为 `plugin:`。
-- 审批者授权仍然强制执行：只有被识别为审批者的用户才能通过 Slack 批准或拒绝请求。
+- Exec 和 Plugin 审批可以渲染为 Slack 原生 Block Kit 提示。
+- `channels.slack.execApprovals.*` 仍然是原生 exec 审批客户端启用和私信/频道路由配置。
+- Exec 审批私信使用 `channels.slack.execApprovals.approvers` 或 `commands.ownerAllowFrom`。
+- 当 Slack 作为发起 Session 的原生审批客户端启用，或当 `approvals.plugin` 路由到发起 Slack Session 或 Slack 目标时，Plugin 审批使用 Slack 原生按钮。
+- Plugin 审批私信使用来自 `channels.slack.allowFrom`、命名账户 `allowFrom` 或账户默认路由的 Slack Plugin 审批者。
+- 审批者授权仍然强制执行：仅 exec 审批者不能审批 Plugin 请求，除非他们同时也是 Plugin 审批者。
 
 这使用与其他 Channel 相同的共享审批按钮界面。当 Slack app 设置中启用了 `interactivity` 时，审批提示在对话中直接以 Block Kit 按钮渲染。
 当这些按钮存在时，它们是主要的审批 UX；OpenClaw 仅在工具结果表明聊天审批不可用或手动审批是唯一路径时才包含手动 `/approve` 命令。
@@ -1279,7 +1282,7 @@ Slack 可以作为带有交互按钮和交互的原生审批客户端，而不�
 - `channels.slack.execApprovals.target`（`dm` | `channel` | `both`，默认：`dm`）
 - `agentFilter`、`sessionFilter`
 
-当 `enabled` 未设置或为 `"auto"` 且至少一个审批者可解析时，Slack 自动启用原生 exec 审批。设置 `enabled: false` 显式禁用 Slack 作为原生审批客户端。设置 `enabled: true` 在审批者可解析时强制开启原生审批。
+当 `enabled` 未设置或为 `"auto"` 且至少一个 exec 审批者可解析时，Slack 自动启用原生 exec 审批。当 Slack Plugin 审批者可解析且请求与原生客户端过滤器匹配时，Slack 也可以通过此原生客户端路径处理原生 Plugin 审批。设置 `enabled: false` 显式禁用 Slack 作为原生审批客户端。设置 `enabled: true` 在审批者可解析时强制开启原生审批。禁用 Slack exec 审批不会禁用通过 `approvals.plugin` 启用的原生 Slack Plugin 审批传递；Plugin 审批传递改用 Slack Plugin 审批者。
 
 无显式 Slack exec 审批配置时的默认行为：
 
@@ -1307,7 +1310,7 @@ Slack 可以作为带有交互按钮和交互的原生审批客户端，而不�
 }
 ```
 
-共享的 `approvals.exec` 转发是独立的。仅在 exec 审批提示还必须路由到其他聊天或显式带外目标时使用。共享的 `approvals.plugin` 转发也是独立的；当这些请求已在 Slack 中发起时，Slack 原生按钮仍可解决 Plugin 审批。
+共享的 `approvals.exec` 转发是独立的。仅在 exec 审批提示还必须路由到其他聊天或显式带外目标时使用。共享的 `approvals.plugin` 转发也是独立的；当 Slack 能够原生处理 Plugin 审批请求时，Slack 原生传递会抑制该回退。
 
 同频道 `/approve` 在已支持命令的 Slack 频道和私信中也有效。完整的审批转发模型请参见 [Exec 审批](/tools/exec-approvals)。
 

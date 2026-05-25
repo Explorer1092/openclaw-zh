@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "8952d12875a8891dbc9b45c8f50ed8a3"
+mmh3_hash: "53a3a87858348f1133b8efdae3313acc"
 summary: "ACP 运行、子 Agent、隔离 Cron 任务和 CLI 操作的后台任务跟踪"
 read_when:
   - 检查进行中或最近完成的后台工作时
@@ -99,11 +99,11 @@ sidebarTitle: "后台任务"
   <Accordion title="Cron 和媒体的默认通知">
     主 Session Cron 任务默认使用 `silent` 通知策略——它们创建用于跟踪的记录，但不生成通知。隔离 Cron 任务也默认为 `silent`，但更可见，因为它们在自己的 Session 中运行。
 
-    Session 支持的 `image_generate`、`music_generate` 和 `video_generate` 运行也使用 `silent` 通知策略。它们仍然创建任务记录，但完成会作为内部唤醒回传到原始 Agent Session，以便 Agent 可以写后续消息并附加已完成的媒体。生成媒体的完成事件需要通过 message 工具交付：Agent 必须用 `message` 工具发送已完成的媒体，然后回复 `NO_REPLY`。如果完成 Agent 仅写入私有最终回复或遗漏了媒体附件，OpenClaw 会将完成移交标记为失败；它不会自动将生成的媒体作为后备发布。
+    Session 支持的 `image_generate`、`music_generate` 和 `video_generate` 运行也使用 `silent` 通知策略。它们仍然创建任务记录，但完成会作为内部唤醒回传到原始 Agent Session，以便 Agent 可以写后续消息并附加已完成的媒体。生成媒体的完成事件需要通过 message 工具交付：Agent 必须用 `message` 工具发送已完成的媒体，然后回复 `NO_REPLY`。如果请求方 Session 不再活跃，且完成 Agent 遗漏了部分或全部生成的媒体，OpenClaw 会向原始 Channel 目标发送幂等的直接回退，仅包含缺失的媒体。
 
   </Accordion>
   <Accordion title="并发媒体生成守卫">
-    当 Session 支持的媒体生成任务仍处于活跃状态时，该工具还充当守卫：在同一 Session 中重复调用 `image_generate`、`music_generate` 或 `video_generate` 会返回活跃任务状态，而非启动第二个并发生成。当你希望从 Agent 侧进行明确的进度/状态查询时，请使用 `action: "status"`。
+    当 Session 支持的媒体生成任务仍处于活跃状态时，媒体工具还充当意外重试的守卫。对同一提示词重复调用 `image_generate` 会返回匹配的活跃任务状态，而不同的图像提示词则可以启动自己的任务。`music_generate` 和 `video_generate` 调用仍会返回该 Session 的活跃任务状态，而不是启动第二个并发生成。当你希望从 Agent 侧进行明确的进度/状态查询时，请使用 `action: "status"`。
   </Accordion>
   <Accordion title="什么不会创建任务">
     - Heartbeat 轮次——主 Session；参见 [Heartbeat](/gateway/heartbeat)

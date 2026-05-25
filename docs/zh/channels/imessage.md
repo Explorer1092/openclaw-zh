@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "dc00de95653807a08284634aa860ce4d"
+mmh3_hash: "61fe0cf95b8c9570e1a630c9c6a6dda1"
 summary: "通过 imsg 实现原生 iMessage 支持（基于 stdio 的 JSON-RPC），支持私有 API 动作：回复、tapback、效果、附件和群组管理。适合满足主机要求的新 OpenClaw iMessage 设置。"
 read_when:
   - 设置 iMessage 支持
@@ -689,6 +689,7 @@ channels: {
 ```
 
 - 游标在每次成功调度时推进，当行调度抛出时保持——下次启动从保持的游标重试同一行。
+- 启动追赶查询成功后，后续实时处理的行也会推进同一游标，因此 Gateway 重启不会重放已实时处理的消息。实时游标写入不会跳过仍低于 `maxFailureRetries` 的追赶失败。
 - 对同一 `guid` 连续 `maxFailureRetries` 次抛出后，追赶记录 `warn` 并强制推进游标越过卡住的消息，使后续启动可以继续。
 - 已放弃的 guid 在后续运行中见到时被跳过（不尝试调度），并在运行摘要中的 `skippedGivenUp` 下计数。
 

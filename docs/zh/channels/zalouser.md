@@ -1,5 +1,5 @@
 ---
-mmh3_hash: "a7f3e60a02bf0289819a2428eb9a4141"
+mmh3_hash: "0d50b2ac584fb6aca7004ad102f689f3"
 summary: "通过原生 zca-js（二维码登录）的 Zalo 个人账户支持、功能和配置"
 read_when:
   - 为 OpenClaw 设置 Zalo 个人号
@@ -164,6 +164,22 @@ openclaw directory groups list --channel zalouser --query "work"
   },
 }
 ```
+
+## 环境变量
+
+Zalo Personal 插件还可以从环境变量读取配置文件选择：
+
+- `ZALOUSER_PROFILE`：当 Channel 或账户配置中未设置 `profile` 时使用的配置文件名称。
+- `ZCA_PROFILE`：旧版回退配置文件名称，仅在未设置 `ZALOUSER_PROFILE` 时使用。
+
+配置文件名称选择 OpenClaw 状态中保存的 Zalo 登录凭据。解析顺序为：
+
+1. 配置中的显式 `profile`。
+2. `ZALOUSER_PROFILE`。
+3. `ZCA_PROFILE`。
+4. 非默认账户使用账户 ID，默认账户使用 `default`。
+
+对于多账户设置，优先在配置中为每个账户设置 `profile`，以避免一个环境变量导致多个账户共享同一登录 Session。
 
 ## 打字状态、Reaction 和送达确认
 
