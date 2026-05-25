@@ -170,7 +170,10 @@ openclaw browser select <ref> OptionA OptionB
 openclaw browser fill --fields '[{"ref":"1","value":"Ada"}]'
 openclaw browser wait --text "Done"
 openclaw browser evaluate --fn '(el) => el.textContent' --ref <ref>
+openclaw browser evaluate --timeout-ms 30000 --fn 'async () => { await window.ready; return true; }'
 ```
+
+当页面端函数可能需要比默认评估超时更长的时间时，请使用 `evaluate --timeout-ms <ms>`。
 
 操作响应在 OpenClaw 能够证明替换标签时，返回操作触发页面替换后当前的原始 `targetId`。脚本应仍然存储并传递 `suggestedTargetId`/标签以用于长期工作流。
 

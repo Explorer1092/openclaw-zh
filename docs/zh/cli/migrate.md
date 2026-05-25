@@ -47,7 +47,10 @@ openclaw onboard --import-from hermes --import-source ~/.hermes
   覆盖源状态目录。Hermes 默认为 `~/.hermes`。
 </ParamField>
 <ParamField path="--include-secrets" type="boolean">
-  导入支持的凭据。默认关闭。
+  无需提示即导入支持的凭据。交互式应用会在导入检测到的身份验证凭据之前询问，默认选择是；非交互式 `--yes` 需要 `--include-secrets` 才能导入它们。
+</ParamField>
+<ParamField path="--no-auth-credentials" type="boolean">
+  跳过身份验证凭据导入，包括交互式提示。
 </ParamField>
 <ParamField path="--overwrite" type="boolean">
   当计划报告冲突时，允许应用替换现有目标。
@@ -92,7 +95,7 @@ openclaw onboard --import-from hermes --import-source ~/.hermes
     当计划存在冲突时，Apply 拒绝继续。审查计划，然后在有意替换现有目标时使用 `--overwrite` 重新运行。Provider 可能仍会在迁移报告目录中为覆盖的文件写入条目级备份。
   </Accordion>
   <Accordion title="密钥">
-    默认情况下永远不导入密钥。使用 `--include-secrets` 导入支持的凭据。
+    交互式应用会询问是否导入检测到的身份验证凭据，默认选择是。使用 `--no-auth-credentials` 跳过它们，或使用 `--include-secrets` 配合 `--yes` 进行无人值守的凭据导入。
   </Accordion>
 </AccordionGroup>
 
@@ -171,11 +174,53 @@ Codex `config.toml`、原生 `hooks/hooks.json`、非精选 marketplace、不是
 - OpenClaw 文件内存的内存配置默认值，以及外部内存 Provider（如 Honcho）的归档或手动审查条目。
 - 在 `skills/<name>/` 下包含 `SKILL.md` 文件的技能。
 - 来自 `skills.config` 的每个技能配置值。
-- 仅在使用 `--include-secrets` 时，来自 `.env` 的支持的 API 密钥。
+- 在接受交互式凭据迁移或设置了 `--include-secrets` 时，来自 Hermes `auth.json` 的支持的 OAuth 凭据以及 OpenCode `auth.json` 中的 OpenCode OpenAI OAuth 凭据。
+- 在接受交互式凭据迁移或设置了 `--include-secrets` 时，来自 Hermes `.env` 和 OpenCode `auth.json` 的支持的 API 密钥和令牌。
 
 ### 支持的 `.env` 密钥
 
-`OPENAI_API_KEY`、`ANTHROPIC_API_KEY`、`OPENROUTER_API_KEY`、`GOOGLE_API_KEY`、`GEMINI_API_KEY`、`GROQ_API_KEY`、`XAI_API_KEY`、`MISTRAL_API_KEY`、`DEEPSEEK_API_KEY`。
+- `AI_GATEWAY_API_KEY`
+- `ALIBABA_API_KEY`
+- `ANTHROPIC_API_KEY`
+- `ARCEEAI_API_KEY`
+- `CEREBRAS_API_KEY`
+- `CHUTES_API_KEY`
+- `CLOUDFLARE_AI_GATEWAY_API_KEY`
+- `COPILOT_GITHUB_TOKEN`
+- `DASHSCOPE_API_KEY`
+- `DEEPINFRA_API_KEY`
+- `DEEPSEEK_API_KEY`
+- `FIREWORKS_API_KEY`
+- `GEMINI_API_KEY`
+- `GH_TOKEN`
+- `GITHUB_TOKEN`
+- `GLM_API_KEY`
+- `GOOGLE_API_KEY`
+- `GROQ_API_KEY`
+- `HF_TOKEN`
+- `HUGGINGFACE_HUB_TOKEN`
+- `KILOCODE_API_KEY`
+- `KIMICODE_API_KEY`
+- `KIMI_API_KEY`
+- `MINIMAX_API_KEY`
+- `MINIMAX_CODING_API_KEY`
+- `MISTRAL_API_KEY`
+- `MODELSTUDIO_API_KEY`
+- `MOONSHOT_API_KEY`
+- `NVIDIA_API_KEY`
+- `OPENAI_API_KEY`
+- `OPENCODE_API_KEY`
+- `OPENCODE_GO_API_KEY`
+- `OPENCODE_ZEN_API_KEY`
+- `OPENROUTER_API_KEY`
+- `QIANFAN_API_KEY`
+- `QWEN_API_KEY`
+- `TOGETHER_API_KEY`
+- `VENICE_API_KEY`
+- `XAI_API_KEY`
+- `XIAOMI_API_KEY`
+- `ZAI_API_KEY`
+- `Z_AI_API_KEY`
 
 ### 仅归档状态
 
@@ -186,7 +231,6 @@ OpenClaw 无法安全解释的 Hermes 状态被复制到迁移报告供手动审
 - `logs/`
 - `cron/`
 - `mcp-tokens/`
-- `auth.json`
 - `state.db`
 
 ### 应用后

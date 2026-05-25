@@ -43,6 +43,7 @@ openclaw gateway run
     - `openclaw onboard --mode local` 和 `openclaw setup` 应写入 `gateway.mode=local`。如果文件存在但 `gateway.mode` 缺失，请将其视为损坏或被覆盖的配置并修复它，而不是隐式假设本地模式。
     - 如果文件存在且 `gateway.mode` 缺失，Gateway 将其视为可疑的配置损坏并拒绝为您"猜测本地"。
     - 没有身份验证的情况下绑定到回环之外的地址被阻止（安全护栏）。
+    - `lan`、`tailnet` 和 `custom` 目前通过仅 IPv4 的 BYOH 路径解析。目前不原生支持仅 IPv6 的 BYOH。如果主机本身仅支持 IPv6，请使用 IPv4 旁路服务器或代理。
     - 当授权时（`commands.restart` 默认启用；设置 `commands.restart: false` 以阻止手动重启，同时仍允许 Gateway 工具/配置应用/更新），`SIGUSR1` 触发进程内重启。
     - `SIGINT`/`SIGTERM` 处理程序停止 Gateway 进程，但不恢复任何自定义终端状态。如果您用 TUI 或原始模式输入包装 CLI，请在退出前恢复终端。
 
@@ -55,7 +56,7 @@ openclaw gateway run
   WebSocket 端口（默认来自配置/env；通常为 `18789`）。
 </ParamField>
 <ParamField path="--bind <loopback|lan|tailnet|auto|custom>" type="string">
-  侦听器绑定模式。
+  侦听器绑定模式。`lan`、`tailnet` 和 `custom` 目前通过仅 IPv4 路径解析。
 </ParamField>
 <ParamField path="--auth <token|password>" type="string">
   身份验证模式覆盖。
@@ -74,6 +75,9 @@ openclaw gateway run
 </ParamField>
 <ParamField path="--tailscale-reset-on-exit" type="boolean">
   关闭时重置 Tailscale serve/funnel 配置。
+</ParamField>
+<ParamField path="--bind custom + gateway.customBindHost" type="string">
+  目前需要 IPv4 地址。对于仅 IPv6 的 BYOH，请在 Gateway 前放置 IPv4 旁路服务器或代理，并将 OpenClaw 指向该 IPv4 端点。
 </ParamField>
 <ParamField path="--allow-unconfigured" type="boolean">
   允许在配置中没有 `gateway.mode=local` 的情况下启动 Gateway。仅为临时/开发引导绕过启动守卫；不写入或修复配置文件。
@@ -128,7 +132,9 @@ openclaw gateway restart --force
 - 设置 `OPENCLAW_GATEWAY_STARTUP_TRACE=1` 以在 Gateway 启动期间记录阶段计时，包括每阶段 `eventLoopMax` 延迟以及已安装索引、清单注册表、启动规划和拥有者映射工作的插件查找表计时。
 - 设置 `OPENCLAW_GATEWAY_RESTART_TRACE=1` 以记录重启范围的 `restart trace:` 行，涵盖重启信号处理、活跃工作排空、关闭阶段、下次启动、就绪计时和内存指标。
 - 设置 `OPENCLAW_DIAGNOSTICS=timeline` 与 `OPENCLAW_DIAGNOSTICS_TIMELINE_PATH=<path>` 以为外部 QA 运行环境写入尽力而为的 JSONL 启动诊断时间线。您也可以在配置中使用 `diagnostics.flags: ["timeline"]` 启用该标志；路径仍然由 env 提供。添加 `OPENCLAW_DIAGNOSTICS_EVENT_LOOP=1` 以包含事件循环样本。
-- 运行 `pnpm test:startup:gateway -- --runs 5 --warmup 1` 以对 Gateway 启动进行基准测试。基准记录第一次进程输出、`/healthz`、`/readyz`、启动跟踪计时、事件循环延迟和插件查找表计时详情。
+- 先运行 `pnpm build`，然后运行 `pnpm test:startup:gateway -- --runs 5 --warmup 1` 以对已构建的 CLI 入口进行 Gateway 启动基准测试。基准记录第一次进程输出、`/healthz`、`/readyz`、启动跟踪计时、事件循环延迟和插件查找表计时详情。
+- 先运行 `pnpm build`，然后运行 `pnpm test:restart:gateway -- --case skipChannels --runs 1 --restarts 5` 以在 macOS 或 Linux 上对已构建的 CLI 入口进行进程内 Gateway 重启基准测试。重启基准使用 SIGUSR1，在子进程中同时启用启动和重启跟踪，并记录下一次 `/healthz`、下一次 `/readyz`、停机时间、就绪计时、CPU、RSS 和重启跟踪指标。
+- 将 `/healthz` 视为存活检查，将 `/readyz` 视为可用就绪检查。跟踪行和基准输出用于拥有者归因；不要将一个跟踪跨度或一个样本视为完整的性能结论。
 
 ## 查询运行中的 Gateway
 

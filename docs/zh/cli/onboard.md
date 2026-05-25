@@ -212,7 +212,7 @@ openclaw onboard --non-interactive \
   <Accordion title="网络搜索后续操作">
     某些网络搜索 Provider 会触发特定于 Provider 的后续提示：
 
-    - **Grok** 可以提供可选的 `x_search` 设置，使用相同的 `XAI_API_KEY` 和 `x_search` 模型选择。
+    - **Grok** 可以提供可选的 `x_search` 设置，使用相同的 xAI OAuth 配置文件或 API 密钥和 `x_search` 模型选择。
     - **Kimi** 可以询问 Moonshot API 区域（`api.moonshot.ai` 对比 `api.moonshot.cn`）和默认的 Kimi 网络搜索模型。
 
   </Accordion>

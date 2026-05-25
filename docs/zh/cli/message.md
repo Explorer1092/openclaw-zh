@@ -87,12 +87,13 @@ Channel 选择：
   - 仅 Telegram：`--poll-duration-seconds`（5-600）、`--silent`、`--poll-anonymous` / `--poll-public`、`--thread-id`
 
 - `react`
-  - Channel：Discord/Google Chat/Slack/Telegram/WhatsApp/Signal/Matrix
+  - Channel：Discord/Google Chat/Matrix/Nextcloud Talk/Signal/Slack/Telegram/WhatsApp
   - 必需：`--message-id`、`--target`
   - 可选：`--emoji`、`--remove`、`--participant`、`--from-me`、`--target-author`、`--target-author-uuid`
   - 注意：`--remove` 需要 `--emoji`（省略 `--emoji` 在支持的情况下清除自己的反应；请参阅 /tools/reactions）
   - 仅 WhatsApp：`--participant`、`--from-me`
   - Signal 群组反应：需要 `--target-author` 或 `--target-author-uuid`
+  - Nextcloud Talk：仅支持添加反应；`--remove` 会被拒绝并带有明确错误（请参阅 /tools/reactions）
 
 - `reactions`
   - Channel：Discord/Google Chat/Slack/Matrix

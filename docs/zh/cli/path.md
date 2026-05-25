@@ -142,7 +142,7 @@ oc://FILE/SECTION/ITEM/FIELD?session=SCOPE
 `set` 写入一个具体目标：
 
 - Markdown 前置元数据值和 `- key: value` 项字段是字符串叶子。Markdown 插入会追加节、前置元数据键或节列表项，并为变更后的文件呈现规范的 Markdown 形状。
-- JSONC 叶子写入将字符串值强制转换为现有叶子类型（`string`、有限 `number`、`true`/`false` 或 `null`）。JSONC 对象和数组插入将 `<value>` 解析为 JSON，并对普通叶子写入使用 `jsonc-parser` 编辑路径，保留注释和周围格式。
+- JSONC 叶子写入将字符串值强制转换为现有叶子类型（`string`、有限 `number`、`true`/`false` 或 `null`）。当 JSONC/JSON/JSONL 叶子替换应将 `<value>` 解析为 JSON 且可能改变形状时（例如将字符串 SecretRef 简写替换为对象），使用 `--value-json`。JSONC 对象和数组插入将 `<value>` 解析为 JSON，并对普通叶子写入使用 `jsonc-parser` 编辑路径，保留注释和周围格式。
 - JSONL 叶子写入与行内的 JSONC 强制转换方式相同。整行替换和追加将 `<value>` 解析为 JSON。渲染的 JSONL 保留文件的主要 LF/CRLF 换行惯例。
 - YAML 叶子写入将字符串值强制转换为现有标量类型（`string`、有限 `number`、`true`/`false` 或 `null`）。YAML 插入使用捆绑的 `yaml` 包的文档 API 进行映射/序列更新。存在解析器错误的格式错误 YAML 文档在修改前会以 `parse-error` 被拒绝。
 
@@ -179,6 +179,12 @@ openclaw path emit ./AGENTS.md
 ```bash
 # 引用包含 / 或 . 的键
 openclaw path resolve 'oc://config.jsonc/agents.defaults.models/"anthropic/claude-opus-4-7"/alias'
+
+# 深层 JSON/JSONC 路径可以使用斜杠段；它们规范化为点分隔子段
+openclaw path set 'oc://openclaw.json/agents/list/0/tools/exec/security' 'allowlist' --dry-run
+
+# 用解析后的对象替换 JSONC 叶子
+openclaw path set 'oc://openclaw.json/gateway/auth/token' '{"source":"file","provider":"secrets","id":"/test"}' --value-json --dry-run
 
 # 在 JSONC 子项上进行谓词搜索
 openclaw path find 'oc://config.jsonc/plugins/[enabled=true]/id'

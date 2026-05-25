@@ -78,7 +78,7 @@ openclaw update status --timeout 10
 
 当您明确切换渠道（`--channel ...`）时，OpenClaw 还会保持安装方法一致：
 
-- `dev` → 确保 git 检出（默认：`~/openclaw`，用 `OPENCLAW_GIT_DIR` 覆盖），更新它，并从该检出安装全局 CLI。
+- `dev` → 确保 git 检出（默认：`~/openclaw`，或当设置了 `OPENCLAW_HOME` 时为 `$OPENCLAW_HOME/openclaw`；用 `OPENCLAW_GIT_DIR` 覆盖），更新它，并从该检出安装全局 CLI。
 - `stable` → 使用 `latest` 从 npm 安装。
 - `beta` → 优先使用 npm dist-tag `beta`，但当 beta 缺失或比当前稳定版本旧时回退到 `latest`。
 

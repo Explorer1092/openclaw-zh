@@ -33,7 +33,7 @@ title: "CLI 参考"
 | 配对与 Channel | [`pairing`](/cli/pairing) · [`qr`](/cli/qr) · [`channels`](/cli/channels)                                                                                                                                                                  |
 | 安全与 Plugin | [`security`](/cli/security) · [`secrets`](/cli/secrets) · [`skills`](/cli/skills) · [`plugins`](/cli/plugins) · [`proxy`](/cli/proxy)                                                                                                       |
 | 旧版别名       | [`daemon`](/cli/daemon)（Gateway 服务）· [`clawbot`](/cli/clawbot)（命名空间）                                                                                                                                                              |
-| Plugin（可选）   | [`path`](/cli/path) · [`voicecall`](/cli/voicecall)（如已安装）                                                                                                                                                                             |
+| Plugin（可选）   | [`meeting-notes`](/cli/meeting-notes) · [`path`](/cli/path) · [`policy`](/cli/policy) · [`voicecall`](/cli/voicecall)（如已安装）                                                                                                            |
 
 ## 全局标志
 
@@ -125,6 +125,10 @@ openclaw [--dev] [--profile <name>] <command>
     status
     index
     search
+  meeting-notes
+    list
+    show
+    path
   path
     resolve
     find

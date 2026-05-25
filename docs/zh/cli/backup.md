@@ -18,13 +18,14 @@ openclaw backup create --dry-run --json
 openclaw backup create --verify
 openclaw backup create --no-include-workspace
 openclaw backup create --only-config
-openclaw backup verify ./2026-03-09T00-00-00.000Z-openclaw-backup.tar.gz
+openclaw backup verify ./2026-03-09T08-00-00.000+08-00-openclaw-backup.tar.gz
 ```
 
 ## 注意事项
 
 - 归档包含一个 `manifest.json` 文件，其中包含已解析的源路径和归档布局。
 - 默认输出是当前工作目录中带时间戳的 `.tar.gz` 归档。
+- 带时间戳的备份文件名使用机器的本地时区，并包含 UTC 偏移量。
 - 如果当前工作目录在备份的源目录树内，OpenClaw 会回退到您的主目录作为默认归档位置。
 - 现有归档文件不会被覆盖。
 - 源状态/工作区树内的输出路径会被拒绝，以避免自我包含。

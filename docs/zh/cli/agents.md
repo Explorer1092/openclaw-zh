@@ -22,6 +22,7 @@ title: "Agents"
 openclaw agents list
 openclaw agents list --bindings
 openclaw agents add work --workspace ~/.openclaw/workspace-work
+openclaw agents add work --workspace ~/.openclaw/workspace-work --bind telegram:*
 openclaw agents add ops --workspace ~/.openclaw/workspace-ops --bind telegram:ops --non-interactive
 openclaw agents bindings
 openclaw agents bind --agent work --bind telegram:ops
@@ -51,9 +52,23 @@ openclaw agents bindings --json
 openclaw agents bind --agent work --bind telegram:ops --bind discord:guild-a
 ```
 
-如果省略 `accountId`（`--bind <channel>`），OpenClaw 会在可用时从 Channel 默认值和 Plugin 设置 Hook 中解析它。
+您也可以在创建 Agent 时添加绑定：
+
+```bash
+openclaw agents add work --workspace ~/.openclaw/workspace-work --bind telegram:* --bind discord:*
+```
+
+如果省略 `accountId`（`--bind <channel>`），OpenClaw 会从 Plugin 设置 Hook、强制账户绑定或 Channel 已配置账户数量中解析它。
 
 如果省略 `bind` 或 `unbind` 的 `--agent`，OpenClaw 以当前默认 Agent 为目标。
+
+### `--bind` 格式
+
+| 格式                           | 含义                                                                                   |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| `--bind <channel>:*`           | 匹配 Channel 上的所有账户。                                                             |
+| `--bind <channel>:<account>`   | 匹配一个账户。                                                                          |
+| `--bind <channel>`             | 仅匹配默认账户，除非 CLI 能安全解析 Plugin 特定的账户范围。                              |
 
 ### 绑定范围行为
 
@@ -64,14 +79,20 @@ openclaw agents bind --agent work --bind telegram:ops --bind discord:guild-a
 示例：
 
 ```bash
+# 匹配 Channel 上的所有账户
+openclaw agents bind --agent work --bind telegram:*
+
+# 匹配特定账户
+openclaw agents bind --agent work --bind telegram:ops
+
 # 初始的仅 Channel 绑定
 openclaw agents bind --agent work --bind telegram
 
 # 之后升级为账户范围的绑定
-openclaw agents bind --agent work --bind telegram:ops
+openclaw agents bind --agent work --bind telegram:alerts
 ```
 
-升级后，该绑定的路由范围限定为 `telegram:ops`。如果您还想要默认账户路由，请显式添加（例如 `--bind telegram:default`）。
+升级后，该绑定的路由范围限定为 `telegram:alerts`。如果您还想要默认账户路由，请显式添加（例如 `--bind telegram:default`）。
 
 删除绑定：
 

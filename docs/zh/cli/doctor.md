@@ -125,7 +125,11 @@ repair?(ctx, findings) -> HealthRepairResult
 
 `detect()` 驱动 `doctor --lint`。`repair()` 是可选的，仅由 `doctor --fix` / `doctor --repair` 考虑。尚未迁移到此形状的检查继续使用旧版 doctor 贡献流程。
 
-该分离是有意为之：`detect()` 拥有诊断，而 `repair()` 拥有报告其更改或将更改的内容。修复上下文可以携带 `dryRun`/`diff` 请求，修复结果可以返回结构化的 `diffs` 用于配置/文件编辑，以及 `effects` 用于服务、进程、包、状态或其他副作用。
+该分离是有意为之：`detect()` 拥有诊断，而 `repair()` 拥有报告其更改或将更改的内容。修复上下文可以携带 `dryRun`/`diff` 请求，修复结果可以返回结构化的 `diffs` 用于配置/文件编辑，以及 `effects` 用于服务、进程、包、状态或其他副作用。这使已转换的检查可以在不将变更规划移入 `detect()` 的情况下，逐步实现 `doctor --fix --dry-run` 和差异报告。
+
+`repair()` 通过 `status: "repaired" | "skipped" | "failed"` 报告是否尝试了所请求的修复。省略状态意味着 `repaired`，因此简单的修复检查只需返回更改。当修复返回 `skipped` 或 `failed` 时，doctor 报告原因且不为该检查运行验证。
+
+成功的结构化修复后，doctor 以已修复的发现作为范围重新运行 `detect()`。检查可以使用选定的发现、路径或 `ocPath` 值进行聚焦验证。如果发现仍然存在，doctor 报告修复警告而不是将更改视为静默完成。
 
 发现包含：
 
@@ -138,6 +142,8 @@ repair?(ctx, findings) -> HealthRepairResult
 | `line` / `column`| 源代码位置（如可用）。                         |
 | `ocPath`         | 当检查可以指向时的精确 `oc://` 地址。          |
 | `fixHint`        | 建议的操作员操作或修复摘要。                   |
+
+本次发布在结构化健康路径上注册了现代化的核心 doctor 检查。`openclaw/plugin-sdk/health` 子路径为捆绑的后续消费者公开了相同的契约，但 Plugin 支持的检查只有在其拥有的包在活跃命令路径中注册它们后才运行。
 
 ## 检查选择
 
@@ -161,6 +167,7 @@ openclaw doctor --lint --skip core/doctor/skills-readiness
 - `doctor --fix --non-interactive` 报告缺少或陈旧的 Gateway 服务定义，但不在更新修复模式之外安装或重写它们。对于缺少的服务运行 `openclaw gateway install`，或当您有意想要替换启动器时运行 `openclaw gateway install --force`。
 - 状态完整性检查现在检测 sessions 目录中的孤立转录文件。将它们归档为 `.deleted.<timestamp>` 需要交互式确认；`--fix`、`--yes` 和无头运行会将其保留原位。
 - Doctor 还扫描 `~/.openclaw/cron/jobs.json`（或 `cron.store`）以查找旧版 cron 作业形状，并可以在调度器不得不在运行时自动规范化它们之前就地重写它们。
+- Doctor 报告具有显式 `payload.model` 覆盖的 cron 作业，包括 Provider 命名空间计数和与 `agents.defaults.model` 的不匹配，使在身份验证或计费调查期间不继承默认模型的计划作业可见。
 - 在 Linux 上，当用户的 crontab 仍然运行旧版 `~/.openclaw/bin/ensure-whatsapp.sh` 时，doctor 会发出警告；该脚本不再维护，并且当 cron 缺少 systemd 用户总线环境时可能记录错误的 WhatsApp Gateway 中断。
 - 当 WhatsApp 启用时，doctor 检查本地 `openclaw-tui` 客户端仍在运行的降级 Gateway 事件循环。`doctor --fix` 仅停止已验证的本地 TUI 客户端，以使 WhatsApp 回复不会排在陈旧的 TUI 刷新循环后面。
 - Doctor 将旧版 `openai-codex/*` 模型 ref 重写为跨主要模型、回退、heartbeat/子 Agent/压缩覆盖、Hook、Channel 模型覆盖和陈旧 Session 路由固定的规范 `openai/*` ref。`--fix` 将 Codex 意图移到 Provider/模型范围的 `agentRuntime.id: "codex"` 条目上，保留 Session auth-profile 固定（如 `openai-codex:...`），删除陈旧的整 Agent/Session 运行时固定，并保持修复后的 OpenAI Agent ref 在 Codex auth 路由上，而不是直接 OpenAI API 密钥 auth。
@@ -173,7 +180,7 @@ openclaw doctor --lint --skip core/doctor/skills-readiness
 - 重复的 `doctor --fix` 运行在唯一的区别是对象键顺序时不再报告/应用 Talk 规范化。
 - Doctor 包含一个 Memory 搜索就绪检查，并可以在嵌入凭据缺失时推荐 `openclaw configure --section model`。
 - 当没有配置命令拥有者时，doctor 会发出警告。命令拥有者是允许运行仅拥有者命令和批准危险操作的人类操作员账户。DM 配对只允许某人与机器人通话；如果您在首次拥有者引导存在之前批准了发送者，请显式设置 `commands.ownerAllowFrom`。
-- 当配置了 Codex 模式 Agent 且操作员的 Codex 主目录中存在个人 Codex CLI 资产时，doctor 会发出警告。本地 Codex 应用服务器启动使用隔离的每 Agent 主目录，因此使用 `openclaw migrate codex --dry-run` 来清点应该有意提升的资产。
+- 当配置了 Codex 模式 Agent 且操作员的 Codex 主目录中存在个人 Codex CLI 资产时，doctor 会报告信息提示。本地 Codex 应用服务器启动使用隔离的每 Agent 主目录，因此如果需要，请先安装 Codex Plugin，然后使用 `openclaw migrate plan codex` 来清点应该有意提升的资产。
 - Doctor 删除已退役的 `plugins.entries.codex.config.codexDynamicToolsProfile`；Codex 应用服务器始终保持 Codex 原生工作区工具为原生。
 - 当允许默认 Agent 的 Skill 在当前运行时环境中因缺少二进制文件、env 变量、配置或操作系统要求而不可用时，doctor 会发出警告。`doctor --fix` 可以用 `skills.entries.<skill>.enabled=false` 禁用那些不可用的 Skill；当您想要保持 Skill 活跃时，请安装/配置缺少的要求。
 - 如果启用了沙盒模式但 Docker 不可用，doctor 报告高信号警告并提供补救措施（`install Docker` 或 `openclaw config set agents.defaults.sandbox.mode off`）。

@@ -27,6 +27,7 @@ openclaw status --usage
 - 当当前 Session 快照稀疏时，`/status` 可以从最近的对话记录使用日志中回填令牌和缓存计数器。现有的非零实时值仍然优先于对话记录回退值。
 - `/status` 包含紧凑的 Gateway 进程正常运行时间和主机系统正常运行时间。
 - 当实时 Session 条目缺少它时，对话记录回退还可以恢复活动运行时模型标签。如果该对话记录模型与所选模型不同，status 会根据恢复的运行时模型而不是所选模型解析上下文窗口。
+- 当 Session 固定到与已配置主模型不同的模型时，status 打印两个值、原因（`session override`）和清除提示（`/model <configured-default>` 或 `/reset`）。已配置的主模型适用于新的或未固定的 Session；现有固定 Session 保留其 Session 选择直到被清除。
 - 对于提示大小核算，当 Session 元数据缺失或较小时，对话记录回退优先使用较大的面向提示的总量，这样自定义 Provider Session 就不会折叠到 `0` 令牌显示。
 - 配置了多个 Agent 时，输出包括每 Agent Session 存储。
 - 概览在可用时包含 Gateway + Node 主机服务安装/运行时状态。

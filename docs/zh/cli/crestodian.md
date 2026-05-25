@@ -12,7 +12,7 @@ title: "Crestodian"
 
 Crestodian 是 OpenClaw 的本地设置、修复和配置助手。它被设计为在正常 Agent 路径中断时仍然可以访问。
 
-不带命令运行 `openclaw` 会在交互式终端中启动 Crestodian。运行 `openclaw crestodian` 会显式启动相同的助手。
+在活跃配置文件缺失或没有已编写设置（空文件或仅含元数据）时，不带命令运行 `openclaw` 会首先启动经典入职。配置文件有已编写设置后，不带命令运行 `openclaw` 会在交互式终端中启动 Crestodian。运行 `openclaw crestodian` 会显式启动相同的助手。
 
 ## Crestodian 显示的内容
 
@@ -81,7 +81,7 @@ Crestodian 的启动路径故意很小。它可以在以下情况下运行：
 - Plugin 命令注册不可用
 - 尚未配置任何 Agent
 
-`openclaw --help` 和 `openclaw --version` 仍然使用正常的快速路径。非交互式 `openclaw` 以简短消息退出，而不是打印根帮助，因为无命令产品是 Crestodian。
+`openclaw --help` 和 `openclaw --version` 仍然使用正常的快速路径。非交互式裸 `openclaw` 以简短消息退出，而不是打印根帮助。在全新安装时，该消息指向非交互式入职；设置完成后，它指向一次性 Crestodian 命令。
 
 ## 操作和审批
 

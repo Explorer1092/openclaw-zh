@@ -11,7 +11,7 @@ title: "Memory"
 # `openclaw memory`
 
 管理语义内存索引和搜索。
-由活动内存 Plugin 提供（默认：`memory-core`；设置 `plugins.slots.memory = "none"` 以禁用）。
+由捆绑的 `memory-core` Plugin 提供。当 `plugins.slots.memory` 选择 `memory-core`（默认值）时可用；其他内存 Plugin 公开其自己的 CLI 命名空间。
 
 相关：
 

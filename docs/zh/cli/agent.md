@@ -14,6 +14,7 @@ title: "Agent"
 至少传递一个 Session 选择器：
 
 - `--to <dest>`
+- `--session-key <key>`
 - `--session-id <id>`
 - `--agent <id>`
 
@@ -25,6 +26,7 @@ title: "Agent"
 
 - `-m, --message <text>`：必需的消息内容
 - `-t, --to <dest>`：用于派生 Session 密钥的收件人
+- `--session-key <key>`：用于路由的显式 Session 密钥
 - `--session-id <id>`：显式 Session ID
 - `--agent <id>`：Agent ID；覆盖路由绑定
 - `--model <id>`：本次运行的模型覆盖（`provider/model` 或模型 ID）
@@ -45,6 +47,8 @@ title: "Agent"
 openclaw agent --to +15555550123 --message "status update" --deliver
 openclaw agent --agent ops --message "Summarize logs"
 openclaw agent --agent ops --model openai/gpt-5.4 --message "Summarize logs"
+openclaw agent --session-key agent:ops:incident-42 --message "Summarize status"
+openclaw agent --agent ops --session-key incident-42 --message "Summarize status"
 openclaw agent --session-id 1234 --message "Summarize inbox" --thinking medium
 openclaw agent --to +15555550123 --message "Trace logs" --verbose on --json
 openclaw agent --agent ops --message "Generate report" --deliver --reply-channel slack --reply-to "#reports"
@@ -58,9 +62,11 @@ openclaw agent --agent ops --message "Run locally" --local
 - `--local` 和嵌入式回退运行被视为一次性运行。为该本地进程打开的捆绑 MCP 回环资源和热 Claude stdio Session 在回复后被停用，因此脚本化调用不会保持本地子进程存活。
 - 由 Gateway 支持的运行将 Gateway 拥有的 MCP 回环资源保留在运行中的 Gateway 进程下；旧版客户端可能仍发送历史清理标志，但 Gateway 将其作为兼容性空操作接受。
 - `--channel`、`--reply-channel` 和 `--reply-account` 影响回复传递，而不影响 Session 路由。
+- `--session-key` 选择显式的 Session 密钥。Agent 前缀密钥必须使用 `agent:<agent-id>:<session-key>`，当两者都提供时，`--agent` 必须与密钥的 Agent ID 匹配。裸非哨兵密钥在提供 `--agent` 时作用域为该 Agent，否则作用域为已配置的默认 Agent；例如，`--agent ops --session-key incident-42` 路由到 `agent:ops:incident-42`。字面量 `global` 和 `unknown` 仅在未提供 `--agent` 时保持无作用域；在这种情况下，嵌入式回退和存储所有权使用已配置的默认 Agent。
 - `--json` 将 stdout 保留用于 JSON 响应。Gateway、Plugin 和嵌入式回退诊断被路由到 stderr，以便脚本可以直接解析 stdout。
 - 嵌入式回退 JSON 包含 `meta.transport: "embedded"` 和 `meta.fallbackFrom: "gateway"`，以便脚本可以区分回退运行和 Gateway 运行。
 - 如果 Gateway 接受 Agent 运行但 CLI 等待最终回复超时，嵌入式回退使用新的显式 `gateway-fallback-*` Session/运行 ID 并报告 `meta.fallbackReason: "gateway_timeout"` 加上回退 Session 字段。这避免了与 Gateway 拥有的转录锁竞争或静默替换原始路由对话 Session。
+- 对于 Gateway 支持的运行，`SIGTERM` 和 `SIGINT` 会中断等待中的 CLI 请求。如果 Gateway 已接受运行，CLI 还会在退出前为该已接受的运行 ID 发送 `chat.abort`。本地 `--local` 运行和嵌入式回退运行接收相同的中止信号，但不发送 `chat.abort`。如果重复的 `--run-id` 在原始 Agent 运行仍活跃时到达 Gateway，重复响应报告 `status: "in_flight"`，且非 JSON CLI 向 stderr 打印诊断信息而不是空回复。对于外部 cron/systemd 封装器，请保留外部硬终止保护（如 `timeout -k 60 600 openclaw agent ...`），以便监督程序在关机无法排空时仍能回收进程。
 - 当此命令触发 `models.json` 重新生成时，SecretRef 管理的 Provider 凭据被持久化为非密文标记（例如 env 变量名、`secretref-env:ENV_VAR_NAME` 或 `secretref-managed`），而不是解析后的密文明文。
 - 标记写入是源权威的：OpenClaw 从活跃源配置快照中持久化标记，而不是从解析的运行时密文值中持久化。
 
@@ -82,7 +88,7 @@ openclaw agent --agent ops --message "Run locally" --local
 }
 ```
 
-`deliveryStatus.status` 为 `sent`、`suppressed`、`partial_failed` 或 `failed` 之一。`suppressed` 表示传递被有意未发送，例如消息发送 Hook 取消了它或没有可见结果；这仍然是最终的无重试结果。`partial_failed` 表示在后续有效载荷失败之前至少发送了一个有效载荷。`failed` 表示没有完成持久发送或传递预检失败。
+`deliveryStatus.status` 为 `sent`、`suppressed`、`partial_failed` 或 `failed` 之一。`suppressed` 表示传递被有意未发送，例如消息发送 Hook 取消了它或没有可见结果；这仍然是最终的无重试结果。`partial_failed` 表示在后续有效载荷失败之前至少发送了一个有效载荷。`failed` 表示没有持久发送完成或传递预检失败。
 
 由 Gateway 支持的 CLI 响应也保留原始 Gateway 结果形状，其中同一对象在 `result.deliveryStatus` 处可用。
 

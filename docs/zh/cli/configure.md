@@ -26,7 +26,7 @@ title: "Configure"
 
 对于网络搜索，`openclaw configure --section web` 允许您选择 Provider 并配置其凭据。一些 Provider 还显示特定于 Provider 的后续提示：
 
-- **Grok** 可以提供使用相同 `XAI_API_KEY` 的可选 `x_search` 设置，并让您选择 `x_search` 模型。
+- **Grok** 可以提供使用相同 xAI OAuth 配置文件或 API 密钥的可选 `x_search` 设置，并让您选择 `x_search` 模型。
 - **Kimi** 可以询问 Moonshot API 区域（`api.moonshot.ai` 与 `api.moonshot.cn`）和默认的 Kimi 网络搜索模型。
 
 相关：

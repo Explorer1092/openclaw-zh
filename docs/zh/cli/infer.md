@@ -127,6 +127,7 @@ Focus on model runs, image generation, video generation, audio transcription, TT
 - 当需要特定后端时，使用 `--provider` 或 `--model provider/model`。
 - 使用 `model run --thinking <level>` 传递一次性思考/推理级别（`off`、`minimal`、`low`、`medium`、`high`、`adaptive`、`xhigh` 或 `max`），同时保持运行原始状态。
 - 对于 `image describe`、`audio transcribe` 和 `video describe`，`--model` 必须使用 `<provider/model>` 形式。
+- 对于 `image describe`，`--file` 接受本地路径和 HTTP(S) 图像 URL。远程 URL 使用正常的媒体抓取 SSRF 策略。
 - 对于 `image describe`，显式 `--model` 直接运行该 Provider/模型。模型必须在模型目录或 Provider 配置中支持图像输入。`codex/<model>` 运行有界 Codex 应用服务器图像理解轮次；`openai-codex/<model>` 使用 OpenAI Codex OAuth Provider 路径。
 - 无状态执行命令默认为本地。
 - Gateway 管理的状态命令默认为 Gateway。
@@ -160,7 +161,7 @@ openclaw infer model run --local --model google/gemini-2.5-flash --prompt "Reply
 openclaw infer model run --local --model groq/llama-3.1-8b-instant --prompt "Reply with exactly: pong" --json
 openclaw infer model run --local --model mistral/mistral-medium-3-5 --prompt "Reply with exactly: pong" --json
 openclaw infer model run --local --model mistral/mistral-small-latest --prompt "Reply with exactly: pong" --json
-openclaw infer model run --local --model openai/gpt-4.1 --prompt "Reply with exactly: pong" --json
+openclaw infer model run --local --model openai/gpt-5.5 --prompt "Reply with exactly: pong" --json
 openclaw infer model run --local --model ollama/qwen2.5vl:7b --prompt "Describe this image." --file ./photo.jpg --json
 ```
 
@@ -193,7 +194,7 @@ openclaw infer image describe --file ./photo.jpg --json
 openclaw infer image describe --file https://example.com/photo.png --json
 openclaw infer image describe --file ./receipt.jpg --prompt "Extract the merchant, date, and total" --json
 openclaw infer image describe-many --file ./before.png --file ./after.png --prompt "Compare the screenshots and list visible UI changes" --json
-openclaw infer image describe --file ./ui-screenshot.png --model openai/gpt-4.1-mini --json
+openclaw infer image describe --file ./ui-screenshot.png --model openai/gpt-5.4-mini --json
 openclaw infer image describe --file ./photo.jpg --model ollama/qwen2.5vl:7b --prompt "Describe the image in one sentence" --timeout-ms 300000 --json
 ```
 
@@ -261,7 +262,7 @@ openclaw infer tts status --json
 openclaw infer video generate --prompt "cinematic sunset over the ocean" --json
 openclaw infer video generate --prompt "slow drone shot over a forest lake" --resolution 768P --duration 6 --json
 openclaw infer video describe --file ./clip.mp4 --json
-openclaw infer video describe --file ./clip.mp4 --model openai/gpt-4.1-mini --json
+openclaw infer video describe --file ./clip.mp4 --model openai/gpt-5.4-mini --json
 ```
 
 注意事项：
