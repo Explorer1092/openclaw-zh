@@ -4,6 +4,7 @@ read_when:
   - You want the agent to create or update a skill from chat
   - You need to review, apply, reject, or quarantine a generated skill draft
   - You are configuring Skill Workshop approval, autonomy, storage, or limits
+  - You want to understand where self-learning proposals are reviewed
 title: "Skill Workshop"
 sidebarTitle: "Skill Workshop"
 ---
@@ -44,6 +45,32 @@ target change -> stale
 ```
 
 Only a `pending` proposal can be revised, applied, rejected, or quarantined.
+
+## Lifecycle curation
+
+The Gateway tracks aggregate skill usage in the shared state database. Once a
+day, it reviews skills created and applied by Skill Workshop. Skills unused for
+more than 30 days become `stale`; after 90 days they become `archived` and are
+left out of new agent skill snapshots. Archived skill files remain unchanged on
+disk. Manually authored skills are never curated; only skills created by Skill
+Workshop proposals enter lifecycle curation.
+
+Pinned skills bypass lifecycle transitions. A stale skill returns to `active`
+after it is used and the next sweep runs. Archived skills return only through an
+explicit restore:
+
+Lifecycle transitions and restores apply to new sessions; running sessions keep
+their current skill snapshot.
+
+```bash
+openclaw skills curator status
+openclaw skills curator pin <skill>
+openclaw skills curator unpin <skill>
+openclaw skills curator restore <skill>
+```
+
+All curator commands accept `--json`. Status also reports deterministic overlap
+candidates as suggestions only; it never merges skills or calls a model.
 
 ## Chat
 
@@ -208,7 +235,17 @@ OpenClaw detects durable instructions such as “next time,” “remember to,�
 when an interactive turn ends, including failed turns. On the next turn, the agent offers to save
 the most recent detected workflow through `skill_workshop`; the user decides whether to create a
 proposal. This built-in suggestion does not create or change a skill by itself. Enable
-`skills.workshop.autonomous.enabled` to create pending proposals directly instead.
+`skills.workshop.autonomous.enabled` to create pending proposals directly instead. In the Control
+UI, the Workshop tab offers the same setting as a **Self-learning** toggle in the page header, and
+as an enable button on the empty proposal board.
+
+With autonomous capture enabled, OpenClaw can also perform a conservative review after successful,
+substantial work and after the whole agent system becomes idle. That isolated review can create or
+revise at most one pending proposal. It cannot update a live skill or apply, reject, or quarantine a
+proposal, even when `approvalPolicy` is `"auto"`.
+
+See [Self-learning](/tools/self-learning) for enablement, eligibility, privacy and cost details,
+the proposal threshold, and troubleshooting.
 
 ## Approval and autonomy
 
@@ -230,7 +267,7 @@ proposal. This built-in suggestion does not create or change a skill by itself. 
 
 | Setting                    | Default     | Effect                                                                                                                                                                 |
 | -------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `autonomous.enabled`       | `false`     | Creates pending proposals directly instead of offering the most recent detected workflow on the next turn.                                                             |
+| `autonomous.enabled`       | `false`     | Creates pending proposals from explicit corrections and, after an idle delay, substantial completed work with reusable recovery or meaningful round-trip savings.      |
 | `allowSymlinkTargetWrites` | `false`     | Lets apply write through workspace skill symlinks whose real target is listed in `skills.load.allowSymlinkTargets`.                                                    |
 | `approvalPolicy`           | `"pending"` | `"pending"` requires an approval prompt before agent-initiated `apply`, `reject`, or `quarantine`. `"auto"` skips the prompt (the agent still has to call the action). |
 | `maxPending`               | `50`        | Caps pending and quarantined proposals per workspace (1-200).                                                                                                          |
@@ -240,6 +277,17 @@ Autonomous capture recognizes prospective rules (for example, “from now on”)
 corrections (for example, “that’s not what I asked”). It groups new instructions by topic into up
 to three proposals per turn, routes vocabulary matches to existing writable workspace skills, and
 revises its own pending proposal when another correction targets the same skill.
+
+For successful substantial work without an explicit correction, an isolated run of the selected
+model decides whether the completed trajectory clears the conservative proposal bar. The
+foreground model is not prompted to learn before it replies. The background reviewer preserves the
+foreground run as proposal provenance, cannot access general agent tools, and cannot make lifecycle
+decisions. The review starts only when the foreground runtime reports both its exact resolved model
+and that `skill_workshop` was actually available. Restrictive or unknown tool policy therefore
+fails closed and creates no proposal.
+
+See [Self-learning](/tools/self-learning) for the complete autonomous review behavior and safety
+model.
 
 Proposal descriptions are always capped at 160 bytes, independent of
 `maxSkillBytes`.
@@ -257,6 +305,10 @@ Proposal descriptions are always capped at 160 bytes, independent of
 | `skills.proposals.apply`           | `operator.admin` |
 | `skills.proposals.reject`          | `operator.admin` |
 | `skills.proposals.quarantine`      | `operator.admin` |
+| `skills.curator.status`            | `operator.read`  |
+| `skills.curator.pin`               | `operator.admin` |
+| `skills.curator.unpin`             | `operator.admin` |
+| `skills.curator.restore`           | `operator.admin` |
 
 `requestRevision` is Gateway-only (no CLI or agent-tool equivalent): it
 forwards free-text revision instructions to the owning agent's chat session
@@ -321,6 +373,7 @@ Workshop is built in and prints the same policy hint when applicable.
 ## Related
 
 - [Skills](/tools/skills) for load order, precedence, and visibility
+- [Self-learning](/tools/self-learning) for conservative post-run skill proposals
 - [Creating skills](/tools/creating-skills) for hand-written `SKILL.md`
   basics
 - [Skills config](/tools/skills-config) for the full `skills.workshop` schema
