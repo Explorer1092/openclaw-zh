@@ -24,7 +24,7 @@ Provider plugins can contribute cache-aware guidance without replacing the OpenC
 
 Use provider-owned contributions for model-family-specific tuning. Reserve the legacy `before_prompt_build` hook for compatibility or truly global prompt changes.
 
-The bundled OpenAI/Codex GPT-5-family overlay (`resolveGpt5SystemPromptContribution`) uses this mechanism: a `stablePrefix` behavior contract (execution policy, tool discipline, output contract, completion contract) plus an optional `interaction_style` override for a friendlier tone. It applies to any `gpt-5*` model id routed through the OpenAI or Codex plugins, controlled by the OpenAI plugin setting `plugins.entries.openai.config.personality` (`"friendly"`/`"on"` or `"off"`).
+The built-in GPT-5-family prompt contribution (`resolveGpt5SystemPromptContribution`) uses this mechanism: a `stablePrefix` behavior contract (execution policy, tool discipline, output contract, completion contract) plus an optional `interaction_style` override for a friendlier tone. For OpenAI-family routes, `plugins.entries.openai.config.personality` controls that style layer: `"friendly"` is the default, `"on"` aliases `"friendly"`, and `"off"` removes only the friendly override; the stable behavior contract remains.
 
 ## Structure
 
@@ -48,7 +48,7 @@ The prompt is compact, with fixed sections:
 - **Runtime**: host, OS, node, model, repo root (when detected), thinking level (one line).
 - **Reasoning**: current visibility level plus the `/reasoning` toggle hint.
 
-Large stable content (including **Project Context**) stays above the internal prompt cache boundary. Volatile per-turn sections (Control UI embed guidance, **Messaging**, **Collapsible Details**, **Voice**, **Group Chat Context**, **Reactions**, **Heartbeats**, **Runtime**) are appended below that boundary so local backends with prefix caches can reuse the stable workspace prefix across channel turns. Tool descriptions should avoid embedding current channel names when the accepted schema already carries that runtime detail.
+Large stable content (including **Project Context**) stays above the internal prompt cache boundary. Volatile per-turn sections (Control UI embed guidance, **Messaging**, **Collapsible Details**, **Voice**, **Group Chat Context**, **Reactions**, **Heartbeats**, **Runtime**) are appended below that boundary so local backends with prefix caches can reuse the stable workspace prefix across channel turns. The boundary is internal transport metadata: every section remains system-prompt guidance for CLI backends. Tool descriptions should avoid embedding current channel names when the accepted schema already carries that runtime detail.
 
 Tooling also carries long-running-work guidance:
 
